@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using Speckle.Core.Logging;
 using DB = Autodesk.Revit.DB;
@@ -35,7 +34,8 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetElementDisplayValue(
       DB.Element element,
       Options options = null,
-      bool isConvertedAsInstance = false
+      bool isConvertedAsInstance = false,
+      DB.Transform transform = null
     )
     {
       var displayMeshes = new List<Mesh>();
@@ -75,14 +75,45 @@ namespace Objects.Converter.Revit
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
 
-      if (isConvertedAsInstance) SortInstanceGeometry(element, solids, meshes, geom);
-      else SortGeometry(element.Document, solids, meshes, geom);
+      SortGeometry(element, solids, meshes, geom, transform?.Inverse);
+      //if (isConvertedAsInstance) SortInstanceGeometry(element, solids, meshes, geom);
+      //else SortGeometry(element.Document, solids, meshes, geom);
 
       // convert meshes and solids
       displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
       displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
 
       return displayMeshes;
+    }
+
+    private static void LogInstanceMeshRetrievalWarnings(
+      Element element, 
+      int topLevelSolidsCount, 
+      int topLevelMeshesCount, 
+      int topLevelGeomElementCount, 
+      int topLevelGeomInstanceCount, 
+      bool hasSymbolGeom
+    )
+    {
+      if (hasSymbolGeom)
+      {
+        if (topLevelSolidsCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level solids. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelSolidsCount);
+        }
+        if (topLevelMeshesCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numMeshes} top level meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelMeshesCount);
+        }
+        if (topLevelGeomElementCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numGeomElements} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelGeomElementCount);
+        }
+      }
+      else if (topLevelSolidsCount == 0 && topLevelMeshesCount == 0)
+      {
+        SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} does not have valid symbol geometry and does not have any top-level solids or meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
+      }
     }
 
     /// <summary>
@@ -100,11 +131,12 @@ namespace Objects.Converter.Revit
     /// <param name="solids"></param>
     /// <param name="meshes"></param>
     /// <param name="geom"></param>
-    void SortInstanceGeometry(
+    void SortGeometry(
       Element element,
       List<Solid> solids,
       List<DB.Mesh> meshes,
-      GeometryElement geom
+      GeometryElement geom,
+      Transform inverseTransform = null
     )
     {
       var topLevelSolidsCount = 0;
@@ -112,139 +144,75 @@ namespace Objects.Converter.Revit
       var topLevelGeomElementCount = 0;
       var topLevelGeomInstanceCount = 0;
       var hasSymbolGeom = false;
-      foreach (GeometryObject geomObj in geom)
-      {
-        switch (geomObj)
-        {
-          case Solid:
-            topLevelSolidsCount++;
-            break;
-          case DB.Mesh:
-            topLevelMeshesCount++;
-            break;
-          case GeometryElement:
-            topLevelGeomElementCount++;
-            break;
-          case GeometryInstance instance:
-            topLevelGeomInstanceCount++;
-            var symbolGeo = instance.GetSymbolGeometry();
 
-            if (!SymbolGeometryContainsGeometryData(symbolGeo))
-            {
-              SortGeometry(element.Document, solids, meshes, geom, instance.Transform.Inverse);
-            }
-            else
-            {
-              hasSymbolGeom = true;
-              SortGeometry(element.Document, solids, meshes, symbolGeo);
-            }
-            break;
-        }
-      }
-
-      LogInstanceMeshRetrievalWarnings(
-        element, 
-        topLevelSolidsCount, 
-        topLevelMeshesCount, 
-        topLevelGeomElementCount, 
-        topLevelGeomInstanceCount, 
-        hasSymbolGeom);
-    }
-
-    private bool SymbolGeometryContainsGeometryData(GeometryElement geometryElement)
-    {
-      foreach (var geomObj in geometryElement)
-      {
-        switch (geomObj)
-        {
-          case Solid:
-            return true;
-          case DB.Mesh:
-            return true;
-          case GeometryElement el:
-            return SymbolGeometryContainsGeometryData(el);
-          case GeometryInstance instance:
-            return SymbolGeometryContainsGeometryData(instance.GetSymbolGeometry());
-        }
-      }
-      return false;
-    }
-
-    private static void LogInstanceMeshRetrievalWarnings(
-      Element element, 
-      int topLevelSolidsCount, 
-      int topLevelMeshesCount, 
-      int topLevelGeomElementCount, 
-      int topLevelGeomInstanceCount, 
-      bool hasSymbolGeom
-    )
-    {
-      if (topLevelGeomInstanceCount == 0)
-      {
-        SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} did not have any top level geometry instances. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
-      }
-      else if (hasSymbolGeom)
-      {
-        if (topLevelSolidsCount > 0)
-        {
-          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level solids. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelSolidsCount);
-        }
-        if (topLevelMeshesCount > 0)
-        {
-          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numMeshes} top level meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelMeshesCount);
-        }
-        if (topLevelGeomElementCount > 0)
-        {
-          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numGeomElements} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelGeomElementCount);
-        }
-      }
-      else
-      {
-        if (topLevelSolidsCount == 0 && topLevelMeshesCount == 0)
-        {
-          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} does not have valid symbol geometry and does not have any top-level solids or meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
-        }
-      }
-    }
-
-    void SortGeometry(
-      Document doc,
-      List<Solid> solids,
-      List<DB.Mesh> meshes,
-      GeometryElement geom,
-      Transform inverseTransform = null
-    )
-    {
       foreach (GeometryObject geomObj in geom)
       {
         switch (geomObj)
         {
           case Solid solid:
             // skip invalid solid
-            if (solid.Faces.Size == 0 || Math.Abs(solid.SurfaceArea) == 0) continue;
-            if (IsSkippableGraphicStyle(solid.GraphicsStyleId, doc)) continue;
+            if (solid.Faces.Size == 0
+              || Math.Abs(solid.SurfaceArea) == 0
+              || IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document)) 
+            {
+              continue;
+            }
 
             if (inverseTransform != null)
+            {
+              topLevelSolidsCount++;
               solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+            }
 
             solids.Add(solid);
             break;
           case DB.Mesh mesh:
-            if (IsSkippableGraphicStyle(mesh.GraphicsStyleId, doc)) continue;
+            if (IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document)) continue;
 
             if (inverseTransform != null)
+            {
+              topLevelMeshesCount++;
               mesh = mesh.get_Transformed(inverseTransform);
+            }
 
             meshes.Add(mesh);
             break;
           case GeometryInstance instance:
-            var instanceGeo = instance.GetInstanceGeometry();
-            SortGeometry(doc, solids, meshes, instanceGeo, inverseTransform);
+            GeometryElement geomElement;
+            if (inverseTransform != null)
+            {
+              topLevelGeomInstanceCount++;
+              hasSymbolGeom = true;
+              geomElement = instance.GetSymbolGeometry();
+            }
+            else
+            {
+              geomElement = instance.GetInstanceGeometry();
+            }
+
+            // element transforms should not be carried down into nested geometryInstances.
+            // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
+            SortGeometry(element, solids, meshes, geomElement);
             break;
-          case GeometryElement element:
-            SortGeometry(doc, solids, meshes, element, inverseTransform);
+          case GeometryElement geometryElement:
+            if (inverseTransform != null)
+            {
+              topLevelGeomElementCount++;
+            }
+            SortGeometry(element, solids, meshes, geometryElement);
             break;
         }
+      }
+
+      if (inverseTransform != null)
+      {
+        LogInstanceMeshRetrievalWarnings(
+          element,
+          topLevelSolidsCount,
+          topLevelMeshesCount,
+          topLevelGeomElementCount,
+          topLevelGeomInstanceCount,
+          hasSymbolGeom);
       }
     }
 
