@@ -274,6 +274,10 @@ namespace Speckle.ConnectorRevit.UI
         CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
+      // Create setting for passing the current host element id to the converter
+      var currentHostSettingKey = "current-host-element";
+      settings.Add(currentHostSettingKey, string.Empty);
+
       // Get direct mesh setting and create modified settings in case this is used for retried conversions
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
@@ -354,6 +358,9 @@ namespace Speckle.ConnectorRevit.UI
               converted: convRes.Converted,
               log: convRes.Log
             );
+
+            // continue traversing for hosted elements
+            var hostedElements = ConvertHostedElements(@base, convRes);
           }
           else
           {

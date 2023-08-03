@@ -29,24 +29,25 @@ public static class DefaultTraversal
   }
 
   /// <summary>
-  /// Traverses until finds an instance object then HALTS deeper traversal
+  /// Traverses until finds a convertable object then HALTS deeper traversal
   /// </summary>
   /// <remarks>
-  /// Revit creates instances at the top most level,
-  /// so this traversal is a shallow traversal for instance objects,
+  /// Current <see cref="Converter{TInput,TOutput}.Revit.ConverterRevit"/> does traversal,
+  /// so this traversal is a shallow traversal for directly convertable objects,
   /// and a deep traversal for all other types
   /// </remarks>
   /// <param name="converter"></param>
   /// <returns></returns>
   public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
   {
-    var convertableRule = TraversalRule
-      .NewTraversalRule()
-      .When(converter.CanConvertToNative)
-      .When(HasDisplayValue)
-      .ContinueTraversing(_ => elementsPropAliases);
+    var convertableRule = TraversalRule.NewTraversalRule().When(converter.CanConvertToNative).ContinueTraversing(None);
 
-    return new GraphTraversal(convertableRule, IgnoreResultsRule, IgnoreInstancesRule, DefaultRule);
+    var displayValueRule = TraversalRule
+      .NewTraversalRule()
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => displayValueAndElementsPropAliases);
+
+    return new GraphTraversal(convertableRule, displayValueRule, IgnoreResultsRule, DefaultRule);
   }
 
   /// <summary>
@@ -71,10 +72,6 @@ public static class DefaultTraversal
   private static readonly ITraversalRule IgnoreResultsRule = TraversalRule
     .NewTraversalRule()
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
-    .ContinueTraversing(None);
-  private static readonly ITraversalRule IgnoreInstancesRule = TraversalRule
-    .NewTraversalRule()
-    .When(o => o.speckle_type.Contains("Objects.Other.Instances"))
     .ContinueTraversing(None);
 
   public static readonly ITraversalRule DefaultRule = TraversalRule
