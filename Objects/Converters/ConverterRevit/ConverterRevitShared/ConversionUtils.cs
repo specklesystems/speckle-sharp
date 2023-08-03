@@ -251,33 +251,19 @@ namespace Objects.Converter.Revit
     /// potential conflicts when setting them back on the element</param>
     public void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
-      var instParams = GetElementParams(revitElement, false, exclusions);
-      var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement); //ignore type props of levels..!
       var allParams = new Dictionary<string, Parameter>();
+      AddElementParamsToDict(revitElement, allParams, false, exclusions);
 
-      if (instParams != null)
-        instParams
-          .ToList()
-          .ForEach(x =>
-          {
-            if (!allParams.ContainsKey(x.Key))
-              allParams.Add(x.Key, x.Value);
-          });
+      var elementType = revitElement.Document.GetElement(revitElement.GetTypeId());
+      AddElementParamsToDict(
+        speckleElement is Level ? null : elementType, //ignore type props of levels..!
+        allParams,
+        true,
+        exclusions);
 
-      if (typeParams != null)
-        typeParams
-          .ToList()
-          .ForEach(x =>
-          {
-            if (!allParams.ContainsKey(x.Key))
-              allParams.Add(x.Key, x.Value);
-          });
-
+      Base paramBase = new();
       //sort by key
-      allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
-      Base paramBase = new Base();
-
-      foreach (var kv in allParams)
+      foreach (var kv in allParams.OrderBy(x => x.Key))
       {
         try
         {
@@ -317,27 +303,15 @@ namespace Objects.Converter.Revit
         speckleElement["materialQuantities"] = qs;
     }
 
-    //private List<string> alltimeExclusions = new List<string> {
-    //  "ELEM_CATEGORY_PARAM" };
-    private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
-    {
-      var elementType = element.Document.GetElement(element.GetTypeId());
-
-      if (elementType == null)
-      {
-        return new Dictionary<string, Parameter>();
-      }
-      return GetElementParams(elementType, true);
-    }
-
-    private Dictionary<string, Parameter> GetElementParams(
+    private void AddElementParamsToDict(
       DB.Element element,
+      Dictionary<string, Parameter> paramDict,
       bool isTypeParameter = false,
-      List<string> exclusions = null
-    )
+      List<string> exclusions = null)
     {
+      if (element == null) return;
+
       exclusions ??= new();
-      Dictionary<string, Parameter> paramDict = new();
       using var parameters = element.Parameters;
       foreach (DB.Parameter param in parameters)
       {
@@ -355,13 +329,12 @@ namespace Objects.Converter.Revit
         }
 
         var speckleParam = ParameterToSpeckle(
-          param, 
-          isTypeParameter, 
+          param,
+          isTypeParameter,
           paramInternalName: internalName,
           cache: revitDocumentAggregateCache);
         paramDict[internalName] = speckleParam;
       }
-      return paramDict;
     }
 
     /// <summary>
