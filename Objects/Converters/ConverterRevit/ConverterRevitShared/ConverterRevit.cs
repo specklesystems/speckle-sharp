@@ -189,7 +189,7 @@ namespace Objects.Converter.Revit
 
       // set the current host from document settings
       var currentHostId = Settings["current-host-element"];
-      if (currentHostId != null)
+      if (!string.IsNullOrEmpty(currentHostId))
         CurrentHostElement = Doc.GetElement(currentHostId);
 
       switch (@object)

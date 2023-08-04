@@ -44,6 +44,7 @@ namespace Speckle.ConnectorRevit.UI
       CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
+      settings.Add(currentHostSettingKey, string.Empty); // Create setting for passing the current host element id to the converter
       converter.SetConverterSettings(settings);
 
       var streamId = state.StreamId;

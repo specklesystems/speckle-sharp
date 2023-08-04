@@ -358,7 +358,7 @@ namespace Speckle.ConnectorRevit.UI
         if (@base == null)
           return;
 
-        var nestedElements = DefaultTraversal.elementsPropAliases.Where(o => @base[o] != null)?.FirstOrDefault();
+        var nestedElements = @base["elements"] ?? @base["@elements"];
 
         if (nestedElements == null)
           return;
@@ -415,7 +415,6 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
       // Create setting for passing the current host element id to the converter
-      var currentHostSettingKey = "current-host-element";
       settings.Add(currentHostSettingKey, string.Empty);
 
       // Get direct mesh setting and create modified settings in case this is used for retried conversions
