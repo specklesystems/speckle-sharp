@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using Speckle.Core.Logging;
 
@@ -68,4 +68,19 @@ public class ConversionSkippedException : ConversionException
   public ConversionSkippedException(string message) : base(message) { }
 
   public ConversionSkippedException() { }
+}
+
+/// <summary>
+/// Exception thrown when an object was not ready to be baked into the document (i.e. the element's host doesn't exist yet)
+/// </summary>
+public class ConversionNotReadyException : ConversionException
+{
+  public ConversionNotReadyException(string? message, object? objectToConvert, Exception? innerException = null)
+    : base(message, objectToConvert, innerException) { }
+
+  public ConversionNotReadyException(string message, Exception innerException) : base(message, innerException) { }
+
+  public ConversionNotReadyException(string message) : base(message) { }
+
+  public ConversionNotReadyException() { }
 }

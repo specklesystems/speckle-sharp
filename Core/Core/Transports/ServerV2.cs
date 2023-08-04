@@ -1,6 +1,8 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,36 +18,35 @@ namespace Speckle.Core.Transports;
 
 public class ServerTransport : ServerTransportV2
 {
-  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null)
+  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
     : base(account, streamId, timeoutSeconds, blobStorageFolder) { }
 }
 
 public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
-  private object ElapsedLock = new();
+  private readonly object _elapsedLock = new();
 
-  private bool ErrorState;
-  private bool IsWriteComplete;
+  private Exception? _exception;
+  private bool IsInErrorState => _exception is not null;
+  private bool _isWriteComplete;
 
   // TODO: make send buffer more flexible to accept blobs too
-  private List<(string, string)> SendBuffer = new();
-  private object SendBufferLock = new();
-  private Thread SendingThread;
+  private List<(string id, string data)> _sendBuffer = new();
+  private readonly object _sendBufferLock = new();
+  private Thread? _sendingThread;
 
-  private bool ShouldSendThreadRun;
+  private bool _shouldSendThreadRun;
 
-  public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null)
+  public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
   {
     Account = account;
-    CancellationToken = CancellationToken.None;
     Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+    BlobStorageFolder = blobStorageFolder ?? SpecklePathProvider.BlobStoragePath();
 
-    if (blobStorageFolder == null)
-      BlobStorageFolder = SpecklePathProvider.BlobStoragePath();
     Directory.CreateDirectory(BlobStorageFolder);
   }
 
-  public int TotalSentBytes { get; set; }
+  public int TotalSentBytes { get; private set; }
 
   public Account Account { get; set; }
   public string BaseUri { get; private set; }
@@ -60,34 +61,34 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public void SaveBlob(Blob obj)
   {
-    if (string.IsNullOrEmpty(StreamId) || obj == null)
-      throw new InvalidOperationException("Invalid parameters to SaveBlob");
+    if (string.IsNullOrEmpty(StreamId))
+      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
     var hash = obj.GetFileHash();
 
-    lock (SendBufferLock)
+    lock (_sendBufferLock)
     {
-      if (ErrorState)
+      if (IsInErrorState)
         return;
-      SendBuffer.Add(($"blob:{hash}", obj.filePath));
+      _sendBuffer.Add(($"blob:{hash}", obj.filePath));
     }
   }
 
   public object Clone()
   {
-    return new ServerTransportV2(Account, StreamId)
+    return new ServerTransportV2(Account, StreamId, TimeoutSeconds, BlobStorageFolder)
     {
       OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
-      CancellationToken = CancellationToken
+      CancellationToken = CancellationToken,
     };
   }
 
   public void Dispose()
   {
-    if (SendingThread != null)
+    if (_sendingThread != null)
     {
-      ShouldSendThreadRun = false;
-      SendingThread.Join();
+      _shouldSendThreadRun = false;
+      _sendingThread.Join();
     }
     Api.Dispose();
   }
@@ -105,15 +106,15 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     };
 
   public CancellationToken CancellationToken { get; set; }
-  public Action<string, int> OnProgressAction { get; set; }
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
   public int SavedObjectCount { get; private set; }
-  public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
+  public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;
 
   public async Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int> onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown = null
   )
   {
     if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || targetTransport == null)
@@ -123,84 +124,76 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
     using ParallelServerApi api = new(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds);
 
-      var stopwatch = Stopwatch.StartNew();
-      api.CancellationToken = CancellationToken;
-      try
-      {
-        string rootObjectJson = await api.DownloadSingleObject(StreamId, id).ConfigureAwait(false);
-        List<string> allIds = ParseChildrenIds(rootObjectJson);
+    var stopwatch = Stopwatch.StartNew();
+    api.CancellationToken = CancellationToken;
 
-        List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
-        List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0, 5)).ToList();
+    string rootObjectJson = await api.DownloadSingleObject(StreamId, id).ConfigureAwait(false);
+    List<string> allIds = ParseChildrenIds(rootObjectJson);
 
-        onTotalChildrenCountKnown?.Invoke(allIds.Count);
+    List<string> childrenIds = allIds.Where(x => !x.Contains("blob:")).ToList();
+    List<string> blobIds = allIds.Where(x => x.Contains("blob:")).Select(x => x.Remove(0, 5)).ToList();
 
-        //
-        // Objects download
-        //
+    onTotalChildrenCountKnown?.Invoke(allIds.Count);
 
-        // Check which children are not already in the local transport
-        var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
-        List<string> newChildrenIds =
-          new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+    //
+    // Objects download
+    //
 
-        targetTransport.BeginWrite();
+    // Check which children are not already in the local transport
+    var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
+    List<string> newChildrenIds = new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
-        await api.DownloadObjects(
-            StreamId,
-            newChildrenIds,
-            (id, json) =>
-            {
-              stopwatch.Stop();
-              targetTransport.SaveObject(id, json);
-              OnProgressAction?.Invoke(TransportName, 1);
-              stopwatch.Start();
-            }
-          )
-          .ConfigureAwait(false);
+    targetTransport.BeginWrite();
 
-        // pausing until writing to the target transport
-        stopwatch.Stop();
-        targetTransport.SaveObject(id, rootObjectJson);
+    await api.DownloadObjects(
+        StreamId,
+        newChildrenIds,
+        (childId, childData) =>
+        {
+          stopwatch.Stop();
+          targetTransport.SaveObject(childId, childData);
+          OnProgressAction?.Invoke(TransportName, 1);
+          stopwatch.Start();
+        }
+      )
+      .ConfigureAwait(false);
 
-        await targetTransport.WriteComplete().ConfigureAwait(false);
-        targetTransport.EndWrite();
-        stopwatch.Start();
+    // pausing until writing to the target transport
+    stopwatch.Stop();
+    targetTransport.SaveObject(id, rootObjectJson);
 
-        //
-        // Blobs download
-        //
-        var localBlobTrimmedHashes = Directory
-          .GetFiles(BlobStorageFolder)
-          .Select(fileName => fileName.Split(Path.DirectorySeparatorChar).Last())
-          .Where(fileName => fileName.Length > 10)
-          .Select(fileName => fileName.Substring(0, Blob.LocalHashPrefixLength))
-          .ToList();
+    await targetTransport.WriteComplete().ConfigureAwait(false);
+    targetTransport.EndWrite();
+    stopwatch.Start();
 
-        var newBlobIds = blobIds
-          .Where(id => !localBlobTrimmedHashes.Contains(id.Substring(0, Blob.LocalHashPrefixLength)))
-          .ToList();
+    //
+    // Blobs download
+    //
+    var localBlobTrimmedHashes = Directory
+      .GetFiles(BlobStorageFolder)
+      .Select(fileName => fileName.Split(Path.DirectorySeparatorChar).Last())
+      .Where(fileName => fileName.Length > 10)
+      .Select(fileName => fileName.Substring(0, Blob.LocalHashPrefixLength))
+      .ToList();
 
-        await api.DownloadBlobs(
-            StreamId,
-            newBlobIds,
-            () =>
-            {
-              OnProgressAction?.Invoke(TransportName, 1);
-            }
-          )
-          .ConfigureAwait(false);
+    var newBlobIds = blobIds
+      .Where(blobId => !localBlobTrimmedHashes.Contains(blobId.Substring(0, Blob.LocalHashPrefixLength)))
+      .ToList();
 
-        stopwatch.Stop();
-        Elapsed += stopwatch.Elapsed;
-        return rootObjectJson;
-      }
-      catch (Exception e)
-      {
-        OnErrorAction?.Invoke(TransportName, e);
-        return null;
-      }
-    }
+    await api.DownloadBlobs(
+        StreamId,
+        newBlobIds,
+        () =>
+        {
+          OnProgressAction?.Invoke(TransportName, 1);
+        }
+      )
+      .ConfigureAwait(false);
+
+    stopwatch.Stop();
+    Elapsed += stopwatch.Elapsed;
+    return rootObjectJson;
+  }
 
   public string GetObject(string id)
   {
@@ -212,66 +205,81 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     return result;
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
-    if (string.IsNullOrEmpty(StreamId) || objectIds == null)
-      throw new Exception("Invalid parameters to HasObjects");
+    if (string.IsNullOrEmpty(StreamId))
+      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
     return await Api.HasObjects(StreamId, objectIds).ConfigureAwait(false);
   }
 
   public void SaveObject(string id, string serializedObject)
   {
-    if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || serializedObject == null)
-      throw new Exception("Invalid parameters to SaveObject");
-    lock (SendBufferLock)
+    if (string.IsNullOrEmpty(StreamId))
+      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+    lock (_sendBufferLock)
     {
-      if (ErrorState)
+      if (IsInErrorState)
         return;
-      SendBuffer.Add((id, serializedObject));
-      IsWriteComplete = false;
+      _sendBuffer.Add((id, serializedObject));
+      _isWriteComplete = false;
     }
   }
 
   public void SaveObject(string id, ITransport sourceTransport)
   {
-    if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || sourceTransport == null)
-      throw new InvalidOperationException("Invalid parameters to SaveObject");
-    SaveObject(id, sourceTransport.GetObject(id));
+    if (string.IsNullOrEmpty(StreamId))
+      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+
+    var objectData = sourceTransport.GetObject(id);
+
+    if (objectData is null)
+      throw new TransportException(
+        this,
+        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
+      );
+
+    SaveObject(id, objectData);
   }
 
   public void BeginWrite()
   {
-    if (ShouldSendThreadRun || SendingThread != null)
+    if (_shouldSendThreadRun || _sendingThread != null)
       throw new InvalidOperationException("ServerTransport already sending");
     TotalSentBytes = 0;
     SavedObjectCount = 0;
 
-    ErrorState = false;
-    ShouldSendThreadRun = true;
-    SendingThread = new Thread(SendingThreadMain);
-    SendingThread.Name = "ServerTransportSender";
-    SendingThread.IsBackground = true;
-    SendingThread.Start();
+    _exception = null;
+    _shouldSendThreadRun = true;
+    _sendingThread = new Thread(SendingThreadMain) { Name = "ServerTransportSender", IsBackground = true };
+    _sendingThread.Start();
   }
 
   public async Task WriteComplete()
   {
     while (true)
     {
-      lock (SendBufferLock)
-        if (IsWriteComplete || ErrorState)
+      lock (_sendBufferLock)
+        if (_isWriteComplete || IsInErrorState)
+        {
+          CancellationToken.ThrowIfCancellationRequested();
+
+          if (_exception is not null)
+            throw new TransportException(this, $"{TransportName} transport failed", _exception);
+
           return;
+        }
+
       await Task.Delay(50).ConfigureAwait(false);
     }
   }
 
   public void EndWrite()
   {
-    if (!ShouldSendThreadRun || SendingThread == null)
+    if (!_shouldSendThreadRun || _sendingThread == null)
       throw new InvalidOperationException("ServerTransport not sending");
-    ShouldSendThreadRun = false;
-    SendingThread.Join();
-    SendingThread = null;
+    _shouldSendThreadRun = false;
+    _sendingThread.Join();
+    _sendingThread = null;
   }
 
   private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
@@ -297,7 +305,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     return $"Server Transport @{Account.serverInfo.url}";
   }
 
-  private List<string> ParseChildrenIds(string json)
+  private static List<string> ParseChildrenIds(string json)
   {
     List<string> childrenIds = new();
     try
@@ -306,41 +314,42 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       foreach (JToken prop in doc1["__closure"])
         childrenIds.Add(((JProperty)prop).Name);
     }
-    catch
+    catch (Exception)
     {
       // empty children list if no __closure key is found
     }
     return childrenIds;
   }
 
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private async void SendingThreadMain()
   {
     while (true)
     {
       var stopwatch = Stopwatch.StartNew();
-      if (!ShouldSendThreadRun || CancellationToken.IsCancellationRequested)
+      if (!_shouldSendThreadRun || CancellationToken.IsCancellationRequested)
         return;
-      List<(string, string)> buffer = null;
-      lock (SendBufferLock)
-        if (SendBuffer.Count > 0)
+      List<(string id, string data)>? buffer = null;
+      lock (_sendBufferLock)
+        if (_sendBuffer.Count > 0)
         {
-          buffer = SendBuffer;
-          SendBuffer = new List<(string, string)>();
+          buffer = _sendBuffer;
+          _sendBuffer = new();
         }
         else
         {
-          IsWriteComplete = true;
+          _isWriteComplete = true;
         }
 
-      if (buffer == null)
+      if (buffer is null)
       {
         Thread.Sleep(100);
         continue;
       }
       try
       {
-        List<(string, string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList();
-        List<(string, string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
+        var bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList();
+        var bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
 
         List<string> objectIds = new(bufferObjects.Count);
 
@@ -352,7 +361,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         List<(string, string)> newObjects = new();
         foreach ((string id, object json) in bufferObjects)
           if (!hasObjects[id])
-            newObjects.Add((id, json as string));
+            newObjects.Add((id, (string)json));
 
         // Report the objects that are already on the server
         OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
@@ -370,18 +379,17 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       }
       catch (Exception ex)
       {
-        OnErrorAction?.Invoke(TransportName, ex);
-        lock (SendBufferLock)
+        lock (_sendBufferLock)
         {
-          SendBuffer.Clear();
-          ErrorState = true;
+          _sendBuffer.Clear();
+          _exception = ex;
         }
         return;
       }
       finally
       {
         stopwatch.Stop();
-        lock (ElapsedLock)
+        lock (_elapsedLock)
           Elapsed += stopwatch.Elapsed;
       }
     }

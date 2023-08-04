@@ -142,7 +142,7 @@ namespace Archicad.Model
     private bool IsCoplanar(Vector vector1, Vector vector2, Vector vector3, Vector vector4)
     {
       var dotProduct = Vector.DotProduct(vector2 - vector1, Vector.CrossProduct(vector4 - vector1, vector3 - vector1)); 
-      return Math.Abs(dotProduct) < Speckle.Core.Helpers.Constants.Eps;
+      return Math.Abs(dotProduct) < Speckle.Core.Helpers.Constants.SmallEps;
     }
 
     #endregion

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
+using ConnectorRevit.Storage;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
@@ -197,13 +198,22 @@ namespace Speckle.ConnectorRevit.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
-
-
       try
       {
-
         if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
+
+        // if the dialog body is open, then avalonia will freak out and crash Revit when trying to re-initialize
+        // so we need to close the dialog and cancel any ongoing send / receive operation. (Maybe we can somehow 
+        // save the operation state and let the user come back to it later)
+        if (MainViewModel.Instance.DialogBody != null)
+        {
+          CurrentOperationCancellation?.Cancel();
+          MainViewModel.CloseDialog();
+        }
+
+        // invalidate all revit elements in the cache
+        revitDocumentAggregateCache.InvalidateAll();
 
         SpeckleRevitCommand.RegisterPane();
 

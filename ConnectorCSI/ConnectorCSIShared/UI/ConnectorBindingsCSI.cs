@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Models;
 using Speckle.ConnectorCSI.Util;
 using System.Timers;
@@ -16,6 +15,7 @@ namespace Speckle.ConnectorCSI.UI
   {
     public static cSapModel Model { get; set; }
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
+
     public ConnectorBindingsCSI(cSapModel model)
     {
       Model = model;
@@ -34,14 +34,17 @@ namespace Speckle.ConnectorCSI.UI
 
     public override string GetDocumentId() => GetDocHash();
 
-    private string GetDocHash() => Utilities.hashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFuctions.MD5);
+    private string GetDocHash() =>
+      Utilities.HashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFunctions.MD5);
 
     public override string GetDocumentLocation() => Model.GetModelFilepath();
 
     public override string GetFileName() => Model.GetModelFilename();
 
     public override string GetHostAppNameVersion() => GetHostAppVersion(Model);
+
     public override string GetHostAppName() => GetHostAppName(Model);
+
     public string GetHostAppVersion(cSapModel model)
     {
       var name = "";
@@ -50,6 +53,7 @@ namespace Speckle.ConnectorCSI.UI
       model.GetProgramInfo(ref name, ref ver, ref type);
       return name;
     }
+
     public string GetHostAppName(cSapModel model)
     {
       var name = "";
@@ -58,15 +62,10 @@ namespace Speckle.ConnectorCSI.UI
       model.GetProgramInfo(ref name, ref ver, ref type);
       return name.ToLower();
     }
+
     public override List<string> GetObjectsInView()
     {
       throw new NotImplementedException();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
 
     public override void ResetDocument()
@@ -75,6 +74,5 @@ namespace Speckle.ConnectorCSI.UI
     }
 
     #endregion
-
   }
 }

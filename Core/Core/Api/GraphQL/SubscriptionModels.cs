@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Speckle.Core.Api.SubscriptionModels;
 
@@ -66,10 +67,10 @@ public class CommitInfo
   public string message { get; set; }
   public string sourceApplication { get; set; }
   public int? totalChildrenCount { get; set; }
-  public string[] parents { get; set; }
+  public IList<string> parents { get; set; }
 
   [Obsolete("Please use the parents property. This property will be removed in later versions")]
-  public string[] previousCommitIds { get; set; }
+  public IList<string> previousCommitIds { get; set; }
 }
 
 public class CommitCreatedResult

@@ -26,7 +26,7 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -41,12 +41,16 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
 #elif AUTOCAD2023
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
+#elif AUTOCAD2024
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
 #elif CIVIL2021
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
 #elif CIVIL2023
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
+#elif CIVIL2024
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #endif
@@ -102,18 +106,13 @@ namespace Objects.Converter.AutocadCivil
       switch (@object)
       {
         case DBObject obj:
-          /*
-          // check for speckle schema xdata
-          string schema = GetSpeckleSchema(o.XData);
-          if (schema != null)
-            return ObjectToSpeckleBuiltElement(o);
-          */
+
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
 
           //Use the Handle object to update progressReport object.
           //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
           reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
-          style = DisplayStyleToSpeckle(obj as Entity);
+          style = DisplayStyleToSpeckle(obj as Entity); // note layer display styles are converted in the layer method
           extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
 
           switch (obj)
@@ -187,7 +186,10 @@ namespace Objects.Converter.AutocadCivil
             case MText o:
               @base = TextToSpeckle(o);
               break;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+            case LayerTableRecord o:
+              @base = LayerToSpeckle(o);
+              break;
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               break;
@@ -354,7 +356,7 @@ namespace Objects.Converter.AutocadCivil
         */
 
         case Mesh o:
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
 #else
           acadObj = MeshToNativeDB(o);
@@ -377,7 +379,11 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+        case Collection o:
+          acadObj = CollectionToNative(o);
+          break;
+
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
         case Alignment o:
           acadObj = AlignmentToNative(o);
           break;
@@ -457,9 +463,10 @@ namespace Objects.Converter.AutocadCivil
             case BlockTableRecord _:
             case AcadDB.DBText _:
             case AcadDB.MText _:
+            case LayerTableRecord _:
               return true;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
@@ -517,6 +524,7 @@ namespace Objects.Converter.AutocadCivil
         case BlockDefinition _:
         case Instance _:
         case Text _:
+        case Collection _:
 
         case Alignment _:
         case ModelCurve _:

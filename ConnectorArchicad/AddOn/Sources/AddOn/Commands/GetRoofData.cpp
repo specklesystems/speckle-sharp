@@ -29,6 +29,11 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
+	GS::ErrCode err = NoError;
+	err = GetDataCommand::SerializeElementType (element, memo, os);
+	if (NoError != err)
+		return err;
+
 	// quantities
 	API_ElementQuantity quantity = {};
 	API_Quantities quantities = {};
@@ -38,12 +43,9 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	ACAPI_ELEMENT_QUANTITY_MASK_SET (quantityMask, roof, volume);
 
 	quantities.elements = &quantity;
-	GSErrCode err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
+	err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
 	if (err != NoError)
 		return err;
-
-	// The identifier of the roof
-	os.Add (ElementBase::ApplicationId, APIGuidToString (element.roof.head.guid));
 
 	// Geometry and positioning
 	// The story of the shell

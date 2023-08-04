@@ -88,6 +88,7 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   internal void EndSubOperation()
   {
+    Update(1.0);    
     Invoke(new Action(_progressBar.EndSubOperation));
   }
 
@@ -113,7 +114,7 @@ public sealed class ProgressInvoker : Invoker
   {
     Func<double, bool> updateProgress = _progressBar.Update;
 
-    Invoke(updateProgress, fractionDone);
+    Invoke(updateProgress, Math.Min(fractionDone, 1));
   }
 
   /// <summary>

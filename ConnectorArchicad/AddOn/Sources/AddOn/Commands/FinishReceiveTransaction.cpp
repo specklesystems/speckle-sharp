@@ -1,5 +1,6 @@
 #include "FinishReceiveTransaction.hpp"
 #include "LibpartImportManager.hpp"
+#include "ClassificationImportManager.hpp"
 #include "ResourceIds.hpp"
 
 
@@ -7,6 +8,7 @@ GS::ObjectState AddOnCommands::FinishReceiveTransaction::Execute (const GS::Obje
 {
 	AttributeManager::DeleteInstance();
     LibpartImportManager::DeleteInstance ();
+	ClassificationImportManager::DeleteInstance ();
     return GS::ObjectState ();
 }
 

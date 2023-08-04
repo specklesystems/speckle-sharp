@@ -14,6 +14,7 @@
 #include "Commands/GetWindowData.hpp"
 #include "Commands/GetBeamData.hpp"
 #include "Commands/GetColumnData.hpp"
+#include "Commands/GetElementBaseData.hpp"
 #include "Commands/GetObjectData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoomData.hpp"
@@ -195,6 +196,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoomData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
@@ -226,7 +228,11 @@ API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 	RSGetIndString (&envir->addOnInfo.name, AddOnInfoID, AddOnNameID, ACAPI_GetOwnResModule ());
 	RSGetIndString (&envir->addOnInfo.description, AddOnInfoID, AddOnDescriptionID, ACAPI_GetOwnResModule ());
 
+#ifdef DEBUG
+	return APIAddon_Preload;
+#else
 	return APIAddon_Normal;
+#endif
 }
 
 

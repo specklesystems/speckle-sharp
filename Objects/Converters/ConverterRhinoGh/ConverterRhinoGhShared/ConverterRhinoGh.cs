@@ -178,7 +178,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           var lId = l.GetUserString(ApplicationIdKey) ?? l.Id.ToString();
           reportObj = new ApplicationObject(l.Id.ToString(), "Layer") { applicationId = lId };
           if (l.RenderMaterial != null)
-            material = RenderMaterialToSpeckle(l.RenderMaterial.SimulateMaterial(true));
+            material = RenderMaterialToSpeckle(l.RenderMaterial);
           style = DisplayStyleToSpeckle(new ObjectAttributes(), l);
           userDictionary = l.UserDictionary;
           userStrings = l.GetUserStrings();

@@ -13,12 +13,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
 
-#if ADVANCESTEEL2023
-using Autodesk.AdvanceSteel.DocumentManagement;
-using Autodesk.AdvanceSteel.DotNetRoots.Units;
-#endif
-
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Autodesk.Aec.ApplicationServices;
 #endif
 
@@ -323,23 +318,6 @@ namespace Objects.Converter.AutocadCivil
 
     #region units
 
-#if ADVANCESTEEL2023
-
-    private double _factor;
-    public double Factor
-    {
-      get
-      {
-        if (_factor.Equals(0.0))
-        {
-          _factor = DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
-        }
-
-        return _factor;
-      }
-    }
-#endif
-
     private string _modelUnits;
     public string ModelUnits
     {
@@ -349,7 +327,7 @@ namespace Objects.Converter.AutocadCivil
         {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           if (_modelUnits == Units.None)
           {
             // try to get the drawing unit instead

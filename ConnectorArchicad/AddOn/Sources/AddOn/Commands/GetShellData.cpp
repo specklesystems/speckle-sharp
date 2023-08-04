@@ -30,8 +30,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	// The identifier of the shell
-	os.Add (ElementBase::ApplicationId, APIGuidToString (element.shell.head.guid));
+	GS::ErrCode err = NoError;
+	err = GetDataCommand::SerializeElementType (element, memo, os);
+	if (NoError != err)
+		return err;
 
 	// Geometry and positioning
 	// The story of the shell

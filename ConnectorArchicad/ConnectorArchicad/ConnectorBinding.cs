@@ -14,7 +14,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
@@ -121,18 +120,36 @@ namespace Archicad.Launcher
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
+      try
       {
-        Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
-        if (commitObject is not null)
-          await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
-
-        await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
-
-        if (commitObject == null)
+        using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
         {
-          timer.Cancel();
-          throw new SpeckleException("Failed to receive specified");
+          Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
+          if (commitObject is not null)
+            await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+
+          await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+
+          if (commitObject == null)
+          {
+            timer.Cancel();
+            throw new SpeckleException("Failed to receive specified");
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        // log
+        if (ex is not OperationCanceledException)
+          SpeckleLog.Logger.Error("Conversion to native failed.");
+
+        // throw
+        switch (ex)
+        {
+          case OperationCanceledException:
+            throw new OperationCanceledException(ex.Message);
+          default:
+            throw new SpeckleException(ex.Message, ex);
         }
       }
 
@@ -176,14 +193,6 @@ namespace Archicad.Launcher
         CommitId = state.CommitId != "latest" ? state.CommitId : null
       };
       return stream.ToString();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-      Dictionary<string, List<MappingValue>> Mapping
-    )
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }
