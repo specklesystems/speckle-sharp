@@ -13,18 +13,22 @@ public static class Categories
   public static IReadOnlyList<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>
   {
     BuiltInCategory.OST_Areas,
+    BuiltInCategory.OST_CableTrayFitting,
     BuiltInCategory.OST_CableTray,
     BuiltInCategory.OST_Ceilings,
     BuiltInCategory.OST_Columns,
     BuiltInCategory.OST_CommunicationDevices,
     BuiltInCategory.OST_Conduit,
+    BuiltInCategory.OST_ConduitFitting,
     BuiltInCategory.OST_CurtaSystem,
     BuiltInCategory.OST_DataDevices,
     BuiltInCategory.OST_Doors,
+    BuiltInCategory.OST_DuctAccessory,
     BuiltInCategory.OST_DuctSystem,
     BuiltInCategory.OST_DuctCurves,
     BuiltInCategory.OST_DuctFitting,
     BuiltInCategory.OST_DuctInsulations,
+    BuiltInCategory.OST_DuctTerminal,
     BuiltInCategory.OST_ElectricalCircuit,
     BuiltInCategory.OST_ElectricalEquipment,
     BuiltInCategory.OST_ElectricalFixtures,
@@ -47,7 +51,9 @@ public static class Categories
     BuiltInCategory.OST_MechanicalEquipment,
     BuiltInCategory.OST_MEPSpaces,
     BuiltInCategory.OST_Parking,
+    BuiltInCategory.OST_PipeAccessory,
     BuiltInCategory.OST_PipeCurves,
+    BuiltInCategory.OST_PipeFitting,
     BuiltInCategory.OST_PipingSystem,
     BuiltInCategory.OST_PipeInsulations,
     BuiltInCategory.OST_PointClouds,
@@ -176,7 +182,7 @@ public static class Categories
   public static RevitCategoryInfo Duct { get; } = new(
     nameof(Duct),
     typeof(DB.Mechanical.Duct),
-    typeof(DB.Mechanical.FlexDuctType),
+    typeof(DB.MEPCurveType),
     new List<BuiltInCategory>
     {
         BuiltInCategory.OST_DuctCurves,
@@ -217,7 +223,7 @@ public static class Categories
   public static RevitCategoryInfo Pipe { get; } = new(
     nameof(Pipe),
     typeof(DB.Plumbing.Pipe),
-    typeof(DB.Plumbing.FlexPipeType),
+    typeof(DB.MEPCurveType),
     new List<BuiltInCategory>
     {
         BuiltInCategory.OST_PipeCurves,

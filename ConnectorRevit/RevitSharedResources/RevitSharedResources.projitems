@@ -9,14 +9,24 @@
     <Import_RootNamespace>RevitSharedResources</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitDocumentAggregateCacheExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitObjectCacheExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Categories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCommitObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategoriesExposer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCommitObjectBuilderExposer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitDocumentAggregateCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitObjectCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IReceivedObjectIdMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCategoryInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Extensions\RevitExtensions\" />
   </ItemGroup>
 </Project>

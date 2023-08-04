@@ -1331,6 +1331,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1373,6 +1375,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsPreviewProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1461,6 +1465,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1469,7 +1475,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     HandleCommandException(ex, Progress.CancellationToken.IsCancellationRequested, commandName);
   }
 
-  public static void HandleCommandException(Exception ex, bool isUserCancel, [CallerMemberName] string commandName = "UnknownCommand")
+  public static void HandleCommandException(
+    Exception ex,
+    bool isUserCancel,
+    [CallerMemberName] string commandName = "UnknownCommand"
+  )
   {
     string commandPrettyName = commandName.EndsWith("Command")
       ? commandName.Substring(0, commandName.Length - "Command".Length)
@@ -1479,7 +1489,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     INotification notificationViewModel;
     switch (ex)
     {
-      case OperationCanceledException _:
+      case OperationCanceledException:
         // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
         // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
         // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
@@ -1492,7 +1502,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = isUserCancel ? NotificationType.Success : NotificationType.Error
         };
         break;
-      case InvalidOperationException _:
+      case InvalidOperationException:
         // NOTE: Hopefully, this means that the Receive/Send/Preview/etc. command could not START because of invalid state
         logLevel = LogEventLevel.Warning;
         notificationViewModel = new PopUpNotificationViewModel
@@ -1502,7 +1512,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = NotificationType.Warning
         };
         break;
-      case SpeckleGraphQLException<StreamData> _:
+      case SpeckleGraphQLException<StreamData>:
         // NOTE: GraphQL requests for StreamData are expected to fail for a variety of reasons
         logLevel = LogEventLevel.Warning;
         notificationViewModel = new PopUpNotificationViewModel
@@ -1512,7 +1522,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = NotificationType.Error
         };
         break;
-      case SpeckleException _:
+      case SpeckleNonUserFacingException:
+        logLevel = LogEventLevel.Error;
+        notificationViewModel = new PopUpNotificationViewModel
+        {
+          Title = $"😖 {commandPrettyName} Failed!",
+          Message = "Click to open the log file for a detailed list of error messages",
+          OnClick = SpeckleLog.OpenCurrentLogFolder,
+          Type = NotificationType.Error,
+          Expiration = TimeSpan.FromSeconds(10)
+        };
+        break;
+      case SpeckleException:
         logLevel = LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
         {

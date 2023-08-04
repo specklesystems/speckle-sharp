@@ -187,7 +187,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
       if (@base == null)
       {
-        throw new SpeckleException("Receive operation returned nothing", false);
+        throw new SpeckleException("Receive operation returned nothing");
       }
       try
       {

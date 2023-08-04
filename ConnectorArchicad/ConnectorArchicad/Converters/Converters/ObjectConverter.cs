@@ -28,11 +28,11 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    static List<Mesh> GetMesh (Base element)
+    static List<Mesh> GetMesh(Base element)
     {
       List<Mesh> meshes = new List<Mesh>();
       if (element is Mesh mesh)
-        meshes.Add (mesh);
+        meshes.Add(mesh);
 
       return meshes;
     }
@@ -90,10 +90,7 @@ namespace Archicad.Converters
         return membersToTraverse;
       }
 
-      var traversalRule = TraversalRule
-        .NewTraversalRule()
-        .When(_ => true)
-        .ContinueTraversing(AllAliases);
+      var traversalRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(AllAliases);
 
       return new ArchicadGeometryCollector(traversalRule);
     }
@@ -113,9 +110,12 @@ namespace Archicad.Converters
                                : new Transform();
 
         string parentCumulativeTransformId = (tc.parent as ArchicadGeometryCollectorContext).cumulativeTransformKey;
-        string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
+        string cumulativeTransformId = Utilities.HashString(parentCumulativeTransformId + currentTransform.id);
         tc.cumulativeTransformKey = cumulativeTransformId;
-        transformMatrixById.TryAdd(cumulativeTransformId, transformMatrixById[parentCumulativeTransformId] * currentTransform);
+        transformMatrixById.TryAdd(
+          cumulativeTransformId,
+          transformMatrixById[parentCumulativeTransformId] * currentTransform
+        );
       }
       else
       {
@@ -125,13 +125,17 @@ namespace Archicad.Converters
       return tc;
     }
 
-    private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    private static List<string> Store(
+      TraversalContext tc,
+      Dictionary<string, Transform> transformMatrixById,
+      Dictionary<string, Mesh> transformedMeshById
+    )
     {
       var meshes = GetMesh(tc.current);
 
       return meshes.Select(mesh => {
         string cumulativeTransformId = (tc as ArchicadGeometryCollectorContext).cumulativeTransformKey;
-        var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
+        var transformedMeshId = Utilities.HashString(cumulativeTransformId + mesh.id);
         if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
         {
           transformedMesh = (Mesh)mesh.ShallowCopy();
@@ -143,8 +147,10 @@ namespace Archicad.Converters
       }).ToList();
     }
 
-
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var archicadObjects = new List<Archicad.ArchicadObject>();
       var meshModels = new List<MeshModel>();
@@ -152,10 +158,14 @@ namespace Archicad.Converters
       var transformedMeshById = new Dictionary<string, Mesh>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object")
+      )
       {
         foreach (var tc in elements)
         {
+          token.ThrowIfCancellationRequested();
+
           var element = tc.current;
 
           // base point
@@ -203,11 +213,17 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token);
+      result = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.CreateObject(archicadObjects, meshModels),
+        token
+      );
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
       // Objects not stored on the server
       return new List<Base>();

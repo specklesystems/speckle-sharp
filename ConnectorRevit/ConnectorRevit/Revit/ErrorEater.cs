@@ -1,19 +1,17 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
-using Speckle.ConnectorRevit.Entry;
-using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
+using Speckle.Core.Logging;
 
 namespace ConnectorRevit.Revit
 {
   public class ErrorEater : IFailuresPreprocessor
   {
     private ISpeckleConverter _converter;
+    private List<Exception> _exceptions = new();
+    public Dictionary<string, int> CommitErrorsDict = new();
 
     public ErrorEater(ISpeckleConverter converter)
     {
@@ -22,47 +20,73 @@ namespace ConnectorRevit.Revit
 
     public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
     {
-      IList<FailureMessageAccessor> failList = new List<FailureMessageAccessor>();
-      var criticalFails = 0;
+      var resolvedFailures = 0;
       var failedElements = new List<ElementId>();
       // Inside event handler, get all warnings
-      failList = failuresAccessor.GetFailureMessages();
+      var failList = failuresAccessor.GetFailureMessages();
       foreach (FailureMessageAccessor failure in failList)
       {
-        // check FailureDefinitionIds against ones that you want to dismiss, 
+        // check FailureDefinitionIds against ones that you want to dismiss,
         //FailureDefinitionId failID = failure.GetFailureDefinitionId();
         // prevent Revit from showing Unenclosed room warnings
         //if (failID == BuiltInFailures.RoomFailures.RoomNotEnclosed)
         //{
         var t = failure.GetDescriptionText();
-        _converter.Report.LogConversionError(new Exception(t));
 
         var s = failure.GetSeverity();
-        if (s == FailureSeverity.Warning) continue;
+        if (s == FailureSeverity.Warning)
+        {
+          // just delete the warnings for now
+          failuresAccessor.DeleteWarning(failure);
+          resolvedFailures++;
+          continue;
+        }
+
         try
         {
           failuresAccessor.ResolveFailure(failure);
+          resolvedFailures++;
         }
-        catch (Exception e)
+        catch
         {
-          // currently, the whole commit is rolled back. this should be investigated further at a later date
-          // to properly proceed with commit
-          failedElements.AddRange(failure.GetFailingElementIds());
-          //_converter.ConversionErrors.Clear();
-          _converter.Report.LogConversionError(new Exception(
-            "Objects failed to bake due to a fatal error!\n" +
-            "This is likely due to scaling issues - please ensure you've set the correct units on your objects or remove any invalid objects.\n\n" +
-            "Revit error: " + t));
-          // logging the error
-          var exception =
-            new Speckle.Core.Logging.SpeckleException("Revit commit failed: " + t, e,
-              level: Sentry.SentryLevel.Warning);
-          return FailureProcessingResult.ProceedWithCommit;
+          var idsToDelete = failure.GetFailingElementIds().ToList();
+
+          if (failuresAccessor.IsElementsDeletionPermitted(idsToDelete))
+          {
+            failuresAccessor.DeleteElements(idsToDelete);
+            resolvedFailures++;
+          }
+          else
+          {
+            if (CommitErrorsDict.ContainsKey(t))
+              CommitErrorsDict[t]++;
+            else
+              CommitErrorsDict.Add(t, 1);
+            // currently, the whole commit is rolled back. this should be investigated further at a later date
+            // to properly proceed with commit
+            failedElements.AddRange(failure.GetFailingElementIds());
+
+            // logging the error
+            var speckleEx = new SpeckleException($"Fatal Error: {t}");
+            _exceptions.Add(speckleEx);
+            SpeckleLog.Logger.Fatal(speckleEx, "Fatal Error: {failureMessage}", t);
+          }
         }
       }
 
-      failuresAccessor.DeleteAllWarnings();
-      return FailureProcessingResult.Continue;
+      if (resolvedFailures > 0)
+        return FailureProcessingResult.ProceedWithCommit;
+      else
+        return FailureProcessingResult.Continue;
+    }
+
+    public SpeckleNonUserFacingException? GetException()
+    {
+      if (CommitErrorsDict.Count > 0 && _exceptions.Count > 0)
+      {
+        return new SpeckleNonUserFacingException("Error eater was unable to resolve exceptions", new AggregateException(_exceptions));
+      }
+      return null;
     }
   }
 }

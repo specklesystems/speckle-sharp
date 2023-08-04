@@ -247,13 +247,7 @@ namespace Objects.Converter.Revit
       if (revitColumn.Location is LocationPoint)
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
 
-      // structural connection modifiers alter family instance geometry, but the modifiers are view specific
-      // so we need to pass in the view we want in order to get the correct geometry
-      // TODO: we need to make sure we are passing in the correct view
-      var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      var options = revitColumn.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitColumn.GetDependentElements(connectionHandlerFilter).Any() ?
-        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
-      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, options);
+      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, SolidDisplayValueOptions);
 
       return speckleColumn;
     }

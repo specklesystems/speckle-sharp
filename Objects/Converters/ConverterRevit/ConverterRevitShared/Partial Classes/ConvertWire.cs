@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
@@ -87,6 +88,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      CreateSystemConnections(speckleRevitWire.Connectors, wire, receivedObjectsCache);
+
       var status = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: status, createdId: wire.UniqueId, convertedItem: wire);
       return appObj;
@@ -134,6 +137,10 @@ namespace Objects.Converter.Revit
         }
 
       GetAllRevitParamsAndIds(speckleWire, revitWire, new List<string>());
+      foreach (var connector in revitWire.GetConnectorSet())
+      {
+        speckleWire.Connectors.Add(ConnectorToSpeckle(connector));
+      }
       return speckleWire;
     }
   }
