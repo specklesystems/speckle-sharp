@@ -316,7 +316,7 @@ namespace Speckle.ConnectorRevit.UI
           obj.Log.Add($"{ex.Message}");
 
           // reconvert as directShape if possible
-          if (isConvertibleAndDisplayable && !shouldConvertAsDisplayable)
+          if (shouldConvertAsDisplayable || isConvertibleAndDisplayable)
           {
             obj.Log.Add($"Retrying conversion as DirectShape fallback");
             var convRes = ConvertAsDisplayable(@base, displayableSettings);
