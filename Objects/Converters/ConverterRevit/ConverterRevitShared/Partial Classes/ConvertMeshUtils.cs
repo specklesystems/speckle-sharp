@@ -110,10 +110,6 @@ namespace Objects.Converter.Revit
           SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numGeomElements} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelGeomElementCount);
         }
       }
-      else if (topLevelSolidsCount == 0 && topLevelMeshesCount == 0)
-      {
-        SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} does not have valid symbol geometry and does not have any top-level solids or meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
-      }
     }
 
     /// <summary>
@@ -143,7 +139,7 @@ namespace Objects.Converter.Revit
       var topLevelMeshesCount = 0;
       var topLevelGeomElementCount = 0;
       var topLevelGeomInstanceCount = 0;
-      var hasSymbolGeom = false;
+      bool hasSymbolGeometry = false;
 
       foreach (GeometryObject geomObj in geom)
       {
@@ -178,21 +174,21 @@ namespace Objects.Converter.Revit
             meshes.Add(mesh);
             break;
           case GeometryInstance instance:
-            GeometryElement geomElement;
+            // element transforms should not be carried down into nested geometryInstances.
+            // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
             if (inverseTransform != null)
             {
               topLevelGeomInstanceCount++;
-              hasSymbolGeom = true;
-              geomElement = instance.GetSymbolGeometry();
+              SortGeometry(element, solids, meshes, instance.GetSymbolGeometry());
+              if (meshes.Count > 0 || solids.Count > 0)
+              {
+                hasSymbolGeometry = true;
+              }
             }
             else
             {
-              geomElement = instance.GetInstanceGeometry();
+              SortGeometry(element, solids, meshes, instance.GetInstanceGeometry());
             }
-
-            // element transforms should not be carried down into nested geometryInstances.
-            // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
-            SortGeometry(element, solids, meshes, geomElement);
             break;
           case GeometryElement geometryElement:
             if (inverseTransform != null)
@@ -212,7 +208,7 @@ namespace Objects.Converter.Revit
           topLevelMeshesCount,
           topLevelGeomElementCount,
           topLevelGeomInstanceCount,
-          hasSymbolGeom);
+          hasSymbolGeometry);
       }
     }
 
