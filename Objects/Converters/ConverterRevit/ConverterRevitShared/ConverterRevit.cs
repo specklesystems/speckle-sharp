@@ -498,6 +498,11 @@ namespace Objects.Converter.Revit
         else
           return null;
 
+      // get the current host from document settings
+      var currentHostId = Settings["current-host-element"];
+      if (!string.IsNullOrEmpty(currentHostId))
+        CurrentHostElement = Doc.GetElement(currentHostId);
+
       //Family Document
       if (Doc.IsFamilyDocument)
       {
