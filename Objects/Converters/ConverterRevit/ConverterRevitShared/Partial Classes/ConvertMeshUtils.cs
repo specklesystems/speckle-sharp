@@ -76,8 +76,6 @@ namespace Objects.Converter.Revit
       var meshes = new List<DB.Mesh>();
 
       SortGeometry(element, solids, meshes, geom, transform?.Inverse);
-      //if (isConvertedAsInstance) SortInstanceGeometry(element, solids, meshes, geom);
-      //else SortGeometry(element.Document, solids, meshes, geom);
 
       // convert meshes and solids
       displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
