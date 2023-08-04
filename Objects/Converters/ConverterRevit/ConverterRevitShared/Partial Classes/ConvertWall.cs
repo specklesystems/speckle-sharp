@@ -155,7 +155,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
 
       SetWallVoids(revitWall, speckleWall);
-      appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      //appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
 

@@ -256,11 +256,10 @@ namespace Speckle.ConnectorRevit.UI
           return obj;
 
         // determine displayable conversion
-        _ = bool.TryParse(settings["recieve-objects-mesh"], out bool receiveDirectMesh);
+        _ = bool.TryParse(settings["recieve-objects-mesh"], out bool shouldConvertAsDisplayable);
         var isConvertibleAndDisplayable =
           obj.Convertible
           && (DefaultTraversal.HasDisplayValue(@base) || @base.speckle_type.Contains("Objects.Other.Instance"));
-        var shouldConvertAsDisplayable = !obj.Convertible || receiveDirectMesh;
 
         using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
@@ -360,7 +359,7 @@ namespace Speckle.ConnectorRevit.UI
         if (@base == null || !appObj.Converted.Any())
           return;
 
-        var nestedElements = DefaultTraversal.elementsPropAliases.Where(o => @base[o] != null)?.First();
+        var nestedElements = DefaultTraversal.elementsPropAliases.Where(o => @base[o] != null)?.FirstOrDefault();
 
         if (nestedElements == null)
           return;

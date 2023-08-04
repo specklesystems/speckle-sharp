@@ -186,6 +186,12 @@ namespace Objects.Converter.Revit
       Base returnObject = null;
       List<string> notes = new List<string>();
       string id = @object is Element element ? element.UniqueId : string.Empty;
+
+      // set the current host from document settings
+      var currentHostId = Settings["current-host-element"];
+      if (currentHostId != null)
+        CurrentHostElement = Doc.GetElement(currentHostId);
+
       switch (@object)
       {
         case DB.Document o:
