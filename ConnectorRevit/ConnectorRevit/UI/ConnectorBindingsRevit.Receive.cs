@@ -258,8 +258,7 @@ namespace Speckle.ConnectorRevit.UI
         // determine displayable conversion
         _ = bool.TryParse(settings["recieve-objects-mesh"], out bool shouldConvertAsDisplayable);
         var isConvertibleAndDisplayable =
-          obj.Convertible
-          && (DefaultTraversal.HasDisplayValue(@base) || @base.speckle_type.Contains("Objects.Other.Instance"));
+          obj.Convertible && (DefaultTraversal.HasDisplayValue(@base) || @base.speckle_type.Contains("Instance"));
 
         using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
