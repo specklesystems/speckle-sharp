@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -156,14 +156,21 @@ namespace Objects.Converter.Revit
       BuiltInCategory.TryParse(bicName, out bic);
       var cat = Doc.Settings.Categories.get_Item(bic);
 
-      var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
-      if(speckleDs.applicationId != null)
-        revitDs.ApplicationId = speckleDs.applicationId ;
-      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
-      revitDs.SetShape(converted);
-      revitDs.Name = speckleDs.name;
-      SetInstanceParameters(revitDs, speckleDs);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
+      try
+      {
+        var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
+        if (speckleDs.applicationId != null)
+          revitDs.ApplicationId = speckleDs.applicationId;
+        revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+        revitDs.SetShape(converted);
+        revitDs.Name = speckleDs.name;
+        SetInstanceParameters(revitDs, speckleDs);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
+      }
+      catch (Exception ex)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
+      }
       return appObj;
     }
 
