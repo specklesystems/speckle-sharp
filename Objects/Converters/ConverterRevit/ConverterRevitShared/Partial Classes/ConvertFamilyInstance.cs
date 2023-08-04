@@ -720,7 +720,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
-      appObj = SetHostedElements(instance, familyInstance, appObj);
+      //appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
     }
 

@@ -160,7 +160,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
 
       Doc.Regenerate();
-      appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
+      //appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
       return appObj;
     }
 

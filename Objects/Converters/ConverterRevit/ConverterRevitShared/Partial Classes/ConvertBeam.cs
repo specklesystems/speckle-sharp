@@ -113,7 +113,7 @@ namespace Objects.Converter.Revit
       // TODO: get sub families, it's a family! 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitBeam.UniqueId, convertedItem: revitBeam);
-      appObj = SetHostedElements(speckleBeam, revitBeam, appObj);
+      //appObj = SetHostedElements(speckleBeam, revitBeam, appObj);
       return appObj;
     }
 

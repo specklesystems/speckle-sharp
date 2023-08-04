@@ -197,6 +197,7 @@ namespace Objects.Converter.Revit
       return ids;
     }
 
+    /* Deprecated and moved logic to connector
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
       if (@base == null)
@@ -235,6 +236,7 @@ namespace Objects.Converter.Revit
       CurrentHostElement = null; // unset the current host element.
       return appObj;
     }
+    */
 
     #endregion
 

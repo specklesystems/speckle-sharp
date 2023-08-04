@@ -372,13 +372,17 @@ namespace Speckle.ConnectorRevit.UI
         foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
         {
           // create the application object and log to reports
-          var nestedAppObj = new ApplicationObject(obj.id, ConnectorRevitUtils.SimplifySpeckleType(obj.speckle_type))
+          var nestedAppObj = Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault();
+          if (nestedAppObj == null)
           {
-            applicationId = obj.applicationId,
-            Convertible = converter.CanConvertToNative(obj)
-          };
-          progress.Report.Log(nestedAppObj);
-          converter.Report.Log(nestedAppObj);
+            nestedAppObj = new ApplicationObject(obj.id, ConnectorRevitUtils.SimplifySpeckleType(obj.speckle_type))
+            {
+              applicationId = obj.applicationId,
+              Convertible = converter.CanConvertToNative(obj)
+            };
+            progress.Report.Log(nestedAppObj);
+            converter.Report.Log(nestedAppObj);
+          }
 
           // convert
           var converted = ConvertObject(nestedAppObj, obj, displayableSettings);
@@ -429,6 +433,10 @@ namespace Speckle.ConnectorRevit.UI
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         var @base = StoredObjects[obj.OriginalId];
+
+        // skip if this object has already been converted from a nested elements loop
+        if (obj.Status != ApplicationObject.State.Unknown)
+          continue;
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);

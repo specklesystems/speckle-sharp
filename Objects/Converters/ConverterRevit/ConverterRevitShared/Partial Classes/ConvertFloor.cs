@@ -130,7 +130,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitFloor, speckleFloor);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitFloor.UniqueId, convertedItem: revitFloor);
-      appObj = SetHostedElements(speckleFloor, revitFloor, appObj);
+      //appObj = SetHostedElements(speckleFloor, revitFloor, appObj);
       return appObj;
     }
 

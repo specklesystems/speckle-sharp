@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitWall, speckleWall);
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
-      appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      //appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
     public ApplicationObject FaceWallToNativeV2(RevitFaceWall speckleWall)
@@ -150,7 +150,7 @@ namespace Objects.Converter.Revit
         //Doc.Delete(freeform.Id);
         SetInstanceParameters(revitWall, speckleWall);
         appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
-        appObj = SetHostedElements(speckleWall, revitWall, appObj);
+        //appObj = SetHostedElements(speckleWall, revitWall, appObj);
         return appObj;
       }
       catch (Exception e)
