@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Controls;
 using DUI3;
-using DUI3WebView2Helper;
 using JetBrains.Annotations;
 using Rhino;
 using Rhino.PlugIns;

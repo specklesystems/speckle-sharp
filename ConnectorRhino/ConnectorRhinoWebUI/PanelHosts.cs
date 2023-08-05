@@ -5,7 +5,6 @@ using ConnectorRhinoWebUI.Bindings;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
-using DUI3WebView2Helper;
 using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
@@ -19,7 +18,7 @@ namespace ConnectorRhinoWebUI
   public class SpeckleWebUiWebView2PanelHost : RhinoWindows.Controls.WpfElementHost
   {
     public SpeckleWebUiWebView2PanelHost(uint docSn) 
-      : base(WebView2HelperFactory.CreateBrowserControl(Factory.CreateBindings()), null)
+      : base(new WebUiPanelWebView2(), null)
     {
     }
   }
@@ -28,7 +27,7 @@ namespace ConnectorRhinoWebUI
   public class SpeckleWebUiCefPanelHost : RhinoWindows.Controls.WpfElementHost
   {
     public SpeckleWebUiCefPanelHost(uint docSn)
-      : base(new SpeckleWebUIPanelCef(), null)
+      : base(new WebUiPanelCef(), null)
     {
     }
   }

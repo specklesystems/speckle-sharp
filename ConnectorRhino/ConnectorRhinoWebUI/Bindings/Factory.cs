@@ -16,12 +16,15 @@ public static class Factory
       
     var baseBindings = new BasicConnectorBindingRhino(documentState);
     // TODO: sendBindings
+    // TODO: expiryBindings (?) maybe part of sendBindings after all...
+    // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
 
     var bindingsList = new List<IBinding>
     {
       new ConfigBinding(),
       new AccountBinding(),
+      new TestBinding(),
       baseBindings,
       selectionBindings
     };

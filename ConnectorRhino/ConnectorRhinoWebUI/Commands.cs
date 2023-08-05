@@ -1,5 +1,4 @@
 ﻿using System.Windows.Forms;
-using DUI3WebView2Helper;
 using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
@@ -14,21 +13,19 @@ namespace ConnectorRhinoWebUI;
 /// </summary>
 public class SpeckleWebUiWebView2Command : Command
 {
+  public override string EnglishName => "SpeckleWebUIWebView2";
+  
   public SpeckleWebUiWebView2Command()
   {
     Panels.RegisterPanel(
       ConnectorRhinoWebUiPlugin.Instance,
       typeof(SpeckleWebUiWebView2PanelHost),
-      "SpeckleWebUIWebView2",
+      "DUI3WebView",
       System.Drawing.SystemIcons.Information,
       PanelType.System
     );
   }
-
-  public static SpeckleWebUiWebView2Command Instance { get; private set; }
-
-  public override string EnglishName => "SpeckleWebUIWebView2";
-
+  
   protected override Result RunCommand(RhinoDoc doc, RunMode mode)
   {
     var panelId = typeof(SpeckleWebUiWebView2PanelHost).GUID;
@@ -84,23 +81,21 @@ public class SpeckleWebUiWebView2Command : Command
 /// <summary>
 /// Cefsharp Panel
 /// </summary>
-public class SpeckleRhinoWebUICefCommand : Command
+public class SpeckleRhinoWebUiCefCommand : Command
 {
-  public SpeckleRhinoWebUICefCommand()
+  public override string EnglishName => "SpeckleRhinoWebUICef";
+
+  public SpeckleRhinoWebUiCefCommand()
   {
-    Instance = this;
     Panels.RegisterPanel(
       ConnectorRhinoWebUiPlugin.Instance,
       typeof(SpeckleWebUiCefPanelHost),
-      "SpeckleWebUICef",
+      "DUI3CefSharp",
       System.Drawing.SystemIcons.Information,
       PanelType.System
     );
   }
-
-  public static SpeckleRhinoWebUICefCommand Instance { get; private set; }
-
-  public override string EnglishName => "SpeckleRhinoWebUICef";
+  
 
   protected override Result RunCommand(RhinoDoc doc, RunMode mode)
   {

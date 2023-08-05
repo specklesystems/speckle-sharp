@@ -23,7 +23,6 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\DesktopUI3\DUI3WebView2Helper\DUI3WebView2Helper\DUI3WebView2Helper.csproj" />
     <ProjectReference Include="..\..\DesktopUI3\DUI3\DUI3.csproj" />
   </ItemGroup>
   
@@ -34,6 +33,11 @@
   
   <ItemGroup>
     <Page Remove="SpeckleWebUiPanelWebView2.xaml" />
+    <Page Update="WebUIPanelWebView2.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>Wpf</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   
   <ItemGroup>
