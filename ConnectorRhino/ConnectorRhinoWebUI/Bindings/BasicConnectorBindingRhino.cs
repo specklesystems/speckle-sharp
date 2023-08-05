@@ -5,7 +5,6 @@ using DUI3.Bindings;
 using DUI3.Models;
 using Rhino;
 using Speckle.Core.Credentials;
-using Speckle.Newtonsoft.Json;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -13,26 +12,26 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
-  private DocumentState _documentState;
-  
-  public BasicConnectorBindingRhino()
+  private DocumentModelStore _documentModelStore;
+
+  public BasicConnectorBindingRhino(DocumentModelStore modelStore)
   {
     RhinoDoc.BeginSaveDocument += (_, _) => WriteDocState();
     RhinoDoc.CloseDocument += (_, _) => WriteDocState();
-    RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, e) =>
+    RhinoDoc.EndOpenDocument += (_, e) =>
     {
       if (e.Merge) return;
       if (e.Document == null) return;
-      ReadDocState();
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
     
-    // NOTE: this fires quite a few times. We should debounce it
-    RhinoDoc.LayerTableEvent += (sender, e) =>
+    // NOTE: this fires every time for each layer that is modified in a bulk layer change operation.
+    // We might wanna debounce it.
+    RhinoDoc.LayerTableEvent += (_, _) =>
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.FiltersNeedRefresh);
     };
-    _documentState = new DocumentState();
+    _documentModelStore = modelStore;
   }
 
   public string GetSourceApplicationName()
@@ -60,42 +59,30 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
     };
   }
 
-  public DocumentState GetDocumentState()
+  public DocumentModelStore GetDocumentState()
   {
-    return _documentState;
+    ReadDocState();
+    return _documentModelStore;
   }
 
   public void AddModelToDocumentState(ModelCard model)
   {
-    _documentState.Models.Add(model);
+    _documentModelStore.Models.Add(model);
     WriteDocState();
   }
 
   public void UpdateModelInDocumentState(ModelCard model)
   {
-    // var idx = _documentState.Models.FindIndex(m => model.Id == m.Id);
-    // _documentState.Models[idx] = model;
-    // TODO: implement
+     var idx = _documentModelStore.Models.FindIndex(m => model.Id == m.Id);
+    _documentModelStore.Models[idx] = model;
     WriteDocState();
   }
   
   public void RemoveModelFromDocumentState(ModelCard model)
   {
-    var index = _documentState.Models.FindIndex(m => m.Id == model.Id);
-    _documentState.Models.RemoveAt(index);
+    var index = _documentModelStore.Models.FindIndex(m => m.Id == model.Id);
+    _documentModelStore.Models.RemoveAt(index);
     WriteDocState();
-  }
-
-  public Dictionary<string, object> GetSendFilters_OLD()
-  {
-    var dict = new Dictionary<string, object>()
-    {
-      { KnownSendFilterTypeKeyNames.Everything, new RhinoEverythingFilter() },
-      { KnownSendFilterTypeKeyNames.Selection, new RhinoSelectionFilter() },
-      { KnownSendFilterTypeKeyNames.Layers, new RhinoLayerFilter() },
-    };
-
-    return dict;
   }
 
   public List<SendFilter> GetSendFilters()
@@ -104,8 +91,7 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
     {
       new RhinoEverythingFilter() { Name = "Everything" },
       new RhinoSelectionFilter() { Name = "Selection" },
-      new RhinoLayerFilter() { Name = "Layers" },
-      new RhinoBlocksFilter() { Name = "Test Filter", Summary = "Not usable, do not implement." }
+      new RhinoLayerFilter() { Name = "Layers" }
     };
   }
 
@@ -115,9 +101,14 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
   /// </summary>
   private void WriteDocState()
   {
+    if (RhinoDoc.ActiveDoc == null)
+    {
+      return; // Should throw
+    }
     RhinoDoc.ActiveDoc?.Strings.Delete(SpeckleKey);
-    var serializedState = _documentState.Serialize();
-    RhinoDoc.ActiveDoc?.Strings.SetString(SpeckleKey, _documentState.Serialize());
+    var serializedState = _documentModelStore.Serialize();
+    
+    RhinoDoc.ActiveDoc?.Strings.SetString(SpeckleKey, SpeckleKey, serializedState);
   }
   
   /// <summary>
@@ -125,10 +116,61 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
   /// </summary>
   private void ReadDocState()
   {
-    var strings = RhinoDoc.ActiveDoc.Strings.GetEntryNames(SpeckleKey);
-    if(strings==null || strings.Length < 1) return;
-    var state = DocumentState.Deserialize(strings[0]);
-    _documentState = state;
+    var stateString = RhinoDoc.ActiveDoc.Strings.GetValue(SpeckleKey, SpeckleKey);
+    if (stateString == null)
+    {
+      _documentModelStore = new DocumentModelStore();
+      return;
+    }
+    var state = DocumentModelStore.Deserialize(stateString);
+    _documentModelStore = state;
   }
 }
 
+// internal class ExpirationChecker
+// {
+//   private bool _needToRun = false;
+//   private HashSet<string> objectIds = new HashSet<string>();
+//   private BasicConnectorBindingRhino _parent;
+//   public ExpirationChecker(BasicConnectorBindingRhino parent)
+//   {
+//     _parent = parent;
+//     RhinoDoc.AddRhinoObject += (sender, e) =>
+//     {
+//       objectIds.Add(e.ObjectId.ToString());
+//       _needToRun = true;
+//     };
+//     RhinoDoc.DeleteRhinoObject += (_, e) =>
+//     {
+//       objectIds.Add(e.ObjectId.ToString());
+//       _needToRun = true;
+//     };
+//     RhinoDoc.ReplaceRhinoObject += (_, e) =>
+//     {
+//       objectIds.Add(e.NewRhinoObject.Id.ToString());
+//       objectIds.Add(e.OldRhinoObject.Id.ToString());
+//       _needToRun = true;
+//     };
+//     RhinoApp.Idle += (_, _) => CheckAndNotifyExpiration();
+//   }
+//
+//   public void CheckAndNotifyExpiration()
+//   {
+//     if(!_needToRun) return;
+//     var senders = _parent._documentState.Models.FindAll(f => f.TypeDiscriminator == nameof(SenderModelCard)).Cast<SenderModelCard>().ToList();
+//     var senderscount = senders.Count;
+//     var objectIdsList = objectIds.ToArray();
+//     var expiredSenderIds = new List<string>();
+//     
+//     // etc. Do work
+//     foreach (var sender in senders)
+//     {
+//       var isExpired= sender.SendFilter.CheckExpiry(objectIdsList);
+//       if(isExpired) expiredSenderIds.Add(sender.Id);
+//     }
+//     
+//     // TODO notify browser
+//     objectIds = new HashSet<string>();
+//     _needToRun = false;
+//   }
+// }

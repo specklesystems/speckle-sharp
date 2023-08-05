@@ -23,6 +23,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI3\DUI3WebView2Helper\DUI3WebView2Helper\DUI3WebView2Helper.csproj" />
     <ProjectReference Include="..\..\DesktopUI3\DUI3\DUI3.csproj" />
   </ItemGroup>
   
@@ -31,10 +32,26 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   
+  <ItemGroup>
+    <Page Remove="SpeckleWebUiPanelWebView2.xaml" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="SpeckleWebUiPanelWebView2.xaml.cs" />
+  </ItemGroup>
+  
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments></StartArguments>
     <StartAction>Program</StartAction>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE;RHINO_7_DUI3;</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE;RHINO_7_DUI3;</DefineConstants>
   </PropertyGroup>
   
 </Project>

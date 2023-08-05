@@ -64,6 +64,7 @@ public static class DefaultTraversal
 
     return new GraphTraversal(bimElementRule, IgnoreResultsRule, DefaultRule);
   }
+  
 
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
   #region Helper Functions

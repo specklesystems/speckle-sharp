@@ -17,6 +17,11 @@ public class RhinoEverythingFilter : SendFilter
   {
     return new List<string>(); // TODO
   }
+
+  public override bool CheckExpiry(string[] changedObjectIds)
+  {
+    return true;
+  }
 }
 
 public class RhinoSelectionFilter : DirectSelectionSendFilter
@@ -31,9 +36,16 @@ public class RhinoSelectionFilter : DirectSelectionSendFilter
   {
     return SelectedObjectIds;
   }
+
+  public override bool CheckExpiry(string[] changedObjectIds)
+  {
+    // TODO
+    return false;
+  }
 }
 
-public class RhinoLayerFilter : ListSendFilter // TODO: would be nicer as a tree send filter 🤔
+// TODO: Rhino layer filter would be nicer as a tree send filter 🤔
+public class RhinoLayerFilter : ListSendFilter 
 {
   public RhinoLayerFilter()
   {
@@ -49,14 +61,11 @@ public class RhinoLayerFilter : ListSendFilter // TODO: would be nicer as a tree
   {
     return new List<string>(); // TODO: based on the SelectedOptions field
   }
-}
 
-// NOTE: For fun, not implemented or implementable. It's meant to demo/test the case where we have multiple list based filters.
-public class RhinoBlocksFilter : ListSendFilter
-{
-  public override List<string> GetObjectIds()
+  public override bool CheckExpiry(string[] changedObjectIds)
   {
-    throw new System.NotImplementedException();
+    // TODO
+    return false;
   }
 }
 

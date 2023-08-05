@@ -8,9 +8,9 @@ public interface IBasicConnectorBinding : IBinding
 {
   public string GetSourceApplicationName();
   public string GetSourceApplicationVersion();
-  public Account[] GetAccounts();
+  public Account[] GetAccounts(); // Remove
   public DocumentInfo GetDocumentInfo();
-  public DocumentState GetDocumentState();
+  public DocumentModelStore GetDocumentState();
   public List<SendFilter> GetSendFilters();
   public void AddModelToDocumentState(ModelCard model);
   public void UpdateModelInDocumentState(ModelCard model);

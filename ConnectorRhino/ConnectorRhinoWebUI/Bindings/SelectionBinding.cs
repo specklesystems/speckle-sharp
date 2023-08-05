@@ -23,14 +23,14 @@ public class SelectionBinding : ISelectionBinding
     RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, args) =>
     {
       // Resets selection doc change
-      Parent.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, new SelectionInfo());
+      Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
     
     RhinoApp.Idle += (sender, args) =>
     {
       if (!_selectionExpired) return;
       var selInfo = GetSelection();
-      Parent.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
+      Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
       _selectionExpired = false;
     };
   } 

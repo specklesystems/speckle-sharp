@@ -20,6 +20,8 @@ public abstract class SendFilter : DiscriminatedObject
   public string Name { get; set; }
   public string Summary { get; set; }
   public abstract List<string> GetObjectIds();
+
+  public abstract bool CheckExpiry(string[] changedObjectIds);
 }
 
 /// <summary>
@@ -56,3 +58,5 @@ public class TreeListSendFilerNode
   public bool Selected { get; set; }
   public List<TreeListSendFilerNode> Children { get; set; } = new List<TreeListSendFilerNode>();
 }
+
+  
