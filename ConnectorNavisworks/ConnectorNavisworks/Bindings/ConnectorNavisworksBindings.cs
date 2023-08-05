@@ -35,7 +35,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   // private bool _isRetrying;
   internal static bool PersistCache;
 
-  private NavisworksOptionsManager _settingsHandler;
+  private readonly NavisworksOptionsManager _settingsHandler;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
