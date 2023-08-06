@@ -1,18 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DUI3;
+using DUI3.Bindings;
 using DUI3.Models;
+using DUI3.Utils;
 using Rhino;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
-public class RhinoEverythingFilter : SendFilter
+public class RhinoEverythingFilter : EverythingSendFilter
 {
-  public RhinoEverythingFilter()
-  {
-    Name = "Everything";
-    Summary = "All supported objects in the currently opened file.";
-  }
-  
   public override List<string> GetObjectIds()
   {
     return new List<string>(); // TODO
@@ -26,12 +23,6 @@ public class RhinoEverythingFilter : SendFilter
 
 public class RhinoSelectionFilter : DirectSelectionSendFilter
 {
-  public RhinoSelectionFilter()
-  {
-    Name = "Selection";
-    Summary = "User based selection filter. UI should replace this summary with the selection info summary!";
-  }
-  
   public override List<string> GetObjectIds()
   {
     return SelectedObjectIds;
@@ -39,30 +30,35 @@ public class RhinoSelectionFilter : DirectSelectionSendFilter
 
   public override bool CheckExpiry(string[] changedObjectIds)
   {
-    // TODO
-    return false;
+    return SelectedObjectIds.Intersect(changedObjectIds).Any();
   }
 }
 
-// TODO: Rhino layer filter would be nicer as a tree send filter 🤔
-public class RhinoLayerFilter : ListSendFilter 
+public class RhinoLayerFilter : ListValueInput, ISendFilter 
 {
+  public string Name { get; set; }
+  public string Summary { get; set; }
+
   public RhinoLayerFilter()
   {
     Name = "Layers";
     Summary = "How many layers are actually selected. UI should populate this.";
     foreach (var layer in RhinoDoc.ActiveDoc.Layers)
     {
-      Options.Add(layer.FullPath);
+      Options.Add(new ListValueItem()
+      {
+        Id = layer.Id.ToString(),
+        Name = layer.FullPath
+      });
     }
   }
   
-  public override List<string> GetObjectIds()
+  public List<string> GetObjectIds()
   {
     return new List<string>(); // TODO: based on the SelectedOptions field
   }
 
-  public override bool CheckExpiry(string[] changedObjectIds)
+  public bool CheckExpiry(string[] changedObjectIds)
   {
     // TODO
     return false;

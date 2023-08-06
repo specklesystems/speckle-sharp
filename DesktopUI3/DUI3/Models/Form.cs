@@ -1,4 +1,5 @@
-﻿using DUI3.Utils;
+﻿using System.Collections.Generic;
+using DUI3.Utils;
 
 namespace DUI3.Models;
 
@@ -18,3 +19,28 @@ public class BooleanValueInput: FormInputBase
   public bool Value { get; set; } = false;
 }
 
+public class ListValueInput : FormInputBase
+{
+  public List<ListValueItem> Options { get; set; } = new();
+  public List<ListValueItem> SelectedOptions { get; set; } = new();
+  public bool MultiSelect { get; set; } = true;
+}
+
+public class ListValueItem : DiscriminatedObject
+{
+  public string Id { get; set; }
+  public string Name { get; set; }
+  public string Color { get; set; }
+}
+
+public class TreeValueInput : FormInputBase
+{
+  public List<TreeListValueItem> Nodes { get; set; } = new();
+  public bool MultiSelect { get; set; } = true;
+}
+
+public class TreeListValueItem : ListValueItem
+{
+  public bool Selected { get; set; }
+  public List<TreeListValueItem> Nodes { get; set; } = new();
+}

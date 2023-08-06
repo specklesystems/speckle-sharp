@@ -14,8 +14,8 @@ public static class Factory
   {
     var documentState = new DocumentModelStore();
       
-    var baseBindings = new BasicConnectorBindingRhino(documentState);
-    // TODO: sendBindings
+    var baseBindings = new BasicConnectorBinding(documentState);
+    var sendBindings = new SendBinding(documentState);
     // TODO: expiryBindings (?) maybe part of sendBindings after all...
     // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
@@ -26,6 +26,7 @@ public static class Factory
       new AccountBinding(),
       new TestBinding(),
       baseBindings,
+      sendBindings,
       selectionBindings
     };
       

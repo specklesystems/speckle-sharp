@@ -1,12 +1,11 @@
-﻿using System.Windows.Forms;
-using Rhino;
+﻿using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
 using Rhino.UI;
 
 namespace ConnectorRhinoWebUI;
 
-// NOTE: we have two commands to test both cef sharp and webviev2 in the same host app.
+// NOTE: we have two commands to test both cefsharp and webview2 in the same host app.
 
 /// <summary>
 /// Webview2 Panel
