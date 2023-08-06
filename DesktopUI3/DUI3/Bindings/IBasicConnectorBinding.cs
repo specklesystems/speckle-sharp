@@ -8,18 +8,15 @@ public interface IBasicConnectorBinding : IBinding
 {
   public string GetSourceApplicationName();
   public string GetSourceApplicationVersion();
-  public Account[] GetAccounts();
   public DocumentInfo GetDocumentInfo();
-  public DocumentState GetDocumentState();
-  public List<SendFilter> GetSendFilters();
-  public void AddModelToDocumentState(ModelCard model);
-  public void UpdateModelInDocumentState(ModelCard model);
-  public void RemoveModelFromDocumentState(ModelCard model);
+  public DocumentModelStore GetDocumentState();
+  public void AddModel(ModelCard model);
+  public void UpdateModel(ModelCard model);
+  public void RemoveModel(ModelCard model);
 }
 
 public static class BasicConnectorBindingEvents
 {
   public static readonly string DisplayToastNotification = "DisplayToastNotification";
-  public static readonly string DocumentChanged = "documentChanged";
-  public static readonly string FiltersNeedRefresh = "filtersNeedRefresh";
+  public static readonly string DocumentChanged = "documentChanged"; 
 }

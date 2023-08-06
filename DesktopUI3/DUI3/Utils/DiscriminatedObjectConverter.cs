@@ -15,11 +15,10 @@ namespace DUI3.Utils;
 /// </summary>
 public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 {
-  private readonly JsonSerializer _localSerializer = new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver() };
-  
+  private readonly JsonSerializer _localSerializer = new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver(), NullValueHandling = NullValueHandling.Ignore };
+
   public override void WriteJson(JsonWriter writer, DiscriminatedObject value, JsonSerializer serializer)
   {
-    // NOTE: using the existing passed on serializer causes some weird behaviour. We're bypassing it. A nice TODO would be to investigate why.
     var jo = JObject.FromObject(value, _localSerializer);
     jo.WriteTo(writer);
   }
@@ -69,3 +68,21 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
   }
 }
 
+public class AbstractConverter<TReal, TAbstract> 
+  : JsonConverter
+{
+  public override bool CanConvert(Type objectType)
+  {
+    return objectType == typeof(TAbstract);
+  }
+
+  public override object ReadJson(JsonReader reader, Type type, object value, JsonSerializer jser)
+  {
+    return jser.Deserialize<TReal>(reader);
+  }
+
+  public override void WriteJson(JsonWriter writer, object value, JsonSerializer jser)
+  {
+    jser.Serialize(writer, value);
+  }
+}

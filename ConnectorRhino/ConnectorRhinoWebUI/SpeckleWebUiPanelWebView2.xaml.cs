@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Controls;
 using ConnectorRhinoWebUI.Bindings;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
+using Speckle.Core.Logging;
 
 namespace ConnectorRhinoWebUI
 {
@@ -24,30 +27,44 @@ namespace ConnectorRhinoWebUI
     {
       Browser.CoreWebView2.OpenDevToolsWindow();
 
-      var executeScriptAsyncMethod = (string script) => {
-        Debug.WriteLine(script);
-        Browser.ExecuteScriptAsync(script); 
-      };
+      void ExecuteScriptAsyncMethod(string script)
+      {
+        if (!Browser.IsInitialized)
+        {
+          throw new SpeckleException("Failed to execute script, Webview2 is not initialized yet.");
+        }
 
-      var showDevToolsMethod = () => Browser.CoreWebView2.OpenDevToolsWindow();
+        Browser.ExecuteScriptAsync(script);
+      }
 
+      void ShowDevToolsMethod() => Browser.CoreWebView2.OpenDevToolsWindow();
+
+      var documentState = new DocumentModelStore();
+
+      var bindingsToProvide = new List<IBinding>();
+      
+      // Test bindings
+      bindingsToProvide.Add(new TestBinding());
+      bindingsToProvide.Add(new ConfigBinding());
+      
+      // var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
+      // Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
+
+      var docState = new DocumentModelStore();
+      
       // Base bindings
       var baseBindings = new BasicConnectorBindingRhino();
-      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
+      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
-
-      // Test bindings
-      var testBinding = new TestBinding();
-      var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
-      Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
+      
       
       // Config bindings
       var configBindings = new ConfigBinding();
       var configBindingsBridge = new BrowserBridge(
         Browser,
         configBindings,
-        executeScriptAsyncMethod,
-        showDevToolsMethod);
+        ExecuteScriptAsyncMethod,
+        ShowDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(configBindingsBridge.FrontendBoundName, configBindingsBridge);
       
             
@@ -56,8 +73,8 @@ namespace ConnectorRhinoWebUI
       var selectionBindingBridge = new BrowserBridge(
         Browser,
         selectionBinding,
-        executeScriptAsyncMethod,
-        showDevToolsMethod);
+        ExecuteScriptAsyncMethod,
+        ShowDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(selectionBindingBridge.FrontendBoundName, selectionBindingBridge);
       
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using JetBrains.Annotations;
 using Speckle.Core.Transports;
 
 namespace DUI3.Bindings;
@@ -12,6 +13,7 @@ public class ConfigBinding : IBinding
 
   private static readonly SQLiteTransport ConfigStorage = new(scope: "Config");
   
+  [PublicAPI]
   public Config GetConfig()
   {
     try

@@ -1,4 +1,5 @@
-﻿using DUI3.Utils;
+﻿using DUI3.Bindings;
+using DUI3.Utils;
 
 namespace DUI3.Models;
 
@@ -9,19 +10,14 @@ public class ModelCard : DiscriminatedObject
   /// It's not the actual model (branch) id.
   /// </summary>
   public string Id { get; set; }
+  /// <summary>
+  /// Model id. FKA branch id.
+  /// </summary>
   public string ModelId { get; set; }
+  /// <summary>
+  /// Project id. FKA stream id.
+  /// </summary>
   public string ProjectId { get; set; }
   public string AccountId { get; set; }
   public string LastLocalUpdate { get; set; }
-}
-
-public class SenderModelCard : ModelCard
-{
-  public SendSettings SendSettings { get; set; }
-  public SendFilter SendFilter { get; set; }
-}
-
-public class ReceiverModelCard : ModelCard
-{
-  // TODO: receive filter, receive settings, etc.
 }
