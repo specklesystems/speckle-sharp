@@ -167,8 +167,16 @@ namespace Objects.Converter.CSI
       {
         foreach (var opening in area.openings)
         {
-          var openingName = CreateAreaFromPoints(opening.ToPoints(), propName, out var openingSuccess);
-          openingSuccess = Model.AreaObj.SetOpening(openingName, true);
+          string openingName;
+          try
+          {
+            openingName = CreateAreaFromPoints(opening.ToPoints(), propName, out _);
+          }
+          catch
+          {
+            openingName = string.Empty;
+          }
+          var openingSuccess = Model.AreaObj.SetOpening(openingName, true);
           if (openingSuccess != 0)
           {
             appObj.Update(logItem: $"unable to create opening with id {opening.id}");
