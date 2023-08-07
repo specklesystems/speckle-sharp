@@ -59,7 +59,8 @@ public static class Extensions
   {
     if (category.CategoryType == CategoryType.Model ||
         category.CategoryType == CategoryType.AnalyticalModel ||
-        category.CategoryType == CategoryType.Internal)
+        category.CategoryType == CategoryType.Internal ||
+        category.Id.IntegerValue == -2000220) // Grids
       return true;
 
     return false;
