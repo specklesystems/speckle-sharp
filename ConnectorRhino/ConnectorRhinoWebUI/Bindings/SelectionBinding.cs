@@ -33,7 +33,7 @@ public class SelectionBinding : ISelectionBinding
   /// <summary>
   /// Enables idle event.
   /// </summary>
-  public void EnableIdle()
+  private void EnableIdle()
   {
     if (this.idle == null)
     {
