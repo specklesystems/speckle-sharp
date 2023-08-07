@@ -25,6 +25,10 @@ public class SendBinding : ISendBinding
   {
     _store = store;
     bool isDocInit = false;
+    // TODO: TBD -> isDocInit always false for newly opened documents. For saved documents turns to the true. 
+    //  If we somehow want to make sure that doc is initialized, maybe it should be passed here directly as referenced.
+    //  So document events should be tracked with some other class and this class should? have the responsibilty update it's
+    //  Doc property, so we won't need to check here since we will have already updated reference...
     RhinoDoc.BeginOpenDocument += (_, _) => isDocInit = false;
     RhinoDoc.EndOpenDocument += (_, _) => isDocInit = true;
     RhinoDoc.LayerTableEvent += (_, _) =>
