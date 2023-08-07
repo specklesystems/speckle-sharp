@@ -307,7 +307,7 @@ namespace Speckle.ConnectorRevit.UI
           x => x.Title == linkedFile.Name.Split(new string[] { ".rvt" }, StringSplitOptions.None)[0]
         );
         if (match != null)
-          selection.AddRange(match.SupportedElements(revitDocumentAggregateCache));
+          selection.AddRange(match.GetSupportedElements(revitDocumentAggregateCache));
       }
 
       return selection;
@@ -339,8 +339,8 @@ namespace Speckle.ConnectorRevit.UI
       //and these for every linked doc
       foreach (var doc in allDocs)
       {
-        selection.AddRange(doc.SupportedElements(revitDocumentAggregateCache)); // includes levels
-        selection.AddRange(doc.SupportedTypes(revitDocumentAggregateCache));
+        selection.AddRange(doc.GetSupportedElements(revitDocumentAggregateCache)); // includes levels
+        selection.AddRange(doc.GetSupportedTypes(revitDocumentAggregateCache));
       }
 
       return selection;
@@ -442,8 +442,10 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var doc in allDocs)
         {
+          //NOTE: this logic needs revisiting, this is just to avoid the error: https://github.com/specklesystems/speckle-sharp/issues/2829
           if (doc.GetElement(view.Id) == null)
             continue;
+
           using var docCollector = new FilteredElementCollector(doc, view.Id);
           selection.AddRange(
             docCollector
@@ -510,7 +512,7 @@ namespace Speckle.ConnectorRevit.UI
         selection.AddRange(currentDoc.Levels());
 
       if (projectInfoFilter.Selection.Contains("Families & Types"))
-        selection.AddRange(currentDoc.SupportedTypes(revitDocumentAggregateCache));
+        selection.AddRange(currentDoc.GetSupportedTypes(revitDocumentAggregateCache));
 
       return selection;
     }
