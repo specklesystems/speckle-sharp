@@ -42,7 +42,7 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
 
       foreach (Category category in doc.Settings.Categories)
       {
-        if (!category.IsCategorySupported())
+        if (!Helpers.Extensions.Extensions.IsCategorySupported(category))
           continue;
 
         //some categories, in other languages (eg DEU) have duplicated names #542
