@@ -53,16 +53,16 @@ public static class Extensions
   /// Checks if an element's category is supported for conversion
   /// </summary>
   /// <param name="e">The element to check support for</param>
-  /// <returns>True if the element's category is contained in <see cref="Categories.SupportedBuiltInCategories"/>, false otherwise.</returns>
+  /// <returns>True if the element's category is Model or AnalyticalModel, false otherwise.</returns>
   public static bool IsElementSupported(this Element e)
   {
     if (e.Category == null)
       return false;
     if (e.ViewSpecific)
       return false;
+    if (e.Category.CategoryType != CategoryType.Model && e.Category.CategoryType != CategoryType.AnalyticalModel)
+      return false; ;
 
-    if (Categories.SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
-      return true;
-    return false;
+    return true;
   }
 }

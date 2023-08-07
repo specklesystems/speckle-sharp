@@ -37,11 +37,13 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
     public static void CacheInitializer(IRevitObjectCache<Category> cache, Document doc)
     {
       var _categories = new Dictionary<string, Category>();
-      foreach (var bic in SCH.SupportedBuiltInCategories)
+
+
+      foreach (Category category in doc.Settings.Categories)
       {
-        var category = Category.GetCategory(doc, bic);
-        if (category == null)
+        if (category.CategoryType != CategoryType.Model && category.CategoryType != CategoryType.AnalyticalModel)
           continue;
+
         //some categories, in other languages (eg DEU) have duplicated names #542
         if (_categories.ContainsKey(category.Name))
         {
@@ -69,7 +71,7 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
       }
       cache.AddMany(predefinedCategories, categoryInfo => categoryInfo.CategoryName);
     }
-    
+
     public static void CacheInitializer(IRevitObjectCache<ElementType> cache, Document doc)
     {
       // don't do any default initialization
