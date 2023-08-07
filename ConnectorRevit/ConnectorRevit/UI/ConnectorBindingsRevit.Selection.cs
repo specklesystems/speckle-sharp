@@ -442,6 +442,8 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var doc in allDocs)
         {
+          if (doc.GetElement(view.Id) == null)
+            continue;
           using var docCollector = new FilteredElementCollector(doc, view.Id);
           selection.AddRange(
             docCollector
