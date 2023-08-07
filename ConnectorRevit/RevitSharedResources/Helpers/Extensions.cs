@@ -50,18 +50,32 @@ public static class Extensions
   }
 
   /// <summary>
+  /// Checks if a category is supported when sending
+  /// See: https://docs.google.com/spreadsheets/d/1By5RM0PCMw-M1ZVubXD3bF1FVz3Uk4u4vBrRUhJzWXw/edit?usp=sharing
+  /// </summary>
+  /// <param name="category"></param>
+  /// <returns></returns>
+  public static bool IsCategorySupported(this Category category)
+  {
+    if (category.CategoryType == CategoryType.Model ||
+        category.CategoryType == CategoryType.AnalyticalModel ||
+        category.CategoryType == CategoryType.Internal)
+      return true;
+
+    return false;
+  }
+
+  /// <summary>
   /// Checks if an element's category is supported for conversion
   /// </summary>
   /// <param name="e">The element to check support for</param>
   /// <returns>True if the element's category is Model or AnalyticalModel, false otherwise.</returns>
   public static bool IsElementSupported(this Element e)
   {
-    if (e.Category == null)
+    if (e.Category == null ||
+        e.ViewSpecific ||
+        !IsCategorySupported(e.Category))
       return false;
-    if (e.ViewSpecific)
-      return false;
-    if (e.Category.CategoryType != CategoryType.Model && e.Category.CategoryType != CategoryType.AnalyticalModel)
-      return false; ;
 
     return true;
   }

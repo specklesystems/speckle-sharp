@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
+using RevitSharedResources.Helpers;
 using RevitSharedResources.Interfaces;
 using SCH = RevitSharedResources.Helpers.Categories;
 
@@ -41,7 +42,7 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
 
       foreach (Category category in doc.Settings.Categories)
       {
-        if (category.CategoryType != CategoryType.Model && category.CategoryType != CategoryType.AnalyticalModel)
+        if (!category.IsCategorySupported())
           continue;
 
         //some categories, in other languages (eg DEU) have duplicated names #542

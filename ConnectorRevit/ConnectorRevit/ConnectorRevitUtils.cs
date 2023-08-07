@@ -72,12 +72,6 @@ namespace Speckle.ConnectorRevit
         .Select(category => category.Id)
         .ToList();
 
-      var categoryNames = cache
-  .GetOrInitializeWithDefaultFactory<Category>()
-  .GetAllObjects()
-  .Select(category => category.Name)
-  .ToList();
-
       using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
       using var collector = new FilteredElementCollector(doc);
 
