@@ -14,8 +14,7 @@ namespace AutocadCivilDUI3Shared.Bindings
 
     public SelectionBinding()
     {
-      Application.DocumentManager.MdiActiveDocument.Editor.SelectionAdded += (_, _) => { OnSelectionChanged(); };
-      Application.DocumentManager.MdiActiveDocument.Editor.SelectionRemoved += (_, _) => { OnSelectionChanged(); };
+      Application.DocumentManager.MdiActiveDocument.ImpliedSelectionChanged += (_, _) => { OnSelectionChanged(); };
     }
 
     private void OnSelectionChanged()
