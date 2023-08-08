@@ -20,7 +20,7 @@ namespace AutocadCivilDUI3Shared.Utils
 
     private void NotifyDocumentChangedIfNeeded(Document doc)
     {
-      if (doc == null) return;
+      if (doc == null || Doc == null) return;
       if (_previousDocName == doc.Name) return;
 
       _previousDocName = doc.Name;
