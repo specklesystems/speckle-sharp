@@ -11,5 +11,6 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<RevitMEPConnector> Connectors { get; set; } = new();
+    public List<ICurve> Curves { get; set; } = new();
   }
 }
