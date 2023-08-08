@@ -801,7 +801,8 @@ namespace Objects.Converter.Revit
         var meshes = GetElementDisplayValue(
           instance,
           new Options() { DetailLevel = ViewDetailLevel.Fine },
-          true
+          true,
+          parentTransform
         );
         symbol.displayValue = meshes;
       }
