@@ -10,6 +10,7 @@ namespace ConnectorRhinoWebUI.Utils
   public static class RhinoIdleManager
   {
     private static Dictionary<string, Action> calls = new Dictionary<string, Action>();
+    private static bool _hasSubscribed = false;
 
     /// <summary>
     /// Subscribe deferred action to RhinoIdle event to run it whenever Rhino become idle.
@@ -17,8 +18,10 @@ namespace ConnectorRhinoWebUI.Utils
     /// <param name="action"> Action to call whenever Rhino become Idle.</param>
     public static void SubscribeToIdle(Action action)
     {
-      calls[action.Method.Name ?? Guid.NewGuid().ToString()] = action; 
-
+      calls[action.Method.Name ?? Guid.NewGuid().ToString()] = action;
+      
+      if (_hasSubscribed) return;
+      _hasSubscribed = true;
       RhinoApp.Idle += RhinoAppOnIdle;
     }
 
@@ -29,6 +32,7 @@ namespace ConnectorRhinoWebUI.Utils
         kvp.Value();
       }
       calls = new Dictionary<string, Action>();
+      _hasSubscribed = false;
       RhinoApp.Idle -= RhinoAppOnIdle;
     }
   }
