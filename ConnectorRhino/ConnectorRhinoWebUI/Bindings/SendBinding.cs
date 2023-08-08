@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -12,13 +14,17 @@ public class SendBinding : ISendBinding
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
   private DocumentModelStore _store;
-  private bool _runExpirationChecks = false;
+
   private HashSet<string> _changedObjectIds { get; set; } = new();
   
   public SendBinding(DocumentModelStore store)
   {
     _store = store;
     bool isDocInit = false;
+    // TODO: TBD -> isDocInit always false for newly opened documents. For saved documents turns to the true. 
+    //  If we somehow want to make sure that doc is initialized, maybe it should be passed here directly as referenced.
+    //  So document events should be tracked with some other class and this class should? have the responsibilty update it's
+    //  Doc property, so we won't need to check here since we will have already updated reference...
     RhinoDoc.BeginOpenDocument += (_, _) => isDocInit = false;
     RhinoDoc.EndOpenDocument += (_, _) => isDocInit = true;
     RhinoDoc.LayerTableEvent += (_, _) =>
@@ -26,18 +32,18 @@ public class SendBinding : ISendBinding
       Parent?.SendToBrowser(SendBindingEvents.FiltersNeedRefresh);
     };
     
-    RhinoDoc.AddRhinoObject += (sender, e) =>
+    RhinoDoc.AddRhinoObject += (_, e) =>
     {
       if (!isDocInit) return;
       _changedObjectIds.Add(e.ObjectId.ToString());
-      _runExpirationChecks = true;
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
     };
     
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
       if (!isDocInit) return;
       _changedObjectIds.Add(e.ObjectId.ToString());
-      _runExpirationChecks = true;
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
     };
     
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
@@ -45,12 +51,10 @@ public class SendBinding : ISendBinding
       if (!isDocInit) return;
       _changedObjectIds.Add(e.NewRhinoObject.Id.ToString());
       _changedObjectIds.Add(e.OldRhinoObject.Id.ToString());
-      _runExpirationChecks = true;
-    };
-    
-    RhinoApp.Idle += (_, _) => RunExpirationChecks();
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
+    }; 
   }
-  
+
   public List<ISendFilter> GetSendFilters()
   {
     return new List<ISendFilter>()
@@ -79,7 +83,6 @@ public class SendBinding : ISendBinding
   
   private void RunExpirationChecks()
   {
-    if(!_runExpirationChecks) return;
     var senders = _store.GetSenders();
     var objectIdsList = _changedObjectIds.ToArray();
     var expiredSenderIds = new List<string>();
@@ -91,6 +94,5 @@ public class SendBinding : ISendBinding
     }
     Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
     _changedObjectIds = new HashSet<string>();
-    _runExpirationChecks = false;
   }
 }

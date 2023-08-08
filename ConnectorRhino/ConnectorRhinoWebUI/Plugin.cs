@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Windows.Controls;
-using DUI3;
-using JetBrains.Annotations;
+using System;
+using ConnectorRhinoWebUI.Utils;
 using Rhino;
 using Rhino.PlugIns;
-using Rhino.UI;
 
 namespace ConnectorRhinoWebUI
 {
@@ -22,17 +19,10 @@ namespace ConnectorRhinoWebUI
     
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
     
-    private bool _init;
-    
     public ConnectorRhinoWebUiPlugin()
     {
       Instance = this;
-      RhinoApp.Idle += (_, _) =>
-      {
-        if (_init) return;
-        _init = true;
-        RhinoApp.RunScript("SpeckleWebUIWebView2", false);
-      };
+      RhinoIdleManager.SubscribeToIdle(() => RhinoApp.RunScript("SpeckleWebUIWebView2", false));
     }
   }
 }
