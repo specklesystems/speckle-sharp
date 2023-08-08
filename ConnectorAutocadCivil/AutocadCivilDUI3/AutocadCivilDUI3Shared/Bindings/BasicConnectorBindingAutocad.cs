@@ -1,7 +1,9 @@
-﻿using System.Linq;
+using System.Linq;
+using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models;
 using Speckle.Core.Credentials;
 
 namespace Speckle.ConnectorAutocadDUI3.Bindings;
@@ -12,21 +14,16 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
   public IBridge Parent { get; set; }
 
   private static Document Doc => Application.DocumentManager.MdiActiveDocument;
+  private readonly AutocadDocumentModelStore _store;
   private static string _previousDocName;
   
-  public BasicConnectorBindingAutocad()
+  public BasicConnectorBindingAutocad(AutocadDocumentModelStore store)
   {
-    Application.DocumentWindowCollection.DocumentWindowActivated += (sender, e) => NotifyDocumentChangedIfNeeded(e.DocumentWindow.Document as Document);
-    Application.DocumentManager.DocumentActivated += (sender, e) => NotifyDocumentChangedIfNeeded(e.Document);
-  }
-
-  private void NotifyDocumentChangedIfNeeded(Document doc)
-  {
-    if (doc == null) return;
-    if (_previousDocName == doc.Name) return;
-      
-    _previousDocName = doc.Name;
-    Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+    _store = store;
+    _store.DocumentChanged += (_, _) =>
+    {
+      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+    };
   }
 
   public string GetSourceApplicationName()
@@ -58,5 +55,27 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       Id = Doc.Name,
       Location = Doc.Name
     };
+  }
+
+  public DocumentModelStore GetDocumentState()
+  {
+    return _store;
+  }
+
+  public void AddModel(ModelCard model)
+  {
+    _store.Models.Add(model);
+  }
+
+  public void UpdateModel(ModelCard model)
+  {
+    var idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    _store.Models[idx] = model;
+  }
+
+  public void RemoveModel(ModelCard model)
+  {
+    var index = _store.Models.FindIndex(m => m.Id == model.Id);
+    _store.Models.RemoveAt(index);
   }
 }

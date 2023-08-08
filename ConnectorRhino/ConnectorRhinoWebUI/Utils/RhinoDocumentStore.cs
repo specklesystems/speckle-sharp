@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
 using DUI3.Models;
 using Rhino;
 
