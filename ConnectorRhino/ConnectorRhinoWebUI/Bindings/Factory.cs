@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
-using DUI3.Models;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -10,12 +10,11 @@ namespace ConnectorRhinoWebUI.Bindings;
 /// </summary>
 public static class Factory
 {
+  private static readonly RhinoDocumentStore Store = new RhinoDocumentStore();
   public static List<IBinding> CreateBindings()
   {
-    var documentState = new DocumentModelStore();
-      
-    var baseBindings = new BasicConnectorBinding(documentState);
-    var sendBindings = new SendBinding(documentState);
+    var baseBindings = new BasicConnectorBinding(Store);
+    var sendBindings = new SendBinding(Store);
     // TODO: expiryBindings (?) maybe part of sendBindings after all...
     // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
@@ -33,3 +32,5 @@ public static class Factory
     return bindingsList;
   }
 }
+
+

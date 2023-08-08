@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using Rhino;
-using Speckle.Core.Credentials;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -12,17 +11,13 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
-  private DocumentModelStore _store;
+  private readonly RhinoDocumentStore _store;
 
-  public BasicConnectorBinding(DocumentModelStore store)
+  public BasicConnectorBinding(RhinoDocumentStore store)
   {
     _store = store;
-    RhinoDoc.BeginSaveDocument += (_, _) => WriteDocState();
-    RhinoDoc.CloseDocument += (_, _) => WriteDocState();
-    RhinoDoc.EndOpenDocument += (_, e) =>
+    _store.DocumentChanged += (_,_) =>
     {
-      if (e.Merge) return;
-      if (e.Document == null) return;
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }
@@ -49,7 +44,6 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public DocumentModelStore GetDocumentState()
   {
-    ReadDocState();
     return _store;
   }
 
@@ -68,38 +62,5 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   {
     var index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
-  }
-
-  private const string SpeckleKey = "Speckle_DUI3";
-  
-  /// <summary>
-  /// Writes the _documentState to the current document info.
-  /// </summary>
-  private void WriteDocState()
-  {
-    if (RhinoDoc.ActiveDoc == null)
-    {
-      return; // Should throw
-    }
-    RhinoDoc.ActiveDoc?.Strings.Delete(SpeckleKey);
-    var serializedState = _store.Serialize();
-    
-    RhinoDoc.ActiveDoc?.Strings.SetString(SpeckleKey, SpeckleKey, serializedState);
-  }
-  
-  /// <summary>
-  /// Populates the _documentState from the current document info.
-  /// </summary>
-  private void ReadDocState()
-  {
-    // TODO: clean up
-    var stateString = RhinoDoc.ActiveDoc.Strings.GetValue(SpeckleKey, SpeckleKey);
-    if (stateString == null)
-    {
-      _store.Models = new List<ModelCard>();
-      return;
-    }
-    var state = DocumentModelStore.Deserialize(stateString);
-    _store.Models = state.Models;
   }
 }

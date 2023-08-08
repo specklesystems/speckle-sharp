@@ -57,11 +57,18 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
     if (myType != null) return myType;
     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
     {
-      var type = assembly.DefinedTypes.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
-      if (type != null)
+      try
       {
-        TypeCache[name] = type;
-        return type;
+        var type = assembly.DefinedTypes.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
+        if (type != null)
+        {
+          TypeCache[name] = type;
+          return type;
+        }
+      }
+      catch
+      {
+        
       }
     }
     return null;
