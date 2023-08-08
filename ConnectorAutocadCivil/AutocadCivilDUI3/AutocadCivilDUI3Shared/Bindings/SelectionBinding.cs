@@ -14,6 +14,7 @@ namespace AutocadCivilDUI3Shared.Bindings
 
     public SelectionBinding()
     {
+      // TODO: When we switch document MdiActiveDocument become null and we cannot catch selections........
       Application.DocumentManager.MdiActiveDocument.ImpliedSelectionChanged += (_, _) => { OnSelectionChanged(); };
     }
 
