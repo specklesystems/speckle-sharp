@@ -11,6 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Panel.xaml.cs">
       <DependentUpon>Panel.xaml</DependentUpon>

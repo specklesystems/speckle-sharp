@@ -3,6 +3,7 @@ using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
+using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
@@ -14,10 +15,12 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
   public IBridge Parent { get; set; }
   private static UIApplication RevitApp { get; set; }
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
-  public BasicConnectorBindingRevit(UIApplication revitApp)
+  private readonly RevitDocumentStore _store;
+  
+  public BasicConnectorBindingRevit(UIApplication revitApp, RevitDocumentStore store)
   {
     RevitApp = revitApp;
-
+    _store = store;
     RevitApp.ViewActivated += (sender, e) =>
     {
       if (e.Document == null) return;
@@ -55,17 +58,18 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public DocumentModelStore GetDocumentState()
   {
-    throw new System.NotImplementedException();
+    return _store;
   }
 
   public void AddModel(ModelCard model)
   {
-    throw new System.NotImplementedException();
+    _store.Models.Add(model);
   }
 
   public void UpdateModel(ModelCard model)
   {
-    throw new System.NotImplementedException();
+    var idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)

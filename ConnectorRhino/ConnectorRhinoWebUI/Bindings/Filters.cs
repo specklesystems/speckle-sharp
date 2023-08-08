@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
-using DUI3.Utils;
 using Rhino;
 
 namespace ConnectorRhinoWebUI.Bindings;

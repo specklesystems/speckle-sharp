@@ -8,12 +8,18 @@ using Speckle.Newtonsoft.Json;
 
 namespace DUI3.Models;
 
+/// <summary>
+/// Encapsulates the state Speckle needs to persist in the host app's document. 
+/// </summary>
 public abstract class DocumentModelStore : DiscriminatedObject
 {
   public List<ModelCard> Models { get; set; } = new List<ModelCard>();
 
   private static readonly JsonSerializerSettings SerializerOptions = DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
   
+  /// <summary>
+  /// This event is triggered by each specific host app implementation of the document model store.
+  /// </summary>
   [PublicAPI]
   public event EventHandler DocumentChanged;
 

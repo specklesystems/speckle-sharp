@@ -9,14 +9,24 @@ namespace Speckle.ConnectorRevitDUI3.Utils;
 
 public class RevitDocumentStore : DocumentModelStore
 {
-  public static UIApplication RevitApp { get; set; }
+  private static UIApplication RevitApp { get; set; }
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
   
   private static readonly Guid Guid = new Guid("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
   
-  public RevitDocumentStore()
+  public RevitDocumentStore(UIApplication revitApp)
   {
-    // TODO: instantiate events, etc.
+    RevitApp = revitApp;
+   
+    RevitApp.ViewActivated += (_, e) =>
+    {
+      if (e.Document == null) return;
+      if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName) return;
+      OnDocumentChanged();
+    };
+
+    RevitApp.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
+    RevitApp.Application.DocumentOpened += (_, _) => IsDocumentInit = true;
   }
   
   public override void WriteToFile()

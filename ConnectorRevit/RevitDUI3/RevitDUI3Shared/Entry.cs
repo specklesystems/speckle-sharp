@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.DB.Events;
@@ -10,21 +11,34 @@ using DUI3;
 using DUI3.Bindings;
 using Sentry.Protocol;
 using Speckle.ConnectorRevitDUI3.Bindings;
+using Speckle.ConnectorRevitDUI3.Utils;
 
 namespace Speckle.ConnectorRevitDUI3;
 
 public class App : IExternalApplication
 {
   private static UIApplication AppInstance { get; set; }
-
-  private static UIControlledApplication UICtrlApp { get; set; }
-
+  private static UIControlledApplication UiCtrlApp { get; set; }
+  private static RevitDocumentStore RevitDocumentStore { get; set; }
+  
   public Result OnStartup(UIControlledApplication application)
   {
+    UiCtrlApp = application;
+    UiCtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplicationOnApplicationInitialized;
+    CreateTabAndRibbonPanel(application);
     
-    UICtrlApp = application;
-    UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplicationOnApplicationInitialized;
+    return Result.Succeeded;
+  }
 
+  private void ControlledApplicationOnApplicationInitialized(object sender, ApplicationInitializedEventArgs e)
+  {
+    AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+    AppInstance = new UIApplication(sender as Application);
+    RegisterPanelAndInitializePlugin(AppInstance);
+  }
+
+  private void CreateTabAndRibbonPanel(UIControlledApplication application)
+  {
     string tabName = "Speckle";
     try
     {
@@ -36,70 +50,39 @@ public class App : IExternalApplication
     }
 
     var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2 DUI3");
-    var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 DUI3", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitDUI3Command).FullName)) as PushButton;
-    return Result.Succeeded;
+    var _ = specklePanel.AddItem(new PushButtonData("Speckle 2 DUI3", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitDUI3Command).FullName)) as PushButton;
   }
-
-  private void ControlledApplicationOnApplicationInitialized(object sender, ApplicationInitializedEventArgs e)
-  {
-    AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-    AppInstance = new UIApplication(sender as Application);
-    
-    RegisterDockablePane(AppInstance);
-  }
-
-  internal static readonly DockablePaneId PanelId = new(new Guid("{85F73DA4-3EF4-4870-BDBC-FD2D238EED31}"));
   
+  internal static readonly DockablePaneId PanelId = new(new Guid("{85F73DA4-3EF4-4870-BDBC-FD2D238EED31}"));
   public static Panel Panel { get; private set; }
   
-  private void RegisterDockablePane(UIApplication application)
+  private void RegisterPanelAndInitializePlugin(UIApplication application)
   {
     CefSharpSettings.ConcurrentTaskExecution = true;
     
     Panel = new Panel();
-    UICtrlApp.RegisterDockablePane(PanelId, "Speckle DUI3", Panel);
+    UiCtrlApp.RegisterDockablePane(PanelId, "Speckle DUI3", Panel);
     
-    var browser = Panel.Browser; 
-    
+    RevitDocumentStore = new RevitDocumentStore(AppInstance);
+    var bridges = Factory.CreateBindings(AppInstance, RevitDocumentStore).Select(binding => 
+      new BrowserBridge(Panel.Browser, binding, Panel.ExecuteScriptAsync, Panel.ShowDevTools)
+    );
+
 #if REVIT2020
-      // browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
+      // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
       var bindingOptions = new BindingOptions() { CamelCaseJavascriptNames = false };
 #endif
 #if REVIT2023
-    browser.JavascriptObjectRepository.NameConverter = null;
-    BindingOptions bindingOptions = null;
+    Panel.Browser.JavascriptObjectRepository.NameConverter = null;
+    BindingOptions bindingOptions = BindingOptions.DefaultBinder;
 #endif
     
-    // TODO: these methods should probably be moved to browser specific helper projects
-    void ExecuteScriptAsyncMethod(string script)
+    Panel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      Debug.WriteLine(script);
-      if(browser.CanExecuteJavascriptInMainFrame) {
-        browser.EvaluateScriptAsync(script);
-      }
-      else
+      foreach (var bridge in bridges)
       {
-        // TODO: Log 
+        Panel.Browser.JavascriptObjectRepository.Register(bridge.FrontendBoundName, bridge, true, bindingOptions);
       }
-    }
-
-    void ShowDevToolsMethod() => browser.ShowDevTools();
-    
-    var testBinding = new TestBinding();
-    var testBindingBridge = new BrowserBridge(browser, testBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
-    
-    var baseBinding = new BasicConnectorBindingRevit(application);
-    var baseBindingBridge = new BrowserBridge(browser, baseBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
-
-    var configBinding = new ConfigBinding();
-    var configBindingBridge = new BrowserBridge(browser, configBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
-    
-    browser.IsBrowserInitializedChanged += (sender, e) =>
-    {
-      browser.JavascriptObjectRepository.Register(testBindingBridge.FrontendBoundName, testBindingBridge, true, bindingOptions);
-      browser.JavascriptObjectRepository.Register(baseBindingBridge.FrontendBoundName, baseBindingBridge, true, bindingOptions);
-      browser.JavascriptObjectRepository.Register(configBindingBridge.FrontendBoundName, configBindingBridge, true, bindingOptions);
-      
 #if  REVIT2020
       // NOTE: Cef65 does not work with DUI3 in yarn dev. To test things you need to do `yarn build` and serve the build
       // folder at port 3000 (or change it to something else if you want to).
@@ -108,10 +91,10 @@ public class App : IExternalApplication
       // - run `yarn build` in the DUI3 folder
       // - run ` PORT=3003  node .output/server/index.mjs` after the build
       browser.Load("http://localhost:3003");
-      ShowDevToolsMethod();
+      Panel.ShowDevTools();
 #endif
 #if REVIT2023
-      browser.Load("http://localhost:8082");
+      Panel.Browser.Load("http://localhost:8082");
 #endif
     };
 
@@ -122,6 +105,12 @@ public class App : IExternalApplication
     return Result.Succeeded;
   }
   
+  /// <summary>
+  /// Prevents some dll conflicts. 
+  /// </summary>
+  /// <param name="sender"></param>
+  /// <param name="args"></param>
+  /// <returns></returns>
   static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     Assembly assembly = null;
