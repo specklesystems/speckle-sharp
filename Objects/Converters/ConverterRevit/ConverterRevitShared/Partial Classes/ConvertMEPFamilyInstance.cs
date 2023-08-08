@@ -35,8 +35,33 @@ namespace Objects.Converter.Revit
         speckleFi.Connectors.Add(ConnectorToSpeckle(connector));
       }
 
+      using var coarseOptions = new Options() { DetailLevel = ViewDetailLevel.Coarse };
+      foreach (var curve in GetCurvesFromGeom(familyInstance.get_Geometry(coarseOptions)))
+      {
+        speckleFi.Curves.Add(CurveToSpeckle(curve, familyInstance.Document));
+      }
+
       _ = RevitInstanceToSpeckle(familyInstance, out _, null, existingInstance: speckleFi);
       return speckleFi;
+    }
+
+    private IEnumerable<DB.Curve> GetCurvesFromGeom(GeometryElement geometryElement)
+    {
+      foreach (var geomObj in geometryElement)
+      {
+        switch (geomObj) 
+        {
+          case DB.Curve curve:
+            yield return curve;
+            break;
+          case DB.GeometryInstance i:
+            foreach (var c in GetCurvesFromGeom(i.GetInstanceGeometry()))
+            {
+              yield return c;
+            }
+            break;
+        }
+      }
     }
 
     public DB.FamilyInstance MEPFamilyInstanceToNative(RevitMEPFamilyInstance speckleFi, ApplicationObject appObj)

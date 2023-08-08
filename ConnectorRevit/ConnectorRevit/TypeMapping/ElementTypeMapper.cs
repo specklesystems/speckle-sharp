@@ -114,7 +114,7 @@ namespace ConnectorRevit.TypeMapping
       {
         return true;
       }
-      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0) 
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0)
       {
         return true;
       }
@@ -130,12 +130,20 @@ namespace ConnectorRevit.TypeMapping
 
     private static async Task<bool> ShowMissingIncomingTypesDialog()
     {
-      return await Dispatcher.UIThread.InvokeAsync<bool>(() =>
+      var response = await Dispatcher.UIThread.InvokeAsync<bool>(() =>
       {
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
         var mappingView = new MissingIncomingTypesDialog();
-        return mappingView.ShowDialog<bool>();
+        return mappingView.ShowDialog<bool>(); ;
       }).ConfigureAwait(false);
+
+      if (response)
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Accept" } });
+      else
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Ignore" } });
+
+
+      return response;
     }
 
     private async Task ShowCustomMappingDialog(TypeMap? currentMapping, HostTypeContainer hostTypesContainer, int numNewTypes)
@@ -271,7 +279,7 @@ namespace ConnectorRevit.TypeMapping
       {
         var settings = new JsonSerializerSettings
         {
-          Converters = { 
+          Converters = {
             new AbstractConverter<RevitMappingValue, ISingleValueToMap>(),
             new AbstractConverter<RevitHostType, ISingleHostType>(),
           },
