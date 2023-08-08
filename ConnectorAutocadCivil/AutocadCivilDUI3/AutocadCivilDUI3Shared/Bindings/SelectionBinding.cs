@@ -32,7 +32,7 @@ namespace AutocadCivilDUI3Shared.Bindings
       {
         PromptSelectionResult selection = doc.Editor.SelectImplied();
         if (selection.Status == PromptStatus.OK)
-          objs = selection.Value.GetHandles();
+          objs = selection.Value.GetIds();
       }
       return new SelectionInfo
       {

@@ -12,6 +12,10 @@ namespace AutocadCivilDUI3Shared.Utils
 
     public AutocadDocumentModelStore()
     {
+      if (Doc != null)
+      {
+        IsDocumentInit = true;
+      }
       Application.DocumentManager.MdiActiveDocument.BeginDocumentClose += (_, _) => WriteToFile();
       Application.DocumentManager.MdiActiveDocument.Editor.Document.Database.BeginSave += (_, _) => WriteToFile();
       Application.DocumentWindowCollection.DocumentWindowActivated += (sender, e) => NotifyDocumentChangedIfNeeded(e.DocumentWindow.Document as Document);

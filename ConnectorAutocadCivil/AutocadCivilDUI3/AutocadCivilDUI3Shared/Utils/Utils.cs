@@ -59,6 +59,30 @@ namespace AutocadCivilDUI3Shared.Utils
       return handles;
     }
 
+    public static List<string> GetIds(this SelectionSet selection)
+    {
+      var ids = new List<string>();
+
+      if (selection == null)
+        return ids;
+
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
+      using (TransactionContext.StartTransaction(Doc))
+      {
+        Transaction tr = Doc.TransactionManager.TopTransaction;
+        foreach (SelectedObject selObj in selection)
+        {
+          DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
+          if (obj != null && obj.Visible())
+          {
+            ids.Add(obj.Id.ToString());
+          }
+        }
+      }
+
+      return ids;
+    }
+
     /// <summary>
     /// Adds an entity to the autocad database model space record
     /// </summary>
