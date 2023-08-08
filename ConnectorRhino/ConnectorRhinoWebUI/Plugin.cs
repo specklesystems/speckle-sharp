@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using DUI3;
-using JetBrains.Annotations;
+using ConnectorRhinoWebUI.Utils;
 using Rhino;
 using Rhino.PlugIns;
-using Rhino.UI;
 
 namespace ConnectorRhinoWebUI
 {
@@ -26,16 +22,7 @@ namespace ConnectorRhinoWebUI
     public ConnectorRhinoWebUiPlugin()
     {
       Instance = this;
-      RhinoApp.Idle += OnIdle;
-    }
-
-    private void OnIdle(object sender, EventArgs e)
-    {
-      // Run Speckle command whenever Rhino become idle.
-      RhinoApp.RunScript("SpeckleWebUIWebView2", false);
-      
-      // Unsubscribe from idle event after calling command, because we wont attempt to call command in same instance.
-      RhinoApp.Idle -= OnIdle;
+      RhinoIdleManager.SubscribeToIdle(() => RhinoApp.RunScript("SpeckleWebUIWebView2", false));
     }
   }
 }

@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using Rhino;
@@ -12,16 +12,11 @@ public class SelectionBinding : ISelectionBinding
   public string Name { get; set; } = "selectionBinding";
   public IBridge Parent { get; set; }
 
-  /// <summary>
-  /// Gets event handler of <see cref="OnIdle(object, EventArgs)"/>.
-  /// </summary>
-  private EventHandler? idle;
-
   public SelectionBinding()
   {
-    RhinoDoc.SelectObjects += (sender, args) => { this.EnableIdle(); };
-    RhinoDoc.DeselectObjects += (sender, args) => { this.EnableIdle(); };
-    RhinoDoc.DeselectAllObjects += (sender, args) => { this.EnableIdle(); };
+    RhinoDoc.SelectObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
+    RhinoDoc.DeselectObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
+    RhinoDoc.DeselectAllObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
 
     RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, args) =>
     {
@@ -30,35 +25,8 @@ public class SelectionBinding : ISelectionBinding
     };
   }
 
-  /// <summary>
-  /// Enables idle event.
-  /// </summary>
-  private void EnableIdle()
+  private void OnSelectionChanged()
   {
-    if (this.idle == null)
-    {
-      RhinoApp.Idle += this.idle = this.OnIdle;
-    }
-  }
-
-  /// <summary>
-  /// Disables idle event.
-  /// </summary>
-  private void DisableIdle()
-  {
-    if (this.idle != null)
-    {
-      RhinoApp.Idle -= this.idle;
-      this.idle = null;
-    }
-  }
-
-  /// <inheritdoc cref="RhinoApp.Idle"/>
-  private void OnIdle(object sender, EventArgs e)
-  {
-    // Disable idle event handler until enabled by others.
-    this.DisableIdle();
-
     var selInfo = GetSelection();
     Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
   }

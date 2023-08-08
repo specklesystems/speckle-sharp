@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -13,11 +14,6 @@ public class SendBinding : ISendBinding
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
   private DocumentModelStore _store;
-
-  /// <summary>
-  /// Gets event handler of <see cref="OnIdle(object, EventArgs)"/>.
-  /// </summary>
-  private EventHandler? idle;
 
   private HashSet<string> _changedObjectIds { get; set; } = new();
   
@@ -36,18 +32,18 @@ public class SendBinding : ISendBinding
       Parent?.SendToBrowser(SendBindingEvents.FiltersNeedRefresh);
     };
     
-    RhinoDoc.AddRhinoObject += (sender, e) =>
+    RhinoDoc.AddRhinoObject += (_, e) =>
     {
       if (!isDocInit) return;
       _changedObjectIds.Add(e.ObjectId.ToString());
-      this.EnableIdle();
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
     };
     
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
       if (!isDocInit) return;
       _changedObjectIds.Add(e.ObjectId.ToString());
-      this.EnableIdle();
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
     };
     
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
@@ -55,40 +51,8 @@ public class SendBinding : ISendBinding
       if (!isDocInit) return;
       _changedObjectIds.Add(e.NewRhinoObject.Id.ToString());
       _changedObjectIds.Add(e.OldRhinoObject.Id.ToString());
-      this.EnableIdle();
+      RhinoIdleManager.SubscribeToIdle(() => RunExpirationChecks());
     }; 
-  }
-
-  /// <summary>
-  /// Enables idle event.
-  /// </summary>
-  private void EnableIdle()
-  {
-    if (this.idle == null)
-    {
-      RhinoApp.Idle += this.idle = this.OnIdle;
-    }
-  }
-
-  /// <summary>
-  /// Disables idle event.
-  /// </summary>
-  private void DisableIdle()
-  {
-    if (this.idle != null)
-    {
-      RhinoApp.Idle -= this.idle;
-      this.idle = null;
-    }
-  }
-
-  /// <inheritdoc cref="RhinoApp.Idle"/>
-  private void OnIdle(object sender, EventArgs e)
-  {
-    // Disable idle event handler until enabled by others.
-    this.DisableIdle();
-
-    this.RunExpirationChecks();
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -119,7 +83,6 @@ public class SendBinding : ISendBinding
   
   private void RunExpirationChecks()
   {
-    RhinoApp.WriteLine("RunExpirationChecks");
     var senders = _store.GetSenders();
     var objectIdsList = _changedObjectIds.ToArray();
     var expiredSenderIds = new List<string>();
