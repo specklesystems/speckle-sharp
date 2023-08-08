@@ -1,0 +1,121 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DUI3 Base", "DUI3 Base", "{FA255724-6988-4429-A5A9-443F02164B16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DUI3", "DesktopUI3\DUI3\DUI3.csproj", "{DF36A611-95A5-458D-9383-05888E58229D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{DC3AF69E-BD90-4B52-9483-9892C55C9201}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhinoWebUI", "ConnectorRhino\ConnectorRhinoWebUI\ConnectorRhinoWebUI.csproj", "{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Autocad", "Autocad", "{84435AD0-2028-4A12-8411-CF26185CEBDB}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutocadCivilDUI3Shared", "ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.shproj", "{2BDE80E8-5F26-4E57-BBA6-109120F5D4EE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2023DUI3", "ConnectorAutocadCivil\AutocadCivilDUI3\Autocad2023\ConnectorAutocad2023DUI3.csproj", "{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2022DUI3", "ConnectorAutocadCivil\AutocadCivilDUI3\Autocad2022\ConnectorAutocad2022DUI3.csproj", "{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{574B03A6-8B43-467B-A9FD-82EA4D62D52D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RevitDUI3Shared", "ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.shproj", "{3D7F0278-6CF2-4588-A101-4027ABB8B87F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Revit2023DUI3", "ConnectorRevit\RevitDUI3\Revit2023DUI3\Revit2023DUI3.csproj", "{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Revit2020DUI3", "ConnectorRevit\RevitDUI3\Revit2020DUI3\Revit2020DUI3.csproj", "{18A89B49-E5A1-48DD-8DA3-13BE68399C76}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core\Core.csproj", "{BA4D2B73-3410-49CC-BF53-5DB22F40B659}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF36A611-95A5-458D-9383-05888E58229D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Debug|x64.Build.0 = Debug|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Release|x64.ActiveCfg = Release|Any CPU
+		{DF36A611-95A5-458D-9383-05888E58229D}.Release|x64.Build.0 = Release|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Debug|x64.Build.0 = Debug|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Release|x64.ActiveCfg = Release|Any CPU
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4}.Release|x64.Build.0 = Release|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Debug|x64.Build.0 = Debug|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Release|x64.ActiveCfg = Release|Any CPU
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}.Release|x64.Build.0 = Release|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Debug|x64.Build.0 = Debug|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Release|x64.ActiveCfg = Release|Any CPU
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}.Release|x64.Build.0 = Release|Any CPU
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Debug|x64.ActiveCfg = Debug|x64
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Debug|x64.Build.0 = Debug|x64
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Release|x64.ActiveCfg = Release|x64
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA}.Release|x64.Build.0 = Release|x64
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Debug|x64.ActiveCfg = Debug|x64
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Debug|x64.Build.0 = Debug|x64
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Release|x64.ActiveCfg = Release|x64
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76}.Release|x64.Build.0 = Release|x64
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Debug|x64.Build.0 = Debug|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|x64.ActiveCfg = Release|Any CPU
+		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF36A611-95A5-458D-9383-05888E58229D} = {FA255724-6988-4429-A5A9-443F02164B16}
+		{31B03753-E0CD-47DC-A8AF-0E7ADBEC3DF4} = {DC3AF69E-BD90-4B52-9483-9892C55C9201}
+		{2BDE80E8-5F26-4E57-BBA6-109120F5D4EE} = {84435AD0-2028-4A12-8411-CF26185CEBDB}
+		{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47} = {84435AD0-2028-4A12-8411-CF26185CEBDB}
+		{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5} = {84435AD0-2028-4A12-8411-CF26185CEBDB}
+		{3D7F0278-6CF2-4588-A101-4027ABB8B87F} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
+		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
+		{18A89B49-E5A1-48DD-8DA3-13BE68399C76} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D0F041EE-B7B0-4C74-A200-731E7C0FD422}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{0ccbb127-75c2-4ac7-a169-090f5adb1efa}*SharedItemsImports = 5
+		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{18a89b49-e5a1-48dd-8da3-13be68399c76}*SharedItemsImports = 5
+		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{1ebaa135-7d72-4ea9-bbb6-316646f3dba5}*SharedItemsImports = 5
+		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{2bde80e8-5f26-4e57-bba6-109120f5d4ee}*SharedItemsImports = 13
+		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{3d7f0278-6cf2-4588-a101-4027abb8b87f}*SharedItemsImports = 13
+		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{6cd69b4e-73d5-49fa-af3b-6fd81eba4a47}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal
