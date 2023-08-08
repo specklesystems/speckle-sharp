@@ -2,6 +2,7 @@
 using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
@@ -40,11 +41,6 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 #endif
   }
 
-  public Account[] GetAccounts()
-  {
-    return AccountManager.GetAccounts().ToArray();
-  }
-
   public DocumentInfo GetDocumentInfo()
   {
     if (CurrentDoc == null) return null;
@@ -55,5 +51,25 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
       Id = CurrentDoc.Document.GetHashCode().ToString(),
       Location = CurrentDoc.Document.PathName
     };
+  }
+
+  public DocumentModelStore GetDocumentState()
+  {
+    throw new System.NotImplementedException();
+  }
+
+  public void AddModel(ModelCard model)
+  {
+    throw new System.NotImplementedException();
+  }
+
+  public void UpdateModel(ModelCard model)
+  {
+    throw new System.NotImplementedException();
+  }
+
+  public void RemoveModel(ModelCard model)
+  {
+    throw new System.NotImplementedException();
   }
 }

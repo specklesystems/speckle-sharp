@@ -42,14 +42,16 @@ public class App : IExternalApplication
 
   private void ControlledApplicationOnApplicationInitialized(object sender, ApplicationInitializedEventArgs e)
   {
-    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+    AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
     AppInstance = new UIApplication(sender as Application);
     
     RegisterDockablePane(AppInstance);
   }
 
-  internal static readonly DockablePaneId PanelId = new DockablePaneId(new Guid("{85F73DA4-3EF4-4870-BDBC-FD2D238EED31}"));
+  internal static readonly DockablePaneId PanelId = new(new Guid("{85F73DA4-3EF4-4870-BDBC-FD2D238EED31}"));
+  
   public static Panel Panel { get; private set; }
+  
   private void RegisterDockablePane(UIApplication application)
   {
     CefSharpSettings.ConcurrentTaskExecution = true;
@@ -122,19 +124,19 @@ public class App : IExternalApplication
   
   static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
-    Assembly a = null;
+    Assembly assembly = null;
     var name = args.Name.Split(',')[0];
     string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
 
-    if (path != null)
+    if(path != null)
     {
       string assemblyFile = Path.Combine(path, name + ".dll");
 
       if (File.Exists(assemblyFile))
-        a = Assembly.LoadFrom(assemblyFile);
+        assembly = Assembly.LoadFrom(assemblyFile);
     }
 
-    return a;
+    return assembly;
   }
 
 }

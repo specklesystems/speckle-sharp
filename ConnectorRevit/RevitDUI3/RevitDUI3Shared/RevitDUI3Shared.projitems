@@ -10,11 +10,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Factory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Panel.xaml.cs">
       <DependentUpon>Panel.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleRevitDUI3Command.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Schemas.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitDocumentStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)SpeckleRevit2DUI3.addin" />

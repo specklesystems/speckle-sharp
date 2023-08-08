@@ -29,13 +29,11 @@ public class RhinoDocumentStore : DocumentModelStore
 
   public override void WriteToFile()
   {
-    if (RhinoDoc.ActiveDoc == null)
-    {
-      return; // Should throw
-    }
-    RhinoDoc.ActiveDoc?.Strings.Delete(SpeckleKey);
-    var serializedState = Serialize();
+    if (RhinoDoc.ActiveDoc == null) return; // Should throw
     
+    RhinoDoc.ActiveDoc?.Strings.Delete(SpeckleKey);
+    
+    var serializedState = Serialize();
     RhinoDoc.ActiveDoc?.Strings.SetString(SpeckleKey, SpeckleKey, serializedState);
   }
 
