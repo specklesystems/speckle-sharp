@@ -26,8 +26,6 @@ namespace AutocadCivilDUI3Shared.Bindings
 
     private void OnDocumentChanged(Document document)
     {
-      Debug.WriteLine(visitedDocuments.Count);
-      Debug.WriteLine(visitedDocuments.Contains(document));
       if (!visitedDocuments.Contains(document))
       {
         document.ImpliedSelectionChanged += (_, _) => { OnSelectionChanged(); };
