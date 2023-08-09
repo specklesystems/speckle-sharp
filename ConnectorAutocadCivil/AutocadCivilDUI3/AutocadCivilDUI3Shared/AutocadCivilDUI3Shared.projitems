@@ -10,10 +10,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingAutocad.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DUI3PanelWebView.xaml.cs">
       <DependentUpon>DUI3PanelWebView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentModelStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\TransactionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)DUI3PanelWebView.xaml" />

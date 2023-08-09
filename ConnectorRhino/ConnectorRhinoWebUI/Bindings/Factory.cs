@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
