@@ -17,14 +17,12 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
   private readonly RevitDocumentStore _store;
   
-  public BasicConnectorBindingRevit(UIApplication revitApp, RevitDocumentStore store)
+  public BasicConnectorBindingRevit(RevitDocumentStore store)
   {
-    RevitApp = revitApp;
+    RevitApp = RevitAppProvider.RevitApp;
     _store = store;
-    RevitApp.ViewActivated += (sender, e) =>
+    _store.DocumentChanged += (_,_) =>
     {
-      if (e.Document == null) return;
-      if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName) return;
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }

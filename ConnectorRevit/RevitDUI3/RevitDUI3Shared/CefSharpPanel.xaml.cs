@@ -5,9 +5,9 @@ using CefSharp;
 
 namespace Speckle.ConnectorRevitDUI3;
 
-public partial class Panel : Page, Autodesk.Revit.UI.IDockablePaneProvider
+public partial class CefSharpPanel : Page, Autodesk.Revit.UI.IDockablePaneProvider
 {
-  public Panel()
+  public CefSharpPanel()
   {
     InitializeComponent();
   }

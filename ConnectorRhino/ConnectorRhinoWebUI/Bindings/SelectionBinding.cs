@@ -14,25 +14,25 @@ public class SelectionBinding : ISelectionBinding
 
   public SelectionBinding()
   {
-    RhinoDoc.SelectObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
-    RhinoDoc.DeselectObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
-    RhinoDoc.DeselectAllObjects += (sender, args) => { RhinoIdleManager.SubscribeToIdle(() => OnSelectionChanged()); };
+    RhinoDoc.SelectObjects += (_,_) => { RhinoIdleManager.SubscribeToIdle(OnSelectionChanged); };
+    RhinoDoc.DeselectObjects += (_,_) => { RhinoIdleManager.SubscribeToIdle(OnSelectionChanged); };
+    RhinoDoc.DeselectAllObjects += (_,_) => { RhinoIdleManager.SubscribeToIdle(OnSelectionChanged); };
 
-    RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, args) =>
+    RhinoDoc.EndOpenDocumentInitialViewUpdate += (_,_) =>
     {
       // Resets selection doc change
-      Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, new SelectionInfo());
+      Parent?.SendToBrowser(SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
   }
 
   private void OnSelectionChanged()
   {
     var selInfo = GetSelection();
-    Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
+    Parent?.SendToBrowser(SelectionBindingEvents.SetSelection, selInfo);
   }
 
   public SelectionInfo GetSelection()
-    {
+  {
     var objects = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
     var objectIds = objects.Select(o => o.Id.ToString()).ToList();
     var layerCount = objects.Select(o => o.Attributes.LayerIndex).Distinct().Count();

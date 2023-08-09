@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
 using DUI3.Models;
+using Revit.Async;
 
 namespace Speckle.ConnectorRevitDUI3.Utils;
 
@@ -14,34 +16,48 @@ public class RevitDocumentStore : DocumentModelStore
   
   private static readonly Guid Guid = new Guid("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
   
-  public RevitDocumentStore(UIApplication revitApp)
+  public RevitDocumentStore()
   {
-    RevitApp = revitApp;
-   
+    RevitApp = RevitAppProvider.RevitApp;
+    
+    RevitApp.ApplicationClosing += (_,_) => WriteToFile();
+    RevitApp.Application.DocumentSaving += (_,_) => WriteToFile();
+    RevitApp.Application.DocumentSynchronizingWithCentral += (_,_) => WriteToFile();
+    
     RevitApp.ViewActivated += (_, e) =>
     {
       if (e.Document == null) return;
       if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName) return;
+      
+      IsDocumentInit = true;
+      ReadFromFile();
       OnDocumentChanged();
     };
-
+    
     RevitApp.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
-    RevitApp.Application.DocumentOpened += (_, _) => IsDocumentInit = true;
+    RevitApp.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
   }
   
   public override void WriteToFile()
   {
-    using var ds = GetSettingsDataStorage(CurrentDoc.Document) ?? DataStorage.Create(CurrentDoc.Document);
+    if (CurrentDoc == null) return;
+    RevitTask.RunAsync(() =>
+    {
+        using var t = new Transaction(CurrentDoc.Document, "Speckle Write State");
+        t.Start();
+        using var ds = GetSettingsDataStorage(CurrentDoc.Document) ?? DataStorage.Create(CurrentDoc.Document);
     
-    using var stateEntity = new Entity(DocumentModelStoreSchema.GetSchema());
-    var serializedModels = Serialize();
-    stateEntity.Set("contents", serializedModels);
+        using var stateEntity = new Entity(DocumentModelStoreSchema.GetSchema());
+        var serializedModels = Serialize();
+        stateEntity.Set("contents", serializedModels);
 
-    using var idEntity = new Entity(IdStorageSchema.GetSchema());
-    idEntity.Set("Id", Guid);
+        using var idEntity = new Entity(IdStorageSchema.GetSchema());
+        idEntity.Set("Id", Guid);
     
-    ds.SetEntity(idEntity);
-    ds.SetEntity(stateEntity);
+        ds.SetEntity(idEntity);
+        ds.SetEntity(stateEntity);
+        t.Commit();
+      });
   }
 
   public override void ReadFromFile()
