@@ -169,12 +169,11 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
   {
     return element switch
     {
-      CableTray o => o.MEPSystem?.Name,
-      Conduit c => c.MEPSystem?.Name,
-      Duct d => d.MEPSystem?.Name,
-      Pipe p => p.MEPSystem?.Name,
-      Wire w => w.MEPSystem?.Name,
-      _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
+      MEPCurve o => o.MEPSystem?.Name,
+      FamilyInstance o => o.MEPModel?.ConnectorManager?.Connectors?.Size > 0 ?
+        ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM) :
+        null,
+      _ => null
     };
   }
 
