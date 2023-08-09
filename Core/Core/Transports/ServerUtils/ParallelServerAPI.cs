@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +13,7 @@ namespace Speckle.Core.Transports.ServerUtils;
 
 internal enum ServerApiOperation
 {
-  _NoOp = default,
+  NoOp = default,
   DownloadSingleObject,
   DownloadObjects,
   HasObjects,
@@ -23,13 +25,13 @@ internal enum ServerApiOperation
 
 internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>, IServerApi
 {
-  private string AuthToken;
+  private readonly string _authToken;
 
-  private string BaseUri;
+  private readonly string _baseUri;
 
-  private object CallbackLock = new();
+  private readonly object _callbackLock = new();
 
-  private int TimeoutSeconds;
+  private readonly int _timeoutSeconds;
 
   public ParallelServerApi(
     string baseUri,
@@ -40,11 +42,10 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     int numBufferedOperations = 8
   )
   {
-    BaseUri = baseUri;
-    AuthToken = authorizationToken;
-    TimeoutSeconds = timeoutSeconds;
+    _baseUri = baseUri;
+    _authToken = authorizationToken;
+    _timeoutSeconds = timeoutSeconds;
     NumThreads = numThreads;
-    CancellationToken = CancellationToken.None;
 
     BlobStorageFolder = blobStorageFolder;
 
@@ -60,13 +61,13 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
 
   #region Operations
 
-  public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(string streamId, IReadOnlyList<string> objectIds)
   {
     EnsureStarted();
     List<Task<object?>> tasks = new();
-    List<List<string>> splitObjectsIds;
+    IReadOnlyList<IReadOnlyList<string>> splitObjectsIds;
     if (objectIds.Count <= 50)
-      splitObjectsIds = new List<List<string>> { objectIds };
+      splitObjectsIds = new List<IReadOnlyList<string>> { objectIds };
     else
       splitObjectsIds = SplitList(objectIds, NumThreads);
 
@@ -96,11 +97,15 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     return (string)result!;
   }
 
-  public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+  public async Task DownloadObjects(
+    string streamId,
+    IReadOnlyList<string> objectIds,
+    CbObjectDownloaded onObjectCallback
+  )
   {
     EnsureStarted();
     List<Task<object?>> tasks = new();
-    List<List<string>> splitObjectsIds = SplitList(objectIds, NumThreads);
+    IReadOnlyList<IReadOnlyList<string>> splitObjectsIds = SplitList(objectIds, NumThreads);
     object callbackLock = new();
 
     CbObjectDownloaded callbackWrapper = (id, json) =>
@@ -122,11 +127,11 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
   }
 
-  public async Task UploadObjects(string streamId, List<(string, string)> objects)
+  public async Task UploadObjects(string streamId, IReadOnlyList<(string, string)> objects)
   {
     EnsureStarted();
     List<Task<object?>> tasks = new();
-    List<List<(string, string)>> splitObjects;
+    IReadOnlyList<IReadOnlyList<(string, string)>> splitObjects;
 
     // request count optimization: if objects are < 500k, send in 1 request
     int totalSize = 0;
@@ -136,7 +141,8 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
       if (totalSize >= 500_000)
         break;
     }
-    splitObjects = totalSize >= 500_000 ? SplitList(objects, NumThreads) : new() { objects };
+    splitObjects =
+      totalSize >= 500_000 ? SplitList(objects, NumThreads) : new List<IReadOnlyList<(string, string)>> { objects };
 
     for (int i = 0; i < NumThreads; i++)
     {
@@ -148,26 +154,27 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
   }
 
-  public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
+  public async Task UploadBlobs(string streamId, IReadOnlyList<(string, string)> blobs)
   {
     EnsureStarted();
     var op = QueueOperation(ServerApiOperation.UploadBlobs, (streamId, blobs));
     await op.ConfigureAwait(false);
   }
 
-  public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+  public async Task DownloadBlobs(string streamId, IReadOnlyList<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
   {
     EnsureStarted();
     var op = QueueOperation(ServerApiOperation.DownloadBlobs, (streamId, blobIds, onBlobDownloaded));
     await op.ConfigureAwait(false);
   }
 
-  public async Task<List<string>?> HasBlobs(string streamId, List<(string, string)> blobs)
+  public async Task<List<string>> HasBlobs(string streamId, IReadOnlyList<(string, string)> blobs)
   {
     EnsureStarted();
     Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
-    var res = await op.ConfigureAwait(false);
-    return (List<string>?)res;
+    var res = (List<string>)await op.ConfigureAwait(false);
+    Debug.Assert(res is not null);
+    return res!;
   }
 
   #endregion
@@ -178,13 +185,14 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
       Start();
   }
 
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
-    using ServerApi serialApi = new(BaseUri, AuthToken, BlobStorageFolder, TimeoutSeconds);
+    using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds);
 
     serialApi.OnBatchSent = (num, size) =>
     {
-      lock (CallbackLock)
+      lock (_callbackLock)
         OnBatchSent(num, size);
     };
     serialApi.CancellationToken = CancellationToken;
@@ -193,7 +201,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     while (true)
     {
       var (operation, inputValue, tcs) = Tasks.Take();
-      if (operation == ServerApiOperation._NoOp || tcs == null)
+      if (operation == ServerApiOperation.NoOp || tcs == null)
         return;
 
       try
@@ -216,27 +224,27 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
         var (dsoStreamId, dsoObjectId) = ((string, string))inputValue;
         return await serialApi.DownloadSingleObject(dsoStreamId, dsoObjectId).ConfigureAwait(false);
       case ServerApiOperation.DownloadObjects:
-        var (doStreamId, doObjectIds, doCallback) = ((string, List<string>, CbObjectDownloaded))inputValue;
+        var (doStreamId, doObjectIds, doCallback) = ((string, IReadOnlyList<string>, CbObjectDownloaded))inputValue;
         await serialApi.DownloadObjects(doStreamId, doObjectIds, doCallback).ConfigureAwait(false);
         return null;
       case ServerApiOperation.HasObjects:
-        var (hoStreamId, hoObjectIds) = ((string, List<string>))inputValue;
+        var (hoStreamId, hoObjectIds) = ((string, IReadOnlyList<string>))inputValue;
         return await serialApi.HasObjects(hoStreamId, hoObjectIds).ConfigureAwait(false);
       case ServerApiOperation.UploadObjects:
-        var (uoStreamId, uoObjects) = ((string, List<(string, string)>))inputValue;
+        var (uoStreamId, uoObjects) = ((string, IReadOnlyList<(string, string)>))inputValue;
         await serialApi.UploadObjects(uoStreamId, uoObjects).ConfigureAwait(false);
         return null;
       case ServerApiOperation.UploadBlobs:
-        var (ubStreamId, ubBlobs) = ((string, List<(string, string)>))inputValue;
+        var (ubStreamId, ubBlobs) = ((string, IReadOnlyList<(string, string)>))inputValue;
         await serialApi.UploadBlobs(ubStreamId, ubBlobs).ConfigureAwait(false);
         return null;
       case ServerApiOperation.HasBlobs:
-        var (hbStreamId, hBlobs) = ((string, List<(string, string)>))inputValue;
+        var (hbStreamId, hBlobs) = ((string, IReadOnlyList<(string, string)>))inputValue;
         return await serialApi
           .HasBlobs(hbStreamId, hBlobs.Select(b => b.Item1.Split(':')[1]).ToList())
           .ConfigureAwait(false);
       case ServerApiOperation.DownloadBlobs:
-        var (dbStreamId, blobIds, cb) = ((string, List<string>, CbBlobdDownloaded))inputValue;
+        var (dbStreamId, blobIds, cb) = ((string, IReadOnlyList<string>, CbBlobdDownloaded))inputValue;
         await serialApi.DownloadBlobs(dbStreamId, blobIds, cb).ConfigureAwait(false);
         return null;
       default:
@@ -251,7 +259,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     return tcs.Task;
   }
 
-  private static List<List<T>> SplitList<T>(List<T> list, int parts)
+  private static List<List<T>> SplitList<T>(IReadOnlyList<T> list, int parts)
   {
     List<List<T>> ret = new(parts);
     for (int i = 0; i < parts; i++)

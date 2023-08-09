@@ -15,18 +15,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Tekla.Structures" Version="2022.0.10715" />
-    <PackageReference Include="Tekla.Structures.Catalogs" Version="2022.0.10715" />
-    <PackageReference Include="Tekla.Structures.Datatype" Version="2022.0.10715" />
-    <PackageReference Include="Tekla.Structures.Model" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures" Version="2022.0.10715"/>
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2022.0.10715"/>
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2022.0.10715"/>
+    <PackageReference Include="Tekla.Structures.Model" Version="2022.0.10715"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj"/>
   </ItemGroup>
 
-  <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
+  <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems"
+    Label="Shared"/>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent"
+    Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">
+    <Exec
+      Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)\Objects.dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;"/>
+  </Target>
 
 </Project>

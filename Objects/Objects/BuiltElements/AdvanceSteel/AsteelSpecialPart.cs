@@ -6,10 +6,16 @@ namespace Objects.BuiltElements.AdvanceSteel;
 
 public class AsteelSpecialPart : Base, IAsteelObject
 {
-  //[SchemaInfo("AsteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
-
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }
 
   public Base userAttributes { get; set; }
+
+  public Base asteelProperties { get; set; }
+
+  //[SchemaInfo("AsteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
+  public AsteelSpecialPart()
+  {
+
+  }
 }

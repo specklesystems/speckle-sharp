@@ -9,6 +9,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -18,10 +19,9 @@ namespace Speckle.Core.Serialisation;
 
 public class BaseObjectSerializerV2
 {
-  private Stopwatch _stopwatch = new();
-  private bool Busy;
-
-  private Regex ChunkPropertyNameRegex = new(@"^@\((\d*)\)");
+  private readonly Stopwatch _stopwatch = new();
+  private bool _busy;
+  
   private List<Dictionary<string, int>> ParentClosures = new();
 
   private HashSet<object> ParentObjects = new();
@@ -49,14 +49,14 @@ public class BaseObjectSerializerV2
 
   public string Serialize(Base baseObj)
   {
-    if (Busy)
+    if (_busy)
       throw new Exception(
         "A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances"
       );
     try
     {
       _stopwatch.Start();
-      Busy = true;
+      _busy = true;
       Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
       string serialized = Dict2Json(converted);
       StoreObject(converted["id"] as string, serialized);
@@ -66,7 +66,7 @@ public class BaseObjectSerializerV2
     {
       ParentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
       ParentObjects = new HashSet<object>();
-      Busy = false;
+      _busy = false;
       _stopwatch.Stop();
     }
   }
@@ -199,9 +199,9 @@ public class BaseObjectSerializerV2
       bool isChunkable = false;
       int chunkSize = 1000;
 
-      if (ChunkPropertyNameRegex.IsMatch(propName))
+      if (Constants.ChunkPropertyNameRegex.IsMatch(propName))
       {
-        var match = ChunkPropertyNameRegex.Match(propName);
+        var match = Constants.ChunkPropertyNameRegex.Match(propName);
         isChunkable = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
       }
       allProperties[propName] = (baseValue, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, null));
@@ -301,7 +301,7 @@ public class BaseObjectSerializerV2
   private static string ComputeId(Dictionary<string, object> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
-    string hash = Utilities.hashString(serialized);
+    string hash = Utilities.HashString(serialized);
     return hash;
   }
 

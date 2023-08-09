@@ -101,18 +101,15 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         if (!IsReceiver)
         {
           if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-            return
-              $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
         }
         //receiver
         else
         {
           if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
-            return
-              $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}@{SelectedCommit.id}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}@{SelectedCommit.id}";
           if (SelectedBranch != null)
-            return
-              $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
         }
 
         return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}";
@@ -122,8 +119,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (!IsReceiver)
       {
         if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-          return
-            $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
       }
       //receiver
       else
@@ -131,8 +127,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
           return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
         if (SelectedBranch != null)
-          return
-            $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
       }
 
       return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
@@ -182,11 +177,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       var menu = new MenuItemViewModel
       {
-        Header = new MaterialIcon
-        {
-          Kind = MaterialIconKind.EllipsisVertical,
-          Foreground = Brushes.White
-        }
+        Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Brushes.White }
       };
       menu.Items = new List<MenuItemViewModel>
       {
@@ -378,13 +369,12 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (StreamEditView.Instance != null)
       {
         await Task.Delay(250).ConfigureAwait(true);
-        Dispatcher.UIThread.Post(
-          () =>
-          {
-            var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
-            if (scroller != null)
-              scroller.ScrollToEnd();
-          });
+        Dispatcher.UIThread.Post(() =>
+        {
+          var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
+          if (scroller != null)
+            scroller.ScrollToEnd();
+        });
       }
     }
     catch (Exception ex)
@@ -435,7 +425,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       else
         SelectedBranch = BranchesViewModel[0];
     }
-
     catch (Exception ex)
     {
       SpeckleLog.Logger.Error(ex, "Failed updating stream state {exceptionMessage}", ex.Message);
@@ -483,7 +472,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       using var httpClient = new HttpClient();
-      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
+      Http.AddAuthHeader(httpClient, Client.ApiToken);
+
       var result = await httpClient.GetAsync(url).ConfigureAwait(true);
 
       byte[] bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
@@ -512,7 +502,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       using var httpClient = new HttpClient();
-      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
+      Http.AddAuthHeader(httpClient, Client.ApiToken);
+
       var result = await httpClient.GetAsync(url).ConfigureAwait(true);
 
       byte[] bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
@@ -746,7 +737,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         _branchesViewModel.Remove(_branchesViewModel.Last());
 
       if (!IsReceiver)
-        _branchesViewModel.Add(new BranchViewModel(new Branch {name = "Add New Branch"}, "Plus"));
+        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
 
       return _branchesViewModel;
     }
@@ -765,8 +756,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       {
         if (_selectedCommit.id == ConnectorHelpers.LatestCommitString)
           PreviewImageUrl =
-            Client.Account.serverInfo.url +
-            $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+            Client.Account.serverInfo.url
+            + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         else
           PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         PreviewImageUrl360 = $"{PreviewImageUrl}/all";
@@ -859,7 +850,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       else if (!SearchQuery.Replace(" ", "").Any())
         ClearSearchCommand();
       else
-        _searchQueryItems = _searchQuery.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList();
+        _searchQueryItems = _searchQuery.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
       this.RaisePropertyChanged(nameof(FilteredReport));
     }
   }
@@ -1052,34 +1043,29 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (svm != null && svm.Stream.id == Stream.id)
         openStream = false;
 
-      Dispatcher.UIThread.Post(
-        () =>
-        {
-          MainUserControl.NotificationManager.Show(
-            new PopUpNotificationViewModel
+      Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(
+          new PopUpNotificationViewModel
+          {
+            Title = $"🆕 New comment by {authorName}:",
+            Message = e.rawText,
+            OnClick = () =>
             {
-              Title = $"🆕 New comment by {authorName}:",
-              Message = e.rawText,
-              OnClick = () =>
-              {
-                if (openStream)
-                  MainViewModel.RouterInstance.Navigate.Execute(this);
+              if (openStream)
+                MainViewModel.RouterInstance.Navigate.Execute(this);
 
-                SelectedTab = 3;
-              },
-              Type = NotificationType.Success,
-              Expiration = TimeSpan.FromSeconds(15)
-            }
-          );
-        });
+              SelectedTab = 3;
+            },
+            Type = NotificationType.Success,
+            Expiration = TimeSpan.FromSeconds(15)
+          }
+        );
+      });
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Error(
-        ex,
-        "Failed to notify of Comment Activity {message}",
-        ex.Message
-      );
+      SpeckleLog.Logger.Error(ex, "Failed to notify of Comment Activity {message}", ex.Message);
     }
   }
 
@@ -1119,28 +1105,27 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (svm != null && svm.Stream.id == Stream.id)
         openOnline = true;
 
-      Dispatcher.UIThread.Post(
-        () =>
-        {
-          MainUserControl.NotificationManager.Show(
-            new PopUpNotificationViewModel
+      Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(
+          new PopUpNotificationViewModel
+          {
+            Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
+            Message = openOnline ? "Click to view it online" : "Click open the stream",
+            OnClick = () =>
             {
-              Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
-              Message = openOnline ? "Click to view it online" : "Click open the stream",
-              OnClick = () =>
-              {
-                //if in stream edit open online
-                if (openOnline)
-                  ViewOnlineSavedStreamCommand();
-                //if on home, open stream
-                else
-                  MainViewModel.RouterInstance.Navigate.Execute(this);
-              },
-              Type = NotificationType.Success,
-              Expiration = TimeSpan.FromSeconds(10)
-            }
-          );
-        });
+              //if in stream edit open online
+              if (openOnline)
+                ViewOnlineSavedStreamCommand();
+              //if on home, open stream
+              else
+                MainViewModel.RouterInstance.Navigate.Execute(this);
+            },
+            Type = NotificationType.Success,
+            Expiration = TimeSpan.FromSeconds(10)
+          }
+        );
+      });
 
       ScrollToBottom();
 
@@ -1201,7 +1186,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
         Analytics.TrackEvent(
           Analytics.Events.DUIAction,
-          new Dictionary<string, object> {{"name", "Branch Create"}}
+          new Dictionary<string, object> { { "name", "Branch Create" } }
         );
       }
       catch (Exception ex)
@@ -1224,7 +1209,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     var summary = string.Join("\n", reportObjectSummaries);
 
     await Application.Current.Clipboard.SetTextAsync(summary).ConfigureAwait(true);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Copy Report"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Copy Report" } });
   }
 
   public void ClearSearchCommand()
@@ -1236,13 +1221,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
 
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Share Open"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Share Open" } });
   }
 
   public void EditSavedStreamCommand()
   {
     MainViewModel.RouterInstance.Navigate.Execute(this);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream Edit"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Edit" } });
   }
 
   public async void ViewOnlineSavedStreamCommand()
@@ -1251,13 +1236,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     await Task.Delay(100).ConfigureAwait(true);
 
     OpenUrl(Url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream View"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream View" } });
   }
 
   private void OpenUrl(string url)
   {
     //to open urls in .net core must set UseShellExecute = true
-    Process.Start(new ProcessStartInfo(url) {UseShellExecute = true});
+    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
   }
 
   public async void CopyStreamURLCommand()
@@ -1265,7 +1250,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     //ensure click transition has finished
     await Task.Delay(100).ConfigureAwait(true);
     Application.Current.Clipboard.SetTextAsync(Url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream Copy Link"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Copy Link" } });
   }
 
   public async void SendCommand()
@@ -1302,13 +1287,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         Analytics.Events.Send,
         new Dictionary<string, object>
         {
-          {"filter", StreamState.Filter.Name},
-          {"view", view},
-          {"collaborators", Stream.collaborators.Count},
-          {"isMain", SelectedBranch.Branch.name == "main" ? true : false},
-          {"branches", Stream.branches?.totalCount},
-          {"commits", Stream.commits?.totalCount},
-          {"savedStreams", HomeViewModel.Instance.SavedStreams?.Count}
+          { "filter", StreamState.Filter.Name },
+          { "view", view },
+          { "collaborators", Stream.collaborators.Count },
+          { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+          { "branches", Stream.branches?.totalCount },
+          { "commits", Stream.commits?.totalCount },
+          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
         }
       );
 
@@ -1346,6 +1331,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1367,7 +1354,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       string previewName = IsReceiver ? "Preview Receive" : "Preview Send";
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", previewName}});
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", previewName } });
 
       if (IsReceiver)
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
@@ -1388,6 +1375,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsPreviewProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1426,17 +1415,17 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         Analytics.Events.Receive,
         new Dictionary<string, object>
         {
-          {"mode", StreamState.ReceiveMode},
-          {"auto", StreamState.AutoReceive},
-          {"sourceHostApp", HostApplications.GetHostAppFromString(state.LastCommit?.sourceApplication).Slug},
-          {"sourceHostAppVersion", state.LastCommit?.sourceApplication},
-          {"view", view},
-          {"collaborators", Stream.collaborators.Count},
-          {"isMain", SelectedBranch.Branch.name == "main" ? true : false},
-          {"branches", Stream.branches?.totalCount},
-          {"commits", Stream.commits?.totalCount},
-          {"savedStreams", HomeViewModel.Instance.SavedStreams?.Count},
-          {"isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false}
+          { "mode", StreamState.ReceiveMode },
+          { "auto", StreamState.AutoReceive },
+          { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastCommit?.sourceApplication).Slug },
+          { "sourceHostAppVersion", state.LastCommit?.sourceApplication },
+          { "view", view },
+          { "collaborators", Stream.collaborators.Count },
+          { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+          { "branches", Stream.branches?.totalCount },
+          { "commits", Stream.commits?.totalCount },
+          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+          { "isMultiplayer", state.LastCommit != null ? state.LastCommit.authorId != state.UserId : false }
         }
       );
 
@@ -1476,10 +1465,21 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
   private void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
+  {
+    HandleCommandException(ex, Progress.CancellationToken.IsCancellationRequested, commandName);
+  }
+
+  public static void HandleCommandException(
+    Exception ex,
+    bool isUserCancel,
+    [CallerMemberName] string commandName = "UnknownCommand"
+  )
   {
     string commandPrettyName = commandName.EndsWith("Command")
       ? commandName.Substring(0, commandName.Length - "Command".Length)
@@ -1489,11 +1489,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     INotification notificationViewModel;
     switch (ex)
     {
-      case OperationCanceledException _:
+      case OperationCanceledException:
         // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
         // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
         // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
-        bool isUserCancel = Progress.CancellationToken.IsCancellationRequested;
 
         logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
@@ -1503,18 +1502,17 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = isUserCancel ? NotificationType.Success : NotificationType.Error
         };
         break;
-      case InvalidOperationException _:
+      case InvalidOperationException:
         // NOTE: Hopefully, this means that the Receive/Send/Preview/etc. command could not START because of invalid state
         logLevel = LogEventLevel.Warning;
         notificationViewModel = new PopUpNotificationViewModel
         {
-          Title =
-            $"❌ {commandPrettyName} cancelled!", // InvalidOperation implies we didn't even try to complete the command, therefore "cancelled" rather than "failed"
+          Title = $"❌ {commandPrettyName} cancelled!", // InvalidOperation implies we didn't even try to complete the command, therefore "cancelled" rather than "failed"
           Message = ex.Message,
           Type = NotificationType.Warning
         };
         break;
-      case SpeckleGraphQLException<StreamData> _:
+      case SpeckleGraphQLException<StreamData>:
         // NOTE: GraphQL requests for StreamData are expected to fail for a variety of reasons
         logLevel = LogEventLevel.Warning;
         notificationViewModel = new PopUpNotificationViewModel
@@ -1524,7 +1522,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = NotificationType.Error
         };
         break;
-      case SpeckleException _:
+      case SpeckleNonUserFacingException:
+        logLevel = LogEventLevel.Error;
+        notificationViewModel = new PopUpNotificationViewModel
+        {
+          Title = $"😖 {commandPrettyName} Failed!",
+          Message = "Click to open the log file for a detailed list of error messages",
+          OnClick = SpeckleLog.OpenCurrentLogFolder,
+          Type = NotificationType.Error,
+          Expiration = TimeSpan.FromSeconds(10)
+        };
+        break;
+      case SpeckleException:
         logLevel = LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
         {
@@ -1568,7 +1577,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     Progress.CancellationTokenSource.Cancel();
 
     string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", cancelledEvent}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", cancelledEvent } });
 
     //NOTE: We don't want to show a notification yet! Just because cancellation is requested, doesn't mean the receive operation has been cancelled yet.
   }
@@ -1577,7 +1586,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     Progress.CancellationTokenSource.Cancel();
     string cancelledEvent = IsReceiver ? "Cancel Preview Receive" : "Cancel Preview Send";
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", cancelledEvent}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", cancelledEvent } });
     Progress.IsPreviewProgressing = false;
     PreviewOn = false;
   }
@@ -1594,13 +1603,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         Analytics.TrackEvent(
           Client.Account,
           Analytics.Events.DUIAction,
-          new Dictionary<string, object> {{"name", "Stream Receiver Add"}}
+          new Dictionary<string, object> { { "name", "Stream Receiver Add" } }
         );
       else
         Analytics.TrackEvent(
           Client.Account,
           Analytics.Events.DUIAction,
-          new Dictionary<string, object> {{"name", "Stream Sender Add"}}
+          new Dictionary<string, object> { { "name", "Stream Sender Add" } }
         );
 
       MainUserControl.NotificationManager.Show(
@@ -1636,7 +1645,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Analytics.TrackEvent(
         StreamState.Client.Account,
         Analytics.Events.DUIAction,
-        new Dictionary<string, object> {{"name", "Settings Open"}}
+        new Dictionary<string, object> { { "name", "Settings Open" } }
       );
     }
     catch (Exception ex)

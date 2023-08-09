@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,34 +18,42 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var beams = new List<Objects.BuiltElements.Archicad.ArchicadBeam>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadBeam archiBeam:
-            beams.Add(archiBeam);
-            break;
-          case Objects.BuiltElements.Beam beam:
+          token.ThrowIfCancellationRequested();
 
-            // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
-            {
-              var baseLine = (Line)beam.baseLine;
-              Objects.BuiltElements.Archicad.ArchicadBeam newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadBeam archiBeam:
+              beams.Add(archiBeam);
+              break;
+            case Objects.BuiltElements.Beam beam:
+
+              // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
               {
-                id = beam.id,
-                applicationId = beam.applicationId,
-                begC = Utils.ScaleToNative(baseLine.start),
-                endC = Utils.ScaleToNative(baseLine.end)
-              };
+                var baseLine = (Line)beam.baseLine;
+                var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam
+                {
+                  id = beam.id,
+                  applicationId = beam.applicationId,
+                  begC = Utils.ScaleToNative(baseLine.start),
+                  endC = Utils.ScaleToNative(baseLine.end)
+                };
 
-              beams.Add(newBeam);
-            }
-                      
-            break;
+                beams.Add(newBeam);
+              }
+
+              break;
+          }
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateBeam(beams), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateBeam(beams), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
@@ -63,7 +71,7 @@ namespace Archicad.Converters
         return new List<Base>();
       }
 
-      List<Base> beams = new List<Base>();
+      var beams = new List<Base>();
       foreach (Objects.BuiltElements.Archicad.ArchicadBeam beam in data)
       {
         // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam

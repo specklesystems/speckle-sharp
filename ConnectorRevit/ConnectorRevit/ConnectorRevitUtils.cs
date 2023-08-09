@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -29,34 +31,6 @@ namespace Speckle.ConnectorRevit
     private static List<string> _cachedScheduleViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
-    private static Dictionary<string, Category> _categories { get; set; }
-
-    public static Dictionary<string, Category> GetCategories(Document doc)
-    {
-      if (_categories != null)
-        return _categories;
-
-      _categories = new Dictionary<string, Category>();
-      foreach (var bic in SupportedBuiltInCategories)
-      {
-        var category = Category.GetCategory(doc, bic);
-        if (category == null)
-          continue;
-        //some categories, in other languages (eg DEU) have duplicated names #542
-        if (_categories.ContainsKey(category.Name))
-        {
-          var spec = category.Id.ToString();
-          if (category.Parent != null)
-            spec = category.Parent.Name;
-          _categories.Add($"{category.Name} ({spec})", category);
-        }
-        else
-          _categories.Add(category.Name, category);
-      }
-
-      return _categories;
-    }
-
     public static List<ParameterFilterElement> GetFilters(Autodesk.Revit.DB.Document doc)
     {
       return new FilteredElementCollector(doc)
@@ -65,7 +39,7 @@ namespace Speckle.ConnectorRevit
         .OrderBy(x => x.Name)
         .ToList();
     }
-    
+
     /// <summary>
     /// We want to display a user-friendly category names when grouping objects
     /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
@@ -89,14 +63,19 @@ namespace Speckle.ConnectorRevit
 
     #region extension methods
 
-    public static List<Element> SupportedElements(this Document doc)
+    public static List<Element> GetSupportedElements(this Document doc, IRevitDocumentAggregateCache cache)
     {
-      //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(
-        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
-      );
+      //get elements of supported categories
+      var categoryIds = cache
+        .GetOrInitializeWithDefaultFactory<Category>()
+        .GetAllObjects()
+        .Select(category => category.Id)
+        .ToList();
 
-      List<Element> elements = new FilteredElementCollector(doc)
+      using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
+      using var collector = new FilteredElementCollector(doc);
+
+      var elements = collector
         .WhereElementIsNotElementType()
         .WhereElementIsViewIndependent()
         .WherePasses(categoryFilter)
@@ -105,14 +84,19 @@ namespace Speckle.ConnectorRevit
       return elements;
     }
 
-    public static List<Element> SupportedTypes(this Document doc)
+    public static List<Element> GetSupportedTypes(this Document doc, IRevitDocumentAggregateCache cache)
     {
       //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(
-        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
-      );
+      var categoryIds = cache
+        .GetOrInitializeWithDefaultFactory<Category>()
+        .GetAllObjects()
+        .Select(category => category.Id)
+        .ToList();
 
-      List<Element> elements = new FilteredElementCollector(doc)
+      using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
+      using var collector = new FilteredElementCollector(doc);
+
+      var elements = collector
         .WhereElementIsElementType()
         .WherePasses(categoryFilter)
         .ToList();
@@ -162,11 +146,6 @@ namespace Speckle.ConnectorRevit
 
     #endregion
 
-    public static List<string> GetCategoryNames(Document doc)
-    {
-      return GetCategories(doc).Keys.OrderBy(x => x).ToList();
-    }
-
     public static List<string> GetViewFilterNames(Document doc)
     {
       return GetFilters(doc).Select(x => x.Name).ToList();
@@ -190,16 +169,17 @@ namespace Speckle.ConnectorRevit
         .Cast<View>()
         .Where(x => !x.IsTemplate)
         .ToList();
-      _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      _cachedViews = els.Select(x => x.Title).OrderBy(x => x).ToList();
       return _cachedViews;
     }
+
     private static bool IsViewRevisionSchedule(string input)
     {
-      string pattern =  @"<.+>(\s*\d+)?";
+      string pattern = @"<.+>(\s*\d+)?";
       Regex rgx = new Regex(pattern);
       return rgx.IsMatch(input);
     }
-    
+
     private static async Task<List<string>> GetScheduleNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
@@ -228,6 +208,7 @@ namespace Speckle.ConnectorRevit
 
       return GetViewNamesAsync(doc).Result;
     }
+
     public static List<string> GetScheduleNames(Document doc)
     {
       if (_cachedScheduleViews != null)
@@ -238,30 +219,6 @@ namespace Speckle.ConnectorRevit
       }
 
       return GetScheduleNamesAsync(doc).Result;
-    }
-
-    public static bool IsPhysicalElement(this Element e)
-    {
-      if (e.Category == null)
-        return false;
-      if (e.ViewSpecific)
-        return false;
-      // exclude specific unwanted categories
-      if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones)
-        return false;
-      return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
-    }
-
-    public static bool IsElementSupported(this Element e)
-    {
-      if (e.Category == null)
-        return false;
-      if (e.ViewSpecific)
-        return false;
-
-      if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
-        return true;
-      return false;
     }
 
     /// <summary>
@@ -282,109 +239,5 @@ namespace Speckle.ConnectorRevit
         .LastOrDefault();
       return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
     }
-
-    //list of currently supported Categories (for sending only)
-    //exact copy of the one in the ConverterRevitShared.Categories
-    //until issue https://github.com/specklesystems/speckle-sharp/issues/392 is resolved
-    private static List<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>
-    {
-      BuiltInCategory.OST_Areas,
-      BuiltInCategory.OST_CableTray,
-      BuiltInCategory.OST_Ceilings,
-      BuiltInCategory.OST_Columns,
-      BuiltInCategory.OST_CommunicationDevices,
-      BuiltInCategory.OST_Conduit,
-      BuiltInCategory.OST_CurtaSystem,
-      BuiltInCategory.OST_DataDevices,
-      BuiltInCategory.OST_Doors,
-      BuiltInCategory.OST_DuctSystem,
-      BuiltInCategory.OST_DuctCurves,
-      BuiltInCategory.OST_DuctFitting,
-      BuiltInCategory.OST_DuctInsulations,
-      BuiltInCategory.OST_ElectricalCircuit,
-      BuiltInCategory.OST_ElectricalEquipment,
-      BuiltInCategory.OST_ElectricalFixtures,
-      BuiltInCategory.OST_Fascia,
-      BuiltInCategory.OST_FireAlarmDevices,
-      BuiltInCategory.OST_FlexDuctCurves,
-      BuiltInCategory.OST_FlexPipeCurves,
-      BuiltInCategory.OST_Floors,
-      BuiltInCategory.OST_GenericModel,
-      BuiltInCategory.OST_Grids,
-      BuiltInCategory.OST_Gutter,
-      //BuiltInCategory.OST_HVAC_Zones,
-      BuiltInCategory.OST_IOSModelGroups,
-      BuiltInCategory.OST_LightingDevices,
-      BuiltInCategory.OST_LightingFixtures,
-      BuiltInCategory.OST_Lines,
-      BuiltInCategory.OST_Mass,
-      BuiltInCategory.OST_MassFloor,
-      BuiltInCategory.OST_Materials,
-      BuiltInCategory.OST_MechanicalEquipment,
-      BuiltInCategory.OST_MEPSpaces,
-      BuiltInCategory.OST_Parking,
-      BuiltInCategory.OST_PipeCurves,
-      BuiltInCategory.OST_PipingSystem,
-      BuiltInCategory.OST_PointClouds,
-      BuiltInCategory.OST_PointLoads,
-      BuiltInCategory.OST_StairsRailing,
-      BuiltInCategory.OST_RailingSupport,
-      BuiltInCategory.OST_RailingTermination,
-      BuiltInCategory.OST_Rebar,
-      BuiltInCategory.OST_Roads,
-      BuiltInCategory.OST_RoofSoffit,
-      BuiltInCategory.OST_Roofs,
-      BuiltInCategory.OST_Rooms,
-      BuiltInCategory.OST_SecurityDevices,
-      BuiltInCategory.OST_ShaftOpening,
-      BuiltInCategory.OST_Site,
-      BuiltInCategory.OST_EdgeSlab,
-      BuiltInCategory.OST_Stairs,
-      BuiltInCategory.OST_AreaRein,
-      BuiltInCategory.OST_StructuralFramingSystem,
-      BuiltInCategory.OST_StructuralColumns,
-      BuiltInCategory.OST_StructConnections,
-      BuiltInCategory.OST_FabricAreas,
-      BuiltInCategory.OST_FabricReinforcement,
-      BuiltInCategory.OST_StructuralFoundation,
-      BuiltInCategory.OST_StructuralFraming,
-      BuiltInCategory.OST_PathRein,
-      BuiltInCategory.OST_StructuralStiffener,
-      BuiltInCategory.OST_StructuralTruss,
-      BuiltInCategory.OST_SwitchSystem,
-      BuiltInCategory.OST_TelephoneDevices,
-      BuiltInCategory.OST_Topography,
-      BuiltInCategory.OST_Cornices,
-      BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_Wire,
-      BuiltInCategory.OST_Casework,
-      BuiltInCategory.OST_CurtainWallPanels,
-      BuiltInCategory.OST_CurtainWallMullions,
-      BuiltInCategory.OST_Entourage,
-      BuiltInCategory.OST_Furniture,
-      BuiltInCategory.OST_FurnitureSystems,
-      BuiltInCategory.OST_Planting,
-      BuiltInCategory.OST_PlumbingFixtures,
-      BuiltInCategory.OST_Ramps,
-      BuiltInCategory.OST_SpecialityEquipment,
-      BuiltInCategory.OST_Rebar,
-#if (REVIT2020 || REVIT2021)
-
-#else
-      BuiltInCategory.OST_AudioVisualDevices,
-      BuiltInCategory.OST_FireProtection,
-      BuiltInCategory.OST_FoodServiceEquipment,
-      BuiltInCategory.OST_Hardscape,
-      BuiltInCategory.OST_MedicalEquipment,
-      BuiltInCategory.OST_Signage,
-      BuiltInCategory.OST_TemporaryStructure,
-      BuiltInCategory.OST_VerticalCirculation,
-#endif
-#if REVIT2020 || REVIT2021 || REVIT2022
-#else
-      BuiltInCategory.OST_MechanicalControlDevices,
-#endif
-    };
   }
 }

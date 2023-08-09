@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
@@ -41,20 +42,6 @@ namespace ConverterRevitTests
         });
       }
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
-    }
-
-    internal void NativeToSpeckleBase()
-    {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.SourceDoc);
-
-      foreach (var elem in fixture.RevitElements)
-      {
-        var spkElem = kit.ConvertToSpeckle(elem);
-        Assert.NotNull(spkElem);
-      }
-
-      Assert.Equal(0, kit.Report.ConversionErrorsCount);
     }
 
     /// <summary>
@@ -120,6 +107,7 @@ namespace ConverterRevitTests
 
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(doc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       //setting context objects for nested routine
       var contextObjects = elements
         .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
@@ -154,12 +142,14 @@ namespace ConverterRevitTests
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;
 
       converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       //setting context objects for update routine
       var state = new StreamState()
       {
         ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
       };
       converter.SetContextDocument(new StreamStateCache(state));
+      converter.SetContextDocument(new ConvertedObjectsCache());
 
       var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
       var appObjs = new List<ApplicationObject>();
@@ -284,6 +274,8 @@ namespace ConverterRevitTests
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
+      converter.SetContextDocument(new ConvertedObjectsCache());
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(

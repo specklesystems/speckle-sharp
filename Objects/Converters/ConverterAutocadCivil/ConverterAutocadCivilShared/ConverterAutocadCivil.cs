@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
@@ -26,11 +26,10 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
-
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -42,12 +41,16 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
 #elif AUTOCAD2023
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
+#elif AUTOCAD2024
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
 #elif CIVIL2021
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
 #elif CIVIL2023
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
+#elif CIVIL2024
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #endif
@@ -63,7 +66,9 @@ namespace Objects.Converter.AutocadCivil
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
     public ProgressReport Report { get; private set; } = new ProgressReport();
+
     public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
+
     public Document Doc { get; private set; }
     public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
@@ -95,23 +100,20 @@ namespace Objects.Converter.AutocadCivil
       Base @base = null;
       ApplicationObject reportObj = null;
       DisplayStyle style = null;
+      Base extensionDictionary = null;
       List<string> notes = new List<string>();
 
       switch (@object)
       {
         case DBObject obj:
-          /*
-          // check for speckle schema xdata
-          string schema = GetSpeckleSchema(o.XData);
-          if (schema != null)
-            return ObjectToSpeckleBuiltElement(o);
-          */
+
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
 
           //Use the Handle object to update progressReport object.
           //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
           reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
-          style = DisplayStyleToSpeckle(obj as Entity);
+          style = DisplayStyleToSpeckle(obj as Entity); // note layer display styles are converted in the layer method
+          extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
 
           switch (obj)
           {
@@ -184,7 +186,10 @@ namespace Objects.Converter.AutocadCivil
             case MText o:
               @base = TextToSpeckle(o);
               break;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+            case LayerTableRecord o:
+              @base = LayerToSpeckle(o);
+              break;
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               break;
@@ -252,16 +257,23 @@ namespace Objects.Converter.AutocadCivil
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
+            reportObj.Update(
+              status: ApplicationObject.State.Skipped,
+              logItem: $"{@object.GetType()} type not supported"
+            );
             Report.UpdateReportObject(reportObj);
           }
           return @base;
       }
 
-      if (@base is null) return @base;
+      if (@base is null)
+        return @base;
 
       if (style != null)
         @base["displayStyle"] = style;
+
+      if (extensionDictionary != null)
+        @base["extensionDictionary"] = extensionDictionary;
 
       if (reportObj != null)
       {
@@ -287,7 +299,9 @@ namespace Objects.Converter.AutocadCivil
       bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
       bool isFromCivil = @object[CivilPropName] != null ? true : false;
       object acadObj = null;
-      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
+      var reportObj = Report.ReportObjects.ContainsKey(@object.id)
+        ? new ApplicationObject(@object.id, @object.speckle_type)
+        : null;
       List<string> notes = new List<string>();
       switch (@object)
       {
@@ -336,13 +350,13 @@ namespace Objects.Converter.AutocadCivil
           break;
 
         /*
-        case Surface o: 
+        case Surface o:
           return SurfaceToNative(o);
 
         */
 
         case Mesh o:
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
 #else
           acadObj = MeshToNativeDB(o);
@@ -365,7 +379,11 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+        case Collection o:
+          acadObj = CollectionToNative(o);
+          break;
+
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
         case Alignment o:
           acadObj = AlignmentToNative(o);
           break;
@@ -378,7 +396,10 @@ namespace Objects.Converter.AutocadCivil
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
+            reportObj.Update(
+              status: ApplicationObject.State.Skipped,
+              logItem: $"{@object.GetType()} type not supported"
+            );
             Report.UpdateReportObject(reportObj);
           }
           throw new NotSupportedException();
@@ -388,13 +409,22 @@ namespace Objects.Converter.AutocadCivil
       {
         case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
           acadObj = o.Converted.Any() ? o.Converted : null;
-          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, container: o.Container, log: o.Log);
+          if (reportObj != null)
+            reportObj.Update(
+              status: o.Status,
+              createdIds: o.CreatedIds,
+              converted: o.Converted,
+              container: o.Container,
+              log: o.Log
+            );
           break;
         default:
-          if (reportObj != null) reportObj.Update(log: notes);
+          if (reportObj != null)
+            reportObj.Update(log: notes);
           break;
       }
-      if (reportObj != null) Report.UpdateReportObject(reportObj);
+      if (reportObj != null)
+        Report.UpdateReportObject(reportObj);
       return acadObj;
     }
 
@@ -433,9 +463,10 @@ namespace Objects.Converter.AutocadCivil
             case BlockTableRecord _:
             case AcadDB.DBText _:
             case AcadDB.MText _:
+            case LayerTableRecord _:
               return true;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:
@@ -449,13 +480,13 @@ namespace Objects.Converter.AutocadCivil
 #endif
 
             default:
-              {
+            {
 #if ADVANCESTEEL2023
                 return CanConvertASToSpeckle(o);
 #else
-                return false;
+              return false;
 #endif
-              }
+            }
           }
 
         case Acad.Geometry.Point3d _:
@@ -493,6 +524,7 @@ namespace Objects.Converter.AutocadCivil
         case BlockDefinition _:
         case Instance _:
         case Text _:
+        case Collection _:
 
         case Alignment _:
         case ModelCurve _:

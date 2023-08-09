@@ -14,7 +14,7 @@ namespace Speckle.Core.Api;
 public class SpeckleGraphQLException<T> : SpeckleException
 {
   private GraphQLRequest _request;
-  public GraphQLResponse<T>? Response;
+  public readonly GraphQLResponse<T>? Response;
 
   public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<T>? response)
     : base(message)
@@ -24,7 +24,11 @@ public class SpeckleGraphQLException<T> : SpeckleException
   }
 
   public SpeckleGraphQLException(string message, Exception inner, GraphQLRequest request, GraphQLResponse<T>? response)
-    : base(message, inner) { }
+    : this(message, inner)
+  {
+    _request = request;
+    Response = response;
+  }
 
   public SpeckleGraphQLException() { }
 
@@ -35,7 +39,7 @@ public class SpeckleGraphQLException<T> : SpeckleException
     : base(message, innerException) { }
 
   public IEnumerable<string> ErrorMessages =>
-    Response?.Errors != null ? Response.Errors.Select(e => e.Message) : new string[] { };
+    Response?.Errors != null ? Response.Errors.Select(e => e.Message) : Enumerable.Empty<string>();
 
   public IDictionary<string, object>? Extensions => Response?.Extensions;
 }
@@ -84,5 +88,19 @@ public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T
     : base(message) { }
 
   public SpeckleGraphQLInternalErrorException(string message, Exception innerException)
+    : base(message, innerException) { }
+}
+
+public class SpeckleGraphQLStreamNotFoundException<TStreamData> : SpeckleGraphQLException<TStreamData>
+{
+  public SpeckleGraphQLStreamNotFoundException(GraphQLRequest request, GraphQLResponse<TStreamData> response)
+    : base("Stream not found", request, response) { }
+
+  public SpeckleGraphQLStreamNotFoundException() { }
+
+  public SpeckleGraphQLStreamNotFoundException(string message)
+    : base(message) { }
+
+  public SpeckleGraphQLStreamNotFoundException(string message, Exception innerException)
     : base(message, innerException) { }
 }

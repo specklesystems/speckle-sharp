@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,27 +20,34 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
-      foreach (var tc in elements)
-      {
-        switch (tc.current)
-        {
-          case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
-            walls.Add(archiWall);
-            break;
-          case Objects.BuiltElements.Wall wall:
-            var baseLine = (Line)wall.baseLine;
-            Objects.BuiltElements.Archicad.ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
-            {
-              id = wall.id,
-              applicationId = wall.applicationId,
-              startPoint = Utils.ScaleToNative(baseLine.start),
-              endPoint = Utils.ScaleToNative(baseLine.end),
-              height = Utils.ScaleToNative(wall.height, wall.units),
-              flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
-            };
 
-            walls.Add(newWall);
-            break;
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      {
+        foreach (var tc in elements)
+        {
+          token.ThrowIfCancellationRequested();
+
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
+              walls.Add(archiWall);
+              break;
+            case Objects.BuiltElements.Wall wall:
+              var baseLine = (Line)wall.baseLine;
+              Objects.BuiltElements.Archicad.ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
+              {
+                id = wall.id,
+                applicationId = wall.applicationId,
+                startPoint = Utils.ScaleToNative(baseLine.start),
+                endPoint = Utils.ScaleToNative(baseLine.end),
+                height = Utils.ScaleToNative(wall.height, wall.units),
+                flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
+              };
+
+              walls.Add(newWall);
+              break;
+          }
         }
       }
 

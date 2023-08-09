@@ -45,6 +45,7 @@ public interface ITransport
   /// <summary>
   /// Used to report errors during the transport's longer operations.
   /// </summary>
+  [Obsolete("Transports will now throw exceptions")]
   public Action<string, Exception>? OnErrorAction { get; set; }
 
   /// <summary>
@@ -77,12 +78,10 @@ public interface ITransport
   /// <returns></returns>
   public Task WriteComplete();
 
-  /// <summary>
-  /// Gets an object.
-  /// </summary>
   /// <param name="id">The object's hash.</param>
-  /// <returns></returns>
-  public string GetObject(string id);
+  /// <returns>The serialized object data, or <see langword="null"/> if the transport cannot find the object</returns>
+  /// <exception cref="OperationCanceledException"></exception>
+  public string? GetObject(string id);
 
   /// <summary>
   /// Copies the parent object and all its children to the provided transport.
@@ -105,7 +104,7 @@ public interface ITransport
   /// </summary>
   /// <param name="objectIds">List of object ids to check</param>
   /// <returns>A dictionary with the specified object ids as keys and boolean values, whether each object is present in the transport or not</returns>
-  public Task<Dictionary<string, bool>> HasObjects(List<string> objectIds);
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds);
 }
 
 public interface IBlobCapableTransport

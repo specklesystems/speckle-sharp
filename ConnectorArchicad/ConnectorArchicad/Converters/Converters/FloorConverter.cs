@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,30 +18,36 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
-            floors.Add(archiFloor);
-            break;
-          case Objects.BuiltElements.Floor floor:
+          token.ThrowIfCancellationRequested();
 
-            Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
-            {
-              id = floor.id,
-              applicationId = floor.applicationId,
-              shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
-            };
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
+              floors.Add(archiFloor);
+              break;
+            case Objects.BuiltElements.Floor floor:
 
-            floors.Add(newFloor);
-            break;
+              Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
+              {
+                id = floor.id,
+                applicationId = floor.applicationId,
+                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
+              };
+
+              floors.Add(newFloor);
+              break;
+          }
         }
       }
 
-      var result =
-        await AsyncCommandProcessor.Execute(
-          new Communication.Commands.CreateFloor(floors), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateFloor(floors), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList(); ;
     }

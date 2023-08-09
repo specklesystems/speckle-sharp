@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,24 +19,31 @@ namespace Archicad.Converters
     {
       var roofs = new List<Objects.BuiltElements.Archicad.ArchicadRoof>();
       var shells = new List<Objects.BuiltElements.Archicad.ArchicadShell>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
-            roofs.Add(archiRoof);
-            break;
-          case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
-            shells.Add(archiShell);
-            break;
-          case Objects.BuiltElements.Roof roof:
-            roofs.Add(new Objects.BuiltElements.Archicad.ArchicadRoof
-            {
-              id = roof.id,
-              applicationId = roof.applicationId,
-              shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids),
-            });
-            break;
+          token.ThrowIfCancellationRequested();
+
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
+              roofs.Add(archiRoof);
+              break;
+            case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
+              shells.Add(archiShell);
+              break;
+            case Objects.BuiltElements.Roof roof:
+              roofs.Add(new Objects.BuiltElements.Archicad.ArchicadRoof
+              {
+                id = roof.id,
+                applicationId = roof.applicationId,
+                shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids),
+              });
+              break;
+          }
         }
       }
 

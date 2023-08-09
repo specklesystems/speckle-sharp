@@ -2,7 +2,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Tests;
+using TestsUnit;
 
 namespace TestsIntegration;
 
@@ -101,6 +101,15 @@ public class Api
   }
 
   [Test, Order(12)]
+  public async Task IsStreamAccessible()
+  {
+    var res = await myClient.IsStreamAccessible(streamId).ConfigureAwait(false);
+
+    Assert.True(res);
+  }
+
+
+  [Test, Order(13)]
   public async Task StreamSearch()
   {
     var res = await myClient.StreamSearch(streamId).ConfigureAwait(false);

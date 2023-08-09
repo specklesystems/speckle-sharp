@@ -10,36 +10,28 @@ namespace Speckle.Core.Transports;
 /// <summary>
 /// An in memory storage of speckle objects.
 /// </summary>
-public class MemoryTransport : ITransport, IDisposable, ICloneable
+public sealed class MemoryTransport : ITransport, ICloneable
 {
-  public Dictionary<string, string> Objects;
+  public IDictionary<string, string> Objects { get; }
 
-  public MemoryTransport()
+  public MemoryTransport() : this(new Dictionary<string, string>()) { }
+
+  public MemoryTransport(IDictionary<string, string> objects)
   {
+    Objects = objects;
     SpeckleLog.Logger.Debug("Creating a new Memory Transport");
-
-    Objects = new Dictionary<string, string>();
   }
 
   public object Clone()
   {
-    return new MemoryTransport
+    return new MemoryTransport(Objects)
     {
       TransportName = TransportName,
       OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
       CancellationToken = CancellationToken,
-      Objects = Objects,
       SavedObjectCount = SavedObjectCount
     };
-  }
-
-  public void Dispose()
-  {
-    Objects = null;
-    OnErrorAction = null;
-    OnProgressAction = null;
-    SavedObjectCount = 0;
   }
 
   public CancellationToken CancellationToken { get; set; }
@@ -48,9 +40,10 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public Action<string, int> OnProgressAction { get; set; }
 
+  [Obsolete("Transports will now throw exceptions")]
   public Action<string, Exception> OnErrorAction { get; set; }
 
-  public int SavedObjectCount { get; set; }
+  public int SavedObjectCount { get; private set; }
 
   public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
 
@@ -63,13 +56,13 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public void EndWrite() { }
 
-  public void SaveObject(string hash, string serializedObject)
+  public void SaveObject(string id, string serializedObject)
   {
     var stopwatch = Stopwatch.StartNew();
     if (CancellationToken.IsCancellationRequested)
       return; // Check for cancellation
 
-    Objects[hash] = serializedObject;
+    Objects[id] = serializedObject;
 
     SavedObjectCount++;
     OnProgressAction?.Invoke(TransportName, 1);
@@ -79,13 +72,23 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public void SaveObject(string id, ITransport sourceTransport)
   {
-    throw new NotImplementedException();
+    CancellationToken.ThrowIfCancellationRequested();
+
+    var serializedObject = sourceTransport.GetObject(id);
+
+    if (serializedObject is null)
+      throw new TransportException(
+        this,
+        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
+      );
+
+    SaveObject(id, serializedObject);
   }
 
-  public string GetObject(string hash)
+  public string GetObject(string id)
   {
     var stopwatch = Stopwatch.StartNew();
-    var ret = Objects.ContainsKey(hash) ? Objects[hash] : null;
+    var ret = Objects.TryGetValue(id, out string o) ? o : null;
     stopwatch.Stop();
     Elapsed += stopwatch.Elapsed;
     return ret;
@@ -105,7 +108,7 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
     return Utilities.WaitUntil(() => true);
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new();
     foreach (string objectId in objectIds)

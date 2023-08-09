@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -45,13 +48,14 @@ namespace Objects.Converter.Revit
 
     private const double TOLERANCE = 0.0164042; // 5mm in ft
 
-    public Document Doc { get; private set; }
+    public static Document Doc { get; private set; }
 
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } =
+      new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
@@ -102,11 +106,22 @@ namespace Objects.Converter.Revit
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
+    private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+    private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+
     public void SetContextDocument(object doc)
     {
       if (doc is Transaction t)
       {
         T = t;
+      }
+      else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
+      {
+        this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+      }
+      else if (doc is IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      {
+        this.receivedObjectsCache = receivedObjectsCache;
       }
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
@@ -128,7 +143,9 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
+        throw new ArgumentException(
+          $"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}"
+        );
       }
     }
 
@@ -180,10 +197,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject =
-            o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
-              ? NetworkToSpeckle(o, out notes)
-              : FamilyInstanceToSpeckle(o, out notes);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -231,28 +245,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = CableTrayToSpeckle(o);
           break;
         case DB.Electrical.Conduit o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = ConduitToSpeckle(o);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -344,7 +358,7 @@ namespace Objects.Converter.Revit
         returnObject != null
         && returnObject["renderMaterial"] == null
         && returnObject["displayValue"] == null
-        && !(returnObject is Model)
+        && !(returnObject is Collection)
       )
       {
         try
@@ -442,7 +456,27 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var nativeObject = ConvertToNativeObject(@base);
+
+      switch (nativeObject)
+      {
+        case ApplicationObject appObject:
+          if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+          {
+            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+          }
+          break;
+        case Element element:
+          receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
+          break;
+      }
+      
+      return nativeObject;
+    }
+
+    public object ConvertToNativeObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -517,7 +551,11 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(
+            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
+            o.displayValue,
+            ToNativeMeshSetting
+          );
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -631,6 +669,9 @@ namespace Objects.Converter.Revit
 
         case BE.View3D o:
           return ViewToNative(o);
+
+        case RevitMEPFamilyInstance o:
+          return FittingOrMEPInstanceToNative(o);
 
         case Other.Revit.RevitInstance o:
           return RevitInstanceToNative(o);

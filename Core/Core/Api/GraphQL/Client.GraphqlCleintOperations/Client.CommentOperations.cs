@@ -16,7 +16,7 @@ public partial class Client
   /// <param name="limit">The number of comments to get</param>
   /// <param name="cursor">Time to filter the comments with</param>
   /// <returns></returns>
-  public Task<Comments> StreamGetComments(string streamId, int limit = 25, string cursor = null)
+  public Task<Comments> StreamGetComments(string streamId, int limit = 25, string? cursor = null)
   {
     return StreamGetComments(CancellationToken.None, streamId, limit, cursor);
   }
@@ -34,7 +34,7 @@ public partial class Client
     CancellationToken cancellationToken,
     string streamId,
     int limit = 25,
-    string cursor = null
+    string? cursor = null
   )
   {
     var request = new GraphQLRequest
