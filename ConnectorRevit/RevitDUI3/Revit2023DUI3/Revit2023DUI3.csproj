@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorRevitDUI3</RootNamespace>
+    <AssemblyName>SpeckleConnectorRevitDUI3</AssemblyName>
+    <TargetFramework>net48</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RevitFolderName>SpeckleRevit2DUI3</RevitFolderName>
+    <RevitVersion>2023</RevitVersion>
+    <AssemblyTitle>ConnectorRevitDUI3</AssemblyTitle>
+    <Product>ConnectorRevitDUI3</Product>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <UseWPF>true</UseWPF>
+    <DefineConstants>$(DefineConstants);REVIT2023</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\DesktopUI3\DUI3\DUI3.csproj" />
+  </ItemGroup>
+  
+  
+  <ItemGroup>
+    <PackageReference Include="CefSharp.Wpf" Version="92.0.260" />
+    <PackageReference Include="Revit.Async" Version="2.0.1" />
+    <PackageReference Include="Revit_All_Main_Versions_API_x64" Version="2023.0.0" />
+  </ItemGroup>
+
+
+
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2023;$(AppData)\Autodesk\Revit\Addins\2023\SpeckleRevit2DUI3" />
+  </Target>
+  <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+    <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
+  </Target>
+  <Target Name="AfterBuildRelease">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
+    </ItemGroup>
+    <Message Importance="High" Text="RELEASE copy from $(TargetDir) to $(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\" />
+    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
+  </Target>
+  <Import Project="..\RevitDUI3Shared\RevitDUI3Shared.projitems" Label="Shared" />
+</Project>

@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7917CDBC-7BCF-4EE0-A80F-500C626468BA</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>RevitDUI3Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CefSharpPanel.xaml.cs">
+      <DependentUpon>Panel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleRevitDUI3Command.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitAppProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Schemas.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitDocumentStore.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)SpeckleRevit2DUI3.addin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)CefSharpPanel.xaml" />
+  </ItemGroup>
+</Project>

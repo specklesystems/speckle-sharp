@@ -2,6 +2,9 @@
   "solution": {
     "path": "..\\All.sln",
     "projects": [
+      "ConnectorAutocadCivil\\AutocadCivilDUI3\\Autocad2022\\ConnectorAutocad2022DUI3.csproj",
+      "ConnectorAutocadCivil\\AutocadCivilDUI3\\Autocad2023\\ConnectorAutocad2023DUI3.csproj",
+      "ConnectorAutocadCivil\\AutocadCivilDUI3\\AutocadCivilDUI3Shared\\AutocadCivilDUI3Shared.shproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2021\\ConnectorAutocad2021.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2022\\ConnectorAutocad2022.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2023\\ConnectorAutocad2023.csproj",
@@ -14,6 +17,7 @@
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "DesktopUI3\\DUI3\\DUI3.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2021\\ConverterAutocad2021.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2022\\ConverterAutocad2022.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2023\\ConverterAutocad2023.csproj",
