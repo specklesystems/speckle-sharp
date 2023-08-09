@@ -5,12 +5,24 @@ using System.Threading;
 
 namespace RevitSharedResources.Models
 {
+  /// <summary>
+  /// This class gives access to the Revit API context from anywhere in your codebase. This is essentially a 
+  /// lite version of the Revit.Async package from Kennan Chan. Most of the functionality was taken from that code.
+  /// The main difference is that this class does not subscribe to the applicationIdling event from revit
+  /// which the docs say will impact the performance of Revit
+  /// </summary>
   public static class APIContext
   {
     private static SemaphoreSlim semaphore = new(1,1);
     private static UIControlledApplication uiApplication;
     private static ExternalEventHandler<IExternalEventHandler, ExternalEvent> factoryExternalEventHandler;
     private static ExternalEvent factoryExternalEvent;
+
+    /// <summary>
+    /// Initialize that happens in a Revit context will make an ExternalEvent and ExternalEventHandler
+    /// whose jobs are to create external events that wrap the funcs passed into the Run method.
+    /// </summary>
+    /// <param name="application"></param>
     public static void Initialize(UIControlledApplication application)
     {
       uiApplication = application; 
