@@ -30,6 +30,7 @@
   
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" />
+    <PackageReference Include="Revit.Async" Version="2.0.1" />
     <PackageReference Include="Revit_All_Main_Versions_API_x64" Version="2023.0.0" />
   </ItemGroup>
 

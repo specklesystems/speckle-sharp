@@ -1,31 +1,28 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Rhino;
+using Autodesk.Revit.UI.Events;
 
-namespace ConnectorRhinoWebUI.Utils;
+namespace Speckle.ConnectorRevitDUI3.Utils;
 
-/// <summary>
-/// Rhino Idle Manager is a helper util to manage deferred actions.
-/// </summary>
-public static class RhinoIdleManager
+public static class RevitIdleManager
 {
   private static Dictionary<string, Action> calls = new Dictionary<string, Action>();
   private static bool _hasSubscribed = false;
 
   /// <summary>
-  /// Subscribe deferred action to RhinoIdle event to run it whenever Rhino become idle.
+  /// Subscribe deferred action to Idling event to run it whenever Revit becomes idle.
   /// </summary>
-  /// <param name="action"> Action to call whenever Rhino become Idle.</param>
+  /// <param name="action"> Action to call whenever Revit becomes Idle.</param>
   public static void SubscribeToIdle(Action action)
   {
     calls[action.Method.Name ?? Guid.NewGuid().ToString()] = action;
     
     if (_hasSubscribed) return;
     _hasSubscribed = true;
-    RhinoApp.Idle += RhinoAppOnIdle;
+    RevitAppProvider.RevitApp.Idling += RevitAppOnIdle;
   }
 
-  private static void RhinoAppOnIdle(object sender, EventArgs e)
+  private static void RevitAppOnIdle(object sender, IdlingEventArgs e)
   {
     foreach (var kvp in calls)
     {
@@ -33,7 +30,6 @@ public static class RhinoIdleManager
     }
     calls = new Dictionary<string, Action>();
     _hasSubscribed = false;
-    RhinoApp.Idle -= RhinoAppOnIdle;
+    RevitAppProvider.RevitApp.Idling -= RevitAppOnIdle;
   }
 }
-

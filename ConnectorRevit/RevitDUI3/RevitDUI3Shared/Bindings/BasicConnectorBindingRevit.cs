@@ -2,6 +2,8 @@
 using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models;
+using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
@@ -13,14 +15,14 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
   public IBridge Parent { get; set; }
   private static UIApplication RevitApp { get; set; }
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
-  public BasicConnectorBindingRevit(UIApplication revitApp)
+  private readonly RevitDocumentStore _store;
+  
+  public BasicConnectorBindingRevit(RevitDocumentStore store)
   {
-    RevitApp = revitApp;
-
-    RevitApp.ViewActivated += (sender, e) =>
+    RevitApp = RevitAppProvider.RevitApp;
+    _store = store;
+    _store.DocumentChanged += (_,_) =>
     {
-      if (e.Document == null) return;
-      if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName) return;
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }
@@ -40,11 +42,6 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 #endif
   }
 
-  public Account[] GetAccounts()
-  {
-    return AccountManager.GetAccounts().ToArray();
-  }
-
   public DocumentInfo GetDocumentInfo()
   {
     if (CurrentDoc == null) return null;
@@ -55,5 +52,26 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
       Id = CurrentDoc.Document.GetHashCode().ToString(),
       Location = CurrentDoc.Document.PathName
     };
+  }
+
+  public DocumentModelStore GetDocumentState()
+  {
+    return _store;
+  }
+
+  public void AddModel(ModelCard model)
+  {
+    _store.Models.Add(model);
+  }
+
+  public void UpdateModel(ModelCard model)
+  {
+    var idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    _store.Models[idx] = model;
+  }
+
+  public void RemoveModel(ModelCard model)
+  {
+    throw new System.NotImplementedException();
   }
 }

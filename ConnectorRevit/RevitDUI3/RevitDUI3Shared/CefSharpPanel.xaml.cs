@@ -1,16 +1,27 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using Autodesk.Revit.UI;
+using CefSharp;
 
 namespace Speckle.ConnectorRevitDUI3;
 
-public partial class Panel : Page, Autodesk.Revit.UI.IDockablePaneProvider
+public partial class CefSharpPanel : Page, Autodesk.Revit.UI.IDockablePaneProvider
 {
-  public Panel()
+  public CefSharpPanel()
   {
     InitializeComponent();
   }
 
+  public void ExecuteScriptAsync(string script)
+  {
+    Browser.ExecuteScriptAsync(script);
+  }
+
+  public void ShowDevTools()
+  {
+    Browser.ShowDevTools();
+  }
+  
   public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
   {
     data.FrameworkElement = this as FrameworkElement;
