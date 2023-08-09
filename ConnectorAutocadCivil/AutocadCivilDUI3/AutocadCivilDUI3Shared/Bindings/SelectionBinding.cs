@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -12,14 +14,30 @@ namespace AutocadCivilDUI3Shared.Bindings
     public string Name { get; set; } = "selectionBinding";
     public IBridge Parent { get; set; }
 
+    private List<Document> visitedDocuments = new List<Document>();
+
     public SelectionBinding()
     {
-      // TODO: When we switch document MdiActiveDocument become null and we cannot catch selections........
       Application.DocumentManager.MdiActiveDocument.ImpliedSelectionChanged += (_, _) => { OnSelectionChanged(); };
+      visitedDocuments.Add(Application.DocumentManager.MdiActiveDocument);
+
+      Application.DocumentManager.DocumentActivated += (sender, e) => OnDocumentChanged(e.Document);
+    }
+
+    private void OnDocumentChanged(Document document)
+    {
+      Debug.WriteLine(visitedDocuments.Count);
+      Debug.WriteLine(visitedDocuments.Contains(document));
+      if (!visitedDocuments.Contains(document))
+      {
+        document.ImpliedSelectionChanged += (_, _) => { OnSelectionChanged(); };
+        visitedDocuments.Add(document);
+      }
     }
 
     private void OnSelectionChanged()
     {
+      Debug.WriteLine("Document: setSelcetion}");
       var selInfo = GetSelection();
       Parent?.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
     }
