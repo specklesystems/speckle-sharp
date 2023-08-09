@@ -68,7 +68,6 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
       RevitApp.ApplicationClosing += RevitApp_ApplicationClosing;
-      RevitApp.ActiveUIDocument.
       //RevitApp.Application.FileExporting += Application_FileExporting;
       //RevitApp.Application.FileImporting += Application_FileImporting;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
