@@ -12,6 +12,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)DocumentUtils\TransactionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.Previews.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />

@@ -61,6 +61,9 @@ public partial class ConnectorBindingsNavisworks
   {
     _progressViewModel = progress;
 
+    // Perform the validation checks - will throw if something is wrong
+    ValidateBeforeSending(state);
+
     string commitId;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
@@ -80,9 +83,6 @@ public partial class ConnectorBindingsNavisworks
         CachedConvertedElements = null;
         _cachedState = state;
         _cachedCommit = commitObject;
-
-        // Perform the validation checks - will throw if something is wrong
-        ValidateBeforeSending(state);
 
         Cursor.Current = Cursors.WaitCursor;
 
@@ -179,7 +179,7 @@ public partial class ConnectorBindingsNavisworks
     if (state.Filter == null)
       throw new InvalidOperationException("No filter provided. Nothing to Send.");
 
-    if (state.Filter.Slug == "all")
+    if (state.Filter.Slug == "all" || state.CommitMessage == "Sent everything")
       throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
   }
 
@@ -225,6 +225,11 @@ public partial class ConnectorBindingsNavisworks
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
     {
+      if (_progressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
+
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
       ModelItem modelItem = modelItemsToConvert[index];
       var element = new Element();
       element.GetElement(modelItem);
@@ -286,7 +291,7 @@ public partial class ConnectorBindingsNavisworks
     Collection commitObject
   )
   {
-    _progressBar.BeginSubOperation(0.55, "Spinning the alchemy wheel, transmuting data...");
+    _progressBar.BeginSubOperation(0.35, "Spinning the alchemy wheel, transmuting data...");
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
     _conversionInvoker = new ConversionInvoker(_navisworksConverter);
     var converted = ConvertObjects(conversions);
@@ -298,19 +303,21 @@ public partial class ConnectorBindingsNavisworks
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
 
-    _progressBar.StartNewSubOperation(0.66, "Building a family tree, data-style...");
+    _progressBar.StartNewSubOperation(0.2, "Building a family tree, data-style...");
 
     commitObject.elements = Element.BuildNestedObjectHierarchy(converted, state).ToList();
 
     if (commitObject.elements.Count == 0)
     {
       _settingsHandler.RestoreAutoSave();
-      throw new SpeckleException("Zero objects remain unhidden in selection. Send stopped.");
+      throw new SpeckleException(
+        "All Geometry objects in the selection are hidden or cannot be converted. Send stopped."
+      );
     }
 
     _progressViewModel.Report.Merge(_navisworksConverter.Report);
 
-    _progressBar.StartNewSubOperation(0.75, "Sending Views.");
+    _progressBar.StartNewSubOperation(0.1, "Sending Views.");
     ConvertViews(state, commitObject);
     _progressBar.EndSubOperation();
 
@@ -354,7 +361,7 @@ public partial class ConnectorBindingsNavisworks
   private async Task<string> SendConvertedObjectsToSpeckle(StreamState state, Base commitObject)
   {
     _progressBar.BeginSubOperation(
-      1,
+      0.3,
       $"Pack your bags, data! That's {_convertedCount} objects going on a trip to the Speckle universe..."
     );
 
@@ -391,7 +398,7 @@ public partial class ConnectorBindingsNavisworks
   /// <returns>The id of the created commit.</returns>
   private async Task<string> CreateCommit(StreamState state, string objectId)
   {
-    _progressBar.BeginSubOperation(1, "Sealing the deal... Your data's new life begins in Speckle!");
+    _progressBar.BeginSubOperation(0.1, "Sealing the deal... Your data's new life begins in Speckle!");
 
     // Define a new commit input with stream details, object ID, and commit message
     var commit = new CommitCreateInput

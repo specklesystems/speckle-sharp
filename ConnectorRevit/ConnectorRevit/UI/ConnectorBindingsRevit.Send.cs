@@ -12,6 +12,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
+using RevitSharedResources.Interfaces;
 using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -48,7 +49,7 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
+      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
@@ -62,7 +63,16 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
-      RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByCollection);
+      IRevitCommitObjectBuilder commitObjectBuilder;
+
+      if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
+      {
+        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
+      }
+      else
+      {
+        commitObjectBuilder = builderExposer.commitObjectBuilder;
+      }
 
       progress.Report = new ProgressReport();
       progress.Max = selectedObjects.Count;
@@ -73,7 +83,9 @@ namespace Speckle.ConnectorRevit.UI
       await RevitTask
         .RunAsync(_ =>
         {
-          using var _d0 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+          using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+          using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
 
           foreach (var revitElement in selectedObjects)
           {
@@ -91,8 +103,8 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(reportObj);
 
             //Add context to logger
-            using var _d1 = LogContext.PushProperty("elementType", revitElement.GetType());
-            using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
+            using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
+            using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
 
             try
             {
@@ -130,7 +142,7 @@ namespace Speckle.ConnectorRevit.UI
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
 
-            YeildToUIThread(TimeSpan.FromMilliseconds(1));
+            YieldToUIThread(TimeSpan.FromMilliseconds(1));
           }
         })
         .ConfigureAwait(false);
@@ -199,7 +211,7 @@ namespace Speckle.ConnectorRevit.UI
       return false;
     }
 
-    private static void YeildToUIThread(TimeSpan delay)
+    private static void YieldToUIThread(TimeSpan delay)
     {
       using CancellationTokenSource s = new(delay);
       Dispatcher.UIThread.MainLoop(s.Token);

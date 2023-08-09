@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -180,6 +181,7 @@ public static class Analytics
     {
       try
       {
+        var executingAssembly = Assembly.GetExecutingAssembly();
         var properties = new Dictionary<string, object>
         {
           { "distinct_id", hashedEmail },
@@ -187,7 +189,7 @@ public static class Analytics
           { "token", MixpanelToken },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
-          { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString() },
+          { "core_version", FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion ?? executingAssembly.GetName().Version.ToString()},
           { "$os", GetOs() }
         };
 
@@ -248,9 +250,9 @@ public static class Analytics
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         client.PostAsync(MixpanelServer + "/engage#profile-union", query);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        // POKEMON: Gotta catch 'em all!
+        SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed add connector to profile");
       }
     });
   }

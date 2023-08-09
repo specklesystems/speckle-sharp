@@ -228,7 +228,11 @@ API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 	RSGetIndString (&envir->addOnInfo.name, AddOnInfoID, AddOnNameID, ACAPI_GetOwnResModule ());
 	RSGetIndString (&envir->addOnInfo.description, AddOnInfoID, AddOnDescriptionID, ACAPI_GetOwnResModule ());
 
+#ifdef DEBUG
+	return APIAddon_Preload;
+#else
 	return APIAddon_Normal;
+#endif
 }
 
 

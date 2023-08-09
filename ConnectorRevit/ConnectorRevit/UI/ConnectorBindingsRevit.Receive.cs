@@ -15,6 +15,8 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
+using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -70,10 +72,13 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+      // share the same revit element cache between the connector and converter
+      converter.SetContextDocument(revitDocumentAggregateCache);
+
 #pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
+        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
         await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
           .ConfigureAwait(false);
       }
@@ -97,7 +102,8 @@ namespace Speckle.ConnectorRevit.UI
 
         g.Start();
         var failOpts = t.GetFailureHandlingOptions();
-        failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+        var errorEater = new ErrorEater(converter);
+        failOpts.SetFailuresPreprocessor(errorEater);
         failOpts.SetClearAfterRollback(true);
         t.SetFailureHandlingOptions(failOpts);
         t.Start();
@@ -113,6 +119,21 @@ namespace Speckle.ConnectorRevit.UI
 
           previousObjects.AddConvertedElements(convertedObjects);
           t.Commit();
+
+          if (t.GetStatus() == TransactionStatus.RolledBack)
+          {
+            var numTotalErrors = errorEater.CommitErrorsDict.Sum(kvp => kvp.Value);
+            var numUniqueErrors = errorEater.CommitErrorsDict.Keys.Count;
+
+            var exception = errorEater.GetException();
+            if (exception == null) 
+              SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
+            else 
+              SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
+            
+            return (false, exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
+          }
+
           g.Assimilate();
           return (true, null);
         }
@@ -130,14 +151,21 @@ namespace Speckle.ConnectorRevit.UI
         }
       }).ConfigureAwait(false);
 
+      revitDocumentAggregateCache.InvalidateAll();
+      CurrentOperationCancellation = null;
+
       if (!success)
       {
-        //Don't wrap cancellation token (if it's ours!)
-        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
-        throw new SpeckleException(exception.Message, exception);
+        switch (exception)
+        {
+          case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
+          case SpeckleNonUserFacingException:
+            throw exception;
+          default:
+            throw new SpeckleException(exception.Message, exception);
+        }
       }
 
-      CurrentOperationCancellation = null;
       return state;
     }
 
@@ -176,18 +204,30 @@ namespace Speckle.ConnectorRevit.UI
 
     private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
+      using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+
+
       var convertedObjectsCache = new ConvertedObjectsCache();
+      converter.SetContextDocument(convertedObjectsCache);
+
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-      foreach (var obj in Preview)
+
+      var index = -1;
+      while (++index < Preview.Count)
       {
-        var @base = StoredObjects[obj.OriginalId];
+        var obj = Preview[index];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
+        var @base = StoredObjects[obj.OriginalId];
+
+        using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
         {
           conversionProgressDict["Conversion"]++;
@@ -207,10 +247,6 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
-              {
-                convertedObjectsCache.AddConvertedObjects(@base, typedList);
-              }
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
@@ -218,10 +254,30 @@ namespace Speckle.ConnectorRevit.UI
               break;
           }
         }
-        catch (Exception e)
+        catch (ConversionNotReadyException ex) 
         {
-          SpeckleLog.Logger.Warning("Failed to convert ");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          var notReadyDataCache = revitDocumentAggregateCache
+            .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
+          var notReadyData = notReadyDataCache
+            .GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
+
+          if (++notReadyData.NumberOfTimesCaught > 2)
+          {
+            SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
+            obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+            progress.Report.UpdateReportObject(obj);
+          }
+          else
+          {
+            Preview.Add(obj);
+          }
+          // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
+          notReadyDataCache.Set(@base.id, notReadyData);
+        }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Warning(ex, "Failed to convert");
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);
         }
       }

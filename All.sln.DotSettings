@@ -70,5 +70,6 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=GQL/@EntryIndexedValue">GQL</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=QL/@EntryIndexedValue">QL</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=SQ/@EntryIndexedValue">SQ</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=UI/@EntryIndexedValue">UI</s:String>
 	<s:String x:Key="/Default/CustomTools/CustomToolsData/@EntryValue">ExternalToolData|CSharpier|csharpier||csharpier|$FILE$</s:String>
 	<s:String x:Key="/Default/Environment/StructuredLogging/PropertyNamingType/@EntryValue">CamelCase</s:String></wpf:ResourceDictionary>

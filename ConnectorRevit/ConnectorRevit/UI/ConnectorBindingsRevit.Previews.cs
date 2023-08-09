@@ -20,7 +20,7 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-    public override bool CanPreviewReceive => true;
+    public override bool CanPreviewReceive => false;
     private string SelectedReceiveCommit { get; set; }
     List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
 
@@ -144,7 +144,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
+        var filterObjs = GetSelectionFilterObjects(converter, state.Filter);
         foreach (var filterObj in filterObjs)
         {
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);

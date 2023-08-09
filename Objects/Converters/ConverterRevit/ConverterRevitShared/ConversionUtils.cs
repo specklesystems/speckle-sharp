@@ -4,10 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Organization;
 using Objects.Other;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -962,6 +965,72 @@ namespace Objects.Converter.Revit
 
       return templatePath;
     }
+
+    public IEnumerable<(string, Element, Connector)> GetRevitConnectorsThatConnectToSpeckleConnector(
+      RevitMEPConnector revitMEPConnector,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+    {
+      var origin = PointToNative(revitMEPConnector.origin);
+
+      foreach (var connectedId in revitMEPConnector.connectedConnectorIds)
+      {
+        var connectorAppId = connectedId.Split('.').First();
+        var convertedElement = receivedObjectsCache
+          .GetCreatedObjectsFromConvertedId(connectorAppId)
+          .FirstOrDefault();
+
+        var existingRevitConnector = convertedElement?
+          .GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
+          .FirstOrDefault();
+
+        yield return (connectorAppId, convertedElement, existingRevitConnector);
+      }
+    }
+    
+    public void CreateSystemConnections(
+      IEnumerable<RevitMEPConnector> revitMEPConnectors,
+      Element revitEl,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+    {
+      foreach (var speckleConnector in revitMEPConnectors)
+      {
+        var origin = PointToNative(speckleConnector.origin);
+        var newRevitConnector = revitEl
+          .GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
+          .FirstOrDefault();
+
+        if (newRevitConnector == null) continue;
+
+        foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
+          speckleConnector,
+          receivedObjectsCache))
+        {
+          existingConnector?.ConnectTo(newRevitConnector);
+        } 
+      }
+    }
+
+    public T TryInSubtransaction<T>(Func<T> func, Action<Exception> catchFunc)
+    {
+      using var subtransaction = new SubTransaction(Doc);
+      subtransaction.Start();
+
+      T returnValue = default;
+      try
+      {
+        returnValue = func();
+        subtransaction.Commit();
+      }
+      catch (Exception ex)
+      {
+        subtransaction.RollBack();
+        Doc.Regenerate();
+        catchFunc(ex);
+      }
+      return returnValue;
+    }
     #endregion
 
     private List<ICurve> GetProfiles(DB.SpatialElement room)
@@ -1071,6 +1140,16 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
+      DB.Material material = GetMEPSystemRevitMaterial(e);
+      return material != null ? RenderMaterialToSpeckle(material) : null;
+    }
+    /// <summary>
+    /// Retrieves the revit material from assigned system type for mep elements
+    /// </summary>
+    /// <param name="e">Revit element to parse</param>
+    /// <returns>Revit material of the element, null if no material found</returns>
+    public static DB.Material GetMEPSystemRevitMaterial(Element e)
+    {
       ElementId idType = ElementId.InvalidElementId;
 
       if (e is DB.MEPCurve dt)
@@ -1105,15 +1184,11 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
-        RenderMaterial material = RenderMaterialToSpeckle(mat);
-
-        return material;
+        return e.Document.GetElement(mechType.MaterialId) as DB.Material;
       }
 
       return null;
     }
-
     private static bool IsSupportedMEPCategory(Element e)
     {
       var categories = e.Document.Settings.Categories;

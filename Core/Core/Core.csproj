@@ -12,6 +12,7 @@
     <PackageTags>$(PackageTags) core</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
+    <WarningsAsErrors>8603, 8601, 8602, CS8625</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

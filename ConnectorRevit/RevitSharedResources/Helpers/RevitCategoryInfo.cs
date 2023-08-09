@@ -26,5 +26,32 @@ namespace RevitSharedResources.Helpers
     {
       return BuiltInCategories.Select(x => (int)x).Contains(category.Id.IntegerValue);
     }
+
+    public List<ElementType> GetElementTypes(Document document)
+    {
+      return GetElementTypes<ElementType>(document);
+    }
+    public List<T> GetElementTypes<T>(Document document)
+      where T : ElementType
+    {
+      var collector = new FilteredElementCollector(document);
+      if (BuiltInCategories.Count > 0)
+      {
+        using var filter = new ElementMulticategoryFilter(BuiltInCategories);
+        collector = collector.WherePasses(filter);
+      }
+      if (ElementTypeType != null)
+      {
+        collector = collector.OfClass(ElementTypeType);
+      }
+      var elementTypes = collector.WhereElementIsElementType().Cast<T>().ToList();
+      collector.Dispose();
+      return elementTypes;
+    }
+
+    public string GetCategorySpecificTypeName(string typeName)
+    {
+      return CategoryName + "_" + typeName;
+    }
   }
 }

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using SCH = RevitSharedResources.Helpers.Categories;
 
 namespace Speckle.ConnectorRevit
 {
@@ -29,34 +30,6 @@ namespace Speckle.ConnectorRevit
     private static List<string> _cachedViews = null;
     private static List<string> _cachedScheduleViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
-
-    private static Dictionary<string, Category> _categories { get; set; }
-
-    public static Dictionary<string, Category> GetCategories(Document doc)
-    {
-      if (_categories != null)
-        return _categories;
-
-      _categories = new Dictionary<string, Category>();
-      foreach (var bic in SCH.SupportedBuiltInCategories)
-      {
-        var category = Category.GetCategory(doc, bic);
-        if (category == null)
-          continue;
-        //some categories, in other languages (eg DEU) have duplicated names #542
-        if (_categories.ContainsKey(category.Name))
-        {
-          var spec = category.Id.ToString();
-          if (category.Parent != null)
-            spec = category.Parent.Name;
-          _categories.Add($"{category.Name} ({spec})", category);
-        }
-        else
-          _categories.Add(category.Name, category);
-      }
-
-      return _categories;
-    }
 
     public static List<ParameterFilterElement> GetFilters(Autodesk.Revit.DB.Document doc)
     {
@@ -90,14 +63,19 @@ namespace Speckle.ConnectorRevit
 
     #region extension methods
 
-    public static List<Element> SupportedElements(this Document doc)
+    public static List<Element> GetSupportedElements(this Document doc, IRevitDocumentAggregateCache cache)
     {
-      //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(
-        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
-      );
+      //get elements of supported categories
+      var categoryIds = cache
+        .GetOrInitializeWithDefaultFactory<Category>()
+        .GetAllObjects()
+        .Select(category => category.Id)
+        .ToList();
 
-      List<Element> elements = new FilteredElementCollector(doc)
+      using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
+      using var collector = new FilteredElementCollector(doc);
+
+      var elements = collector
         .WhereElementIsNotElementType()
         .WhereElementIsViewIndependent()
         .WherePasses(categoryFilter)
@@ -106,14 +84,19 @@ namespace Speckle.ConnectorRevit
       return elements;
     }
 
-    public static List<Element> SupportedTypes(this Document doc)
+    public static List<Element> GetSupportedTypes(this Document doc, IRevitDocumentAggregateCache cache)
     {
       //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(
-        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
-      );
+      var categoryIds = cache
+        .GetOrInitializeWithDefaultFactory<Category>()
+        .GetAllObjects()
+        .Select(category => category.Id)
+        .ToList();
 
-      List<Element> elements = new FilteredElementCollector(doc)
+      using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
+      using var collector = new FilteredElementCollector(doc);
+
+      var elements = collector
         .WhereElementIsElementType()
         .WherePasses(categoryFilter)
         .ToList();
@@ -162,11 +145,6 @@ namespace Speckle.ConnectorRevit
     }
 
     #endregion
-
-    public static List<string> GetCategoryNames(Document doc)
-    {
-      return GetCategories(doc).Keys.OrderBy(x => x).ToList();
-    }
 
     public static List<string> GetViewFilterNames(Document doc)
     {

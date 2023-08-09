@@ -75,7 +75,7 @@ public static class DefaultTraversal
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
     .ContinueTraversing(None);
 
-  private static readonly ITraversalRule DefaultRule = TraversalRule
+  public static readonly ITraversalRule DefaultRule = TraversalRule
     .NewTraversalRule()
     .When(_ => true)
     .ContinueTraversing(Members());
@@ -133,7 +133,7 @@ public static class DefaultTraversal
   }
 
   [Pure]
-  internal static IEnumerable<string> None(Base _)
+  public static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
   }
