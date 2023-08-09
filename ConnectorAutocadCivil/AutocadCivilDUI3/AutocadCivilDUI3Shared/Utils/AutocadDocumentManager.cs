@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using DUI3.Models;
-using Speckle.Newtonsoft.Json;
 
 namespace AutocadCivilDUI3Shared.Utils
 {
@@ -14,7 +12,7 @@ namespace AutocadCivilDUI3Shared.Utils
     private static string SpeckleModelCardsKey = "Speckle_DUI3_Model_Cards";
 
     /// <summary>
-    /// Returns all the speckle stream states present in the current document.
+    /// Returns all the speckle model cards present in the current document.
     /// </summary>
     /// <param name="doc"></param>
     /// <returns></returns>
@@ -54,7 +52,7 @@ namespace AutocadCivilDUI3Shared.Utils
     }
 
     /// <summary>
-    /// Writes the stream states to the current document.
+    /// Writes the model cards to the current document.
     /// </summary>
     /// <param name="doc"></param>
     /// <param name="wrap"></param>
