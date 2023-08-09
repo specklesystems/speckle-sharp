@@ -32,7 +32,7 @@ public class SelectionBinding : ISelectionBinding
   {
     var els = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id => RevitApp.ActiveUIDocument.Document.GetElement(id)).ToList();
     var cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
-    var ids = els.Select(el => el.UniqueId).ToList();
+    var ids = els.Select(el => el.Id.IntegerValue.ToString()).ToList();
     return new SelectionInfo()
     {
       SelectedObjectIds = ids,

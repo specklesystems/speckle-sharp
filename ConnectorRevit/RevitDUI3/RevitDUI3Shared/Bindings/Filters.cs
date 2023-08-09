@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using DUI3.Bindings;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
@@ -7,8 +8,8 @@ public class RevitEverythingFilter : EverythingSendFilter
 {
   public override List<string> GetObjectIds()
   {
-    return new List<string>();
-    // throw new System.NotImplementedException();
+    // TODO
+    return new List<string>(); 
   }
 
   public override bool CheckExpiry(string[] changedObjectIds)
@@ -26,7 +27,6 @@ public class RevitSelectionFilter : DirectSelectionSendFilter
 
   public override bool CheckExpiry(string[] changedObjectIds)
   {
-    // TODO;
-    return false;
+    return SelectedObjectIds.Intersect(changedObjectIds).Any();
   }
 }

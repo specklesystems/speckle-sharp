@@ -84,7 +84,10 @@ public class SendBinding : ISendBinding
     foreach (var sender in senders)
     {
       var isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
-      if(isExpired) expiredSenderIds.Add(sender.Id);
+      if (isExpired)
+      {
+        expiredSenderIds.Add(sender.Id);
+      }
     }
     Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
     _changedObjectIds = new HashSet<string>();
