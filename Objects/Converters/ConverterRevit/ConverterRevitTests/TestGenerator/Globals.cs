@@ -1,20 +1,33 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Linq;
 
 namespace TestGenerator
 {
   public static class Globals
   {
-    public static string TestModelsFolderPath(string basePath)
+    /// <summary>
+    /// This is the same method in ConverterRevitTests.Globals
+    /// TODO: Consolidate
+    /// </summary>
+    /// <param name="directoryStringInSpeckleSharp"></param>
+    /// <param name="year"></param>
+    /// <returns></returns>
+    public static string GetTestModelFolderLocation(string directoryStringInSpeckleSharp, string year)
     {
-      return Path.Combine(basePath, "..", "..", "TestModels");
-    }
+      var assemblyLocationList = directoryStringInSpeckleSharp.Split('\\').ToList();
 
-    public static string TestModelsFolderForRevitVersion(string basePath, string year)
-    {
-      return Path.Combine(TestModelsFolderPath(basePath), year);
+      for (var i = assemblyLocationList.Count - 1; i >= 0; i--)
+      {
+        var folderName = assemblyLocationList[i];
+        assemblyLocationList.RemoveAt(i);
+        if (folderName == "speckle-sharp") break;
+      }
+      assemblyLocationList.Add("speckle-sharp-test-models");
+      assemblyLocationList.Add("Revit");
+
+      assemblyLocationList.Add(year);
+      var testFolderLocation = string.Join("\\", assemblyLocationList);
+      return testFolderLocation;
     }
   }
 }

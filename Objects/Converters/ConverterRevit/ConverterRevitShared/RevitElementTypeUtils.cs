@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using ConverterRevitShared.Classes;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using OSG = Objects.Structural.Geometry;
 using DB = Autodesk.Revit.DB;
 using Speckle.Core.Logging;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit
 {
@@ -18,9 +18,7 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit : IRevitElementTypeRetriever,
     IAllRevitCategoriesExposer
   {
-    private ConversionOperationCache ConversionOperationCache { get; } = new();
-    private static AllRevitCategories AllRevitCategoriesInstance { get; } = new();
-    public IAllRevitCategories AllCategories => AllRevitCategoriesInstance;
+    public IAllRevitCategories AllCategories => new AllRevitCategories(revitDocumentAggregateCache);
 
     #region IRevitElementTypeRetriever
     public string? GetElementType(Base @base)
@@ -97,46 +95,7 @@ namespace Objects.Converter.Revit
       };
     }
 
-    public bool CacheContainsTypeWithName(string category, string baseType)
-    {
-      var type = ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, baseType));
-      if (type == null) return false;
-
-      return true;
-    }
-
-    public IEnumerable<ElementType> GetAllCachedElementTypes()
-    {
-      return ConversionOperationCache.GetAllObjectsOfType<ElementType>();
-    }
-    
-    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo typeInfo)
-    {
-      var types = ConversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
-        typeInfo.CategoryName,
-        () => GetElementTypes<ElementType>(typeInfo.ElementTypeType, typeInfo.BuiltInCategories),
-        out var typesRetrieved);
-
-      // if type was added instead of retreived, add types to master cache to facilitate lookup later
-      if (!typesRetrieved)
-      {
-        ConversionOperationCache.AddMany<ElementType>(types, type => GetUniqueTypeName(typeInfo.CategoryName, type.Name));
-      }
-
-      return types;
-    }
-
-    public void InvalidateElementTypeCache(string categoryName)
-    {
-      ConversionOperationCache.Invalidate<IEnumerable<ElementType>>(categoryName);
-    }
-
     #endregion
-
-    private string GetUniqueTypeName(string category, string type)
-    {
-      return category + "_" + type;
-    }
 
     private T? GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
       where T : ElementType
@@ -149,8 +108,10 @@ namespace Objects.Converter.Revit
         SpeckleLog.Logger.Warning("Could not find valid incoming type for element of type {speckleType}", element.speckle_type);
         appObj.Update(logItem: $"Could not find valid incoming type for element of type \"{element.speckle_type}\"");
       }
-      var typeInfo = Revit.AllRevitCategories.GetRevitCategoryInfoStatic<T>(element);
-      var types = GetOrAddAvailibleTypes(typeInfo);
+      var typeInfo = AllCategories.GetRevitCategoryInfo<T>(element);
+      var types = revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<List<ElementType>>()
+        .GetOrAddGroupOfTypes(typeInfo);
 
       if (!types.Any())
       {
@@ -173,7 +134,9 @@ namespace Objects.Converter.Revit
           .Where(t => string.Equals(t.Name, type, StringComparison.CurrentCultureIgnoreCase))
           .FirstOrDefault();
       }
-      exactType ??= ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
+      exactType ??= revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<ElementType>()
+        .TryGet(typeInfo.GetCategorySpecificTypeName(type));
 
       if (exactType != null)
       {
@@ -186,7 +149,7 @@ namespace Objects.Converter.Revit
       return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
     }
 
-    private T GetElementType<T>(Base element, string? family, string? type, IEnumerable<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    private T GetElementType<T>(Base element, string? family, string? type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
     {
       isExactMatch = false;
       ElementType match = null;
@@ -210,21 +173,6 @@ namespace Objects.Converter.Revit
         fs.Activate();
 
       return (T)(object)match;
-    }
-
-    private static IEnumerable<T> GetElementTypes<T>(Type type, ICollection<BuiltInCategory> categories)
-    {
-      var collector = new FilteredElementCollector(Doc);
-      if (categories.Count > 0)
-      {
-        using var filter = new ElementMulticategoryFilter(categories);
-        collector = collector.WherePasses(filter);
-      }
-      if (type != null)
-      {
-        collector = collector.OfClass(type);
-      }
-      return collector.WhereElementIsElementType().Cast<T>();
     }
   }
 }

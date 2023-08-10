@@ -90,7 +90,7 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
 
   public string GenerateSeed()
   {
-    return new string(Utilities.hashString(Guid.NewGuid().ToString()).Take(20).ToArray());
+    return new string(Utilities.HashString(Guid.NewGuid().ToString()).Take(20).ToArray());
   }
 
   public override void AppendAdditionalMenuItems(ToolStripDropDown menu)

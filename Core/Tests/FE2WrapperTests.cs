@@ -5,6 +5,7 @@ using Speckle.Core.Logging;
 namespace TestsUnit;
 
 [TestFixture]
+[TestOf(typeof(StreamWrapper))]
 public class Fe2WrapperTests
 {
   [TestCase(

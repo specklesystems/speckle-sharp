@@ -38,6 +38,7 @@ namespace Objects.Converter.Revit
     {
       return new double[] { pt.x, pt.y, pt.z };
     }
+
     public List<double> PointsToFlatList(IEnumerable<Point> points)
     {
       return points.SelectMany(PointToArray).ToList();
@@ -63,37 +64,45 @@ namespace Objects.Converter.Revit
 
     public XYZ PointToNative(Point pt)
     {
-      var revitPoint = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+      var revitPoint = new XYZ(
+        ScaleToNative(pt.x, pt.units),
+        ScaleToNative(pt.y, pt.units),
+        ScaleToNative(pt.z, pt.units)
+      );
       var intPt = ToInternalCoordinates(revitPoint, true);
       return intPt;
     }
 
-    public Point PointToSpeckle(XYZ pt, Document doc, string units = null, bool doNotTransformWithReferencePoint = false)
+    public Point PointToSpeckle(
+      XYZ pt,
+      Document doc,
+      string units = null,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       var u = units ?? ModelUnits;
-      
+
       var extPt = doNotTransformWithReferencePoint ? pt : ToExternalCoordinates(pt, true, doc);
 
       var pointToSpeckle = new Point(
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
         u == Units.None ? extPt.Z : ScaleToSpeckle(extPt.Z),
-        u);
+        u
+      );
       return pointToSpeckle;
     }
 
     public List<XYZ> PointListToNative(IList<double> arr, string units = null)
     {
-      if (arr.Count % 3 != 0) throw new SpeckleException("Array malformed: length%3 != 0.");
+      if (arr.Count % 3 != 0)
+        throw new SpeckleException("Array malformed: length%3 != 0.");
 
       var u = units ?? ModelUnits;
 
       var points = new List<XYZ>(arr.Count / 3);
       for (int i = 2; i < arr.Count; i += 3)
-        points.Add(new XYZ(
-          ScaleToNative(arr[i - 2], u),
-          ScaleToNative(arr[i - 1], u),
-          ScaleToNative(arr[i], u)));
+        points.Add(new XYZ(ScaleToNative(arr[i - 2], u), ScaleToNative(arr[i - 1], u), ScaleToNative(arr[i], u)));
 
       return points;
     }
@@ -109,7 +118,10 @@ namespace Objects.Converter.Revit
       var points = pointcloud.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
 
       var _pointcloud = new Pointcloud();
-      _pointcloud.points = points.Select(o => PointToSpeckle(transform.OfPoint(o), pointcloud.Document, u)).SelectMany(o => new List<double>() { o.x, o.y, o.z }).ToList();
+      _pointcloud.points = points
+        .Select(o => PointToSpeckle(transform.OfPoint(o), pointcloud.Document, u))
+        .SelectMany(o => new List<double>() { o.x, o.y, o.z })
+        .ToList();
       _pointcloud.colors = points.Select(o => o.Color).ToList();
       _pointcloud.units = u;
       _pointcloud.bbox = BoxToSpeckle(boundingBox, pointcloud.Document, u);
@@ -117,7 +129,12 @@ namespace Objects.Converter.Revit
       return _pointcloud;
     }
 
-    public Vector VectorToSpeckle(XYZ pt, Document doc, string units = null, bool doNotTransformWithReferencePoint = false)
+    public Vector VectorToSpeckle(
+      XYZ pt,
+      Document doc,
+      string units = null,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       var u = units ?? ModelUnits;
       var extPt = doNotTransformWithReferencePoint ? pt : ToExternalCoordinates(pt, false, doc);
@@ -125,22 +142,30 @@ namespace Objects.Converter.Revit
         u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
         u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),
         u == Units.None ? extPt.Z : ScaleToSpeckle(extPt.Z),
-        u);
+        u
+      );
       return pointToSpeckle;
     }
 
     public XYZ VectorToNative(Vector pt)
     {
-      var revitVector = new XYZ(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+      var revitVector = new XYZ(
+        ScaleToNative(pt.x, pt.units),
+        ScaleToNative(pt.y, pt.units),
+        ScaleToNative(pt.z, pt.units)
+      );
       var intV = ToInternalCoordinates(revitVector, false);
       return intV;
     }
 
     public DB.Plane PlaneToNative(Plane plane)
     {
-      return DB.Plane.CreateByOriginAndBasis(PointToNative(plane.origin), VectorToNative(plane.xdir).Normalize(), VectorToNative(plane.ydir).Normalize());
+      return DB.Plane.CreateByOriginAndBasis(
+        PointToNative(plane.origin),
+        VectorToNative(plane.xdir).Normalize(),
+        VectorToNative(plane.ydir).Normalize()
+      );
     }
-
 
     public Plane PlaneToSpeckle(DB.Plane plane, Document doc, string units = null)
     {
@@ -155,9 +180,7 @@ namespace Objects.Converter.Revit
 
     public DB.Line LineToNative(Line line)
     {
-      return DB.Line.CreateBound(
-        PointToNative(line.start),
-        PointToNative(line.end));
+      return DB.Line.CreateBound(PointToNative(line.start), PointToNative(line.end));
     }
 
     public Line LineToSpeckle(DB.Line line, Document doc, string units = null)
@@ -178,7 +201,11 @@ namespace Objects.Converter.Revit
       var u = units ?? ModelUnits;
       var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
 
-      var c = new Circle(PlaneToSpeckle(arcPlane, doc, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), u);
+      var c = new Circle(
+        PlaneToSpeckle(arcPlane, doc, u),
+        u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius),
+        u
+      );
       c.length = ScaleToSpeckle(arc.Length);
       return c;
     }
@@ -191,7 +218,8 @@ namespace Objects.Converter.Revit
 
     public DB.Arc ArcToNative(Arc arc)
     {
-      double startAngle, endAngle;
+      double startAngle,
+        endAngle;
       if (arc.startAngle > arc.endAngle)
       {
         startAngle = (double)arc.endAngle;
@@ -231,7 +259,14 @@ namespace Objects.Converter.Revit
       double startAngle = arc.XDirection.AngleOnPlaneTo(dir0, arc.Normal);
       double endAngle = arc.XDirection.AngleOnPlaneTo(dir1, arc.Normal);
 
-      var a = new Arc(PlaneToSpeckle(arcPlane, doc, u), u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius), startAngle, endAngle, endAngle - startAngle, u);
+      var a = new Arc(
+        PlaneToSpeckle(arcPlane, doc, u),
+        u == Units.None ? arc.Radius : ScaleToSpeckle(arc.Radius),
+        startAngle,
+        endAngle,
+        endAngle - startAngle,
+        u
+      );
       a.endPoint = PointToSpeckle(end, doc, u);
       a.startPoint = PointToSpeckle(start, doc, u);
       a.midPoint = PointToSpeckle(mid, doc, u);
@@ -263,7 +298,9 @@ namespace Objects.Converter.Revit
     public Ellipse EllipseToSpeckle(DB.Ellipse ellipse, Document doc, string units = null)
     {
       var u = units ?? ModelUnits;
-      using (DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection))
+      using (
+        DB.Plane basePlane = DB.Plane.CreateByOriginAndBasis(ellipse.Center, ellipse.XDirection, ellipse.YDirection)
+      )
       {
         var trim = ellipse.IsBound ? new Interval(ellipse.GetEndParameter(0), ellipse.GetEndParameter(1)) : null;
 
@@ -273,7 +310,8 @@ namespace Objects.Converter.Revit
           u == Units.None ? ellipse.RadiusY : ScaleToSpeckle(ellipse.RadiusY),
           new Interval(0, 2 * Math.PI),
           trim,
-          u);
+          u
+        );
         ellipseToSpeckle.length = ScaleToSpeckle(ellipse.Length);
         ellipseToSpeckle.domain = new Interval(0, 1);
         return ellipseToSpeckle;
@@ -292,7 +330,8 @@ namespace Objects.Converter.Revit
       Curve speckleCurve = new Curve();
       speckleCurve.weights = revitCurve.Weights.Cast<double>().ToList();
       speckleCurve.points = points;
-      speckleCurve.knots = revitCurve.Knots.Cast<double>().ToList(); ;
+      speckleCurve.knots = revitCurve.Knots.Cast<double>().ToList();
+      ;
       speckleCurve.degree = revitCurve.Degree;
       //speckleCurve.periodic = revitCurve.Period;
       speckleCurve.rational = revitCurve.isRational;
@@ -313,12 +352,22 @@ namespace Objects.Converter.Revit
       for (int i = 0; i < speckleCurve.points.Count; i += 3)
       {
         //use PointToNative for conversion as that takes into account the Project Base Point
-        var point = new Point(speckleCurve.points[i], speckleCurve.points[i + 1], speckleCurve.points[i + 2], speckleCurve.units);
+        var point = new Point(
+          speckleCurve.points[i],
+          speckleCurve.points[i + 1],
+          speckleCurve.points[i + 2],
+          speckleCurve.units
+        );
         pts.Add(PointToNative(point));
       }
       try
       {
-        if (speckleCurve.knots != null && speckleCurve.weights != null && speckleCurve.knots.Any() && speckleCurve.weights.Any())
+        if (
+          speckleCurve.knots != null
+          && speckleCurve.weights != null
+          && speckleCurve.knots.Any()
+          && speckleCurve.weights.Any()
+        )
         {
           var weights = speckleCurve.weights.GetRange(0, pts.Count);
           var speckleKnots = new List<double>(speckleCurve.knots);
@@ -339,11 +388,11 @@ namespace Objects.Converter.Revit
           var curve = NurbSpline.CreateCurve(pts, weights);
           return curve;
         }
-
       }
       catch (Exception e)
       {
-        if (e is Autodesk.Revit.Exceptions.ArgumentException) throw e; // prob a closed, periodic curve
+        if (e is Autodesk.Revit.Exceptions.ArgumentException)
+          throw e; // prob a closed, periodic curve
         return null;
       }
     }
@@ -499,11 +548,7 @@ namespace Objects.Converter.Revit
       if (polyline.value.Count == 6)
       {
         // Polyline is actually a single line
-        TryAppendLineSafely(
-          curveArray,
-          new Line(polyline.value, polyline.units),
-          appObj
-        );
+        TryAppendLineSafely(curveArray, new Line(polyline.value, polyline.units), appObj);
       }
       else
       {
@@ -511,26 +556,18 @@ namespace Objects.Converter.Revit
         var lastPt = pts[0];
         for (var i = 1; i < pts.Count; i++)
         {
-          var success = TryAppendLineSafely(
-            curveArray,
-            new Line(lastPt, pts[i], polyline.units),
-            appObj
-          );
-          if (success) lastPt = pts[i];
+          var success = TryAppendLineSafely(curveArray, new Line(lastPt, pts[i], polyline.units), appObj);
+          if (success)
+            lastPt = pts[i];
         }
 
         if (polyline.closed)
         {
-          TryAppendLineSafely(
-            curveArray,
-            new Line(pts[pts.Count - 1], pts[0], polyline.units),
-            appObj
-          );
+          TryAppendLineSafely(curveArray, new Line(pts[pts.Count - 1], pts[0], polyline.units), appObj);
         }
       }
       return curveArray;
     }
-
 
     public Polyline PolylineToSpeckle(PolyLine polyline, Document doc, string units = null)
     {
@@ -546,7 +583,11 @@ namespace Objects.Converter.Revit
 
       // get the base plane of the bounding box from the transform
       var transform = box.Transform;
-      var plane = DB.Plane.CreateByOriginAndBasis(transform.Origin, transform.BasisX.Normalize(), transform.BasisY.Normalize());
+      var plane = DB.Plane.CreateByOriginAndBasis(
+        transform.Origin,
+        transform.BasisX.Normalize(),
+        transform.BasisY.Normalize()
+      );
 
       var _box = new Box()
       {
@@ -563,7 +604,9 @@ namespace Objects.Converter.Revit
     public DB.BoundingBoxXYZ BoxToNative(Box box)
     {
       var boundingBox = new BoundingBoxXYZ();
-      boundingBox.Min = PointToNative(new Point((double)box.xSize.start, (double)box.ySize.start, (double)box.zSize.start));
+      boundingBox.Min = PointToNative(
+        new Point((double)box.xSize.start, (double)box.ySize.start, (double)box.zSize.start)
+      );
       boundingBox.Max = PointToNative(new Point((double)box.xSize.end, (double)box.ySize.end, (double)box.zSize.end));
       return boundingBox;
     }
@@ -582,10 +625,7 @@ namespace Objects.Converter.Revit
         var B = triangle.get_Index(1);
         var C = triangle.get_Index(2);
         faces.Add(3);
-        faces.AddRange(new int[]
-        {
-          (int)A, (int)B, (int)C
-        });
+        faces.AddRange(new int[] { (int)A, (int)B, (int)C });
       }
 
       var u = units ?? ModelUnits;
@@ -599,9 +639,19 @@ namespace Objects.Converter.Revit
 
     // Inspired by
     // https://github.com/DynamoDS/DynamoRevit/blob/master/src/Libraries/RevitNodes/GeometryConversion/ProtoToRevitMesh.cs
-    public IList<GeometryObject> MeshToNative(Mesh mesh, TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh, TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage, RenderMaterial parentMaterial = null)
+    public IList<GeometryObject> MeshToNative(
+      Mesh mesh,
+      TessellatedShapeBuilderTarget target = TessellatedShapeBuilderTarget.Mesh,
+      TessellatedShapeBuilderFallback fallback = TessellatedShapeBuilderFallback.Salvage,
+      RenderMaterial parentMaterial = null
+    )
     {
-      var tsb = new TessellatedShapeBuilder() { Fallback = fallback, Target = target, GraphicsStyleId = ElementId.InvalidElementId };
+      var tsb = new TessellatedShapeBuilder()
+      {
+        Fallback = fallback,
+        Target = target,
+        GraphicsStyleId = ElementId.InvalidElementId
+      };
 
       var valid = tsb.AreTargetAndFallbackCompatible(target, fallback);
       tsb.OpenConnectedFaceSet(target == TessellatedShapeBuilderTarget.Solid);
@@ -614,7 +664,8 @@ namespace Objects.Converter.Revit
       while (i < mesh.faces.Count)
       {
         int n = mesh.faces[i];
-        if (n < 3) n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+        if (n < 3)
+          n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
 
         var points = mesh.faces.GetRange(i + 1, n).Select(x => vertices[x]).ToArray();
 
@@ -626,7 +677,8 @@ namespace Objects.Converter.Revit
           var face1 = new TessellatedFace(triPoints, materialId);
           tsb.AddFace(face1);
 
-          triPoints = new List<XYZ> { points[1], points[2], points[3] }; ;
+          triPoints = new List<XYZ> { points[1], points[2], points[3] };
+          ;
           var face2 = new TessellatedFace(triPoints, materialId);
           tsb.AddFace(face2);
         }
@@ -652,21 +704,32 @@ namespace Objects.Converter.Revit
       var result = tsb.GetBuildResult();
       return result.GetGeometricalObjects();
 
-
       static bool IsNonPlanarQuad(IList<XYZ> points)
       {
-        if (points.Count != 4) return false;
+        if (points.Count != 4)
+          return false;
 
         var matrix = new Matrix4x4(
-          (float)points[0].X, (float)points[1].X, (float)points[2].X, (float)points[3].X,
-          (float)points[0].Y, (float)points[1].Y, (float)points[2].Y, (float)points[3].Y,
-          (float)points[0].Z, (float)points[1].Z, (float)points[2].Z, (float)points[3].Z,
-          1, 1, 1, 1
+          (float)points[0].X,
+          (float)points[1].X,
+          (float)points[2].X,
+          (float)points[3].X,
+          (float)points[0].Y,
+          (float)points[1].Y,
+          (float)points[2].Y,
+          (float)points[3].Y,
+          (float)points[0].Z,
+          (float)points[1].Z,
+          (float)points[2].Z,
+          (float)points[3].Z,
+          1,
+          1,
+          1,
+          1
         );
         return matrix.GetDeterminant() != 0;
       }
     }
-
 
     public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
     {
@@ -698,7 +761,6 @@ namespace Objects.Converter.Revit
 
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, Document doc, string units = null)
     {
-
 #if REVIT2020
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
 #else
@@ -708,7 +770,12 @@ namespace Objects.Converter.Revit
       return spcklSurface;
     }
 
-    public Surface NurbsSurfaceToSpeckle(DB.NurbsSurfaceData surface, DB.BoundingBoxUV uvBox, Document doc, string units = null)
+    public Surface NurbsSurfaceToSpeckle(
+      DB.NurbsSurfaceData surface,
+      DB.BoundingBoxUV uvBox,
+      Document doc,
+      string units = null
+    )
     {
       var result = new Surface();
 
@@ -767,9 +834,10 @@ namespace Objects.Converter.Revit
     {
       // TODO: Trim curve with domain. Unsure if this is necessary as all our curves are converted to NURBS on Rhino output.
       var nativeCurveArray = CurveToNative(edge.Curve);
-      bool isTrimmed = edge.Curve.domain != null && edge.Domain != null &&
-        (edge.Curve.domain.start != edge.Domain.start ||
-          edge.Curve.domain.end != edge.Domain.end);
+      bool isTrimmed =
+        edge.Curve.domain != null
+        && edge.Domain != null
+        && (edge.Curve.domain.start != edge.Domain.start || edge.Curve.domain.end != edge.Domain.end);
       if (nativeCurveArray.Size == 1)
       {
         var nativeCurve = nativeCurveArray.get_Item(0);
@@ -804,9 +872,9 @@ namespace Objects.Converter.Revit
         return new List<BRepBuilderEdgeGeometry> { fullEdge };
       }
 
-      var iterator = edge.ProxyCurveIsReversed ?
-        nativeCurveArray.ReverseIterator() :
-        nativeCurveArray.ForwardIterator();
+      var iterator = edge.ProxyCurveIsReversed
+        ? nativeCurveArray.ReverseIterator()
+        : nativeCurveArray.ForwardIterator();
 
       var result = new List<BRepBuilderEdgeGeometry>();
       while (iterator.MoveNext())
@@ -828,9 +896,7 @@ namespace Objects.Converter.Revit
       var weights = new double[count];
       int p = 0;
 
-      controlPoints.ForEach(row =>
-        row.ForEach(pt =>
-          weights[p++] = pt.weight));
+      controlPoints.ForEach(row => row.ForEach(pt => weights[p++] = pt.weight));
 
       return weights;
     }
@@ -843,12 +909,14 @@ namespace Objects.Converter.Revit
       var points = new DB.XYZ[count];
       int p = 0;
 
-      controlPoints.ForEach(row =>
-        row.ForEach(pt =>
-        {
-          var point = new Point(pt.x, pt.y, pt.z, pt.units);
-          points[p++] = PointToNative(point);
-        }));
+      controlPoints.ForEach(
+        row =>
+          row.ForEach(pt =>
+          {
+            var point = new Point(pt.x, pt.y, pt.z, pt.units);
+            points[p++] = PointToNative(point);
+          })
+      );
 
       return points;
     }
@@ -858,7 +926,8 @@ namespace Objects.Converter.Revit
       var count = list.Count;
       var knots = new double[count + 2];
 
-      int j = 0, k = 0;
+      int j = 0,
+        k = 0;
       while (j < count)
         knots[++k] = list[j++];
 
@@ -870,7 +939,12 @@ namespace Objects.Converter.Revit
 
     public BRepBuilderSurfaceGeometry SurfaceToNative(Surface surface)
     {
-      var uvBox = new DB.BoundingBoxUV(surface.knotsU[0], surface.knotsV[0], surface.knotsU[surface.knotsU.Count - 1], surface.knotsV[surface.knotsV.Count - 1]);
+      var uvBox = new DB.BoundingBoxUV(
+        surface.knotsU[0],
+        surface.knotsV[0],
+        surface.knotsU[surface.knotsU.Count - 1],
+        surface.knotsV[surface.knotsV.Count - 1]
+      );
       var surfPts = surface.GetControlPoints();
       var uKnots = SurfaceKnotsToNative(surface.knotsU);
       var vKnots = SurfaceKnotsToNative(surface.knotsV);
@@ -879,14 +953,29 @@ namespace Objects.Converter.Revit
       BRepBuilderSurfaceGeometry result;
       if (!surface.rational)
       {
-        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, false, uvBox);
+        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(
+          surface.degreeU,
+          surface.degreeV,
+          uKnots,
+          vKnots,
+          cPts,
+          false,
+          uvBox
+        );
       }
       else
       {
         var weights = ControlPointWeightsToNative(surfPts);
-        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(surface.degreeU, surface.degreeV, uKnots,
-          vKnots, cPts, weights, false, uvBox);
+        result = DB.BRepBuilderSurfaceGeometry.CreateNURBSSurface(
+          surface.degreeU,
+          surface.degreeV,
+          uKnots,
+          vKnots,
+          cPts,
+          weights,
+          false,
+          uvBox
+        );
       }
 
       return result;
@@ -932,8 +1021,11 @@ namespace Objects.Converter.Revit
               {
                 try
                 {
-                  if (trim.TrimType != BrepTrimType.Boundary && trim.TrimType != BrepTrimType.Mated &&
-                      trim.TrimType != BrepTrimType.Seam)
+                  if (
+                    trim.TrimType != BrepTrimType.Boundary
+                    && trim.TrimType != BrepTrimType.Mated
+                    && trim.TrimType != BrepTrimType.Seam
+                  )
                     continue;
                   if (trim.Edge == null)
                     continue;
@@ -963,8 +1055,12 @@ namespace Objects.Converter.Revit
                 }
                 catch (Exception e)
                 {
-                  notes.Add($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}: {e.Message}");
-                  throw new SpeckleException($"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)}  on brep with id {brep.id}\n   Reason: {e.Message}", false);
+                  notes.Add(
+                    $"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}: {e.Message}"
+                  );
+                  throw new SpeckleException(
+                    $"Failed to create trim {loop.Trims.IndexOf(trim)} on loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)}  on brep with id {brep.id}\n   Reason: {e.Message}"
+                  );
                 }
               }
               builder.FinishLoop(loopId);
@@ -972,8 +1068,11 @@ namespace Objects.Converter.Revit
             catch (Exception e)
             {
               notes.Add(e.Message);
-              if (e is SpeckleException) throw;
-              throw new SpeckleException($"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
+              if (e is SpeckleException)
+                throw;
+              throw new SpeckleException(
+                $"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}"
+              );
             }
           }
           builder.FinishFace(faceId);
@@ -982,16 +1081,21 @@ namespace Objects.Converter.Revit
         {
           builder.Dispose();
           notes.Add(e.Message);
-          if (e is SpeckleException) throw;
-          throw new SpeckleException($"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}", false);
+          if (e is SpeckleException)
+            throw;
+          throw new SpeckleException(
+            $"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}"
+          );
         }
       }
 
       var bRepBuilderOutcome = builder.Finish();
-      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure) return null;
+      if (bRepBuilderOutcome == BRepBuilderOutcome.Failure)
+        return null;
 
       var isResultAvailable = builder.IsResultAvailable();
-      if (!isResultAvailable) return null;
+      if (!isResultAvailable)
+        return null;
       var result = builder.GetResult();
       builder.Dispose();
       return result;
@@ -1008,7 +1112,8 @@ namespace Objects.Converter.Revit
       var brep = new Brep();
       brep.units = u;
 
-      if (solid is null || solid.Faces.IsEmpty) return null;
+      if (solid is null || solid.Faces.IsEmpty)
+        return null;
 
       var faceIndex = 0;
       var edgeIndex = 0;
@@ -1049,12 +1154,23 @@ namespace Objects.Converter.Revit
 
             // Get curve, create trim and save index
             var trim = edge.GetCurveUV(edgeSide);
-            var sTrim = new BrepTrim(brep, edgeIndex, faceIndex, loopIndex, curve2dIndex, 0, BrepTrimType.Boundary, edge.IsFlippedOnFace(edgeSide), -1, -1);
+            var sTrim = new BrepTrim(
+              brep,
+              edgeIndex,
+              faceIndex,
+              loopIndex,
+              curve2dIndex,
+              0,
+              BrepTrimType.Boundary,
+              edge.IsFlippedOnFace(edgeSide),
+              -1,
+              -1
+            );
             var sTrimIndex = trimIndex;
             loopTrimIndices.Add(sTrimIndex);
 
             // Add curve and trim, increase index counters.
-            speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane(), d,Units.None));
+            speckle2dCurves.Add(CurveToSpeckle(trim.As3DCurveInXYPlane(), d, Units.None));
             speckleTrims.Add(sTrim);
             curve2dIndex++;
             trimIndex++;
@@ -1064,12 +1180,20 @@ namespace Objects.Converter.Revit
             {
               // First time we visit this edge, add 3d curve and create new BrepEdge.
               var edgeCurve = edge.AsCurve();
-              speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve, d,u);
+              speckle3dCurves[curve3dIndex] = CurveToSpeckle(edgeCurve, d, u);
               var sCurveIndex = curve3dIndex;
               curve3dIndex++;
 
               // Create a trim with just one of the trimIndices set, the second one will be set on the opposite condition.
-              var sEdge = new BrepEdge(brep, sCurveIndex, new[] { sTrimIndex }, -1, -1, edge.IsFlippedOnFace(face), null);
+              var sEdge = new BrepEdge(
+                brep,
+                sCurveIndex,
+                new[] { sTrimIndex },
+                -1,
+                -1,
+                edge.IsFlippedOnFace(face),
+                null
+              );
               speckleEdges.Add(edge, sEdge);
               speckleEdgeIndexes.Add(edge, edgeIndex);
               edgeIndex++;
@@ -1096,8 +1220,10 @@ namespace Objects.Converter.Revit
           loopIndices.Add(sLoopIndex);
         }
 
-        speckleFaces.Add(face,
-          new BrepFace(brep, surfaceIndex, loopIndices, loopIndices[0], !face.OrientationMatchesSurfaceOrientation));
+        speckleFaces.Add(
+          face,
+          new BrepFace(brep, surfaceIndex, loopIndices, loopIndices[0], !face.OrientationMatchesSurfaceOrientation)
+        );
         faceIndex++;
         brep.Surfaces.Add(surface);
         surfaceIndex++;
@@ -1117,7 +1243,13 @@ namespace Objects.Converter.Revit
 #endif
     }
 
-    public Surface FaceToSpeckle(DB.Face face, Document doc, out bool parametricOrientation, double relativeTolerance = 0.0, string units = null)
+    public Surface FaceToSpeckle(
+      DB.Face face,
+      Document doc,
+      out bool parametricOrientation,
+      double relativeTolerance = 0.0,
+      string units = null
+    )
     {
       var u = units ?? ModelUnits;
       using (var surface = face.GetSurface())
@@ -1143,29 +1275,38 @@ namespace Objects.Converter.Revit
           throw new NotImplementedException();
       }
     }
+
     public Surface FaceToSpeckle(PlanarFace planarFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
+
     public Surface FaceToSpeckle(ConicalFace conicalFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
+
     public Surface FaceToSpeckle(CylindricalFace cylindricalFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
+
     public Surface FaceToSpeckle(RevolvedFace revolvedFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
+
     public Surface FaceToSpeckle(RuledFace ruledFace, double tolerance, string units = null)
     {
       throw new NotImplementedException();
     }
 
-    public int AddSurface(Brep brep, DB.Face face, out List<BrepBoundary>[] shells,
-      Dictionary<DB.Edge, BrepEdge> brepEdges = null)
+    public int AddSurface(
+      Brep brep,
+      DB.Face face,
+      out List<BrepBoundary>[] shells,
+      Dictionary<DB.Edge, BrepEdge> brepEdges = null
+    )
     {
       throw new NotImplementedException();
     }
@@ -1186,7 +1327,8 @@ namespace Objects.Converter.Revit
           {
             var brepEdge = loop.edges[e];
             var orientation = loop.orientation[e];
-            if (orientation == 0) continue;
+            if (orientation == 0)
+              continue;
 
             if (loop.trims.segments[e] is Curve trim)
             {
@@ -1207,7 +1349,11 @@ namespace Objects.Converter.Revit
       public List<int> orientation;
     }
 
-    public DirectShape BrepToDirectShape(Brep brep, out List<string> notes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public DirectShape BrepToDirectShape(
+      Brep brep,
+      out List<string> notes,
+      BuiltInCategory cat = BuiltInCategory.OST_GenericModel
+    )
     {
       var revitDs = DirectShape.CreateElement(Doc, new ElementId(cat));
       notes = new List<string>();

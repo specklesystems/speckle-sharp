@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Objects.Converter.Revit;
-using Revit.Async;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using Xunit;
 using xUnitRevitUtils;
@@ -21,7 +20,7 @@ namespace ConverterRevitTests
     {
       var tcs = new TaskCompletionSource<string>();
 
-      await RevitTask.RunAsync(() =>
+      await APIContext.Run(() =>
       {
         using var g = new DB.TransactionGroup(doc, transactionName);
         using var transaction = new DB.Transaction(doc, transactionName);

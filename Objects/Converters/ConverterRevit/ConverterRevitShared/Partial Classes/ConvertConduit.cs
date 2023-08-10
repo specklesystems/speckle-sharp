@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -59,6 +60,8 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(conduit, speckleRevitConduit);
       }
 
+      CreateSystemConnections(speckleRevitConduit.Connectors, conduit, receivedObjectsCache);
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: conduit.UniqueId, convertedItem: conduit);
       return appObj;
     }
@@ -88,6 +91,11 @@ namespace Objects.Converter.Revit
         {
           "RBS_CONDUIT_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM"
         });
+
+      foreach (var connector in revitConduit.GetConnectorSet())
+      {
+        speckleConduit.Connectors.Add(ConnectorToSpeckle(connector));
+      }
 
       return speckleConduit;
     }

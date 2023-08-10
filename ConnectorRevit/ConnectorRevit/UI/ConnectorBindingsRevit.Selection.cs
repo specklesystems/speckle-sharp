@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -26,7 +27,13 @@ namespace Speckle.ConnectorRevit.UI
       if (CurrentDoc != null)
       {
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
-        categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
+        categories = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<Category>()
+          .GetAllKeys()
+          .OrderBy(x => x)
+          .ToList();
+
+        //categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
         viewFilters = ConnectorRevitUtils.GetViewFilterNames(CurrentDoc.Document);
         views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
         schedules = ConnectorRevitUtils.GetScheduleNames(CurrentDoc.Document);
@@ -300,7 +307,7 @@ namespace Speckle.ConnectorRevit.UI
           x => x.Title == linkedFile.Name.Split(new string[] { ".rvt" }, StringSplitOptions.None)[0]
         );
         if (match != null)
-          selection.AddRange(match.SupportedElements());
+          selection.AddRange(match.GetSupportedElements(revitDocumentAggregateCache));
       }
 
       return selection;
@@ -332,14 +339,14 @@ namespace Speckle.ConnectorRevit.UI
       //and these for every linked doc
       foreach (var doc in allDocs)
       {
-        selection.AddRange(doc.SupportedElements()); // includes levels
-        selection.AddRange(doc.SupportedTypes());
+        selection.AddRange(doc.GetSupportedElements(revitDocumentAggregateCache)); // includes levels
+        selection.AddRange(doc.GetSupportedTypes(revitDocumentAggregateCache));
       }
 
       return selection;
     }
 
-    private static List<Element> GetSelectionByCategory(
+    private List<Element> GetSelectionByCategory(
       ISelectionFilter filter,
       Document currentDoc,
       List<Document> allDocs
@@ -347,20 +354,24 @@ namespace Speckle.ConnectorRevit.UI
     {
       var selection = new List<Element>();
       var catFilter = filter as ListSelectionFilter;
-      var bics = new List<BuiltInCategory>();
-      var categories = ConnectorRevitUtils.GetCategories(currentDoc);
-      IList<ElementFilter> elementFilters = new List<ElementFilter>();
+      var catIds = new List<ElementId>();
 
       foreach (var cat in catFilter.Selection)
       {
-        elementFilters.Add(new ElementCategoryFilter(categories[cat].Id));
+        var revitCategory = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<Category>()
+          .TryGet(cat);
+        if (revitCategory == null) continue;
+
+        catIds.Add(revitCategory.Id);
       }
 
-      var categoryFilter = new LogicalOrFilter(elementFilters);
+      using var categoryFilter = new ElementMulticategoryFilter(catIds);
       foreach (var doc in allDocs)
       {
+        using var collector = new FilteredElementCollector(doc);
         selection.AddRange(
-          new FilteredElementCollector(doc)
+          collector
             .WhereElementIsNotElementType()
             .WhereElementIsViewIndependent()
             .WherePasses(categoryFilter)
@@ -431,6 +442,10 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var doc in allDocs)
         {
+          //NOTE: this logic needs revisiting, this is just to avoid the error: https://github.com/specklesystems/speckle-sharp/issues/2829
+          if (doc.GetElement(view.Id) == null)
+            continue;
+
           using var docCollector = new FilteredElementCollector(doc, view.Id);
           selection.AddRange(
             docCollector
@@ -497,7 +512,7 @@ namespace Speckle.ConnectorRevit.UI
         selection.AddRange(currentDoc.Levels());
 
       if (projectInfoFilter.Selection.Contains("Families & Types"))
-        selection.AddRange(currentDoc.SupportedTypes());
+        selection.AddRange(currentDoc.GetSupportedTypes(revitDocumentAggregateCache));
 
       return selection;
     }

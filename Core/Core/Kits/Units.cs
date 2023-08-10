@@ -18,7 +18,7 @@ public static class Units
   // public const string USInches = "us_in"; the smelliest ones, can add later if people scream "USA #1"
   public const string USFeet = "us_ft"; // it happened, absolutely gross
 
-  private static List<string> SupportedUnits =
+  private static readonly List<string> SupportedUnits =
     new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
 
   public static bool IsUnitSupported(string unit)

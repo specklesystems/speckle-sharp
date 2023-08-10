@@ -86,7 +86,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override string GetDocumentId()
   {
-    return Utilities.hashString("X" + Doc?.Path + Doc?.Name, Utilities.HashingFuctions.MD5);
+    return Utilities.HashString("X" + Doc?.Path + Doc?.Name, Utilities.HashingFunctions.MD5);
   }
 
   public override string GetDocumentLocation()
