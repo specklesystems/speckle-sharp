@@ -101,6 +101,10 @@ namespace Speckle.ConnectorRevit.Entry
         // We need to hook into the AssemblyResolve event before doing anything else
         // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        //Application.ThreadException 
+        System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+        //System.Windows.Forms.Application.SetUnhandledExceptionMode(System.Windows.Forms.UnhandledExceptionMode.CatchException);
         AppInstance = new UIApplication(sender as Application);
 
         Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
@@ -141,6 +145,16 @@ namespace Speckle.ConnectorRevit.Entry
           Process.Start("https://speckle.community/");
         }
       }
+    }
+
+    private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+    {
+      SpeckleLog.Logger.Fatal("hi");
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+      SpeckleLog.Logger.Fatal("hi");
     }
 
     public Result OnShutdown(UIControlledApplication application)

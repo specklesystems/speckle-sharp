@@ -13,6 +13,7 @@ using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
@@ -144,6 +145,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception ex)
           {
+            SpeckleLog.Logger.Error(ex, ex.Message);
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
           }
         }
@@ -225,6 +227,8 @@ namespace Objects.Converter.Revit
         }
         catch (Exception e)
         {
+          transactionManager.RollbackSubTransaction();
+          transactionManager.StartSubtransaction();
           appObj.Update(
             logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
           );

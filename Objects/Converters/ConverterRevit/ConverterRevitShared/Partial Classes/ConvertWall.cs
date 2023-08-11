@@ -316,7 +316,7 @@ namespace Objects.Converter.Revit
       transactionManager.Commit();
       var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
       sketchEditScope.Start(sketch.Id);
-      transactionManager.Start();
+      transactionManager.StartSubtransaction();
 
       foreach (var obj in voidCurves)
       {
@@ -343,7 +343,7 @@ namespace Objects.Converter.Revit
       }
       finally
       {
-        transactionManager.Start();
+        transactionManager.StartSubtransaction();
       }
 #endif
     }

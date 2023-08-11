@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,24 +75,24 @@ namespace Speckle.ConnectorRevit.UI
       // share the same revit element cache between the connector and converter
       converter.SetContextDocument(revitDocumentAggregateCache);
 
-#pragma warning disable CA1031 // Do not catch general exception types
-      try
-      {
-        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
-        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
-          .ConfigureAwait(false);
-      }
-      catch (Exception ex)
-      {
-        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
-        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
-      }
-      finally
-      {
-        MainViewModel.CloseDialog();
-      }
-#pragma warning restore CA1031 // Do not catch general exception types
+//#pragma warning disable CA1031 // Do not catch general exception types
+//      try
+//      {
+//        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
+//        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+//          .ConfigureAwait(false);
+//      }
+//      catch (Exception ex)
+//      {
+//        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+//        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
+//        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+//      }
+//      finally
+//      {
+//        MainViewModel.CloseDialog();
+//      }
+//#pragma warning restore CA1031 // Do not catch general exception types
 
       var (success, exception) = await APIContext.Run(_ =>
       {
@@ -102,7 +103,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(transactionManager);
 
-          var convertedObjects = ConvertReceivedObjects(converter, progress);
+          var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
 
           if (state.ReceiveMode == ReceiveMode.Update)
             DeleteObjects(previousObjects, convertedObjects);
@@ -175,7 +176,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, ITransactionManager transactionManager)
     {
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
       using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
@@ -214,7 +215,23 @@ namespace Speckle.ConnectorRevit.UI
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
             continue;
 
+          //var lowerType = @base.speckle_type.ToLower();
+          //var cat = (@base["category"] as string)?.ToLower() ?? "";
+          ////if (!lowerType.Contains("instance") 
+          ////  || lowerType.Contains("mepfamily")
+          ////  || cat.Contains("generic")
+          ////  || cat.Contains("structural")
+          ////  || cat.Contains("casework")
+          ////  || cat.Contains("site"))
+          ////  continue;
+          //if (!lowerType.Contains("instance") 
+          //  || !cat.Contains("casework"))
+          //  continue;
+          //Trace.WriteLine(lowerType, cat);
+
+          transactionManager.StartSubtransaction();
           var convRes = converter.ConvertToNative(@base);
+          transactionManager.CommitSubtransaction();
           RefreshView();
 
           switch (convRes)
