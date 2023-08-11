@@ -226,7 +226,7 @@ namespace Objects.Converter.AutocadCivil
               {
                 //Update report because AS object type
                 Report.UpdateReportObject(reportObj);
-                throw ex;
+                throw;
               }
 
               break;
