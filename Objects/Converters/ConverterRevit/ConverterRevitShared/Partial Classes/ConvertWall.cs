@@ -313,10 +313,10 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       var sketch = (Sketch)Doc.GetElement(wall.SketchId);
 
-      T.Commit();
+      transactionManager.Commit();
       var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
       sketchEditScope.Start(sketch.Id);
-      T.Start();
+      transactionManager.Start();
 
       foreach (var obj in voidCurves)
       {
@@ -327,7 +327,7 @@ namespace Objects.Converter.Revit
         var curveArray = CurveToNative(@void, true);
         Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
       }
-      if (T.Commit() != TransactionStatus.Committed)
+      if (transactionManager.Commit() != TransactionStatus.Committed)
         sketchEditScope.Cancel();
 
       try
@@ -336,9 +336,15 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        sketchEditScope.Cancel();
+        if (sketchEditScope.IsActive)
+        {
+          sketchEditScope.Cancel();
+        }
       }
-      T.Start();
+      finally
+      {
+        transactionManager.Start();
+      }
 #endif
     }
 

@@ -75,8 +75,6 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
-    public Transaction T { get; private set; }
-
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
@@ -108,12 +106,13 @@ namespace Objects.Converter.Revit
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
     private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+    private ITransactionManager transactionManager;
 
     public void SetContextDocument(object doc)
     {
-      if (doc is Transaction t)
+      if (doc is ITransactionManager transactionManager)
       {
-        T = t;
+        this.transactionManager = transactionManager;
       }
       else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
       {

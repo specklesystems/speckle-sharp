@@ -30,6 +30,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Revit\TransactionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitDocumentAggregateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitObjectCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\UIDocumentProvider.cs" />
