@@ -704,9 +704,6 @@ namespace Objects.Converter.Revit
           return BlockInstanceToNative(o);
 
         case Base b:
-          if (b.IsDisplayableObject())
-            return DisplayableObjectToNative(b);
-
           //hacky but the current comments camera is not a Base object
           //used only from DUI and not for normal geometry conversion
           var boo = b["isHackySpeckleCamera"] as bool?;
@@ -717,6 +714,11 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
+    }
+
+    public object ConvertToNativeDisplayable(Base @base)
+    {
+      return DisplayableObjectToNative(@base);
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
@@ -851,6 +853,16 @@ namespace Objects.Converter.Revit
       };
       if (objRes)
         return true;
+
+      return false;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      // check for schema
+      var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+      if (schema != null)
+        return CanConvertToNativeDisplayable(schema);
 
       return @object.IsDisplayableObject();
     }

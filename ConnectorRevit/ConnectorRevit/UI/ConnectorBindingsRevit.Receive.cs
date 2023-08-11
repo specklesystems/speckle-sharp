@@ -247,113 +247,8 @@ namespace Speckle.ConnectorRevit.UI
       Dictionary<string, string> settings
     )
     {
-      // Converts an object based on direct mesh settings and conversion result
-      ApplicationObject ConvertObject(ApplicationObject obj, Base @base, Dictionary<string, string> displayableSettings)
-      {
-        progress.CancellationToken.ThrowIfCancellationRequested();
-
-        if (obj == null || @base == null)
-          return obj;
-
-        // determine displayable conversion
-        _ = bool.TryParse(settings["recieve-objects-mesh"], out bool shouldConvertAsDisplayable);
-        var isConvertibleAndDisplayable =
-          obj.Convertible && (DefaultTraversal.HasDisplayValue(@base) || @base.speckle_type.Contains("Instance"));
-
-        using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
-        try
-        {
-          var s = new CancellationTokenSource();
-          DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
-          Dispatcher.UIThread.MainLoop(s.Token);
-
-          if (shouldConvertAsDisplayable)
-            throw new Exception("Converting as Direct Shape");
-
-          var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-
-          if (convRes == null)
-            throw new Exception("Direct conversion returned null");
-
-          obj.Update(
-            status: convRes.Status,
-            createdIds: convRes.CreatedIds,
-            converted: convRes.Converted,
-            log: convRes.Log
-          );
-
-          if (convRes.Status == ApplicationObject.State.Failed)
-            throw new Exception("Direct conversion attempt failed.");
-
-          progress.Report.UpdateReportObject(obj);
-          RefreshView();
-        }
-        catch (ConversionNotReadyException ex)
-        {
-          var notReadyDataCache =
-            revitDocumentAggregateCache.GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
-          var notReadyData = notReadyDataCache.GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
-
-          if (++notReadyData.NumberOfTimesCaught > 2)
-          {
-            SpeckleLog.Logger.Warning(
-              ex,
-              $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did"
-            );
-            obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-            progress.Report.UpdateReportObject(obj);
-          }
-          else
-          {
-            Preview.Add(obj);
-          }
-          // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
-          notReadyDataCache.Set(@base.id, notReadyData);
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Warning(ex, "Failed to convert");
-          obj.Log.Add($"{ex.Message}");
-
-          // reconvert as directShape if possible
-          if (shouldConvertAsDisplayable || isConvertibleAndDisplayable)
-          {
-            obj.Log.Add($"Retrying conversion as DirectShape fallback");
-            var convRes = ConvertAsDisplayable(@base, displayableSettings);
-            if (convRes != null)
-            {
-              obj.Update(
-                status: convRes.Status,
-                createdIds: convRes.CreatedIds,
-                converted: convRes.Converted,
-                log: convRes.Log
-              );
-            }
-            else
-            {
-              obj.Update(status: ApplicationObject.State.Failed, logItem: "Reconversion returned null");
-            }
-          }
-          progress.Report.UpdateReportObject(obj);
-        }
-
-        return obj;
-      }
-
-      // Retries a conversion using the direct mesh setting.
-      // Used in the case of failed conversions
-      ApplicationObject ConvertAsDisplayable(Base @base, Dictionary<string, string> displayableSettings)
-      {
-        converter.SetConverterSettings(displayableSettings);
-        var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-        if (convRes != null)
-          RefreshView();
-        converter.SetConverterSettings(settings);
-        return convRes;
-      }
-
       // Traverses through the `elements` property of the given base
-      void ConvertNestedElements(Base @base, ApplicationObject appObj, Dictionary<string, string> displayableSettings)
+      void ConvertNestedElements(Base @base, ApplicationObject appObj, bool receiveDirectMesh)
       {
         if (@base == null)
           return;
@@ -385,13 +280,13 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           // convert
-          var converted = ConvertObject(nestedAppObj, obj, displayableSettings);
+          var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress);
 
           if (converted == null)
             return;
 
           // recurse and convert nested elements
-          ConvertNestedElements(obj, nestedAppObj, displayableSettings);
+          ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
 
           // set this again in case this is a deeply hosted element
           settings["current-host-element"] = host == null ? null : host.Id.ToString();
@@ -421,8 +316,6 @@ namespace Speckle.ConnectorRevit.UI
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
       var receiveDirectMesh = receiveDirectMeshSetting != null ? receiveDirectMeshSetting.IsChecked : false;
-      var displayableSettings = new Dictionary<string, string>(settings);
-      displayableSettings["recieve-objects-mesh"] = true.ToString();
 
       // convert
       var index = -1;
@@ -448,13 +341,125 @@ namespace Speckle.ConnectorRevit.UI
         )
           continue;
 
-        var converted = ConvertObject(obj, @base, displayableSettings);
+        var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress);
 
         // continue traversing for hosted elements
-        ConvertNestedElements(@base, converted, displayableSettings);
+        ConvertNestedElements(@base, converted, receiveDirectMesh);
       }
 
       return convertedObjectsCache;
+    }
+
+    private ApplicationObject ConvertObject(
+      ApplicationObject obj,
+      Base @base,
+      bool receiveDirectMesh,
+      ISpeckleConverter converter,
+      ProgressViewModel progress
+    )
+    {
+      progress.CancellationToken.ThrowIfCancellationRequested();
+
+      if (obj == null || @base == null)
+        return obj;
+
+      using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
+
+      try
+      {
+        var s = new CancellationTokenSource();
+        DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+        Dispatcher.UIThread.MainLoop(s.Token);
+
+        ApplicationObject convRes;
+        if (converter.CanConvertToNative(@base))
+        {
+          if (receiveDirectMesh)
+          {
+            convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+            if (convRes == null)
+            {
+              obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+              return obj;
+            }
+          }
+          else
+          {
+            convRes = converter.ConvertToNative(@base) as ApplicationObject;
+            if (convRes == null || convRes.Status == ApplicationObject.State.Failed)
+            {
+              if (converter.CanConvertToNativeDisplayable(@base)) // retry conversion as displayable
+              {
+                obj.Log.Add("Direct conversion failed. Retrying conversion with displayable geometry.");
+                convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+                if (convRes == null)
+                {
+                  obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+                  return obj;
+                }
+              }
+            }
+          }
+        }
+        else if (converter.CanConvertToNativeDisplayable(@base))
+        {
+          obj.Log.Add("No direct conversion exists. Converting displayable geometry.");
+          convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+          if (convRes == null)
+          {
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+            return obj;
+          }
+        }
+        else
+        {
+          obj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: "No direct conversion or displayable values can be converted."
+          );
+          return obj;
+        }
+
+        obj.Update(
+          status: convRes.Status,
+          createdIds: convRes.CreatedIds,
+          converted: convRes.Converted,
+          log: convRes.Log
+        );
+
+        progress.Report.UpdateReportObject(obj);
+        RefreshView();
+      }
+      catch (ConversionNotReadyException ex)
+      {
+        var notReadyDataCache =
+          revitDocumentAggregateCache.GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
+        var notReadyData = notReadyDataCache.GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
+
+        if (++notReadyData.NumberOfTimesCaught > 2)
+        {
+          SpeckleLog.Logger.Warning(
+            ex,
+            $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did"
+          );
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+          progress.Report.UpdateReportObject(obj);
+        }
+        else
+        {
+          Preview.Add(obj);
+        }
+        // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
+        notReadyDataCache.Set(@base.id, notReadyData);
+      }
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Warning(ex, "Failed to convert");
+        obj.Log.Add($"{ex.Message}");
+        progress.Report.UpdateReportObject(obj);
+      }
+
+      return obj;
     }
 
     private void RefreshView()
