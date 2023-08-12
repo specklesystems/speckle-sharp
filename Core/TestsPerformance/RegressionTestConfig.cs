@@ -13,30 +13,39 @@ public abstract class RegressionTestConfig
     const int LaunchCount = 1;
     const int WarmupCount = 1;
     const int IterationCount = 5;
+    const RunStrategy Strategy = RunStrategy.Monitoring;
 
     public Config()
     {
-      const RunStrategy strategy = RunStrategy.Monitoring;
-
       AddJob(
         new Job("Head")
-          .WithStrategy(strategy)
+          .WithStrategy(Strategy)
           .WithLaunchCount(LaunchCount)
           .WithWarmupCount(WarmupCount)
           .WithIterationCount(IterationCount)
-          .AsBaseline()
           .Freeze()
       );
 
       AddJob(
         new Job("2.15.3")
-          .WithStrategy(strategy)
+          .WithStrategy(Strategy)
           .WithLaunchCount(LaunchCount)
           .WithWarmupCount(WarmupCount)
           .WithIterationCount(IterationCount)
           .WithNuGet("Speckle.Objects", "2.15.3")
+          .AsBaseline()
           .Freeze()
       );
+
+      // AddJob(
+      //   new Job("2.14.2")
+      //     .WithStrategy(Strategy)
+      //     .WithLaunchCount(LaunchCount)
+      //     .WithWarmupCount(WarmupCount)
+      //     .WithIterationCount(IterationCount)
+      //     .WithNuGet("Speckle.Objects", "2.14.2")
+      //     .Freeze()
+      // );
     }
   }
 }
