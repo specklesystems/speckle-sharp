@@ -144,9 +144,9 @@ public sealed class BaseObjectDeserializerV2
       reader.DateParseHandling = DateParseHandling.None;
       doc1 = JObject.Load(reader);
     }
-    
+
     object? converted = ConvertJsonElement(doc1);
-    
+
     lock (_callbackLock)
       OnProgressAction?.Invoke("DS", 1);
     return converted;
@@ -208,9 +208,10 @@ public sealed class BaseObjectDeserializerV2
 
         return retList;
       case JTokenType.Object:
-        Dictionary<string, object?> dict = new();
+        var jObject = (JContainer)doc;
+        Dictionary<string, object?> dict = new(jObject.Count);
 
-        foreach (JToken propJToken in doc)
+        foreach (JToken propJToken in jObject)
         {
           JProperty prop = (JProperty)propJToken;
           if (prop.Name == "__closure")
@@ -221,9 +222,11 @@ public sealed class BaseObjectDeserializerV2
         if (!dict.ContainsKey(TypeDiscriminator))
           return dict;
 
-        if (dict[TypeDiscriminator] as string == "reference" && dict.ContainsKey("referencedId"))
+        if (
+          dict[TypeDiscriminator] as string == "reference" && dict.TryGetValue("referencedId", out object? referencedId)
+        )
         {
-          var objId = (string)dict["referencedId"]!;
+          var objId = (string)referencedId!;
           object deserialized = null;
           lock (_deserializedObjects)
             if (_deserializedObjects.TryGetValue(objId, out object? o))
@@ -247,9 +250,10 @@ public sealed class BaseObjectDeserializerV2
 
           // This reference was not already deserialized. Do it now in sync mode
           string objectJson = ReadTransport.GetObject(objId);
-          if(objectJson is null) throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
+          if (objectJson is null)
+            throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
           deserialized = DeserializeTransportObject(objectJson);
-          
+
           lock (_deserializedObjects)
             _deserializedObjects[objId] = deserialized;
           return deserialized;
@@ -288,14 +292,12 @@ public sealed class BaseObjectDeserializerV2
         }
 
         Type targetValueType = property.PropertyType;
-        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out object convertedValue);
+        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out object? convertedValue);
         if (conversionOk)
           property.SetValue(baseObj, convertedValue);
         else
           // Cannot convert the value in the json to the static property type
-          throw new Exception(
-            $"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}"
-          );
+          throw new Exception($"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}");
       }
       else
       {

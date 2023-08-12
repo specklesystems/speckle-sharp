@@ -364,6 +364,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures202
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2023", "Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2023\ConverterTeklaStructures2023.csproj", "{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsPerformance", "Core\TestsPerformance\TestsPerformance.csproj", "{4D1C70D7-FFD5-4518-A374-2A23E020D416}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1985,6 +1987,22 @@ Global
 		{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}.Release|x64.ActiveCfg = Release|Any CPU
 		{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}.Release|x64.Build.0 = Release|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Debug|x64.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release|x64.ActiveCfg = Release|Any CPU
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2137,6 +2155,7 @@ Global
 		{B4D6F6DC-0712-4F9F-A24F-6B76DAE84B6F} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{511C2FB0-9C73-4AC9-BA59-C8A84C089C59} = {18C8730C-0173-4987-9416-46F86EC20541}
 		{EB52E451-9ED8-460E-9EE4-6717BFB12EAB} = {5D988C50-8E85-402A-9020-A4AB0565F0C9}
+		{4D1C70D7-FFD5-4518-A374-2A23E020D416} = {8AA78EE8-C33B-4BC5-992A-E5DE7AB0BEC7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
