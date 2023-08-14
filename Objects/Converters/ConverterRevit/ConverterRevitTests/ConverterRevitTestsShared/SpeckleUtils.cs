@@ -22,29 +22,18 @@ namespace ConverterRevitTests
 
       await APIContext.Run(() =>
       {
-        using var g = new DB.TransactionGroup(doc, transactionName);
-        using var transaction = new DB.Transaction(doc, transactionName);
-
-        g.Start();
-        transaction.Start();
+        using var transactionManager = new TransactionManager("", doc);
+        transactionManager.Start();
 
         if (converter != null)
         {
-          converter.SetContextDocument(transaction);
-        }
-
-        if (ignoreWarnings)
-        {
-          var options = transaction.GetFailureHandlingOptions();
-          options.SetFailuresPreprocessor(new IgnoreAllWarnings());
-          transaction.SetFailureHandlingOptions(options);
+          converter.SetContextDocument(transactionManager);
         }
 
         try
         {
           action.Invoke();
-          transaction.Commit();
-          g.Assimilate();
+          transactionManager.Finish();
         }
         catch (Exception exception)
         {

@@ -30,7 +30,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Revit\TransactionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitDocumentAggregateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitObjectCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\UIDocumentProvider.cs" />
@@ -43,7 +42,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\HelpCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\HostTypeContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\RevitHostType.cs" />

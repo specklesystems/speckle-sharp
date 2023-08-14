@@ -5,7 +5,7 @@ using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
-namespace ConnectorRevit.Revit
+namespace RevitSharedResources.Models
 {
   public class ErrorEater : IFailuresPreprocessor
   {

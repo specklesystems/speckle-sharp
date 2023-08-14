@@ -8,6 +8,7 @@ using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
@@ -106,11 +107,11 @@ namespace Objects.Converter.Revit
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
     private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
-    private ITransactionManager transactionManager;
+    private TransactionManager transactionManager;
 
     public void SetContextDocument(object doc)
     {
-      if (doc is ITransactionManager transactionManager)
+      if (doc is TransactionManager transactionManager)
       {
         this.transactionManager = transactionManager;
       }

@@ -27,6 +27,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\APIContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ITransactionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ErrorEater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TransactionManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Extensions\RevitExtensions\" />

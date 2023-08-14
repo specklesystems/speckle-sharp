@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
+using RevitSharedResources.Models;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -281,11 +282,11 @@ namespace Objects.Converter.Revit
     {
       if (!revitSchedule.Definition.ShowHeaders)
       {
-        return RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
+        return TransactionManager.ExecuteInTemporaryTransaction(() =>
         {
           revitSchedule.Definition.ShowHeaders = true;
           return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
-        }, Doc);
+        }, revitSchedule.Document);
       }
 
       return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
@@ -362,9 +363,14 @@ namespace Objects.Converter.Revit
     }
     #endregion
 
-    public static IEnumerable<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, ICollection<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule, SectionType tableSection)
+    public static IEnumerable<string> ElementApplicationIdsInRow(
+      int rowNumber, 
+      TableSectionData section, 
+      ICollection<ElementId> orginialTableIds, 
+      DB.ViewSchedule revitSchedule, 
+      SectionType tableSection)
     {
-      var remainingIdsInRow = RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
+      var remainingIdsInRow = TransactionManager.ExecuteInTemporaryTransaction(() =>
       {
         section.RemoveRow(rowNumber);
         return new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id)
@@ -477,47 +483,6 @@ namespace Objects.Converter.Revit
           numHiddenFields = numHiddenFields
         };
       }
-    }
-
-    public static TResult ExecuteInTemporaryTransaction<TResult>(Func<TResult> function, Document doc)
-    {
-      TResult result = default;
-      if (!doc.IsModifiable)
-      {
-        using var t = new Transaction(doc, "This Transaction Will Never Get Committed");
-        try
-        {
-          t.Start();
-          result = function();
-        }
-        catch
-        {
-          // ignore because we're just going to rollback
-        }
-        finally
-        {
-          t.RollBack();
-        }
-      }
-      else
-      {
-        using var t = new SubTransaction(doc);
-        try
-        {
-          t.Start();
-          result = function();
-        }
-        catch
-        {
-          // ignore because we're just going to rollback
-        }
-        finally
-        {
-          t.RollBack();
-        }
-      }
-
-      return result;
     }
   }
 }

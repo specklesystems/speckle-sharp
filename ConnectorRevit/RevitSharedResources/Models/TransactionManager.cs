@@ -4,10 +4,11 @@ using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
 
-namespace ConnectorRevit.Revit
+namespace RevitSharedResources.Models
 {
   /// <summary>
-  /// implements <see cref="IRevitTransactionManager"/>
+  /// Is responsible for all functionality regarding subtransactions, transactions, and transaction groups.
+  /// This includes starting, pausing, committing, and rolling back transactions
   /// </summary>
   public class TransactionManager : ITransactionManager
   {
@@ -155,6 +156,51 @@ namespace ConnectorRevit.Revit
         return status;
       }
       return TransactionStatus.Uninitialized;
+    }
+
+    public TResult ExecuteInTemporaryTransaction<TResult>(Func<TResult> function)
+    {
+      return ExecuteInTemporaryTransaction(function, document);
+    }
+    public static TResult ExecuteInTemporaryTransaction<TResult>(Func<TResult> function, Document document)
+    {
+      TResult result = default;
+      if (!document.IsModifiable)
+      {
+        using var t = new Transaction(document, "This Transaction Will Never Get Committed");
+        try
+        {
+          t.Start();
+          result = function();
+        }
+        catch
+        {
+          // ignore because we're just going to rollback
+        }
+        finally
+        {
+          t.RollBack();
+        }
+      }
+      else
+      {
+        using var t = new SubTransaction(document);
+        try
+        {
+          t.Start();
+          result = function();
+        }
+        catch
+        {
+          // ignore because we're just going to rollback
+        }
+        finally
+        {
+          t.RollBack();
+        }
+      }
+
+      return result;
     }
 
     #region disposal
