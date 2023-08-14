@@ -227,12 +227,13 @@ namespace Objects.Converter.Revit
           if (res is ApplicationObject apl)
             appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          transactionManager.RollbackSubTransaction();
           appObj.Update(
-            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
+            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{ex.Message}"
           );
+          SpeckleLog.Logger.Error(ex, ex.Message);
+          transactionManager.RollbackSubTransaction();
           continue;
         }
         CurrentHostElement = host; // set this again in case this is a deeply hosted element

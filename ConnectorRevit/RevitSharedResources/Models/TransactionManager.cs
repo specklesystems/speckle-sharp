@@ -10,7 +10,7 @@ namespace RevitSharedResources.Models
   /// Is responsible for all functionality regarding subtransactions, transactions, and transaction groups.
   /// This includes starting, pausing, committing, and rolling back transactions
   /// </summary>
-  public class TransactionManager : ITransactionManager
+  public class TransactionManager : IDisposable
   {
     private string streamId;
     private Document document;
