@@ -47,9 +47,9 @@
       CA2328; CA2329; CA2330; CA2350; CA2351; CA2352; CA2353; CA2354;
       CA2355; CA2356; CA2361; CA2362; CA3001; CA3002; CA3003; CA3004;
       CA3006; CA3007; CA3008; CA3009; CA3010; CA3011; CA3012; CA3061;
-      CA3075; CA3076; CA3077; CA3147; CA5350; CA5351; CA5358; CA5359;
+      CA3076; CA3077; CA3147; CA5350; CA5351; CA5358; CA5359;
       CA5360; CA5361; CA5362; CA5363; CA5364; CA5365; CA5366; CA5367;
-      CA5368; CA5369; CA5370; CA5371; CA5372; CA5373; CA5374; CA5375;
+      CA5368; CA5370; CA5371; CA5372; CA5373; CA5374; CA5375;
       CA5376; CA5377; CA5378; CA5379; CA5380; CA5381; CA5382; CA5383;
       CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
       CA5392; CA5393; CA5395; CA5396; CA5397; CA5398; CA5399;
@@ -57,6 +57,8 @@
       <!-- The following security anaysers are ommited for the listed reasons -->
       <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
       <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
+      <!--"CA3075: Insecure DTD Processing" - we assume loaded XML is trusted-->
+      <!--"CA5369: Use XmlReader for Deserialize" - we assume loaded XML is trusted-->
     </WarningsAsErrors>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
