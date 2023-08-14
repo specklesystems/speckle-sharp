@@ -72,7 +72,9 @@ namespace ConnectorRevit.Revit
         HandleFailedCommit(subTransaction.Commit());
         subTransaction.Dispose();
       }
-      if (transaction != null && transaction.IsValidObject)
+      if (transaction != null 
+        && transaction.IsValidObject
+        && transaction.GetStatus() == TransactionStatus.Started)
       {
         var status = transaction.Commit();
         HandleFailedCommit(status);

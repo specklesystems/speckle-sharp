@@ -221,14 +221,15 @@ namespace Objects.Converter.Revit
 
         try
         {
+          transactionManager.StartSubtransaction();
           var res = ConvertToNative(obj);
+          transactionManager.CommitSubtransaction();
           if (res is ApplicationObject apl)
             appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
         }
         catch (Exception e)
         {
           transactionManager.RollbackSubTransaction();
-          transactionManager.StartSubtransaction();
           appObj.Update(
             logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
           );

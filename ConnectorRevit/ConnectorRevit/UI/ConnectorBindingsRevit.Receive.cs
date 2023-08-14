@@ -76,26 +76,26 @@ namespace Speckle.ConnectorRevit.UI
       // share the same revit element cache between the connector and converter
       converter.SetContextDocument(revitDocumentAggregateCache);
 
-//#pragma warning disable CA1031 // Do not catch general exception types
-//      try
-//      {
-//        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
-//        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
-//          .ConfigureAwait(false);
-//      }
-//      catch (Exception ex)
-//      {
-//        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
-//        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-//        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
-//      }
-//      finally
-//      {
-//        MainViewModel.CloseDialog();
-//      }
-//#pragma warning restore CA1031 // Do not catch general exception types
+#pragma warning disable CA1031 // Do not catch general exception types
+      try
+      {
+        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
+        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+          .ConfigureAwait(false);
+      }
+      catch (Exception ex)
+      {
+        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+      }
+      finally
+      {
+        MainViewModel.CloseDialog();
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
 
-      var task = await APIContext.Run(async _ =>
+      var (success, exception) = await APIContext.Run(_ =>
       {
         using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
         transactionManager.Start();
@@ -104,16 +104,13 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(transactionManager);
 
-          var sw = new Stopwatch();
-          sw.Start();
-          var convertedObjects = await ConvertReceivedObjects(converter, progress, transactionManager, state);
+          var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
 
           if (state.ReceiveMode == ReceiveMode.Update)
             DeleteObjects(previousObjects, convertedObjects);
 
           previousObjects.AddConvertedElements(convertedObjects);
           transactionManager.Finish();
-          Trace.WriteLine($"Elapsed seconds {sw.Elapsed.TotalSeconds}");
           return (true, null);
         }
         catch (Exception ex)
@@ -128,8 +125,6 @@ namespace Speckle.ConnectorRevit.UI
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
       }).ConfigureAwait(false);
-
-      var (success, exception) = await task.ConfigureAwait(false);
 
       revitDocumentAggregateCache.InvalidateAll();
       CurrentOperationCancellation = null;
@@ -182,7 +177,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private async Task<IConvertedObjectsCache<Base, Element>> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, TransactionManager transactionManager, StreamState state)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, TransactionManager transactionManager)
     {
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
       using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
@@ -199,16 +194,8 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
-      var excelData = new Base();
-      var totalTime = new List<double>();
-      var conversionTime = new List<double>();
-      
-      transactionManager.StartSubtransaction();
       var index = -1;
-      var sw = new Stopwatch();
-      var sw1 = new Stopwatch();
-      sw1.Start();
-      while (++index < 1000)
+      while (++index < Preview.Count)
       {
         var obj = Preview[index];
         progress.CancellationToken.ThrowIfCancellationRequested();
@@ -230,15 +217,10 @@ namespace Speckle.ConnectorRevit.UI
             continue;
 
           transactionManager.StartSubtransaction();
-          sw.Start(); 
           var convRes = converter.ConvertToNative(@base);
           transactionManager.CommitSubtransaction();
-          //Trace.WriteLine(sw1.Elapsed.TotalSeconds, sw.Elapsed.TotalMilliseconds);
-          totalTime.Add(sw1.Elapsed.TotalSeconds);
-          conversionTime.Add(sw.Elapsed.TotalMilliseconds);
-          sw.Reset();
-          RefreshView();
 
+          RefreshView();
           if (index % 50 == 0)
             transactionManager.Commit();
 
@@ -254,6 +236,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (ConversionNotReadyException ex) 
         {
+          transactionManager.RollbackSubTransaction();
           var notReadyDataCache = revitDocumentAggregateCache
             .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
           var notReadyData = notReadyDataCache
@@ -274,58 +257,12 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
+          transactionManager.RollbackSubTransaction();
           SpeckleLog.Logger.Warning(ex, "Failed to convert");
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);
         }
       }
-
-      //excelData["totalTime"] = totalTime;
-      //excelData["conversionTime"] = conversionTime;
-
-
-      //var transports = new List<ITransport>() { new ServerTransport(state.Client.Account, state.StreamId) };
-
-      //var objectId = await Operations
-      //  .Send(
-      //    @object: excelData,
-      //    cancellationToken: progress.CancellationToken,
-      //    transports: transports,
-      //    onProgressAction: dict => progress.Update(dict),
-      //    onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-      //    disposeTransports: true
-      //  )
-      //  .ConfigureAwait(true);
-
-      //progress.CancellationToken.ThrowIfCancellationRequested();
-
-      //var actualCommit = new CommitCreateInput()
-      //{
-      //  streamId = state.StreamId,
-      //  objectId = objectId,
-      //  branchName = state.BranchName,
-      //  message = state.CommitMessage ?? $"Sent {1} objects from {ConnectorRevitUtils.RevitAppName}.",
-      //  sourceApplication = ConnectorRevitUtils.RevitAppName,
-      //};
-
-      //if (state.PreviousCommitId != null)
-      //{
-      //  actualCommit.parents = new List<string>() { state.PreviousCommitId };
-      //}
-
-      //var commitId = await ConnectorHelpers
-      //  .CreateCommit(state.Client, actualCommit, progress.CancellationToken)
-      //  .ConfigureAwait(false);
-
-
-
-
-
-
-
-
-
-
 
       return convertedObjectsCache;
     }
@@ -376,7 +313,6 @@ namespace Speckle.ConnectorRevit.UI
       var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
       var objectsToConvert = traverseFunction.Traverse(obj)
-        .Where(tc => tc.current.speckle_type.Contains("Instance"))
         .Select(tc => CreateApplicationObject(tc.current))
         .Where(appObject => appObject != null)
         .Reverse()
