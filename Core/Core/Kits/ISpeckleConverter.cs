@@ -56,11 +56,25 @@ public interface ISpeckleConverter
   public List<object> ConvertToNative(List<Base> objects);
 
   /// <summary>
+  /// Converts a Speckle object to a native displayable one
+  /// </summary>
+  /// <param name="object">Speckle object to convert</param>
+  /// <returns></returns>
+  public object ConvertToNativeDisplayable(Base @object);
+
+  /// <summary>
   /// Checks if it can convert a Speckle object to a native one
   /// </summary>
   /// <param name="object">Speckle object to convert</param>
   /// <returns></returns>
   public bool CanConvertToNative(Base @object);
+
+  /// <summary>
+  /// Checks if it can convert a Speckle object to a native displayable one
+  /// </summary>
+  /// <param name="object">Speckle object to convert</param>
+  /// <returns></returns>
+  public bool CanConvertToNativeDisplayable(Base @object);
 
   /// <summary>
   /// Returns a list of applications serviced by this converter

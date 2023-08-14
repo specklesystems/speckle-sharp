@@ -428,6 +428,11 @@ namespace Objects.Converter.AutocadCivil
       return acadObj;
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects)
     {
       return objects.Select(x => ConvertToNative(x)).ToList();
@@ -533,6 +538,11 @@ namespace Objects.Converter.AutocadCivil
         default:
           return false;
       }
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }
