@@ -79,7 +79,7 @@ namespace ConnectorRevit.Revit
         transaction.Dispose();
         return status;
       }
-      throw new SpeckleException("Cannot commit transaction because it has not been started yet");
+      return TransactionStatus.Uninitialized;
     }
 
     private void HandleFailedCommit(TransactionStatus status)
@@ -102,7 +102,9 @@ namespace ConnectorRevit.Revit
     public void RollbackTransaction()
     {
       RollbackSubTransaction();
-      if (transaction.IsValidObject && transaction?.GetStatus() == TransactionStatus.Started)
+      if (transaction != null
+        && transaction.IsValidObject
+        && transaction.GetStatus() == TransactionStatus.Started)
       {
         transaction.RollBack();
       }
@@ -110,7 +112,9 @@ namespace ConnectorRevit.Revit
     
     public void RollbackSubTransaction()
     {
-      if (subTransaction.IsValidObject && subTransaction?.GetStatus() == TransactionStatus.Started)
+      if (subTransaction != null 
+        && subTransaction.IsValidObject 
+        && subTransaction.GetStatus() == TransactionStatus.Started)
       {
         subTransaction.RollBack();
       }
@@ -119,7 +123,9 @@ namespace ConnectorRevit.Revit
     public void RollbackAll()
     {
       RollbackTransaction();
-      if (transactionGroup.IsValidObject && transactionGroup?.GetStatus() == TransactionStatus.Started)
+      if (transactionGroup != null 
+        && transactionGroup.IsValidObject 
+        && transactionGroup.GetStatus() == TransactionStatus.Started)
       {
         transactionGroup.Assimilate();
       }
@@ -139,14 +145,14 @@ namespace ConnectorRevit.Revit
 
     public TransactionStatus CommitSubtransaction()
     {
-      if (subTransaction != null)
+      if (subTransaction != null && subTransaction.IsValidObject)
       {
         var status = subTransaction.Commit();
         HandleFailedCommit(status);
         subTransaction.Dispose();
         return status;
       }
-      throw new SpeckleException("Cannot commit subtransaction because it has not been started yet");
+      return TransactionStatus.Uninitialized;
     }
 
     #region disposal
@@ -163,12 +169,12 @@ namespace ConnectorRevit.Revit
       if (disposing)
       {
         // free managed resources
-        if (subTransaction?.IsValidObject is bool validSubtransaction && validSubtransaction)
-          subTransaction?.Dispose();
-        if (transaction?.IsValidObject is bool validTransaction && validTransaction)
-          transaction?.Dispose();
-        if (transaction?.IsValidObject is bool validTransactionGroup && validTransactionGroup)
-          transactionGroup?.Dispose();
+        if (subTransaction != null && subTransaction.IsValidObject)
+          subTransaction.Dispose();
+        if (transaction != null && transaction.IsValidObject)
+          transaction.Dispose();
+        if (transactionGroup != null && transactionGroup.IsValidObject)
+          transactionGroup.Dispose();
       }
 
       isDisposed = true;

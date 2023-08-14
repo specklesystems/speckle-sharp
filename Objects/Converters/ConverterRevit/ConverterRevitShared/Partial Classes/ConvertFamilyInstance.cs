@@ -576,48 +576,49 @@ namespace Objects.Converter.Revit
             break;
 
           case FamilyPlacementType.WorkPlaneBased when CurrentHostElement != null:
-            Options op = new Options() { ComputeReferences = true };
-            GeometryElement geomElement = CurrentHostElement.get_Geometry(op);
-            if (geomElement == null)
-            {
-              // if host geom was null, then regenerate document and that should fix it
-              Doc.Regenerate();
-              geomElement = CurrentHostElement.get_Geometry(op);
-              // if regenerating didn't fix it then try generic method
-              // TODO: this won't be correct, maybe we should just throw an error?
-              if (geomElement == null)
-              {
-                goto default;
-              }
-            }
-            Reference faceRef = null;
-            var planeDist = double.MaxValue;
-            GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
-            XYZ norm = new XYZ(0, 0, 0);
-            try
-            {
-              familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
-            }
-            catch (Exception e)
-            {
-              appObj.Update(
-                status: ApplicationObject.State.Failed,
-                logItem: $"Could not create WorkPlaneBased hosted instance: {e.Message}"
-              );
-              return appObj;
-            }
-            // parameters
-            IList<DB.Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
-            IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
-            if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
-              InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
+            goto default;
+            //Options op = new Options() { ComputeReferences = true };
+            //GeometryElement geomElement = CurrentHostElement.get_Geometry(op);
+            //if (geomElement == null)
+            //{
+            //  // if host geom was null, then regenerate document and that should fix it
+            //  Doc.Regenerate();
+            //  geomElement = CurrentHostElement.get_Geometry(op);
+            //  // if regenerating didn't fix it then try generic method
+            //  // TODO: this won't be correct, maybe we should just throw an error?
+            //  if (geomElement == null)
+            //  {
+            //    goto default;
+            //  }
+            //}
+            //Reference faceRef = null;
+            //var planeDist = double.MaxValue;
+            //GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
+            //XYZ norm = new XYZ(0, 0, 0);
+            //try
+            //{
+            //  familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
+            //}
+            //catch (Exception e)
+            //{
+            //  appObj.Update(
+            //    status: ApplicationObject.State.Failed,
+            //    logItem: $"Could not create WorkPlaneBased hosted instance: {e.Message}"
+            //  );
+            //  return appObj;
+            //}
+            //// parameters
+            //IList<DB.Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
+            //IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
+            //if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+            //  InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
 
-            if (lvlParams.ElementAtOrDefault(0) != null && level != null)
-            {
-              lvlParams[0].Set(level.Id);
-            }
+            //if (lvlParams.ElementAtOrDefault(0) != null && level != null)
+            //{
+            //  lvlParams[0].Set(level.Id);
+            //}
 
-            break;
+            //break;
 
           case FamilyPlacementType.OneLevelBased when CurrentHostElement is FootPrintRoof roof: // handle receiving mullions on a curtain roof
             var curtainGrids = roof.CurtainGrids;
