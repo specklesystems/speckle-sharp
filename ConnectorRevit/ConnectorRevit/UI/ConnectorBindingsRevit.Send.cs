@@ -80,7 +80,7 @@ namespace Speckle.ConnectorRevit.UI
       var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
-      await APIContext.Run(_ =>
+      await APIContext.Run(() =>
       {
         using var _d0 = LogContext.PushProperty("converterName", converter.Name);
         using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
