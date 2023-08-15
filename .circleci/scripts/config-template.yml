@@ -538,7 +538,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build add-on
           command: |
-            dir "C:/Program Files (x86)/Microsoft Visual Studio" /s
+            dir "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Microsoft/VC"
             cd ConnectorArchicad/AddOn
             "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe" "Build.Win.x64.<<parameters.archicadversion>>/Speckle Connector.sln" -property:Configuration=Release
       - persist_to_workspace:
