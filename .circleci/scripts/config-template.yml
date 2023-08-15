@@ -520,7 +520,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Dump
           command: |
-            dir "C:/Program Files (x86)/Microsoft Visual Studio/" "/s"
+            ls "C:/Program Files (x86)/Microsoft Visual Studio/" -R
       - run:
           name: Install cmake
           command: |
