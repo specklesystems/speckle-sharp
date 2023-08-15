@@ -559,13 +559,18 @@ public partial class ConverterRhinoGh
   // This results in a transposed transformation matrix - may need to be addressed later
   public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
   {
-    var t = instance.InstanceXform.ToFloatArray(true);
+    var t = instance.InstanceXform;
+    var matrix = new System.DoubleNumerics.Matrix4x4(
+      t.M00, t.M01, t.M02, t.M03,
+      t.M10, t.M11, t.M12, t.M13,
+      t.M20, t.M21, t.M22, t.M23,
+      t.M30, t.M31, t.M32, t.M33);
 
     var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
 
     var _instance = new BlockInstance
     {
-      transform = new Other.Transform(t, ModelUnits),
+      transform = new Other.Transform(matrix, ModelUnits),
       typedDefinition = def,
       applicationId = instance.Id.ToString(),
       units = ModelUnits
