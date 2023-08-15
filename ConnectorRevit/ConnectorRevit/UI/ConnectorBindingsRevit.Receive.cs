@@ -13,8 +13,8 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -71,10 +71,13 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+      // share the same revit element cache between the connector and converter
+      converter.SetContextDocument(revitDocumentAggregateCache);
+
 #pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
+        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
         await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
           .ConfigureAwait(false);
       }
@@ -90,7 +93,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-      var (success, exception) = await RevitTask.RunAsync(app =>
+      var (success, exception) = await APIContext.Run(_ =>
       {
         string transactionName = $"Baking stream {state.StreamId}";
         using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
@@ -147,6 +150,9 @@ namespace Speckle.ConnectorRevit.UI
         }
       }).ConfigureAwait(false);
 
+      revitDocumentAggregateCache.InvalidateAll();
+      CurrentOperationCancellation = null;
+
       if (!success)
       {
         switch (exception)
@@ -159,7 +165,6 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      CurrentOperationCancellation = null;
       return state;
     }
 
@@ -204,14 +209,19 @@ namespace Speckle.ConnectorRevit.UI
 
 
       var convertedObjectsCache = new ConvertedObjectsCache();
+      converter.SetContextDocument(convertedObjectsCache);
+
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-      foreach (var obj in Preview)
+
+      var index = -1;
+      while (++index < Preview.Count)
       {
+        var obj = Preview[index];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         var @base = StoredObjects[obj.OriginalId];
@@ -236,16 +246,32 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
-              {
-                convertedObjectsCache.AddConvertedObjects(@base, typedList);
-              }
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
             default:
               break;
           }
+        }
+        catch (ConversionNotReadyException ex) 
+        {
+          var notReadyDataCache = revitDocumentAggregateCache
+            .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
+          var notReadyData = notReadyDataCache
+            .GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
+
+          if (++notReadyData.NumberOfTimesCaught > 2)
+          {
+            SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
+            obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+            progress.Report.UpdateReportObject(obj);
+          }
+          else
+          {
+            Preview.Add(obj);
+          }
+          // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
+          notReadyDataCache.Set(@base.id, notReadyData);
         }
         catch (Exception ex)
         {

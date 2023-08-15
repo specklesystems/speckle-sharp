@@ -1,7 +1,6 @@
 # nullable enable
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
@@ -27,7 +26,7 @@ namespace Speckle.Core.Api;
 
 public partial class Client : IDisposable
 {
-  public Client() { }
+  internal Client() { }
 
   public Client(Account account)
   {

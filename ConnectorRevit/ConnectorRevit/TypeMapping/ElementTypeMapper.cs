@@ -9,6 +9,7 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
@@ -17,6 +18,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Newtonsoft.Json;
 using DB = Autodesk.Revit.DB;
+using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace ConnectorRevit.TypeMapping
 {
@@ -27,6 +29,7 @@ namespace ConnectorRevit.TypeMapping
   {
     private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
     private readonly IRevitElementTypeRetriever typeRetriever;
+    private readonly IRevitDocumentAggregateCache revitDocumentAggregateCache;
     private List<Base> speckleElements = new();
     private readonly Document document;
 
@@ -38,7 +41,7 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="storedObjects"></param>
     /// <param name="doc"></param>
     /// <exception cref="ArgumentException"></exception>
-    public ElementTypeMapper(ISpeckleConverter converter, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
+    public ElementTypeMapper(ISpeckleConverter converter, IRevitDocumentAggregateCache revitDocumentAggregateCache, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
     {
       document = doc;
 
@@ -53,6 +56,8 @@ namespace ConnectorRevit.TypeMapping
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
       }
       else revitCategoriesExposer = typeInfoExposer;
+
+      this.revitDocumentAggregateCache = revitDocumentAggregateCache ?? throw new ArgumentException($"RevitDocumentAggregateCache cannot be null");
 
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
@@ -109,7 +114,7 @@ namespace ConnectorRevit.TypeMapping
       {
         return true;
       }
-      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0) 
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0)
       {
         return true;
       }
@@ -125,12 +130,20 @@ namespace ConnectorRevit.TypeMapping
 
     private static async Task<bool> ShowMissingIncomingTypesDialog()
     {
-      return await Dispatcher.UIThread.InvokeAsync<bool>(() =>
+      var response = await Dispatcher.UIThread.InvokeAsync<bool>(() =>
       {
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
         var mappingView = new MissingIncomingTypesDialog();
-        return mappingView.ShowDialog<bool>();
+        return mappingView.ShowDialog<bool>(); ;
       }).ConfigureAwait(false);
+
+      if (response)
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Accept" } });
+      else
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Ignore" } });
+
+
+      return response;
     }
 
     private async Task ShowCustomMappingDialog(TypeMap? currentMapping, HostTypeContainer hostTypesContainer, int numNewTypes)
@@ -203,6 +216,11 @@ namespace ConnectorRevit.TypeMapping
       var hostTypes = new HostTypeContainer();
 
       numNewTypes = 0;
+      var groupedElementTypeCache = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<List<ElementType>>();
+      var elementTypeCache = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<ElementType>();
+
       foreach (var @base in speckleElements)
       {
         var incomingType = typeRetriever.GetElementType(@base);
@@ -215,12 +233,10 @@ namespace ConnectorRevit.TypeMapping
         var incomingFamily = typeRetriever.GetElementFamily(@base);
 
         var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
-        if (typeInfo.ElementTypeType == null) continue;
+        //if (typeInfo.ElementTypeType == null) continue;
 
-        var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
-        var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
-
-        //if (exactTypeMatch) continue;
+        var elementTypes = groupedElementTypeCache.GetOrAddGroupOfTypes(typeInfo);
+        var exactTypeMatch = elementTypeCache.ContainsKey(typeInfo.GetCategorySpecificTypeName(incomingType));
 
         hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name)));
 
@@ -238,8 +254,8 @@ namespace ConnectorRevit.TypeMapping
       }
 
       hostTypes.SetAllTypes(
-        typeRetriever
-          .GetAllCachedElementTypes()
+        elementTypeCache
+          .GetAllObjects()
           .Select(type => new RevitHostType(type.FamilyName, type.Name))
       );
 
@@ -263,7 +279,7 @@ namespace ConnectorRevit.TypeMapping
       {
         var settings = new JsonSerializerSettings
         {
-          Converters = { 
+          Converters = {
             new AbstractConverter<RevitMappingValue, ISingleValueToMap>(),
             new AbstractConverter<RevitHostType, ISingleHostType>(),
           },

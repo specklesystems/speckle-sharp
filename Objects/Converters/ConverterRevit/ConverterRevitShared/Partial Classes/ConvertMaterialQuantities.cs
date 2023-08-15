@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -23,9 +23,9 @@ namespace Objects.Converter.Revit
       if (material == null || element == null) 
         return null;
 
-      //Get quantities
+      // To-Do: These methods from the Revit API appear to have bugs.
       double volume = element.GetMaterialVolume(material.Id);
-      double area = element.GetMaterialArea(material.Id, false); //To-Do: Do we need Paint-Materials
+      double area = element.GetMaterialArea(material.Id, false);
 
       // Convert revit interal units to speckle commit units
       double factor = ScaleToSpeckle(1);
@@ -37,7 +37,6 @@ namespace Objects.Converter.Revit
 
       if (LocationToSpeckle(element) is ICurve curve)
         materialQuantity["length"] = curve.length;
-
       return materialQuantity;
     }
 
@@ -46,8 +45,17 @@ namespace Objects.Converter.Revit
     #region MaterialQuantities
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
-      var matIDs = element?.GetMaterialIds(false);
-      if (matIDs == null || matIDs.Count() == 0)
+      
+      var matIDs = element?.GetMaterialIds(false); 
+      // Does not return the correct materials for some categories
+      // Need to take different approach for MEP-Elements
+      if (matIDs == null || !matIDs.Any() &&  element is MEPCurve)
+      {
+        DB.Material mepMaterial = ConverterRevit.GetMEPSystemRevitMaterial(element);
+        if (mepMaterial != null) matIDs.Add(mepMaterial.Id);
+      }
+
+      if (matIDs == null || !matIDs.Any())
         return null;
 
       var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
@@ -55,7 +63,7 @@ namespace Objects.Converter.Revit
     }
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials, string units)
     {
-      if (materials == null || materials.Count() == 0) return null;
+      if (materials == null || !materials.Any()) return null;
       List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
 
       foreach (var material in materials)
@@ -65,6 +73,7 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
+    
   }
 
 }

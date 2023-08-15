@@ -44,7 +44,7 @@ public class CSINode : Node
     CSISpringProperty = springProperty;
     this.massProperty = massProperty;
     this.damperProperty = damperProperty;
-    DiaphragmAssignment = CSIDiaphragm.name;
+    DiaphragmAssignment = CSIDiaphragm?.name;
     this.DiaphragmOption = DiaphragmOption;
   }
 

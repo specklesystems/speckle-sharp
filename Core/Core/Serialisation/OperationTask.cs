@@ -9,22 +9,22 @@ namespace Speckle.Core.Serialisation;
 
 internal readonly struct OperationTask<T> where T : struct
 {
-  public readonly T operationType;
-  public readonly object? inputValue;
-  public readonly TaskCompletionSource<object?>? tcs;
+  public readonly T OperationType;
+  public readonly object? InputValue;
+  public readonly TaskCompletionSource<object?>? Tcs;
 
   public OperationTask(T operationType, object? inputValue = null, TaskCompletionSource<object?>? tcs = null)
   {
-    this.operationType = operationType;
-    this.inputValue = inputValue;
-    this.tcs = tcs;
+    OperationType = operationType;
+    InputValue = inputValue;
+    Tcs = tcs;
   }
 
   public void Deconstruct(out T operationType, out object? inputValue, out TaskCompletionSource<object?>? tcs)
   {
-    operationType = this.operationType;
-    inputValue = this.inputValue;
-    tcs = this.tcs;
+    operationType = OperationType;
+    inputValue = InputValue;
+    tcs = Tcs;
   }
 }
 
@@ -43,7 +43,7 @@ internal abstract class ParallelOperationExecutor<TOperation> : IDisposable wher
   {
     if (!HasStarted)
       throw new InvalidOperationException($"Unable to {nameof(Stop)} {this} as it has not started!");
-    foreach (Thread t in Threads)
+    foreach (Thread _ in Threads)
       Tasks.Add(default);
     foreach (Thread t in Threads)
       t.Join();

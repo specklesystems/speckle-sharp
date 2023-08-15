@@ -701,12 +701,6 @@ namespace Speckle.ConnectorAutocadCivil
       return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
     }
 
-    public static string RemoveInvalidDynamicPropChars(string str)
-    {
-      // remove ./
-      return Regex.Replace(str, @"[./]", "-");
-    }
-
 #if ADVANCESTEEL2023
 
     public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
