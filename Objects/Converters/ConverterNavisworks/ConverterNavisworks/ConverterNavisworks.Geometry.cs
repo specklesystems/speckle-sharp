@@ -213,10 +213,7 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   private static Vector3 VectorFromVertex(InwSimpleVertex v)
   {
     var arrayV = (Array)v.coord;
-    var x = arrayV.GetValue(1) as double?;
-    var y = arrayV.GetValue(2) as double?;
-    var z = arrayV.GetValue(3) as double?;
-    return new Vector3((double) x, (double)y, (double)z);
+    return new Vector3((double)arrayV.GetValue(1), (double)arrayV.GetValue(2), (double)arrayV.GetValue(3));
   }
 }
 
