@@ -513,6 +513,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     executor:
       name: << parameters.e >>
       shell: bash.exe
+      version: 2023.04.1
     steps:
       - cached-checkout
       - attach_workspace:
