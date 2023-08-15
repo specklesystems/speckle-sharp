@@ -1,51 +1,51 @@
-﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
+﻿using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 
 namespace TestsPerformance;
 
-[Config(typeof(Config))]
-public abstract class RegressionTestConfig
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = true)]
+public sealed class RegressionTestConfigAttribute : Attribute, IConfigSource
 {
-  private class Config : ManualConfig
+  public IConfig Config { get; private set; }
+
+  public RegressionTestConfigAttribute(
+    int launchCount = 1,
+    int warmupCount = 0,
+    int iterationCount = 10,
+    RunStrategy strategy = RunStrategy.Monitoring,
+    bool includeHead = true,
+    params string[] nugetVersions
+  )
   {
-    const int LaunchCount = 1;
-    const int WarmupCount = 1;
-    const int IterationCount = 5;
-    const RunStrategy Strategy = RunStrategy.Monitoring;
+    List<Job> jobs = new();
 
-    public Config()
+    if (includeHead)
     {
-      AddJob(
+      jobs.Add(
         new Job("Head")
-          .WithStrategy(Strategy)
-          .WithLaunchCount(LaunchCount)
-          .WithWarmupCount(WarmupCount)
-          .WithIterationCount(IterationCount)
-          .Freeze()
+          .WithStrategy(strategy)
+          .WithLaunchCount(launchCount)
+          .WithWarmupCount(warmupCount)
+          .WithIterationCount(iterationCount)
       );
-
-      AddJob(
-        new Job("2.15.3")
-          .WithStrategy(Strategy)
-          .WithLaunchCount(LaunchCount)
-          .WithWarmupCount(WarmupCount)
-          .WithIterationCount(IterationCount)
-          .WithNuGet("Speckle.Objects", "2.15.3")
-          .AsBaseline()
-          .Freeze()
-      );
-
-      // AddJob(
-      //   new Job("2.14.2")
-      //     .WithStrategy(Strategy)
-      //     .WithLaunchCount(LaunchCount)
-      //     .WithWarmupCount(WarmupCount)
-      //     .WithIterationCount(IterationCount)
-      //     .WithNuGet("Speckle.Objects", "2.14.2")
-      //     .Freeze()
-      // );
     }
+
+    bool isBaseline = true;
+    foreach (var version in nugetVersions)
+    {
+      jobs.Add(new Job(version)
+        .WithStrategy(strategy)
+        .WithLaunchCount(launchCount)
+        .WithWarmupCount(warmupCount)
+        .WithIterationCount(iterationCount)
+        .WithNuGet("Speckle.Objects", version)
+        .WithBaseline(isBaseline));
+
+      isBaseline = false;
+    }
+
+    Config = ManualConfig.CreateEmpty().AddJob(jobs.ToArray());
   }
 }

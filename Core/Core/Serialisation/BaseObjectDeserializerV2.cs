@@ -43,6 +43,9 @@ public sealed class BaseObjectDeserializerV2
   public string? BlobStorageFolder { get; set; }
   public TimeSpan Elapsed { get; private set; }
 
+  public static int DefaultNumberThreads => Math.Min(Environment.ProcessorCount, 6); //6 threads seems the sweet spot, see performance test project
+  public int WorkerThreadCount { get; set; } = DefaultNumberThreads;
+
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
   /// <exception cref="InvalidOperationException">Thrown when <see cref="_busy"/></exception>
@@ -59,7 +62,7 @@ public sealed class BaseObjectDeserializerV2
       _busy = true;
       var stopwatch = Stopwatch.StartNew();
       _deserializedObjects = new();
-      _workerThreads = new DeserializationWorkerThreads(this);
+      _workerThreads = new DeserializationWorkerThreads(this, WorkerThreadCount);
       _workerThreads.Start();
 
       List<(string, int)> closures = GetClosures(rootObjectJson);

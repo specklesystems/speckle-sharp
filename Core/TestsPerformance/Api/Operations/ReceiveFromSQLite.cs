@@ -5,7 +5,8 @@ using Speckle.Core.Models;
 namespace TestsPerformance.Api.Operations;
 
 [MemoryDiagnoser]
-public class ReceiveFromSQLite : RegressionTestConfig
+[RegressionTestConfig(1, 1, 8, nugetVersions: "2.15.2")]
+public class ReceiveFromSQLite
 {
   [Params(0, 4, 9, 19)]
   public int DataComplexity { get; set; }
