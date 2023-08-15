@@ -4,7 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
-using System.Numerics;
+using Numerics = System.Numerics;
+using System.DoubleNumerics;
 
 namespace Speckle.Core.Serialisation;
 
@@ -230,9 +231,35 @@ internal static class ValueConverter
       return true;
     }
 
+    #region BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
+    if (type == typeof(Numerics.Matrix4x4) && value is IReadOnlyList<object> lMatrix)
+    {
+      float I(int index) => Convert.ToSingle(lMatrix[index]);
+      convertedValue = new Matrix4x4(
+        I(0),
+        I(1),
+        I(2),
+        I(3),
+        I(4),
+        I(5),
+        I(6),
+        I(7),
+        I(8),
+        I(9),
+        I(10),
+        I(11),
+        I(12),
+        I(13),
+        I(14),
+        I(15)
+      );
+      return true;
+    }
+    #endregion
+
     if (type == typeof(Matrix4x4) && value is IReadOnlyList<object> l)
     {
-      float I(int index) => Convert.ToSingle(l[index]);
+      double I(int index) => Convert.ToDouble(l[index]);
       convertedValue = new Matrix4x4(
         I(0),
         I(1),

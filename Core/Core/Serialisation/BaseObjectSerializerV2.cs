@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -137,7 +137,7 @@ public class BaseObjectSerializerV2
     if (obj is DateTime t)
       return t.ToString("o", CultureInfo.InvariantCulture);
     if (obj is Matrix4x4 m)
-      return new List<float>
+      return new List<double>
       {
         m.M11,
         m.M12,
