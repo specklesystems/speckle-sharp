@@ -25,6 +25,7 @@ public sealed class RegressionTestConfigAttribute : Attribute, IConfigSource
     {
       jobs.Add(
         new Job("Head")
+          .WithRuntime(ClrRuntime.Net481)
           .WithStrategy(strategy)
           .WithLaunchCount(launchCount)
           .WithWarmupCount(warmupCount)
@@ -35,13 +36,16 @@ public sealed class RegressionTestConfigAttribute : Attribute, IConfigSource
     bool isBaseline = true;
     foreach (var version in nugetVersions)
     {
-      jobs.Add(new Job(version)
-        .WithStrategy(strategy)
-        .WithLaunchCount(launchCount)
-        .WithWarmupCount(warmupCount)
-        .WithIterationCount(iterationCount)
-        .WithNuGet("Speckle.Objects", version)
-        .WithBaseline(isBaseline));
+      jobs.Add(
+        new Job(version)
+          .WithRuntime(ClrRuntime.Net481)
+          .WithStrategy(strategy)
+          .WithLaunchCount(launchCount)
+          .WithWarmupCount(warmupCount)
+          .WithIterationCount(iterationCount)
+          .WithNuGet("Speckle.Objects", version)
+          .WithBaseline(isBaseline)
+      );
 
       isBaseline = false;
     }
