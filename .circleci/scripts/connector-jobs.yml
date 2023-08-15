@@ -124,13 +124,11 @@ csi:
 
 archicad:
   - build-archicad-add-on:
-      e: win/server-2019
       archicadversion: "25"
       requires:
         - get-ci-tools
       name: build-archicad-add-on-25
   - build-archicad-add-on:
-      e: win/server-2019
       archicadversion: "26"
       requires:
         - get-ci-tools
