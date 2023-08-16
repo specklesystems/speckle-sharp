@@ -56,10 +56,20 @@ public interface ISpeckleConverter
   public List<object> ConvertToNative(List<Base> objects);
 
   /// <summary>
-  /// Converts a Speckle object to a native displayable one
+  /// Converts a given speckle objects as a generic native object.
+  /// This should assume <see cref="CanConvertToNativeDisplayable"/> has been called and returned True,
+  /// or call it within this method's implementation to ensure non-displayable objects are gracefully handled.
   /// </summary>
+  /// <remarks>
+  /// This method should not try to convert an object to it's native representation (i.e Speckle Wall -> Wall),
+  /// but rather use the 'displayValue' of that wall to create a geometrically correct representation of that object
+  /// in the native application.
+  /// An object may be able to be converted both with <see cref="ConvertToNative(Speckle.Core.Models.Base)"/> and <see cref="ConvertToNativeDisplayable"/>.
+  /// In this case, deciding which to use is dependent on each connector developer.
+  /// Preferably, <see cref="ConvertToNativeDisplayable"/> should be used as a fallback to the <see cref="ConvertToNative(Speckle.Core.Models.Base)"/> logic.
+  /// </remarks>
   /// <param name="object">Speckle object to convert</param>
-  /// <returns></returns>
+  /// <returns>The native object that resulted after converting the input <paramref name="object"/></returns>
   public object ConvertToNativeDisplayable(Base @object);
 
   /// <summary>
@@ -70,10 +80,16 @@ public interface ISpeckleConverter
   public bool CanConvertToNative(Base @object);
 
   /// <summary>
-  /// Checks if it can convert a Speckle object to a native displayable one
+  /// Checks to verify if a given object is: 1) displayable and  2) can be supported for conversion to the native application.
+  /// An object is considered "displayable" if it has a 'displayValue' property (defined in it's class or dynamically attached to it, detached or not).
   /// </summary>
+  /// <remarks>
+  /// An object may return "True" for both <see cref="CanConvertToNative"/> and <see cref="CanConvertToNativeDisplayable"/>
+  /// In this case, deciding which to use is dependent on each connector developer.
+  /// Preferably, <see cref="CanConvertToNativeDisplayable"/> should be used as a fallback to the <see cref="CanConvertToNative"/> logic.
+  /// </remarks>
   /// <param name="object">Speckle object to convert</param>
-  /// <returns></returns>
+  /// <returns>True if the object is "displayable" and the converter supports native conversion of the given speckle object in particular.</returns>
   public bool CanConvertToNativeDisplayable(Base @object);
 
   /// <summary>
