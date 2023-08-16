@@ -472,7 +472,7 @@ namespace Objects.Converter.Revit
           receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
-      
+
       return nativeObject;
     }
 
@@ -717,6 +717,11 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
@@ -847,6 +852,11 @@ namespace Objects.Converter.Revit
         Organization.DataTable _ => true,
         _ => false,
       };
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }
