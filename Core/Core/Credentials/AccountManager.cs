@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -536,9 +536,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {
@@ -566,9 +564,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {

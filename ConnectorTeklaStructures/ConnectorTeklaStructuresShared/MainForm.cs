@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -21,6 +22,7 @@ namespace Speckle.ConnectorTeklaStructures
 
     //window owner call
     [DllImport("user32.dll", SetLastError = true)]
+    [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
     const int GWL_HWNDPARENT = -8;
 
