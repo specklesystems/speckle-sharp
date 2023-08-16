@@ -81,12 +81,13 @@ public interface ISpeckleConverter
 
   /// <summary>
   /// Checks to verify if a given object is: 1) displayable and  2) can be supported for conversion to the native application.
-  /// An object is considered "displayable" if it has a 'displayValue' property (defined in it's class or dynamically attached to it, detached or not).
+  /// An object is considered "displayable" if it has a 'displayValue' property (defined in its class or dynamically attached to it, detached or not).
   /// </summary>
   /// <remarks>
   /// An object may return "True" for both <see cref="CanConvertToNative"/> and <see cref="CanConvertToNativeDisplayable"/>
   /// In this case, deciding which to use is dependent on each connector developer.
   /// Preferably, <see cref="CanConvertToNativeDisplayable"/> should be used as a fallback to the <see cref="CanConvertToNative"/> logic.
+  /// Objects found in the 'displayValue' property are assumed to be universally convertible by all converters and the viewer, but are not guaranteed to be so.
   /// </remarks>
   /// <param name="object">Speckle object to convert</param>
   /// <returns>True if the object is "displayable" and the converter supports native conversion of the given speckle object in particular.</returns>
