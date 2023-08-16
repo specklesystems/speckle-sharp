@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IReceivedObjectIdMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCategoryInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\APIContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
   </ItemGroup>
   <ItemGroup>

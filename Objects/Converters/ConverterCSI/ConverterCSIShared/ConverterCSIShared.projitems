@@ -11,6 +11,11 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSIUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ArcExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelInfo.cs" />

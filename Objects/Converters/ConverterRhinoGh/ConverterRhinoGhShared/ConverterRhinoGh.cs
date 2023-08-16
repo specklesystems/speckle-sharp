@@ -556,6 +556,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     return rhinoObj;
   }
 
+  public object ConvertToNativeDisplayable(Base @object)
+  {
+    throw new NotImplementedException();
+  }
+
   public List<object> ConvertToNative(List<Base> objects)
   {
     return objects.Select(x => ConvertToNative(x)).ToList();
@@ -668,5 +673,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       default:
         return false;
     }
+  }
+
+  public bool CanConvertToNativeDisplayable(Base @object)
+  {
+    return false;
   }
 }
