@@ -180,7 +180,7 @@ namespace Objects.Converter.Revit
 
       //CreateVoids(revitWall, speckleWall);
 
-      if (revitWall.CurtainGrid == null)
+      if (revitWall.CurtainGrid is not CurtainGrid grid)
       {
         if (revitWall.IsStackedWall)
         {
@@ -195,21 +195,14 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        // curtain walls have two meshes, one for panels and one for mullions
-        // adding mullions as sub-elements so they can be correctly displayed in viewers etc
-        var (panelsMesh, mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
-        speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-        speckleWall.displayValue = panelsMesh;
-
-        var elements = new List<Base>();
-        if (mullionsMesh.Count > 0) //Only add mullions object if they have meshes 
-        {
-          elements.Add(new Base
-          {
-            ["@displayValue"] = mullionsMesh
-          });
-        }
-        speckleWall.elements = elements;
+        AddHostedDependentElements(
+          revitWall, 
+          speckleWall,
+          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallMullions) ?? grid.GetMullionIds().ToList());
+        AddHostedDependentElements(
+          revitWall, 
+          speckleWall,
+          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallPanels) ?? grid.GetPanelIds().ToList());
       }
 
       GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
@@ -228,43 +221,21 @@ namespace Objects.Converter.Revit
       return speckleWall;
     }
 
-    private (List<Mesh>, List<Mesh>) GetCurtainWallDisplayMesh(DB.Wall wall)
+    private List<ElementId>? GetWallSubElementsInView(BuiltInCategory category)
     {
-      var grid = wall.CurtainGrid;
-
-      var meshPanels = GetWallSubElementMeshes(grid.GetPanelIds(), BuiltInCategory.OST_CurtainWallPanels);
-      var meshMullions = GetWallSubElementMeshes(grid.GetMullionIds(), BuiltInCategory.OST_CurtainWallMullions);
-
-      return (meshPanels, meshMullions);
-    }
-
-    private List<Mesh> GetWallSubElementMeshes(IEnumerable<ElementId> elementIds, BuiltInCategory category)
-    {
-      var meshes = new List<Mesh>();
-      HashSet<int> idsInView = null;
-      if (ViewSpecificOptions != null)
+      if (ViewSpecificOptions == null)
       {
-        using var filter = new ElementCategoryFilter(category);
-        using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id)
-          .WhereElementIsNotElementType()
-          .WherePasses(filter);
-
-        idsInView = new HashSet<int>(collector.ToElementIds().Select(id => id.IntegerValue));
+        return null;
       }
 
-      foreach (var id in elementIds)
-      {
-        if (idsInView != null && !idsInView.Contains(id.IntegerValue))
-        {
-          continue;
-        }
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(id))
-          continue;
-        SubelementIds.Add(id);
-        meshes.AddRange(GetElementDisplayValue(Doc.GetElement(id)));
-      }
-      return meshes;
+      using var filter = new ElementCategoryFilter(category);
+      using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+      return collector
+        .WhereElementIsNotElementType()
+        .WherePasses(filter)
+        .ToElementIds()
+        .ToList();
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
