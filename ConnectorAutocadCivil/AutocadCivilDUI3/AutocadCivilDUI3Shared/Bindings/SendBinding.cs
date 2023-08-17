@@ -98,12 +98,11 @@ namespace AutocadCivilDUI3Shared.Bindings
               }
 
               convertedObjects.Add(converted);
-
               var args = new SenderProgress()
               {
                 Id = modelCardId,
                 Status = "Converting",
-                Progress = count / objectsIds.Count
+                Progress = (double)count / objectsIds.Count
               };
               Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
             }
