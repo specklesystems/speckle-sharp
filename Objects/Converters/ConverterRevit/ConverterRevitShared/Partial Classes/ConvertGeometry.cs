@@ -392,7 +392,7 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         if (e is Autodesk.Revit.Exceptions.ArgumentException)
-          throw e; // prob a closed, periodic curve
+          throw; // prob a closed, periodic curve
         return null;
       }
     }

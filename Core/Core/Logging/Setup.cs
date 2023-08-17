@@ -63,12 +63,6 @@ public static class Setup
     //start mutex so that Manager can detect if this process is running
     mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
-#if !NETSTANDARD1_5_OR_GREATER
-    //needed by older .net frameworks, eg Revit 2019
-    ServicePointManager.SecurityProtocol =
-      SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-#endif
-
     SpeckleLog.Initialize(hostApplication, versionedHostApplication);
 
     foreach (var account in AccountManager.GetAccounts())
