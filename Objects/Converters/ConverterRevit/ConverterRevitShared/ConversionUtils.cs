@@ -17,9 +17,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
 using OSG = Objects.Structural.Geometry;
@@ -382,7 +379,8 @@ namespace Objects.Converter.Revit
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
+        applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
+        units = GetSymbolUnit(rp),
       };
 
       sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
@@ -439,7 +437,65 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
-
+    
+    /// <summary>
+    /// Get the symbol unit of the parameter : eg. mm, m, cm, etc.
+    /// </summary>
+    /// <param name="parameter">the parameter of revit</param>
+    /// <returns></returns>
+    public static string GetSymbolUnit(DB.Parameter parameter)
+    {
+      string symbol = string.Empty;
+#if REVIT2020
+      try
+      {
+        DisplayUnitType forgeTypeId = parameter.DisplayUnitType;
+        IList<UnitSymbolType> validSymbols = FormatOptions.GetValidUnitSymbols(forgeTypeId);
+        if (validSymbols.Count > 0)
+        {
+          var unitSymbolTypes = validSymbols.Where(x => x != UnitSymbolType.UST_NONE).ToArray();
+          if (unitSymbolTypes.Any())
+          {
+            foreach (DB.UnitSymbolType symbolId in unitSymbolTypes)
+            {
+              symbol = LabelUtils.GetLabelFor(symbolId);
+              return symbol;
+            }
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        // ignore with catch symbol
+      }
+#else
+      try
+      {
+        ForgeTypeId forgeTypeId = parameter.GetUnitTypeId();
+        if (FormatOptions.CanHaveSymbol(forgeTypeId))
+        {
+          IList<DB.ForgeTypeId> validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
+          if (validSymbols.Count > 0)
+          {
+            IEnumerable<DB.ForgeTypeId> typeId = validSymbols.Where(x => !x.Empty());
+            if (typeId.Any())
+            {
+              foreach (DB.ForgeTypeId symbolId in typeId)
+              {
+                symbol = LabelUtils.GetLabelForSymbol(symbolId);
+              }
+            }
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        // ignore with catch symbol
+      }
+#endif
+      return symbol;
+    }
+    
     /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
@@ -497,7 +553,7 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
 
@@ -595,7 +651,7 @@ namespace Objects.Converter.Revit
     //  else
     //    return (rp.Definition as InternalDefinition).BuiltInParameter != ;
     //}
-
+    
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
@@ -631,7 +687,7 @@ namespace Objects.Converter.Revit
 
     //  }
     //}
-
+    
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {
       var param = elem.get_Parameter(bip);
@@ -642,7 +698,6 @@ namespace Objects.Converter.Revit
 
       TrySetParam(param, value, units);
     }
-
     /// <summary>
     /// Queries a Revit Document for phases by the given name.
     /// </summary>

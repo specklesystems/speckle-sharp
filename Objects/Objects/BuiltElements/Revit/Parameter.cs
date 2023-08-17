@@ -14,7 +14,7 @@ public class Parameter : Base
     [SchemaParamInfo(
       "(Optional) Speckle units. If not set it's retrieved from the current document. For non lenght based parameters (eg. Air Flow) it should be set to 'none' so that the Revit display unit will be used instead."
     )]
-      string units = ""
+    string units = ""
   )
   {
     this.name = name;
@@ -41,6 +41,6 @@ public class Parameter : Base
   /// True = Type Parameter, False = Instance Parameter
   /// </summary>
   public bool isTypeParameter { get; set; } = false;
-
+  
   public string units { get; set; }
 }
