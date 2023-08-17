@@ -56,8 +56,9 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await APIContext.Run(
-            app =>
+          await APIContext.Run(app =>
+          {
+            using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
             {
               t.Start();
               convertedObjects = ConvertReceivedObjects(converter, progress, settings);
