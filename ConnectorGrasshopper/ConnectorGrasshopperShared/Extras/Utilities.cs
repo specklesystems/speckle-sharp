@@ -203,25 +203,18 @@ public static class Utilities
 
   private static void RecurseTreeToList(List<object> parent, List<int> path, int pathIndex, List<object> objects)
   {
-    try
-    {
-      var listIndex = path[pathIndex]; //there should be a list at this index inside this parent list
+    var listIndex = path[pathIndex]; //there should be a list at this index inside this parent list
 
-      parent = EnsureHasSublistAtIndex(parent, listIndex);
-      var sublist = parent[listIndex] as List<object>;
-      //it's the last index of the path => the last sublist => add objects
-      if (pathIndex == path.Count - 1)
-      {
-        sublist.AddRange(objects);
-        return;
-      }
-
-      RecurseTreeToList(sublist, path, pathIndex + 1, objects);
-    }
-    catch (Exception ex)
+    parent = EnsureHasSublistAtIndex(parent, listIndex);
+    var sublist = parent[listIndex] as List<object>;
+    //it's the last index of the path => the last sublist => add objects
+    if (pathIndex == path.Count - 1)
     {
-      throw ex;
+      sublist.AddRange(objects);
+      return;
     }
+
+    RecurseTreeToList(sublist, path, pathIndex + 1, objects);
   }
 
   /// <summary>
