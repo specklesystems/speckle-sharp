@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Timers;
-using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
+using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Timer = System.Timers.Timer;
 
 namespace Speckle.ConnectorRevit.UI
@@ -32,9 +31,11 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
 
+    private static IRevitDocumentAggregateCache revitDocumentAggregateCache;
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
+      revitDocumentAggregateCache = new RevitDocumentAggregateCache(new UIDocumentProvider(revitApp));
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)

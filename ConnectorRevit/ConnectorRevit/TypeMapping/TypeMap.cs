@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DesktopUI2.Models.TypeMappingOnReceive;
@@ -17,10 +18,8 @@ namespace ConnectorRevit.TypeMapping
     [JsonIgnore]
     private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess, out bool isNewType, bool overwriteExisting = false)
+    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess)
     {
-      isNewType = false;
-
       if (baseIds.Contains(@base.id)) return;
       baseIds.Add(@base.id);
 
@@ -31,9 +30,8 @@ namespace ConnectorRevit.TypeMapping
         categoryToCategoryMap[category] = categoryMappingValues;
       }
 
-      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap) || overwriteExisting)
+      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap))
       {
-        isNewType = true;
         singleValueToMap = new RevitMappingValue(incomingType, initialGuess, incomingFamily, true);
         categoryMappingValues.AddMappingValue(singleValueToMap);
       }
@@ -77,6 +75,42 @@ namespace ConnectorRevit.TypeMapping
       }
 
       return singleValueToMap;
+    }
+
+    public void AddTypeMap(TypeMap typeMap)
+    {
+      foreach (var kvp in typeMap.categoryToCategoryMap)
+      {
+        AddAllMappingValuesInCategory(kvp.Key, kvp.Value);
+      }
+    }
+
+    private void AddAllMappingValuesInCategory(string category, SingleCategoryMap singleCategoryMap)
+    {
+      foreach (var mapping in singleCategoryMap.GetMappingValues())
+      {
+        if (mapping is not RevitMappingValue revitMappingValue)
+        {
+          throw new ArgumentException($"expected a {nameof(RevitMappingValue)}, but was passed a value of type {mapping.GetType()}");
+        }
+
+        // add empty category if it isn't already present
+        if (!categoryToCategoryMap.TryGetValue(category, out var categoryMappingValues))
+        {
+          categoryMappingValues = new SingleCategoryMap(category);
+          categoryToCategoryMap[category] = categoryMappingValues;
+        }
+
+        if (!categoryMappingValues.TryGetMappingValue(revitMappingValue.IncomingFamily, revitMappingValue.IncomingType, out var existingMappingValue))
+        {
+          categoryMappingValues.AddMappingValue(revitMappingValue);
+        }
+        else
+        {
+          existingMappingValue.InitialGuess = revitMappingValue.InitialGuess;
+          existingMappingValue.MappedHostType = revitMappingValue.MappedHostType;
+        }
+      }
     }
   }
 }

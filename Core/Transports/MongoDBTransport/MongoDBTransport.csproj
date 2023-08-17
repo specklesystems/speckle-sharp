@@ -6,6 +6,7 @@
     <Description>A MongoDB transport for Speckle</Description>
     <PackageTags>$(PackageTags) mongodb transport</PackageTags>
     <IsPackable>true</IsPackable>
+    <Nullable>disable</Nullable>
 
   </PropertyGroup>
 

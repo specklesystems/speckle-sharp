@@ -32,7 +32,10 @@ public static class Fixtures
     user["password"] = "12ABC3456789DEF0GHO";
     user["name"] = $"{seed.Substring(0, 5)} Name";
 
-    var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
+    using var httpClient = new HttpClient(
+      new HttpClientHandler { AllowAutoRedirect = false, CheckCertificateRevocationList = true }
+    );
+
     httpClient.BaseAddress = new Uri(Server.url);
 
     string redirectUrl;
@@ -85,7 +88,7 @@ public static class Fixtures
       },
       serverInfo = Server
     };
-    var client = new Client(acc);
+    using var client = new Client(acc);
 
     var user1 = await client.ActiveUserGet().ConfigureAwait(false);
     acc.userInfo.id = user1.id;

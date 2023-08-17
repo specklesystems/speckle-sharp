@@ -10,9 +10,14 @@ namespace RevitSharedResources.Interfaces
   public interface IRevitCategoryInfo
   {
     public string CategoryName { get; }
+    public List<string> CategoryAliases { get; }
     public Type ElementInstanceType { get; }
     public Type ElementTypeType { get; }
     public ICollection<BuiltInCategory> BuiltInCategories { get; }
     public bool ContainsRevitCategory(Category category);
+    List<ElementType> GetElementTypes(Document document);
+    List<T> GetElementTypes<T>(Document document)
+      where T : ElementType;
+    string GetCategorySpecificTypeName(string typeName);
   }
 }

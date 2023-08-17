@@ -13,14 +13,14 @@ using System.Threading.Tasks;
 using System.Linq;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Autodesk.Revit.DB.DirectContext3D;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-    public override bool CanPreviewReceive => true;
+    public override bool CanPreviewReceive => false;
     private string SelectedReceiveCommit { get; set; }
     List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
 
@@ -56,7 +56,7 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await RevitTask.RunAsync(
+          await APIContext.Run(
             app =>
             {
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
@@ -144,7 +144,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
+        var filterObjs = GetSelectionFilterObjects(converter, state.Filter);
         foreach (var filterObj in filterObjs)
         {
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);

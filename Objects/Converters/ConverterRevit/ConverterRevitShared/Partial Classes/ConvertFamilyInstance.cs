@@ -18,6 +18,7 @@ using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
 using SHC = RevitSharedResources.Helpers.Categories;
+using Objects.Organization;
 
 namespace Objects.Converter.Revit
 {
@@ -49,9 +50,12 @@ namespace Objects.Converter.Revit
           return null;
         else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)mullion.LocationCurve).Direction;
-          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
+          {
+            var direction = locationLine.Direction;
+            // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
+            isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          }
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -73,6 +77,12 @@ namespace Objects.Converter.Revit
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);
+
+      // MEP elements
+      if (revitFi.MEPModel?.ConnectorManager?.Connectors?.Size > 0)
+      {
+        @base = MEPFamilyInstanceToSpeckle(revitFi);
+      }
 
       // elements
       var baseGeometry = LocationToSpeckle(revitFi);
@@ -482,11 +492,11 @@ namespace Objects.Converter.Revit
     }
 
     // revit instances
-    public ApplicationObject RevitInstanceToNative(RevitInstance instance)
+    public ApplicationObject RevitInstanceToNative(RevitInstance instance, ApplicationObject appObj = null)
     {
       DB.FamilyInstance familyInstance = null;
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
-      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      appObj ??= new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
       var isUpdate = false;
 
       // skip if element already exists in doc & receive mode is set to ignore
@@ -721,7 +731,8 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance instance,
       out List<string> notes,
       Transform parentTransform,
-      bool useParentTransform = false
+      bool useParentTransform = false,
+      RevitInstance existingInstance = null
     )
     {
       notes = new List<string>();
@@ -743,7 +754,7 @@ namespace Objects.Converter.Revit
       );
       notes.AddRange(definitionNotes);
 
-      var _instance = new RevitInstance();
+      var _instance = existingInstance ?? new RevitInstance();
       _instance.transform = transform;
       _instance.typedDefinition = definition;
       _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
@@ -794,7 +805,7 @@ namespace Objects.Converter.Revit
           instance,
           new Options() { DetailLevel = ViewDetailLevel.Fine },
           true,
-          instance.HasModifiedGeometry()
+          parentTransform
         );
         symbol.displayValue = meshes;
       }

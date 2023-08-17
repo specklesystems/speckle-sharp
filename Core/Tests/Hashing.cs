@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using NUnit.Framework;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
 public class Hashing

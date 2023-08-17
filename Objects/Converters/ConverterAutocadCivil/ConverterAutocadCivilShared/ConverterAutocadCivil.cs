@@ -106,18 +106,13 @@ namespace Objects.Converter.AutocadCivil
       switch (@object)
       {
         case DBObject obj:
-          /*
-          // check for speckle schema xdata
-          string schema = GetSpeckleSchema(o.XData);
-          if (schema != null)
-            return ObjectToSpeckleBuiltElement(o);
-          */
+
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
 
           //Use the Handle object to update progressReport object.
           //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
           reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
-          style = DisplayStyleToSpeckle(obj as Entity);
+          style = DisplayStyleToSpeckle(obj as Entity); // note layer display styles are converted in the layer method
           extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
 
           switch (obj)
@@ -191,6 +186,9 @@ namespace Objects.Converter.AutocadCivil
             case MText o:
               @base = TextToSpeckle(o);
               break;
+            case LayerTableRecord o:
+              @base = LayerToSpeckle(o);
+              break;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
@@ -228,7 +226,7 @@ namespace Objects.Converter.AutocadCivil
               {
                 //Update report because AS object type
                 Report.UpdateReportObject(reportObj);
-                throw ex;
+                throw;
               }
 
               break;
@@ -381,6 +379,10 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
+        case Collection o:
+          acadObj = CollectionToNative(o);
+          break;
+
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
         case Alignment o:
           acadObj = AlignmentToNative(o);
@@ -426,6 +428,11 @@ namespace Objects.Converter.AutocadCivil
       return acadObj;
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects)
     {
       return objects.Select(x => ConvertToNative(x)).ToList();
@@ -461,6 +468,7 @@ namespace Objects.Converter.AutocadCivil
             case BlockTableRecord _:
             case AcadDB.DBText _:
             case AcadDB.MText _:
+            case LayerTableRecord _:
               return true;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
@@ -521,6 +529,7 @@ namespace Objects.Converter.AutocadCivil
         case BlockDefinition _:
         case Instance _:
         case Text _:
+        case Collection _:
 
         case Alignment _:
         case ModelCurve _:
@@ -529,6 +538,11 @@ namespace Objects.Converter.AutocadCivil
         default:
           return false;
       }
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }

@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Tests;
+namespace TestsUnit;
 
 /// <summary>
 /// Simple speckle kit (no conversions) used in tests.
@@ -23,7 +23,7 @@ public class TestKit : ISpeckleKit
 
   public ISpeckleConverter LoadConverter(string app)
   {
-    return null;
+    throw new KitException("This is the test kit");
   }
 
   public Base ToSpeckle(object @object)
