@@ -5,11 +5,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -21,7 +22,7 @@ public class BaseObjectSerializerV2
 {
   private readonly Stopwatch _stopwatch = new();
   private bool _busy;
-  
+
   private List<Dictionary<string, int>> ParentClosures = new();
 
   private HashSet<object> ParentObjects = new();
@@ -136,26 +137,52 @@ public class BaseObjectSerializerV2
       return c.ToArgb();
     if (obj is DateTime t)
       return t.ToString("o", CultureInfo.InvariantCulture);
-    if (obj is Matrix4x4 m)
-      return new List<float>
+    if (obj is Matrix4x4 md)
+      return new List<double>
       {
-        m.M11,
-        m.M12,
-        m.M13,
-        m.M14,
-        m.M21,
-        m.M22,
-        m.M23,
-        m.M24,
-        m.M31,
-        m.M32,
-        m.M33,
-        m.M34,
-        m.M41,
-        m.M42,
-        m.M43,
-        m.M44
+        md.M11,
+        md.M12,
+        md.M13,
+        md.M14,
+        md.M21,
+        md.M22,
+        md.M23,
+        md.M24,
+        md.M31,
+        md.M32,
+        md.M33,
+        md.M34,
+        md.M41,
+        md.M42,
+        md.M43,
+        md.M44
       };
+    if (obj is System.Numerics.Matrix4x4 ms) //BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
+    {
+      SpeckleLog.Logger.Warning(
+        "This kept for backwards compatibility, no one should be using {this}",
+        "ValueConverter deserialize to System.Numerics.Matrix4x4"
+      );
+      return new List<double>
+      {
+        ms.M11,
+        ms.M12,
+        ms.M13,
+        ms.M14,
+        ms.M21,
+        ms.M22,
+        ms.M23,
+        ms.M24,
+        ms.M31,
+        ms.M32,
+        ms.M33,
+        ms.M34,
+        ms.M41,
+        ms.M42,
+        ms.M43,
+        ms.M44
+      };
+    }
 
     throw new Exception("Unsupported value in serialization: " + type);
   }

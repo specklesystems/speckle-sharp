@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.Geometry;
@@ -213,7 +213,7 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   private static Vector3 VectorFromVertex(InwSimpleVertex v)
   {
     var arrayV = (Array)v.coord;
-    return new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
+    return new Vector3((double)arrayV.GetValue(1), (double)arrayV.GetValue(2), (double)arrayV.GetValue(3));
   }
 }
 
