@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 

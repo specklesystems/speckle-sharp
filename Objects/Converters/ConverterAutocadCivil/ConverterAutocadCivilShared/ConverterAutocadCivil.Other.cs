@@ -14,6 +14,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
+using Units = Speckle.Core.Kits.Units;
 
 using Objects.Other;
 using Arc = Objects.Geometry.Arc;
@@ -27,7 +28,6 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
-using Units = Speckle.Core.Kits.Units;
 
 namespace Objects.Converter.AutocadCivil
 {

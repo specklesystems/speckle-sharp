@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
@@ -32,7 +31,6 @@ namespace Objects.Converter.Revit
         model["info"] = info;
        
       }
-      model["units"] = GetUnits();
       Report.Log($"Created Model Object");
 
       return model;
@@ -72,89 +70,5 @@ namespace Objects.Converter.Revit
 
       return spcklLocations;
     }
-    
-#if REVIT2020
-    public List<Units> GetUnits()
-    {
-      IList<DB.DisplayUnitType> displayUnitTypes = DB.UnitUtils.GetValidDisplayUnits();
-      var units = new List<Units>();
-      try
-      {
-        foreach (DB.DisplayUnitType displayUnitType in displayUnitTypes)
-        {
-          var unit = new Units();
-          unit.applicationId = displayUnitType.ToString();
-          unit.display = DB.LabelUtils.GetLabelFor(displayUnitType);
-          IList<DB.UnitSymbolType> validSymbols = DB.FormatOptions.GetValidUnitSymbols(displayUnitType);
-          if (validSymbols.Count > 0)
-          {
-            unit.symbol = new List<Base>();
-            foreach (DB.UnitSymbolType symbol in validSymbols)
-            {
-              var baseUnit = new Base();
-              baseUnit.applicationId = symbol.ToString();
-              // check if this is a valid symbol
-              try
-              {
-                baseUnit["display"] = DB.LabelUtils.GetLabelFor(symbol);
-                unit.symbol.Add(baseUnit);
-              }
-              catch (Exception e)
-              {
-                 // Still don't know why this happens, but it does.
-              }
-            }
-          }
-          units.Add(unit);
-        }
-      }
-      catch (Exception)
-      {
-        return units;
-        // ignore with catch symbol
-      }
-      return units;
-    }
-#else
-public List<Units> GetUnits()
-    {
-      IList<DB.ForgeTypeId> forgeTypeIds = DB.UnitUtils.GetAllUnits();
-      var units = new List<Units>();
-      try
-      {
-        foreach (DB.ForgeTypeId forgeTypeId in forgeTypeIds)
-        {
-          var unit = new Units();
-          unit.applicationId = forgeTypeId.TypeId;
-          unit.display = DB.LabelUtils.GetLabelForUnit(forgeTypeId);
-          IList<DB.ForgeTypeId> validSymbols = DB.FormatOptions.GetValidSymbols(forgeTypeId);
-          if (validSymbols.Count > 0)
-          {
-            var typeId = validSymbols.Where(x=>!x.Empty()).ToArray();
-            if (typeId.Any())
-            {
-              unit.symbol = new List<Base>();
-              foreach (DB.ForgeTypeId symbol in typeId)
-              {
-                var baseUnit = new Base();
-                baseUnit.applicationId = symbol.TypeId;
-                baseUnit["display"] = DB.LabelUtils.GetLabelForSymbol(symbol);
-                unit.symbol.Add(baseUnit);
-              }
-            }
-          }
-          units.Add(unit);
-        }
-      }
-      catch (Exception)
-      {
-        return units;
-        // ignore with catch symbol
-      }
-      return units;
-    }
-#endif
-    
-    
   }
 }

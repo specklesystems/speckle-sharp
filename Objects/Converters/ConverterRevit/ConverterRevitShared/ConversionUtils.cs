@@ -19,7 +19,6 @@ using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
 using SHC = RevitSharedResources.Helpers.Categories;
-using Units = Objects.BuiltElements.Revit.Units;
 
 namespace Objects.Converter.Revit
 {
@@ -393,7 +392,7 @@ namespace Objects.Converter.Revit
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
         applicationUnitType = rp.GetUnityTypeString(), //eg UT_Length
-        units = GetSymBolUnit(rp),
+        units = GetSymbolUnit(rp),
       };
 
       switch (rp.StorageType)
@@ -457,7 +456,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="parameter">the parameter of revit</param>
     /// <returns></returns>
-    public static string GetSymBolUnit(DB.Parameter parameter)
+    public static string GetSymbolUnit(DB.Parameter parameter)
     {
       string symbol = string.Empty;
 #if REVIT2020
@@ -567,11 +566,12 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, "", sp.applicationUnit);
+        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
-        [Obsolete("This method will be remove in feature")]
-    private void TrySetParam(DB.Parameter rp, object value, string units ="", string applicationUnit = "")
+
+    [Obsolete("This method will be removed in feature")]
+    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
     {
       try
       {
