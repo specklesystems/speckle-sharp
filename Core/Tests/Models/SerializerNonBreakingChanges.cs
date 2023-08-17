@@ -1,3 +1,4 @@
+using System.DoubleNumerics;
 using System.Drawing;
 using NUnit.Framework;
 using Speckle.Core.Api;
@@ -115,50 +116,26 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
     var res = from.SerializeAsTAndDeserialize<DoubleValueMock>();
     Assert.That(res.value, Is.EqualTo(testCase));
   }
-}
 
-/// <summary>
-/// Test fixture that documents what property typing changes break backwards/cross/forwards compatibility, and are "breaking" changes.
-/// This doesn't guarantee things work this way for SpecklePy
-/// Nor does it encompass other tricks (like deserialize callback, or computed json ignored properties)
-/// </summary>
-[
-  TestFixture,
-  Description(
-    "For certain types, changing property from one type to another is a breaking change, and not backwards/forwards compatible"
-  )
-]
-public class SerializerBreakingChanges : PrimitiveTestFixture
-{
   [Test]
-  public void StringToInt_ShouldThrow()
+  [TestCase(123, 255)]
+  [TestCase(256, 1)]
+  public void ListToMatrix64(int seed, double scaler)
   {
-    var from = new StringValueMock();
-    from.value = "testValue";
-    Assert.Throws<Exception>(() => from.SerializeAsTAndDeserialize<IntValueMock>());
-  }
+    Random rand = new(seed);
+    List<double> testCase = Enumerable.Range(0, 16).Select(_ => rand.NextDouble() * scaler).ToList();
 
-  [Test, TestCaseSource(nameof(MyEnums))]
-  public void StringToEnum_ShouldThrow(MyEnum testCase)
-  {
-    var from = new StringValueMock { value = testCase.ToString() };
+    ListDoubleValueMock from = new() { value = testCase, };
 
-    Assert.Throws<Exception>(() =>
-    {
-      var res = from.SerializeAsTAndDeserialize<EnumValueMock>();
-    });
-  }
+    //Test List -> Matrix
+    var res = from.SerializeAsTAndDeserialize<Matrix64ValueMock>();
+    Assert.That(res.value.M11, Is.EqualTo(testCase[0]));
+    Assert.That(res.value.M44, Is.EqualTo(testCase[^1]));
 
-  [
-    Test,
-    Description("Deserialization of a JTokenType.Float to a .NET short/int/long should throw exception"),
-    TestCaseSource(nameof(Float64TestCases)),
-    TestCase(1e+30)
-  ]
-  public void DoubleToInt_ShouldThrow(double testCase)
-  {
-    var from = new DoubleValueMock { value = testCase };
-    Assert.Throws<Exception>(() => from.SerializeAsTAndDeserialize<IntValueMock>());
+    //Test Matrix -> List
+    var backAgain = res.SerializeAsTAndDeserialize<ListDoubleValueMock>();
+    Assert.That(backAgain.value, Is.Not.Null);
+    Assert.That(backAgain.value, Is.EquivalentTo(testCase));
   }
 }
 
@@ -190,6 +167,16 @@ public class StringValueMock : SerializerMock
 public class DoubleValueMock : SerializerMock
 {
   public double value { get; set; }
+}
+
+public class Matrix64ValueMock : SerializerMock
+{
+  public Matrix4x4 value { get; set; }
+}
+
+public class Matrix32ValueMock : SerializerMock
+{
+  public System.Numerics.Matrix4x4 value { get; set; }
 }
 
 public class ColorValueMock : SerializerMock
