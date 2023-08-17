@@ -1,14 +1,33 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Speckle.Core.Kits;
 
 namespace AutocadCivilDUI3Shared.Utils
 {
   public static class Utils
   {
+#if AUTOCAD2021DUI3
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2021);
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2022DUI3
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2023DUI3
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2024DUI3
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
+#endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
 
     #region extension methods
@@ -25,6 +44,66 @@ namespace AutocadCivilDUI3Shared.Utils
     /// </remarks>
     public static List<string> ToStrings(this ObjectId[] ids) =>
       ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
+
+    /// <summary>
+    /// Retrieves the handle from an input string
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static bool GetHandle(string str, out Handle handle)
+    {
+      // 
+      handle = new Handle();
+      try
+      {
+        long value = Convert.ToInt64(str, 16);
+        handle = new Handle(value);
+      }
+      catch
+      {
+        return false;
+      }
+      return true;
+    }
+
+    /// <summary>
+    /// Used to retrieve a DB Object from its handle
+    /// </summary>
+    /// <param name="handle">Object handle as string</param>
+    /// <param name="type">Object class dxf name</param>
+    /// <param name="layer">Object layer name</param>
+    /// <returns></returns>
+    public static DBObject GetObject(
+      this Handle handle,
+      Transaction tr,
+      out string type,
+      out string layer,
+      out string applicationId
+    )
+    {
+      Document Doc = Application.DocumentManager.MdiActiveDocument;
+      DBObject obj = null;
+      type = null;
+      layer = null;
+      applicationId = null;
+
+      // get objectId
+      ObjectId id = Doc.Database.GetObjectId(false, handle, 0);
+      if (!id.IsErased && !id.IsNull)
+      {
+        type = id.ObjectClass.DxfName;
+
+        // get the db object from id
+        obj = tr.GetObject(id, OpenMode.ForRead);
+        if (obj != null)
+        {
+          Entity objEntity = obj as Entity;
+          layer = objEntity.Layer;
+          applicationId = ApplicationIdManager.GetFromXData(objEntity);
+        }
+      }
+      return obj;
+    }
 
     /// <summary>
     /// Retrieve handles of visible objects in a selection
