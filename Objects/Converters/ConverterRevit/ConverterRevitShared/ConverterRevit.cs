@@ -866,5 +866,10 @@ namespace Objects.Converter.Revit
 
       return @object.IsDisplayableObject();
     }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
+    }
   }
 }

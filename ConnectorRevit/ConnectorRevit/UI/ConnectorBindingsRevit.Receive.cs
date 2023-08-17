@@ -13,7 +13,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Serilog.Context;
@@ -107,8 +106,21 @@ namespace Speckle.ConnectorRevit.UI
       }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-      var (success, exception) = await RevitTask
-        .RunAsync(app =>
+      var (success, exception) = await APIContext.Run(_ =>
+      {
+        string transactionName = $"Baking stream {state.StreamId}";
+        using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
+        using var t = new Transaction(CurrentDoc.Document, transactionName);
+
+        g.Start();
+        var failOpts = t.GetFailureHandlingOptions();
+        var errorEater = new ErrorEater(converter);
+        failOpts.SetFailuresPreprocessor(errorEater);
+        failOpts.SetClearAfterRollback(true);
+        t.SetFailureHandlingOptions(failOpts);
+        t.Start();
+
+        try
         {
           string transactionName = $"Baking stream {state.StreamId}";
           using var g = new TransactionGroup(CurrentDoc.Document, transactionName);

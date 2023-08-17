@@ -18,6 +18,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" Private="false" />
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" Private="false" ExactVersion="false"/>
   </ItemGroup>
 </Project>

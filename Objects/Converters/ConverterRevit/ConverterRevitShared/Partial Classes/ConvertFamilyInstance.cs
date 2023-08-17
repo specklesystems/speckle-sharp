@@ -50,9 +50,12 @@ namespace Objects.Converter.Revit
           return null;
         else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)mullion.LocationCurve).Direction;
-          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
+          {
+            var direction = locationLine.Direction;
+            // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
+            isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          }
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -801,7 +804,8 @@ namespace Objects.Converter.Revit
         var meshes = GetElementDisplayValue(
           instance,
           new Options() { DetailLevel = ViewDetailLevel.Fine },
-          true
+          true,
+          parentTransform
         );
         symbol.displayValue = meshes;
       }

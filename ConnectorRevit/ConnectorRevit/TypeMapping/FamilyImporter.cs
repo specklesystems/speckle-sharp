@@ -9,9 +9,9 @@ using Avalonia.Threading;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
-using Revit.Async;
 using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Logging;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 using SHC = RevitSharedResources.Helpers.Categories;
@@ -83,7 +83,7 @@ namespace ConnectorRevit.TypeMapping
 
     private async Task ImportTypesIntoDocument(HostTypeContainer hostTypesContainer, Dictionary<string, FamilyInfo> familyInfo, ImportFamiliesDialogViewModel vm)
     {
-      await RevitTask.RunAsync(_ =>
+      await APIContext.Run(_ =>
       {
         using var t = new Transaction(document, $"Import family types");
 
@@ -151,7 +151,7 @@ namespace ConnectorRevit.TypeMapping
         string pathClone = string.Copy(path);
 
         //open family file as xml to extract all family symbols without loading all of them into the project
-        await RevitTask.RunAsync(() => document.Application.ExtractPartAtomFromFamilyFile(path, xmlPath))
+        await APIContext.Run(() => document.Application.ExtractPartAtomFromFamilyFile(path, xmlPath))
           .ConfigureAwait(false);
         var xmlDoc = new XmlDocument(); // Create an XML document object
         xmlDoc.Load(xmlPath);
