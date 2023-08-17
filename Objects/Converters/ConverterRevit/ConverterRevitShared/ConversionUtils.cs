@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Organization;
@@ -377,7 +379,7 @@ namespace Objects.Converter.Revit
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = rp.GetUnityTypeString(), //eg UT_Length
+        applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
         units = GetSymbolUnit(rp),
       };
 
