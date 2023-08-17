@@ -29,6 +29,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Revit2020DUI3", "ConnectorR
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core\Core.csproj", "{BA4D2B73-3410-49CC-BF53-5DB22F40B659}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterRhinoGhShared", "Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.shproj", "{B74CB8C1-187B-46A6-B20B-92B8C129F3EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Converters", "Converters", "{C77F7A63-5465-41F3-9EB4-FF13C96F195C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino7", "Objects\Converters\ConverterRhinoGh\ConverterRhino7\ConverterRhino7.csproj", "{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino6", "Objects\Converters\ConverterRhinoGh\ConverterRhino6\ConverterRhino6.csproj", "{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +101,22 @@ Global
 		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|x64.ActiveCfg = Release|Any CPU
 		{BA4D2B73-3410-49CC-BF53-5DB22F40B659}.Release|x64.Build.0 = Release|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Debug|x64.Build.0 = Debug|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Release|x64.ActiveCfg = Release|Any CPU
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C}.Release|x64.Build.0 = Release|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Debug|x64.Build.0 = Debug|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Release|x64.ActiveCfg = Release|Any CPU
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +130,10 @@ Global
 		{3D7F0278-6CF2-4588-A101-4027ABB8B87F} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
 		{0CCBB127-75C2-4AC7-A169-090F5ADB1EFA} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
 		{18A89B49-E5A1-48DD-8DA3-13BE68399C76} = {574B03A6-8B43-467B-A9FD-82EA4D62D52D}
+		{B74CB8C1-187B-46A6-B20B-92B8C129F3EE} = {C77F7A63-5465-41F3-9EB4-FF13C96F195C}
+		{C77F7A63-5465-41F3-9EB4-FF13C96F195C} = {DC3AF69E-BD90-4B52-9483-9892C55C9201}
+		{DAAE53F3-59EA-45AA-890D-FBCA534EBF6C} = {C77F7A63-5465-41F3-9EB4-FF13C96F195C}
+		{1BDD3832-3074-4ECA-B7BD-E2259AF5BBE4} = {C77F7A63-5465-41F3-9EB4-FF13C96F195C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0F041EE-B7B0-4C74-A200-731E7C0FD422}
@@ -113,9 +141,12 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{0ccbb127-75c2-4ac7-a169-090f5adb1efa}*SharedItemsImports = 5
 		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{18a89b49-e5a1-48dd-8da3-13be68399c76}*SharedItemsImports = 5
+		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{1bdd3832-3074-4eca-b7bd-e2259af5bbe4}*SharedItemsImports = 5
 		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{1ebaa135-7d72-4ea9-bbb6-316646f3dba5}*SharedItemsImports = 5
 		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{2bde80e8-5f26-4e57-bba6-109120f5d4ee}*SharedItemsImports = 13
 		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{3d7f0278-6cf2-4588-a101-4027abb8b87f}*SharedItemsImports = 13
 		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{6cd69b4e-73d5-49fa-af3b-6fd81eba4a47}*SharedItemsImports = 5
+		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
+		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{daae53f3-59ea-45aa-890d-fbca534ebf6c}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

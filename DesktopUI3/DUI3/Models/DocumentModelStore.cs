@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DUI3.Bindings;
@@ -24,9 +24,9 @@ public abstract class DocumentModelStore : DiscriminatedObject
   public event EventHandler DocumentChanged;
 
   public virtual bool IsDocumentInit { get; set; } = false;
-  public ModelCard GetModelById(string modelId)
+  public ModelCard GetModelById(string id)
   {
-    var model = Models.First(model => model.ModelId == modelId);
+    var model = Models.First(model => model.Id == id);
     return model;
   }
 
