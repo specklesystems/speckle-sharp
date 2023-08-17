@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -29,7 +27,6 @@ namespace Objects.Converter.Revit
         info.siteName = doc.SiteLocation.PlaceName;
         info.locations = ProjectLocationsToSpeckle(doc);
         model["info"] = info;
-       
       }
       Report.Log($"Created Model Object");
 
