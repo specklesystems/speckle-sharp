@@ -105,7 +105,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     // TODO!
     // An unsaved document has no path or filename
     var fileName = _doc.CurrentFileName;
-    var hash = Core.Models.Utilities.hashString(fileName, Core.Models.Utilities.HashingFuctions.MD5);
+    var hash = Core.Models.Utilities.HashString(fileName, Core.Models.Utilities.HashingFunctions.MD5);
     return hash;
   }
 

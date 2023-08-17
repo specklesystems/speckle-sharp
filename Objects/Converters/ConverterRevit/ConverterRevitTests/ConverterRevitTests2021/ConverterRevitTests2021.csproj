@@ -55,7 +55,6 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="ModPlus.Revit.API.2021" Version="4.0.0" />
-        <PackageReference Include="Revit.Async" Version="2.0.1" />
         <PackageReference Include="xUnitRevitUtils.2021" Version="1.0.7" />
     </ItemGroup>
     <ItemGroup>
@@ -63,8 +62,6 @@
         <ProjectReference Include="..\..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterRevit2021\ConverterRevit2021.csproj" />
-        <ProjectReference Include="..\TestGenerator\TestGenerator.csproj" 
-                          OutputItemType="Analyzer"
-                          ReferenceOutputAssembly="false"/>
+        <ProjectReference Include="..\TestGenerator\TestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>

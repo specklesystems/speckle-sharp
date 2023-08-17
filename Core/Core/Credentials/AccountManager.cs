@@ -27,9 +27,9 @@ namespace Speckle.Core.Credentials;
 /// </summary>
 public static class AccountManager
 {
-  private static SQLiteTransport AccountStorage = new(scope: "Accounts");
+  private static readonly SQLiteTransport AccountStorage = new(scope: "Accounts");
   private static bool _isAddingAccount;
-  private static SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
+  private static readonly SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
 
   /// <summary>
   /// Gets the basic information about a server.
@@ -168,7 +168,7 @@ public static class AccountManager
   /// <returns>The default account or null.</returns>
   public static Account GetDefaultAccount()
   {
-    var defaultAccount = GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+    var defaultAccount = GetAccounts().FirstOrDefault(acc => acc.isDefault);
     if (defaultAccount == null)
     {
       var firstAccount = GetAccounts().FirstOrDefault();
@@ -182,20 +182,27 @@ public static class AccountManager
   /// <summary>
   /// Gets all the accounts present in this environment.
   /// </summary>
-  /// <returns></returns>
+  /// <remarks>This function does have potential side effects. Any invalid accounts found while enumerating will be removed</remarks>
+  /// <returns>Un-enumerated enumerable of accounts</returns>
   public static IEnumerable<Account> GetAccounts()
   {
+    static bool IsInvalid(Account ac) => ac?.userInfo == null || ac.serverInfo == null;
+
     var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
     var localAccounts = GetLocalAccounts();
 
-    //prevent invalid account from slipping out
-    var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
-    foreach (var acc in invalidAccounts)
-      RemoveAccount(acc.id);
+    foreach (var acc in sqlAccounts)
+    {
+      if (IsInvalid(acc))
+        RemoveAccount(acc.id);
+      else
+        yield return acc;
+    }
 
-    var allAccounts = sqlAccounts.Concat(localAccounts);
-
-    return allAccounts;
+    foreach (var acc in localAccounts)
+    {
+      yield return acc;
+    }
   }
 
   /// <summary>
@@ -209,6 +216,7 @@ public static class AccountManager
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
     if (!Directory.Exists(accountsDir))
       return accounts;
+
     var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
       try
@@ -217,7 +225,8 @@ public static class AccountManager
         var account = JsonConvert.DeserializeObject<Account>(json);
 
         if (
-          !string.IsNullOrEmpty(account.token)
+          account is not null
+          && !string.IsNullOrEmpty(account.token)
           && !string.IsNullOrEmpty(account.userInfo.id)
           && !string.IsNullOrEmpty(account.userInfo.email)
           && !string.IsNullOrEmpty(account.userInfo.name)
@@ -267,7 +276,7 @@ public static class AccountManager
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         account.isOnline = false;
       }

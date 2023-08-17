@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Geometry;
@@ -155,7 +155,7 @@ namespace Objects.Converter.CSI
           LinkPropertyToNative(o, ref appObj);
           break;
         case CSIProperty2D o:
-          Property2DToNative(o, ref appObj);
+          Property2DToNative(o);
           break;
         case CSISpringProperty o:
           SpringPropertyToNative(o, ref appObj);

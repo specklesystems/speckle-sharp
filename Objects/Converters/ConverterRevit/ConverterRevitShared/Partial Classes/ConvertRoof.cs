@@ -65,6 +65,16 @@ namespace Objects.Converter.Revit
             var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
             var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
             revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+
+            // sometimes Revit flips the roof so the start offset is the end and vice versa.
+            // In that case, delete the created roof, flip the referencePlane and recreate it.
+            var actualStart = GetParamValue<double>(revitRoof, BuiltInParameter.EXTRUSION_START_PARAM);
+            if (actualStart - speckleExtrusionRoof.end < TOLERANCE)
+            {
+              Doc.Delete(revitRoof.Id);
+              plane.Flip();
+              revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+            }
             break;
           }
         case RevitFootprintRoof speckleFootprintRoof:
