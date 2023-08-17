@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Globalization;
 using Numerics = System.Numerics;
 using System.DoubleNumerics;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Serialisation;
 
@@ -198,7 +199,8 @@ internal static class ValueConverter
     {
       if (!isList)
         return false;
-      Type arrayElementType = type.GetElementType() ?? throw new ArgumentException("IsArray yet not valid element type", nameof(type));
+      Type arrayElementType =
+        type.GetElementType() ?? throw new ArgumentException("IsArray yet not valid element type", nameof(type));
 
       Array ret = Activator.CreateInstance(type, valueList.Count) as Array;
       for (int i = 0; i < valueList.Count; i++)
@@ -234,8 +236,9 @@ internal static class ValueConverter
     #region BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
     if (type == typeof(Numerics.Matrix4x4) && value is IReadOnlyList<object> lMatrix)
     {
+      SpeckleLog.Logger.Warning("This kept for backwards compatibility, no one should be using {this}", "ValueConverter deserialize to System.Numerics.Matrix4x4");
       float I(int index) => Convert.ToSingle(lMatrix[index]);
-      convertedValue = new Matrix4x4(
+      convertedValue = new Numerics.Matrix4x4(
         I(0),
         I(1),
         I(2),

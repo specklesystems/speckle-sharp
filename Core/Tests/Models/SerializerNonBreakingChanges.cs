@@ -2,6 +2,7 @@ using System.DoubleNumerics;
 using System.Drawing;
 using NUnit.Framework;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 
 namespace TestsUnit.Models;
@@ -120,6 +121,7 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
   [Test]
   [TestCase(123, 255)]
   [TestCase(256, 1)]
+  [TestCase(256, float.MinValue)]
   public void ListToMatrix64(int seed, double scaler)
   {
     Random rand = new(seed);
@@ -129,6 +131,28 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
 
     //Test List -> Matrix
     var res = from.SerializeAsTAndDeserialize<Matrix64ValueMock>();
+    Assert.That(res.value.M11, Is.EqualTo(testCase[0]));
+    Assert.That(res.value.M44, Is.EqualTo(testCase[^1]));
+
+    //Test Matrix -> List
+    var backAgain = res.SerializeAsTAndDeserialize<ListDoubleValueMock>();
+    Assert.That(backAgain.value, Is.Not.Null);
+    Assert.That(backAgain.value, Is.EquivalentTo(testCase));
+  }
+
+  [Test]
+  [TestCase(123, 255)]
+  [TestCase(256, 1)]
+  [DefaultFloatingPointTolerance(Constants.Eps)]
+  public void Matrix32ToMatrix64(int seed, float scaler)
+  {
+    Random rand = new(seed);
+    List<double> testCase = Enumerable.Range(0, 16).Select(_ => rand.NextDouble() * scaler).ToList();
+
+    ListDoubleValueMock from = new() { value = testCase, };
+
+    //Test List -> Matrix
+    var res = from.SerializeAsTAndDeserialize<Matrix32ValueMock>();
     Assert.That(res.value.M11, Is.EqualTo(testCase[0]));
     Assert.That(res.value.M44, Is.EqualTo(testCase[^1]));
 
