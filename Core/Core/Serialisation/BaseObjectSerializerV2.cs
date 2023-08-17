@@ -161,7 +161,7 @@ public class BaseObjectSerializerV2
     {
       SpeckleLog.Logger.Warning(
         "This kept for backwards compatibility, no one should be using {this}",
-        "ValueConverter deserialize to System.Numerics.Matrix4x4"
+        "BaseObjectSerializerV2 serialize System.Numerics.Matrix4x4"
       );
       return new List<double>
       {
