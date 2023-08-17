@@ -13,7 +13,6 @@ using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Units = Speckle.Core.Kits.Units;
 
 namespace Archicad.Converters
 {

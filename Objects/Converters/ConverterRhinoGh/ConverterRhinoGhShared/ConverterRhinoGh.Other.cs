@@ -18,7 +18,6 @@ using Point = Objects.Geometry.Point;
 using RenderMaterial = Rhino.Render.RenderMaterial;
 using RH = Rhino.DocObjects;
 using Transform = Rhino.Geometry.Transform;
-using Units = Speckle.Core.Kits.Units;
 using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.RhinoGh;

@@ -28,6 +28,7 @@ namespace Objects.Converter.Revit
         info.locations = ProjectLocationsToSpeckle(doc);
         model["info"] = info;
       }
+
       Report.Log($"Created Model Object");
 
       return model;

@@ -14,7 +14,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
-using Units = Speckle.Core.Kits.Units;
 
 using Objects.Other;
 using Arc = Objects.Geometry.Arc;
