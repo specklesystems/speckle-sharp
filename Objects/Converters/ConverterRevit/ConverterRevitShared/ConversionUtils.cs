@@ -557,7 +557,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-    [Obsolete("This method will be removed in feature")]
     private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
     {
       try
