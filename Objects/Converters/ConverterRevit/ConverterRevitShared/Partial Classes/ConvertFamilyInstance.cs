@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
@@ -456,7 +456,7 @@ namespace Objects.Converter.Revit
       );
 
       // get the scale: TODO: do revit transforms ever have scaling?
-      var scale = (float)transform.Scale;
+      var scale = transform.Scale;
 
       return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }

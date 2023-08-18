@@ -61,7 +61,7 @@ namespace Objects.Converter.Revit
       TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
 
       var offset = minZ - level.Elevation;
-      TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, offset);
+      TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, offset,"");
 
       if (revitWall.WallType.Name != wallType.Name)
         revitWall.ChangeTypeId(wallType.Id);

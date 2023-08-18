@@ -117,7 +117,7 @@ namespace Objects.Converter.Revit
 
             // make sure that the bottom of the floor remains in the same location
             var newTypeDepth = GetParamValue<double>(elementType, BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM);
-            TrySetParam(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, currentHeightOffset + (newTypeDepth - currentTypeDepth));
+            TrySetParam(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, currentHeightOffset + (newTypeDepth - currentTypeDepth),"");
           }
         }
       }

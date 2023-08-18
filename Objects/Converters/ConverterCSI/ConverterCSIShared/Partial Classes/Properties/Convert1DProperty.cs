@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
@@ -38,10 +38,10 @@ namespace Objects.Converter.CSI
       var catalogue = new Catalogue();
       int? success = null;
 
-      if (property1D.profile?.GetType().Equals(catalogue.GetType()) == true)
+      if (property1D.profile is Catalogue sectionProfile
+        && !string.IsNullOrEmpty(sectionProfile.catalogueName)
+        && !string.IsNullOrEmpty(sectionProfile.sectionName))
       {
-        Catalogue sectionProfile = (Catalogue)property1D.profile;
-
         switch (sectionProfile.catalogueName)
         {
           case "CA":
