@@ -38,6 +38,7 @@ namespace ConnectorRevit.Storage
         {
           applicationId = @base.applicationId,
           CreatedIds = elements
+            .Where(element => element.IsValidObject)
             .Select(element => element.UniqueId)
             .ToList(),
           Converted = elements.Cast<object>().ToList()

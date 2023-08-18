@@ -13,6 +13,7 @@ using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
@@ -141,6 +142,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception ex)
           {
+            SpeckleLog.Logger.Error(ex, ex.Message);
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
           }
         }
@@ -216,15 +218,19 @@ namespace Objects.Converter.Revit
 
         try
         {
+          transactionManager.StartSubtransaction();
           var res = ConvertToNative(obj);
+          transactionManager.CommitSubtransaction();
           if (res is ApplicationObject apl)
             appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
           appObj.Update(
-            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
+            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{ex.Message}"
           );
+          SpeckleLog.Logger.Error(ex, ex.Message);
+          transactionManager.RollbackSubTransaction();
           continue;
         }
         CurrentHostElement = host; // set this again in case this is a deeply hosted element

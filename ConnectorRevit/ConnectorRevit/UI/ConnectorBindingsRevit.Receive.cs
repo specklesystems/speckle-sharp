@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -95,57 +97,31 @@ namespace Speckle.ConnectorRevit.UI
 
       var (success, exception) = await APIContext.Run(_ =>
       {
-        string transactionName = $"Baking stream {state.StreamId}";
-        using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
-        using var t = new Transaction(CurrentDoc.Document, transactionName);
-
-        g.Start();
-        var failOpts = t.GetFailureHandlingOptions();
-        var errorEater = new ErrorEater(converter);
-        failOpts.SetFailuresPreprocessor(errorEater);
-        failOpts.SetClearAfterRollback(true);
-        t.SetFailureHandlingOptions(failOpts);
-        t.Start();
+        using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
+        transactionManager.Start();
 
         try
         {
-          converter.SetContextDocument(t);
+          converter.SetContextDocument(transactionManager);
 
-          var convertedObjects = ConvertReceivedObjects(converter, progress);
+          var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
 
           if (state.ReceiveMode == ReceiveMode.Update)
             DeleteObjects(previousObjects, convertedObjects);
 
           previousObjects.AddConvertedElements(convertedObjects);
-          t.Commit();
-
-          if (t.GetStatus() == TransactionStatus.RolledBack)
-          {
-            var numTotalErrors = errorEater.CommitErrorsDict.Sum(kvp => kvp.Value);
-            var numUniqueErrors = errorEater.CommitErrorsDict.Keys.Count;
-
-            var exception = errorEater.GetException();
-            if (exception == null) 
-              SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
-            else 
-              SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
-            
-            return (false, exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
-          }
-
-          g.Assimilate();
+          transactionManager.Finish();
           return (true, null);
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}", transactionName, t.GetType());
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
 
           string message = $"Fatal Error: {ex.Message}";
           if (ex is OperationCanceledException) message = "Receive cancelled";
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
-          t.RollBack();
-          g.RollBack();
+          transactionManager.RollbackAll();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
       }).ConfigureAwait(false);
@@ -201,7 +177,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, TransactionManager transactionManager)
     {
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
       using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
@@ -240,8 +216,13 @@ namespace Speckle.ConnectorRevit.UI
           if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
             continue;
 
+          transactionManager.StartSubtransaction();
           var convRes = converter.ConvertToNative(@base);
+          transactionManager.CommitSubtransaction();
+
           RefreshView();
+          if (index % 50 == 0)
+            transactionManager.Commit();
 
           switch (convRes)
           {
@@ -255,6 +236,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (ConversionNotReadyException ex) 
         {
+          transactionManager.RollbackSubTransaction();
           var notReadyDataCache = revitDocumentAggregateCache
             .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
           var notReadyData = notReadyDataCache
@@ -275,6 +257,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
+          transactionManager.RollbackSubTransaction();
           SpeckleLog.Logger.Warning(ex, "Failed to convert");
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);

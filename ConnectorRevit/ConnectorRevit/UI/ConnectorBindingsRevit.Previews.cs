@@ -15,6 +15,7 @@ using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Autodesk.Revit.DB.DirectContext3D;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
+using ConnectorRevit.Revit;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -62,7 +63,7 @@ namespace Speckle.ConnectorRevit.UI
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                convertedObjects = ConvertReceivedObjects(converter, progress);
+                convertedObjects = ConvertReceivedObjects(converter, progress, new TransactionManager(null,null));
                 t.Commit();
               }
 
