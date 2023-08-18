@@ -199,13 +199,15 @@ namespace Objects.Converter.Revit
       else
       {
         AddHostedDependentElements(
-          revitWall, 
+          revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallMullions) ?? grid.GetMullionIds().ToList());
+          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallMullions) ?? grid.GetMullionIds().ToList()
+        );
         AddHostedDependentElements(
-          revitWall, 
+          revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallPanels) ?? grid.GetPanelIds().ToList());
+          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallPanels) ?? grid.GetPanelIds().ToList()
+        );
       }
 
       GetAllRevitParamsAndIds(
@@ -239,11 +241,7 @@ namespace Objects.Converter.Revit
       using var filter = new ElementCategoryFilter(category);
       using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
 
-      return collector
-        .WhereElementIsNotElementType()
-        .WherePasses(filter)
-        .ToElementIds()
-        .ToList();
+      return collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds().ToList();
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
@@ -293,10 +291,10 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       var sketch = (Sketch)Doc.GetElement(wall.SketchId);
 
-      T.Commit();
+      transactionManager.Commit();
       var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
       sketchEditScope.Start(sketch.Id);
-      T.Start();
+      transactionManager.StartSubtransaction();
 
       foreach (var obj in voidCurves)
       {
@@ -306,7 +304,7 @@ namespace Objects.Converter.Revit
         var curveArray = CurveToNative(@void, true);
         Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
       }
-      if (T.Commit() != TransactionStatus.Committed)
+      if (transactionManager.Commit() != TransactionStatus.Committed)
         sketchEditScope.Cancel();
 
       try
@@ -315,9 +313,15 @@ namespace Objects.Converter.Revit
       }
       catch (Exception ex)
       {
-        sketchEditScope.Cancel();
+        if (sketchEditScope.IsActive)
+        {
+          sketchEditScope.Cancel();
+        }
       }
-      T.Start();
+      finally
+      {
+        transactionManager.StartSubtransaction();
+      }
 #endif
     }
 
