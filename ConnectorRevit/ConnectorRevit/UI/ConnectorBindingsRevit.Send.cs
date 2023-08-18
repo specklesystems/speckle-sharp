@@ -34,6 +34,8 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
+      using var ctx = RevitConverterState.Push();
+
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
@@ -44,7 +46,6 @@ namespace Speckle.ConnectorRevit.UI
       CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
-      settings.Add(currentHostSettingKey, string.Empty); // Create setting for passing the current host element id to the converter
       converter.SetConverterSettings(settings);
 
       var streamId = state.StreamId;
@@ -68,7 +69,9 @@ namespace Speckle.ConnectorRevit.UI
 
       if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
       {
-        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
+        throw new Exception(
+          $"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object."
+        );
       }
       else
       {
@@ -81,71 +84,72 @@ namespace Speckle.ConnectorRevit.UI
       var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
-      await APIContext.Run(() =>
-      {
-        using var _d0 = LogContext.PushProperty("converterName", converter.Name);
-        using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
-        using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
-
-        foreach (var revitElement in selectedObjects)
+      await APIContext
+        .Run(() =>
         {
-          if (progress.CancellationToken.IsCancellationRequested)
-            break;
+          using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+          using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+          using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
 
-          bool isAlreadyConverted = GetOrCreateApplicationObject(
-            revitElement,
-            converter.Report,
-            out ApplicationObject reportObj
-          );
-          if (isAlreadyConverted)
-            continue;
-
-          progress.Report.Log(reportObj);
-
-          //Add context to logger
-          using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
-          using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
-
-          try
+          foreach (var revitElement in selectedObjects)
           {
-            converter.Report.Log(reportObj); // Log object so converter can access
+            if (progress.CancellationToken.IsCancellationRequested)
+              break;
 
-            Base result = ConvertToSpeckle(revitElement, converter);
-
-            reportObj.Update(
-              status: ApplicationObject.State.Created,
-              logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
+            bool isAlreadyConverted = GetOrCreateApplicationObject(
+              revitElement,
+              converter.Report,
+              out ApplicationObject reportObj
             );
-            if (result.applicationId != reportObj.applicationId)
+            if (isAlreadyConverted)
+              continue;
+
+            progress.Report.Log(reportObj);
+
+            //Add context to logger
+            using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
+            using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
+
+            try
             {
-              SpeckleLog.Logger.Information(
-                "Conversion result of type {elementType} has a different application Id ({actualId}) to the report object {expectedId}",
-                revitElement.GetType(),
-                result.applicationId,
-                reportObj.applicationId
+              converter.Report.Log(reportObj); // Log object so converter can access
+
+              Base result = ConvertToSpeckle(revitElement, converter);
+
+              reportObj.Update(
+                status: ApplicationObject.State.Created,
+                logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
               );
-              result.applicationId = reportObj.applicationId;
+              if (result.applicationId != reportObj.applicationId)
+              {
+                SpeckleLog.Logger.Information(
+                  "Conversion result of type {elementType} has a different application Id ({actualId}) to the report object {expectedId}",
+                  revitElement.GetType(),
+                  result.applicationId,
+                  reportObj.applicationId
+                );
+                result.applicationId = reportObj.applicationId;
+              }
+              commitObjectBuilder.IncludeObject(result, revitElement);
+              convertedCount++;
             }
-            commitObjectBuilder.IncludeObject(result, revitElement);
-            convertedCount++;
-          }
-          catch (ConversionSkippedException ex)
-          {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
-          }
-          catch (Exception ex)
-          {
-            SpeckleLog.Logger.Error(ex, "Object failed during conversion");
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
-          }
+            catch (ConversionSkippedException ex)
+            {
+              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
+            }
+            catch (Exception ex)
+            {
+              SpeckleLog.Logger.Error(ex, "Object failed during conversion");
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
+            }
 
-          conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
 
-          YieldToUIThread(TimeSpan.FromMilliseconds(1));
-        }
-      })
-      .ConfigureAwait(false);
+            YieldToUIThread(TimeSpan.FromMilliseconds(1));
+          }
+        })
+        .ConfigureAwait(false);
 
       revitDocumentAggregateCache.InvalidateAll();
 
@@ -214,6 +218,7 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     private DateTime timerStarted = DateTime.MinValue;
+
     private void YieldToUIThread(TimeSpan delay)
     {
       var currentTime = DateTime.UtcNow;

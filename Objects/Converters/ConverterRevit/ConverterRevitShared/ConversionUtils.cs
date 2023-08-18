@@ -197,47 +197,6 @@ namespace Objects.Converter.Revit
       return ids;
     }
 
-    /* Deprecated and moved logic to connector
-    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
-    {
-      if (@base == null)
-        return appObj;
-
-      //we used to use "elements" but have now switched to "@elements"
-      //this extra check is for backwards compatibility
-      var nestedElements = @base["elements"] ?? @base["@elements"];
-      if (nestedElements == null)
-        return appObj;
-
-      CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
-      {
-        if (!CanConvertToNative(obj))
-        {
-          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-          continue;
-        }
-
-        try
-        {
-          var res = ConvertToNative(obj);
-          if (res is ApplicationObject apl)
-            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-        }
-        catch (Exception e)
-        {
-          appObj.Update(
-            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
-          );
-          continue;
-        }
-        CurrentHostElement = host; // set this again in case this is a deeply hosted element
-      }
-      CurrentHostElement = null; // unset the current host element.
-      return appObj;
-    }
-    */
-
     #endregion
 
     #region parameters

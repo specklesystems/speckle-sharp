@@ -23,9 +23,7 @@ namespace Speckle.ConnectorRevit.UI
     public const string noMapping = "Never";
     public const string everyReceive = "Always";
     public const string forNewTypes = "For New Types";
-
-    public const string currentHostSettingKey = "current-host-element";
-
+    
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };

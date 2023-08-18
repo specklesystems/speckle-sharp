@@ -257,10 +257,11 @@ namespace Speckle.ConnectorRevit.UI
         if (nestedElements == null)
           return;
 
-        // set host in settings for the converter.
+        // set host in converter state.
         // assumes host is the first converted object of the appObject
         var host = appObj == null || !appObj.Converted.Any() ? null : appObj.Converted.First() as Element;
-        settings["current-host-element"] = host == null ? null : host.Id.ToString();
+        using var ctx = RevitConverterState.Push();
+        ctx.CurrentHostElement = host;
 
         // traverse each element member and convert
         foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
@@ -286,11 +287,7 @@ namespace Speckle.ConnectorRevit.UI
 
           // recurse and convert nested elements
           ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
-
-          // set this again in case this is a deeply hosted element
-          settings["current-host-element"] = host == null ? null : host.Id.ToString();
         }
-        settings["current-host-element"] = null; // unset the current host element.
       }
 
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
@@ -307,9 +304,6 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-
-      // Create setting for passing the current host element id to the converter
-      settings.Add(currentHostSettingKey, string.Empty);
 
       // Get direct mesh setting and create modified settings in case this is used for retried conversions
       var receiveDirectMeshSetting =

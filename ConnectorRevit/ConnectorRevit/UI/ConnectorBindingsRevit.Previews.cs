@@ -56,17 +56,19 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await APIContext.Run(app =>
-          {
-            using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
+          await APIContext
+            .Run(app =>
             {
-              t.Start();
-              convertedObjects = ConvertReceivedObjects(converter, progress, settings);
-              t.Commit();
-            }
+              using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
+              {
+                t.Start();
+                convertedObjects = ConvertReceivedObjects(converter, progress, settings);
+                t.Commit();
+              }
 
-            AddMultipleRevitElementServers(convertedObjects);
-          });
+              AddMultipleRevitElementServers(convertedObjects);
+            })
+            .ConfigureAwait(false);
         }
         else // just generate the log
         {
