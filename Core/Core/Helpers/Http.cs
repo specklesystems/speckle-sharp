@@ -182,7 +182,7 @@ public static class Http
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
     var client = new HttpClient(handler ?? new SpeckleHttpClientHandler());
-    client.Timeout = timeout ?? TimeSpan.FromSeconds(60);
+    client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
     return client;
   }
 

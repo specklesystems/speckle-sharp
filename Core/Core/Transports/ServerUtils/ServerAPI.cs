@@ -40,7 +40,7 @@ public sealed class ServerApi : IDisposable, IServerApi
     );
 
     _client.BaseAddress = new Uri(baseUri);
-    _client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
+    _client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
     Http.AddAuthHeader(_client, authorizationToken);
   }
