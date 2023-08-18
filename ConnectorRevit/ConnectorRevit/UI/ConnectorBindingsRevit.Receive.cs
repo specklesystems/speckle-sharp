@@ -236,7 +236,7 @@ namespace Speckle.ConnectorRevit.UI
           }
 
           // convert
-          var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress);
+          var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress, transactionManager);
 
           // Check if parent conversion succeeded before attempting the children
           if (
