@@ -1,10 +1,20 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using DUI3;
 using DUI3.Bindings;
 using Speckle.ConnectorRevitDUI3.Utils;
+using Speckle.Core.Kits;
+using System;
+using DUI3.Models;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Transports;
+using Speckle.Core.Models;
+using Revit.Async;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
@@ -37,9 +47,47 @@ public class SendBinding : ISendBinding
     };
   }
 
-  public void Send(string modelId)
+  public async void Send(string modelCardId)
   {
-    throw new System.NotImplementedException();
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    Document doc = RevitApp.ActiveUIDocument.Document;
+
+    // TODO: Couln't get elements from ids
+    List<Element> elements = objectsIds.Select(x => doc.GetElement(x)).Where(x => x != null).ToList();
+
+    var converter = KitManager.GetDefaultKit().LoadConverter("Revit2023");
+    converter.SetContextDocument(doc);
+
+    var convertedObjects = new List<Base>();
+
+    await RevitTask
+        .RunAsync(_ =>
+        {
+          foreach (var revitElement in elements)
+          {
+            convertedObjects.Add(converter.ConvertToSpeckle(elements));
+          }
+        })
+        .ConfigureAwait(false);
+
+    var commitObject = new Base();
+    commitObject["@elements"] = convertedObjects;
+
+    var projectId = model.ProjectId;
+    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
+    var client = new Client(account);
+
+    var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
+
+    // TODO: Fix send operations haven't succeeded
+    var objectId = await Operations.Send(
+      commitObject,
+      transports,
+      disposeTransports: true
+    ).ConfigureAwait(true);
+
+    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Revit" });
   }
 
   public void CancelSend(string modelId)
