@@ -90,5 +90,5 @@ public class CreateVersion
   public string ProjectId { get; set; }
   public string ObjectId { get; set; }
   public string Message { get; set; }
-  public string HostApp { get; set; }
+  public string SourceApplication { get; set; }
 }

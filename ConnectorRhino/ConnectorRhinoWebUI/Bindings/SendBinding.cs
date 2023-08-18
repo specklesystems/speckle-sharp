@@ -105,6 +105,17 @@ public class SendBinding : ISendBinding
     return objectByNestedLayers.ToDictionary(k => k.Key, v => v.Value.AsEnumerable());
   }
 
+  private async void SendProgress(string modelCardId, double progress)
+  {
+    var args = new SenderProgress()
+    {
+      Id = modelCardId,
+      Status = progress == 1 ? "Completed" : "Converting",
+      Progress = progress
+    };
+    Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
+  }
+
   public async void Send(string modelCardId)
   {
     RhinoDoc doc = RhinoDoc.ActiveDoc;
@@ -113,222 +124,22 @@ public class SendBinding : ISendBinding
     
     // Collect RhinoObjects from their guids
     IEnumerable<RhinoObject> rhinoObjects = objectsIds.Select((id) => doc.Objects.FindId(new Guid(id)));
-    // Group RhinoObjects according to their layers
-    // TODO: Handle here nested layers!
-    IDictionary<Layer, IEnumerable<RhinoObject>> objsByLayer = rhinoObjects.GroupBy(o => doc.Layers.FindIndex(o.Attributes.LayerIndex)).ToDictionary(key => key.Key, value => value.AsEnumerable());
 
-    IDictionary<Layer, List<object>> objectByNestedLayers = new Dictionary<Layer, List<object>>();
-
-
-    IDictionary<Layer, IEnumerable<object>> objsByLayerTest = GroupByLayer(rhinoObjects, doc);
-
-    // Collect named views
-    IEnumerable<object> namedViews = objectsIds
-      .Select(id => doc.NamedViews.FindByName(id))
-      .Where(index => index != -1)
-      .Select(index => doc.NamedViews[index]);
-    // Collect views
-    IEnumerable<ViewInfo> views = objectsIds
-      .Where(id => doc.Views.Find(new Guid(id)) != null)
-      .Select(id => doc.Views.Find(new Guid(id)).ActiveViewport)
-      .Select(viewport => new ViewInfo(viewport));
-    
     ConverterRhinoGh converter = new ConverterRhinoGh();
     converter.SetContextDocument(doc);
 
-    var commitObject = converter.ConvertToSpeckle(doc) as Collection; // create a collection base obj
-
-    foreach (KeyValuePair<Layer, IEnumerable<RhinoObject>> layerWithObjects in objsByLayer)
-    {
-      var layerObject = converter.ConvertToSpeckle(layerWithObjects.Key) as Collection;
-      foreach (RhinoObject rhinoObject in layerWithObjects.Value)
-      {
-        layerObject.elements.Add(converter.ConvertToSpeckle(rhinoObject));
-      }
-      commitObject.elements.Add(layerObject);
-    }
-
-
-    /*
-    // ------- DUI2 WAY --------
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.Utils.RhinoAppName);
-    converter.SetContextDocument(doc);
-
-    var streamId = model.ProjectId;
-    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
-    var client = new Client(account);
-
-    int objCount = objectsIds.Count;
+    var convertedObjects = new List<Base>();
     int count = 0;
-
-    // var commitObject = converter.ConvertToSpeckle(doc) as Collection; // create a collection base obj
-
-
-    // store converted commit objects and layers by layer paths
-    var commitLayerObjects = new Dictionary<string, List<Base>>();
-    var commitLayers = new Dictionary<string, Layer>();
-    var commitCollections = new Dictionary<string, Collection>();
-
-    // convert all commit objs
-    foreach (var selectedId in objectsIds)
+    foreach (RhinoObject rhinoObject in rhinoObjects)
     {
-      Base converted = null;
-      string applicationId = null;
-      var reportObj = new ApplicationObject(selectedId, "Unknown");
-      if (Utils.Utils.FindObjectBySelectedId(doc, selectedId, out object obj, out string descriptor))
-      {
-        // create applicationObject
-        reportObj = new ApplicationObject(selectedId, descriptor);
-        converter.Report.Log(reportObj); // Log object so converter can access
-        switch (obj)
-        {
-          case RhinoObject o:
-            applicationId = o.Attributes.GetUserString(ApplicationIdKey) ?? selectedId;
-            if (!converter.CanConvertToSpeckle(o))
-            {
-              reportObj.Update(
-                status: ApplicationObject.State.Skipped,
-                logItem: "Sending this object type is not supported in Rhino"
-              );
-              // progress.Report.Log(reportObj);
-              continue;
-            }
-
-            converted = converter.ConvertToSpeckle(o);
-
-            if (converted != null)
-            {
-              var objectLayer = doc.Layers[o.Attributes.LayerIndex];
-              if (commitLayerObjects.ContainsKey(objectLayer.FullPath))
-                commitLayerObjects[objectLayer.FullPath].Add(converted);
-              else
-                commitLayerObjects.Add(objectLayer.FullPath, new List<Base> { converted });
-              if (!commitLayers.ContainsKey(objectLayer.FullPath))
-                commitLayers.Add(objectLayer.FullPath, objectLayer);
-            }
-            break;
-          case Layer o:
-            applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
-            converted = converter.ConvertToSpeckle(o);
-            if (converted is Collection layerCollection && !commitLayers.ContainsKey(o.FullPath))
-            {
-              commitLayers.Add(o.FullPath, o);
-              commitCollections.Add(o.FullPath, layerCollection);
-            }
-            break;
-          case ViewInfo o:
-            converted = converter.ConvertToSpeckle(o);
-            if (converted != null)
-              commitObject.elements.Add(converted);
-            break;
-        }
-      }
-      else
-      {
-        // progress.Report.LogOperationError(new Exception($"Failed to find doc object ${selectedId}."));
-        continue;
-      }
-
-      if (converted == null)
-      {
-        reportObj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null");
-        // progress.Report.Log(reportObj);
-        continue;
-      }
-
-
-      // Send here progress to UI!!
       count++;
-      Parent.SendToBrowser(SendBindingEvents.SenderProgress, new SenderProgress() { Id = model.Id, Progress = count });
-      // conversionProgressDict["Conversion"]++;
-      // progress.Update(conversionProgressDict);
-
-      // set application ids, also set for speckle schema base object if it exists
-      converted.applicationId = applicationId;
-      if (converted["@SpeckleSchema"] != null)
-      {
-        var newSchemaBase = converted["@SpeckleSchema"] as Base;
-        newSchemaBase.applicationId = applicationId;
-        converted["@SpeckleSchema"] = newSchemaBase;
-      }
-
-      // log report object
-      reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
-      // progress.Report.Log(reportObj);
-
-      objCount++;
+      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
+      double progress = (double)count / objectsIds.Count;
+      SendProgress(modelCardId, progress);
     }
 
-    #region layer handling
-    // convert layers as collections and attach all layer objects
-    foreach (var layerPath in commitLayerObjects.Keys)
-      if (commitCollections.ContainsKey(layerPath))
-      {
-        commitCollections[layerPath].elements = commitLayerObjects[layerPath];
-      }
-      else
-      {
-        var collection = converter.ConvertToSpeckle(commitLayers[layerPath]) as Collection;
-        if (collection != null)
-        {
-          collection.elements = commitLayerObjects[layerPath];
-          commitCollections.Add(layerPath, collection);
-        }
-      }
-
-    // generate all parent paths of commit collections and create ordered list by depth descending
-    var allPaths = new HashSet<string>();
-    foreach (var key in commitLayers.Keys)
-    {
-      if (!allPaths.Contains(key))
-        allPaths.Add(key);
-      AddParent(commitLayers[key]);
-
-      void AddParent(Layer childLayer)
-      {
-        var parentLayer = doc.Layers.FindId(childLayer.ParentLayerId);
-        if (parentLayer != null && !commitCollections.ContainsKey(parentLayer.FullPath))
-        {
-          var parentCollection = converter.ConvertToSpeckle(parentLayer) as Collection;
-          if (parentCollection != null)
-          {
-            commitCollections.Add(parentLayer.FullPath, parentCollection);
-            allPaths.Add(parentLayer.FullPath);
-          }
-          AddParent(parentLayer);
-        }
-      }
-    }
-    var orderedPaths = allPaths.OrderByDescending(path => path.Count(c => c == ':')).ToList(); // this ensures we attach children collections first
-
-    // attach children collections to their parents and the base commit
-    for (int i = 0; i < orderedPaths.Count; i++)
-    {
-      var path = orderedPaths[i];
-      var collection = commitCollections[path];
-      var parentIndex = path.LastIndexOf(Layer.PathSeparator);
-
-      // if there is no parent, attach to base commit layer prop directly
-      if (parentIndex == -1)
-      {
-        commitObject.elements.Add(collection);
-        continue;
-      }
-
-      // get the parent collection, attach child, and update parent collection in commit collections
-      var parentPath = path.Substring(0, parentIndex);
-      var parent = commitCollections[parentPath];
-      parent.elements.Add(commitCollections[path]);
-      commitCollections[parentPath] = parent;
-    }
-
-    #endregion
-
-    // progress.CancellationToken.ThrowIfCancellationRequested();
-
-    // progress.Max = objCount;
-
-    */
+    var commitObject = new Base();
+    commitObject["@elements"] = convertedObjects;
 
     var projectId = model.ProjectId;
     Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
@@ -342,7 +153,7 @@ public class SendBinding : ISendBinding
       disposeTransports: true
     ).ConfigureAwait(true);
 
-    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", HostApp = "Rhino" });
+    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }
 
   public void CancelSend(string modelId)
