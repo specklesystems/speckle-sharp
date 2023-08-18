@@ -303,12 +303,12 @@ namespace Speckle.ConnectorRevit.UI
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
-      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
+      var receiveLinkedModels = receiveLinkedModelsSetting?.IsChecked ?? false;
 
       // Get direct mesh setting and create modified settings in case this is used for retried conversions
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
-      var receiveDirectMesh = receiveDirectMeshSetting != null ? receiveDirectMeshSetting.IsChecked : false;
+      var receiveDirectMesh = receiveDirectMeshSetting?.IsChecked ?? false;
 
       // convert
       var index = -1;
@@ -358,6 +358,11 @@ namespace Speckle.ConnectorRevit.UI
 
       using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
 
+      // Get the direct shape fallback setting value
+      var directShapeFallbackSetting =
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-fallback") as CheckBoxSetting;
+      var fallbackToDirectShape = directShapeFallbackSetting?.IsChecked ?? true;
+
       try
       {
         var s = new CancellationTokenSource();
@@ -381,15 +386,27 @@ namespace Speckle.ConnectorRevit.UI
             convRes = converter.ConvertToNative(@base) as ApplicationObject;
             if (convRes == null || convRes.Status == ApplicationObject.State.Failed)
             {
-              if (converter.CanConvertToNativeDisplayable(@base)) // retry conversion as displayable
+              if (fallbackToDirectShape)
               {
-                obj.Log.Add("Direct conversion failed. Retrying conversion with displayable geometry.");
-                convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
-                if (convRes == null)
+                if (converter.CanConvertToNativeDisplayable(@base)) // retry conversion as displayable
                 {
-                  obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
-                  return obj;
+                  obj.Log.Add("Direct conversion failed. Retrying conversion with displayable geometry.");
+                  convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+                  if (convRes == null)
+                  {
+                    obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+                    return obj;
+                  }
                 }
+              }
+              else
+              {
+                var logItem =
+                  convRes == null
+                    ? "Conversion returned null"
+                    : "Conversion failed with errors: " + string.Join("/n", convRes.Log);
+                obj.Update(status: ApplicationObject.State.Failed, logItem: logItem);
+                return obj;
               }
             }
           }
