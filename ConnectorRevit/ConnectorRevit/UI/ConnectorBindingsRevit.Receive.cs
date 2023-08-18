@@ -349,25 +349,28 @@ namespace Speckle.ConnectorRevit.UI
           continue;
 
         var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress);
-        bool parentConvertedUsingFallback = false;
-        if (!receiveDirectMesh && fallbackToDirectShape && converted.Status == ApplicationObject.State.Failed)
+
+        // Determine if we should use the fallback DirectShape conversion
+        // Should only happen when receiveDirectMesh is OFF, fallback is ON and object failed normal conversion.
+        bool usingFallback =
+          !receiveDirectMesh && fallbackToDirectShape && converted.Status == ApplicationObject.State.Failed;
+        if (usingFallback)
         {
           obj.Log.Add("Conversion to native Revit object failed. Retrying conversion with displayable geometry.");
-          parentConvertedUsingFallback = true;
           converted = ConvertObject(obj, @base, true, converter, progress);
           if (converted == null)
             obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
         }
 
-        // Check if parent conversion succeeded before attempting the children
+        // Check if parent conversion succeeded or fallback is enabled before attempting the children
         if (
-          parentConvertedUsingFallback
+          usingFallback
           || receiveDirectMesh
           || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
         )
           // continue traversing for hosted elements
           // use DirectShape conversion if the parent was converted using fallback or if the global setting is active.
-          ConvertNestedElements(@base, converted, parentConvertedUsingFallback || receiveDirectMesh);
+          ConvertNestedElements(@base, converted, usingFallback || receiveDirectMesh);
       }
 
       return convertedObjectsCache;
