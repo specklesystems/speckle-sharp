@@ -176,12 +176,14 @@ public static class Http
     }
   }
 
-  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null)
+  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    return new HttpClient(handler ?? new SpeckleHttpClientHandler());
+    var client = new HttpClient(handler ?? new SpeckleHttpClientHandler());
+    client.Timeout = timeout ?? TimeSpan.FromSeconds(60);
+    return client;
   }
 
   public static bool CanAddAuth(string? authToken, out string? bearerHeader)
