@@ -282,11 +282,12 @@ namespace Speckle.ConnectorRevit.UI
           // convert
           var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress);
 
-          if (converted == null)
-            return;
-
-          // recurse and convert nested elements
-          ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
+          // Check if parent conversion succeeded before attempting the children
+          if (
+            receiveDirectMesh || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
+          )
+            // recurse and convert nested elements
+            ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
         }
       }
 
@@ -309,6 +310,11 @@ namespace Speckle.ConnectorRevit.UI
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
       var receiveDirectMesh = receiveDirectMeshSetting?.IsChecked ?? false;
+
+      // Get the direct shape fallback setting value
+      var directShapeFallbackSetting =
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-fallback") as CheckBoxSetting;
+      var fallbackToDirectShape = directShapeFallbackSetting?.IsChecked ?? true;
 
       // convert
       var index = -1;
@@ -335,9 +341,25 @@ namespace Speckle.ConnectorRevit.UI
           continue;
 
         var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress);
+        bool parentConvertedUsingFallback = false;
+        if (!receiveDirectMesh && fallbackToDirectShape && converted.Status == ApplicationObject.State.Failed)
+        {
+          obj.Log.Add("Conversion to native Revit object failed. Retrying conversion with displayable geometry.");
+          parentConvertedUsingFallback = true;
+          converted = ConvertObject(obj, @base, true, converter, progress);
+          if (converted == null)
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+        }
 
-        // continue traversing for hosted elements
-        ConvertNestedElements(@base, converted, receiveDirectMesh);
+        // Check if parent conversion succeeded before attempting the children
+        if (
+          parentConvertedUsingFallback
+          || receiveDirectMesh
+          || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
+        )
+          // continue traversing for hosted elements
+          // use DirectShape conversion if the parent was converted using fallback or if the global setting is active.
+          ConvertNestedElements(@base, converted, parentConvertedUsingFallback || receiveDirectMesh);
       }
 
       return convertedObjectsCache;
@@ -357,11 +379,6 @@ namespace Speckle.ConnectorRevit.UI
         return obj;
 
       using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
-
-      // Get the direct shape fallback setting value
-      var directShapeFallbackSetting =
-        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-fallback") as CheckBoxSetting;
-      var fallbackToDirectShape = directShapeFallbackSetting?.IsChecked ?? true;
 
       try
       {
@@ -386,28 +403,12 @@ namespace Speckle.ConnectorRevit.UI
             convRes = converter.ConvertToNative(@base) as ApplicationObject;
             if (convRes == null || convRes.Status == ApplicationObject.State.Failed)
             {
-              if (fallbackToDirectShape)
-              {
-                if (converter.CanConvertToNativeDisplayable(@base)) // retry conversion as displayable
-                {
-                  obj.Log.Add("Direct conversion failed. Retrying conversion with displayable geometry.");
-                  convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
-                  if (convRes == null)
-                  {
-                    obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
-                    return obj;
-                  }
-                }
-              }
-              else
-              {
-                var logItem =
-                  convRes == null
-                    ? "Conversion returned null"
-                    : "Conversion failed with errors: " + string.Join("/n", convRes.Log);
-                obj.Update(status: ApplicationObject.State.Failed, logItem: logItem);
-                return obj;
-              }
+              var logItem =
+                convRes == null
+                  ? "Conversion returned null"
+                  : "Conversion failed with errors: " + string.Join("/n", convRes.Log);
+              obj.Update(status: ApplicationObject.State.Failed, logItem: logItem);
+              return obj;
             }
           }
         }
@@ -424,7 +425,7 @@ namespace Speckle.ConnectorRevit.UI
         else
         {
           obj.Update(
-            status: ApplicationObject.State.Failed,
+            status: ApplicationObject.State.Skipped,
             logItem: "No direct conversion or displayable values can be converted."
           );
           return obj;
