@@ -14,7 +14,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject AdaptiveComponentToNative(AdaptiveComponent speckleAc)
     {
       var docObj = GetExistingElementByApplicationId(speckleAc.applicationId);
-      var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
+      var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type)
+      {
+        applicationId = speckleAc.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -31,13 +34,16 @@ namespace Objects.Converter.Revit
 
       if (!isExactMatch)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Could not find adaptive component {familyName}"
+        );
         return appObj;
       }
 
       DB.FamilyInstance revitAc = null;
       var isUpdate = false;
-      //try update existing 
+      //try update existing
       if (docObj != null)
       {
         try
@@ -47,7 +53,6 @@ namespace Objects.Converter.Revit
           // if family changed, tough luck. delete and let us create a new one.
           if (familyName != revitType.FamilyName)
             Doc.Delete(docObj.Id);
-
           else
           {
             revitAc = (DB.FamilyInstance)docObj;
@@ -90,6 +95,9 @@ namespace Objects.Converter.Revit
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc.displayValue = GetElementDisplayValue(revitAc, SolidDisplayValueOptions);
+
+      var subComponents = revitAc.GetSubComponentIds();
+      GetHostedElementsFromIds(speckleAc, revitAc, subComponents, out _, _ => true);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       Report.Log($"Converted AdaptiveComponent {revitAc.Id}");
