@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\APIContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RevitConverterState.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Extensions\RevitExtensions\" />

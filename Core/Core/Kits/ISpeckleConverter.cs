@@ -122,24 +122,6 @@ public interface ISpeckleConverter
   /// </summary>
   /// <param name="settings">The object representing the settings for your converter.</param>
   public void SetConverterSettings(object settings);
-
-  #region abstract methods & properties
-
-  /// <summary>
-  /// Checks if it can convert a Speckle object to a native displayable one
-  /// </summary>
-  /// <param name="object">Speckle object to convert</param>
-  /// <returns></returns>
-  public abstract bool CanConvertToNativeDisplayable(Base @object);
-
-  /// <summary>
-  /// Converts a Speckle object to a native displayable one
-  /// </summary>
-  /// <param name="object">Speckle object to convert</param>
-  /// <returns></returns>
-  public abstract object ConvertToNativeDisplayable(Base @object);
-
-  #endregion
 }
 
 // NOTE: Do not change the order of the existing ones

@@ -8,6 +8,7 @@ using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -67,7 +68,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public Element CurrentHostElement { get; set; }
+    public Element CurrentHostElement => RevitConverterState.Peek?.CurrentHostElement;
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -186,11 +187,6 @@ namespace Objects.Converter.Revit
       Base returnObject = null;
       List<string> notes = new List<string>();
       string id = @object is Element element ? element.UniqueId : string.Empty;
-
-      // set the current host from document settings
-      var currentHostId = Settings["current-host-element"];
-      if (!string.IsNullOrEmpty(currentHostId))
-        CurrentHostElement = Doc.GetElement(currentHostId);
 
       switch (@object)
       {
@@ -497,11 +493,6 @@ namespace Objects.Converter.Revit
           return DisplayableObjectToNative(@object);
         else
           return null;
-
-      // get the current host from document settings
-      var currentHostId = Settings["current-host-element"];
-      if (!string.IsNullOrEmpty(currentHostId))
-        CurrentHostElement = Doc.GetElement(currentHostId);
 
       //Family Document
       if (Doc.IsFamilyDocument)
@@ -865,11 +856,6 @@ namespace Objects.Converter.Revit
         return CanConvertToNativeDisplayable(schema);
 
       return @object.IsDisplayableObject();
-    }
-
-    public bool CanConvertToNativeDisplayable(Base @object)
-    {
-      return false;
     }
   }
 }
