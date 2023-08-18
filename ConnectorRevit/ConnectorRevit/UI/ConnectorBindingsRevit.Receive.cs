@@ -476,7 +476,8 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Warning(ex, "Failed to convert");
+        SpeckleLog.Logger.Warning(ex, "Failed to convert due to unexpected error.");
+        obj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to convert due to unexpected error.");
         obj.Log.Add($"{ex.Message}");
         progress.Report.UpdateReportObject(obj);
       }
