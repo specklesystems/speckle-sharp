@@ -303,18 +303,26 @@ namespace Speckle.ConnectorRevit.UI
 
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting =
-        CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting?.IsChecked ?? false;
 
-      // Get direct mesh setting and create modified settings in case this is used for retried conversions
-      var receiveDirectMeshSetting =
-        CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
-      var receiveDirectMesh = receiveDirectMeshSetting?.IsChecked ?? false;
-
-      // Get the direct shape fallback setting value
-      var directShapeFallbackSetting =
-        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-fallback") as CheckBoxSetting;
-      var fallbackToDirectShape = directShapeFallbackSetting?.IsChecked ?? true;
+      var receiveDirectMesh = false;
+      var fallbackToDirectShape = false;
+      var directShapeStrategySetting =
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-strategy") as ListBoxSetting;
+      switch (directShapeStrategySetting!.Selection)
+      {
+        case "Always":
+          receiveDirectMesh = true;
+          break;
+        case "On Error":
+          fallbackToDirectShape = true;
+          break;
+        case "Never":
+        case null:
+          // Do nothing, default values will do.
+          break;
+      }
 
       // convert
       var index = -1;

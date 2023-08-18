@@ -72,22 +72,22 @@ namespace Speckle.ConnectorRevit.UI
           Description =
             "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"
         },
-        new CheckBoxSetting
+        // new CheckBoxSetting
+        // {
+        //   Slug = "recieve-objects-mesh",
+        //   Name = "Receive Objects as DirectShape",
+        //   Icon = "Link",
+        //   IsChecked = false,
+        //   Description = "Receive the stream as a Meshes only"
+        // },
+        new ListBoxSetting
         {
-          Slug = "recieve-objects-mesh",
-          Name = "Receive Objects as DirectShape",
+          Slug = "direct-shape-strategy",
+          Name = "Convert received objects to DirectShape",
           Icon = "Link",
-          IsChecked = false,
-          Description = "Receive the stream as a Meshes only"
-        },
-        new CheckBoxSetting
-        {
-          Slug = "direct-shape-fallback",
-          Name = "Fallback to DirectShape on error",
-          Icon = "Link",
-          IsChecked = true,
-          Description =
-            "If a conversion error occurs for a native element, a conversion to DirectShape will be attempted instead."
+          Values = new List<string> { "Always", "On Error", "Never" },
+          Selection = "On Error",
+          Description = "Determines when to attempt conversion of an element into a DirectShape"
         },
         new MultiSelectBoxSetting
         {
