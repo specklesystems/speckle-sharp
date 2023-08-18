@@ -202,10 +202,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
           streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
         }
-        catch (OperationCanceledException)
-        {
-          return;
-        }
         catch (Exception e)
         {
           if (e.InnerException is TaskCanceledException)
