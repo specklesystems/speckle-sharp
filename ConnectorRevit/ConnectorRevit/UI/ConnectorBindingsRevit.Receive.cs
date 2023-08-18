@@ -306,7 +306,7 @@ namespace Speckle.ConnectorRevit.UI
 
         transactionManager.StartSubtransaction();
 
-        var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress);
+        var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress, transactionManager);
         // Determine if we should use the fallback DirectShape conversion
         // Should only happen when receiveDirectMesh is OFF, fallback is ON and object failed normal conversion.
         bool usingFallback =
@@ -314,7 +314,7 @@ namespace Speckle.ConnectorRevit.UI
         if (usingFallback)
         {
           obj.Log.Add("Conversion to native Revit object failed. Retrying conversion with displayable geometry.");
-          converted = ConvertObject(obj, @base, true, converter, progress);
+          converted = ConvertObject(obj, @base, true, converter, progress, transactionManager);
           if (converted == null)
             obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
         }
@@ -343,7 +343,8 @@ namespace Speckle.ConnectorRevit.UI
       Base @base,
       bool receiveDirectMesh,
       ISpeckleConverter converter,
-      ProgressViewModel progress
+      ProgressViewModel progress,
+      TransactionManager transactionManager
     )
     {
       progress.CancellationToken.ThrowIfCancellationRequested();
