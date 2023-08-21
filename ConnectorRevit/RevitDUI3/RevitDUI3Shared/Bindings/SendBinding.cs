@@ -53,7 +53,6 @@ public class SendBinding : ISendBinding
     List<string> objectsIds = model.SendFilter.GetObjectIds();
     Document doc = RevitApp.ActiveUIDocument.Document;
 
-    // TODO: Couln't get elements from ids
     List<Element> elements = objectsIds.Select(x => doc.GetElement(x)).Where(x => x != null).ToList();
 
     var converter = KitManager.GetDefaultKit().LoadConverter("Revit2023");
@@ -66,7 +65,7 @@ public class SendBinding : ISendBinding
         {
           foreach (var revitElement in elements)
           {
-            convertedObjects.Add(converter.ConvertToSpeckle(elements));
+            convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
           }
         })
         .ConfigureAwait(false);
