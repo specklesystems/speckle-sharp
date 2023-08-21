@@ -11,20 +11,20 @@ public interface ISendBinding : IBinding
   /// <summary>
   /// Instructs the host app to start sending this model.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void Send(string modelId);
+  /// <param name="modelCardId"></param>
+  public void Send(string modelCardId);
   
   /// <summary>
   /// Instructs the host app to  cancel the sending for a given model.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void CancelSend(string modelId);
+  /// <param name="modelCardId"></param>
+  public void CancelSend(string modelCardId);
   
   /// <summary>
   /// Highlights the objects attached to this sender in the host application.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void Highlight(string modelId); 
+  /// <param name="modelCardId"></param>
+  public void Highlight(string modelCardId); 
 }
 
 public static class SendBindingEvents

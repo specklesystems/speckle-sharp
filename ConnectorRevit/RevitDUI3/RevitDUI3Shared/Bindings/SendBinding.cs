@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using DUI3;
@@ -47,6 +48,7 @@ public class SendBinding : ISendBinding
   public async void Send(string modelCardId)
   {
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    // TODO: Here send warning to UI if somehow model return null!
     List<string> objectsIds = model.SendFilter.GetObjectIds();
     Document doc = RevitApp.ActiveUIDocument.Document;
 
@@ -66,7 +68,11 @@ public class SendBinding : ISendBinding
             count++;
             convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
             double progress = (double)count / elements.Count;
-            Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+            // To send progressbar immediately.
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+            {
+              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
+            }, DispatcherPriority.Background);
           }
         })
         .ConfigureAwait(false);
@@ -90,12 +96,12 @@ public class SendBinding : ISendBinding
     Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Revit" });
   }
 
-  public void CancelSend(string modelId)
+  public void CancelSend(string modelCardId)
   {
     throw new System.NotImplementedException();
   }
 
-  public void Highlight(string modelId)
+  public void Highlight(string modelCardId)
   {
     throw new System.NotImplementedException();
   }
