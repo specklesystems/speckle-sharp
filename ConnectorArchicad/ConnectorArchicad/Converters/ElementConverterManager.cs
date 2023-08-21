@@ -62,18 +62,15 @@ namespace Archicad
           ?.Result;
       else if (filter.Slug == "elementType")
       {
-        var elementTypes = filter.Summary
-          .Split(",")
-          .Select(elementType => elementType.Trim())
-          .ToList();
+        var elementTypes = filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
         elementIds = AsyncCommandProcessor
-            .Execute(
-              new Communication.Commands.GetElementIds(
-                Communication.Commands.GetElementIds.ElementFilter.ElementType,
-                elementTypes
-              )
+          .Execute(
+            new Communication.Commands.GetElementIds(
+              Communication.Commands.GetElementIds.ElementFilter.ElementType,
+              elementTypes
             )
-            ?.Result;
+          )
+          ?.Result;
       }
 
       SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken); // Gets all selected objects

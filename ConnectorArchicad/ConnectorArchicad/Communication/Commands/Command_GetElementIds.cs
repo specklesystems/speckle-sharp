@@ -76,7 +76,10 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<string>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementIds", new Parameters(Filter, FilterBy));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetElementIds",
+        new Parameters(Filter, FilterBy)
+      );
       return result.ApplicationIds;
     }
 

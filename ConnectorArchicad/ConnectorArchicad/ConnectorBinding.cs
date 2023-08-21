@@ -100,8 +100,25 @@ namespace Archicad.Launcher
           Icon = "Category",
           Values = new List<string>
           {
-            "Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Stair", "Railing", "Curtain Wall",
-            "Door", "Window", "Skylight", "Opening", "Zone", "Mesh", "Morph", "Object", "Lamp", "Equipment"
+            "Wall",
+            "Column",
+            "Beam",
+            "Slab",
+            "Roof",
+            "Shell",
+            "Stair",
+            "Railing",
+            "Curtain Wall",
+            "Door",
+            "Window",
+            "Skylight",
+            "Opening",
+            "Zone",
+            "Mesh",
+            "Morph",
+            "Object",
+            "Lamp",
+            "Equipment"
           },
           Description = "Adds all elements with the selected Element Types"
         }
