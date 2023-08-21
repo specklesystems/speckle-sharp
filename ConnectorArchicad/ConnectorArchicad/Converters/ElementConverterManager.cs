@@ -60,6 +60,21 @@ namespace Archicad
         elementIds = AsyncCommandProcessor
           .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
           ?.Result;
+      else if (filter.Slug == "elementType")
+      {
+        var elementTypes = filter.Summary
+          .Split(",")
+          .Select(elementType => elementType.Trim())
+          .ToList();
+        elementIds = AsyncCommandProcessor
+            .Execute(
+              new Communication.Commands.GetElementIds(
+                Communication.Commands.GetElementIds.ElementFilter.ElementType,
+                elementTypes
+              )
+            )
+            ?.Result;
+      }
 
       SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken); // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
@@ -212,7 +227,14 @@ namespace Archicad
     {
       var subElementsAsBases = new List<Base>();
 
-      if (convertedObject is not (Objects.BuiltElements.Archicad.ArchicadWall or Objects.BuiltElements.Archicad.ArchicadRoof or Objects.BuiltElements.Archicad.ArchicadShell))
+      if (
+        convertedObject
+        is not (
+          Objects.BuiltElements.Archicad.ArchicadWall
+          or Objects.BuiltElements.Archicad.ArchicadRoof
+          or Objects.BuiltElements.Archicad.ArchicadShell
+        )
+      )
         return subElementsAsBases;
 
       var subElements = await GetAllSubElements(convertedObject.applicationId);
