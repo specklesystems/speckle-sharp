@@ -288,6 +288,14 @@
                           <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  CEILING  -->
+                          <DataTemplate DataType="{x:Type s:RevitCeilingViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  ROOF  -->
+                          <DataTemplate DataType="{x:Type s:RevitRoofViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
                           <!--  BEAM  -->
                           <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
                             <map:RevitBasic />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit.RevitRoof;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Newtonsoft.Json;
@@ -238,6 +239,28 @@ public class RevitFloorViewModel : RevitBasicViewModel
   }
 }
 
+public class RevitCeilingViewModel : RevitBasicViewModel
+{
+  public override string Name => "Ceiling";
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new RevitCeiling(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+    return Operations.Serialize(obj);
+  }
+}
+
+public class RevitRoofViewModel : RevitBasicViewModel
+{
+  public override string Name => "Roof";
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new RevitRoof(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+    return Operations.Serialize(obj);
+  }
+}
+
 public class RevitBeamViewModel : RevitBasicViewModel
 {
   public override string Name => "Beam";
@@ -431,6 +454,36 @@ public class RevitDefaultFloorViewModel : Schema
   public override string GetSerializedSchema()
   {
     var obj = new Floor();
+    return Operations.Serialize(obj);
+  }
+}
+
+public class RevitDefaultCeilingViewModel : Schema
+{
+  public override string Name => "Default Ceiling";
+
+  public override string Summary => Name;
+
+  public override bool IsValid => true;
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new Ceiling();
+    return Operations.Serialize(obj);
+  }
+}
+
+public class RevitDefaultRoofViewModel : Schema
+{
+  public override string Name => "Default Roof";
+
+  public override string Summary => Name;
+
+  public override bool IsValid => true;
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new Roof();
     return Operations.Serialize(obj);
   }
 }
