@@ -64,7 +64,7 @@ static GS::Array<API_Guid> GetElementsFilteredByElementTypes (GS::Array<GS::UniS
 					continue;
 
 				GS::UniString elementTypeName;
-				Utility::GetTypeNameFromElementType (elementHead, elementTypeName);
+				Utility::GetNonLocalizedElementTypeName (elementHead, elementTypeName);
 				if (elementTypes.Contains (elementTypeName))
 					filteredGuids.Push (guid);
 			}
