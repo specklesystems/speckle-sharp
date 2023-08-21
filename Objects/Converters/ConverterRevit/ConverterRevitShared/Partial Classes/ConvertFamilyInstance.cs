@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
@@ -50,9 +50,12 @@ namespace Objects.Converter.Revit
           return null;
         else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)mullion.LocationCurve).Direction;
-          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
+          {
+            var direction = locationLine.Direction;
+            // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
+            isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          }
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -453,7 +456,7 @@ namespace Objects.Converter.Revit
       );
 
       // get the scale: TODO: do revit transforms ever have scaling?
-      var scale = (float)transform.Scale;
+      var scale = transform.Scale;
 
       return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }

@@ -8,6 +8,7 @@ using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
@@ -75,8 +76,6 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
-    public Transaction T { get; private set; }
-
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
@@ -108,12 +107,13 @@ namespace Objects.Converter.Revit
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
     private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+    private TransactionManager transactionManager;
 
     public void SetContextDocument(object doc)
     {
-      if (doc is Transaction t)
+      if (doc is TransactionManager transactionManager)
       {
-        T = t;
+        this.transactionManager = transactionManager;
       }
       else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
       {
@@ -472,7 +472,7 @@ namespace Objects.Converter.Revit
           receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
-      
+
       return nativeObject;
     }
 
@@ -717,6 +717,11 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
@@ -847,6 +852,11 @@ namespace Objects.Converter.Revit
         Organization.DataTable _ => true,
         _ => false,
       };
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }

@@ -11,7 +11,6 @@ using Tekla.Structures.Model;
 using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;
 
-
 namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures : ISpeckleConverter
@@ -45,6 +44,7 @@ namespace Objects.Converter.TeklaStructures
     {
       Model = (Model)doc;
     }
+
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
@@ -94,8 +94,14 @@ namespace Objects.Converter.TeklaStructures
         //    return true;
         default:
           return false;
-          //_ => (@object as ModelObject).IsElementSupported()
-      };
+        //_ => (@object as ModelObject).IsElementSupported()
+      }
+      ;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -123,8 +129,9 @@ namespace Objects.Converter.TeklaStructures
           return true;
         default:
           return false;
-          //_ => (@object as ModelObject).IsElementSupported()
-      };
+        //_ => (@object as ModelObject).IsElementSupported()
+      }
+      ;
     }
 
     public object ConvertToNative(Base @object)
@@ -143,7 +150,8 @@ namespace Objects.Converter.TeklaStructures
           {
             foreach (var displayAlias in DefaultTraversal.displayValuePropAliases)
             {
-              if (@base[displayAlias] is not List<GE.Mesh> meshes) continue;
+              if (@base[displayAlias] is not List<GE.Mesh> meshes)
+                continue;
 
               MeshToNative(@base, meshes);
             }
@@ -179,11 +187,15 @@ namespace Objects.Converter.TeklaStructures
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public Base ConvertToSpeckle(object @object)
     {
-
       Base returnObject = null;
       switch (@object)
       {
@@ -228,10 +240,11 @@ namespace Objects.Converter.TeklaStructures
           Report.Log($"Created Fitting");
           break;
         default:
-          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
+          ConversionErrors.Add(
+            new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}")
+          );
           returnObject = null;
           break;
-
       }
       return returnObject;
     }
