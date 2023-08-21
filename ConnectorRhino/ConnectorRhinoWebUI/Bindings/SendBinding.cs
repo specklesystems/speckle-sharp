@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -12,12 +9,10 @@ using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Objects.Converter.RhinoGh;
-using CefSharp.DevTools.LayerTree;
+using DUI3.Utils;
 using Layer = Rhino.DocObjects.Layer;
 
 namespace ConnectorRhinoWebUI.Bindings;
@@ -135,7 +130,7 @@ public class SendBinding : ISendBinding
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
-      SendProgress(modelCardId, progress);
+      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
     }
 
     var commitObject = new Base();

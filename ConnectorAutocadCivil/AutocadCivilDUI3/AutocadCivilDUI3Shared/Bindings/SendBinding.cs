@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Windows.Controls;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -98,13 +96,8 @@ namespace AutocadCivilDUI3Shared.Bindings
               }
 
               convertedObjects.Add(converted);
-              var args = new SenderProgress()
-              {
-                Id = modelCardId,
-                Status = "Converting",
-                Progress = (double)count / objectsIds.Count
-              };
-              Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
+              double progress = (double)count / objectsIds.Count;
+              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
             }
             catch (Exception)
             {

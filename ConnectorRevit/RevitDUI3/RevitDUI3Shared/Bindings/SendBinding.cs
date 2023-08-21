@@ -6,15 +6,12 @@ using DUI3;
 using DUI3.Bindings;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Kits;
-using System;
-using DUI3.Models;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 using Speckle.Core.Models;
 using Revit.Async;
-using System.Threading;
-using System.Windows.Threading;
+using DUI3.Utils;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
@@ -63,9 +60,13 @@ public class SendBinding : ISendBinding
     await RevitTask
         .RunAsync(_ =>
         {
+          int count = 0;
           foreach (var revitElement in elements)
           {
+            count++;
             convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
+            double progress = (double)count / elements.Count;
+            Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
           }
         })
         .ConfigureAwait(false);
