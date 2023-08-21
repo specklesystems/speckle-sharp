@@ -117,8 +117,7 @@ namespace Archicad.Launcher
             "Mesh",
             "Morph",
             "Object",
-            "Lamp",
-            "Equipment"
+            "Lamp"
           },
           Description = "Adds all elements with the selected Element Types"
         }
