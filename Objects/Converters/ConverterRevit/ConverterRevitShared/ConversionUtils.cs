@@ -5,10 +5,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Organization;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
@@ -18,15 +16,10 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
-using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -537,7 +530,7 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
 
