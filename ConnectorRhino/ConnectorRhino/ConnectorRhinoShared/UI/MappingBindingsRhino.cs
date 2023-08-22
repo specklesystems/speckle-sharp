@@ -203,7 +203,7 @@ public class MappingBindingsRhino : MappingsBindings
         schemas.Add(new RevitDefaultFloorViewModel());
         schemas.Add(new RevitCeilingViewModel());
         schemas.Add(new RevitDefaultCeilingViewModel());
-        schemas.Add(new RevitRoofViewModel());
+        schemas.Add(new RevitFootprintRoofViewModel());
         schemas.Add(new RevitDefaultRoofViewModel());
       }
       else if (isVertical)

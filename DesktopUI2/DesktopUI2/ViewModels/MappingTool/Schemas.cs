@@ -245,18 +245,27 @@ public class RevitCeilingViewModel : RevitBasicViewModel
 
   public override string GetSerializedSchema()
   {
-    var obj = new RevitCeiling(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+    var obj = new RevitCeiling(
+      null,
+      SelectedFamily.Name,
+      SelectedType,
+      new RevitLevel(SelectedLevel),
+      0,
+      null,
+      null,
+      null
+    );
     return Operations.Serialize(obj);
   }
 }
 
-public class RevitRoofViewModel : RevitBasicViewModel
+public class RevitFootprintRoofViewModel : RevitBasicViewModel
 {
-  public override string Name => "Roof";
+  public override string Name => "FootprintRoof";
 
   public override string GetSerializedSchema()
   {
-    var obj = new RevitRoof(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+    var obj = new RevitFootprintRoof(null, SelectedFamily.Name, SelectedType, new RevitLevel(SelectedLevel));
     return Operations.Serialize(obj);
   }
 }

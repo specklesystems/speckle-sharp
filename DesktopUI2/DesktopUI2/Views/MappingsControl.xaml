@@ -266,6 +266,8 @@
                           <!--  Default = empty  -->
                           <DataTemplate DataType="{x:Type s:RevitDefaultWallViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultFloorViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultCeilingViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultRoofViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBeamViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBraceViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultColumnViewModel}" />
@@ -293,7 +295,7 @@
                             <map:RevitBasic />
                           </DataTemplate>
                           <!--  ROOF  -->
-                          <DataTemplate DataType="{x:Type s:RevitRoofViewModel}">
+                          <DataTemplate DataType="{x:Type s:RevitFootprintRoofViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
                           <!--  BEAM  -->

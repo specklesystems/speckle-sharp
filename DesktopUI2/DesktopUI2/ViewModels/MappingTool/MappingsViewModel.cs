@@ -396,7 +396,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
               updatedSchemas.Add(o);
               break;
 
-            case RevitRoofViewModel o:
+            case RevitFootprintRoofViewModel o:
               var roofFamilies = AvailableRevitTypes.Where(x => x.category == "Roofs").ToList();
               if (!roofFamilies.Any() || !AvailableRevitLevels.Any())
                 break;
