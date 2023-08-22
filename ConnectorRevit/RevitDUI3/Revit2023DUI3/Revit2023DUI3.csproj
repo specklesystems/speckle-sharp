@@ -41,7 +41,7 @@
   </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*" Exclude="$(TargetDir)*.addin"/>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" Exclude="$(TargetDir)*.addin" />
       <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />

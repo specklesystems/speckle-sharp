@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -97,7 +98,10 @@ namespace AutocadCivilDUI3Shared.Bindings
 
               convertedObjects.Add(converted);
               double progress = (double)count / objectsIds.Count;
-              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+              Dispatcher.CurrentDispatcher.Invoke(() =>
+              {
+                Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
+              }, DispatcherPriority.Background);
             }
             catch (Exception)
             {

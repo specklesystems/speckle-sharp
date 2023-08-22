@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -130,7 +131,10 @@ public class SendBinding : ISendBinding
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
-      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+      Dispatcher.CurrentDispatcher.Invoke(() =>
+      {
+        Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
+      }, DispatcherPriority.Background);
     }
 
     var commitObject = new Base();
