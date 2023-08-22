@@ -304,8 +304,6 @@ namespace Speckle.ConnectorRevit.UI
         )
           continue;
 
-        transactionManager.StartSubtransaction();
-
         var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress, transactionManager);
         // Determine if we should use the fallback DirectShape conversion
         // Should only happen when receiveDirectMesh is OFF, fallback is ON and object failed normal conversion.
@@ -319,7 +317,6 @@ namespace Speckle.ConnectorRevit.UI
             obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
         }
 
-        transactionManager.CommitSubtransaction();
         RefreshView();
         if (index % 50 == 0)
           transactionManager.Commit();
@@ -353,6 +350,7 @@ namespace Speckle.ConnectorRevit.UI
         return obj;
 
       using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
+      transactionManager.StartSubtransaction();
 
       try
       {
@@ -414,6 +412,7 @@ namespace Speckle.ConnectorRevit.UI
 
         progress.Report.UpdateReportObject(obj);
         RefreshView();
+        transactionManager.CommitSubtransaction();
       }
       catch (ConversionNotReadyException ex)
       {
@@ -440,6 +439,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
+        transactionManager.RollbackSubTransaction();
         SpeckleLog.Logger.Warning(ex, "Failed to convert due to unexpected error.");
         obj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to convert due to unexpected error.");
         obj.Log.Add($"{ex.Message}");
