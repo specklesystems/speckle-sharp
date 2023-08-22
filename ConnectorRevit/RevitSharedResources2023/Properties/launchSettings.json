@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RevitSharedResources2023": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Program Files\\Autodesk\\Revit 2023\\Revit 2023.exe"
+    }
+  }
+}
