@@ -635,5 +635,46 @@ namespace Speckle.ConnectorRevit.UI
         return p.AsString().ToLowerInvariant();
       }
     }
+
+    /// <summary>
+    /// Validates the selected objects and retrieves the corresponding elements.
+    /// For zones, the spaces within the zone are retrieved.
+    /// </summary>
+    /// <param name="selectedObjects">A list of elements to validate and extract from.</param>
+    /// <returns>
+    /// A list of elements from the provided list and any interpreted selections, e.g. Spaces from Zones.
+    /// Duplicate elements are removed.
+    /// </returns>
+    private static IEnumerable<Element> ValidateSelectedObjects(IEnumerable<Element> selectedObjects)
+    {
+      var validObjects = selectedObjects.SelectMany(GetElements);
+
+      return validObjects;
+
+      IEnumerable<Element> GetElements(Element element)
+      {
+        // Handle the resolution of selected Elements to their convertable states here
+        switch (element)
+        {
+          case Autodesk.Revit.DB.Mechanical.Zone zone:
+
+            var spaces = new List<Autodesk.Revit.DB.Mechanical.Space>();
+            var zoneSpaces = zone.Spaces.GetEnumerator();
+
+            while (zoneSpaces.MoveNext())
+            {
+              if (zoneSpaces.Current is Autodesk.Revit.DB.Mechanical.Space space)
+              {
+                spaces.Add(space);
+              }
+            }
+
+            return spaces;
+
+          default:
+            return new[] { element };
+        }
+      }
+    }
   }
 }
