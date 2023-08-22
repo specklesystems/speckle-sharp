@@ -105,6 +105,9 @@ namespace Objects.Converter.Revit
       speckleSpace.spaceType = revitSpace.SpaceType.ToString();
       speckleSpace.zoneName = revitSpace.Zone?.Name;
 
+      // Zones are stored as a Space prop despite being a parent object, so we need to convert it here
+      speckleSpace.zone = ConvertAndCacheZone(revitSpace.Zone, revitSpace.Document);
+
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
       speckleSpace.displayValue = GetElementDisplayValue(revitSpace);
