@@ -391,7 +391,8 @@ namespace Objects.Converter.Revit
         applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
+      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
+      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
       sp.applicationUnit = appUnit;
       return sp;
     }
@@ -401,7 +402,13 @@ namespace Objects.Converter.Revit
       Definition definition,
       out string unitType,
       string unitsOverride = null,
-      IRevitDocumentAggregateCache cache = null)
+      IRevitDocumentAggregateCache cache = null,
+#if REVIT2020
+      DisplayUnitType unitTypeId = default
+#else
+      ForgeTypeId unitTypeId = null
+#endif
+    )
     {
       unitType = null;
       switch (rp.StorageType)
@@ -409,27 +416,22 @@ namespace Objects.Converter.Revit
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId();
+          if (unitsOverride == null)
+          {
+            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
+          }
+          else
+          {
+            unitTypeId = UnitsToNative(unitsOverride);
+          }
           unitType = UnitsToNativeString(unitTypeId);
           return cache != null
             ? ScaleToSpeckle(val, unitTypeId, cache)
             : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
-#if REVIT2020 || REVIT2021 || REVIT2022
-          switch (definition.ParameterType)
-          {
-            case ParameterType.YesNo:
-              return Convert.ToBoolean(intVal);
-            default:
-              return intVal;
-          }
-#else
-          if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            return Convert.ToBoolean(intVal);
-          else
-            return intVal;
-#endif
+          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
+
         case StorageType.String:
           return rp.AsString();
         // case StorageType.ElementId:
@@ -444,7 +446,39 @@ namespace Objects.Converter.Revit
       }
     }
 
-    #endregion
+#endregion
+
+    /// <summary>
+    /// Method for getting symbol when parameter is NOT validated to be a double or int
+    /// </summary>
+    /// <param name="parameter"></param>
+    /// <param name="definition"></param>
+    /// <param name="cache"></param>
+    /// <param name="forgeTypeId"></param>
+    /// <returns></returns>
+    public static string GetSymbolUnit(
+      DB.Parameter parameter,
+      DB.Definition definition,
+      IRevitDocumentAggregateCache cache,
+#if REVIT2020
+      out DisplayUnitType unitTypeId
+#else
+      out ForgeTypeId unitTypeId
+#endif
+    )
+    {
+      unitTypeId = default;
+      if (parameter.StorageType != StorageType.Double)
+      {
+        return null;
+      }
+
+      unitTypeId = parameter.GetUnitTypeId();
+      var unitTypeIdCopy = unitTypeId;
+      return cache
+        .GetOrInitializeEmptyCacheOfType<string>(out _)
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
+    }
 
     /// <summary>
     /// </summary>
@@ -672,7 +706,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
