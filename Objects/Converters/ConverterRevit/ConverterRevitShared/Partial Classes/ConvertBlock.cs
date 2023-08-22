@@ -1,190 +1,156 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
 using Speckle.Core.Models;
-using Objects.Geometry;
 using Speckle.Core.Models.Extensions;
-using BlockInstance = Objects.Other.BlockInstance;
-using Transform = Objects.Other.Transform;
-using Mesh = Objects.Geometry.Mesh;
+using Objects.Other;
+using Speckle.Core.Logging;
+using DB = Autodesk.Revit.DB;
 
-namespace Objects.Converter.Revit
+namespace Objects.Converter.Revit;
+
+public partial class ConverterRevit
 {
-  public partial class ConverterRevit
+  public ApplicationObject? BlockInstanceToNative(BlockInstance instance)
   {
-    public ApplicationObject? BlockInstanceToNative(BlockInstance instance, Transform? transform = null)
+    var docObj = GetExistingElementByApplicationId(instance.applicationId);
+    var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+
+    // skip if element already exists in doc & receive mode is set to ignore
+    if (IsIgnore(docObj, appObj))
+      return appObj;
+
+    var isUpdate = false;
+    if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
     {
-      var docObj = GetExistingElementByApplicationId(instance.applicationId);
-      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
-
-      // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj))
-        return appObj;
-
-      var isUpdate = false;
-      if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
-      {
-        try
-        {
-          Doc.Delete(docObj.Id);
-          isUpdate = true;
-        }
-        catch
-        {
-          //something went wrong, re-create it
-        }
-      }
-
-      // need to combine the two transforms, but i'm stupid and did it wrong so leaving like this for now
-      if (transform != null)
-        transform *= instance.transform;
-      else
-        transform = instance.transform;
-
-      // convert definition geometry to native
-      var breps = new List<Brep>();
-      var meshes = new List<Mesh>();
-      var curves = new List<DB.Curve>();
-      var blocks = new List<BlockInstance>();
-
-      foreach (var geometry in instance.typedDefinition.geometry)
-      {
-        switch (geometry)
-        {
-          case Brep brep:
-            var success = brep.TransformTo(transform, out Brep tbrep);
-            if (success)
-              breps.Add(tbrep);
-            else
-            {
-              appObj.Update(logItem: $"Could not convert block brep to native, using mesh fallback value instead");
-              meshes.AddRange(tbrep.displayValue);
-            }
-
-            break;
-          case Mesh mesh:
-            mesh.TransformTo(transform, out Mesh tmesh);
-            meshes.Add(tmesh);
-            break;
-          case ICurve curve:
-            try
-            {
-              if (curve is ITransformable tCurve)
-              {
-                tCurve.TransformTo(transform, out tCurve);
-                curve = (ICurve)tCurve;
-              }
-
-              var modelCurves = CurveToNative(curve);
-              curves.AddRange(modelCurves.Cast<DB.Curve>());
-            }
-            catch (Exception e)
-            {
-              appObj.Update(logItem: $"Could not convert block curve to native: {e.Message}");
-            }
-
-            break;
-          case BlockInstance blk:
-            blocks.Add(blk);
-            break;
-          case { }:
-            var displayValue = geometry.GetDetachedProp("displayValue") as IList ?? Array.Empty<object>();
-            foreach (var d in displayValue)
-            {
-              if (d is Mesh m)
-              {
-                m.TransformTo(transform, out Mesh tm);
-                meshes.Add(tm);
-              }
-              //TODO: Ideally, we'd support more geometry types here too, but this switch statement is getting messy!
-            }
-            break;
-        }
-      }
-
-      var ids = new List<ElementId>();
-      int skippedBreps = breps.Count;
-      breps.ForEach(o =>
-      {
-        var ds =
-          TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
-        if (ds != null)
-        {
-          ids.Add(ds.Id);
-          skippedBreps--;
-        }
-      });
-
-      int skippedMeshes = meshes.Count;
-      meshes.ForEach(o =>
-      {
-        var ds =
-          TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
-        if (ds != null)
-        {
-          ids.Add(ds.Id);
-          skippedMeshes--;
-        }
-      });
-
-      int skippedCurves = curves.Count;
-      curves.ForEach(o =>
-      {
-        var mc = Doc.Create.NewModelCurve(o, NewSketchPlaneFromCurve(o, Doc));
-        if (mc != null)
-        {
-          ids.Add(mc.Id);
-          skippedCurves--;
-        }
-      });
-
-      int skippedBlocks = blocks.Count;
-      blocks.ForEach(o =>
-      {
-        var block = BlockInstanceToNative(o, transform);
-        if (block != null)
-        {
-          var nestedBlock = block.Converted.FirstOrDefault() as Group;
-          ids.Add(nestedBlock.Id);
-          skippedBlocks--;
-        }
-      });
-
-      if (!ids.Any())
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"No geometry could be created");
-        Report.Log(appObj);
-        return null;
-      }
-
-      Group group = null;
       try
       {
-        group = Doc.Create.NewGroup(ids);
-        group.GroupType.Name =
-          $"SpeckleBlock_{RemoveProhibitedCharacters(instance.typedDefinition.name)}_{instance.applicationId ?? instance.id}";
-        string skipped =
-          $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
-        if (!string.IsNullOrEmpty(skipped))
-          appObj.Update(logItem: $"Skipped {skipped}");
-        var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-        appObj.Update(
-          status: state,
-          createdId: group.UniqueId,
-          convertedItem: group,
-          logItem: $"Assigned name: {group.GroupType.Name}"
+        isUpdate = true;
+        Doc.Delete(docObj.Id);
+      }
+      catch (Exception e)
+      {
+        SpeckleLog.Logger.Warning(
+          e,
+          "Unexpected issue when deleting existing BlockInstance, proceeding with new Block creation."
         );
       }
-      catch
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Group could not be created");
-      }
-
-      return appObj;
     }
+
+    try
+    {
+      var familyInstance = ConvertBlockInstanceToFamilyInstance(instance);
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(
+        status: state,
+        createdId: familyInstance.UniqueId,
+        convertedItem: familyInstance,
+        logItem: $"Assigned name: {familyInstance.Symbol.Name}"
+      );
+    }
+    catch (Exception e)
+    {
+      appObj.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"BlockInstance could not be created: {e.ToFormattedString()}"
+      );
+    }
+
+    return appObj;
+  }
+
+  private DB.FamilyInstance ConvertBlockInstanceToFamilyInstance(BlockInstance instance)
+  {
+    var symbol = ConvertBlockDefinitionToFamilySymbol(instance.typedDefinition);
+    instance.transform.Decompose(out var scale, out var rot, out var trans);
+
+    var position = new DB.XYZ(trans.X / trans.W, trans.Y / trans.W, trans.Z / trans.W);
+
+    // Create instance with the correct mode depending if it's nested or not.
+    // TODO: This is just prep for deep nesting support. For now we usually call this at the model level only.
+    var structuralType = DB.Structure.StructuralType.NonStructural;
+    var familyInstance = Doc.IsFamilyDocument
+      ? Doc.FamilyCreate.NewFamilyInstance(position, symbol, structuralType)
+      : Doc.Create.NewFamilyInstance(position, symbol, structuralType);
+
+    RotateFamilyInstance(familyInstance, rot.Z / rot.W);
+
+    return familyInstance;
+  }
+
+  private void RotateFamilyInstance(DB.FamilyInstance familyInstance, double angle)
+  {
+    DB.Transform t = familyInstance.GetTotalTransform();
+    using DB.Line zLine = DB.Line.CreateUnbound(t.Origin, t.BasisZ);
+    DB.ElementTransformUtils.RotateElement(Doc, familyInstance.Id, zLine, angle);
+  }
+
+  private DB.FamilySymbol ConvertBlockDefinitionToFamilySymbol(BlockDefinition definition)
+  {
+    // TODO: Update behaviour should skip the family creation and spit out the symbol to be reused
+    var famDoc = CreateNewFamilyTemplateDoc();
+    PopulateFamilyWithBlockDefinitionGeometry(definition, famDoc);
+    // Load the new document into the model doc
+    var family = Doc.LoadFamily(famDoc);
+    var symbol = GetFamilySymbolForBlockDefinition(family);
+    return symbol;
+  }
+
+  private void PopulateFamilyWithBlockDefinitionGeometry(BlockDefinition definition, DB.Document famDoc)
+  {
+    // Get the flat list of geometry
+    var flatGeometry = definition.geometry
+      .SelectMany(
+        b =>
+          b switch
+          {
+            Instance i => i.GetTransformedGeometry().Cast<Base>().ToList(),
+            // This cast to Base is safe. Compiler just can't safely know ITransformable is only applied to Base objects.
+            ITransformable bt => new List<Base> { (bt as Base)! },
+            _ => null
+          }
+      )
+      .ToList();
+
+    // Start up a local converter to isolate conversions for this particular family document.
+    // This prevents other conversions from being polluted by multi-document environments.
+    var converter = new ConverterRevit();
+    converter.SetContextDocument(famDoc); // Always remember to set the doc 🙂
+
+    // Using the family document, add all geometry of the instance at the root level (no nesting)
+    using DB.Transaction t = new(famDoc, $"Create geometry for block definition - {definition.id}");
+    t.Start();
+    flatGeometry.ForEach(o => converter.ConvertToNative(o));
+    t.Commit();
+  }
+
+  private DB.FamilySymbol GetFamilySymbolForBlockDefinition(DB.Family family)
+  {
+    // The loaded family contains all the possible symbols (variations)
+    // We must pick the right one and return.
+    // TODO: For now, we're just picking the first.
+    var element = Doc.GetElement(family.GetFamilySymbolIds().First());
+    if (element is not DB.FamilySymbol symbol)
+      throw new Exception($"Could not find any symbols in family {family.Name}");
+    if (!symbol.IsActive)
+      symbol.Activate();
+    return symbol;
+  }
+
+  /// <summary>
+  ///   Creates a new family document as a duplicate of the specified template.
+  /// </summary>
+  /// <param name="name">The name of the template to use to create the family document.</param>
+  /// <returns>A new family document based based on the specified template.</returns>
+  /// <exception cref="System.IO.FileNotFoundException">When the file corresponding to the provided template name could not be found</exception>
+  /// <exception cref="Autodesk.Revit.Exceptions.InvalidOperationException">When the document could not be opened</exception>
+  public DB.Document CreateNewFamilyTemplateDoc(string name = "Generic Model")
+  {
+    var templatePath = GetTemplatePath(name);
+    if (!File.Exists(templatePath))
+      throw new FileNotFoundException($"Could not find '{name}.rft' template file - {templatePath}");
+    return Doc.Application.NewFamilyDocument(templatePath);
   }
 }
