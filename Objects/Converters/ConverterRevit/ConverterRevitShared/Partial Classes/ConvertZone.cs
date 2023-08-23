@@ -54,16 +54,5 @@ namespace Objects.Converter.Revit
 
       return speckleZone;
     }
-
-    private Zone ConvertAndCacheZone(DB.Zone revitZone, Document doc)
-    {
-      if (revitZone == null)
-        return null;
-
-      if (!Zones.ContainsKey(revitZone.Name))
-        Zones[revitZone.Name] = ZoneToSpeckle(revitZone);
-
-      return Zones[revitZone.Name];
-    }
   }
 }

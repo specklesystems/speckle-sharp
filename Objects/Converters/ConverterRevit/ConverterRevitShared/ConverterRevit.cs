@@ -83,11 +83,6 @@ namespace Objects.Converter.Revit
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
 
     /// <summary>
-    ///  Used to cache already converted Zones
-    /// </summary>
-    public Dictionary<string, BER.Zone> Zones { get; private set; } = new Dictionary<string, BER.Zone>();
-
-    /// <summary>
     /// Used to cache already converted family instance FamilyType deifnitions
     /// </summary>
     public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } =
