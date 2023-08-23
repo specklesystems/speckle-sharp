@@ -252,6 +252,8 @@ namespace Objects.Converter.Revit
       if (phaseDemolished != null)
         speckleElement["phaseDemolished"] = phaseDemolished.Name;
 
+      speckleElement["WorksetId"] = revitElement.WorksetId.IntegerValue;
+
       var category = revitElement.Category;
       if (category != null)
       {
@@ -278,12 +280,6 @@ namespace Objects.Converter.Revit
       using var parameters = element.Parameters;
       foreach (DB.Parameter param in parameters)
       {
-        // exclude parameters that don't have a value and those pointing to other elements as we don't support them
-        if (param.StorageType == StorageType.ElementId || !param.HasValue)
-        {
-          continue;
-        }
-
         var internalName = GetParamInternalName(param);
         if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
         {
@@ -389,13 +385,8 @@ namespace Objects.Converter.Revit
 #endif
         case StorageType.String:
           return rp.AsString();
-        // case StorageType.ElementId:
-        //   // NOTE: if this collects too much garbage, maybe we can ignore it
-        //   var id = rp.AsElementId();
-        //   var e = Doc.GetElement(id);
-        //   if (e != null && CanConvertToSpeckle(e))
-        //     sp.value = ConvertToSpeckle(e);
-        //   break;
+        case StorageType.ElementId:
+          return rp.AsElementId().ToString();
         default:
           return null;
       }
