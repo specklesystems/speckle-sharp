@@ -256,7 +256,7 @@ namespace Speckle.ConnectorRevit.UI
 
           case "view":
             var selectedViews = GetSelectedViews(filter);
-            selection = GetSelectionFromViews(selectedViews, linkedDocs);
+            selection = GetSelectionByView(selectedViews, linkedDocs);
             if (selectedViews.Count == 1)
             {
               // if the user is sending a single view, then we pass it to the converter in order for the converter
@@ -270,7 +270,7 @@ namespace Speckle.ConnectorRevit.UI
             }
 
           case "schedule":
-            return GetScheduleSelection(filter);
+            return GetSelectionBySchedule(filter);
 
           case "project-info":
             return GetSelectionByProjectInfo(filter);
@@ -424,7 +424,7 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionFromViews(List<View> views, Dictionary<ElementId, Document> linkedDocs)
+    private static List<Element> GetSelectionByView(List<View> views, Dictionary<ElementId, Document> linkedDocs)
     {
       var selection = new List<Element>();
       foreach (var view in views)
@@ -489,7 +489,7 @@ namespace Speckle.ConnectorRevit.UI
         .ToList();
     }
 
-    private static List<Element> GetScheduleSelection(ISelectionFilter filter)
+    private static List<Element> GetSelectionBySchedule(ISelectionFilter filter)
     {
       var selection = new List<Element>();
       var scheduleFilter = filter as ListSelectionFilter;
