@@ -649,19 +649,32 @@ namespace Speckle.ConnectorRevit.UI
     /// </remarks>
     private static IEnumerable<Element> ValidateSelectedObjects(IEnumerable<Element> selectedObjects)
     {
-      return selectedObjects.SelectMany(ResolveElementsByType);
-
       // Handle the resolution of selected Elements to their convertable states here
-      IEnumerable<Element> ResolveElementsByType(Element element) =>
-        element switch
-        {
-          Autodesk.Revit.DB.Mechanical.Zone zone => GetSpacesFromZone(zone),
-          _ => new[] { element }
-        };
-
-      IEnumerable<Element> GetSpacesFromZone(Autodesk.Revit.DB.Mechanical.Zone zone)
+      foreach (var element in selectedObjects)
       {
-        return zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>();
+        switch (element)
+        {
+          case Autodesk.Revit.DB.Mechanical.Zone zone:
+            foreach (var space in GetSpacesFromZone(zone))
+            {
+              yield return space;
+            }
+            break;
+
+          default:
+            yield return element;
+            break;
+        }
+      }
+
+      yield break;
+
+      static IEnumerable<Autodesk.Revit.DB.Mechanical.Space> GetSpacesFromZone(Autodesk.Revit.DB.Mechanical.Zone zone)
+      {
+        foreach (var space in zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>())
+        {
+          yield return space;
+        }
       }
     }
   }
