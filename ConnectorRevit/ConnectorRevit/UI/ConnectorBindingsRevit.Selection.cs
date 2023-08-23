@@ -170,29 +170,24 @@ namespace Speckle.ConnectorRevit.UI
 
     private Dictionary<ElementId, Document> GetLinkedDocuments()
     {
-      var docs = new Dictionary<ElementId, Document>();
+      var linkedDocs = new Dictionary<ElementId, Document>();
 
       // Get settings and return empty list if we should not send linked models
       var sendLinkedModels = CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
       if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
-        return docs;
+        return linkedDocs;
 
-      //TODO: is the name the most safe way to look for it?
       var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document)
         .OfCategory(BuiltInCategory.OST_RvtLinks)
-        .OfClass(typeof(RevitLinkType))
+        .OfClass(typeof(RevitLinkInstance))
         .ToElements()
-        .Cast<RevitLinkType>();
-      foreach (Document revitDoc in RevitApp.Application.Documents)
+        .Cast<RevitLinkInstance>();
+      foreach (var linkedRVT in linkedRVTs)
       {
-        var linkedFile = linkedRVTs.FirstOrDefault(x => x.Name.Replace(".rvt", "") == revitDoc.Title);
-        if (revitDoc.IsLinked && linkedFile != null)
-        {
-          docs.Add(linkedFile.Id, revitDoc);
-        }
+        linkedDocs.Add(linkedRVT.Id, linkedRVT.GetLinkDocument());
       }
 
-      return docs;
+      return linkedDocs;
     }
 
     private static List<Element> FilterHiddenDesignOptions(List<Element> selection)
