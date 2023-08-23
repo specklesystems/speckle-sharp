@@ -636,44 +636,32 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    /// <summary>
-    /// Validates the selected objects and retrieves the corresponding elements.
-    /// For zones, the spaces within the zone are retrieved.
+    /// Processes the provided list of elements, applying specific validations and transformations based on the element type.
     /// </summary>
-    /// <param name="selectedObjects">A list of elements to validate and extract from.</param>
+    /// <param name="selectedObjects">A collection of elements to process.</param>
     /// <returns>
-    /// A list of elements from the provided list and any interpreted selections, e.g. Spaces from Zones.
-    /// Duplicate elements are removed.
+    /// A collection of elements after applying the respective validations and transformations.
     /// </returns>
+    /// <remarks>
+    /// Current Validations and Transformations:
+    /// - Zones are expanded into their constituent spaces.
+    /// - [Add additional validations here as they are implemented.]
+    /// </remarks>
     private static IEnumerable<Element> ValidateSelectedObjects(IEnumerable<Element> selectedObjects)
     {
-      var validObjects = selectedObjects.SelectMany(GetElements);
+      return selectedObjects.SelectMany(ResolveElementsByType);
 
-      return validObjects;
-
-      IEnumerable<Element> GetElements(Element element)
-      {
-        // Handle the resolution of selected Elements to their convertable states here
-        switch (element)
+      // Handle the resolution of selected Elements to their convertable states here
+      IEnumerable<Element> ResolveElementsByType(Element element) =>
+        element switch
         {
-          case Autodesk.Revit.DB.Mechanical.Zone zone:
+          Autodesk.Revit.DB.Mechanical.Zone zone => GetSpacesFromZone(zone),
+          _ => new[] { element }
+        };
 
-            var spaces = new List<Autodesk.Revit.DB.Mechanical.Space>();
-            var zoneSpaces = zone.Spaces.GetEnumerator();
-
-            while (zoneSpaces.MoveNext())
-            {
-              if (zoneSpaces.Current is Autodesk.Revit.DB.Mechanical.Space space)
-              {
-                spaces.Add(space);
-              }
-            }
-
-            return spaces;
-
-          default:
-            return new[] { element };
-        }
+      IEnumerable<Element> GetSpacesFromZone(Autodesk.Revit.DB.Mechanical.Zone zone)
+      {
+        return zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>();
       }
     }
   }
