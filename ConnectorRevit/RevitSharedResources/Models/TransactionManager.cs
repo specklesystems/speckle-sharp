@@ -14,6 +14,7 @@ namespace RevitSharedResources.Models
   {
     private string streamId;
     private Document document;
+
     public TransactionManager(string streamId, Document document)
     {
       this.streamId = streamId;
@@ -50,9 +51,7 @@ namespace RevitSharedResources.Models
         transactionGroup.Start();
       }
 
-      if (transaction == null
-        || !transaction.IsValidObject
-        || transaction.GetStatus() != TransactionStatus.Started)
+      if (transaction == null || !transaction.IsValidObject || transaction.GetStatus() != TransactionStatus.Started)
       {
         transaction = new Transaction(document, $"Baking stream {streamId}");
         var failOpts = transaction.GetFailureHandlingOptions();
@@ -66,16 +65,16 @@ namespace RevitSharedResources.Models
 
     public TransactionStatus Commit()
     {
-      if (subTransaction != null 
-        && subTransaction.IsValidObject 
-        && subTransaction.GetStatus() == TransactionStatus.Started)
+      if (
+        subTransaction != null
+        && subTransaction.IsValidObject
+        && subTransaction.GetStatus() == TransactionStatus.Started
+      )
       {
         HandleFailedCommit(subTransaction.Commit());
         subTransaction.Dispose();
       }
-      if (transaction != null 
-        && transaction.IsValidObject
-        && transaction.GetStatus() == TransactionStatus.Started)
+      if (transaction != null && transaction.IsValidObject && transaction.GetStatus() == TransactionStatus.Started)
       {
         var status = transaction.Commit();
         HandleFailedCommit(status);
@@ -94,30 +93,42 @@ namespace RevitSharedResources.Models
 
         var exception = errorEater.GetException();
         if (exception == null)
-          SpeckleLog.Logger.Fatal("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
+          SpeckleLog.Logger.Fatal(
+            "Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions",
+            numUniqueErrors,
+            numTotalErrors
+          );
         else
-          SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
+          SpeckleLog.Logger.Fatal(
+            exception,
+            "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.",
+            numUniqueErrors,
+            numTotalErrors
+          );
 
-        throw exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.");
+        throw exception
+          ?? new SpeckleException(
+            $"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."
+          );
       }
     }
 
     public void RollbackTransaction()
     {
       RollbackSubTransaction();
-      if (transaction != null
-        && transaction.IsValidObject
-        && transaction.GetStatus() == TransactionStatus.Started)
+      if (transaction != null && transaction.IsValidObject && transaction.GetStatus() == TransactionStatus.Started)
       {
         transaction.RollBack();
       }
     }
-    
+
     public void RollbackSubTransaction()
     {
-      if (subTransaction != null 
-        && subTransaction.IsValidObject 
-        && subTransaction.GetStatus() == TransactionStatus.Started)
+      if (
+        subTransaction != null
+        && subTransaction.IsValidObject
+        && subTransaction.GetStatus() == TransactionStatus.Started
+      )
       {
         subTransaction.RollBack();
       }
@@ -126,9 +137,11 @@ namespace RevitSharedResources.Models
     public void RollbackAll()
     {
       RollbackTransaction();
-      if (transactionGroup != null 
-        && transactionGroup.IsValidObject 
-        && transactionGroup.GetStatus() == TransactionStatus.Started)
+      if (
+        transactionGroup != null
+        && transactionGroup.IsValidObject
+        && transactionGroup.GetStatus() == TransactionStatus.Started
+      )
       {
         transactionGroup.Assimilate();
       }
@@ -137,9 +150,11 @@ namespace RevitSharedResources.Models
     public void StartSubtransaction()
     {
       Start();
-      if (subTransaction == null
+      if (
+        subTransaction == null
         || !subTransaction.IsValidObject
-        || subTransaction.GetStatus() != TransactionStatus.Started)
+        || subTransaction.GetStatus() != TransactionStatus.Started
+      )
       {
         subTransaction = new SubTransaction(document);
         subTransaction.Start();
@@ -162,6 +177,7 @@ namespace RevitSharedResources.Models
     {
       return ExecuteInTemporaryTransaction(function, document);
     }
+
     public static TResult ExecuteInTemporaryTransaction<TResult>(Func<TResult> function, Document document)
     {
       TResult result = default;
@@ -212,7 +228,8 @@ namespace RevitSharedResources.Models
 
     protected virtual void Dispose(bool disposing)
     {
-      if (isDisposed) return;
+      if (isDisposed)
+        return;
 
       if (disposing)
       {

@@ -69,7 +69,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitWall, speckleRevitWall);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
-      appObj = SetHostedElements(speckleRevitWall, revitWall, appObj);
+      //appObj = SetHostedElements(speckleRevitWall, revitWall, appObj);
       return appObj;
     }
   }

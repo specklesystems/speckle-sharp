@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitCeiling, speckleCeiling);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitCeiling.UniqueId, convertedItem: revitCeiling);
-      appObj = SetHostedElements(speckleCeiling, revitCeiling, appObj);
+      //appObj = SetHostedElements(speckleCeiling, revitCeiling, appObj);
       return appObj;
     }
 #endif
