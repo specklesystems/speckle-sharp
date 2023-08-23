@@ -55,9 +55,6 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public ICurve outline { get; set; }
   public string spaceType { get; set; }
 
-  // retain the zoneName for backwards compatibility
-  public string zoneName { get; set; }
-
   // add the zone object for better forward compatibility
   public Zone zone { get; set; }
 
