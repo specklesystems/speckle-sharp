@@ -655,25 +655,13 @@ namespace Speckle.ConnectorRevit.UI
         switch (element)
         {
           case Autodesk.Revit.DB.Mechanical.Zone zone:
-            foreach (var space in GetSpacesFromZone(zone))
-            {
+            foreach (var space in zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>())
               yield return space;
-            }
             break;
 
           default:
             yield return element;
             break;
-        }
-      }
-
-      yield break;
-
-      static IEnumerable<Autodesk.Revit.DB.Mechanical.Space> GetSpacesFromZone(Autodesk.Revit.DB.Mechanical.Zone zone)
-      {
-        foreach (var space in zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>())
-        {
-          yield return space;
         }
       }
     }
