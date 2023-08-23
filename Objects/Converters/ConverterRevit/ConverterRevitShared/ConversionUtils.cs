@@ -252,7 +252,7 @@ namespace Objects.Converter.Revit
       if (phaseDemolished != null)
         speckleElement["phaseDemolished"] = phaseDemolished.Name;
 
-      speckleElement["WorksetId"] = revitElement.WorksetId.IntegerValue;
+      speckleElement["WorksetId"] = revitElement.WorksetId.ToString();
 
       var category = revitElement.Category;
       if (category != null)

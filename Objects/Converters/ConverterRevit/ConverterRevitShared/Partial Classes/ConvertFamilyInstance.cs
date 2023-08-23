@@ -97,11 +97,11 @@ namespace Objects.Converter.Revit
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
       if (revitFi.Room != null)
-        @base["roomId"] = revitFi.Room.Id;
+        @base["roomId"] = revitFi.Room.Id.ToString();
       if (revitFi.ToRoom != null)
-        @base["toRoomId"] = revitFi.ToRoom.Id;
+        @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
       if (revitFi.FromRoom != null)
-        @base["fromRoomId"] = revitFi.FromRoom.Id;
+        @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
 
 
       return @base;
