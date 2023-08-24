@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using DUI3;
 using DUI3.Bindings;
 using Speckle.ConnectorRevitDUI3.Utils;
+using Speckle.Core.Kits;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Transports;
+using Speckle.Core.Models;
+using Revit.Async;
+using DUI3.Utils;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
@@ -37,17 +45,63 @@ public class SendBinding : ISendBinding
     };
   }
 
-  public void Send(string modelId)
+  public async void Send(string modelCardId)
+  {
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    // TODO: Here send warning to UI if somehow model return null!
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    Document doc = RevitApp.ActiveUIDocument.Document;
+
+    List<Element> elements = objectsIds.Select(x => doc.GetElement(x)).Where(x => x != null).ToList();
+
+    var converter = KitManager.GetDefaultKit().LoadConverter("Revit2023");
+    converter.SetContextDocument(doc);
+
+    var convertedObjects = new List<Base>();
+
+    await RevitTask
+        .RunAsync(_ =>
+        {
+          int count = 0;
+          foreach (var revitElement in elements)
+          {
+            count++;
+            convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
+            double progress = (double)count / elements.Count;
+            // To send progressbar immediately.
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+            {
+              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
+            }, DispatcherPriority.Background);
+          }
+        })
+        .ConfigureAwait(false);
+
+    var commitObject = new Base();
+    commitObject["@elements"] = convertedObjects;
+
+    var projectId = model.ProjectId;
+    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
+    var client = new Client(account);
+
+    var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
+
+    // TODO: Fix send operations haven't succeeded
+    var objectId = await Operations.Send(
+      commitObject,
+      transports,
+      disposeTransports: true
+    ).ConfigureAwait(true);
+
+    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Revit" });
+  }
+
+  public void CancelSend(string modelCardId)
   {
     throw new System.NotImplementedException();
   }
 
-  public void CancelSend(string modelId)
-  {
-    throw new System.NotImplementedException();
-  }
-
-  public void Highlight(string modelId)
+  public void Highlight(string modelCardId)
   {
     throw new System.NotImplementedException();
   }

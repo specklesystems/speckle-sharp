@@ -21,12 +21,10 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
-  
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\DesktopUI3\DUI3\DUI3.csproj" />
   </ItemGroup>
-  
   
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="92.0.260" />
@@ -34,31 +32,21 @@
     <PackageReference Include="Revit_All_Main_Versions_API_x64" Version="2023.0.0" />
   </ItemGroup>
 
-
-
-  <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2023;$(AppData)\Autodesk\Revit\Addins\2023\SpeckleRevit2DUI3" />
+  <Target AfterTargets="Clean" Name="CleanAddinFolder">
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2023;$(AppData)\Autodesk\Revit\Addins\2023\SpeckleRevit2DUI3;" />
+    <Delete Files="$(AppData)\Autodesk\Revit\Addins\2023\SpeckleRevit2DUI3.addin"></Delete>
   </Target>
   <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
-    <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
+    <CallTarget Condition="'$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
   </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      <SourceDLLs Include="$(TargetDir)\**\*.*" Exclude="$(TargetDir)*.addin" />
       <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
-  <Target Name="AfterBuildRelease">
-    <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*" />
-      <SourceManifest Include="$(TargetDir)*.addin" />
-    </ItemGroup>
-    <Message Importance="High" Text="RELEASE copy from $(TargetDir) to $(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\" />
-    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
-  </Target>
+  
   <Import Project="..\RevitDUI3Shared\RevitDUI3Shared.projitems" Label="Shared" />
 </Project>

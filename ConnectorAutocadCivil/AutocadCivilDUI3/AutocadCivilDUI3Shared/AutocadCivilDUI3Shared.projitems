@@ -18,6 +18,7 @@
       <DependentUpon>DUI3PanelWebView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\ApplicationIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentModelStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TransactionContext.cs" />

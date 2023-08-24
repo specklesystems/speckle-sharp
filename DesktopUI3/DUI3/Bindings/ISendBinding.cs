@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DUI3.Models;
 using DUI3.Utils;
 
@@ -11,20 +11,20 @@ public interface ISendBinding : IBinding
   /// <summary>
   /// Instructs the host app to start sending this model.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void Send(string modelId);
+  /// <param name="modelCardId"></param>
+  public void Send(string modelCardId);
   
   /// <summary>
   /// Instructs the host app to  cancel the sending for a given model.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void CancelSend(string modelId);
+  /// <param name="modelCardId"></param>
+  public void CancelSend(string modelCardId);
   
   /// <summary>
   /// Highlights the objects attached to this sender in the host application.
   /// </summary>
-  /// <param name="modelId"></param>
-  public void Highlight(string modelId); 
+  /// <param name="modelCardId"></param>
+  public void Highlight(string modelCardId); 
 }
 
 public static class SendBindingEvents
@@ -32,6 +32,7 @@ public static class SendBindingEvents
   public static readonly string FiltersNeedRefresh = "filtersNeedRefresh";
   public static readonly string SendersExpired = "sendersExpired";
   public static readonly string SenderProgress = "senderProgress";
+  public static readonly string CreateVersion = "createVersion";
 }
 
 public class SenderModelCard : ModelCard
@@ -73,4 +74,21 @@ public abstract class DirectSelectionSendFilter : DiscriminatedObject, ISendFilt
   public List<string> SelectedObjectIds { get; set; } = new List<string>();
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
+}
+
+public class SenderProgress
+{
+  public string Id { get; set; }
+  public string Status { get; set; }
+  public double Progress { get; set; }
+}
+
+public class CreateVersion
+{
+  public string AccountId { get; set; }
+  public string ModelId { get; set; }
+  public string ProjectId { get; set; }
+  public string ObjectId { get; set; }
+  public string Message { get; set; }
+  public string SourceApplication { get; set; }
 }

@@ -1,17 +1,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using Rhino;
+using Rhino.DocObjects;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
+using Objects.Converter.RhinoGh;
+using DUI3.Utils;
+using Layer = Rhino.DocObjects.Layer;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
 public class SendBinding : ISendBinding
 {
   public string Name { get; set; } = "sendBinding";
+  private static string ApplicationIdKey = "applicationId";
   public IBridge Parent { get; set; }
   private DocumentModelStore _store;
 
@@ -59,10 +69,90 @@ public class SendBinding : ISendBinding
     };
   }
 
-  public void Send(string modelId)
+  public IDictionary<Layer, IEnumerable<object>> GroupByLayer(IEnumerable<RhinoObject> rhinoObjects, RhinoDoc doc)
   {
-    var model = _store.GetModelById(modelId) as SenderModelCard;
-    throw new System.NotImplementedException();
+    IDictionary<Layer, IEnumerable<RhinoObject>> objsByLayer = rhinoObjects.GroupBy(o => doc.Layers.FindIndex(o.Attributes.LayerIndex)).ToDictionary(key => key.Key, value => value.AsEnumerable());
+    IDictionary<Layer, List<object>> objectByNestedLayers = new Dictionary<Layer, List<object>>();
+
+    foreach (KeyValuePair<Layer, IEnumerable<RhinoObject>> layerWithObjects in objsByLayer)
+    {
+      Layer layer = layerWithObjects.Key;
+      List<object> objects = layerWithObjects.Value as List<object>;
+
+      List<Layer> layerTree = new List<Layer>() { layer };
+
+      bool layerIsChild = layer.ParentLayerId != Guid.Empty;
+      while (layerIsChild)
+      {
+        layer = doc.Layers.FindId(layer.ParentLayerId);
+        layerIsChild = layer.ParentLayerId != Guid.Empty;
+        layerTree.Add(layer);
+      }
+
+      IDictionary<Layer, List<object>> nestedLayers = new Dictionary<Layer, List<object>>();
+      foreach (Layer node in layerTree)
+      {
+        nestedLayers = new Dictionary<Layer, List<object>>();
+        nestedLayers.Add(node, objects);
+        objects = new List<object> { node };
+      }
+    }
+
+    return objectByNestedLayers.ToDictionary(k => k.Key, v => v.Value.AsEnumerable());
+  }
+
+  private async void SendProgress(string modelCardId, double progress)
+  {
+    var args = new SenderProgress()
+    {
+      Id = modelCardId,
+      Status = progress == 1 ? "Completed" : "Converting",
+      Progress = progress
+    };
+    Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
+  }
+
+  public async void Send(string modelCardId)
+  {
+    RhinoDoc doc = RhinoDoc.ActiveDoc;
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    
+    // Collect RhinoObjects from their guids
+    IEnumerable<RhinoObject> rhinoObjects = objectsIds.Select((id) => doc.Objects.FindId(new Guid(id)));
+
+    ConverterRhinoGh converter = new ConverterRhinoGh();
+    converter.SetContextDocument(doc);
+
+    var convertedObjects = new List<Base>();
+    int count = 0;
+    foreach (RhinoObject rhinoObject in rhinoObjects)
+    {
+      count++;
+      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
+      double progress = (double)count / objectsIds.Count;
+      Dispatcher.CurrentDispatcher.Invoke(() =>
+      {
+        Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
+      }, DispatcherPriority.Background);
+    }
+
+    var commitObject = new Base();
+    commitObject["@elements"] = convertedObjects;
+
+    var projectId = model.ProjectId;
+    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
+    var client = new Client(account);
+
+    var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
+
+    var objectId = await Operations.Send(
+      commitObject,
+      transports,
+      disposeTransports: true
+    ).ConfigureAwait(true);
+
+    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }
 
   public void CancelSend(string modelId)
