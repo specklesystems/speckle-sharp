@@ -5,18 +5,12 @@ using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
-namespace ConnectorRevit.Revit
+namespace RevitSharedResources.Models
 {
   public class ErrorEater : IFailuresPreprocessor
   {
-    private ISpeckleConverter _converter;
     private List<Exception> _exceptions = new();
     public Dictionary<string, int> CommitErrorsDict = new();
-
-    public ErrorEater(ISpeckleConverter converter)
-    {
-      _converter = converter;
-    }
 
     public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
     {
