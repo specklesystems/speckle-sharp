@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Objects.Geometry;
 
@@ -269,4 +270,58 @@ public static class MeshTriangulationHelper
       z *= scale;
     }
   }
+
+  /// <summary>
+  /// Removes duplicate vertices in <paramref name="Mesh"/>.
+  /// </summary>
+  /// <param name="mesh">The mesh to edit.</param>
+  public static void MeshRemoveDuplicatePts(this Mesh mesh)
+  {
+    // get all indices from the faces List, that indicate the shape(0,3,4 etc), not the vertext index
+    List<int> facesCounts = new List<int>();
+    int f = 0;
+    while (f < mesh.faces.Count)
+    {
+      var index = mesh.faces[f];
+      facesCounts.Add(f);
+      f += index + 1;
+    }
+
+    // create new lists for mesh components 
+    List<double> newVertices = new List<double>();
+    List<int> newColors = new List<int>();
+    List<int> newFaces = mesh.faces;
+    int i = 0;
+    var pointTuplesList = new List<(double, double, double)>();
+    while (i < mesh.vertices.Count)
+    {
+      var pt = (mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2]);
+      var NewPtIndex = new int(); // new index for the current vertex 
+      if (!pointTuplesList.Contains(pt))
+      {
+        pointTuplesList.Add(pt);
+        newVertices.AddRange(new List<double>() { mesh.vertices[i], mesh.vertices[i + 1], mesh.vertices[i + 2] });
+        newColors.Add(mesh.colors[i / 3]);
+        NewPtIndex = pointTuplesList.Count - 1;
+      }
+      else
+      {
+        NewPtIndex = pointTuplesList.FindIndex(s => s == pt);
+      }
+      // find current vertex in Faces list; replace with new index 
+      int[] occurences = newFaces.Select((b, k) => b == i / 3 ? k : -1).Where(k => k != -1).ToArray();
+      foreach (var facesIndex in occurences)
+      {
+        if (!facesCounts.Contains(facesIndex))
+        {
+          newFaces[facesIndex] = NewPtIndex;
+        }
+      }
+      i += 3;
+    }
+    mesh.colors = newColors;
+    mesh.vertices = newVertices;
+    mesh.faces = newFaces;
+  }
+
 }

@@ -24,6 +24,7 @@ namespace Objects.Converter.Revit
       foreach (Geometry.Mesh displayMesh in speckleSurface.displayValue)
       {
         // triangulate the mesh first since revit Topography can only accept triangulated meshes
+        displayMesh.MeshRemoveDuplicatePts();
         displayMesh.TriangulateMesh();
 
         pts.Capacity += displayMesh.vertices.Count / 3;
