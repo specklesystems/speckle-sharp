@@ -9,11 +9,11 @@ namespace Objects.Converter.AutocadCivil
   {
     private IAsteelObject FilerObjectToSpeckle(ASSlab slab, List<string> notes)
     {
-      AsteelGrating asteelGrating = new AsteelGrating();
+      AsteelSlab asteelSlab = new AsteelSlab();
 
-      SetDisplayValue(asteelGrating, slab);
+      SetDisplayValue(asteelSlab, slab);
 
-      return asteelGrating;
+      return asteelSlab;
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Speckle.Core.Models;
 
@@ -9,9 +9,14 @@ public partial class ConverterNavisworks
 {
   /// Methods included to satisfy the ISpeckleConverter requirements
   /// No actual receiving exists
-  /// 
+  ///
   /// <inheritdoc />
   public object ConvertToNative(Base @object)
+  {
+    throw new NotImplementedException();
+  }
+
+  public object ConvertToNativeDisplayable(Base @object)
   {
     throw new NotImplementedException();
   }
@@ -24,6 +29,11 @@ public partial class ConverterNavisworks
 
   /// <inheritdoc />
   public bool CanConvertToNative(Base @object)
+  {
+    throw new NotImplementedException();
+  }
+
+  public bool CanConvertToNativeDisplayable(Base @object)
   {
     throw new NotImplementedException();
   }

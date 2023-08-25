@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
-using ConnectorRevit.Storage;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
-using Revit.Async;
+using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
@@ -26,7 +25,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
-        await RevitTask.RunAsync(
+        await APIContext.Run(
           app =>
           {
             using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
@@ -325,7 +324,7 @@ namespace Speckle.ConnectorRevit.UI
 
         var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
 
-        await RevitTask.RunAsync(app =>
+        await APIContext.Run(app =>
         {
 
           using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))

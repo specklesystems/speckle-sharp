@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using RevitSharedResources.Interfaces;
 
 namespace Objects.Converter.Revit
 {
@@ -70,12 +71,22 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public double ScaleToSpeckle(double value)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
+      return ScaleToSpeckleStatic(value, RevitLengthTypeId);
+    }
+    
+    public static double ScaleToSpeckleStatic(double value, DisplayUnitType unitType)
+    {
+      return UnitUtils.ConvertFromInternalUnits(value, unitType);
+    }
+
+    public static double ScaleToSpeckle(double value, DisplayUnitType unitType, IRevitDocumentAggregateCache cache)
+    {
+      return ScaleToSpeckleStatic(value, unitType);
     }
 
     public static double ScaleToSpeckle(double value, string units)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, UnitsToNative(units));
+      return ScaleToSpeckleStatic(value, UnitsToNative(units));
     }
 
     private string UnitsToSpeckle(DisplayUnitType type)
@@ -122,6 +133,10 @@ namespace Objects.Converter.Revit
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }
     }
+    private static string UnitsToNativeString(DisplayUnitType unitType)
+    {
+      return unitType.ToString();
+    }
 #else
     public string ModelUnits
     {
@@ -149,26 +164,52 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public double ScaleToNative(double value, string units)
+    public static double ScaleToNative(double value, string units)
     {
       if (string.IsNullOrEmpty(units))
         return value;
-      return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
+      return UnitUtils.ConvertToInternalUnits(value, UnitsToNative(units));
     }
 
+    private double? defaultConversionFactor;
     public double ScaleToSpeckle(double value)
     {
-      return ScaleToSpeckle(value, RevitLengthTypeId);
+      defaultConversionFactor ??= ScaleToSpeckle(1, RevitLengthTypeId);
+      return value * defaultConversionFactor.Value;
     }
     
+    /// <summary>
+    /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="units"></param>
+    /// <returns></returns>
     public static double ScaleToSpeckle(double value, string units)
     {
-      return ScaleToSpeckle(value, new ForgeTypeId(UnitsToNative(units)));
+      return ScaleToSpeckleStatic(value, UnitsToNative(units));
     }
-
-    public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
+    
+    /// <summary>
+    /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="forgeTypeId"></param>
+    /// <returns></returns>
+    public static double ScaleToSpeckleStatic(double value, ForgeTypeId forgeTypeId)
     {
       return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+    }
+
+    public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
+    {
+      return value * cache
+        .GetOrInitializeEmptyCacheOfType<double>(out _)
+        .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
+    }
+    
+    public double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
+    {
+      return ScaleToSpeckle(value, forgeTypeId, revitDocumentAggregateCache);
     }
 
     //new units api introduced in 2021, bleah
@@ -188,20 +229,28 @@ namespace Objects.Converter.Revit
       throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
     }
 
-    public static string UnitsToNative(string units)
+    public static string UnitsToNativeString(string units)
+    {
+      return UnitsToNativeString(UnitsToNative(units));
+    }
+    public static string UnitsToNativeString(ForgeTypeId forgeTypeId)
+    {
+      return forgeTypeId.TypeId;
+    }
+    public static ForgeTypeId UnitsToNative(string units)
     {
       switch (units)
       {
         case Speckle.Core.Kits.Units.Millimeters:
-          return UnitTypeId.Millimeters.TypeId;
+          return UnitTypeId.Millimeters;
         case Speckle.Core.Kits.Units.Centimeters:
-          return UnitTypeId.Centimeters.TypeId;
+          return UnitTypeId.Centimeters;
         case Speckle.Core.Kits.Units.Meters:
-          return UnitTypeId.Meters.TypeId;
+          return UnitTypeId.Meters;
         case Speckle.Core.Kits.Units.Inches:
-          return UnitTypeId.Inches.TypeId;
+          return UnitTypeId.Inches;
         case Speckle.Core.Kits.Units.Feet:
-          return UnitTypeId.Feet.TypeId;
+          return UnitTypeId.Feet;
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }

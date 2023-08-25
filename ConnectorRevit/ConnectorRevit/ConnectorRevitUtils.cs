@@ -63,7 +63,7 @@ namespace Speckle.ConnectorRevit
 
     #region extension methods
 
-    public static List<Element> SupportedElements(this Document doc, IRevitDocumentAggregateCache cache)
+    public static List<Element> GetSupportedElements(this Document doc, IRevitDocumentAggregateCache cache)
     {
       //get elements of supported categories
       var categoryIds = cache
@@ -84,7 +84,7 @@ namespace Speckle.ConnectorRevit
       return elements;
     }
 
-    public static List<Element> SupportedTypes(this Document doc, IRevitDocumentAggregateCache cache)
+    public static List<Element> GetSupportedTypes(this Document doc, IRevitDocumentAggregateCache cache)
     {
       //get element types of supported categories
       var categoryIds = cache

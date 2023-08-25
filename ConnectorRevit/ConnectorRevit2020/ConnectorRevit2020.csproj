@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" IncludeAssets="compile;build" PrivateAssets="all" />
-    <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />

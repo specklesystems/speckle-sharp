@@ -11,8 +11,8 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -34,6 +34,8 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
+      using var ctx = RevitConverterState.Push();
+
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
@@ -49,14 +51,14 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
+      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
         throw new InvalidOperationException(
           "There are zero objects to send. Please use a filter, or set some via selection."
         );
-
+      converter.SetContextDocument(revitDocumentAggregateCache);
       converter.SetContextObjects(
         selectedObjects
           .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
@@ -67,7 +69,9 @@ namespace Speckle.ConnectorRevit.UI
 
       if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
       {
-        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
+        throw new Exception(
+          $"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object."
+        );
       }
       else
       {
@@ -80,8 +84,8 @@ namespace Speckle.ConnectorRevit.UI
       var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
-      await RevitTask
-        .RunAsync(_ =>
+      await APIContext
+        .Run(() =>
         {
           using var _d0 = LogContext.PushProperty("converterName", converter.Name);
           using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
@@ -147,6 +151,8 @@ namespace Speckle.ConnectorRevit.UI
         })
         .ConfigureAwait(false);
 
+      revitDocumentAggregateCache.InvalidateAll();
+
       progress.Report.Merge(converter.Report);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -211,10 +217,20 @@ namespace Speckle.ConnectorRevit.UI
       return false;
     }
 
-    private static void YieldToUIThread(TimeSpan delay)
+    private DateTime timerStarted = DateTime.MinValue;
+
+    private void YieldToUIThread(TimeSpan delay)
     {
+      var currentTime = DateTime.UtcNow;
+
+      if (currentTime.Subtract(timerStarted) < TimeSpan.FromSeconds(.15))
+      {
+        return;
+      }
+
       using CancellationTokenSource s = new(delay);
       Dispatcher.UIThread.MainLoop(s.Token);
+      timerStarted = currentTime;
     }
 
     private static Base ConvertToSpeckle(Element revitElement, ISpeckleConverter converter)

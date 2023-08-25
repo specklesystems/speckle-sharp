@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CSiAPIv1;
@@ -9,6 +9,9 @@ using Speckle.Core.Models;
 using StructuralUtilities.PolygonMesher;
 using System.Linq;
 using Objects.Structural.CSI.Geometry;
+using Objects.Structural.Properties;
+using Objects.Geometry;
+using ConverterCSIShared.Extensions;
 
 namespace Objects.Converter.CSI
 {
@@ -150,81 +153,35 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {area.name} in the model");
         return;
       }
-      string name = "";
-      int numPoints = area.topology.Count();
-      List<double> X = new List<double> { };
-      List<double> Y = new List<double> { };
-      List<double> Z = new List<double> { };
 
-
-      foreach (Node point in area.topology)
+      var propName = CreateOrGetProp(area.property, out bool isExactMatch);
+      if (!isExactMatch)
       {
-        X.Add(ScaleToNative(point.basePoint.x, point.basePoint.units));
-        Y.Add(ScaleToNative(point.basePoint.y, point.basePoint.units));
-        Z.Add(ScaleToNative(point.basePoint.z, point.basePoint.units));
+        appObj.Update(logItem: $"Area section for object could not be created and was replaced with section named \"{propName}\"");
       }
-      double[] x = X.ToArray();
-      double[] y = Y.ToArray();
-      double[] z = Z.ToArray();
-      int? success = null;
 
-      if (area.property is CSIOpening)
+      var name = CreateAreaFromPoints(area.topology.Select(t => t.basePoint), propName, out var success);
+      SetAreaProperties(name, area);
+
+      if (area.openings?.Count > 0)
       {
-        Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
-        success = Model.AreaObj.SetOpening(name, true);
-      }
-      else if (area.property != null)
-      {
-        int numberNames = 0;
-        string[] propNames = null;
-        Model.PropArea.GetNameList(ref numberNames, ref propNames);
-        if (propNames.Contains(area.property.name))
+        foreach (var opening in area.openings)
         {
-          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+          string openingName;
+          try
+          {
+            openingName = CreateAreaFromPoints(opening.ToPoints(), propName, out _);
+          }
+          catch
+          {
+            openingName = string.Empty;
+          }
+          var openingSuccess = Model.AreaObj.SetOpening(openingName, true);
+          if (openingSuccess != 0)
+          {
+            appObj.Update(logItem: $"unable to create opening with id {opening.id}");
+          }
         }
-        else if (area.property is CSIProperty2D prop2D)
-        {
-          Property2DToNative(prop2D, ref appObj);
-          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
-        }
-        else if (propNames.Any())
-        {
-          // TODO: support creating of Property2D
-          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propNames.First());
-          appObj.Update(logItem: $"Area section for object could not be created and was replaced with section named \"{propNames.First()}\"");
-        }
-        else
-          appObj.Update(logItem: "Cannot create area. There are no area sections defined in the project file");
-      }
-      else
-      {
-        success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
-      }
-      if (!string.IsNullOrEmpty(area.name))
-      {
-        if (GetAllAreaNames(Model).Contains(area.name))
-          area.name = area.id;
-        Model.AreaObj.ChangeName(name, area.name);
-        name = area.name;
-      }
-
-      if (area is CSIElement2D)
-      {
-        var CSIarea = (CSIElement2D)area;
-        double[] values = null;
-        if (CSIarea.modifiers != null)
-        {
-          values = CSIarea.modifiers;
-        }
-
-        Model.AreaObj.SetModifiers(CSIarea.name, ref values);
-        Model.AreaObj.SetLocalAxes(CSIarea.name, CSIarea.orientationAngle);
-        Model.AreaObj.SetPier(CSIarea.name, CSIarea.PierAssignment);
-        Model.AreaObj.SetSpandrel(CSIarea.name, CSIarea.SpandrelAssignment);
-        if (CSIarea.CSIAreaSpring != null) { Model.AreaObj.SetSpringAssignment(CSIarea.name, CSIarea.CSIAreaSpring.name); }
-
-        if (CSIarea.DiaphragmAssignment != null) { Model.AreaObj.SetDiaphragm(CSIarea.name, CSIarea.DiaphragmAssignment); }
-
       }
 
       if (!string.IsNullOrEmpty(area.applicationId))
@@ -239,28 +196,103 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Failed);
     }
 
+    private string CreateAreaFromPoints(IEnumerable<Point> points, string propName, out int success)
+    {
+      var name = "";
+      int numPoints = 0;
+      var X = new List<double> { };
+      var Y = new List<double> { };
+      var Z = new List<double> { };
+
+      foreach (var point in points)
+      {
+        X.Add(ScaleToNative(point.x, point.units));
+        Y.Add(ScaleToNative(point.y, point.units));
+        Z.Add(ScaleToNative(point.z, point.units));
+        numPoints++;
+      }
+
+      if (Math.Abs(X.Last() - X.First()) < .01 
+        && Math.Abs(Y.Last() - Y.First()) < .01
+        && Math.Abs(Z.Last() - Z.First()) < .01
+      )
+      {
+        X.RemoveAt(X.Count- 1);
+        Y.RemoveAt(Y.Count- 1);
+        Z.RemoveAt(Z.Count- 1);
+        numPoints--;
+      }
+      var x = X.ToArray();
+      var y = Y.ToArray();
+      var z = Z.ToArray();
+
+      success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propName);
+
+      return name;
+    }
+
+    private string CreateOrGetProp(Property2D property, out bool isExactMatch)
+    {
+      int numberNames = 0;
+      string[] propNames = null;
+      Model.PropArea.GetNameList(ref numberNames, ref propNames);
+      isExactMatch = true;
+
+      if (propNames.Contains(property?.name))
+      {
+        return property.name;
+      }
+      else if (property is CSIProperty2D prop2D)
+      {
+        try
+        {
+          return Property2DToNative(prop2D);
+        }
+        catch (Exception)
+        {
+          // something failed... replace the type
+        }
+      }
+
+      isExactMatch = false;
+      if (propNames.Any())
+      {
+        // TODO: support creating of Property2D
+        return propNames.First();
+      }
+
+      throw new Exception("Cannot create area because there aren't any area sections defined in the project file");
+    }
+
     public void SetAreaProperties(string name, Element2D area)
     {
-
-      Model.AreaObj.SetProperty(name, area.property.name);
-      if (area is CSIElement2D)
+      if (!string.IsNullOrEmpty(area.name))
       {
-        var CSIarea = (CSIElement2D)area;
+        if (GetAllAreaNames(Model).Contains(area.name))
+          area.name = area.id;
+        Model.AreaObj.ChangeName(name, area.name);
+        name = area.name;
+      }
+
+      Model.AreaObj.SetProperty(name, area.property?.name);
+      if (area is CSIElement2D csiArea)
+      {
         double[] values = null;
-        if (CSIarea.modifiers != null)
+        if (csiArea.modifiers != null)
         {
-          values = CSIarea.modifiers;
+          values = csiArea.modifiers;
         }
 
-        Model.AreaObj.SetModifiers(CSIarea.name, ref values);
-        Model.AreaObj.SetLocalAxes(CSIarea.name, CSIarea.orientationAngle);
-        Model.AreaObj.SetPier(CSIarea.name, CSIarea.PierAssignment);
-        Model.AreaObj.SetSpandrel(CSIarea.name, CSIarea.SpandrelAssignment);
-        if (CSIarea.CSIAreaSpring != null) { Model.AreaObj.SetSpringAssignment(CSIarea.name, CSIarea.CSIAreaSpring.name); }
+        Model.AreaObj.SetModifiers(csiArea.name, ref values);
+        Model.AreaObj.SetLocalAxes(csiArea.name, csiArea.orientationAngle);
+        Model.AreaObj.SetPier(csiArea.name, csiArea.PierAssignment);
+        Model.AreaObj.SetSpandrel(csiArea.name, csiArea.SpandrelAssignment);
+        if (csiArea.CSIAreaSpring != null) { Model.AreaObj.SetSpringAssignment(csiArea.name, csiArea.CSIAreaSpring.name); }
 
-        if (CSIarea.DiaphragmAssignment != null) { Model.AreaObj.SetDiaphragm(CSIarea.name, CSIarea.DiaphragmAssignment); }
-
-
+        if (csiArea.DiaphragmAssignment != null) 
+        { 
+          Model.AreaObj.SetDiaphragm(csiArea.name, csiArea.DiaphragmAssignment); 
+        }
       }
     }
     public Element2D AreaToSpeckle(string name)

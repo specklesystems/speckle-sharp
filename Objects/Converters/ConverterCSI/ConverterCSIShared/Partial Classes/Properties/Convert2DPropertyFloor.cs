@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CSiAPIv1;
@@ -11,7 +11,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void FloorPropertyToNative(CSIProperty2D property2D, ref ApplicationObject appObj)
+    public string FloorPropertyToNative(CSIProperty2D property2D)
     {
       int? success = null;
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
@@ -90,10 +90,8 @@ namespace Objects.Converter.CSI
         }
       }
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property2D.name}");
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success == 0) return property2D.name;
+      throw new Exception($"Unable to create floor property from CSIProperty2D with Id {property2D.id}");
     }
 
     public eShellType shellType(CSIProperty2D property)

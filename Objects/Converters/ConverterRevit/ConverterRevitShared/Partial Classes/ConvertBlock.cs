@@ -1,15 +1,13 @@
-﻿using System;
+﻿#nullable enable
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-
 using Speckle.Core.Models;
-
 using Objects.Geometry;
-using Objects.Other;
+using Speckle.Core.Models.Extensions;
 using BlockInstance = Objects.Other.BlockInstance;
 using Transform = Objects.Other.Transform;
 using Mesh = Objects.Geometry.Mesh;
@@ -18,7 +16,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject BlockInstanceToNative(BlockInstance instance, Transform transform = null)
+    public ApplicationObject? BlockInstanceToNative(BlockInstance instance, Transform? transform = null)
     {
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
@@ -52,6 +50,7 @@ namespace Objects.Converter.Revit
       var meshes = new List<Mesh>();
       var curves = new List<DB.Curve>();
       var blocks = new List<BlockInstance>();
+
       foreach (var geometry in instance.typedDefinition.geometry)
       {
         switch (geometry)
@@ -65,6 +64,7 @@ namespace Objects.Converter.Revit
               appObj.Update(logItem: $"Could not convert block brep to native, using mesh fallback value instead");
               meshes.AddRange(tbrep.displayValue);
             }
+
             break;
           case Mesh mesh:
             mesh.TransformTo(transform, out Mesh tmesh);
@@ -86,9 +86,22 @@ namespace Objects.Converter.Revit
             {
               appObj.Update(logItem: $"Could not convert block curve to native: {e.Message}");
             }
+
             break;
           case BlockInstance blk:
             blocks.Add(blk);
+            break;
+          case { }:
+            var displayValue = geometry.GetDetachedProp("displayValue") as IList ?? Array.Empty<object>();
+            foreach (var d in displayValue)
+            {
+              if (d is Mesh m)
+              {
+                m.TransformTo(transform, out Mesh tm);
+                meshes.Add(tm);
+              }
+              //TODO: Ideally, we'd support more geometry types here too, but this switch statement is getting messy!
+            }
             break;
         }
       }
@@ -97,7 +110,8 @@ namespace Objects.Converter.Revit
       int skippedBreps = breps.Count;
       breps.ForEach(o =>
       {
-        var ds = TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
+        var ds =
+          TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
@@ -108,12 +122,13 @@ namespace Objects.Converter.Revit
       int skippedMeshes = meshes.Count;
       meshes.ForEach(o =>
       {
-        var ds = TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
+        var ds =
+          TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
           skippedMeshes--;
-        } 
+        }
       });
 
       int skippedCurves = curves.Count;
@@ -150,16 +165,25 @@ namespace Objects.Converter.Revit
       try
       {
         group = Doc.Create.NewGroup(ids);
-        group.GroupType.Name = $"SpeckleBlock_{RemoveProhibitedCharacters(instance.typedDefinition.name)}_{instance.applicationId ?? instance.id}";
-        string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
-        if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
+        group.GroupType.Name =
+          $"SpeckleBlock_{RemoveProhibitedCharacters(instance.typedDefinition.name)}_{instance.applicationId ?? instance.id}";
+        string skipped =
+          $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
+        if (!string.IsNullOrEmpty(skipped))
+          appObj.Update(logItem: $"Skipped {skipped}");
         var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-        appObj.Update(status: state, createdId: group.UniqueId, convertedItem: group, logItem: $"Assigned name: {group.GroupType.Name}");
+        appObj.Update(
+          status: state,
+          createdId: group.UniqueId,
+          convertedItem: group,
+          logItem: $"Assigned name: {group.GroupType.Name}"
+        );
       }
       catch
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Group could not be created");
       }
+
       return appObj;
     }
   }

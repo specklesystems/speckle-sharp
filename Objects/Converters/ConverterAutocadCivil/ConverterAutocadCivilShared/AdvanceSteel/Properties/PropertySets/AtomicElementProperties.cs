@@ -44,7 +44,7 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "item number", nameof(AtomicElement.ItemNumber));
       InsertProperty(dictionary, "specific gravity", nameof(AtomicElement.SpecificGravity));
       InsertProperty(dictionary, "coating", nameof(AtomicElement.Coating));
-      InsertProperty(dictionary, "number of holes", nameof(AtomicElement.NumberOfHoles));
+      InsertProperty(dictionary, "holes number", nameof(AtomicElement.NumberOfHoles));
       InsertProperty(dictionary, "is attached part", nameof(AtomicElement.IsAttachedPart));
       InsertProperty(dictionary, "is main part", nameof(AtomicElement.IsMainPart));
       InsertProperty(dictionary, "main part prefix", nameof(AtomicElement.MainPartPrefix));
@@ -63,12 +63,18 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "model quantity", nameof(AtomicElement.GetQuantityInModel));
       InsertProperty(dictionary, "singlePart position", nameof(AtomicElement.GetSinglePartPositionNumber));
       InsertProperty(dictionary, "features number", nameof(AtomicElement.NumFeatures));
+      InsertCustomProperty(dictionary, "cuts number", nameof(AtomicElementProperties.GetCutsNumber), null);
       InsertCustomProperty(dictionary, "balance point", nameof(AtomicElementProperties.GetBalancePoint), null);
       InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null, eUnitType.kDistance);
       InsertCustomProperty(dictionary, "numbering - valid single part", nameof(AtomicElementProperties.HasValidSPNumber), null);
       InsertCustomProperty(dictionary, "numbering - valid main part", nameof(AtomicElementProperties.HasValidMPNumber), null);
 
       return dictionary;
+    }
+
+    private static double GetCutsNumber(AtomicElement atomicElement)
+    {
+      return atomicElement.NumFeatures() - atomicElement.NumberOfHoles;
     }
 
     private static Point3d GetBalancePoint(AtomicElement atomicElement)

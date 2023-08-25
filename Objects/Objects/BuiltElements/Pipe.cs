@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -37,7 +38,7 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitPipe : Pipe
+  public class RevitPipe : Pipe, IHasMEPConnectors
   {
     public RevitPipe() { }
 
@@ -70,6 +71,7 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
+    public List<RevitMEPConnector> Connectors { get; set; } = new();
   }
 
   public class RevitFlexPipe : RevitPipe

@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Geometry;
@@ -45,6 +45,7 @@ namespace Objects.Converter.CSI
     public Model SpeckleModel { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
+
     /// <summary>
     /// <para>To know which objects are already in the model. These are *mostly* elements that are in the model before the receive operation starts, but certain names will be added for objects that may be referenced by other elements such as load patterns and load cases.</para>
     /// <para> The keys are typically GUIDS and the values are exclusively names. It is easier to retrieve names, and names are typically used by the api, however GUIDS are more stable and can't be changed in the user interface. Some items (again load patterns and load combinations) don't have GUIDs so those just store the name value twice. </para>
@@ -63,8 +64,11 @@ namespace Objects.Converter.CSI
     /// </summary>
     public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
+
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
@@ -77,7 +81,7 @@ namespace Objects.Converter.CSI
         throw new Exception("operation setting was not set before calling converter.SetContextDocument");
 
       if (Settings["operation"] == "receive")
-      { 
+      {
         ExistingObjectGuids = GetAllGuids(Model);
         // TODO: make sure we are setting the load patterns before we import load combinations
       }
@@ -88,6 +92,7 @@ namespace Objects.Converter.CSI
       else
         throw new Exception("operation setting was not set to \"send\" or \"receive\"");
     }
+
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -117,7 +122,13 @@ namespace Objects.Converter.CSI
         case BuiltElements.Brace _:
         case BuiltElements.Column _:
           return true;
-      };
+      }
+      ;
+      return false;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
       return false;
     }
 
@@ -155,7 +166,7 @@ namespace Objects.Converter.CSI
           LinkPropertyToNative(o, ref appObj);
           break;
         case CSIProperty2D o:
-          Property2DToNative(o, ref appObj);
+          Property2DToNative(o);
           break;
         case CSISpringProperty o:
           SpringPropertyToNative(o, ref appObj);
@@ -202,16 +213,24 @@ namespace Objects.Converter.CSI
           break;
         #endregion
         default:
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Skipped not supported type: {@object.GetType()}");
+          appObj.Update(
+            status: ApplicationObject.State.Skipped,
+            logItem: $"Skipped not supported type: {@object.GetType()}"
+          );
           break;
       }
 
-      // log 
+      // log
       var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? Report.ReportObjects[@object.id] : null;
       if (reportObj != null && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return appObj;
+    }
+
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
     }
 
     public List<object> ConvertToNative(List<Base> objects)
@@ -334,64 +353,64 @@ namespace Objects.Converter.CSI
           returnObject = LoadPatternToSpeckle(name);
           Report.Log($"Created Loading Pattern");
           break;
-          //case "ColumnResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "BeamResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "BraceResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "PierResults":
-          //    returnObject = PierResultSet1dToSpeckle(name);
-          //    break;
-          //case "SpandrelResults":
-          //    returnObject = SpandrelResultSet1dToSpeckle(name);
-          //    break;
-          //case "GridSys":
-          //    returnObject = GridSysToSpeckle(name);
-          //    break;
-          //case "Combo":
-          //    returnObject = ComboToSpeckle(name);
-          //    break;
-          //case "DesignSteel":
-          //    returnObject = DesignSteelToSpeckle(name);
-          //    break;
-          //case "DeisgnConcrete":
-          //    returnObject = DesignConcreteToSpeckle(name);
-          //    break;
-          //case "Story":
-          //    returnObject = StoryToSpeckle(name);
-          //    break;
-          //case "Diaphragm":
-          //    returnObject = DiaphragmToSpeckle(name);
-          //    break;
-          //case "PierLabel":
-          //    returnObject = PierLabelToSpeckle(name);
-          //    break;
-          //case "PropAreaSpring":
-          //    returnObject = PropAreaSpringToSpeckle(name);
-          //    break;
-          //case "PropLineSpring":
-          //    returnObject = PropLineSpringToSpeckle(name);
-          //    break;
-          //case "PropPointSpring":
-          //    returnObject = PropPointSpringToSpeckle(name);
-          //    break;
-          //case "SpandrelLabel":
-          //    returnObject = SpandrelLabelToSpeckle(name);
-          //    break;
-          //case "PropTendon":
-          //    returnObject = PropTendonToSpeckle(name);
-          //    break;
-          //case "PropLink":
-          //    returnObject = PropLinkToSpeckle(name);
-          //    break;
-          //default:
-          //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
-          //    returnObject = null;
-          //    break;
+        //case "ColumnResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "BeamResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "BraceResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "PierResults":
+        //    returnObject = PierResultSet1dToSpeckle(name);
+        //    break;
+        //case "SpandrelResults":
+        //    returnObject = SpandrelResultSet1dToSpeckle(name);
+        //    break;
+        //case "GridSys":
+        //    returnObject = GridSysToSpeckle(name);
+        //    break;
+        //case "Combo":
+        //    returnObject = ComboToSpeckle(name);
+        //    break;
+        //case "DesignSteel":
+        //    returnObject = DesignSteelToSpeckle(name);
+        //    break;
+        //case "DeisgnConcrete":
+        //    returnObject = DesignConcreteToSpeckle(name);
+        //    break;
+        //case "Story":
+        //    returnObject = StoryToSpeckle(name);
+        //    break;
+        //case "Diaphragm":
+        //    returnObject = DiaphragmToSpeckle(name);
+        //    break;
+        //case "PierLabel":
+        //    returnObject = PierLabelToSpeckle(name);
+        //    break;
+        //case "PropAreaSpring":
+        //    returnObject = PropAreaSpringToSpeckle(name);
+        //    break;
+        //case "PropLineSpring":
+        //    returnObject = PropLineSpringToSpeckle(name);
+        //    break;
+        //case "PropPointSpring":
+        //    returnObject = PropPointSpringToSpeckle(name);
+        //    break;
+        //case "SpandrelLabel":
+        //    returnObject = SpandrelLabelToSpeckle(name);
+        //    break;
+        //case "PropTendon":
+        //    returnObject = PropTendonToSpeckle(name);
+        //    break;
+        //case "PropLink":
+        //    returnObject = PropLinkToSpeckle(name);
+        //    break;
+        //default:
+        //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
+        //    returnObject = null;
+        //    break;
       }
 
       // send the object out with the same appId that it came in with for updating purposes

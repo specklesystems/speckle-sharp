@@ -4,25 +4,22 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
-using Objects.BuiltElements;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
-using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -141,6 +138,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception ex)
           {
+            SpeckleLog.Logger.Error(ex, ex.Message);
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
           }
         }
@@ -194,45 +192,6 @@ namespace Objects.Converter.Revit
       return ids;
     }
 
-    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
-    {
-      if (@base == null)
-        return appObj;
-
-      //we used to use "elements" but have now switched to "@elements"
-      //this extra check is for backwards compatibility
-      var nestedElements = @base["elements"] ?? @base["@elements"];
-      if (nestedElements == null)
-        return appObj;
-
-      CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
-      {
-        if (!CanConvertToNative(obj))
-        {
-          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-          continue;
-        }
-
-        try
-        {
-          var res = ConvertToNative(obj);
-          if (res is ApplicationObject apl)
-            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-        }
-        catch (Exception e)
-        {
-          appObj.Update(
-            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
-          );
-          continue;
-        }
-        CurrentHostElement = host; // set this again in case this is a deeply hosted element
-      }
-      CurrentHostElement = null; // unset the current host element.
-      return appObj;
-    }
-
     #endregion
 
     #region parameters
@@ -248,33 +207,20 @@ namespace Objects.Converter.Revit
     /// potential conflicts when setting them back on the element</param>
     public void GetAllRevitParamsAndIds(Base speckleElement, DB.Element revitElement, List<string> exclusions = null)
     {
-      var instParams = GetElementParams(revitElement, false, exclusions);
-      var typeParams = speckleElement is Level ? null : GetTypeParams(revitElement); //ignore type props of levels..!
       var allParams = new Dictionary<string, Parameter>();
+      AddElementParamsToDict(revitElement, allParams, false, exclusions);
 
-      if (instParams != null)
-        instParams
-          .ToList()
-          .ForEach(x =>
-          {
-            if (!allParams.ContainsKey(x.Key))
-              allParams.Add(x.Key, x.Value);
-          });
+      var elementType = revitElement.Document.GetElement(revitElement.GetTypeId());
+      AddElementParamsToDict(
+        speckleElement is Level ? null : elementType, //ignore type props of levels..!
+        allParams,
+        true,
+        exclusions
+      );
 
-      if (typeParams != null)
-        typeParams
-          .ToList()
-          .ForEach(x =>
-          {
-            if (!allParams.ContainsKey(x.Key))
-              allParams.Add(x.Key, x.Value);
-          });
-
+      Base paramBase = new();
       //sort by key
-      allParams = allParams.OrderBy(x => x.Key).ToDictionary(x => x.Key, x => x.Value);
-      Base paramBase = new Base();
-
-      foreach (var kv in allParams)
+      foreach (var kv in allParams.OrderBy(x => x.Key))
       {
         try
         {
@@ -314,42 +260,40 @@ namespace Objects.Converter.Revit
         speckleElement["materialQuantities"] = qs;
     }
 
-    //private List<string> alltimeExclusions = new List<string> {
-    //  "ELEM_CATEGORY_PARAM" };
-    private Dictionary<string, Parameter> GetTypeParams(DB.Element element)
-    {
-      var elementType = element.Document.GetElement(element.GetTypeId());
-
-      if (elementType == null || elementType.Parameters == null)
-      {
-        return new Dictionary<string, Parameter>();
-      }
-      return GetElementParams(elementType, true);
-    }
-
-    private Dictionary<string, Parameter> GetElementParams(
+    private void AddElementParamsToDict(
       DB.Element element,
+      Dictionary<string, Parameter> paramDict,
       bool isTypeParameter = false,
       List<string> exclusions = null
     )
     {
-      exclusions = (exclusions != null) ? exclusions : new List<string>();
+      if (element == null)
+        return;
 
-      //exclude parameters that don't have a value and those pointing to other elements as we don't support them
-      var revitParameters = element.Parameters
-        .Cast<DB.Parameter>()
-        .Where(
-          x => x.HasValue && x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))
-        )
-        .ToList();
+      exclusions ??= new();
+      using var parameters = element.Parameters;
+      foreach (DB.Parameter param in parameters)
+      {
+        // exclude parameters that don't have a value and those pointing to other elements as we don't support them
+        if (param.StorageType == StorageType.ElementId || !param.HasValue)
+        {
+          continue;
+        }
 
-      //exclude parameters that failed to convert
-      var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter)).Where(x => x != null);
+        var internalName = GetParamInternalName(param);
+        if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
+        {
+          continue;
+        }
 
-      return speckleParameters
-        .GroupBy(x => x.applicationInternalName)
-        .Select(x => x.First())
-        .ToDictionary(x => x.applicationInternalName, x => x);
+        var speckleParam = ParameterToSpeckle(
+          param,
+          isTypeParameter,
+          paramInternalName: internalName,
+          cache: revitDocumentAggregateCache
+        );
+        paramDict[internalName] = speckleParam;
+      }
     }
 
     /// <summary>
@@ -367,11 +311,11 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
+      var value = GetParameterValue(rp, rp.Definition, out _, unitsOverride);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
-      return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
+      return (T)value;
     }
 
     /// <summary>
@@ -381,64 +325,66 @@ namespace Objects.Converter.Revit
     /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
-    /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
     private static Parameter ParameterToSpeckle(
       DB.Parameter rp,
       bool isTypeParameter = false,
-      string unitsOverride = null
+      string unitsOverride = null,
+      string paramInternalName = null,
+      IRevitDocumentAggregateCache cache = null
     )
     {
+      var definition = rp.Definition;
       var sp = new Parameter
       {
-        name = rp.Definition.Name,
-        applicationInternalName = GetParamInternalName(rp),
+        name = definition.Name,
+        applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = rp.GetUnityTypeString() //eg UT_Length
+        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
+      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
+      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
+      sp.applicationUnit = appUnit;
+      return sp;
+    }
+
+    private static object GetParameterValue(
+      DB.Parameter rp,
+      Definition definition,
+      out string unitType,
+      string unitsOverride = null,
+      IRevitDocumentAggregateCache cache = null,
+#if REVIT2020
+      DisplayUnitType unitTypeId = default
+#else
+      ForgeTypeId unitTypeId = null
+#endif
+    )
+    {
+      unitType = null;
       switch (rp.StorageType)
       {
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          try
+          if (unitsOverride == null)
           {
-            sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
-            sp.value =
-              unitsOverride == null
-                ? RevitVersionHelper.ConvertFromInternalUnits(val, rp)
-                : ScaleToSpeckle(val, unitsOverride);
+            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
           }
-          catch
-          {
-            sp.value = val;
-          }
-          break;
-        case StorageType.Integer:
-#if REVIT2020 || REVIT2021 || REVIT2022
-          switch (rp.Definition.ParameterType)
-          {
-            case ParameterType.YesNo:
-              sp.value = Convert.ToBoolean(rp.AsInteger());
-              break;
-            default:
-              sp.value = rp.AsInteger();
-              break;
-          }
-#else
-          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            sp.value = Convert.ToBoolean(rp.AsInteger());
           else
-            sp.value = rp.AsInteger();
-#endif
-          break;
+          {
+            unitTypeId = UnitsToNative(unitsOverride);
+          }
+          unitType = UnitsToNativeString(unitTypeId);
+          return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
+        case StorageType.Integer:
+          var intVal = rp.AsInteger();
+          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
+
         case StorageType.String:
-          sp.value = rp.AsString();
-          if (sp.value == null)
-            sp.value = rp.AsValueString();
-          break;
+          return rp.AsString();
         // case StorageType.ElementId:
         //   // NOTE: if this collects too much garbage, maybe we can ignore it
         //   var id = rp.AsElementId();
@@ -449,10 +395,41 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
-      return sp;
     }
 
     #endregion
+
+    /// <summary>
+    /// Method for getting symbol when parameter is NOT validated to be a double or int
+    /// </summary>
+    /// <param name="parameter"></param>
+    /// <param name="definition"></param>
+    /// <param name="cache"></param>
+    /// <param name="forgeTypeId"></param>
+    /// <returns></returns>
+    public static string GetSymbolUnit(
+      DB.Parameter parameter,
+      DB.Definition definition,
+      IRevitDocumentAggregateCache cache,
+#if REVIT2020
+      out DisplayUnitType unitTypeId
+#else
+      out ForgeTypeId unitTypeId
+#endif
+    )
+    {
+      unitTypeId = default;
+      if (parameter.StorageType != StorageType.Double)
+      {
+        return null;
+      }
+
+      unitTypeId = parameter.GetUnitTypeId();
+      var unitTypeIdCopy = unitTypeId;
+      return cache
+        .GetOrInitializeEmptyCacheOfType<string>(out _)
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
+    }
 
     /// <summary>
     /// </summary>
@@ -511,7 +488,7 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
 
@@ -680,7 +657,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
@@ -962,6 +939,76 @@ namespace Objects.Converter.Revit
 
       return templatePath;
     }
+
+    public IEnumerable<(string, Element, Connector)> GetRevitConnectorsThatConnectToSpeckleConnector(
+      RevitMEPConnector revitMEPConnector,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache
+    )
+    {
+      var origin = PointToNative(revitMEPConnector.origin);
+
+      foreach (var connectedId in revitMEPConnector.connectedConnectorIds)
+      {
+        var connectorAppId = connectedId.Split('.').First();
+        var convertedElement = receivedObjectsCache.GetCreatedObjectsFromConvertedId(connectorAppId).FirstOrDefault();
+
+        var existingRevitConnector = convertedElement
+          ?.GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
+          .FirstOrDefault();
+
+        yield return (connectorAppId, convertedElement, existingRevitConnector);
+      }
+    }
+
+    public void CreateSystemConnections(
+      IEnumerable<RevitMEPConnector> revitMEPConnectors,
+      Element revitEl,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache
+    )
+    {
+      foreach (var speckleConnector in revitMEPConnectors)
+      {
+        var origin = PointToNative(speckleConnector.origin);
+        var newRevitConnector = revitEl
+          .GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
+          .FirstOrDefault();
+
+        if (newRevitConnector == null)
+          continue;
+
+        foreach (
+          var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
+            speckleConnector,
+            receivedObjectsCache
+          )
+        )
+        {
+          existingConnector?.ConnectTo(newRevitConnector);
+        }
+      }
+    }
+
+    public T TryInSubtransaction<T>(Func<T> func, Action<Exception> catchFunc)
+    {
+      using var subtransaction = new SubTransaction(Doc);
+      subtransaction.Start();
+
+      T returnValue = default;
+      try
+      {
+        returnValue = func();
+        subtransaction.Commit();
+      }
+      catch (Exception ex)
+      {
+        subtransaction.RollBack();
+        Doc.Regenerate();
+        catchFunc(ex);
+      }
+      return returnValue;
+    }
     #endregion
 
     private List<ICurve> GetProfiles(DB.SpatialElement room)
@@ -1071,6 +1118,17 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
+      DB.Material material = GetMEPSystemRevitMaterial(e);
+      return material != null ? RenderMaterialToSpeckle(material) : null;
+    }
+
+    /// <summary>
+    /// Retrieves the revit material from assigned system type for mep elements
+    /// </summary>
+    /// <param name="e">Revit element to parse</param>
+    /// <returns>Revit material of the element, null if no material found</returns>
+    public static DB.Material GetMEPSystemRevitMaterial(Element e)
+    {
       ElementId idType = ElementId.InvalidElementId;
 
       if (e is DB.MEPCurve dt)
@@ -1105,10 +1163,7 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
-        RenderMaterial material = RenderMaterialToSpeckle(mat);
-
-        return material;
+        return e.Document.GetElement(mechType.MaterialId) as DB.Material;
       }
 
       return null;

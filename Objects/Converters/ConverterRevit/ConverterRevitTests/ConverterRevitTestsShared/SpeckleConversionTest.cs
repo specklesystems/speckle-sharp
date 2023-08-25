@@ -1,9 +1,8 @@
 using Autodesk.Revit.DB;
 using ConnectorRevit.Storage;
 using DesktopUI2.Models;
-using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
-using Revit.Async;
+using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Models;
 using System;
@@ -30,10 +29,11 @@ namespace ConverterRevitTests
     {
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(fixture.SourceDoc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
 
       foreach (var elem in fixture.RevitElements)
       {
-        await RevitTask.RunAsync(() =>
+        await APIContext.Run(() =>
         {
           var spkElem = converter.ConvertToSpeckle(elem);
 
@@ -42,20 +42,6 @@ namespace ConverterRevitTests
         });
       }
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
-    }
-
-    internal void NativeToSpeckleBase()
-    {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.SourceDoc);
-
-      foreach (var elem in fixture.RevitElements)
-      {
-        var spkElem = kit.ConvertToSpeckle(elem);
-        Assert.NotNull(spkElem);
-      }
-
-      Assert.Equal(0, kit.Report.ConversionErrorsCount);
     }
 
     /// <summary>
@@ -130,27 +116,26 @@ namespace ConverterRevitTests
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
 
       var spkElems = new List<Base>();
-      await RevitTask
-        .RunAsync(() =>
+      await APIContext.Run(() =>
+      {
+        foreach (var elem in elements)
         {
-          foreach (var elem in elements)
-          {
-            bool isAlreadyConverted = ConnectorBindingsRevit.GetOrCreateApplicationObject(
-              elem,
-              converter.Report,
-              out ApplicationObject reportObj
-            );
-            if (isAlreadyConverted)
-              continue;
+          bool isAlreadyConverted = ConnectorBindingsRevit.GetOrCreateApplicationObject(
+            elem,
+            converter.Report,
+            out ApplicationObject reportObj
+          );
+          if (isAlreadyConverted)
+            continue;
 
-            var conversionResult = converter.ConvertToSpeckle(elem);
-            if (conversionResult != null)
-            {
-              spkElems.Add(conversionResult);
-            }
+          var conversionResult = converter.ConvertToSpeckle(elem);
+          if (conversionResult != null)
+          {
+            spkElems.Add(conversionResult);
           }
-        })
-        .ConfigureAwait(false);
+        }
+      })
+      .ConfigureAwait(false);
 
       converter = new ConverterRevit();
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;
@@ -163,6 +148,7 @@ namespace ConverterRevitTests
         ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
       };
       converter.SetContextDocument(new StreamStateCache(state));
+      converter.SetContextDocument(new ConvertedObjectsCache());
 
       var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
       var appObjs = new List<ApplicationObject>();
@@ -282,12 +268,14 @@ namespace ConverterRevitTests
     {
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(fixture.SourceDoc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       var spkElems = fixture.Selection.Select(x => converter.ConvertToSpeckle(x) as Base).ToList();
 
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
       converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
+      converter.SetContextDocument(new ConvertedObjectsCache());
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(

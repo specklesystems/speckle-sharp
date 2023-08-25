@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
+using RevitSharedResources.Models;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -16,9 +17,9 @@ namespace Objects.Converter.Revit
     private ApplicationObject DataTableToNative(DataTable speckleTable)
     {
       var docObj = GetExistingElementByApplicationId(speckleTable.applicationId);
-      var appObj = new ApplicationObject(speckleTable.id, speckleTable.speckle_type) 
-      { 
-        applicationId = speckleTable.applicationId 
+      var appObj = new ApplicationObject(speckleTable.id, speckleTable.speckle_type)
+      {
+        applicationId = speckleTable.applicationId
       };
 
       if (docObj == null)
@@ -28,7 +29,9 @@ namespace Objects.Converter.Revit
 
       if (docObj is not ViewSchedule revitSchedule)
       {
-        throw new Exception($"Existing element with UniqueId = {docObj.UniqueId} is of the type {docObj.GetType()}, not of the expected type, DB.ViewSchedule");
+        throw new Exception(
+          $"Existing element with UniqueId = {docObj.UniqueId} is of the type {docObj.GetType()}, not of the expected type, DB.ViewSchedule"
+        );
       }
 
       var speckleIndexToRevitParameterDataMap = new Dictionary<int, RevitParameterData>();
@@ -37,8 +40,7 @@ namespace Objects.Converter.Revit
         AddToIndexToScheduleMap(columnInfo, speckleTable, speckleIndexToRevitParameterDataMap);
       }
 
-      var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
-        .ToElementIds();
+      var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id).ToElementIds();
       foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
         UpdateDataInRow(rowInfo, originalTableIds, revitSchedule, speckleTable, speckleIndexToRevitParameterDataMap);
@@ -48,7 +50,11 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private static void AddToIndexToScheduleMap(ScheduleColumnIterationInfo info, DataTable speckleTable, Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap)
+    private static void AddToIndexToScheduleMap(
+      ScheduleColumnIterationInfo info,
+      DataTable speckleTable,
+      Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap
+    )
     {
       var fieldInt = info.field.ParameterId.IntegerValue;
 
@@ -65,8 +71,14 @@ namespace Objects.Converter.Revit
           paramId = paramIdLong;
         }
 
-        if (paramId == null) { continue; }
-        if (paramId != fieldInt) { continue; }
+        if (paramId == null)
+        {
+          continue;
+        }
+        if (paramId != fieldInt)
+        {
+          continue;
+        }
 
         incomingColumnIndex = i;
         break;
@@ -91,14 +103,31 @@ namespace Objects.Converter.Revit
       speckleIndexToRevitParameterDataMap.Add(incomingColumnIndex, scheduleData);
     }
 
-    private void UpdateDataInRow(ScheduleRowIterationInfo info, ICollection<ElementId> originalTableIds, ViewSchedule revitSchedule, DataTable speckleTable, Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap)
+    private void UpdateDataInRow(
+      ScheduleRowIterationInfo info,
+      ICollection<ElementId> originalTableIds,
+      ViewSchedule revitSchedule,
+      DataTable speckleTable,
+      Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap
+    )
     {
-      var elementIds = ElementApplicationIdsInRow(info.rowIndex, info.section, originalTableIds, revitSchedule, info.tableSection).ToList();
+      var elementIds = ElementApplicationIdsInRow(
+          info.rowIndex,
+          info.section,
+          originalTableIds,
+          revitSchedule,
+          info.tableSection
+        )
+        .ToList();
 
-      if (elementIds.Count == 0) { return; }
+      if (elementIds.Count == 0)
+      {
+        return;
+      }
 
-      var speckleObjectRowIndex = speckleTable.rowMetadata
-        .FindIndex(b => b["RevitApplicationIds"] is IList list && list.Contains(elementIds.First()));
+      var speckleObjectRowIndex = speckleTable.rowMetadata.FindIndex(
+        b => b["RevitApplicationIds"] is IList list && list.Contains(elementIds.First())
+      );
 
       foreach (var kvp in speckleIndexToRevitParameterDataMap)
       {
@@ -123,7 +152,10 @@ namespace Objects.Converter.Revit
               break;
             }
           }
-          if (element == null) { return; }
+          if (element == null)
+          {
+            return;
+          }
 
           var elementType = Doc.GetElement(element.GetTypeId());
           TrySetParam(elementType, revitScheduleData.Parameter, newValue, "none");
@@ -147,13 +179,9 @@ namespace Objects.Converter.Revit
     #region ToSpeckle
     private DataTable ScheduleToSpeckle(DB.ViewSchedule revitSchedule)
     {
-      var speckleTable = new DataTable
-      {
-        applicationId = revitSchedule.UniqueId
-      };
+      var speckleTable = new DataTable { applicationId = revitSchedule.UniqueId };
 
-      var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
-          .ToElementIds();
+      var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id).ToElementIds();
 
       var skippedIndicies = new Dictionary<SectionType, List<int>>();
       var columnHeaders = new List<string>();
@@ -169,7 +197,7 @@ namespace Objects.Converter.Revit
         AddHeaderRow(speckleTable, columnHeaders);
       }
 
-       return speckleTable;
+      return speckleTable;
     }
 
     private void AddHeaderRow(DataTable speckleTable, List<string> headers)
@@ -177,7 +205,12 @@ namespace Objects.Converter.Revit
       speckleTable.AddRow(metadata: new Base(), index: speckleTable.headerRowIndex, headers.ToArray());
     }
 
-    private void DefineColumnMetadata(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, List<string> columnHeaders)
+    private void DefineColumnMetadata(
+      ViewSchedule revitSchedule,
+      DataTable speckleTable,
+      ICollection<ElementId> originalTableIds,
+      List<string> columnHeaders
+    )
     {
       Element firstElement = null;
       Element firstType = null;
@@ -193,7 +226,14 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private static void AddColumnMetadataToDataTable(ScheduleColumnIterationInfo info, ViewSchedule revitSchedule, DataTable speckleTable, List<string> columnHeaders, Element firstType, Element firstElement)
+    private static void AddColumnMetadataToDataTable(
+      ScheduleColumnIterationInfo info,
+      ViewSchedule revitSchedule,
+      DataTable speckleTable,
+      List<string> columnHeaders,
+      Element firstType,
+      Element firstElement
+    )
     {
       // add column header to list for potential future use
       columnHeaders.Add(info.field.ColumnHeading);
@@ -224,15 +264,23 @@ namespace Objects.Converter.Revit
       else
       {
         var scheduleCategory = (BuiltInCategory)revitSchedule.Definition.CategoryId.IntegerValue;
-        SpeckleLog.Logger.Warning("Schedule of category, {scheduleCategory}, contains field of type {builtInParameter} which has an unsupported field type, {fieldType}",
+        SpeckleLog.Logger.Warning(
+          "Schedule of category, {scheduleCategory}, contains field of type {builtInParameter} which has an unsupported field type, {fieldType}",
           scheduleCategory,
           builtInParameter,
-          info.field.FieldType.ToString());
+          info.field.FieldType.ToString()
+        );
       }
       speckleTable.DefineColumn(columnMetadata);
     }
 
-    private void PopulateDataTableRows(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, int[] columnHeaderIndexArray, List<string> columnHeaders)
+    private void PopulateDataTableRows(
+      ViewSchedule revitSchedule,
+      DataTable speckleTable,
+      ICollection<ElementId> originalTableIds,
+      int[] columnHeaderIndexArray,
+      List<string> columnHeaders
+    )
     {
       var minHeaderIndex = columnHeaderIndexArray.Min();
       var maxHeaderIndex = columnHeaderIndexArray.Max();
@@ -281,17 +329,23 @@ namespace Objects.Converter.Revit
     {
       if (!revitSchedule.Definition.ShowHeaders)
       {
-        return RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
-        {
-          revitSchedule.Definition.ShowHeaders = true;
-          return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
-        }, Doc);
+        return TransactionManager.ExecuteInTemporaryTransaction(
+          () =>
+          {
+            revitSchedule.Definition.ShowHeaders = true;
+            return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
+          },
+          revitSchedule.Document
+        );
       }
 
       return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
     }
 
-    private static int[] GetHeaderIndexArrayFromScheduleWithHeaders(ViewSchedule revitSchedule, List<string> columnHeaders)
+    private static int[] GetHeaderIndexArrayFromScheduleWithHeaders(
+      ViewSchedule revitSchedule,
+      List<string> columnHeaders
+    )
     {
       string nextCellValue = null;
       var headerIndexArray = new int[columnHeaders.Count];
@@ -328,14 +382,29 @@ namespace Objects.Converter.Revit
       return Enumerable.Repeat(0, columnHeaders.Count).ToArray();
     }
 
-    private bool AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, List<string> rowValues, int rowIndex)
+    private bool AddRowToSpeckleTable(
+      ViewSchedule revitSchedule,
+      DataTable speckleTable,
+      ICollection<ElementId> originalTableIds,
+      SectionType tableSection,
+      TableSectionData section,
+      List<string> rowValues,
+      int rowIndex
+    )
     {
       if (!rowValues.Where(s => !string.IsNullOrEmpty(s)).Any())
       {
         return false;
       }
       var metadata = new Base();
-      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection).ToList();
+      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(
+          rowIndex,
+          section,
+          originalTableIds,
+          revitSchedule,
+          tableSection
+        )
+        .ToList();
 
       try
       {
@@ -350,7 +419,12 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private static List<string> GetRowValues(ViewSchedule revitSchedule, SectionType tableSection, int columnCount, int rowIndex)
+    private static List<string> GetRowValues(
+      ViewSchedule revitSchedule,
+      SectionType tableSection,
+      int columnCount,
+      int rowIndex
+    )
     {
       var rowData = new List<string>();
       for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
@@ -362,15 +436,22 @@ namespace Objects.Converter.Revit
     }
     #endregion
 
-    public static IEnumerable<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, ICollection<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule, SectionType tableSection)
+    public static IEnumerable<string> ElementApplicationIdsInRow(
+      int rowNumber,
+      TableSectionData section,
+      ICollection<ElementId> orginialTableIds,
+      DB.ViewSchedule revitSchedule,
+      SectionType tableSection
+    )
     {
-      var remainingIdsInRow = RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
-      {
-        section.RemoveRow(rowNumber);
-        return new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id)
-          .ToElementIds()
-          .ToList();
-      }, revitSchedule.Document);
+      var remainingIdsInRow = TransactionManager.ExecuteInTemporaryTransaction(
+        () =>
+        {
+          section.RemoveRow(rowNumber);
+          return new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id).ToElementIds().ToList();
+        },
+        revitSchedule.Document
+      );
 
       // the section must be recomputed here because of our hacky row deleting trick
       var table = revitSchedule.GetTableData();
@@ -383,7 +464,8 @@ namespace Objects.Converter.Revit
 
       foreach (var id in orginialTableIds)
       {
-        if (remainingIdsInRow.Contains(id)) continue;
+        if (remainingIdsInRow.Contains(id))
+          continue;
         yield return revitSchedule.Document.GetElement(id).UniqueId;
       }
     }
@@ -395,6 +477,7 @@ namespace Objects.Converter.Revit
     public BuiltInParameter Parameter;
     public bool IsTypeParam;
   }
+
   public struct ScheduleRowIterationInfo
   {
     public SectionType tableSection;
@@ -403,6 +486,7 @@ namespace Objects.Converter.Revit
     public int columnCount;
     public int masterRowIndex;
   }
+
   public struct ScheduleColumnIterationInfo
   {
     public ScheduleField field;
@@ -410,9 +494,13 @@ namespace Objects.Converter.Revit
     public int columnCount;
     public int numHiddenFields;
   }
+
   public static class RevitScheduleUtils
   {
-    public static IEnumerable<ScheduleRowIterationInfo> ScheduleRowIteration(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies = null)
+    public static IEnumerable<ScheduleRowIterationInfo> ScheduleRowIteration(
+      ViewSchedule revitSchedule,
+      Dictionary<SectionType, List<int>> skippedIndicies = null
+    )
     {
       var masterRowIndex = 0;
 
@@ -431,16 +519,20 @@ namespace Objects.Converter.Revit
 
         for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-          yield return new ScheduleRowIterationInfo 
+          yield return new ScheduleRowIterationInfo
           {
             tableSection = tableSection,
             section = section,
-            rowIndex = rowIndex, 
+            rowIndex = rowIndex,
             columnCount = columnCount,
             masterRowIndex = masterRowIndex
           };
 
-          if (skippedIndicies == null || !skippedIndicies.TryGetValue(tableSection, out var indicies) || !indicies.Contains(rowIndex))
+          if (
+            skippedIndicies == null
+            || !skippedIndicies.TryGetValue(tableSection, out var indicies)
+            || !indicies.Contains(rowIndex)
+          )
           {
             // this "skippedIndicies" dict contains the indicies that contain only empty values
             // these values were skipped when adding them to the DataTable, so the indicies of the revitSchedule
@@ -452,6 +544,7 @@ namespace Objects.Converter.Revit
         }
       }
     }
+
     public static IEnumerable<ScheduleColumnIterationInfo> ScheduleColumnIteration(ViewSchedule revitSchedule)
     {
       var scheduleFieldOrder = revitSchedule.Definition.GetFieldOrder();
@@ -477,47 +570,6 @@ namespace Objects.Converter.Revit
           numHiddenFields = numHiddenFields
         };
       }
-    }
-
-    public static TResult ExecuteInTemporaryTransaction<TResult>(Func<TResult> function, Document doc)
-    {
-      TResult result = default;
-      if (!doc.IsModifiable)
-      {
-        using var t = new Transaction(doc, "This Transaction Will Never Get Committed");
-        try
-        {
-          t.Start();
-          result = function();
-        }
-        catch
-        {
-          // ignore because we're just going to rollback
-        }
-        finally
-        {
-          t.RollBack();
-        }
-      }
-      else
-      {
-        using var t = new SubTransaction(doc);
-        try
-        {
-          t.Start();
-          result = function();
-        }
-        catch
-        {
-          // ignore because we're just going to rollback
-        }
-        finally
-        {
-          t.RollBack();
-        }
-      }
-
-      return result;
     }
   }
 }

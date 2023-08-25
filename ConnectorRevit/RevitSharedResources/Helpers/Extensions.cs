@@ -50,19 +50,34 @@ public static class Extensions
   }
 
   /// <summary>
+  /// Checks if a category is supported when sending
+  /// See: https://docs.google.com/spreadsheets/d/1By5RM0PCMw-M1ZVubXD3bF1FVz3Uk4u4vBrRUhJzWXw/edit?usp=sharing
+  /// </summary>
+  /// <param name="category">The category to check support for</param>
+  /// <returns>True if the CategoryType is Model, AnalyticalModel or Internal</returns>
+  public static bool IsCategorySupported(this Category category)
+  {
+    if (category.CategoryType == CategoryType.Model ||
+        category.CategoryType == CategoryType.AnalyticalModel ||
+        category.CategoryType == CategoryType.Internal ||
+        category.Id.IntegerValue == -2000220) // Grids
+      return true;
+
+    return false;
+  }
+
+  /// <summary>
   /// Checks if an element's category is supported for conversion
   /// </summary>
   /// <param name="e">The element to check support for</param>
-  /// <returns>True if the element's category is contained in <see cref="Categories.SupportedBuiltInCategories"/>, false otherwise.</returns>
+  /// <returns>True if the element's category is supported and if the element is not view dependent</returns>
   public static bool IsElementSupported(this Element e)
   {
-    if (e.Category == null)
-      return false;
-    if (e.ViewSpecific)
+    if (e.Category == null ||
+        e.ViewSpecific ||
+        !IsCategorySupported(e.Category))
       return false;
 
-    if (Categories.SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
-      return true;
-    return false;
+    return true;
   }
 }

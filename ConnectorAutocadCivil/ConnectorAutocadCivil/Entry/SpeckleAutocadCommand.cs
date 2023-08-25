@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -32,6 +33,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
   {
     #region Avalonia parent window
     [DllImport("user32.dll", SetLastError = true)]
+    [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
     const int GWL_HWNDPARENT = -8;
     #endregion

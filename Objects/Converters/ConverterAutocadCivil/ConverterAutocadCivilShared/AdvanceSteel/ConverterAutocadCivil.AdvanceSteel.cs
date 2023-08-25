@@ -76,6 +76,12 @@ namespace Objects.Converter.AutocadCivil
       @base["area unit"] = UnitArea;
       @base["volume unit"] = UnitVolume;
 
+      var objectHandleHierarchy = StructureUtils.GetObjectHandleHierarchy();
+      if (objectHandleHierarchy.ContainsKey(filerObject.Handle))
+      {
+        @base["hierarchy"] = objectHandleHierarchy[filerObject.Handle];
+      }
+
       return @base;
     }
 
