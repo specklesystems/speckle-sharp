@@ -14,7 +14,7 @@ GS::ErrCode GetDataCommand::ExportClassificationsAndProperties (const API_Elemen
 
 	{
 		GS::UniString typeName;
-		err = Utility::GetTypeNameFromElementType(elem.header, typeName);
+		err = Utility::GetLocalizedElementTypeName (elem.header, typeName);
 		if (err != NoError)
 			return err;
 		

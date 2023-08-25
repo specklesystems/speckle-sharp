@@ -92,6 +92,34 @@ namespace Archicad.Launcher
           Name = "Everything",
           Icon = "CubeScan",
           Description = "Sends all supported elements and project information."
+        },
+        new ListSelectionFilter
+        {
+          Slug = "elementType",
+          Name = "Element Type",
+          Icon = "Category",
+          Values = new List<string>
+          {
+            "Wall",
+            "Column",
+            "Beam",
+            "Slab",
+            "Roof",
+            "Shell",
+            "Stair",
+            "Railing",
+            "Curtain Wall",
+            "Door",
+            "Window",
+            "Skylight",
+            "Opening",
+            "Zone",
+            "Mesh",
+            "Morph",
+            "Object",
+            "Lamp"
+          },
+          Description = "Adds all elements with the selected Element Types"
         }
       };
     }
