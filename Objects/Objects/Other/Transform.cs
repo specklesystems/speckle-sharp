@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.DoubleNumerics;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -71,18 +71,18 @@ public class Transform : Base
   public Transform(Vector x, Vector y, Vector z, Vector translation)
   {
     matrix = new Matrix4x4(
-      Convert.ToSingle(x.x),
-      Convert.ToSingle(y.x),
-      Convert.ToSingle(z.x),
-      Convert.ToSingle(translation.x),
-      Convert.ToSingle(x.y),
-      Convert.ToSingle(y.y),
-      Convert.ToSingle(z.y),
-      Convert.ToSingle(translation.y),
-      Convert.ToSingle(x.z),
-      Convert.ToSingle(y.z),
-      Convert.ToSingle(z.z),
-      Convert.ToSingle(translation.z),
+      x.x,
+      y.x,
+      z.x,
+      translation.x,
+      x.y,
+      y.y,
+      z.y,
+      translation.y,
+      x.z,
+      y.z,
+      z.z,
+      translation.z,
       0f,
       0f,
       0f,
@@ -152,10 +152,10 @@ public class Transform : Base
       var num = Math.Sqrt(num8 + 1d);
       num = 0.5d / num;
       return new Quaternion(
-        (float)((m12 - m21) * num),
-        (float)((m20 - m02) * num),
-        (float)((m01 - m10) * num),
-        (float)(num * 0.5d)
+        (m12 - m21) * num,
+        (m20 - m02) * num,
+        (m01 - m10) * num,
+        num * 0.5d
       );
     }
     if (m00 >= m11 && m00 >= m22)
@@ -163,10 +163,10 @@ public class Transform : Base
       var num7 = Math.Sqrt(1d + m00 - m11 - m22);
       var num4 = 0.5d / num7;
       return new Quaternion(
-        (float)(0.5d * num7),
-        (float)((m01 + m10) * num4),
-        (float)((m02 + m20) * num4),
-        (float)((m12 - m21) * num4)
+        0.5d * num7,
+        (m01 + m10) * num4,
+        (m02 + m20) * num4,
+        (m12 - m21) * num4
       );
     }
     if (m11 > m22)
@@ -174,19 +174,19 @@ public class Transform : Base
       var num6 = Math.Sqrt(1d + m11 - m00 - m22);
       var num3 = 0.5d / num6;
       return new Quaternion(
-        (float)((m10 + m01) * num3),
-        (float)(0.5d * num6),
-        (float)((m21 + m12) * num3),
-        (float)((m20 - m02) * num3)
+        (m10 + m01) * num3,
+        0.5d * num6,
+        (m21 + m12) * num3,
+        (m20 - m02) * num3
       );
     }
     var num5 = Math.Sqrt(1d + m22 - m00 - m11);
     var num2 = 0.5d / num5;
     return new Quaternion(
-      (float)((m20 + m02) * num2),
-      (float)((m21 + m12) * num2),
-      (float)(0.5d * num5),
-      (float)((m01 - m10) * num2)
+      (m20 + m02) * num2,
+      (m21 + m12) * num2,
+      0.5d * num5,
+      (m01 - m10) * num2
     );
   }
 
@@ -268,29 +268,6 @@ public class Transform : Base
   internal static Matrix4x4 CreateMatrix(double[] value)
   {
     return new Matrix4x4(
-      Convert.ToSingle(value[0]),
-      Convert.ToSingle(value[1]),
-      Convert.ToSingle(value[2]),
-      Convert.ToSingle(value[3]),
-      Convert.ToSingle(value[4]),
-      Convert.ToSingle(value[5]),
-      Convert.ToSingle(value[6]),
-      Convert.ToSingle(value[7]),
-      Convert.ToSingle(value[8]),
-      Convert.ToSingle(value[9]),
-      Convert.ToSingle(value[10]),
-      Convert.ToSingle(value[11]),
-      Convert.ToSingle(value[12]),
-      Convert.ToSingle(value[13]),
-      Convert.ToSingle(value[14]),
-      Convert.ToSingle(value[15])
-    );
-  }
-
-  // Creates a matrix from a float array
-  internal static Matrix4x4 CreateMatrix(float[] value)
-  {
-    return new Matrix4x4(
       value[0],
       value[1],
       value[2],
@@ -307,6 +284,29 @@ public class Transform : Base
       value[13],
       value[14],
       value[15]
+    );
+  }
+
+  // Creates a matrix from a float array
+  internal static Matrix4x4 CreateMatrix(float[] value)
+  {
+    return new Matrix4x4(
+      Convert.ToDouble(value[0]),
+      Convert.ToDouble(value[1]),
+      Convert.ToDouble(value[2]),
+      Convert.ToDouble(value[3]),
+      Convert.ToDouble(value[4]),
+      Convert.ToDouble(value[5]),
+      Convert.ToDouble(value[6]),
+      Convert.ToDouble(value[7]),
+      Convert.ToDouble(value[8]),
+      Convert.ToDouble(value[9]),
+      Convert.ToDouble(value[10]),
+      Convert.ToDouble(value[11]),
+      Convert.ToDouble(value[12]),
+      Convert.ToDouble(value[13]),
+      Convert.ToDouble(value[14]),
+      Convert.ToDouble(value[15])
     );
   }
 

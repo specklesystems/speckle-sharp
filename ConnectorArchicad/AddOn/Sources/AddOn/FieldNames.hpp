@@ -26,6 +26,7 @@ static const char* ApplicationId = "applicationId";
 static const char* ApplicationIds = "applicationIds";
 static const char* ParentElementId = "parentApplicationId";
 static const char* ElementFilter = "elementFilter";
+static const char* FilterBy = "filterBy";
 static const char* ElementType = "elementType";
 static const char* ElementTypes = "elementTypes";
 static const char* Elements = "elements";
