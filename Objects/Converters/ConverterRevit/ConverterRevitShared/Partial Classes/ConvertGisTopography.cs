@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
+using Objects.Utils;
 using Objects.GIS;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+
+using Objects.BuiltElements;
 
 namespace Objects.Converter.Revit
 {
@@ -16,8 +18,15 @@ namespace Objects.Converter.Revit
       var speckleTopography = new Objects.BuiltElements.Topography()
       {
         applicationId = gisTopography.applicationId ??= Guid.NewGuid().ToString(),
-        displayValue = gisTopography.displayValue
-      };
+        displayValue = new List<Geometry.Mesh>()
+    };
+
+      foreach (Geometry.Mesh displayMesh in gisTopography.displayValue)
+      {
+        displayMesh.MeshRemoveDuplicatePts();
+        speckleTopography.displayValue.Add(displayMesh);
+      }
+
 
       return TopographyToNative(speckleTopography);
     }
