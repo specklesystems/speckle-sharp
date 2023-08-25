@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertConnector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDisplayableObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFabricationPart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />

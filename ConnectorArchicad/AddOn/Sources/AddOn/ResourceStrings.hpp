@@ -84,6 +84,7 @@ enum class ElementTypeStringItems {
 };
 
 const GS::UniString& GetElementTypeStringFromResource (const ElementTypeStringItems& resourceItemId);
+const GS::UniString& GetFixElementTypeStringFromResource (const ElementTypeStringItems& resourceItemId);
 
 }
 

@@ -151,4 +151,50 @@ public static class BaseExtensions
   {
     return speckleObject.GetMembers(DynamicBaseMemberType.Instance).ContainsKey(propName) ? propName : $"@{propName}";
   }
+
+  /// <summary>
+  /// Checks if an object "is displayable" i.e. has a displayValue property that is a list of base.
+  /// This is to mirror the selection logic of our viewer package, where any "displayable object" will become
+  /// a single selectable entity.
+  /// </summary>
+  /// <param name="speckleObject">The Base object to check.</param>
+  /// <returns>True if the object is displayable, false otherwise.</returns>
+  public static bool IsDisplayableObject(this Base speckleObject)
+  {
+    return speckleObject.TryGetDisplayValue() != null;
+  }
+
+  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj)
+    where T : Base
+  {
+    var rawDisplayValue = obj["displayValue"] ?? obj["@displayValue"];
+    return rawDisplayValue switch
+    {
+      T b => new List<T> { b },
+      IEnumerable enumerable => enumerable.OfType<T>(),
+      _ => null
+    };
+  }
+
+  public static IEnumerable<Base>? TryGetDisplayValue(this Base obj)
+  {
+    return TryGetDisplayValue<Base>(obj);
+  }
+
+  public static string? TryGetName(this Base obj)
+  {
+    return obj["name"] as string;
+  }
+
+  public static IEnumerable<T>? TryGetParameters<T>(this Base obj)
+    where T : Base
+  {
+    var parameters = (obj["parameters"] ?? obj["@parameters"]) as Base;
+    return parameters?.GetMembers(DynamicBaseMemberType.Dynamic).Values.OfType<T>();
+  }
+
+  public static IEnumerable<Base>? TryGetParameters(this Base obj)
+  {
+    return TryGetParameters<Base>(obj);
+  }
 }
