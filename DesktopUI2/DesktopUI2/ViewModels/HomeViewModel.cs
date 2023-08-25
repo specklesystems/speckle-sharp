@@ -202,12 +202,16 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
           streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
         }
-        catch (Exception e)
+        catch (OperationCanceledException)
         {
-          if (e.InnerException is TaskCanceledException)
+          continue;
+        }
+        catch (Exception ex)
+        {
+          if (ex.InnerException is TaskCanceledException)
             return;
 
-          SpeckleLog.Logger.Error(e, "Could not fetch streams");
+          SpeckleLog.Logger.Error(ex, "Could not fetch streams");
 
           Dispatcher.UIThread.Post(
             () =>
@@ -727,15 +731,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
-
-
     if (streamAccountWrapper != null)
     {
       var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
 
       if (!await streamState.Client.IsStreamAccessible(streamState.StreamId).ConfigureAwait(true))
       {
-        Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+        Dialogs.ShowDialog(
+          "Stream not found",
+          "Please ensure the stream exists and that you have access to it.",
+          DialogIconKind.Error
+        );
         return;
       }
 
@@ -751,16 +757,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
-
-
     if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
     {
-
       try
       {
         if (!await svm.Client.IsStreamAccessible(svm.Stream.id).ConfigureAwait(true))
         {
-          Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+          Dialogs.ShowDialog(
+            "Stream not found",
+            "Please ensure the stream exists and that you have access to it.",
+            DialogIconKind.Error
+          );
           return;
         }
 
@@ -774,7 +781,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         SpeckleLog.Logger.Error(ex, "Failed to open saved stream {exceptionMessage}", ex.Message);
       }
     }
-
   }
 
   public void ToggleDarkThemeCommand()
