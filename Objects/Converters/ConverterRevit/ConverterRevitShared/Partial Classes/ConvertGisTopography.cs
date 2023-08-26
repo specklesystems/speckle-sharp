@@ -15,18 +15,17 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject GisTopographyToNative(GisTopography gisTopography)
     {
+      var meshes = new List<Geometry.Mesh>();
+      foreach (Geometry.Mesh displayMesh in gisTopography.displayValue)
+      {
+        meshes.Add(displayMesh);
+      }
+
       var speckleTopography = new Objects.BuiltElements.Topography()
       {
         applicationId = gisTopography.applicationId ??= Guid.NewGuid().ToString(),
-        displayValue = new List<Geometry.Mesh>()
-    };
-
-      foreach (Geometry.Mesh displayMesh in gisTopography.displayValue)
-      {
-        displayMesh.MeshRemoveDuplicatePts();
-        speckleTopography.displayValue.Add(displayMesh);
-      }
-
+        displayValue = meshes
+      };
 
       return TopographyToNative(speckleTopography);
     }
