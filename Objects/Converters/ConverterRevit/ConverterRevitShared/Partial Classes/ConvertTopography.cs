@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject TopographyToNative(Topography speckleSurface)
+    public ApplicationObject TopographyToNative(Topography speckleSurface, bool keepXYDuplicates = true)
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
       var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
@@ -30,9 +30,9 @@ namespace Objects.Converter.Revit
         pts.Capacity += displayMesh.vertices.Count / 3;
         for (int i = 0; i < displayMesh.vertices.Count; i += 3)
         {
-          // add a check for duplicate points 
+          // add a check for duplicate points, if 'keepXYDuplicates' is false 
           var ptTuple = (displayMesh.vertices[i], displayMesh.vertices[i + 1]);
-          if (!pointTuplesList.Contains(ptTuple))
+          if ( keepXYDuplicates || !pointTuplesList.Contains(ptTuple) )
           {
             pointTuplesList.Add(ptTuple);
             var point = new Geometry.Point(displayMesh.vertices[i], displayMesh.vertices[i + 1], displayMesh.vertices[i + 2], displayMesh.units);

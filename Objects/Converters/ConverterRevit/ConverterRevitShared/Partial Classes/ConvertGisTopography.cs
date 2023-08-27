@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
         displayValue = meshes
       };
 
-      return TopographyToNative(speckleTopography);
+      return TopographyToNative(speckleTopography, false);
     }
   }
 }
