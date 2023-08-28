@@ -166,8 +166,8 @@ namespace Archicad
         return Converters[typeof(Floor)];
       if (elementType.IsSubclassOf(typeof(Roof)))
         return Converters[typeof(Roof)];
-      if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
-        return Converters[typeof(Objects.BuiltElements.Room)];
+      if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))
+        return Converters[typeof(Archicad.Room)];
 
       return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
     }
