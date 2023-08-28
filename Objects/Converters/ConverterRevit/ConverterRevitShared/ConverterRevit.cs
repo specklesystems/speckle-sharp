@@ -465,11 +465,11 @@ namespace Objects.Converter.Revit
         case ApplicationObject appObject:
           if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
           {
-            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+            receivedObjectsCache?.AddConvertedObjects(@base, typedList);
           }
           break;
         case Element element:
-          receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
+          receivedObjectsCache?.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
 
@@ -523,7 +523,7 @@ namespace Objects.Converter.Revit
       }
 
       // Check if object has inner `SpeckleSchema` prop and swap if appropriate
-      @object = SwapGeometrySchemaObject(@object);
+      //@object = SwapGeometrySchemaObject(@object);
 
       switch (@object)
       {

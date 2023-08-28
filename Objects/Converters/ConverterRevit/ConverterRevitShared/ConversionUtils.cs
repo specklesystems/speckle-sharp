@@ -749,14 +749,13 @@ namespace Objects.Converter.Revit
 
     public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
     {
-      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+      if (applicationId == null || ReceiveMode == ReceiveMode.Create)
         yield break;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
+      if (cachedIds == null) yield break;
       foreach (var id in cachedIds)
-      {
         yield return Doc.GetElement(id);
-      }
     }
 
     /// <summary>
