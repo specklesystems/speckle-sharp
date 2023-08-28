@@ -207,7 +207,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             if (state.ReceiveMode == ReceiveMode.Update)
             {
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
-              toRemove.ForEach(o => Doc.Objects.Delete(o));
+              toRemove.ForEach(o => Doc.Objects.Delete(o, false, true));
 
               if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
               {
@@ -282,9 +282,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       return new List<RhinoObject>();
 
     // first try to find the object by app id user string
-    var match =
-      Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList()
-      ?? new List<RhinoObject>();
+    var match = Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true).ToList();
 
     // if nothing is found, look for the geom obj by its guid directly
     if (!match.Any())
