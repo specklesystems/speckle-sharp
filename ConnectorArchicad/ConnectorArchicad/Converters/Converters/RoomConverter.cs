@@ -128,7 +128,7 @@ namespace Archicad.Converters
         speckleRoom.elementType = archicadRoom.elementType;
         speckleRoom.classifications = archicadRoom.classifications;
         speckleRoom.level = archicadRoom.level;
-        speckleRoom.height = archicadRoom.height;
+        speckleRoom.height = archicadRoom.height ?? .0;
         speckleRoom.shape = archicadRoom.shape;
 
         // downdgrade
