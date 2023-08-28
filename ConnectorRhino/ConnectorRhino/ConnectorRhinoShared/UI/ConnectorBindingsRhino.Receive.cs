@@ -334,12 +334,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       if (current is Collection && string.IsNullOrEmpty(containerId))
         return null;
 
+      // get parameters
+      var parameters = current["parameters"] as Base;
+
       //Handle convertable objects
       if (converter.CanConvertToNative(current))
       {
         var appObj = NewAppObj();
         appObj.Convertible = true;
-        StoreObject(current, appObj);
+        StoreObject(current, appObj, parameters);
         return appObj;
       }
 
@@ -348,7 +351,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         .Where(o => current[o] != null)
         ?.Select(o => current[o])
         ?.FirstOrDefault();
-      var parameters = current["parameters"] as Base;
       if (fallbackMember != null)
       {
         var appObj = NewAppObj();
@@ -479,6 +481,25 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // handle user info, including application id
           SetUserInfo(obj, attributes, parent);
 
+          // add revit parameters as user strings
+          var paramId = parent != null ? parent.OriginalId : obj.id;
+          if (StoredObjectParams.ContainsKey(paramId))
+          {
+            var parameters = StoredObjectParams[paramId];
+            foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+            {
+              if (member.Value is Base parameter)
+              {
+                var convertedParameter = converter.ConvertToNative(parameter) as Tuple<string, string>;
+                if (convertedParameter is not null)
+                {
+                  var name = $"{convertedParameter.Item1}({member.Key})";
+                  attributes.SetUserString(name, convertedParameter.Item2);
+                }
+              }
+            }
+          }
+
           Guid id = Doc.Objects.Add(o, attributes);
           if (id == Guid.Empty)
           {
@@ -554,20 +575,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
     catch { }
 
-    // set parameters
-    if (parent != null)
-      if (StoredObjectParams.ContainsKey(parent.OriginalId))
-      {
-        var parameters = StoredObjectParams[parent.OriginalId];
-        foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-          if (member.Value is Base parameter)
-            try
-            {
-              attributes.SetUserString(member.Key, GetStringFromBaseProp(parameter, "value"));
-            }
-            catch { }
-      }
-
     // set user dictionaries
     if (obj[UserDictionary] is Base userDictionary)
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
@@ -639,24 +646,5 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           continue;
       }
     }
-  }
-
-  private string GetStringFromBaseProp(Base @base, string propName)
-  {
-    var val = @base[propName];
-    if (val == null)
-      return null;
-    switch (val)
-    {
-      case double o:
-        return o.ToString();
-      case bool o:
-        return o.ToString();
-      case int o:
-        return o.ToString();
-      case string o:
-        return o;
-    }
-    return null;
   }
 }
