@@ -346,7 +346,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       }
 
       //Handle objects convertable using displayValues
-      var fallbackMember = DefaultTraversal.displayValuePropAliases.Where(o => current[o] != null)?.FirstOrDefault();
+      var fallbackMember = DefaultTraversal.displayValuePropAliases
+        .Where(o => current[o] != null)
+        ?.Select(o => current[o])
+        ?.FirstOrDefault();
       var parameters = current["parameters"] as Base;
       if (fallbackMember != null)
       {
@@ -369,11 +372,28 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       if (context.propName == null)
         return stringBuilder; // this was probably the base commit collection
 
+      // handle elements hosting case from Revit
+      // WARNING: THIS IS REVIT-SPECIFIC CODE!!
+      // We are checking for the `Category` prop on children objects to use as the layer
+      if (
+        DefaultTraversal.elementsPropAliases.Contains(context.propName)
+        && context.parent.current is not Collection
+        && !string.IsNullOrEmpty((string)context.current["category"])
+      )
+      {
+        stringBuilder.Append((string)context.current["category"]);
+        return stringBuilder;
+      }
+
       string objectLayerName = string.Empty;
-      if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+
+      // handle collections case
+      if (context.current is Collection coll && DefaultTraversal.elementsPropAliases.Contains(context.propName))
         objectLayerName = coll.name;
-      else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
+      // handle default case
+      else if (!DefaultTraversal.elementsPropAliases.Contains(context.propName))
         objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+
       LayerIdRecurse(context.parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
         stringBuilder.Append(Layer.PathSeparator);
