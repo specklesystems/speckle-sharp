@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Objects.GIS;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
@@ -693,6 +694,12 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        // gis
+        case PolygonElement o:
+          return PolygonElementToNative(o);
+
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
         case Base b:
           //hacky but the current comments camera is not a Base object
           //used only from DUI and not for normal geometry conversion
@@ -839,6 +846,8 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
         Organization.DataTable _ => true,
+        // GIS
+        PolygonElement _ => true,
         _ => false,
       };
       if (objRes)

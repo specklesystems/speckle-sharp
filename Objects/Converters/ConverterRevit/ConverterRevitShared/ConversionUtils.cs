@@ -5,10 +5,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Organization;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
@@ -20,10 +18,8 @@ using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
-using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -345,11 +341,11 @@ namespace Objects.Converter.Revit
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
-        units = GetSymbolUnit(rp),
+        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
+      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
+      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
       sp.applicationUnit = appUnit;
       return sp;
     }
@@ -359,7 +355,12 @@ namespace Objects.Converter.Revit
       Definition definition,
       out string unitType,
       string unitsOverride = null,
-      IRevitDocumentAggregateCache cache = null
+      IRevitDocumentAggregateCache cache = null,
+#if REVIT2020
+      DisplayUnitType unitTypeId = default
+#else
+      ForgeTypeId unitTypeId = null
+#endif
     )
     {
       unitType = null;
@@ -368,25 +369,20 @@ namespace Objects.Converter.Revit
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId();
+          if (unitsOverride == null)
+          {
+            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
+          }
+          else
+          {
+            unitTypeId = UnitsToNative(unitsOverride);
+          }
           unitType = UnitsToNativeString(unitTypeId);
           return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
-#if REVIT2020 || REVIT2021 || REVIT2022
-          switch (definition.ParameterType)
-          {
-            case ParameterType.YesNo:
-              return Convert.ToBoolean(intVal);
-            default:
-              return intVal;
-          }
-#else
-          if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            return Convert.ToBoolean(intVal);
-          else
-            return intVal;
-#endif
+          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
+
         case StorageType.String:
           return rp.AsString();
         // case StorageType.ElementId:
@@ -404,61 +400,35 @@ namespace Objects.Converter.Revit
     #endregion
 
     /// <summary>
-    /// Get the symbol unit of the parameter : eg. mm, m, cm, etc.
+    /// Method for getting symbol when parameter is NOT validated to be a double or int
     /// </summary>
-    /// <param name="parameter">the parameter of revit</param>
+    /// <param name="parameter"></param>
+    /// <param name="definition"></param>
+    /// <param name="cache"></param>
+    /// <param name="forgeTypeId"></param>
     /// <returns></returns>
-    public static string GetSymbolUnit(DB.Parameter parameter)
-    {
-      string symbol = string.Empty;
+    public static string GetSymbolUnit(
+      DB.Parameter parameter,
+      DB.Definition definition,
+      IRevitDocumentAggregateCache cache,
 #if REVIT2020
-      try
-      {
-        DisplayUnitType forgeTypeId = parameter.DisplayUnitType;
-        IList<UnitSymbolType> validSymbols = FormatOptions.GetValidUnitSymbols(forgeTypeId);
-        if (validSymbols.Count > 0)
-        {
-          var unitSymbolTypes = validSymbols.Where(x => x != UnitSymbolType.UST_NONE).ToArray();
-          if (unitSymbolTypes.Any())
-          {
-            foreach (DB.UnitSymbolType symbolId in unitSymbolTypes)
-            {
-              symbol = LabelUtils.GetLabelFor(symbolId);
-              return symbol;
-            }
-          }
-        }
-      }
-      catch (Exception e)
-      {
-        // ignore with catch symbol
-      }
+      out DisplayUnitType unitTypeId
 #else
-      try
-      {
-        ForgeTypeId forgeTypeId = parameter.GetUnitTypeId();
-        if (FormatOptions.CanHaveSymbol(forgeTypeId))
-        {
-          IList<DB.ForgeTypeId> validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
-          if (validSymbols.Count > 0)
-          {
-            IEnumerable<DB.ForgeTypeId> typeId = validSymbols.Where(x => !x.Empty());
-            if (typeId.Any())
-            {
-              foreach (DB.ForgeTypeId symbolId in typeId)
-              {
-                symbol = LabelUtils.GetLabelForSymbol(symbolId);
-              }
-            }
-          }
-        }
-      }
-      catch (Exception e)
-      {
-        // ignore with catch symbol
-      }
+      out ForgeTypeId unitTypeId
 #endif
-      return symbol;
+    )
+    {
+      unitTypeId = default;
+      if (parameter.StorageType != StorageType.Double)
+      {
+        return null;
+      }
+
+      unitTypeId = parameter.GetUnitTypeId();
+      var unitTypeIdCopy = unitTypeId;
+      return cache
+        .GetOrInitializeEmptyCacheOfType<string>(out _)
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
     }
 
     /// <summary>
@@ -687,7 +657,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
