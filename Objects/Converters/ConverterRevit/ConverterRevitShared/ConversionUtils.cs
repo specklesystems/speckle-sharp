@@ -354,7 +354,7 @@ namespace Objects.Converter.Revit
 
         if (rp.StorageType == StorageType.Double)
         {
-          sp.applicationUnit = unitsOverride != null ? UnitsToNative(unitsOverride).ToString() : rp.GetUnitTypeId().ToString();
+          sp.applicationUnit = UnitsToNativeString(unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId());
         }
 
 
