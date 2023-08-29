@@ -23,6 +23,8 @@ public class Zone : Base, IHasArea, IHasVolume
   public string name { get; set; }
 
   public Level level { get; set; }
+  
+  public string phase { get; set; }
 
   public string serviceType { get; set; }
 
