@@ -5,7 +5,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     private string _modelUnits;
 
 #if REVIT2020
@@ -172,12 +171,13 @@ namespace Objects.Converter.Revit
     }
 
     private double? defaultConversionFactor;
+
     public double ScaleToSpeckle(double value)
     {
       defaultConversionFactor ??= ScaleToSpeckle(1, RevitLengthTypeId);
       return value * defaultConversionFactor.Value;
     }
-    
+
     /// <summary>
     /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
     /// </summary>
@@ -188,7 +188,7 @@ namespace Objects.Converter.Revit
     {
       return ScaleToSpeckleStatic(value, UnitsToNative(units));
     }
-    
+
     /// <summary>
     /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
     /// </summary>
@@ -202,11 +202,13 @@ namespace Objects.Converter.Revit
 
     public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
     {
-      return value * cache
+      var cacheKey = $"{value}_{forgeTypeId.TypeId}";
+
+      return cache
         .GetOrInitializeEmptyCacheOfType<double>(out _)
-        .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
+        .GetOrAdd(cacheKey, () => UnitUtils.ConvertFromInternalUnits(value, forgeTypeId), out _);
     }
-    
+
     public double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
     {
       return ScaleToSpeckle(value, forgeTypeId, revitDocumentAggregateCache);
@@ -233,10 +235,12 @@ namespace Objects.Converter.Revit
     {
       return UnitsToNativeString(UnitsToNative(units));
     }
+
     public static string UnitsToNativeString(ForgeTypeId forgeTypeId)
     {
       return forgeTypeId.TypeId;
     }
+
     public static ForgeTypeId UnitsToNative(string units)
     {
       switch (units)
