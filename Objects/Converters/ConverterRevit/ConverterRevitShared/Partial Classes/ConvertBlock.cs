@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.DoubleNumerics;
 using ConverterRevitShared.Revit;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -58,7 +59,10 @@ public partial class ConverterRevit
     {
       var errMsg = "An unexpected error occured when converting a BlockInstance to Native";
       SpeckleLog.Logger.Error(e, errMsg);
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{errMsg}: {e.ToFormattedString()}");
+      appObj.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{errMsg}: {e.ToFormattedString()}"
+      );
     }
 
     return appObj;
@@ -66,8 +70,12 @@ public partial class ConverterRevit
 
   private DB.FamilyInstance ConvertBlockInstanceToFamilyInstance(BlockInstance instance)
   {
-    instance.transform.Decompose(out var scale, out _, out _);
-    var scaleTransform = new Transform { matrix = GetScaleMatrix(scale), units = instance.transform.units };
+    instance.transform.Decompose(out var scale, out var rot, out _);
+    var scaleTransform = new Transform
+    {
+      matrix = GetScaleMatrix(scale),
+      units = instance.transform.units
+    };
 
     var symbol = ConvertBlockDefinitionToFamilySymbol(instance.typedDefinition, scaleTransform);
 
@@ -79,38 +87,59 @@ public partial class ConverterRevit
     // TODO: This is just prep for deep nesting support. For now we usually call this at the model level only.
     var structuralType = DB.Structure.StructuralType.NonStructural;
     var familyInstance = Doc.IsFamilyDocument
-      ? Doc.FamilyCreate.NewFamilyInstance(position, symbol, structuralType)
-      : Doc.Create.NewFamilyInstance(position, symbol, structuralType);
+      ? Doc.FamilyCreate.NewFamilyInstance(new DB.XYZ(), symbol, structuralType)
+      : Doc.Create.NewFamilyInstance(new DB.XYZ(), symbol, structuralType);
 
+    var (roll, pitch, yaw) = QuaternionToEuler(rot);
+    familyInstance.Location.Move(position);
+    using var axisZ = DB.Line.CreateBound(new DB.XYZ(position.X, position.Y, 0), new DB.XYZ(position.X, position.Y, 1000));
+    familyInstance.Location.Rotate(axisZ, yaw);
     return familyInstance;
   }
 
   private DB.FamilySymbol ConvertBlockDefinitionToFamilySymbol(BlockDefinition definition, Transform transform)
   {
     using var family = FindBlockDefinitionFamily(definition) ?? CreateBlockDefinitionFamily(definition, transform);
-
+    
     // TODO: We're still picking the first one here. New symbol creation for other scales is not yet supported
-    var symbol =
-      FindBlockDefinitionFamilySymbol(definition, family) ?? CreateBlockDefinitionFamilySymbol(definition, family);
+    var symbol = FindBlockDefinitionFamilySymbol(definition, family) ?? CreateBlockDefinitionFamilySymbol(definition, family);
+    
     return symbol;
   }
 
   private DB.Family CreateBlockDefinitionFamily(BlockDefinition definition, Transform transform)
   {
     var famDoc = CreateNewFamilyTemplateDoc();
+   
+    // Get the flat list of geometry and scale using transform to get it to the right size.
+    var flatGeometry = GetBlockDefinitionGeometry(definition).Select(
+      bt =>
+      {
+        bt.TransformTo(transform, out var transformed);
+        return transformed as Base;
+      });
     // Grab all geometry from the definition, convert and add to family symbol.
-    PopulateFamilyWithBlockDefinitionGeometry(definition, famDoc, transform);
-
+    PopulateFamilyWithBlockDefinitionGeometry(famDoc, flatGeometry);
+    
     // Load the new document into the model doc
-    var famName = GetFamilyNameFor(definition);
-
-    //using var t = new DB.Transaction(famDoc, "Update document info");
+    var famName = definition.name + "_" + transform.GetId();
     string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
     using var so = new DB.SaveAsOptions();
     so.OverwriteExistingFile = true;
+    var catName = Categories.GetBuiltInFromSchemaBuilderCategory(RevitCategory.Furniture);
+    DB.BuiltInCategory.TryParse(catName, out DB.BuiltInCategory bic);
+    DB.Category familyCategory = famDoc.Settings.Categories.get_Item(bic);
+    using var t = new DB.Transaction(famDoc, "Change family category");
+    t.Start();
+    famDoc.OwnerFamily.FamilyCategory = familyCategory;
+    t.Commit();
+    
     famDoc.SaveAs(tempFamilyPath, so);
     famDoc.Close();
-    Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var family);
+
+    var familyLoadOptions = new FamilyLoadOption();
+    
+    Doc.LoadFamily(tempFamilyPath, familyLoadOptions, out var family);
     return family;
   }
 
@@ -121,33 +150,24 @@ public partial class ConverterRevit
   /// </summary>
   /// <param name="definition">The BlockDefinition to extract the geometry from</param>
   /// <param name="famDoc">The revit document where the geometry will be added</param>
-  private void PopulateFamilyWithBlockDefinitionGeometry(
-    BlockDefinition definition,
+  private static void PopulateFamilyWithBlockDefinitionGeometry(
     DB.Document famDoc,
-    Transform scaleTransform
+    IEnumerable<Base?> geometry
   )
   {
-    // Get the flat list of geometry
-    var flatGeometry = GetBlockDefinitionGeometry(definition)
-      .Select(bt =>
-      {
-        bt.TransformTo(scaleTransform, out var transformed);
-        return transformed as Base;
-      });
-
     // Start up a local converter to isolate conversions for this particular family document.
     // This prevents other conversions from being polluted by multi-document environments.
     var converter = new ConverterRevit();
     converter.SetContextDocument(famDoc); // Always remember to set the doc 🙂
 
     // Using the family document, add all geometry of the instance at the root level (no nesting)
-    using DB.Transaction t = new(famDoc, $"Create geometry for block definition - {definition.id}");
+    using DB.Transaction t = new(famDoc, $"Create geometry for block definition");
     t.Start();
-    foreach (var o in flatGeometry)
+    foreach (var o in geometry)
       converter.ConvertToNativeObject(o);
     t.Commit();
   }
-
+  
   private DB.FamilySymbol? FindBlockDefinitionFamilySymbol(BlockDefinition definition, DB.Family family)
   {
     // The loaded family contains all the possible symbols (variations)
@@ -155,7 +175,7 @@ public partial class ConverterRevit
     // TODO: For now, we're just picking the first.
     var element = Doc.GetElement(family.GetFamilySymbolIds().First());
     if (element is not DB.FamilySymbol symbol)
-      throw new Exception($"Could not find any symbols in family {family.Name}");
+      return null;
     if (!symbol.IsActive)
       symbol.Activate();
     symbol.Name = "Default";
@@ -221,7 +241,23 @@ public partial class ConverterRevit
   /// <returns>The resulting scaling transform.</returns>
   private static Matrix4x4 GetScaleMatrix(Vector3 scale)
   {
-    var matrix = new Matrix4x4(scale.X, 0, 0, 0, 0, scale.Y, 0, 0, 0, 0, scale.Z, 0, 0, 0, 0, 1);
+    var matrix = new Matrix4x4(
+      scale.X,
+      0,
+      0,
+      0,
+      0,
+      scale.Y,
+      0,
+      0,
+      0,
+      0,
+      scale.Z,
+      0,
+      0,
+      0,
+      0,
+      1);
     return matrix;
   }
 
@@ -237,7 +273,7 @@ public partial class ConverterRevit
   {
     return definition.name + "_SpeckleBlock";
   }
-
+  
   /// <summary>
   /// Gets the geometric representation of a given block definition. This will 'flatten' all inner instances so that
   /// all that remains is the geometric entities, properly translated into this <see cref="BlockDefinition"/>'s transform space.
@@ -259,5 +295,32 @@ public partial class ConverterRevit
           }
       )
       .Where(bt => bt != null);
+  }
+  
+  public static (double Roll, double Pitch, double Yaw) QuaternionToEuler(Quaternion q)
+  {
+    // Normalize the quaternion
+    q = Quaternion.Normalize(q);
+
+    double roll, pitch, yaw;
+
+    // roll (x-axis rotation)
+    double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+    double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+    roll = Math.Atan2(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    double sinp = 2 * (q.W * q.Y - q.Z * q.X);
+    if (Math.Abs(sinp) >= 1)
+      pitch = (Math.PI / 2) * (sinp >= 0 ? 1 : -1);  // use 90 degrees if out of range
+    else
+      pitch = Math.Asin(sinp);
+
+    // yaw (z-axis rotation)
+    double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+    double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+    yaw = Math.Atan2(siny_cosp, cosy_cosp);
+
+    return (roll, pitch, yaw);
   }
 }
