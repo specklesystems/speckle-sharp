@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.BuiltElements.Revit;
 using DB = Autodesk.Revit.DB.Mechanical;
 using Point = Objects.Geometry.Point;
 
@@ -14,8 +15,11 @@ namespace Objects.Converter.Revit
     public ApplicationObject SpaceToNative(Space speckleSpace)
     {
       var revitSpace = GetExistingElementByApplicationId(speckleSpace.applicationId) as DB.Space;
-      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
-      
+      var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type)
+      {
+        applicationId = speckleSpace.applicationId
+      };
+
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitSpace, appObj))
         return appObj;
@@ -24,13 +28,20 @@ namespace Objects.Converter.Revit
       var level = ConvertLevelToRevit(speckleSpace.level, out levelState);
       var basePoint = PointToNative(speckleSpace.basePoint);
       var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel, out levelState);
+
+      var zoneName = revitSpace?.Zone?.Name ?? speckleSpace["zoneName"];
+
       // create new space if none existing, include zone information if available
       if (revitSpace == null)
       {
         revitSpace = Doc.Create.NewSpace(level, new UV(basePoint.X, basePoint.Y));
-        if (speckleSpace.zoneName != null)
+        if (zoneName != null)
         {
-          var speckleZone = new FilteredElementCollector(Doc).OfClass(typeof(DB.Zone)).Cast<DB.Zone>().Where(z => z.Name == speckleSpace.zoneName).FirstOrDefault();
+          var speckleZone = new FilteredElementCollector(Doc)
+            .OfClass(typeof(DB.Zone))
+            .Cast<DB.Zone>()
+            .Where(z => z.Name == zoneName)
+            .FirstOrDefault();
           if (speckleZone != null) // else space is added to default zone
           {
             var spaceSet = new DB.SpaceSet();
