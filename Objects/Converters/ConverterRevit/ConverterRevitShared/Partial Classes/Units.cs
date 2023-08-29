@@ -202,7 +202,7 @@ namespace Objects.Converter.Revit
 
     public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
     {
-      var cacheKey = $"{value}_{forgeTypeId.TypeId}";
+      var cacheKey = $"{forgeTypeId.TypeId}_{value}";
 
       return cache
         .GetOrInitializeEmptyCacheOfType<double>(out _)
