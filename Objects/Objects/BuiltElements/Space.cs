@@ -59,8 +59,12 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public Zone zone { get; set; }
 
   public string units { get; set; }
-
-  // additional properties to add: also include space separation lines here? Phase? Associated Room? Zone object instead of id?
+  
+  public string roomId { get; set; }
+  
+  public string phase { get; set; }
+  
+  // additional properties to add: also include space separation lines here? 
 
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }
