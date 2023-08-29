@@ -340,6 +340,7 @@ namespace Objects.Converter.Revit
         applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
+        hasValue = rp.HasValue,
         isTypeParameter = isTypeParameter,
         applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
         units = GetSymbolUnit(rp),
@@ -509,14 +510,21 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
+        TrySetParam(rp, sp, applicationUnit: sp.applicationUnit);
       }
     }
 
-    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
+    private void TrySetParam(DB.Parameter rp, Parameter sp, string units = "", string applicationUnit = "")
     {
       try
       {
+        if (!sp.hasValue)
+        {
+          rp.ClearValue();
+          return;
+        }
+
+        var value = sp.value;
         switch (rp.StorageType)
         {
           case StorageType.Double:

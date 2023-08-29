@@ -37,10 +37,14 @@ public class Parameter : Base
 
   public bool isReadOnly { get; set; } = false;
 
+  //setting this to true explicitely as it was added in 2.16 and it will otherwise 
+  //prevent previously sent parameters to receive correctly
+  public bool hasValue { get; set; } = true;
+
   /// <summary>
   /// True = Type Parameter, False = Instance Parameter
   /// </summary>
   public bool isTypeParameter { get; set; } = false;
-  
+
   public string units { get; set; }
 }
