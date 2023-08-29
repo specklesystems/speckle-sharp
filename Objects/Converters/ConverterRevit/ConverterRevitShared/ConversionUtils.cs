@@ -510,21 +510,17 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp, applicationUnit: sp.applicationUnit);
+        if (!sp.hasValue)
+          rp.ClearValue();
+        else
+          TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
 
-    private void TrySetParam(DB.Parameter rp, Parameter sp, string units = "", string applicationUnit = "")
+    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
     {
       try
       {
-        if (!sp.hasValue)
-        {
-          rp.ClearValue();
-          return;
-        }
-
-        var value = sp.value;
         switch (rp.StorageType)
         {
           case StorageType.Double:
