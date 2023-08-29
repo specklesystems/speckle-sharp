@@ -89,30 +89,45 @@ namespace Objects.Converter.Revit
     {
       var profiles = GetProfiles(revitSpace);
 
-      var speckleSpace = new Space();
-      speckleSpace.name = revitSpace.Name;
-      speckleSpace.number = revitSpace.Number;
-      speckleSpace.basePoint = (Point)LocationToSpeckle(revitSpace);
-      speckleSpace.level = ConvertAndCacheLevel(revitSpace.LevelId, revitSpace.Document);
-      speckleSpace.topLevel = ConvertAndCacheLevel(revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId(), revitSpace.Document);
-      speckleSpace.baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET);
-      speckleSpace.topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET);
-      speckleSpace.outline = profiles.Count != 0 ? profiles[0] : null;
+      var speckleSpace = new Space
+      {
+        name = revitSpace.Name,
+        number = revitSpace.Number,
+        basePoint = (Point)LocationToSpeckle(revitSpace),
+        level = ConvertAndCacheLevel(revitSpace.LevelId, revitSpace.Document),
+        topLevel = ConvertAndCacheLevel(
+          revitSpace.get_Parameter(BuiltInParameter.ROOM_UPPER_LEVEL).AsElementId(),
+          revitSpace.Document
+        ),
+        baseOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET),
+        topOffset = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET),
+        outline = profiles.Count != 0 ? profiles[0] : null,
+        area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA),
+        volume = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_VOLUME),
+        spaceType = revitSpace.SpaceType.ToString(),
+        displayValue = GetElementDisplayValue(revitSpace)
+      };
+
       if (profiles.Count > 1)
         speckleSpace.voids = profiles.Skip(1).ToList();
-      speckleSpace.area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA);
-      speckleSpace.volume = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_VOLUME);
-      speckleSpace.spaceType = revitSpace.SpaceType.ToString();
-      speckleSpace.zoneName = revitSpace.Zone?.Name;
+
+      // Spaces are typically associated with a Room, but not always
+      if (revitSpace.Room != null)
+        speckleSpace["roomId"] = revitSpace.Room.Id.ToString();
 
       // Zones are stored as a Space prop despite being a parent object, so we need to convert it here
       speckleSpace.zone = revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<Zone>(out _)
-        .GetOrAdd(revitSpace.Zone.Name, ()=> ZoneToSpeckle(revitSpace.Zone), out _);
-      
+        .GetOrAdd(revitSpace.Zone.Name, () => ZoneToSpeckle(revitSpace.Zone), out _);
+
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
-      speckleSpace.displayValue = GetElementDisplayValue(revitSpace);
+      // Special Phase handling for Spaces, phase is found as a parameter on the Space object, not a property
+      var phase = Doc.GetElement(revitSpace.get_Parameter(BuiltInParameter.ROOM_PHASE).AsElementId());
+      if (phase != null)
+      {
+        speckleSpace["phase"] = phase.Name;
+      }
 
       return speckleSpace;
     }
