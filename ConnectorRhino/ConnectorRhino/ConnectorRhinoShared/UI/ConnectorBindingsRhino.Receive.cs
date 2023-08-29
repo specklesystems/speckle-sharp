@@ -36,6 +36,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     converter.SetContextDocument(Doc);
     converter.ReceiveMode = state.ReceiveMode;
 
+    // set converter settings
+    CurrentSettings = state.Settings;
+    var settings = GetSettingsDict(CurrentSettings);
+    converter.SetConverterSettings(settings);
+
     Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = commit;
 

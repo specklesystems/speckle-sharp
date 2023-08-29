@@ -11,18 +11,18 @@
     <DefineConstants>$(DefineConstants);RHINO7;GRASSHOPPER</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared"/>
+  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*"/>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build"/>
+    <PackageReference Include="Grasshopper" Version="7.10.21256.17001" IncludeAssets="compile;build" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build"/>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build" />
   </ItemGroup>
 </Project>

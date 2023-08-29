@@ -103,6 +103,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
 
+      // set converter settings
+      CurrentSettings = state.Settings;
+      var settings = GetSettingsDict(CurrentSettings);
+      converter.SetConverterSettings(settings);
+
       var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
       SelectedReceiveCommit = commit.id;

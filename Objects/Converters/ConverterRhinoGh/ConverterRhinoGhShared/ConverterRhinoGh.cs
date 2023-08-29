@@ -40,6 +40,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #endif
 
+  /* Deprecating in 2.16
   public enum MeshSettings
   {
     Default,
@@ -47,8 +48,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   }
 
   public MeshSettings SelectedMeshSettings = MeshSettings.Default;
-
+  */
   public bool PreprocessGeometry;
+
+  public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
   public ConverterRhinoGh()
   {
@@ -88,19 +91,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
   public void SetConverterSettings(object settings)
   {
-    if (settings is Dictionary<string, object> dict)
+    Settings = settings as Dictionary<string, string>;
+    if (Settings.ContainsKey("preprocessGeometry"))
     {
-      if (dict.ContainsKey("meshSettings"))
-        SelectedMeshSettings = (MeshSettings)dict["meshSettings"];
-
-      if (dict.ContainsKey("preprocessGeometry"))
-        PreprocessGeometry = (bool)dict["preprocessGeometry"];
-      return;
+      bool.TryParse(Settings["preprocessGeometry"], out PreprocessGeometry);
     }
-
-    // Keep this for backwards compatibility.
-    var s = (MeshSettings)settings;
-    SelectedMeshSettings = s;
   }
 
   public void SetContextDocument(object doc)
@@ -145,6 +140,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     Base @base = null;
     Base schema = null;
     var notes = new List<string>();
+
+    // get preprocessing setting
     var defaultPreprocess = PreprocessGeometry;
 
     try
