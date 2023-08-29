@@ -288,8 +288,8 @@ namespace Objects.Converter.Revit
 
         var speckleParam = ParameterToSpeckle(
           param,
+          internalName,
           isTypeParameter,
-          paramInternalName: internalName,
           cache: revitDocumentAggregateCache
         );
         paramDict[internalName] = speckleParam;
@@ -311,7 +311,9 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = GetParameterValue(rp, rp.Definition, out _, unitsOverride);
+      var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride).ToString() : rp.GetUnitTypeId().ToString();
+
+      var value = GetParameterValue(rp, rp.Definition, unitTypeId);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
@@ -327,46 +329,58 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     private static Parameter ParameterToSpeckle(
       DB.Parameter rp,
+      string paramInternalName,
       bool isTypeParameter = false,
       string unitsOverride = null,
-      string paramInternalName = null,
       IRevitDocumentAggregateCache cache = null
     )
     {
+      var paramCache = cache.GetOrInitializeEmptyCacheOfType<Parameter>(out _);
+      var sp = paramCache.TryGet(paramInternalName);
       var definition = rp.Definition;
-      var sp = new Parameter
-      {
-        name = definition.Name,
-        applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
-        isShared = rp.IsShared,
-        isReadOnly = rp.IsReadOnly,
-        hasValue = rp.HasValue,
-        isTypeParameter = isTypeParameter,
-        applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
-        units = GetSymbolUnit(rp),
-      };
 
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
-      sp.applicationUnit = appUnit;
+      if (sp == null)
+      {
+        sp = new Parameter
+        {
+          name = definition.Name,
+          applicationInternalName = paramInternalName,
+          isShared = rp.IsShared,
+          isReadOnly = rp.IsReadOnly,
+          isTypeParameter = isTypeParameter,
+          applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
+          units = GetSymbolUnit(rp),
+        };
+
+        if (rp.StorageType == StorageType.Double)
+        {
+          sp.applicationUnit = unitsOverride != null ? UnitsToNative(unitsOverride).ToString() : rp.GetUnitTypeId().ToString();
+        }
+
+
+        paramCache.Set(paramInternalName, sp);
+      }
+
+      sp.hasValue = rp.HasValue;
+
+      if (sp.hasValue)
+        sp.value = GetParameterValue(rp, definition, sp.applicationUnit, cache);
+
       return sp;
     }
 
     private static object GetParameterValue(
       DB.Parameter rp,
       Definition definition,
-      out string unitType,
-      string unitsOverride = null,
+      string unitTypeId,
       IRevitDocumentAggregateCache cache = null
     )
     {
-      unitType = null;
       switch (rp.StorageType)
       {
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId();
-          unitType = UnitsToNativeString(unitTypeId);
           return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();

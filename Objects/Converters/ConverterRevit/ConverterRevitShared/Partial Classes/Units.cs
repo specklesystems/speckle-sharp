@@ -1,3 +1,4 @@
+using System;
 using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 
@@ -73,15 +74,27 @@ namespace Objects.Converter.Revit
     {
       return ScaleToSpeckleStatic(value, RevitLengthTypeId);
     }
-    
+
     public static double ScaleToSpeckleStatic(double value, DisplayUnitType unitType)
     {
       return UnitUtils.ConvertFromInternalUnits(value, unitType);
     }
 
+    public static double ScaleToSpeckleStatic(double value, string unitType)
+    {
+      var displayUnitType = (DisplayUnitType)Enum.Parse(typeof(DisplayUnitType), unitType);
+      return UnitUtils.ConvertFromInternalUnits(value, displayUnitType);
+    }
+
     public static double ScaleToSpeckle(double value, DisplayUnitType unitType, IRevitDocumentAggregateCache cache)
     {
       return ScaleToSpeckleStatic(value, unitType);
+    }
+
+    public static double ScaleToSpeckle(double value, string unitType, IRevitDocumentAggregateCache cache)
+    {
+      var displayUnitType = (DisplayUnitType)Enum.Parse(typeof(DisplayUnitType), unitType);
+      return ScaleToSpeckleStatic(value, displayUnitType);
     }
 
     public static double ScaleToSpeckle(double value, string units)
@@ -177,7 +190,7 @@ namespace Objects.Converter.Revit
       defaultConversionFactor ??= ScaleToSpeckle(1, RevitLengthTypeId);
       return value * defaultConversionFactor.Value;
     }
-    
+
     /// <summary>
     /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
     /// </summary>
@@ -188,7 +201,7 @@ namespace Objects.Converter.Revit
     {
       return ScaleToSpeckleStatic(value, UnitsToNative(units));
     }
-    
+
     /// <summary>
     /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
     /// </summary>
@@ -200,13 +213,27 @@ namespace Objects.Converter.Revit
       return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
     }
 
+    public static double ScaleToSpeckleStatic(double value, string typeId)
+    {
+      var forgeTypeId = new ForgeTypeId(typeId);
+      return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+    }
+
+    public static double ScaleToSpeckle(double value, string typeId, IRevitDocumentAggregateCache cache)
+    {
+      var forgeTypeId = new ForgeTypeId(typeId);
+      return value * cache
+        .GetOrInitializeEmptyCacheOfType<double>(out _)
+        .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
+    }
+
     public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
     {
       return value * cache
         .GetOrInitializeEmptyCacheOfType<double>(out _)
         .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
     }
-    
+
     public double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
     {
       return ScaleToSpeckle(value, forgeTypeId, revitDocumentAggregateCache);
