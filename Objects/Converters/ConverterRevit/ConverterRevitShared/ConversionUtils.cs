@@ -834,7 +834,7 @@ namespace Objects.Converter.Revit
       if (doc.IsLinked)
       {
         // get the linked doc instance transform
-        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
+        var instance = RevitLinkInstances.FirstOrDefault(x => x?.GetLinkDocument()?.PathName == doc.PathName);
         if (instance != null)
         {
           var linkInstanceTransform = instance.GetTotalTransform();

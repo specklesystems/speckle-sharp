@@ -443,6 +443,10 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var linkedDoc in linkedDocs)
         {
+          if (linkedDoc.Value == null)
+          {
+            continue;
+          }
           //from Revit 2024 onward we can query linked docs
           //for earlier versions we can't: https://github.com/specklesystems/speckle-sharp/issues/2829
 #if !REVIT2020 && !REVIT2021 && !REVIT2022 && !REVIT2023
