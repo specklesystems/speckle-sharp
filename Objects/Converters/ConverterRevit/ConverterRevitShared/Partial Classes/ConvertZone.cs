@@ -34,23 +34,12 @@ namespace Objects.Converter.Revit
         serviceType = revitZone.ServiceType.ToString()
       };
 
-      // Optionally Zones and Spaces could be sent as a Parent Child, but edge cases abound.
-      // var spaces = new List<DB.Space>();
-      // var zoneSpaces = revitZone.Spaces.GetEnumerator();
-      //
-      // while (zoneSpaces.MoveNext())
-      // {
-      //   if (zoneSpaces.Current is DB.Space space)
-      //   {
-      //     spaces.Add(space);
-      //   }
-      // }
-      // speckleZone.spaces = spaces.Select(x => SpaceToSpeckle(x)).ToList();
-
       GetAllRevitParamsAndIds(speckleZone, revitZone);
 
       // No implicit displayValue
       // speckleZone.displayValue = GetElementDisplayValue(revitSpace);
+      
+      speckleZone["phase"] = revitZone.Phase.Name;
 
       return speckleZone;
     }
