@@ -23,9 +23,9 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    public BuiltElements.Revit.Zone ZoneToSpeckle(DB.Zone revitZone)
+    public RevitZone ZoneToSpeckle(DB.Zone revitZone)
     {
-      var speckleZone = new Zone
+      var speckleZone = new RevitZone
       {
         name = revitZone.Name,
         area = GetParamValue<double>(revitZone, BuiltInParameter.ROOM_AREA),
@@ -38,8 +38,8 @@ namespace Objects.Converter.Revit
 
       // No implicit displayValue
       // speckleZone.displayValue = GetElementDisplayValue(revitSpace);
-      
-      speckleZone["phase"] = revitZone.Phase.Name;
+
+      speckleZone["phaseName"] = revitZone.Phase.Name;
 
       return speckleZone;
     }
