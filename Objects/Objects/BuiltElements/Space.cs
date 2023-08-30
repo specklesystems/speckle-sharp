@@ -56,13 +56,13 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public string spaceType { get; set; }
 
   // add the zone object for better forward compatibility
-  public Zone zone { get; set; }
+  public RevitZone zone { get; set; }
 
   public string units { get; set; }
   
   public string roomId { get; set; }
   
-  public string phase { get; set; }
+  public string phaseName { get; set; }
   
   // additional properties to add: also include space separation lines here? 
 
