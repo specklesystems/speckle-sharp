@@ -3,38 +3,40 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Objects.BuiltElements.Revit;
-
-public class Zone : Base, IHasArea, IHasVolume
+namespace Objects.BuiltElements
 {
-  public Zone() { }
-
-  [SchemaInfo(
-    "A zone is a collection of one or more spaces.",
-    "Creates a Speckle zone to be used as a reference for spaces.",
-    "BIM",
-    "MEP"
-  )]
-  public Zone(string name)
+  public class Zone : Base, IHasArea, IHasVolume
   {
-    this.name = name;
+    public Zone() { }
+    
+    public Zone(string name)
+    {
+      this.name = name;
+    }
+
+    public string name { get; set; }
+    public string units { get; set; }
+    
+    public List<Space> spaces { get; set; }
+    
+    // implicit measurements
+    public double area { get; set; }
+    public double volume { get; set; }
+    public double perimeter { get; set; }
   }
+}
 
-  public string name { get; set; }
+namespace Objects.BuiltElements.Revit
+{
+  public class RevitZone : Zone
+  {
+    public RevitZone() { }
 
-  public Level level { get; set; }
-  
-  public string phase { get; set; }
-
-  public string serviceType { get; set; }
-
-  public bool isDefault { get; set; }
-
-  public string units { get; set; }
-
-  // implicit measurements
-  public double area { get; set; }
-  public double volume { get; set; }
-
-  public double perimeter { get; set; }
+    public Level level { get; set; }
+    public string phaseName { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+    public bool isDefault { get; set; }
+    public string serviceType { get; set; }
+  }
 }
