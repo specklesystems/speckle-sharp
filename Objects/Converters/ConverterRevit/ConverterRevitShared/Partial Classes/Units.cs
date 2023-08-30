@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using RevitSharedResources.Interfaces;
 
 namespace Objects.Converter.Revit
@@ -202,9 +203,16 @@ namespace Objects.Converter.Revit
 
     public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
     {
-      return value * cache
-        .GetOrInitializeEmptyCacheOfType<double>(out _)
-        .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
+      if (forgeTypeId.IsLengthType())
+      {
+        return value * cache
+          .GetOrInitializeEmptyCacheOfType<double>(out _)
+          .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
+      }
+      else
+      {
+        return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+      }
     }
     
     public double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)

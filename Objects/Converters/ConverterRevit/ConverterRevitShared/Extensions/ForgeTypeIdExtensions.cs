@@ -26,6 +26,21 @@ namespace ConverterRevitShared.Extensions
     {
       return forgeTypeId.TypeId.ToString();
     }
+    public static bool IsLengthType(this ForgeTypeId forgeTypeId)
+    {
+      if (
+        forgeTypeId == UnitTypeId.Millimeters
+        || forgeTypeId == UnitTypeId.Centimeters
+        || forgeTypeId == UnitTypeId.Meters
+        || forgeTypeId == UnitTypeId.Inches
+        || forgeTypeId == UnitTypeId.Feet
+        || forgeTypeId == UnitTypeId.FeetFractionalInches
+      )
+      {
+        return true;
+      }
+      return false;
+    }
   }
 }
 #endif
