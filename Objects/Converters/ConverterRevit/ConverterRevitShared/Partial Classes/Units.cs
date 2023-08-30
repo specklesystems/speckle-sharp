@@ -211,7 +211,11 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
+        var cacheKey = $"{forgeTypeId.TypeId}_{value}";
+
+        return cache
+          .GetOrInitializeEmptyCacheOfType<double>(out _)
+          .GetOrAdd(cacheKey, () => UnitUtils.ConvertFromInternalUnits(value, forgeTypeId), out _);
       }
     }
     
