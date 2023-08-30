@@ -128,7 +128,7 @@ namespace Objects.Converter.Revit
 
       // Zones are stored as a Space prop despite being a parent object, so we need to convert it here
       speckleSpace.zone = revitDocumentAggregateCache
-        .GetOrInitializeEmptyCacheOfType<Zone>(out _)
+        .GetOrInitializeEmptyCacheOfType<RevitZone>(out _)
         .GetOrAdd(revitSpace.Zone.Name, () => ZoneToSpeckle(revitSpace.Zone), out _);
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
