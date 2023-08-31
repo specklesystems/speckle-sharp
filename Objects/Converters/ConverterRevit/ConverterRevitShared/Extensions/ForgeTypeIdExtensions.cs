@@ -1,5 +1,6 @@
 #nullable enable
 #if !REVIT2020
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
@@ -24,18 +25,20 @@ namespace ConverterRevitShared.Extensions
     }
     public static string ToUniqueString(this ForgeTypeId forgeTypeId)
     {
-      return forgeTypeId.TypeId.ToString();
+      return forgeTypeId.TypeId;
     }
+    private readonly static HashSet<string> lengthTypes = new()
+    {
+      UnitTypeId.Millimeters.ToUniqueString(),
+      UnitTypeId.Centimeters.ToUniqueString(),
+      UnitTypeId.Meters.ToUniqueString(),
+      UnitTypeId.Inches.ToUniqueString(),
+      UnitTypeId.Feet.ToUniqueString(),
+      UnitTypeId.FeetFractionalInches.ToUniqueString(),
+    };
     public static bool IsLengthType(this ForgeTypeId forgeTypeId)
     {
-      if (
-        forgeTypeId == UnitTypeId.Millimeters
-        || forgeTypeId == UnitTypeId.Centimeters
-        || forgeTypeId == UnitTypeId.Meters
-        || forgeTypeId == UnitTypeId.Inches
-        || forgeTypeId == UnitTypeId.Feet
-        || forgeTypeId == UnitTypeId.FeetFractionalInches
-      )
+      if (lengthTypes.Contains(forgeTypeId.ToUniqueString()))
       {
         return true;
       }
