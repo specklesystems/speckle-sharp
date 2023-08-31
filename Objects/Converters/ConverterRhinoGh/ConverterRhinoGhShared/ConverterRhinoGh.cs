@@ -505,9 +505,15 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = RenderMaterialToNative(o);
 #endif
           break;
+
         case Transform o:
           rhinoObj = TransformToNative(o);
           break;
+
+        case Parameter o:
+          rhinoObj = ParameterToNative(o);
+          break;
+
         default:
           if (reportObj != null)
           {
@@ -542,6 +548,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             log: o.Log
           );
         break;
+
       default:
         if (reportObj != null)
           reportObj.Update(log: notes);

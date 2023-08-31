@@ -212,7 +212,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             if (state.ReceiveMode == ReceiveMode.Update)
             {
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
-              toRemove.ForEach(o => Doc.Objects.Delete(o));
+              toRemove.ForEach(o => Doc.Objects.Delete(o, false, true));
 
               if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
               {
@@ -287,9 +287,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       return new List<RhinoObject>();
 
     // first try to find the object by app id user string
-    var match =
-      Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList()
-      ?? new List<RhinoObject>();
+    var match = Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true).ToList();
 
     // if nothing is found, look for the geom obj by its guid directly
     if (!match.Any())
@@ -341,18 +339,23 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       if (current is Collection && string.IsNullOrEmpty(containerId))
         return null;
 
+      // get parameters
+      var parameters = current["parameters"] as Base;
+
       //Handle convertable objects
       if (converter.CanConvertToNative(current))
       {
         var appObj = NewAppObj();
         appObj.Convertible = true;
-        StoreObject(current, appObj);
+        StoreObject(current, appObj, parameters);
         return appObj;
       }
 
       //Handle objects convertable using displayValues
-      var fallbackMember = DefaultTraversal.displayValuePropAliases.Where(o => current[o] != null)?.FirstOrDefault();
-      var parameters = current["parameters"] as Base;
+      var fallbackMember = DefaultTraversal.displayValuePropAliases
+        .Where(o => current[o] != null)
+        ?.Select(o => current[o])
+        ?.FirstOrDefault();
       if (fallbackMember != null)
       {
         var appObj = NewAppObj();
@@ -374,11 +377,28 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       if (context.propName == null)
         return stringBuilder; // this was probably the base commit collection
 
+      // handle elements hosting case from Revit
+      // WARNING: THIS IS REVIT-SPECIFIC CODE!!
+      // We are checking for the `Category` prop on children objects to use as the layer
+      if (
+        DefaultTraversal.elementsPropAliases.Contains(context.propName)
+        && context.parent.current is not Collection
+        && !string.IsNullOrEmpty((string)context.current["category"])
+      )
+      {
+        stringBuilder.Append((string)context.current["category"]);
+        return stringBuilder;
+      }
+
       string objectLayerName = string.Empty;
-      if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+
+      // handle collections case
+      if (context.current is Collection coll && DefaultTraversal.elementsPropAliases.Contains(context.propName))
         objectLayerName = coll.name;
-      else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
+      // handle default case
+      else if (!DefaultTraversal.elementsPropAliases.Contains(context.propName))
         objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+
       LayerIdRecurse(context.parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
         stringBuilder.Append(Layer.PathSeparator);
@@ -466,6 +486,25 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // handle user info, including application id
           SetUserInfo(obj, attributes, parent);
 
+          // add revit parameters as user strings
+          var paramId = parent != null ? parent.OriginalId : obj.id;
+          if (StoredObjectParams.ContainsKey(paramId))
+          {
+            var parameters = StoredObjectParams[paramId];
+            foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+            {
+              if (member.Value is Base parameter)
+              {
+                var convertedParameter = converter.ConvertToNative(parameter) as Tuple<string, string>;
+                if (convertedParameter is not null)
+                {
+                  var name = $"{convertedParameter.Item1}({member.Key})";
+                  attributes.SetUserString(name, convertedParameter.Item2);
+                }
+              }
+            }
+          }
+
           Guid id = Doc.Objects.Add(o, attributes);
           if (id == Guid.Empty)
           {
@@ -541,20 +580,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
     catch { }
 
-    // set parameters
-    if (parent != null)
-      if (StoredObjectParams.ContainsKey(parent.OriginalId))
-      {
-        var parameters = StoredObjectParams[parent.OriginalId];
-        foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-          if (member.Value is Base parameter)
-            try
-            {
-              attributes.SetUserString(member.Key, GetStringFromBaseProp(parameter, "value"));
-            }
-            catch { }
-      }
-
     // set user dictionaries
     if (obj[UserDictionary] is Base userDictionary)
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
@@ -626,24 +651,5 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           continue;
       }
     }
-  }
-
-  private string GetStringFromBaseProp(Base @base, string propName)
-  {
-    var val = @base[propName];
-    if (val == null)
-      return null;
-    switch (val)
-    {
-      case double o:
-        return o.ToString();
-      case bool o:
-        return o.ToString();
-      case int o:
-        return o.ToString();
-      case string o:
-        return o;
-    }
-    return null;
   }
 }
