@@ -47,4 +47,22 @@ public class Parameter : Base
   public bool isTypeParameter { get; set; } = false;
 
   public string units { get; set; }
+
+  public Parameter DeepCopy()
+  {
+    return new Parameter
+    {
+      name = this.name,
+      //value = this.value,
+      applicationUnitType = this.applicationId,
+      applicationUnit = this.applicationUnit,
+      applicationInternalName = this.applicationInternalName,
+      isShared = this.isShared,
+      isReadOnly = this.isReadOnly,
+      //hasValue = this.hasValue,
+      units = this.units,
+      isTypeParameter = this.isTypeParameter
+
+    };
+  }
 }

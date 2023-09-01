@@ -357,9 +357,10 @@ namespace Objects.Converter.Revit
           sp.applicationUnit = UnitsToNativeString(unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId());
         }
 
-
         paramCache.Set(paramInternalName, sp);
       }
+      else
+        sp = sp.DeepCopy();
 
       sp.hasValue = rp.HasValue;
 
