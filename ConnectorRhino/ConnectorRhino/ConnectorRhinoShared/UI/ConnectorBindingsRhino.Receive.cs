@@ -309,9 +309,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
     {
-      if (StoredObjects.ContainsKey(@base.id))
-        appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
-      else
+      if (!StoredObjects.ContainsKey(@base.id))
         StoredObjects.Add(@base.id, @base);
 
       if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
@@ -334,6 +332,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
       // skip if it is the base commit collection
       if (current is Collection && string.IsNullOrEmpty(containerId))
+        return null;
+
+      // skip if this is a dynamic object and already has been traversed
+      if (StoredObjects.ContainsKey(current.id))
         return null;
 
       //Handle convertable objects
@@ -491,23 +493,25 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             }
           }
           break;
-        case RhinoObject o: // this was prbly a block instance, baked during conversion
 
+        case RhinoObject o: // this was prbly a block instance, baked during conversion
           o.Attributes.LayerIndex = layer.Index; // assign layer
           SetUserInfo(obj, o.Attributes, parent); // handle user info, including application id
           o.CommitChanges();
-
           if (parent != null)
             parent.Update(o.Id.ToString());
           else
             appObj.Update(o.Id.ToString());
           bakedCount++;
           break;
+
         case ViewInfo o: // this is a view, baked during conversion
-          if (parent != null)
-            parent.Update(o.Name);
-          else
-            appObj.Update(o.Name);
+          appObj.Update(o.Name);
+          bakedCount++;
+          break;
+
+        case ConstructionPlane o: // this is a level, baked during conversion
+          appObj.Update(o.Name);
           bakedCount++;
           break;
       }

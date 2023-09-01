@@ -88,6 +88,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     return @object.speckle_type.Contains("Instance")
       || @object.speckle_type.Contains("View")
+      || @object.speckle_type.Contains("Level")
       || @object.speckle_type.Contains("Collection");
   }
 
