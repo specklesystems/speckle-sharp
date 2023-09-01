@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Other;
 using Plane = Objects.Geometry.Plane;
 
 namespace Objects.Converter.RhinoGh;
@@ -143,6 +144,12 @@ public partial class ConverterRhinoGh
             o.basePoint = plane.origin;
             var angle = RH.Vector3d.VectorAngle(RH.Vector3d.XAxis, VectorToNative(plane.xdir), RH.Plane.WorldXY);
             o.rotation = angle;
+          }
+          break;
+        case MappedBlockWrapper o:
+          if (@object is InstanceObject instance)
+          {
+            o.instance = BlockInstanceToSpeckle(instance);
           }
 
           break;

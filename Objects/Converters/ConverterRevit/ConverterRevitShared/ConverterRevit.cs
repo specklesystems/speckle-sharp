@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Organization;
+using Objects.Other;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
@@ -441,6 +442,13 @@ namespace Objects.Converter.Revit
         // item in the list.
         ds.baseGeometries = new List<Base> { @object };
       }
+      else if (speckleSchema is MappedBlockWrapper mbw)
+      {
+        if (@object is not BlockInstance bi)
+          throw new Exception($"{nameof(MappedBlockWrapper)} can only be used with {nameof(BlockInstance)} objects.");
+
+        mbw.instance = bi;
+      }
       else
       {
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
@@ -523,7 +531,7 @@ namespace Objects.Converter.Revit
       }
 
       // Check if object has inner `SpeckleSchema` prop and swap if appropriate
-      //@object = SwapGeometrySchemaObject(@object);
+      @object = SwapGeometrySchemaObject(@object);
 
       switch (@object)
       {
@@ -704,6 +712,8 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Other.MappedBlockWrapper o:
+          return MappedBlockWrapperToNative(o);
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
         case Base b:
@@ -849,6 +859,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Other.MappedBlockWrapper => true,
         Organization.DataTable _ => true,
         _ => false,
       };

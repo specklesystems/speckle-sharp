@@ -315,6 +315,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         //no need to do extra stuff
         if (
           schema is DirectShapeFreeformViewModel
+          || schema is BlockDefinitionViewModel
           || schema is RevitTopographyViewModel
           || schema is RevitDefaultWallViewModel
           || schema is RevitDefaultFloorViewModel
