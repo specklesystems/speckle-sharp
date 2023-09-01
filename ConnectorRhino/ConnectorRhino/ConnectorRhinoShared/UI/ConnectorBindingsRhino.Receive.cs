@@ -339,16 +339,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           speckleType.Contains("View") || speckleType.Contains("Level")
             ? current["name"] as string
             : current.applicationId;
-        var container = speckleType.Contains("View") || speckleType.Contains("Level") ? string.Empty : containerId;
+        var container = speckleType.Contains("View") || speckleType.Contains("Level") ? null : containerId;
         return new ApplicationObject(current.id, speckleType) { applicationId = applicationId, Container = container };
       }
 
       // skip if it is the base commit collection
       if (current is Collection && string.IsNullOrEmpty(containerId))
-        return null;
-
-      // skip if this is a dynamic object and already has been traversed
-      if (StoredObjects.ContainsKey(current.id))
         return null;
 
       // get parameters
