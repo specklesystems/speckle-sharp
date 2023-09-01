@@ -698,8 +698,6 @@ namespace Objects.Converter.Revit
         case PolygonElement o:
           return PolygonElementToNative(o);
 
-        case GisTopography o:
-          return GisTopographyToNative(o);
 
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
@@ -851,7 +849,6 @@ namespace Objects.Converter.Revit
         Organization.DataTable _ => true,
         // GIS
         PolygonElement _ => true,
-        GisTopography _ => true,
         _ => false,
       };
       if (objRes)
