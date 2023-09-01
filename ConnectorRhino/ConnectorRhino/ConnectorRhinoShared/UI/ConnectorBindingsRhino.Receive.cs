@@ -209,13 +209,24 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
               toRemove.ForEach(o => Doc.Objects.Delete(o, false, true));
 
-              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view or level (named construction plane)
               {
-                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+                // Check converter (ViewToNative and LevelToNative) to make sure these names correspond!
+                var name =
+                  state.ReceiveMode == ReceiveMode.Create
+                    ? $"{commitLayerName} - {previewObj.applicationId}"
+                    : previewObj.applicationId;
+                var viewId = Doc.NamedViews.FindByName(name);
+                var planeId = Doc.NamedConstructionPlanes.Find(name);
                 if (viewId != -1)
                 {
                   isUpdate = true;
                   Doc.NamedViews.Delete(viewId);
+                }
+                else if (planeId != -1)
+                {
+                  isUpdate = true;
+                  Doc.NamedConstructionPlanes.Delete(planeId);
                 }
               }
             }
@@ -321,11 +332,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         var speckleType = current.speckle_type
           .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
-        return new ApplicationObject(current.id, speckleType)
-        {
-          applicationId = current.applicationId,
-          Container = containerId
-        };
+
+        // get the application id and container
+        // special cases for views and levels, since we are searching for them by name instead of application id
+        var applicationId =
+          speckleType.Contains("View") || speckleType.Contains("Level")
+            ? current["name"] as string
+            : current.applicationId;
+        var container = speckleType.Contains("View") || speckleType.Contains("Level") ? string.Empty : containerId;
+        return new ApplicationObject(current.id, speckleType) { applicationId = applicationId, Container = container };
       }
 
       // skip if it is the base commit collection
