@@ -35,7 +35,7 @@ public partial class Client : IDisposable
 
     Account = account;
 
-    HttpClient = Http.GetHttpProxyClient();
+    HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
     Http.AddAuthHeader(HttpClient, account.token);
 
     HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);

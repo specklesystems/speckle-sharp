@@ -136,7 +136,7 @@ namespace Objects.Converter.Revit
               for (var i = 0; i < curveArray.Size; i++)
                 revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
 
-              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope,"");
+              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
             }
 
             if (speckleFootprintRoof.cutOffLevel != null)
@@ -170,7 +170,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
 
       Doc.Regenerate();
-      appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
+      //appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
       return appObj;
     }
 

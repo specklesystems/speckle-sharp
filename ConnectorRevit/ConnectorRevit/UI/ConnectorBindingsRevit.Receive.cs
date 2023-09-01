@@ -26,13 +26,13 @@ using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
-
   public partial class ConnectorBindingsRevit
   {
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
     public CancellationTokenSource CurrentOperationCancellation { get; set; }
+
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -56,7 +56,12 @@ namespace Speckle.ConnectorRevit.UI
       Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(state, myCommit, ConnectorRevitUtils.RevitAppName, progress.CancellationToken);
+      await ConnectorHelpers.TryCommitReceived(
+        state,
+        myCommit,
+        ConnectorRevitUtils.RevitAppName,
+        progress.CancellationToken
+      );
 
       Preview.Clear();
       StoredObjects.Clear();
@@ -64,7 +69,6 @@ namespace Speckle.ConnectorRevit.UI
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
-
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
@@ -79,15 +83,24 @@ namespace Speckle.ConnectorRevit.UI
 #pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
-        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+        var elementTypeMapper = new ElementTypeMapper(
+          converter,
+          revitDocumentAggregateCache,
+          Preview,
+          StoredObjects,
+          CurrentDoc.Document
+        );
+        await elementTypeMapper
+          .Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
           .ConfigureAwait(false);
       }
       catch (Exception ex)
       {
         var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
         StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+        progress.Report.LogOperationError(
+          new Exception("Could not update receive object with user types. Using default mapping.", ex)
+        );
       }
       finally
       {
@@ -95,36 +108,39 @@ namespace Speckle.ConnectorRevit.UI
       }
 #pragma warning restore CA1031 // Do not catch general exception types
 
-      var (success, exception) = await APIContext.Run(_ =>
-      {
-        using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
-        transactionManager.Start();
-
-        try
+      var (success, exception) = await APIContext
+        .Run(_ =>
         {
-          converter.SetContextDocument(transactionManager);
+          using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
+          transactionManager.Start();
 
-          var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
+          try
+          {
+            converter.SetContextDocument(transactionManager);
 
-          if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjects, convertedObjects);
+            var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
 
-          previousObjects.AddConvertedElements(convertedObjects);
-          transactionManager.Finish();
-          return (true, null);
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
+            if (state.ReceiveMode == ReceiveMode.Update)
+              DeleteObjects(previousObjects, convertedObjects);
 
-          string message = $"Fatal Error: {ex.Message}";
-          if (ex is OperationCanceledException) message = "Receive cancelled";
-          progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
+            previousObjects.AddConvertedElements(convertedObjects);
+            transactionManager.Finish();
+            return (true, null);
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
 
-          transactionManager.RollbackAll();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
-        }
-      }).ConfigureAwait(false);
+            string message = $"Fatal Error: {ex.Message}";
+            if (ex is OperationCanceledException)
+              message = "Receive cancelled";
+            progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
+
+            transactionManager.RollbackAll();
+            return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+          }
+        })
+        .ConfigureAwait(false);
 
       revitDocumentAggregateCache.InvalidateAll();
       CurrentOperationCancellation = null;
@@ -145,10 +161,13 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
+    private void DeleteObjects(
+      IReceivedObjectIdMap<Base, Element> previousObjects,
+      IConvertedObjectsCache<Base, Element> convertedObjects
+    )
     {
       var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
-      for (var i = previousAppIds.Count - 1; i >=0; i--)
+      for (var i = previousAppIds.Count - 1; i >= 0; i--)
       {
         var appId = previousAppIds[i];
         if (string.IsNullOrEmpty(appId) || convertedObjects.HasConvertedObjectWithId(appId))
@@ -177,12 +196,60 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, TransactionManager transactionManager)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(
+      ISpeckleConverter converter,
+      ProgressViewModel progress,
+      TransactionManager transactionManager
+    )
     {
+      // Traverses through the `elements` property of the given base
+      void ConvertNestedElements(Base @base, ApplicationObject appObj, bool receiveDirectMesh)
+      {
+        if (@base == null)
+          return;
+
+        var nestedElements = @base["elements"] ?? @base["@elements"];
+
+        if (nestedElements == null)
+          return;
+
+        // set host in converter state.
+        // assumes host is the first converted object of the appObject
+        var host = appObj == null || !appObj.Converted.Any() ? null : appObj.Converted.First() as Element;
+        using var ctx = RevitConverterState.Push();
+        ctx.CurrentHostElement = host;
+
+        // traverse each element member and convert
+        foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
+        {
+          // create the application object and log to reports
+          var nestedAppObj = Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault();
+          if (nestedAppObj == null)
+          {
+            nestedAppObj = new ApplicationObject(obj.id, ConnectorRevitUtils.SimplifySpeckleType(obj.speckle_type))
+            {
+              applicationId = obj.applicationId,
+              Convertible = converter.CanConvertToNative(obj)
+            };
+            progress.Report.Log(nestedAppObj);
+            converter.Report.Log(nestedAppObj);
+          }
+
+          // convert
+          var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress, transactionManager);
+
+          // Check if parent conversion succeeded before attempting the children
+          if (
+            receiveDirectMesh || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
+          )
+            // recurse and convert nested elements
+            ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
+        }
+      }
+
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
       using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
       using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
-
 
       var convertedObjectsCache = new ConvertedObjectsCache();
       converter.SetContextDocument(convertedObjectsCache);
@@ -191,9 +258,29 @@ namespace Speckle.ConnectorRevit.UI
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
-      var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
-      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
+      var receiveLinkedModelsSetting =
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+      var receiveLinkedModels = receiveLinkedModelsSetting?.IsChecked ?? false;
 
+      var receiveDirectMesh = false;
+      var fallbackToDirectShape = false;
+      var directShapeStrategySetting =
+        CurrentSettings?.FirstOrDefault(x => x.Slug == "direct-shape-strategy") as ListBoxSetting;
+      switch (directShapeStrategySetting!.Selection)
+      {
+        case "Always":
+          receiveDirectMesh = true;
+          break;
+        case "On Error":
+          fallbackToDirectShape = true;
+          break;
+        case "Never":
+        case null:
+          // Do nothing, default values will do.
+          break;
+      }
+
+      // convert
       var index = -1;
       while (++index < Preview.Count)
       {
@@ -202,69 +289,164 @@ namespace Speckle.ConnectorRevit.UI
 
         var @base = StoredObjects[obj.OriginalId];
 
-        using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
-        try
+        // skip if this object has already been converted from a nested elements loop
+        if (obj.Status != ApplicationObject.State.Unknown)
+          continue;
+
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+
+        //skip element if is from a linked file and setting is off
+        if (
+          !receiveLinkedModels
+          && @base["isRevitLinkedModel"] != null
+          && bool.Parse(@base["isRevitLinkedModel"].ToString())
+        )
+          continue;
+
+        var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress, transactionManager);
+        // Determine if we should use the fallback DirectShape conversion
+        // Should only happen when receiveDirectMesh is OFF, fallback is ON and object failed normal conversion.
+        bool usingFallback =
+          !receiveDirectMesh && fallbackToDirectShape && converted.Status == ApplicationObject.State.Failed;
+        if (usingFallback)
         {
-          conversionProgressDict["Conversion"]++;
-          progress.Update(conversionProgressDict);
-
-          var s = new CancellationTokenSource();
-          DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
-          Dispatcher.UIThread.MainLoop(s.Token);
-
-          //skip element if is from a linked file and setting is off
-          if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
-            continue;
-
-          transactionManager.StartSubtransaction();
-          var convRes = converter.ConvertToNative(@base);
-          transactionManager.CommitSubtransaction();
-
-          RefreshView();
-          if (index % 50 == 0)
-            transactionManager.Commit();
-
-          switch (convRes)
-          {
-            case ApplicationObject o:
-              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
-              progress.Report.UpdateReportObject(obj);
-              break;
-            default:
-              break;
-          }
+          obj.Log.Add("Conversion to native Revit object failed. Retrying conversion with displayable geometry.");
+          converted = ConvertObject(obj, @base, true, converter, progress, transactionManager);
+          if (converted == null)
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
         }
-        catch (ConversionNotReadyException ex) 
-        {
-          transactionManager.RollbackSubTransaction();
-          var notReadyDataCache = revitDocumentAggregateCache
-            .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
-          var notReadyData = notReadyDataCache
-            .GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
 
-          if (++notReadyData.NumberOfTimesCaught > 2)
-          {
-            SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
-            obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-            progress.Report.UpdateReportObject(obj);
-          }
-          else
-          {
-            Preview.Add(obj);
-          }
-          // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
-          notReadyDataCache.Set(@base.id, notReadyData);
-        }
-        catch (Exception ex)
-        {
-          transactionManager.RollbackSubTransaction();
-          SpeckleLog.Logger.Warning(ex, "Failed to convert");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-          progress.Report.UpdateReportObject(obj);
-        }
+        RefreshView();
+        if (index % 50 == 0)
+          transactionManager.Commit();
+
+        // Check if parent conversion succeeded or fallback is enabled before attempting the children
+        if (
+          usingFallback
+          || receiveDirectMesh
+          || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
+        )
+          // continue traversing for hosted elements
+          // use DirectShape conversion if the parent was converted using fallback or if the global setting is active.
+          ConvertNestedElements(@base, converted, usingFallback || receiveDirectMesh);
       }
 
       return convertedObjectsCache;
+    }
+
+    private ApplicationObject ConvertObject(
+      ApplicationObject obj,
+      Base @base,
+      bool receiveDirectMesh,
+      ISpeckleConverter converter,
+      ProgressViewModel progress,
+      TransactionManager transactionManager
+    )
+    {
+      progress.CancellationToken.ThrowIfCancellationRequested();
+
+      if (obj == null || @base == null)
+        return obj;
+
+      using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
+      transactionManager.StartSubtransaction();
+
+      try
+      {
+        var s = new CancellationTokenSource();
+        DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+        Dispatcher.UIThread.MainLoop(s.Token);
+
+        ApplicationObject convRes;
+        if (converter.CanConvertToNative(@base))
+        {
+          if (receiveDirectMesh)
+          {
+            convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+            if (convRes == null)
+            {
+              obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+              return obj;
+            }
+          }
+          else
+          {
+            convRes = converter.ConvertToNative(@base) as ApplicationObject;
+            if (convRes == null || convRes.Status == ApplicationObject.State.Failed)
+            {
+              var logItem =
+                convRes == null
+                  ? "Conversion returned null"
+                  : "Conversion failed with errors: " + string.Join("/n", convRes.Log);
+              obj.Update(status: ApplicationObject.State.Failed, logItem: logItem);
+              return obj;
+            }
+          }
+        }
+        else if (converter.CanConvertToNativeDisplayable(@base))
+        {
+          obj.Log.Add("No direct conversion exists. Converting displayable geometry.");
+          convRes = converter.ConvertToNativeDisplayable(@base) as ApplicationObject;
+          if (convRes == null)
+          {
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+            return obj;
+          }
+        }
+        else
+        {
+          obj.Update(
+            status: ApplicationObject.State.Skipped,
+            logItem: "No direct conversion or displayable values can be converted."
+          );
+          return obj;
+        }
+
+        obj.Update(
+          status: convRes.Status,
+          createdIds: convRes.CreatedIds,
+          converted: convRes.Converted,
+          log: convRes.Log
+        );
+
+        progress.Report.UpdateReportObject(obj);
+        RefreshView();
+        transactionManager.CommitSubtransaction();
+      }
+      catch (ConversionNotReadyException ex)
+      {
+        transactionManager.RollbackSubTransaction();
+        var notReadyDataCache =
+          revitDocumentAggregateCache.GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
+        var notReadyData = notReadyDataCache.GetOrAdd(@base.id, () => new ConversionNotReadyCacheData(), out _);
+
+        if (++notReadyData.NumberOfTimesCaught > 2)
+        {
+          SpeckleLog.Logger.Warning(
+            ex,
+            $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did"
+          );
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+          progress.Report.UpdateReportObject(obj);
+        }
+        else
+        {
+          Preview.Add(obj);
+        }
+        // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
+        notReadyDataCache.Set(@base.id, notReadyData);
+      }
+      catch (Exception ex)
+      {
+        transactionManager.RollbackSubTransaction();
+        SpeckleLog.Logger.Warning(ex, "Failed to convert due to unexpected error.");
+        obj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to convert due to unexpected error.");
+        obj.Log.Add($"{ex.Message}");
+        progress.Report.UpdateReportObject(obj);
+      }
+
+      return obj;
     }
 
     private void RefreshView()
@@ -293,26 +475,31 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>A flattened list of objects to be converted ToNative</returns>
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-
       ApplicationObject CreateApplicationObject(Base current)
       {
-        if (!converter.CanConvertToNative(current)) return null;
+        // determine if this object is displayable
+        var isDisplayable = DefaultTraversal.displayValuePropAliases.Any(o => current[o] != null);
 
+        // skip if this object was already stored, if it's not convertible and has no displayables
+        if (StoredObjects.ContainsKey(current.id))
+          return null;
+        if (!converter.CanConvertToNative(current) && !isDisplayable)
+          return null;
+
+        // create application object and store
         var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type))
         {
           applicationId = current.applicationId,
-          Convertible = true
+          Convertible = converter.CanConvertToNative(current)
         };
-        if (StoredObjects.ContainsKey(current.id))
-          return null;
-
         StoredObjects.Add(current.id, current);
         return appObj;
       }
 
       var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
-      var objectsToConvert = traverseFunction.Traverse(obj)
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
         .Select(tc => CreateApplicationObject(tc.current))
         .Where(appObject => appObject != null)
         .Reverse()
@@ -320,6 +507,5 @@ namespace Speckle.ConnectorRevit.UI
 
       return objectsToConvert;
     }
-
   }
 }
