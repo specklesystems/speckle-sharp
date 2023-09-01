@@ -120,19 +120,19 @@ public class Transform : Base
     // scale
     // this should account for non-uniform scaling
     Vector4 basis4dX = new(matrix.M11, matrix.M21, matrix.M31, matrix.M41);
-    var scaleX = basis4dX.Length();
     Vector4 basis4dY = new(matrix.M12, matrix.M22, matrix.M32, matrix.M42);
-    var scaleY = basis4dY.Length();
     Vector4 basis4dZ = new(matrix.M13, matrix.M23, matrix.M33, matrix.M43);
-    var scaleZ = basis4dZ.Length();
 
-    // Check for mirroring across each axis
+    // Check for mirroring
     Vector3 basisX = new(matrix.M11, matrix.M21, matrix.M31);
     Vector3 basisY = new(matrix.M12, matrix.M22, matrix.M32);
     Vector3 basisZ = new(matrix.M13, matrix.M23, matrix.M33);
-
+    // Negative determinant means flip on Z.
+    // TODO: Add tests and figure out exactly why this is. Jedd and myself have some theories but it would be nice to document this properly
     double determinant = Vector3.Dot(Vector3.Cross(basisX, basisY), basisZ) < 0 ? -1 : 1;
-    scale = new Vector3(scaleX, scaleY, scaleZ * determinant);
+    
+    // Compute the scale, but only multiply the Z scale by the determinant to flag negative scaling on Z axis (see todo above)
+    scale = new Vector3(basis4dX.Length(), basis4dY.Length(), basis4dZ.Length() * determinant);
 
     // rotation
     // this is using a z-up convention for basis vectors

@@ -510,9 +510,9 @@ namespace Objects.Converter.Revit
           case ICurve o:
             return ModelCurveToNative(o);
           case Geometry.Brep o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case Geometry.Mesh o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case BER.FreeformElement o:
             return FreeformElementToNative(o);
           default:

@@ -80,11 +80,8 @@ public partial class ConverterRevit
   {
     using var revitTransform = TransformToNative(instance.transform);
     instance.transform.Decompose(out var s, out var r, out var t);
-
-    var rotAngles = QuaternionToEuler(r);
-    var eulerAngles = new DB.XYZ(rotAngles.Pitch, rotAngles.Roll, rotAngles.Yaw);
-
-    var newIsMirroredCheck = (s.X < 0, s.Y < 0, s.Z < 0);
+    
+    var axisMirrorCheck = (s.X < 0, s.Y < 0, s.Z < 0);
     using DB.Plane pln = GetLocationPlaneForTransform(revitTransform);
 
     // Get the symbol for this instance's block definition
@@ -98,41 +95,11 @@ public partial class ConverterRevit
       pln.Origin + pln.YVec,
       Doc.ActiveView
     );
-
-    var mirrorCheck = CheckTransformMirroring(revitTransform);
-
+    
     var familyInstance = Doc.Create.NewFamilyInstance(refPlane.GetReference(), pln.Origin, pln.XVec, symbol);
-    ApplyMirroringToElement(familyInstance.Id, pln, newIsMirroredCheck);
+    ApplyMirroringToElement(familyInstance.Id, pln, axisMirrorCheck);
 
     return familyInstance;
-  }
-
-  public static void RotateElementZXY(DB.Element element, DB.Plane plane, DB.XYZ eulerAngles)
-  {
-    using DB.Line axisX = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.XVec);
-    using DB.Line axisY = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.YVec);
-    using DB.Line axisZ = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.Normal);
-
-    var rotationInfo = new List<(string, double, DB.Line)>
-    {
-      ("X", eulerAngles.X, axisX),
-      ("Y", eulerAngles.Y, axisY),
-      ("Z", eulerAngles.Z, axisZ),
-    };
-
-    foreach ((string name, double rotation, DB.Line axis) in rotationInfo)
-    {
-      try
-      {
-        element.Document.Regenerate();
-        if (Math.Abs(rotation) > TOLERANCE)
-          DB.ElementTransformUtils.RotateElement(element.Document, element.Id, axis, rotation);
-      }
-      catch (Exception e)
-      {
-        SpeckleLog.Logger.Warning(e, "Could not rotate element on the {name} axis", name);
-      }
-    }
   }
 
   private static DB.Plane GetLocationPlaneForTransform(DB.Transform transform)
@@ -238,13 +205,6 @@ public partial class ConverterRevit
       t.Start();
       // Swap the family category for the one we want
       famDoc.OwnerFamily.FamilyCategory = familyCategory;
-      var workPlaneBased = famDoc.FamilyManager.get_Parameter(DB.BuiltInParameter.FAMILY_WORK_PLANE_BASED);
-      if (workPlaneBased != null)
-        famDoc.FamilyManager.Set(workPlaneBased, "Yes");
-      var alwaysVertical = famDoc.FamilyManager.get_Parameter(DB.BuiltInParameter.FAMILY_ALWAYS_VERTICAL);
-      if (alwaysVertical != null)
-        famDoc.FamilyManager.Set(alwaysVertical, "No");
-      // TODO: Set units?
       t.Commit();
     }
     catch (Exception e)
@@ -301,7 +261,7 @@ public partial class ConverterRevit
   /// <returns>A new family document based based on the specified template.</returns>
   /// <exception cref="System.IO.FileNotFoundException">When the file corresponding to the provided template name could not be found</exception>
   /// <exception cref="Autodesk.Revit.Exceptions.InvalidOperationException">When the document could not be opened</exception>
-  private DB.Document CreateNewFamilyTemplateDoc(string name = "Generic Model")
+  private DB.Document CreateNewFamilyTemplateDoc(string name = "Block")
   {
     var templatePath = GetTemplatePath(name);
     if (!File.Exists(templatePath))
@@ -377,87 +337,5 @@ public partial class ConverterRevit
           }
       )
       .Where(bt => bt != null);
-  }
-
-  private static (double Roll, double Pitch, double Yaw) QuaternionToEuler(Quaternion q)
-  {
-    // Normalize the quaternion
-    q = Quaternion.Normalize(q);
-
-    double roll,
-      pitch,
-      yaw;
-
-    // roll (x-axis rotation)
-    double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
-    double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
-    roll = Math.Atan2(sinr_cosp, cosr_cosp);
-
-    // pitch (y-axis rotation)
-    double sinp = 2 * (q.W * q.Y - q.Z * q.X);
-    if (Math.Abs(sinp) >= 1)
-      pitch = (Math.PI / 2) * (sinp >= 0 ? 1 : -1); // use 90 degrees if out of range
-    else
-      pitch = Math.Asin(sinp);
-
-    // yaw (z-axis rotation)
-    double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
-    double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
-    yaw = Math.Atan2(siny_cosp, cosy_cosp);
-
-    return (roll, pitch, yaw);
-  }
-
-  private static (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) CheckTransformMirroring(DB.Transform transform)
-  {
-    DB.XYZ basisX = transform.BasisX;
-    DB.XYZ basisY = transform.BasisY;
-    DB.XYZ basisZ = transform.BasisZ;
-
-    // Determine if the full matrix includes a mirror operation
-    double fullDeterminant = basisX.CrossProduct(basisY).DotProduct(basisZ);
-    bool hasMirroring = fullDeterminant < 0;
-
-    // Check for mirroring across each axis
-    double determinantYZ = basisY.CrossProduct(basisZ).DotProduct(basisX);
-    double determinantZX = basisZ.CrossProduct(basisX).DotProduct(basisY);
-    double determinantXY = basisX.CrossProduct(basisY).DotProduct(basisZ);
-
-    bool isMirroredX = determinantYZ < 0;
-    bool isMirroredY = determinantZX < 0;
-    bool isMirroredZ = determinantXY < 0;
-
-    return (isMirroredX, isMirroredY, isMirroredZ);
-  }
-
-  public static DB.XYZ ToEulerAnglesZXY(DB.Transform transform)
-  {
-    // Extract basis vectors from the transform
-    DB.XYZ basisX = transform.BasisX;
-    DB.XYZ basisY = transform.BasisY;
-    DB.XYZ basisZ = transform.BasisZ;
-
-    // Assuming the Euler angles are in the ZXY order,
-    // the calculations are as follows:
-
-    double x,
-      y,
-      z;
-
-    y = Math.Asin(basisX.Z);
-
-    if (Math.Cos(y) != 0)
-    {
-      x = Math.Atan2(-basisY.Z / Math.Cos(y), basisZ.Z / Math.Cos(y));
-      z = Math.Atan2(-basisX.Y / Math.Cos(y), basisX.X / Math.Cos(y));
-    }
-    else
-    {
-      // Gimbal lock case
-      x = 0;
-      z = Math.Atan2(basisY.X, basisY.Y);
-    }
-
-    return new DB.XYZ(x, y, z); // Euler angles in radians
   }
 }
