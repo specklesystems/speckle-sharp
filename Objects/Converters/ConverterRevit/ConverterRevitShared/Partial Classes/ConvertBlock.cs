@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -78,6 +79,12 @@ public partial class ConverterRevit
   private DB.FamilyInstance ConvertBlockInstanceToFamilyInstance(BlockInstance instance)
   {
     using var revitTransform = TransformToNative(instance.transform);
+    instance.transform.Decompose(out var s, out var r, out var t);
+
+    var rotAngles = QuaternionToEuler(r);
+    var eulerAngles = new DB.XYZ(rotAngles.Pitch, rotAngles.Roll, rotAngles.Yaw);
+
+    var newIsMirroredCheck = (s.X < 0, s.Y < 0, s.Z < 0);
     using DB.Plane pln = GetLocationPlaneForTransform(revitTransform);
 
     // Get the symbol for this instance's block definition
@@ -93,19 +100,9 @@ public partial class ConverterRevit
     );
 
     var mirrorCheck = CheckTransformMirroring(revitTransform);
-    ApplyMirroringToElement(refPlane.Id, pln, mirrorCheck);
-
-    var angles = ToEulerAnglesZXY(revitTransform);
-    // Position family correctly.
-    RotateElementZXY(refPlane, pln, angles);
-
-    var correctedAngles = new DB.XYZ(
-      angles.X * (mirrorCheck.IsMirorredX ? -1 : 1),
-      angles.Y * (mirrorCheck.IsMirroredZ ? -1 : 1),
-      angles.Z + (angles.Z < 0 ? 1 : -1) * (mirrorCheck.IsMirroredZ ? Math.PI / 2 : 0)
-    );
 
     var familyInstance = Doc.Create.NewFamilyInstance(refPlane.GetReference(), pln.Origin, pln.XVec, symbol);
+    ApplyMirroringToElement(familyInstance.Id, pln, newIsMirroredCheck);
 
     return familyInstance;
   }
@@ -374,7 +371,9 @@ public partial class ConverterRevit
             // This cast to Base is safe. Compiler just can't safely know ITransformable is only applied to Base objects.
             Instance i => i.GetTransformedGeometry(), // Flattening inner instances here.
             ITransformable bt => new List<ITransformable> { bt },
-            _ => null
+            _
+              => (b.GetDetachedProp("displayValue") as IList)?.OfType<ITransformable>()
+                ?? Enumerable.Empty<ITransformable>()
           }
       )
       .Where(bt => bt != null);
@@ -407,18 +406,6 @@ public partial class ConverterRevit
     yaw = Math.Atan2(siny_cosp, cosy_cosp);
 
     return (roll, pitch, yaw);
-  }
-
-  private static double GetTransformZAxisRotation(DB.Transform transform)
-  {
-    var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-    var currentBasisX = new Vector(1, 0, 0);
-    // rotation about the z axis (signed)
-    var rotation = Math.Atan2(
-      Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), new Vector(0, 0, 1)),
-      Vector.DotProduct(desiredBasisX, currentBasisX)
-    );
-    return rotation;
   }
 
   private static (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) CheckTransformMirroring(DB.Transform transform)
