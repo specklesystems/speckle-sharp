@@ -311,7 +311,7 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride).ToString() : rp.GetUnitTypeId().ToString();
+      var unitTypeId = UnitsToNativeString(unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId());
 
       var value = GetParameterValue(rp, rp.Definition, unitTypeId);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
