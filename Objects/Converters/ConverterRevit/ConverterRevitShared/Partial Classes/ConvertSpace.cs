@@ -96,7 +96,7 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    public BuiltElements.Space SpaceToSpeckle(DB.Space revitSpace)
+    public Space SpaceToSpeckle(DB.Space revitSpace)
     {
       var profiles = GetProfiles(revitSpace);
 
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
       var phase = Doc.GetElement(revitSpace.get_Parameter(BuiltInParameter.ROOM_PHASE).AsElementId());
       if (phase != null)
       {
-        speckleSpace["phase"] = phase.Name;
+        speckleSpace.phaseName = phase.Name;
       }
 
       return speckleSpace;
