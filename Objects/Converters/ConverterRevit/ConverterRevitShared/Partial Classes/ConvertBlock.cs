@@ -21,6 +21,12 @@ namespace Objects.Converter.Revit;
 
 public partial class ConverterRevit
 {
+  /// <summary>
+  /// Same as <see cref="BlockInstanceToNative"/> but the result will have a user-specified category
+  /// coming form our mapping tool.
+  /// </summary>
+  /// <param name="blockWrapper">The block wrapper that contains the user-defined category and the block instance</param>
+  /// <returns></returns>
   public ApplicationObject MappedBlockWrapperToNative(MappedBlockWrapper blockWrapper)
   {
     blockWrapper.instance.typedDefinition["category"] = blockWrapper.category;
@@ -29,6 +35,12 @@ public partial class ConverterRevit
     return BlockInstanceToNative(blockWrapper.instance);
   }
 
+  /// <summary>
+  /// Top-level block to native conversion. Handles conversion from block to family, as well as
+  /// updating behaviour and appObject creation.
+  /// </summary>
+  /// <param name="instance">The block instance to convert.</param>
+  /// <returns></returns>
   public ApplicationObject BlockInstanceToNative(BlockInstance instance)
   {
     var docObj = GetExistingElementByApplicationId(instance.applicationId);
@@ -76,6 +88,13 @@ public partial class ConverterRevit
     return appObj;
   }
 
+  /// <summary>
+  /// Converts a Speckle Block instance into a Revit family instance. This includes finding or creating it's
+  /// corresponding family, as well as properly locating that instance in space.
+  /// The resulting family instance will be "Work Plane-based" and placed correctly in 3D space.
+  /// </summary>
+  /// <param name="instance">The instance to convert to a family in Revit.</param>
+  /// <returns>A new instance of the Revit family, located in the same place as the input block instance.</returns>
   private DB.FamilyInstance ConvertBlockInstanceToFamilyInstance(BlockInstance instance)
   {
     using var revitTransform = TransformToNative(instance.transform);
@@ -102,49 +121,13 @@ public partial class ConverterRevit
     return familyInstance;
   }
 
-  private static DB.Plane GetLocationPlaneForTransform(DB.Transform transform)
-  {
-    // Get the position of the instance in the current document
-    var position = transform.OfPoint(DB.XYZ.Zero);
-    // Apply XY mirroring to instance
-    var instanceXAxis = transform.OfVector(DB.XYZ.BasisX);
-    var instanceYAxis = transform.OfVector(DB.XYZ.BasisY);
-    return DB.Plane.CreateByOriginAndBasis(position, instanceXAxis, instanceYAxis);
-  }
-
-  private void ApplyMirroringToElement(
-    DB.ElementId familyInstanceId,
-    DB.Plane plane,
-    (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) mirrorCheck
-  )
-  {
-    new List<(string name, bool shouldMirror, DB.Plane mirrorPlane)>
-    {
-      ("YZ", mirrorCheck.IsMirorredX, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.YVec, plane.Normal)),
-      ("XZ", mirrorCheck.IsMirroredY, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.Normal)),
-      ("XY", mirrorCheck.IsMirroredZ, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.YVec))
-    }
-      .Where(i => i.shouldMirror)
-      .ToList()
-      .ForEach(item =>
-      {
-        try
-        {
-          Doc.Regenerate();
-          DB.ElementTransformUtils.MirrorElements(
-            Doc,
-            new List<DB.ElementId> { familyInstanceId },
-            item.mirrorPlane,
-            false
-          );
-        }
-        catch (Exception e)
-        {
-          SpeckleLog.Logger.Warning(e, "Failed to mirror element on {name} plane", item.name);
-        }
-      });
-  }
-
+  /// <summary>
+  /// Top-level logic to convert from a Speckle BlockDefinition to a Revit Family.
+  /// It handles finding existing family for the block, as well as creating a new one if none exists.
+  /// Ensures that the first symbol of the family is active in the document and returns it.
+  /// </summary>
+  /// <param name="definition">The block definition that will be converted to a revit family.</param>
+  /// <returns>The family symbol representing that block definition.</returns>
   private DB.FamilySymbol ConvertBlockDefinitionToFamilySymbol(BlockDefinition definition)
   {
     // TODO: Geometry update of existing family is not implemented yet.
@@ -157,6 +140,12 @@ public partial class ConverterRevit
     return symbol;
   }
 
+  /// <summary>
+  /// Creates a new family for the given block definition. The family will not contain any sub-families,
+  /// and all nested blocks will be flattened to the top-level.
+  /// </summary>
+  /// <param name="definition">The block definition to create a family out of.</param>
+  /// <returns>A family instance of the newly created family loaded into the doc.</returns>
   private DB.Family CreateBlockDefinitionFamily(BlockDefinition definition)
   {
     var famDoc = CreateNewFamilyTemplateDoc();
@@ -182,6 +171,13 @@ public partial class ConverterRevit
     return family;
   }
 
+  /// <summary>
+  /// Assigns a category to a family document based on a given name. If the category of the given name does not exist,
+  /// "Generic Model" will be used as the default.
+  /// This method is intended to be used in family documents only.
+  /// </summary>
+  /// <param name="famDoc">The Revit family document to change category of.</param>
+  /// <param name="categoryName">The category name. Must be one of <see cref="RevitCategory"/> converted to string.</param>
   private static void AssignCategoryToFamilyDoc(DB.Document famDoc, string? categoryName)
   {
     // Get the RevitCategory from a string value
@@ -236,6 +232,14 @@ public partial class ConverterRevit
     t.Commit();
   }
 
+  /// <summary>
+  /// Attempts to find the corresponding family symbol for a given block definition.
+  /// In general, since we're converting from a block to a family, we expect it to only have one symbol.
+  /// For this reason, current implementation will return the first symbol of the family.
+  /// </summary>
+  /// <param name="definition">The block definition to find a symbol for.</param>
+  /// <param name="family">The family that corresponds to th is block definition.</param>
+  /// <returns>The first family symbol of the family (as it is currently implemented).</returns>
   private DB.FamilySymbol? FindBlockDefinitionFamilySymbol(BlockDefinition definition, DB.Family family)
   {
     // The loaded family contains all the possible symbols (variations)
@@ -249,6 +253,14 @@ public partial class ConverterRevit
     return symbol;
   }
 
+  /// <summary>
+  /// Creates a family symbol for the given block definition.
+  /// THIS IS NOT SUPPORTED YET
+  /// </summary>
+  /// <param name="definition">The block definition to create a symbol out of</param>
+  /// <param name="family">The family where the symbol will be created</param>
+  /// <returns>The new family symbol instance.</returns>
+  /// <exception cref="NotImplementedException">Throws always, as this is not implemented yet.</exception>
   private DB.FamilySymbol CreateBlockDefinitionFamilySymbol(BlockDefinition definition, DB.Family family)
   {
     throw new NotImplementedException("Creating family symbols is not supported yet");
@@ -337,5 +349,55 @@ public partial class ConverterRevit
           }
       )
       .Where(bt => bt != null);
+  }
+
+  /// <summary>
+  /// Converts a Revit Transform into a Revit Plane.
+  /// </summary>
+  /// <param name="transform">The transform to convert.</param>
+  /// <returns>A new plane instance representing the input transform.</returns>
+  private static DB.Plane GetLocationPlaneForTransform(DB.Transform transform)
+  {
+    // Get the position of the instance in the current document
+    var position = transform.OfPoint(DB.XYZ.Zero);
+    // Apply XY mirroring to instance
+    var instanceXAxis = transform.OfVector(DB.XYZ.BasisX);
+    var instanceYAxis = transform.OfVector(DB.XYZ.BasisY);
+    return DB.Plane.CreateByOriginAndBasis(position, instanceXAxis, instanceYAxis);
+  }
+
+  /// <summary>
+  /// Mirrors an element across all axes of a given plane.
+  /// All mirror operations are optional and controlled by the mirrorCheck input parameter.
+  /// </summary>
+  /// <param name="elementId">The ID of the element to mirror.</param>
+  /// <param name="plane">The location of the mirroring planes</param>
+  /// <param name="mirrorCheck">A tuple to determine which axis to mirror</param>
+  private void ApplyMirroringToElement(
+    DB.ElementId elementId,
+    DB.Plane plane,
+    (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) mirrorCheck
+  )
+  {
+    new List<(string name, bool shouldMirror, DB.Plane mirrorPlane)>
+    {
+      ("YZ", mirrorCheck.IsMirorredX, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.YVec, plane.Normal)),
+      ("XZ", mirrorCheck.IsMirroredY, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.Normal)),
+      ("XY", mirrorCheck.IsMirroredZ, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.YVec))
+    }
+      .Where(i => i.shouldMirror)
+      .ToList()
+      .ForEach(item =>
+      {
+        try
+        {
+          Doc.Regenerate();
+          DB.ElementTransformUtils.MirrorElements(Doc, new List<DB.ElementId> { elementId }, item.mirrorPlane, false);
+        }
+        catch (Exception e)
+        {
+          SpeckleLog.Logger.Warning(e, "Failed to mirror element on {name} plane", item.name);
+        }
+      });
   }
 }
