@@ -908,16 +908,17 @@ public partial class ConverterRhinoGh
     var joinedMesh = new RH.Mesh();
 
     // get from settings
-    var meshSetting = Settings.ContainsKey("sendMeshSetting") ? Settings["sendMeshSetting"] : string.Empty;
+    //Settings.TryGetValue("sendMeshSetting", out string meshSetting);
 
-    var mySettings = RH.MeshingParameters.Default;
-    switch (meshSetting)
+    RH.MeshingParameters mySettings;
+    switch (SelectedMeshSettings)
     {
-      case "Default":
-        mySettings = new RH.MeshingParameters(0.05, 0.05);
-        break;
-      case "CurrentDoc":
+      case MeshSettings.CurrentDoc:
         mySettings = RH.MeshingParameters.DocumentCurrentSetting(Doc);
+        break;
+      case MeshSettings.Default:
+      default:
+        mySettings = new RH.MeshingParameters(0.05, 0.05);
         break;
     }
 
