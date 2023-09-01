@@ -80,7 +80,7 @@ public partial class ConverterRevit
   {
     using var revitTransform = TransformToNative(instance.transform);
     instance.transform.Decompose(out var s, out var r, out var t);
-    
+
     var axisMirrorCheck = (s.X < 0, s.Y < 0, s.Z < 0);
     using DB.Plane pln = GetLocationPlaneForTransform(revitTransform);
 
@@ -95,7 +95,7 @@ public partial class ConverterRevit
       pln.Origin + pln.YVec,
       Doc.ActiveView
     );
-    
+
     var familyInstance = Doc.Create.NewFamilyInstance(refPlane.GetReference(), pln.Origin, pln.XVec, symbol);
     ApplyMirroringToElement(familyInstance.Id, pln, axisMirrorCheck);
 

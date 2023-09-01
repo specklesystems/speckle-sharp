@@ -130,7 +130,7 @@ public class Transform : Base
     // Negative determinant means flip on Z.
     // TODO: Add tests and figure out exactly why this is. Jedd and myself have some theories but it would be nice to document this properly
     double determinant = Vector3.Dot(Vector3.Cross(basisX, basisY), basisZ) < 0 ? -1 : 1;
-    
+
     // Compute the scale, but only multiply the Z scale by the determinant to flag negative scaling on Z axis (see todo above)
     scale = new Vector3(basis4dX.Length(), basis4dY.Length(), basis4dZ.Length() * determinant);
 
