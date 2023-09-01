@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -56,15 +57,17 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public string spaceType { get; set; }
 
   // add the zone object for better forward compatibility
-  public RevitZone zone { get; set; }
+  public RevitZone? zone { get; set; }
 
+  [Obsolete]
+  public string zoneName { get; internal set; }
   public string units { get; set; }
-  
+
   public string roomId { get; set; }
-  
+
   public string phaseName { get; set; }
-  
-  // additional properties to add: also include space separation lines here? 
+
+  // additional properties to add: also include space separation lines here?
 
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }
