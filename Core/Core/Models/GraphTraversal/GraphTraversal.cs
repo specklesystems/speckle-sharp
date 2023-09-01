@@ -23,12 +23,14 @@ public class TraversalContext
   }
 }
 
-public class TraversalContext<T> : TraversalContext where T : TraversalContext
+public class TraversalContext<T> : TraversalContext
+  where T : TraversalContext
 {
   public override TraversalContext? parent => typedParent;
   public T? typedParent { get; }
 
-  public TraversalContext(Base current, string? propName = null, T? parent = default) : base(current, propName)
+  public TraversalContext(Base current, string? propName = null, T? parent = default)
+    : base(current, propName)
   {
     this.typedParent = parent;
   }
@@ -36,7 +38,10 @@ public class TraversalContext<T> : TraversalContext where T : TraversalContext
 
 public class GraphTraversal : GraphTraversal<TraversalContext>
 {
-  public GraphTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+  public GraphTraversal(params ITraversalRule[] traversalRule)
+    : base(traversalRule) { }
+
+  public static readonly string traversalContextId = "traversalContextId";
 
   protected override TraversalContext NewContext(Base current, string? propName, TraversalContext? parent)
   {
@@ -44,7 +49,8 @@ public class GraphTraversal : GraphTraversal<TraversalContext>
   }
 }
 
-public abstract class GraphTraversal<T> where T : TraversalContext
+public abstract class GraphTraversal<T>
+  where T : TraversalContext
 {
   private readonly ITraversalRule[] rules;
 
@@ -68,6 +74,7 @@ public abstract class GraphTraversal<T> where T : TraversalContext
       int headIndex = stack.Count - 1;
       T head = stack[headIndex];
       stack.RemoveAt(headIndex);
+
       yield return head;
 
       Base current = head.current;

@@ -85,11 +85,27 @@ public partial class ConverterRhinoGh
           break;
 
         case Floor o:
+          var floorBrep = (RH.Brep)@object.Geometry;
+          var extFloorCurves = GetSurfaceBrepEdges(floorBrep); // extract outline
+          var intFloorCurves = GetSurfaceBrepEdges(floorBrep, getInterior: true); // extract voids
+          o.outline = extFloorCurves.First();
+          o.voids = intFloorCurves;
+          break;
+
+        case Ceiling o:
+          var ceilingBrep = (RH.Brep)@object.Geometry;
+          var extCeilingCurves = GetSurfaceBrepEdges(ceilingBrep); // extract outline
+          var intCeilingCurves = GetSurfaceBrepEdges(ceilingBrep, getInterior: true); // extract voids
+          o.outline = extCeilingCurves.First();
+          o.voids = intCeilingCurves;
+          break;
+
+        case Roof o:
           var brep = (RH.Brep)@object.Geometry;
-          var extCurves = GetSurfaceBrepEdges(brep); // extract outline
-          var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-          o.outline = extCurves.First();
-          o.voids = intCurves;
+          var extRoofCurves = GetSurfaceBrepEdges(brep); // extract outline
+          var intRoofCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
+          o.outline = extRoofCurves.First();
+          o.voids = intRoofCurves;
           break;
 
         case Beam o:
