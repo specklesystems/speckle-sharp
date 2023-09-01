@@ -311,7 +311,7 @@ public partial class ConverterRevit
   /// <example>For a block named "Chair", it's Revit family name would be "Chair_SpeckleBlock"</example>
   private static string GetFamilyNameFor(BlockDefinition definition)
   {
-    return definition.name + "_SpeckleBlock";
+    return definition.name;
   }
 
   /// <summary>
