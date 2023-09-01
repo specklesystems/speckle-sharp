@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +10,8 @@ using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Objects.Other;
+using Serilog.Core;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.netDxf.Blocks;
 using DB = Autodesk.Revit.DB;
@@ -18,6 +20,14 @@ namespace Objects.Converter.Revit;
 
 public partial class ConverterRevit
 {
+  public ApplicationObject MappedBlockWrapperToNative(MappedBlockWrapper blockWrapper)
+  {
+    blockWrapper.instance.typedDefinition["category"] = blockWrapper.category;
+    if (blockWrapper.nameOverride != null)
+      blockWrapper.instance.typedDefinition.name = blockWrapper.nameOverride;
+    return BlockInstanceToNative(blockWrapper.instance);
+  }
+
   public ApplicationObject BlockInstanceToNative(BlockInstance instance)
   {
     var docObj = GetExistingElementByApplicationId(instance.applicationId);
@@ -28,7 +38,7 @@ public partial class ConverterRevit
       return appObj;
 
     var isUpdate = false;
-    if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update)
+    if (docObj != null && ReceiveMode == ReceiveMode.Update)
     {
       try
       {
@@ -59,10 +69,7 @@ public partial class ConverterRevit
     {
       var errMsg = "An unexpected error occured when converting a BlockInstance to Native";
       SpeckleLog.Logger.Error(e, errMsg);
-      appObj.Update(
-        status: ApplicationObject.State.Failed,
-        logItem: $"{errMsg}: {e.ToFormattedString()}"
-      );
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{errMsg}: {e.ToFormattedString()}");
     }
 
     return appObj;
@@ -70,77 +77,184 @@ public partial class ConverterRevit
 
   private DB.FamilyInstance ConvertBlockInstanceToFamilyInstance(BlockInstance instance)
   {
-    instance.transform.Decompose(out var scale, out var rot, out _);
-    var scaleTransform = new Transform
-    {
-      matrix = GetScaleMatrix(scale),
-      units = instance.transform.units
-    };
-
-    var symbol = ConvertBlockDefinitionToFamilySymbol(instance.typedDefinition, scaleTransform);
-
-    // Get the position of the instance in the current document
     using var revitTransform = TransformToNative(instance.transform);
-    var position = revitTransform.OfPoint(DB.XYZ.Zero);
+    using DB.Plane pln = GetLocationPlaneForTransform(revitTransform);
+
+    // Get the symbol for this instance's block definition
+    var symbol = ConvertBlockDefinitionToFamilySymbol(instance.typedDefinition);
 
     // Create instance with the correct mode depending if it's nested or not.
-    // TODO: This is just prep for deep nesting support. For now we usually call this at the model level only.
-    var structuralType = DB.Structure.StructuralType.NonStructural;
-    var familyInstance = Doc.IsFamilyDocument
-      ? Doc.FamilyCreate.NewFamilyInstance(new DB.XYZ(), symbol, structuralType)
-      : Doc.Create.NewFamilyInstance(new DB.XYZ(), symbol, structuralType);
+    // For now we usually call this at the model level only
+    var refPlane = Doc.Create.NewReferencePlane2(
+      pln.Origin,
+      pln.Origin + pln.XVec,
+      pln.Origin + pln.YVec,
+      Doc.ActiveView
+    );
 
-    var (roll, pitch, yaw) = QuaternionToEuler(rot);
-    familyInstance.Location.Move(position);
-    using var axisZ = DB.Line.CreateBound(new DB.XYZ(position.X, position.Y, 0), new DB.XYZ(position.X, position.Y, 1000));
-    familyInstance.Location.Rotate(axisZ, yaw);
+    var mirrorCheck = CheckTransformMirroring(revitTransform);
+    ApplyMirroringToElement(refPlane.Id, pln, mirrorCheck);
+
+    var angles = ToEulerAnglesZXY(revitTransform);
+    // Position family correctly.
+    RotateElementZXY(refPlane, pln, angles);
+
+    var correctedAngles = new DB.XYZ(
+      angles.X * (mirrorCheck.IsMirorredX ? -1 : 1),
+      angles.Y * (mirrorCheck.IsMirroredZ ? -1 : 1),
+      angles.Z + (angles.Z < 0 ? 1 : -1) * (mirrorCheck.IsMirroredZ ? Math.PI / 2 : 0)
+    );
+
+    var familyInstance = Doc.Create.NewFamilyInstance(refPlane.GetReference(), pln.Origin, pln.XVec, symbol);
+
     return familyInstance;
   }
 
-  private DB.FamilySymbol ConvertBlockDefinitionToFamilySymbol(BlockDefinition definition, Transform transform)
+  public static void RotateElementZXY(DB.Element element, DB.Plane plane, DB.XYZ eulerAngles)
   {
-    using var family = FindBlockDefinitionFamily(definition) ?? CreateBlockDefinitionFamily(definition, transform);
-    
+    using DB.Line axisX = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.XVec);
+    using DB.Line axisY = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.YVec);
+    using DB.Line axisZ = DB.Line.CreateBound(plane.Origin, plane.Origin + plane.Normal);
+
+    var rotationInfo = new List<(string, double, DB.Line)>
+    {
+      ("X", eulerAngles.X, axisX),
+      ("Y", eulerAngles.Y, axisY),
+      ("Z", eulerAngles.Z, axisZ),
+    };
+
+    foreach ((string name, double rotation, DB.Line axis) in rotationInfo)
+    {
+      try
+      {
+        element.Document.Regenerate();
+        if (Math.Abs(rotation) > TOLERANCE)
+          DB.ElementTransformUtils.RotateElement(element.Document, element.Id, axis, rotation);
+      }
+      catch (Exception e)
+      {
+        SpeckleLog.Logger.Warning(e, "Could not rotate element on the {name} axis", name);
+      }
+    }
+  }
+
+  private static DB.Plane GetLocationPlaneForTransform(DB.Transform transform)
+  {
+    // Get the position of the instance in the current document
+    var position = transform.OfPoint(DB.XYZ.Zero);
+    // Apply XY mirroring to instance
+    var instanceXAxis = transform.OfVector(DB.XYZ.BasisX);
+    var instanceYAxis = transform.OfVector(DB.XYZ.BasisY);
+    return DB.Plane.CreateByOriginAndBasis(position, instanceXAxis, instanceYAxis);
+  }
+
+  private void ApplyMirroringToElement(
+    DB.ElementId familyInstanceId,
+    DB.Plane plane,
+    (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) mirrorCheck
+  )
+  {
+    new List<(string name, bool shouldMirror, DB.Plane mirrorPlane)>
+    {
+      ("YZ", mirrorCheck.IsMirorredX, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.YVec, plane.Normal)),
+      ("XZ", mirrorCheck.IsMirroredY, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.Normal)),
+      ("XY", mirrorCheck.IsMirroredZ, DB.Plane.CreateByOriginAndBasis(plane.Origin, plane.XVec, plane.YVec))
+    }
+      .Where(i => i.shouldMirror)
+      .ToList()
+      .ForEach(item =>
+      {
+        try
+        {
+          Doc.Regenerate();
+          DB.ElementTransformUtils.MirrorElements(
+            Doc,
+            new List<DB.ElementId> { familyInstanceId },
+            item.mirrorPlane,
+            false
+          );
+        }
+        catch (Exception e)
+        {
+          SpeckleLog.Logger.Warning(e, "Failed to mirror element on {name} plane", item.name);
+        }
+      });
+  }
+
+  private DB.FamilySymbol ConvertBlockDefinitionToFamilySymbol(BlockDefinition definition)
+  {
+    // TODO: Geometry update of existing family is not implemented yet.
+    using var family = FindBlockDefinitionFamily(definition) ?? CreateBlockDefinitionFamily(definition);
+
     // TODO: We're still picking the first one here. New symbol creation for other scales is not yet supported
-    var symbol = FindBlockDefinitionFamilySymbol(definition, family) ?? CreateBlockDefinitionFamilySymbol(definition, family);
-    
+    var symbol =
+      FindBlockDefinitionFamilySymbol(definition, family) ?? CreateBlockDefinitionFamilySymbol(definition, family);
+
     return symbol;
   }
 
-  private DB.Family CreateBlockDefinitionFamily(BlockDefinition definition, Transform transform)
+  private DB.Family CreateBlockDefinitionFamily(BlockDefinition definition)
   {
     var famDoc = CreateNewFamilyTemplateDoc();
-   
+
     // Get the flat list of geometry and scale using transform to get it to the right size.
-    var flatGeometry = GetBlockDefinitionGeometry(definition).Select(
-      bt =>
-      {
-        bt.TransformTo(transform, out var transformed);
-        return transformed as Base;
-      });
+    var flatGeometry = GetBlockDefinitionGeometry(definition).Select(bt => bt as Base);
+
     // Grab all geometry from the definition, convert and add to family symbol.
     PopulateFamilyWithBlockDefinitionGeometry(famDoc, flatGeometry);
-    
-    // Load the new document into the model doc
-    var famName = definition.name + "_" + transform.GetId();
-    string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+    // Change the category of this definition
+    AssignCategoryToFamilyDoc(famDoc, definition["category"] as string);
+
+    string tempFamilyPath = Path.Combine(Path.GetTempPath(), GetFamilyNameFor(definition) + ".rfa");
     using var so = new DB.SaveAsOptions();
     so.OverwriteExistingFile = true;
-    var catName = Categories.GetBuiltInFromSchemaBuilderCategory(RevitCategory.Furniture);
-    DB.BuiltInCategory.TryParse(catName, out DB.BuiltInCategory bic);
-    DB.Category familyCategory = famDoc.Settings.Categories.get_Item(bic);
-    using var t = new DB.Transaction(famDoc, "Change family category");
-    t.Start();
-    famDoc.OwnerFamily.FamilyCategory = familyCategory;
-    t.Commit();
-    
+
+    // Save and close the doc
     famDoc.SaveAs(tempFamilyPath, so);
     famDoc.Close();
 
-    var familyLoadOptions = new FamilyLoadOption();
-    
-    Doc.LoadFamily(tempFamilyPath, familyLoadOptions, out var family);
+    // Load the new document into the model doc
+    Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var family);
     return family;
+  }
+
+  private static void AssignCategoryToFamilyDoc(DB.Document famDoc, string? categoryName)
+  {
+    // Get the RevitCategory from a string value
+    var success = Enum.TryParse(categoryName, out RevitCategory cat);
+    if (!success)
+      cat = RevitCategory.GenericModel;
+
+    // Get the BuiltInCategory corresponding to the RevitCategory
+    var catName = Categories.GetBuiltInFromSchemaBuilderCategory(cat);
+    success = Enum.TryParse(catName, out DB.BuiltInCategory bic);
+    if (!success)
+      bic = DB.BuiltInCategory.OST_GenericModel;
+
+    // Get the actual category from the document
+    DB.Category familyCategory = famDoc.Settings.Categories.get_Item(bic);
+
+    using var t = new DB.Transaction(famDoc, "Change family category");
+
+    try
+    {
+      t.Start();
+      // Swap the family category for the one we want
+      famDoc.OwnerFamily.FamilyCategory = familyCategory;
+      var workPlaneBased = famDoc.FamilyManager.get_Parameter(DB.BuiltInParameter.FAMILY_WORK_PLANE_BASED);
+      if (workPlaneBased != null)
+        famDoc.FamilyManager.Set(workPlaneBased, "Yes");
+      var alwaysVertical = famDoc.FamilyManager.get_Parameter(DB.BuiltInParameter.FAMILY_ALWAYS_VERTICAL);
+      if (alwaysVertical != null)
+        famDoc.FamilyManager.Set(alwaysVertical, "No");
+      // TODO: Set units?
+      t.Commit();
+    }
+    catch (Exception e)
+    {
+      SpeckleLog.Logger.Warning(e, "Document category could not be modified");
+      t.RollBack();
+    }
   }
 
   /// <summary>
@@ -150,10 +264,7 @@ public partial class ConverterRevit
   /// </summary>
   /// <param name="definition">The BlockDefinition to extract the geometry from</param>
   /// <param name="famDoc">The revit document where the geometry will be added</param>
-  private static void PopulateFamilyWithBlockDefinitionGeometry(
-    DB.Document famDoc,
-    IEnumerable<Base?> geometry
-  )
+  private static void PopulateFamilyWithBlockDefinitionGeometry(DB.Document famDoc, IEnumerable<Base?> geometry)
   {
     // Start up a local converter to isolate conversions for this particular family document.
     // This prevents other conversions from being polluted by multi-document environments.
@@ -167,7 +278,7 @@ public partial class ConverterRevit
       converter.ConvertToNativeObject(o);
     t.Commit();
   }
-  
+
   private DB.FamilySymbol? FindBlockDefinitionFamilySymbol(BlockDefinition definition, DB.Family family)
   {
     // The loaded family contains all the possible symbols (variations)
@@ -178,7 +289,6 @@ public partial class ConverterRevit
       return null;
     if (!symbol.IsActive)
       symbol.Activate();
-    symbol.Name = "Default";
     return symbol;
   }
 
@@ -235,33 +345,6 @@ public partial class ConverterRevit
   }
 
   /// <summary>
-  /// Creates a new transform that contains scaling values exclusively.
-  /// </summary>
-  /// <param name="scale">The scale vector to use in the transform.</param>
-  /// <returns>The resulting scaling transform.</returns>
-  private static Matrix4x4 GetScaleMatrix(Vector3 scale)
-  {
-    var matrix = new Matrix4x4(
-      scale.X,
-      0,
-      0,
-      0,
-      0,
-      scale.Y,
-      0,
-      0,
-      0,
-      0,
-      scale.Z,
-      0,
-      0,
-      0,
-      0,
-      1);
-    return matrix;
-  }
-
-  /// <summary>
   /// Utility function to consolidate the naming pattern for <see cref="BlockDefinition"/> instances in Revit.
   /// The current pattern will return the name of the block, followed by the prefix '_SpeckleBlock'
   /// </summary>
@@ -273,7 +356,7 @@ public partial class ConverterRevit
   {
     return definition.name + "_SpeckleBlock";
   }
-  
+
   /// <summary>
   /// Gets the geometric representation of a given block definition. This will 'flatten' all inner instances so that
   /// all that remains is the geometric entities, properly translated into this <see cref="BlockDefinition"/>'s transform space.
@@ -296,13 +379,15 @@ public partial class ConverterRevit
       )
       .Where(bt => bt != null);
   }
-  
-  public static (double Roll, double Pitch, double Yaw) QuaternionToEuler(Quaternion q)
+
+  private static (double Roll, double Pitch, double Yaw) QuaternionToEuler(Quaternion q)
   {
     // Normalize the quaternion
     q = Quaternion.Normalize(q);
 
-    double roll, pitch, yaw;
+    double roll,
+      pitch,
+      yaw;
 
     // roll (x-axis rotation)
     double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
@@ -312,7 +397,7 @@ public partial class ConverterRevit
     // pitch (y-axis rotation)
     double sinp = 2 * (q.W * q.Y - q.Z * q.X);
     if (Math.Abs(sinp) >= 1)
-      pitch = (Math.PI / 2) * (sinp >= 0 ? 1 : -1);  // use 90 degrees if out of range
+      pitch = (Math.PI / 2) * (sinp >= 0 ? 1 : -1); // use 90 degrees if out of range
     else
       pitch = Math.Asin(sinp);
 
@@ -322,5 +407,70 @@ public partial class ConverterRevit
     yaw = Math.Atan2(siny_cosp, cosy_cosp);
 
     return (roll, pitch, yaw);
+  }
+
+  private static double GetTransformZAxisRotation(DB.Transform transform)
+  {
+    var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
+    var currentBasisX = new Vector(1, 0, 0);
+    // rotation about the z axis (signed)
+    var rotation = Math.Atan2(
+      Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), new Vector(0, 0, 1)),
+      Vector.DotProduct(desiredBasisX, currentBasisX)
+    );
+    return rotation;
+  }
+
+  private static (bool IsMirorredX, bool IsMirroredY, bool IsMirroredZ) CheckTransformMirroring(DB.Transform transform)
+  {
+    DB.XYZ basisX = transform.BasisX;
+    DB.XYZ basisY = transform.BasisY;
+    DB.XYZ basisZ = transform.BasisZ;
+
+    // Determine if the full matrix includes a mirror operation
+    double fullDeterminant = basisX.CrossProduct(basisY).DotProduct(basisZ);
+    bool hasMirroring = fullDeterminant < 0;
+
+    // Check for mirroring across each axis
+    double determinantYZ = basisY.CrossProduct(basisZ).DotProduct(basisX);
+    double determinantZX = basisZ.CrossProduct(basisX).DotProduct(basisY);
+    double determinantXY = basisX.CrossProduct(basisY).DotProduct(basisZ);
+
+    bool isMirroredX = determinantYZ < 0;
+    bool isMirroredY = determinantZX < 0;
+    bool isMirroredZ = determinantXY < 0;
+
+    return (isMirroredX, isMirroredY, isMirroredZ);
+  }
+
+  public static DB.XYZ ToEulerAnglesZXY(DB.Transform transform)
+  {
+    // Extract basis vectors from the transform
+    DB.XYZ basisX = transform.BasisX;
+    DB.XYZ basisY = transform.BasisY;
+    DB.XYZ basisZ = transform.BasisZ;
+
+    // Assuming the Euler angles are in the ZXY order,
+    // the calculations are as follows:
+
+    double x,
+      y,
+      z;
+
+    y = Math.Asin(basisX.Z);
+
+    if (Math.Cos(y) != 0)
+    {
+      x = Math.Atan2(-basisY.Z / Math.Cos(y), basisZ.Z / Math.Cos(y));
+      z = Math.Atan2(-basisX.Y / Math.Cos(y), basisX.X / Math.Cos(y));
+    }
+    else
+    {
+      // Gimbal lock case
+      x = 0;
+      z = Math.Atan2(basisY.X, basisY.Y);
+    }
+
+    return new DB.XYZ(x, y, z); // Euler angles in radians
   }
 }
