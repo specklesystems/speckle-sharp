@@ -1,3 +1,4 @@
+#nullable enable
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -24,7 +25,7 @@ public class Parameter : Base
   }
 
   public string name { get; set; }
-  public object value { get; set; }
+  public object? value { get; set; }
   public string applicationUnitType { get; set; } //eg UnitType UT_Length
   public string applicationUnit { get; set; } //DisplayUnitType eg DUT_MILLIMITERS
   public string applicationInternalName { get; set; } //BuiltInParameterName or GUID for shared parameter
