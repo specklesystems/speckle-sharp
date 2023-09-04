@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
+using Objects.Converter.Revit.Models;
 using Objects.Geometry;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
@@ -286,12 +287,7 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        var speckleParam = ParameterToSpeckle(
-          param,
-          isTypeParameter,
-          paramInternalName: internalName,
-          cache: revitDocumentAggregateCache
-        );
+        var speckleParam = ParameterToSpeckle(param, internalName, isTypeParameter);
         paramDict[internalName] = speckleParam;
       }
     }
@@ -311,7 +307,7 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = GetParameterValue(rp, rp.Definition, out _, unitsOverride);
+      var value = GetParameterValue(rp, rp.Definition, unitsOverride);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
@@ -325,35 +321,84 @@ namespace Objects.Converter.Revit
     /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
-    private static Parameter ParameterToSpeckle(
+    private Parameter ParameterToSpeckle(
       DB.Parameter rp,
+      string paramInternalName,
       bool isTypeParameter = false,
-      string unitsOverride = null,
-      string paramInternalName = null,
-      IRevitDocumentAggregateCache cache = null
+      string unitsOverride = null
     )
     {
+#if REVIT2020
+      DisplayUnitType unitTypeId = default;
+#else
+      ForgeTypeId unitTypeId = null;
+#endif
       var definition = rp.Definition;
-      var sp = new Parameter
-      {
-        name = definition.Name,
-        applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
-        isShared = rp.IsShared,
-        isReadOnly = rp.IsReadOnly,
-        isTypeParameter = isTypeParameter,
-        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
-      };
+      var paramCache = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData?>(out _);
 
-      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
-      sp.applicationUnit = appUnit;
-      return sp;
+      var cachedParamData = paramCache
+        .TryGet(paramInternalName);
+
+      ParameterToSpeckleData paramData;
+      if (cachedParamData == null)
+      {
+        paramData = new ParameterToSpeckleData()
+        {
+          InternalName = paramInternalName,
+          IsReadOnly = rp.IsReadOnly,
+          IsShared = rp.IsShared,
+          IsTypeParameter = isTypeParameter,
+          Name = definition.Name,
+          UnitType = definition.GetUnityTypeString(),
+        };
+        if (rp.StorageType == StorageType.Double)
+        {
+          unitTypeId = rp.GetUnitTypeId();
+          paramData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
+          paramData.ApplicationUnits = unitsOverride != null
+            ? UnitsToNative(unitsOverride).ToUniqueString()
+            : unitTypeId.ToUniqueString();
+        }
+        paramCache.Set(paramInternalName, paramData);
+      }
+      else
+      {
+        paramData = cachedParamData.Value;
+      }
+      //var cachedParamData = paramCache
+      //  .GetOrAdd(paramInternalName, () =>
+      //  {
+      //    unitTypeId = rp.GetUnitTypeId();
+      //    var paramData = new ParameterToSpeckleData()
+      //    {
+      //      InternalName = paramInternalName,
+      //      IsReadOnly = rp.IsReadOnly,
+      //      IsShared = rp.IsShared,
+      //      IsTypeParameter = isTypeParameter,
+      //      Name = definition.Name,
+      //      UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId),
+      //      UnitType = definition.GetUnityTypeString(),
+      //    };
+      //    if (rp.StorageType == StorageType.Double)
+      //    {
+      //      paramData.ApplicationUnits = unitsOverride != null
+      //        ? UnitsToNative(unitsOverride).ToUniqueString()
+      //        : unitTypeId.ToUniqueString();
+      //    }
+      //    return paramData;
+      //  }, out _);
+
+      var value = rp.HasValue 
+        ? GetParameterValue(rp, definition, unitsOverride, revitDocumentAggregateCache, unitTypeId)
+        : null;
+
+      return paramData.GetParameterObjectWithValue(value);
     }
 
     private static object GetParameterValue(
       DB.Parameter rp,
       Definition definition,
-      out string unitType,
       string unitsOverride = null,
       IRevitDocumentAggregateCache cache = null,
 #if REVIT2020
@@ -363,7 +408,6 @@ namespace Objects.Converter.Revit
 #endif
     )
     {
-      unitType = null;
       switch (rp.StorageType)
       {
         case StorageType.Double:
@@ -377,7 +421,6 @@ namespace Objects.Converter.Revit
           {
             unitTypeId = UnitsToNative(unitsOverride);
           }
-          unitType = UnitsToNativeString(unitTypeId);
           return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
@@ -407,28 +450,24 @@ namespace Objects.Converter.Revit
     /// <param name="cache"></param>
     /// <param name="forgeTypeId"></param>
     /// <returns></returns>
-    public static string GetSymbolUnit(
+    public string GetSymbolUnit(
       DB.Parameter parameter,
       DB.Definition definition,
-      IRevitDocumentAggregateCache cache,
 #if REVIT2020
-      out DisplayUnitType unitTypeId
+      DisplayUnitType unitTypeId
 #else
-      out ForgeTypeId unitTypeId
+      ForgeTypeId unitTypeId
 #endif
     )
     {
-      unitTypeId = default;
       if (parameter.StorageType != StorageType.Double)
       {
         return null;
       }
 
-      unitTypeId = parameter.GetUnitTypeId();
-      var unitTypeIdCopy = unitTypeId;
-      return cache
+      return revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<string>(out _)
-        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeId.GetSymbol(), out _);
     }
 
     /// <summary>
