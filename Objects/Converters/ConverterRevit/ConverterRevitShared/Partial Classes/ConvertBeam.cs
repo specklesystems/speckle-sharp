@@ -47,7 +47,15 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+      double elevationOffset = 0.0;
+      if (speckleRevitBeam != null)
+      {
+        level = ConvertLevelToRevit(speckleRevitBeam.level, out ApplicationObject.State levelState);
+      }
+      else
+      {
+        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out elevationOffset);
+      }
       var isUpdate = false;
 
       if (docObj != null)
@@ -107,6 +115,9 @@ namespace Objects.Converter.Revit
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
+      if (!(revitBeam is RevitBeam))
+        TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -elevationOffset);
+
       if (speckleRevitBeam != null)
         SetInstanceParameters(revitBeam, speckleRevitBeam);
 
@@ -141,5 +152,5 @@ namespace Objects.Converter.Revit
 
       return speckleBeam;
     }
-}
   }
+}

@@ -53,13 +53,14 @@ namespace Objects.Converter.Revit
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
+      double elevationOffset = 0.0;
       if (speckleWall is RevitWall speckleRevitWall)
       {
         level = ConvertLevelToRevit(speckleRevitWall.level, out levelState);
         structural = speckleRevitWall.structural;
       }
       else
-        level = ConvertLevelToRevit(LevelFromCurve(baseCurve), out levelState);
+        level = ConvertLevelToRevit(baseCurve, out levelState, out elevationOffset);
 
       //if it's a new element, we don't need to update certain properties
       bool isUpdate = true;
@@ -147,8 +148,13 @@ namespace Objects.Converter.Revit
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
         TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
       }
-      else // Set wall unconnected height.
+      else
+      {
+        // Set wall unconnected height.
         TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
+
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, -elevationOffset);
+      }
 
       SetInstanceParameters(revitWall, speckleWall);
 

@@ -50,6 +50,8 @@ namespace Objects.Converter.Revit
 
       var speckleRevitColumn = speckleColumn as RevitColumn;
 
+      double elevationOffset = 0.0;
+      double elevationTopOffset = 0.0;
       var levelState = ApplicationObject.State.Unknown;
       if (speckleRevitColumn != null)
       {
@@ -62,8 +64,8 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = ConvertLevelToRevit(LevelFromCurve(baseLine), out levelState);
-        topLevel = ConvertLevelToRevit(LevelFromPoint(baseLine.GetEndPoint(1)), out levelState);
+        level = ConvertLevelToRevit(baseLine, out levelState, out elevationOffset);
+        topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out elevationTopOffset);
       }
 
       //try update existing 
@@ -140,6 +142,11 @@ namespace Objects.Converter.Revit
 
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
+      if (!(revitColumn is RevitColumn))
+      {
+        TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM, -elevationOffset);
+        TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM, -elevationTopOffset);
+      }
 
       if (speckleRevitColumn != null)
       {

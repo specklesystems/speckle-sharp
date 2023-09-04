@@ -34,12 +34,15 @@ namespace Objects.Converter.Revit
       DB.Level level = null;
       var outline = CurveToNative(speckleRoof.outline);
 
+      double elevationOffset = 0.0;
       var speckleRevitRoof = speckleRoof as RevitRoof;
       var levelState = ApplicationObject.State.Unknown;
       if (speckleRevitRoof != null)
         level = ConvertLevelToRevit(speckleRevitRoof.level, out levelState);
       else
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
+      {
+        level = ConvertLevelToRevit(outline.get_Item(0), out ApplicationObject.State state, out elevationOffset);
+      }
 
       var roofType = GetElementType<RoofType>(speckleRoof, appObj, out bool _);
       if (roofType == null)
@@ -163,6 +166,8 @@ namespace Objects.Converter.Revit
       {
         appObj.Update(logItem: $"Could not create openings: {ex.Message}");
       }
+      if (!(revitRoof is RevitRoof))
+        TrySetParam(revitRoof, BuiltInParameter.ROOF_LEVEL_OFFSET_PARAM, -elevationOffset);
 
       if (speckleRevitRoof != null)
         SetInstanceParameters(revitRoof, speckleRevitRoof);
