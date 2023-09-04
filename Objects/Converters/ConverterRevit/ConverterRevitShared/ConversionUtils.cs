@@ -378,7 +378,7 @@ namespace Objects.Converter.Revit
             unitTypeId = UnitsToNative(unitsOverride);
           }
           unitType = UnitsToNativeString(unitTypeId);
-          return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
+          return ScaleToSpeckle(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
           return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
