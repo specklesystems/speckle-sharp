@@ -4,6 +4,10 @@ using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit.Models
 {
+  /// <summary>
+  /// This struct is used when caching parameter definitions upon sending to avoid having to deep clone the parameter object
+  /// This is done because all the fields except the parameter value will change
+  /// </summary>
   internal struct ParameterToSpeckleData
   {
     public string ApplicationUnits;

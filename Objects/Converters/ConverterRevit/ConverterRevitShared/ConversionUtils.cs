@@ -249,6 +249,8 @@ namespace Objects.Converter.Revit
       if (phaseDemolished != null)
         speckleElement["phaseDemolished"] = phaseDemolished.Name;
 
+      speckleElement["worksetId"] = revitElement.WorksetId.ToString();
+
       var category = revitElement.Category;
       if (category != null)
       {
@@ -328,6 +330,9 @@ namespace Objects.Converter.Revit
       ForgeTypeId unitTypeId = null;
 #endif
 
+      // The parameter definitions are cached using the ParameterToSpeckleData struct
+      // This is done because in the case of type and instance parameter there is lots of redundant data that needs to be extracted from the Revit DB
+      // Caching noticeably speeds up the send process
       // TODO : could add some generic getOrAdd overloads to avoid creating closures
       var paramData = revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
@@ -614,7 +619,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-#endregion
+    #endregion
 
     #region conversion "edit existing if possible" utilities
 

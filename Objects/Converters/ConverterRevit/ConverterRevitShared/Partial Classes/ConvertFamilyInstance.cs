@@ -1,24 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.DoubleNumerics;
-
+using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using DB = Autodesk.Revit.DB;
-
-using Speckle.Core.Models;
-
-using Point = Objects.Geometry.Point;
-using RevitInstance = Objects.Other.Revit.RevitInstance;
-using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
-using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
+using Objects.Organization;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using DB = Autodesk.Revit.DB;
+using Point = Objects.Geometry.Point;
+using RevitInstance = Objects.Other.Revit.RevitInstance;
+using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using SHC = RevitSharedResources.Helpers.Categories;
-using Objects.Organization;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -42,7 +39,7 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && 
+      if (@base == null &&
         (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
         || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
       {
@@ -99,6 +96,13 @@ namespace Objects.Converter.Revit
       // add additional props to base object
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
+      if (revitFi.Room != null)
+        @base["roomId"] = revitFi.Room.Id.ToString();
+      if (revitFi.ToRoom != null)
+        @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
+      if (revitFi.FromRoom != null)
+        @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
+
 
       return @base;
     }
