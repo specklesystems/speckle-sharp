@@ -50,7 +50,7 @@ namespace Speckle.ConnectorRevit.UI
       var client = state.Client;
 
       var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
-      selectedObjects = ValidateSelectedObjects(selectedObjects).ToList();
+      selectedObjects = HandleSelectedObjectDescendants(selectedObjects).ToList();
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).Distinct().ToList();
 
       if (!selectedObjects.Any())

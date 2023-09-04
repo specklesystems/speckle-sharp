@@ -647,7 +647,7 @@ namespace Speckle.ConnectorRevit.UI
     /// - Zones are expanded into their constituent spaces.
     /// - [Add additional validations here as they are implemented.]
     /// </remarks>
-    private static IEnumerable<Element> ValidateSelectedObjects(IEnumerable<Element> selectedObjects)
+    private static IEnumerable<Element> HandleSelectedObjectDescendants(IEnumerable<Element> selectedObjects)
     {
       // Handle the resolution of selected Elements to their convertable states here
       foreach (var element in selectedObjects)
