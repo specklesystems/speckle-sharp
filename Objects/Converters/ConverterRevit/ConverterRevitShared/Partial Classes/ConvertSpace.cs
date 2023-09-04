@@ -44,7 +44,7 @@ namespace Objects.Converter.Revit
       {
         appObj.Update(
           logItem: $"Space Phase {targetPhase.Name} not selected in the Active View.",
-          status: ApplicationObject.State.Unknown
+          status: ApplicationObject.State.Skipped
         );
         return appObj;
         // return null;
