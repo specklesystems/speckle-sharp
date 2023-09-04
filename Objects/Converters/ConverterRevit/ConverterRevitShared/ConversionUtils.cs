@@ -440,7 +440,7 @@ namespace Objects.Converter.Revit
 
       foreach (var spk in filteredSpeckleParameters)
       {
-        if (!(spk.Value is Parameter sp) || sp.isReadOnly)
+        if (!(spk.Value is Parameter sp) || sp.isReadOnly || sp.value == null)
           continue;
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
