@@ -209,13 +209,24 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
               toRemove.ForEach(o => Doc.Objects.Delete(o, false, true));
 
-              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view or level (named construction plane)
               {
-                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+                // Check converter (ViewToNative and LevelToNative) to make sure these names correspond!
+                var name =
+                  state.ReceiveMode == ReceiveMode.Create
+                    ? $"{commitLayerName} - {previewObj.applicationId}"
+                    : previewObj.applicationId;
+                var viewId = Doc.NamedViews.FindByName(name);
+                var planeId = Doc.NamedConstructionPlanes.Find(name);
                 if (viewId != -1)
                 {
                   isUpdate = true;
                   Doc.NamedViews.Delete(viewId);
+                }
+                else if (planeId != -1)
+                {
+                  isUpdate = true;
+                  Doc.NamedConstructionPlanes.Delete(planeId);
                 }
               }
             }
@@ -307,9 +318,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
     {
-      if (StoredObjects.ContainsKey(@base.id))
-        appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
-      else
+      if (!StoredObjects.ContainsKey(@base.id))
         StoredObjects.Add(@base.id, @base);
 
       if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
@@ -323,11 +332,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         var speckleType = current.speckle_type
           .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
-        return new ApplicationObject(current.id, speckleType)
-        {
-          applicationId = current.applicationId,
-          Container = containerId
-        };
+
+        // get the application id and container
+        // special cases for views and levels, since we are searching for them by name instead of application id
+        var applicationId =
+          speckleType.Contains("View") || speckleType.Contains("Level")
+            ? current["name"] as string
+            : current.applicationId;
+        var container = speckleType.Contains("View") || speckleType.Contains("Level") ? null : containerId;
+        return new ApplicationObject(current.id, speckleType) { applicationId = applicationId, Container = container };
       }
 
       // skip if it is the base commit collection
@@ -530,23 +543,25 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             }
           }
           break;
-        case RhinoObject o: // this was prbly a block instance, baked during conversion
 
+        case RhinoObject o: // this was prbly a block instance, baked during conversion
           o.Attributes.LayerIndex = layer.Index; // assign layer
           SetUserInfo(obj, o.Attributes, parent); // handle user info, including application id
           o.CommitChanges();
-
           if (parent != null)
             parent.Update(o.Id.ToString());
           else
             appObj.Update(o.Id.ToString());
           bakedCount++;
           break;
+
         case ViewInfo o: // this is a view, baked during conversion
-          if (parent != null)
-            parent.Update(o.Name);
-          else
-            appObj.Update(o.Name);
+          appObj.Update(o.Name);
+          bakedCount++;
+          break;
+
+        case ConstructionPlane o: // this is a level, baked during conversion
+          appObj.Update(o.Name);
           bakedCount++;
           break;
       }

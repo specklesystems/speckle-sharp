@@ -461,6 +461,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = AlignmentToNative(o);
           break;
 
+        case Level o:
+          rhinoObj = LevelToNative(o);
+          break;
+
         case ModelCurve o:
           rhinoObj = CurveToNative(o.baseCurve);
           break;
@@ -672,6 +676,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case View3D _:
       case Instance _:
       case Alignment _:
+      case Level _:
       case Text _:
       case Dimension _:
         return true;
