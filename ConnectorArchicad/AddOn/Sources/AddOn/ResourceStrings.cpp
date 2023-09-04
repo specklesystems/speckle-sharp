@@ -25,3 +25,9 @@ const GS::UniString& ResourceStrings::GetElementTypeStringFromResource (const El
 {
 	return TGetStringFromResource<ResourceStrings::ElementTypeStringItems> (ID_ELEMENT_TYPE_STRINGS, resourceItemId);
 }
+
+
+const GS::UniString& ResourceStrings::GetFixElementTypeStringFromResource (const ElementTypeStringItems& resourceItemId)
+{
+	return TGetStringFromResource<ResourceStrings::ElementTypeStringItems> (ID_FIX_ELEMENT_TYPE_STRINGS, resourceItemId);
+}

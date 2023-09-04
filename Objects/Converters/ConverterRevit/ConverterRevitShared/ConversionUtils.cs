@@ -5,27 +5,21 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Organization;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
-using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -144,6 +138,7 @@ namespace Objects.Converter.Revit
           }
           catch (Exception ex)
           {
+            SpeckleLog.Logger.Error(ex, ex.Message);
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
           }
         }
@@ -197,45 +192,6 @@ namespace Objects.Converter.Revit
       return ids;
     }
 
-    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
-    {
-      if (@base == null)
-        return appObj;
-
-      //we used to use "elements" but have now switched to "@elements"
-      //this extra check is for backwards compatibility
-      var nestedElements = @base["elements"] ?? @base["@elements"];
-      if (nestedElements == null)
-        return appObj;
-
-      CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
-      {
-        if (!CanConvertToNative(obj))
-        {
-          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-          continue;
-        }
-
-        try
-        {
-          var res = ConvertToNative(obj);
-          if (res is ApplicationObject apl)
-            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-        }
-        catch (Exception e)
-        {
-          appObj.Update(
-            logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}"
-          );
-          continue;
-        }
-        CurrentHostElement = host; // set this again in case this is a deeply hosted element
-      }
-      CurrentHostElement = null; // unset the current host element.
-      return appObj;
-    }
-
     #endregion
 
     #region parameters
@@ -259,7 +215,8 @@ namespace Objects.Converter.Revit
         speckleElement is Level ? null : elementType, //ignore type props of levels..!
         allParams,
         true,
-        exclusions);
+        exclusions
+      );
 
       Base paramBase = new();
       //sort by key
@@ -307,15 +264,16 @@ namespace Objects.Converter.Revit
       DB.Element element,
       Dictionary<string, Parameter> paramDict,
       bool isTypeParameter = false,
-      List<string> exclusions = null)
+      List<string> exclusions = null
+    )
     {
-      if (element == null) return;
+      if (element == null)
+        return;
 
       exclusions ??= new();
       using var parameters = element.Parameters;
       foreach (DB.Parameter param in parameters)
       {
-
         // exclude parameters that don't have a value and those pointing to other elements as we don't support them
         if (param.StorageType == StorageType.ElementId || !param.HasValue)
         {
@@ -332,7 +290,8 @@ namespace Objects.Converter.Revit
           param,
           isTypeParameter,
           paramInternalName: internalName,
-          cache: revitDocumentAggregateCache);
+          cache: revitDocumentAggregateCache
+        );
         paramDict[internalName] = speckleParam;
       }
     }
@@ -385,17 +344,24 @@ namespace Objects.Converter.Revit
         applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
+      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
+      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
       sp.applicationUnit = appUnit;
       return sp;
     }
 
     private static object GetParameterValue(
-      DB.Parameter rp, 
+      DB.Parameter rp,
       Definition definition,
       out string unitType,
       string unitsOverride = null,
-      IRevitDocumentAggregateCache cache = null)
+      IRevitDocumentAggregateCache cache = null,
+#if REVIT2020
+      DisplayUnitType unitTypeId = default
+#else
+      ForgeTypeId unitTypeId = null
+#endif
+    )
     {
       unitType = null;
       switch (rp.StorageType)
@@ -403,27 +369,20 @@ namespace Objects.Converter.Revit
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId();
+          if (unitsOverride == null)
+          {
+            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
+          }
+          else
+          {
+            unitTypeId = UnitsToNative(unitsOverride);
+          }
           unitType = UnitsToNativeString(unitTypeId);
-          return cache != null
-            ? ScaleToSpeckle(val, unitTypeId, cache)
-            : ScaleToSpeckleStatic(val, unitTypeId);
+          return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
-#if REVIT2020 || REVIT2021 || REVIT2022
-          switch (definition.ParameterType)
-          {
-            case ParameterType.YesNo:
-              return Convert.ToBoolean(intVal);
-            default:
-              return intVal;
-          }
-#else
-          if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            return Convert.ToBoolean(intVal);
-          else
-            return intVal;
-#endif
+          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
+
         case StorageType.String:
           return rp.AsString();
         // case StorageType.ElementId:
@@ -439,6 +398,38 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
+
+    /// <summary>
+    /// Method for getting symbol when parameter is NOT validated to be a double or int
+    /// </summary>
+    /// <param name="parameter"></param>
+    /// <param name="definition"></param>
+    /// <param name="cache"></param>
+    /// <param name="forgeTypeId"></param>
+    /// <returns></returns>
+    public static string GetSymbolUnit(
+      DB.Parameter parameter,
+      DB.Definition definition,
+      IRevitDocumentAggregateCache cache,
+#if REVIT2020
+      out DisplayUnitType unitTypeId
+#else
+      out ForgeTypeId unitTypeId
+#endif
+    )
+    {
+      unitTypeId = default;
+      if (parameter.StorageType != StorageType.Double)
+      {
+        return null;
+      }
+
+      unitTypeId = parameter.GetUnitTypeId();
+      var unitTypeIdCopy = unitTypeId;
+      return cache
+        .GetOrInitializeEmptyCacheOfType<string>(out _)
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
+    }
 
     /// <summary>
     /// </summary>
@@ -497,7 +488,7 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
       }
     }
 
@@ -666,7 +657,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
@@ -813,7 +804,7 @@ namespace Objects.Converter.Revit
       if (doc.IsLinked)
       {
         // get the linked doc instance transform
-        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
+        var instance = RevitLinkInstances.FirstOrDefault(x => x?.GetLinkDocument()?.PathName == doc.PathName);
         if (instance != null)
         {
           var linkInstanceTransform = instance.GetTotalTransform();
@@ -951,30 +942,30 @@ namespace Objects.Converter.Revit
 
     public IEnumerable<(string, Element, Connector)> GetRevitConnectorsThatConnectToSpeckleConnector(
       RevitMEPConnector revitMEPConnector,
-      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache
+    )
     {
       var origin = PointToNative(revitMEPConnector.origin);
 
       foreach (var connectedId in revitMEPConnector.connectedConnectorIds)
       {
         var connectorAppId = connectedId.Split('.').First();
-        var convertedElement = receivedObjectsCache
-          .GetCreatedObjectsFromConvertedId(connectorAppId)
-          .FirstOrDefault();
+        var convertedElement = receivedObjectsCache.GetCreatedObjectsFromConvertedId(connectorAppId).FirstOrDefault();
 
-        var existingRevitConnector = convertedElement?
-          .GetConnectorSet()
+        var existingRevitConnector = convertedElement
+          ?.GetConnectorSet()
           .Where(c => c.Origin.DistanceTo(origin) < .01)
           .FirstOrDefault();
 
         yield return (connectorAppId, convertedElement, existingRevitConnector);
       }
     }
-    
+
     public void CreateSystemConnections(
       IEnumerable<RevitMEPConnector> revitMEPConnectors,
       Element revitEl,
-      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache
+    )
     {
       foreach (var speckleConnector in revitMEPConnectors)
       {
@@ -984,14 +975,18 @@ namespace Objects.Converter.Revit
           .Where(c => c.Origin.DistanceTo(origin) < .01)
           .FirstOrDefault();
 
-        if (newRevitConnector == null) continue;
+        if (newRevitConnector == null)
+          continue;
 
-        foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
-          speckleConnector,
-          receivedObjectsCache))
+        foreach (
+          var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
+            speckleConnector,
+            receivedObjectsCache
+          )
+        )
         {
           existingConnector?.ConnectTo(newRevitConnector);
-        } 
+        }
       }
     }
 
@@ -1126,6 +1121,7 @@ namespace Objects.Converter.Revit
       DB.Material material = GetMEPSystemRevitMaterial(e);
       return material != null ? RenderMaterialToSpeckle(material) : null;
     }
+
     /// <summary>
     /// Retrieves the revit material from assigned system type for mep elements
     /// </summary>
@@ -1172,6 +1168,7 @@ namespace Objects.Converter.Revit
 
       return null;
     }
+
     private static bool IsSupportedMEPCategory(Element e)
     {
       var categories = e.Document.Settings.Categories;

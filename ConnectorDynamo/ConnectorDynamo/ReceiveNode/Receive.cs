@@ -455,7 +455,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         Warning(exceptionMessage);
         Message = exceptionMessage.Contains("don't have access") ? "Not authorised" : "Error";
         ReceiveEnabled = false;
-        throw e;
+        throw;
       }
     }
 

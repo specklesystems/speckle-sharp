@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Objects.GIS;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -66,7 +69,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public Element CurrentHostElement { get; set; }
+    public Element CurrentHostElement => RevitConverterState.Peek?.CurrentHostElement;
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -74,8 +77,6 @@ namespace Objects.Converter.Revit
     public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
-
-    public Transaction T { get; private set; }
 
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
@@ -108,12 +109,13 @@ namespace Objects.Converter.Revit
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
     private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+    private TransactionManager transactionManager;
 
     public void SetContextDocument(object doc)
     {
-      if (doc is Transaction t)
+      if (doc is TransactionManager transactionManager)
       {
-        T = t;
+        this.transactionManager = transactionManager;
       }
       else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
       {
@@ -185,6 +187,7 @@ namespace Objects.Converter.Revit
       Base returnObject = null;
       List<string> notes = new List<string>();
       string id = @object is Element element ? element.UniqueId : string.Empty;
+
       switch (@object)
       {
         case DB.Document o:
@@ -472,7 +475,7 @@ namespace Objects.Converter.Revit
           receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
-      
+
       return nativeObject;
     }
 
@@ -485,25 +488,12 @@ namespace Objects.Converter.Revit
 
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh ?? "false") == true)
-      {
-        try
-        {
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
-          var cat = GetObjectCategory(@object);
-          var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
-          return TryDirectShapeToNative(
-            new ApplicationObject(@object.id, @object.speckle_type),
-            meshes,
-            ToNativeMeshSetting,
-            speckleCat
-          );
-        }
-        catch { }
-      }
+      if (bool.Parse(recieveModelMesh ?? "false"))
+        if ((@object is Other.Instance || @object.IsDisplayableObject()) && @object is not BE.Room)
+          return DisplayableObjectToNative(@object);
+        else
+          return null;
+
       //Family Document
       if (Doc.IsFamilyDocument)
       {
@@ -704,9 +694,15 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        // gis
+        case PolygonElement o:
+          return PolygonElementToNative(o);
+
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
         case Base b:
+          //hacky but the current comments camera is not a Base object
+          //used only from DUI and not for normal geometry conversion
           var boo = b["isHackySpeckleCamera"] as bool?;
           if (boo == true)
             return ViewOrientation3DToNative(b);
@@ -715,6 +711,11 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
+    }
+
+    public object ConvertToNativeDisplayable(Base @base)
+    {
+      return DisplayableObjectToNative(@base);
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
@@ -795,7 +796,7 @@ namespace Objects.Converter.Revit
       if (schema != null)
         return CanConvertToNative(schema);
 
-      return @object switch
+      var objRes = @object switch
       {
         //geometry
         ICurve _ => true,
@@ -845,8 +846,24 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
         Organization.DataTable _ => true,
+        // GIS
+        PolygonElement _ => true,
         _ => false,
       };
+      if (objRes)
+        return true;
+
+      return false;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      // check for schema
+      var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+      if (schema != null)
+        return CanConvertToNativeDisplayable(schema);
+
+      return @object.IsDisplayableObject();
     }
   }
 }
