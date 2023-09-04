@@ -8,6 +8,25 @@ namespace ConverterRevitShared.Extensions
   internal static class ParameterExtensions
   {
     public static object? GetValue(
+      this Parameter parameter, 
+      Definition definition,
+      string unitsOverride
+    )
+    {
+#if REVIT2020
+      DisplayUnitType? unitTypeId = null;
+#else
+      ForgeTypeId? unitTypeId = null;
+#endif
+      if (parameter.StorageType == StorageType.Double)
+      {
+        unitTypeId = unitsOverride != null
+              ? ConverterRevit.UnitsToNative(unitsOverride)
+              : parameter.GetUnitTypeId();
+      }
+      return GetValue(parameter, definition, unitTypeId);
+    }
+    public static object? GetValue(
       this Parameter parameter,
       Definition definition,
 #if REVIT2020

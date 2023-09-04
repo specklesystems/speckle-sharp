@@ -301,7 +301,7 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = GetParameterValue(rp, rp.Definition, unitsOverride);
+      var value = rp.GetValue(rp.Definition, unitsOverride);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
@@ -356,50 +356,6 @@ namespace Objects.Converter.Revit
         }, out _);
 
       return paramData.GetParameterObjectWithValue(rp.GetValue(paramData.Definition, unitTypeId));
-    }
-
-    private static object GetParameterValue(
-      DB.Parameter rp,
-      Definition definition,
-      string unitsOverride = null,
-      IRevitDocumentAggregateCache cache = null,
-#if REVIT2020
-      DisplayUnitType unitTypeId = default
-#else
-      ForgeTypeId unitTypeId = null
-#endif
-    )
-    {
-      switch (rp.StorageType)
-      {
-        case StorageType.Double:
-          // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
-          var val = rp.AsDouble();
-          if (unitsOverride == null)
-          {
-            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
-          }
-          else
-          {
-            unitTypeId = UnitsToNative(unitsOverride);
-          }
-          return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
-        case StorageType.Integer:
-          var intVal = rp.AsInteger();
-          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
-
-        case StorageType.String:
-          return rp.AsString();
-        // case StorageType.ElementId:
-        //   // NOTE: if this collects too much garbage, maybe we can ignore it
-        //   var id = rp.AsElementId();
-        //   var e = Doc.GetElement(id);
-        //   if (e != null && CanConvertToSpeckle(e))
-        //     sp.value = ConvertToSpeckle(e);
-        //   break;
-        default:
-          return null;
-      }
     }
 
     #endregion

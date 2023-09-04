@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    private static DisplayUnitType UnitsToNative(string units)
+    public static DisplayUnitType UnitsToNative(string units)
     {
       switch (units)
       {
