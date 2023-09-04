@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Objects.BuiltElements;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -45,12 +44,5 @@ namespace Objects.BuiltElements.Revit
 
     public string elementId { get; set; }
     public Base parameters { get; set; }
-  }
-}
-
-namespace Objects.GIS
-{
-  public class GisTopography : Topography
-  {
   }
 }
