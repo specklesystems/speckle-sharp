@@ -44,7 +44,7 @@ namespace ConverterRevitShared.Extensions
           {
             return null;
           }
-          return ConverterRevit.ScaleToSpeckleStatic(val, unitTypeId ?? parameter.GetUnitTypeId());
+          return ConverterRevit.ScaleToSpeckle(val, unitTypeId ?? parameter.GetUnitTypeId());
         case StorageType.Integer:
           var intVal = parameter.AsInteger();
           if (intVal == default(int) && parameter.HasValue == false)

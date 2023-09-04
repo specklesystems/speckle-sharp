@@ -18,10 +18,10 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
   private readonly object _lockFreeThreads = new();
   private readonly BaseObjectDeserializerV2 _serializer;
 
-  public DeserializationWorkerThreads(BaseObjectDeserializerV2 serializer)
+  public DeserializationWorkerThreads(BaseObjectDeserializerV2 serializer, int threadCount)
   {
     _serializer = serializer;
-    this.NumThreads = Environment.ProcessorCount;
+    NumThreads = threadCount;
   }
 
   public override void Dispose()

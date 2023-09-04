@@ -37,6 +37,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create };
   }
 
+  // used to store the Stream State settings when sending/receiving
+  private List<ISetting>? CurrentSettings { get; set; }
+
   #region Local streams I/O with local file
 
   public override List<StreamState> GetStreamsInFile()
@@ -114,19 +117,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     RhinoApp.WriteLine("Deselected unsupported objects:");
     foreach (var entry in reportLog)
       RhinoApp.WriteLine($"{entry.Value} of type {entry.Key}");
-  }
-
-  public override List<ISetting> GetSettings()
-  {
-    /*
-    var referencePoints = new List<string>() { "Internal Origin (default)" };
-    referencePoints.AddRange(Doc.NamedConstructionPlanes.Select(o => o.Name).ToList());
-    return new List<ISetting>()
-    {
-      new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Description = "Receives stream objects in relation to this document point"}
-    };
-    */
-    return new List<ISetting>();
   }
 
   public override void ResetDocument()

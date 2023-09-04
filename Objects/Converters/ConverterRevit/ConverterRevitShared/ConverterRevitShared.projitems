@@ -61,6 +61,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTopRail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFreeformElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertZone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProjectInfo.cs" />
