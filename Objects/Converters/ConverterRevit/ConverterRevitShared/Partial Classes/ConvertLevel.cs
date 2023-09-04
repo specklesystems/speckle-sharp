@@ -205,7 +205,6 @@ namespace Objects.Converter.Revit
       return p.z;
     }
 
-    // to be deleted (?)
     private RevitLevel LevelFromElevation(double z)
     {
       return new RevitLevel() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
@@ -216,7 +215,6 @@ namespace Objects.Converter.Revit
       return new Objects.BuiltElements.Level() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
     }
 
-    // to be deleted (?)
     private RevitLevel LevelFromPoint(XYZ point)
     {
       return LevelFromElevation(ElevationFromPoint(point));
@@ -230,7 +228,6 @@ namespace Objects.Converter.Revit
       return ElevationFromPoint(point);
     }
 
-    // to be deleted (?)
     private RevitLevel LevelFromCurve(Curve curve)
     {
       return LevelFromElevation(ElevationFromCurve(curve));
