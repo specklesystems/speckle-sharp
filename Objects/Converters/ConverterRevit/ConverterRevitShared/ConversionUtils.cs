@@ -275,12 +275,6 @@ namespace Objects.Converter.Revit
       using var parameters = element.Parameters;
       foreach (DB.Parameter param in parameters)
       {
-        // exclude parameters that don't have a value and those pointing to other elements as we don't support them
-        if (param.StorageType == StorageType.ElementId || !param.HasValue)
-        {
-          continue;
-        }
-
         var internalName = GetParamInternalName(param);
         if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
         {
@@ -333,67 +327,35 @@ namespace Objects.Converter.Revit
 #else
       ForgeTypeId unitTypeId = null;
 #endif
-      var definition = rp.Definition;
-      var paramCache = revitDocumentAggregateCache
-        .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData?>(out _);
 
-      var cachedParamData = paramCache
-        .TryGet(paramInternalName);
-
-      ParameterToSpeckleData paramData;
-      if (cachedParamData == null)
-      {
-        paramData = new ParameterToSpeckleData()
+      // TODO : could add some generic getOrAdd overloads to avoid creating closures
+      var paramData = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
+        .GetOrAdd(paramInternalName, () =>
         {
-          InternalName = paramInternalName,
-          IsReadOnly = rp.IsReadOnly,
-          IsShared = rp.IsShared,
-          IsTypeParameter = isTypeParameter,
-          Name = definition.Name,
-          UnitType = definition.GetUnityTypeString(),
-        };
-        if (rp.StorageType == StorageType.Double)
-        {
-          unitTypeId = rp.GetUnitTypeId();
-          paramData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
-          paramData.ApplicationUnits = unitsOverride != null
-            ? UnitsToNative(unitsOverride).ToUniqueString()
-            : unitTypeId.ToUniqueString();
-        }
-        paramCache.Set(paramInternalName, paramData);
-      }
-      else
-      {
-        paramData = cachedParamData.Value;
-      }
-      //var cachedParamData = paramCache
-      //  .GetOrAdd(paramInternalName, () =>
-      //  {
-      //    unitTypeId = rp.GetUnitTypeId();
-      //    var paramData = new ParameterToSpeckleData()
-      //    {
-      //      InternalName = paramInternalName,
-      //      IsReadOnly = rp.IsReadOnly,
-      //      IsShared = rp.IsShared,
-      //      IsTypeParameter = isTypeParameter,
-      //      Name = definition.Name,
-      //      UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId),
-      //      UnitType = definition.GetUnityTypeString(),
-      //    };
-      //    if (rp.StorageType == StorageType.Double)
-      //    {
-      //      paramData.ApplicationUnits = unitsOverride != null
-      //        ? UnitsToNative(unitsOverride).ToUniqueString()
-      //        : unitTypeId.ToUniqueString();
-      //    }
-      //    return paramData;
-      //  }, out _);
+          var definition = rp.Definition;
+          var newParamData = new ParameterToSpeckleData()
+          {
+            Definition = definition,
+            InternalName = paramInternalName,
+            IsReadOnly = rp.IsReadOnly,
+            IsShared = rp.IsShared,
+            IsTypeParameter = isTypeParameter,
+            Name = definition.Name,
+            UnitType = definition.GetUnityTypeString(),
+          };
+          if (rp.StorageType == StorageType.Double)
+          {
+            unitTypeId = rp.GetUnitTypeId();
+            newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
+            newParamData.ApplicationUnits = unitsOverride != null
+              ? UnitsToNative(unitsOverride).ToUniqueString()
+              : unitTypeId.ToUniqueString();
+          }
+          return newParamData;
+        }, out _);
 
-      var value = rp.HasValue 
-        ? GetParameterValue(rp, definition, unitsOverride, revitDocumentAggregateCache, unitTypeId)
-        : null;
-
-      return paramData.GetParameterObjectWithValue(value);
+      return paramData.GetParameterObjectWithValue(rp.GetValue(paramData.Definition, unitTypeId));
     }
 
     private static object GetParameterValue(

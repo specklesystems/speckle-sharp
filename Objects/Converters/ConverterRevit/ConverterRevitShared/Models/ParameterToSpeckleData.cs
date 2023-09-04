@@ -1,11 +1,13 @@
 #nullable enable
 using Objects.BuiltElements.Revit;
+using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit.Models
 {
   internal struct ParameterToSpeckleData
   {
     public string ApplicationUnits;
+    public DB.Definition Definition;
     public string InternalName;
     public bool IsReadOnly;
     public bool IsShared;
@@ -26,13 +28,6 @@ namespace Objects.Converter.Revit.Models
         name = Name,
         units = UnitsSymbol,
         value = value
-        //name = definition.Name,
-        //applicationInternalName = paramInternalName,
-        //isShared = rp.IsShared,
-        //isReadOnly = rp.IsReadOnly,
-        //isTypeParameter = isTypeParameter,
-        //applicationUnitType = definition.GetUnityTypeString(), //eg UT_Length
-        //units = GetSymbolUnit(rp),
       };
     }
   }
