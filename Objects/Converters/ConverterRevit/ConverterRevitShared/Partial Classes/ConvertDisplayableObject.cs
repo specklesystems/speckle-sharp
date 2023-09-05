@@ -56,7 +56,6 @@ public partial class ConverterRevit
   {
     if (Enum.TryParse<RevitCategory>(@object["category"] as string, out RevitCategory category))
       return category;
-
     else
     {
       switch (@object)

@@ -338,7 +338,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
 
-        return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
+        return new ApplicationObject(current.id, speckleType)
+        {
+          applicationId = current.applicationId,
+          Container = containerId
+        };
       }
 
       // skip if it is the base commit collection
