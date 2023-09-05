@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
       return docZones.FirstOrDefault(x => x.Name == speckleZone.name);
     }
 
-    public static DB.Zone CreateRevitZone(Level revitZoneLevel, Phase targetPhase, string zoneName = null)
+    public DB.Zone CreateRevitZone(Level revitZoneLevel, Phase targetPhase, string zoneName = null)
     {
       var newZone = Doc.Create.NewZone(revitZoneLevel, targetPhase);
 
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
     /// 2. Phase from the existing Revit space (if it exists).
     /// 3. Phase from the active view in Revit.
     /// </remarks>
-    private static Phase DetermineTargetPhase(RevitZone speckleZone, DB.Zone revitZone)
+    private Phase DetermineTargetPhase(RevitZone speckleZone, DB.Zone revitZone)
     {
       // Get all phases
       var phases = Doc.Phases.Cast<Phase>();

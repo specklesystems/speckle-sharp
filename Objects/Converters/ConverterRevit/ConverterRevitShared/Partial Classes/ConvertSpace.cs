@@ -39,7 +39,7 @@ namespace Objects.Converter.Revit
       // it is not possible to create on any phase but the Active View phase
       var activeViewPhaseName = activeViewPhase?.Name;
       var targetPhaseName = targetPhase?.Name;
-      
+
       if (activeViewPhase.Id != targetPhase.Id)
       {
         appObj.Update(
@@ -49,7 +49,6 @@ namespace Objects.Converter.Revit
         return appObj;
         // return null;
       }
-      
 
       revitSpace = CreateRevitSpaceIfNeeded(speckleSpace, revitSpace, targetPhase, level, basePoint);
 
@@ -135,7 +134,7 @@ namespace Objects.Converter.Revit
     /// <param name="level">The Level object associated with the space.</param>
     /// <param name="basePoint">The base point for the space.</param>
     /// <returns>The modified or newly created Revit Space object.</returns>
-    private static DB.Space CreateRevitSpaceIfNeeded(
+    private DB.Space CreateRevitSpaceIfNeeded(
       Space speckleSpace,
       DB.Space revitSpace,
       Phase targetPhase,
@@ -171,7 +170,7 @@ namespace Objects.Converter.Revit
     /// <param name="basePoint">The base point (UV coordinates) for the new space.</param>
     /// <param name="levelName">The name of the level. Used to determine if the space has a location.</param>
     /// <returns>The newly created RevitSpace, or null if the space could not be created.</returns>
-    private static DB.Space CreateNewSpace(Level level, Phase targetPhase, UV basePoint, string levelName)
+    private DB.Space CreateNewSpace(Level level, Phase targetPhase, UV basePoint, string levelName)
     {
       if (targetPhase == null)
       {
@@ -197,7 +196,7 @@ namespace Objects.Converter.Revit
     /// 2. Phase from the existing Revit space (if it exists).
     /// 3. Phase from the active view in Revit.
     /// </remarks>
-    private static Phase DetermineTargetPhase(Space speckleSpace, DB.Space revitSpace)
+    private Phase DetermineTargetPhase(Space speckleSpace, DB.Space revitSpace)
     {
       // Get all phases
       var phases = Doc.Phases.Cast<Phase>().ToList();
@@ -218,7 +217,7 @@ namespace Objects.Converter.Revit
       return targetPhase;
     }
 
-    private static Phase DetermineActiveViewPhase(IEnumerable<Phase> phases = null)
+    private Phase DetermineActiveViewPhase(IEnumerable<Phase> phases = null)
     {
       phases ??= Doc.Phases.Cast<Phase>();
 
