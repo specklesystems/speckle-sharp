@@ -35,9 +35,9 @@ namespace BatchUploadOperationDriver
 
     public async Task ProcessAllJobs()
     {
-#if DEBUG
-      Debugger.Launch();
-#endif
+//#if DEBUG
+//      Debugger.Launch();
+//#endif
       while (await GetNextJobId().ConfigureAwait(false) is Guid jobId)
       {
         // currently using this counter to determine wether this process was started by the batch uploader
@@ -61,7 +61,6 @@ namespace BatchUploadOperationDriver
 
       if (jobCounter > 0)
       {
-        process.Close();
         process.Kill();
       }
     }
