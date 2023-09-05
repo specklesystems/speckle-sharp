@@ -634,21 +634,20 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
       // TODO: we may not want just the first one
-      return Doc.GetElement(cachedIds.First());
+      return  cachedIds == null ? null : Doc.GetElement(cachedIds.First());
     }
 
     public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
     {
-      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+      if (applicationId == null || ReceiveMode == ReceiveMode.Create)
         yield break;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
+      if (cachedIds == null) yield break;
       foreach (var id in cachedIds)
-      {
         yield return Doc.GetElement(id);
-      }
     }
 
     /// <summary>

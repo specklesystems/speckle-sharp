@@ -119,10 +119,20 @@ public class Transform : Base
 
     // scale
     // this should account for non-uniform scaling
-    var scaleX = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length();
-    var scaleY = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length();
-    var scaleZ = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43).Length();
-    scale = new Vector3(scaleX, scaleY, scaleZ);
+    Vector4 basis4dX = new(matrix.M11, matrix.M21, matrix.M31, matrix.M41);
+    Vector4 basis4dY = new(matrix.M12, matrix.M22, matrix.M32, matrix.M42);
+    Vector4 basis4dZ = new(matrix.M13, matrix.M23, matrix.M33, matrix.M43);
+
+    // Check for mirroring
+    Vector3 basisX = new(matrix.M11, matrix.M21, matrix.M31);
+    Vector3 basisY = new(matrix.M12, matrix.M22, matrix.M32);
+    Vector3 basisZ = new(matrix.M13, matrix.M23, matrix.M33);
+    // Negative determinant means flip on Z.
+    // TODO: Add tests and figure out exactly why this is. Jedd and myself have some theories but it would be nice to document this properly
+    double determinant = Vector3.Dot(Vector3.Cross(basisX, basisY), basisZ) < 0 ? -1 : 1;
+
+    // Compute the scale, but only multiply the Z scale by the determinant to flag negative scaling on Z axis (see todo above)
+    scale = new Vector3(basis4dX.Length(), basis4dY.Length(), basis4dZ.Length() * determinant);
 
     // rotation
     // this is using a z-up convention for basis vectors
@@ -151,43 +161,23 @@ public class Transform : Base
     {
       var num = Math.Sqrt(num8 + 1d);
       num = 0.5d / num;
-      return new Quaternion(
-        (m12 - m21) * num,
-        (m20 - m02) * num,
-        (m01 - m10) * num,
-        num * 0.5d
-      );
+      return new Quaternion((m12 - m21) * num, (m20 - m02) * num, (m01 - m10) * num, num * 0.5d);
     }
     if (m00 >= m11 && m00 >= m22)
     {
       var num7 = Math.Sqrt(1d + m00 - m11 - m22);
       var num4 = 0.5d / num7;
-      return new Quaternion(
-        0.5d * num7,
-        (m01 + m10) * num4,
-        (m02 + m20) * num4,
-        (m12 - m21) * num4
-      );
+      return new Quaternion(0.5d * num7, (m01 + m10) * num4, (m02 + m20) * num4, (m12 - m21) * num4);
     }
     if (m11 > m22)
     {
       var num6 = Math.Sqrt(1d + m11 - m00 - m22);
       var num3 = 0.5d / num6;
-      return new Quaternion(
-        (m10 + m01) * num3,
-        0.5d * num6,
-        (m21 + m12) * num3,
-        (m20 - m02) * num3
-      );
+      return new Quaternion((m10 + m01) * num3, 0.5d * num6, (m21 + m12) * num3, (m20 - m02) * num3);
     }
     var num5 = Math.Sqrt(1d + m22 - m00 - m11);
     var num2 = 0.5d / num5;
-    return new Quaternion(
-      (m20 + m02) * num2,
-      (m21 + m12) * num2,
-      0.5d * num5,
-      (m01 - m10) * num2
-    );
+    return new Quaternion((m20 + m02) * num2, (m21 + m12) * num2, 0.5d * num5, (m01 - m10) * num2);
   }
 
   /// <summary>

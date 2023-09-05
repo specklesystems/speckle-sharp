@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.GIS;
 using Objects.Organization;
+using Objects.Other;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
@@ -51,7 +52,7 @@ namespace Objects.Converter.Revit
 
     private const double TOLERANCE = 0.0164042; // 5mm in ft
 
-    public static Document Doc { get; private set; }
+    public Document Doc { get; private set; }
 
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
@@ -444,6 +445,13 @@ namespace Objects.Converter.Revit
         // item in the list.
         ds.baseGeometries = new List<Base> { @object };
       }
+      else if (speckleSchema is MappedBlockWrapper mbw)
+      {
+        if (@object is not BlockInstance bi)
+          throw new Exception($"{nameof(MappedBlockWrapper)} can only be used with {nameof(BlockInstance)} objects.");
+
+        mbw.instance = bi;
+      }
       else
       {
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
@@ -468,11 +476,11 @@ namespace Objects.Converter.Revit
         case ApplicationObject appObject:
           if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
           {
-            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+            receivedObjectsCache?.AddConvertedObjects(@base, typedList);
           }
           break;
         case Element element:
-          receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
+          receivedObjectsCache?.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
 
@@ -502,9 +510,9 @@ namespace Objects.Converter.Revit
           case ICurve o:
             return ModelCurveToNative(o);
           case Geometry.Brep o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case Geometry.Mesh o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case BER.FreeformElement o:
             return FreeformElementToNative(o);
           default:
@@ -694,6 +702,8 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Other.MappedBlockWrapper o:
+          return MappedBlockWrapperToNative(o);
         // gis
         case PolygonElement o:
           return PolygonElementToNative(o);
@@ -846,6 +856,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Other.MappedBlockWrapper => true,
         Organization.DataTable _ => true,
         // GIS
         PolygonElement _ => true,
