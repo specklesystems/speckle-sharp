@@ -28,6 +28,8 @@
     <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\batch-uploader\ClientSDK\BatchUploader.ClientSdk\BatchUploader.ClientSdk.csproj" />
+    <ProjectReference Include="..\..\BatchUploadOperationDriver\BatchUploadOperationDriver.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
