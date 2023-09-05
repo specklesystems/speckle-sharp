@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -54,38 +54,44 @@ public partial class ConverterRevit
 
   public RevitCategory GetSpeckleObjectCategory(Base @object)
   {
-    switch (@object)
+    if (Enum.TryParse<RevitCategory>(@object["category"] as string, out RevitCategory category))
+      return category;
+
+    else
     {
-      case BE.Beam _:
-      case BE.Brace _:
-      case BE.TeklaStructures.TeklaContourPlate _:
-        return RevitCategory.StructuralFraming;
-      case BE.TeklaStructures.Bolts _:
-        return RevitCategory.StructConnectionBolts;
-      case BE.TeklaStructures.Welds _:
-        return RevitCategory.StructConnectionWelds;
-      case BE.Floor _:
-        return RevitCategory.Floors;
-      case BE.Ceiling _:
-        return RevitCategory.Ceilings;
-      case BE.Column _:
-        return RevitCategory.Columns;
-      case BE.Pipe _:
-        return RevitCategory.PipeSegments;
-      case BE.Rebar _:
-        return RevitCategory.Rebar;
-      case BE.Topography _:
-        return RevitCategory.Topography;
-      case BE.Wall _:
-        return RevitCategory.Walls;
-      case BE.Roof _:
-        return RevitCategory.Roofs;
-      case BE.Duct _:
-        return RevitCategory.DuctSystem;
-      case BE.CableTray _:
-        return RevitCategory.CableTray;
-      default:
-        return RevitCategory.GenericModel;
+      switch (@object)
+      {
+        case BE.Beam _:
+        case BE.Brace _:
+        case BE.TeklaStructures.TeklaContourPlate _:
+          return RevitCategory.StructuralFraming;
+        case BE.TeklaStructures.Bolts _:
+          return RevitCategory.StructConnectionBolts;
+        case BE.TeklaStructures.Welds _:
+          return RevitCategory.StructConnectionWelds;
+        case BE.Floor _:
+          return RevitCategory.Floors;
+        case BE.Ceiling _:
+          return RevitCategory.Ceilings;
+        case BE.Column _:
+          return RevitCategory.Columns;
+        case BE.Pipe _:
+          return RevitCategory.PipeSegments;
+        case BE.Rebar _:
+          return RevitCategory.Rebar;
+        case BE.Topography _:
+          return RevitCategory.Topography;
+        case BE.Wall _:
+          return RevitCategory.Walls;
+        case BE.Roof _:
+          return RevitCategory.Roofs;
+        case BE.Duct _:
+          return RevitCategory.DuctSystem;
+        case BE.CableTray _:
+          return RevitCategory.CableTray;
+        default:
+          return RevitCategory.GenericModel;
+      }
     }
   }
 }
