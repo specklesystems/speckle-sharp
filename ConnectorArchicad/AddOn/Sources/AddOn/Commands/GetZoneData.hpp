@@ -1,4 +1,4 @@
-﻿#ifndef GET_ROOM_DATA_HPP
+#ifndef GET_ROOM_DATA_HPP
 #define GET_ROOM_DATA_HPP
 
 #include "GetDataCommand.hpp"
@@ -7,7 +7,7 @@
 namespace AddOnCommands {
 
 
-class GetRoomData : public GetDataCommand {
+class GetZoneData : public GetDataCommand {
 	GS::String			GetFieldName () const override;
 	API_ElemTypeID		GetElemTypeID () const override;
 	GS::ErrCode			SerializeElementType (const API_Element& elem,

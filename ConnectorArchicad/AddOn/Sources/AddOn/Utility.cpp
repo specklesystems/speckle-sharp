@@ -5,6 +5,7 @@
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 #include "ResourceStrings.hpp"
+#include "Polygon2DData.h"
 using namespace FieldNames;
 
 namespace Utility {
@@ -1156,5 +1157,53 @@ GSErrCode CreateTransform (const GS::ObjectState& os, API_Tranmat& transform)
 
 	return NoError;
 }
+
+
+GSErrCode ConstructPoly2DDataFromElementMemo (const API_ElementMemo& memo, Geometry::Polygon2DData& polygon2DData)
+{
+	GSErrCode err = NoError;
+
+	Geometry::InitPolygon2DData (&polygon2DData);
+
+	static_assert (sizeof (API_Coord) == sizeof (Coord), "sizeof (API_Coord) != sizeof (Coord)");
+	static_assert (sizeof (API_PolyArc) == sizeof (PolyArcRec), "sizeof (API_PolyArc) != sizeof (PolyArcRec)");
+
+	polygon2DData.nVertices = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (Coord) - 1;
+	polygon2DData.vertices = reinterpret_cast<Coord**> (BMAllocateHandle ((polygon2DData.nVertices + 1) * sizeof (Coord), ALLOCATE_CLEAR, 0));
+	if (polygon2DData.vertices != nullptr)
+		BNCopyMemory (*polygon2DData.vertices, *memo.coords, (polygon2DData.nVertices + 1) * sizeof (Coord));
+	else
+		err = APIERR_MEMFULL;
+
+	if (err == NoError && memo.parcs != nullptr) {
+		polygon2DData.nArcs = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (PolyArcRec);
+		if (polygon2DData.nArcs > 0) {
+			polygon2DData.arcs = reinterpret_cast<PolyArcRec**> (BMAllocateHandle ((polygon2DData.nArcs + 1) * sizeof (PolyArcRec), ALLOCATE_CLEAR, 0));
+			if (polygon2DData.arcs != nullptr)
+				BNCopyMemory (*polygon2DData.arcs + 1, *memo.parcs, polygon2DData.nArcs * sizeof (PolyArcRec));
+			else
+				err = APIERR_MEMFULL;
+		}
+	}
+
+	if (err == NoError) {
+		polygon2DData.nContours = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32) - 1;
+		polygon2DData.contourEnds = reinterpret_cast<UIndex**> (BMAllocateHandle ((polygon2DData.nContours + 1) * sizeof (UIndex), ALLOCATE_CLEAR, 0));
+		if (polygon2DData.contourEnds != nullptr)
+			BNCopyMemory (*polygon2DData.contourEnds, *memo.pends, (polygon2DData.nContours + 1) * sizeof (UIndex));
+		else
+			err = APIERR_MEMFULL;
+	}
+
+	if (err == NoError) {
+		Geometry::GetPolygon2DDataBoundBox (polygon2DData, &polygon2DData.boundBox);
+		polygon2DData.status.isBoundBoxValid = true;
+	} else {
+		Geometry::FreePolygon2DData (&polygon2DData);
+	}
+
+	return err;
+}
+
 
 }

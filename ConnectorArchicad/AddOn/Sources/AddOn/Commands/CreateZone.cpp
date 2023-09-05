@@ -59,6 +59,9 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nArcs);
 
 		zoneShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
+		
+		element.zone.manual = true;
+		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, manual);
 	}
 
 	if (os.Contains (Room::Height)) {
@@ -68,11 +71,15 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// The name and number of the zone
 	if (os.Contains (Room::Name)) {
-		os.Get (Room::Name, element.zone.roomName);
+		GS::UniString str;
+		os.Get (Room::Name, str);
+		GS::ucscpy (element.zone.roomName, str.ToUStr ());
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomName);
 	}
 	if (os.Contains (Room::Number)) {
-		os.Get (Room::Number, element.zone.roomNoStr);
+		GS::UniString str;
+		os.Get (Room::Number, str);
+		GS::ucscpy (element.zone.roomNoStr, str.ToUStr ());
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomNoStr);
 	}
 

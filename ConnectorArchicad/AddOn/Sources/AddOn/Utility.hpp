@@ -4,6 +4,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "ResourceIds.hpp"
+#include "Polygon2DData.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -85,6 +86,9 @@ GS::UniString ComposeLogMessage (const Int32 resourceIndex, Args... args)
 	RSGetIndString (&errMsgFromatString, ID_LOG_MESSAGES, resourceIndex, ACAPI_GetOwnResModule ());
 	return GS::UniString::Printf (errMsgFromatString, args...);
 }
+
+// Geometry helpers
+GSErrCode ConstructPoly2DDataFromElementMemo (const API_ElementMemo& memo, Geometry::Polygon2DData& polygon2DData);
 
 }
 
