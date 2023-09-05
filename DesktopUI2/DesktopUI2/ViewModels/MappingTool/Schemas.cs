@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Other;
 using Objects.BuiltElements.Revit.RevitRoof;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -378,7 +379,6 @@ public class DirectShapeFreeformViewModel : Schema
       .Select(x => x.ToString())
       .OrderBy(x => x)
       .ToList();
-    ;
   }
 
   public override string Name => "DirectShape";
@@ -433,6 +433,57 @@ public class DirectShapeFreeformViewModel : Schema
     var ds = new DirectShape(); //don't use the constructor
     ds.name = ShapeName;
     ds.category = cat;
+    return Operations.Serialize(ds);
+  }
+}
+
+public class BlockDefinitionViewModel : Schema
+{
+  private List<string> _categories;
+
+  private string _selectedCategory = RevitCategory.GenericModel.ToString();
+
+  public BlockDefinitionViewModel()
+  {
+    Categories = Enum.GetValues(typeof(RevitCategory))
+      .Cast<RevitCategory>()
+      .Select(x => x.ToString())
+      .OrderBy(x => x)
+      .ToList();
+    ;
+  }
+
+  public override string Name => "New Revit Family";
+
+  public List<string> Categories
+  {
+    get => _categories;
+    set => this.RaiseAndSetIfChanged(ref _categories, value);
+  }
+
+  [DataMember]
+  public string SelectedCategory
+  {
+    get => _selectedCategory;
+    set
+    {
+      this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+      this.RaisePropertyChanged(nameof(IsValid));
+    }
+  }
+  public override string Summary => $"New Revit Family - {SelectedCategory}";
+
+  public override bool IsValid => !string.IsNullOrEmpty(SelectedCategory);
+
+  public override string GetSerializedSchema()
+  {
+    var res = Enum.TryParse(SelectedCategory, out RevitCategory cat);
+    if (!res)
+      cat = RevitCategory.GenericModel;
+
+    var ds = new MappedBlockWrapper(); //don't use the constructor
+    ds.category = cat.ToString();
+
     return Operations.Serialize(ds);
   }
 }

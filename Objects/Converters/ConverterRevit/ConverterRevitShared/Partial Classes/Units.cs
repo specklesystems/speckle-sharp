@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using RevitSharedResources.Interfaces;
 
 namespace Objects.Converter.Revit
@@ -71,22 +72,22 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public double ScaleToSpeckle(double value)
     {
-      return ScaleToSpeckleStatic(value, RevitLengthTypeId);
+      return ScaleToSpeckle(value, RevitLengthTypeId);
     }
     
-    public static double ScaleToSpeckleStatic(double value, DisplayUnitType unitType)
+    public static double ScaleToSpeckle(double value, DisplayUnitType unitType)
     {
       return UnitUtils.ConvertFromInternalUnits(value, unitType);
     }
 
     public static double ScaleToSpeckle(double value, DisplayUnitType unitType, IRevitDocumentAggregateCache cache)
     {
-      return ScaleToSpeckleStatic(value, unitType);
+      return ScaleToSpeckle(value, unitType);
     }
 
     public static double ScaleToSpeckle(double value, string units)
     {
-      return ScaleToSpeckleStatic(value, UnitsToNative(units));
+      return ScaleToSpeckle(value, UnitsToNative(units));
     }
 
     private string UnitsToSpeckle(DisplayUnitType type)
@@ -115,7 +116,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    private static DisplayUnitType UnitsToNative(string units)
+    public static DisplayUnitType UnitsToNative(string units)
     {
       switch (units)
       {
@@ -178,38 +179,17 @@ namespace Objects.Converter.Revit
       return value * defaultConversionFactor.Value;
     }
     
-    /// <summary>
-    /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="units"></param>
-    /// <returns></returns>
     public static double ScaleToSpeckle(double value, string units)
     {
-      return ScaleToSpeckleStatic(value, UnitsToNative(units));
+      return ScaleToSpeckle(value, UnitsToNative(units));
     }
     
-    /// <summary>
-    /// this method does not take advantage of any caching. Prefer other implementations of ScaleToSpeckle
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="forgeTypeId"></param>
-    /// <returns></returns>
-    public static double ScaleToSpeckleStatic(double value, ForgeTypeId forgeTypeId)
+    public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
     {
+      // our current profiling shows that the method "ConvertFromInternalUnits" is a huge bottleneck
+      // in the ScaleToSpeckle(double) method, but not here. This is because the former method is called
+      // roughly 12 times more often than this function
       return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
-    }
-
-    public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId, IRevitDocumentAggregateCache cache)
-    {
-      return value * cache
-        .GetOrInitializeEmptyCacheOfType<double>(out _)
-        .GetOrAdd(forgeTypeId.TypeId, () => UnitUtils.ConvertFromInternalUnits(1, forgeTypeId), out _);
-    }
-    
-    public double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
-    {
-      return ScaleToSpeckle(value, forgeTypeId, revitDocumentAggregateCache);
     }
 
     //new units api introduced in 2021, bleah

@@ -22,12 +22,6 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   public const DynamicBaseMemberType DefaultIncludeMembers =
     DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
 
-  // Rule for multiple leading @.
-  private static Regex manyLeadingAtChars = new(@"^@{2,}");
-
-  // Rule for invalid chars.
-  private static Regex invalidChars = new(@"[\.\/]");
-
   private static Dictionary<Type, List<PropertyInfo>> propInfoCache = new();
 
   /// <summary>
@@ -114,41 +108,33 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     return valid;
   }
 
+  private static readonly HashSet<char> DisallowedPropNameChars = new() { '.', '/' };
+
   public bool IsPropNameValid(string name, out string reason)
   {
-    // Existing members
-    //var members = GetInstanceMembersNames();
-
-    // TODO: Check for detached/non-detached duplicate names? i.e: '@something' vs 'something'
-    // TODO: Instance members will not be overwritten, this may cause issues.
-    var checks = new List<(bool, string)>
+    if (string.IsNullOrEmpty(name) || name == "@")
     {
-      (!(string.IsNullOrEmpty(name) || name == "@"), "Found empty prop name"),
-      // Checks for multiple leading @
-      (
-        !manyLeadingAtChars.IsMatch(name),
-        "Only one leading '@' char is allowed. This signals the property value should be detached."
-      ),
-      // Checks for invalid chars
-      (
-        !invalidChars.IsMatch(name),
-        $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"
-      )
-      // Checks if you are trying to change a member property
-      //(!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
-    };
+      reason = "Found empty prop name";
+      return false;
+    }
 
-    var r = "";
-    // Prop name is valid if none of the checks are true
-    var isValid = checks.TrueForAll(v =>
+    if (name.StartsWith("@@"))
     {
-      if (!v.Item1)
-        r = v.Item2;
-      return v.Item1;
-    });
+      reason = "Only one leading '@' char is allowed. This signals the property value should be detached.";
+      return false;
+    }
 
-    reason = r;
-    return isValid;
+    foreach (char c in name)
+    {
+      if (DisallowedPropNameChars.Contains(c))
+      {
+        reason = $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./";
+        return false;
+      }
+    }
+
+    reason = "";
+    return true;
   }
 
   private static void PopulatePropInfoCache(Type type)

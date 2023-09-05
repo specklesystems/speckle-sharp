@@ -30,7 +30,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TransactionManager.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Extensions\RevitExtensions\" />
-  </ItemGroup>
 </Project>

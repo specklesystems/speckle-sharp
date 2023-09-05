@@ -583,5 +583,35 @@ namespace Speckle.ConnectorRevit.UI
         return p.AsString().ToLowerInvariant();
       }
     }
+
+    /// Processes the provided list of elements, applying specific validations and transformations based on the element type.
+    /// </summary>
+    /// <param name="selectedObjects">A collection of elements to process.</param>
+    /// <returns>
+    /// A collection of elements after applying the respective validations and transformations.
+    /// </returns>
+    /// <remarks>
+    /// Current Validations and Transformations:
+    /// - Zones are expanded into their constituent spaces.
+    /// - [Add additional validations here as they are implemented.]
+    /// </remarks>
+    private static IEnumerable<Element> HandleSelectedObjectDescendants(IEnumerable<Element> selectedObjects)
+    {
+      // Handle the resolution of selected Elements to their convertable states here
+      foreach (var element in selectedObjects)
+      {
+        switch (element)
+        {
+          case Autodesk.Revit.DB.Mechanical.Zone zone:
+            foreach (var space in zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>())
+              yield return space;
+            break;
+
+          default:
+            yield return element;
+            break;
+        }
+      }
+    }
   }
 }

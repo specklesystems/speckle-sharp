@@ -97,7 +97,7 @@ namespace Objects.Converter.Revit
         var form = DB.FreeFormElement.Create(Doc, s);
         if (cat != null)
           form.Subcategory = cat;
-        appObj.Update(createdId: form.UniqueId, convertedItem: s);
+        appObj.Update(createdId: form.UniqueId, convertedItem: form);
       }
 
       return appObj;
@@ -108,9 +108,9 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var solids = new List<DB.Solid>();
       var d = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid);
-      var revitMmesh =
+      var revitMesh =
           d.Select(m => m as DB.Solid);
-      solids.AddRange(revitMmesh);
+      solids.AddRange(revitMesh);
 
       foreach (var s in solids)
       {
@@ -123,9 +123,12 @@ namespace Objects.Converter.Revit
 
     private IEnumerable<Solid> GetSolidMeshes(IEnumerable<Mesh> meshes)
     {
-      return meshes
-        .SelectMany(m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort))
-        .Select(m => m as DB.Solid);
+      var allMeshes = meshes
+        .SelectMany(
+        m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort) ?? new List<GeometryObject>());
+      var notNull = allMeshes.Where(m => m != null);
+       var solids = notNull.Select(m => m as DB.Solid);
+       return solids;
     }
 
     private ApplicationObject FreeformElementToNative(Brep brep)

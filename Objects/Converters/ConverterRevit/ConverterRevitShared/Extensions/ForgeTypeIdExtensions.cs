@@ -24,7 +24,7 @@ namespace ConverterRevitShared.Extensions
     }
     public static string ToUniqueString(this ForgeTypeId forgeTypeId)
     {
-      return forgeTypeId.TypeId.ToString();
+      return forgeTypeId.TypeId;
     }
   }
 }

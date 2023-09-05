@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
+using Objects.Converter.Revit.Models;
 using Objects.Geometry;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
@@ -248,6 +249,8 @@ namespace Objects.Converter.Revit
       if (phaseDemolished != null)
         speckleElement["phaseDemolished"] = phaseDemolished.Name;
 
+      speckleElement["worksetId"] = revitElement.WorksetId.ToString();
+
       var category = revitElement.Category;
       if (category != null)
       {
@@ -274,24 +277,13 @@ namespace Objects.Converter.Revit
       using var parameters = element.Parameters;
       foreach (DB.Parameter param in parameters)
       {
-        // exclude parameters that don't have a value and those pointing to other elements as we don't support them
-        if (param.StorageType == StorageType.ElementId || !param.HasValue)
-        {
-          continue;
-        }
-
         var internalName = GetParamInternalName(param);
         if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
         {
           continue;
         }
 
-        var speckleParam = ParameterToSpeckle(
-          param,
-          isTypeParameter,
-          paramInternalName: internalName,
-          cache: revitDocumentAggregateCache
-        );
+        var speckleParam = ParameterToSpeckle(param, internalName, isTypeParameter);
         paramDict[internalName] = speckleParam;
       }
     }
@@ -311,7 +303,7 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = GetParameterValue(rp, rp.Definition, out _, unitsOverride);
+      var value = rp.GetValue(rp.Definition, unitsOverride);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
@@ -325,76 +317,50 @@ namespace Objects.Converter.Revit
     /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
-    private static Parameter ParameterToSpeckle(
+    private Parameter ParameterToSpeckle(
       DB.Parameter rp,
+      string paramInternalName,
       bool isTypeParameter = false,
-      string unitsOverride = null,
-      string paramInternalName = null,
-      IRevitDocumentAggregateCache cache = null
+      string unitsOverride = null
     )
     {
-      var definition = rp.Definition;
-      var sp = new Parameter
-      {
-        name = definition.Name,
-        applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
-        isShared = rp.IsShared,
-        isReadOnly = rp.IsReadOnly,
-        isTypeParameter = isTypeParameter,
-        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
-      };
-
-      sp.units = GetSymbolUnit(rp, definition, cache, out var unitTypeId);
-      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache, unitTypeId);
-      sp.applicationUnit = appUnit;
-      return sp;
-    }
-
-    private static object GetParameterValue(
-      DB.Parameter rp,
-      Definition definition,
-      out string unitType,
-      string unitsOverride = null,
-      IRevitDocumentAggregateCache cache = null,
 #if REVIT2020
-      DisplayUnitType unitTypeId = default
+      DisplayUnitType unitTypeId = default;
 #else
-      ForgeTypeId unitTypeId = null
+      ForgeTypeId unitTypeId = null;
 #endif
-    )
-    {
-      unitType = null;
-      switch (rp.StorageType)
-      {
-        case StorageType.Double:
-          // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
-          var val = rp.AsDouble();
-          if (unitsOverride == null)
-          {
-            unitTypeId = unitTypeId == default ? rp.GetUnitTypeId() : unitTypeId;
-          }
-          else
-          {
-            unitTypeId = UnitsToNative(unitsOverride);
-          }
-          unitType = UnitsToNativeString(unitTypeId);
-          return cache != null ? ScaleToSpeckle(val, unitTypeId, cache) : ScaleToSpeckleStatic(val, unitTypeId);
-        case StorageType.Integer:
-          var intVal = rp.AsInteger();
-          return definition.IsBool() ? Convert.ToBoolean(intVal) : intVal;
 
-        case StorageType.String:
-          return rp.AsString();
-        // case StorageType.ElementId:
-        //   // NOTE: if this collects too much garbage, maybe we can ignore it
-        //   var id = rp.AsElementId();
-        //   var e = Doc.GetElement(id);
-        //   if (e != null && CanConvertToSpeckle(e))
-        //     sp.value = ConvertToSpeckle(e);
-        //   break;
-        default:
-          return null;
-      }
+      // The parameter definitions are cached using the ParameterToSpeckleData struct
+      // This is done because in the case of type and instance parameter there is lots of redundant data that needs to be extracted from the Revit DB
+      // Caching noticeably speeds up the send process
+      // TODO : could add some generic getOrAdd overloads to avoid creating closures
+      var paramData = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
+        .GetOrAdd(paramInternalName, () =>
+        {
+          var definition = rp.Definition;
+          var newParamData = new ParameterToSpeckleData()
+          {
+            Definition = definition,
+            InternalName = paramInternalName,
+            IsReadOnly = rp.IsReadOnly,
+            IsShared = rp.IsShared,
+            IsTypeParameter = isTypeParameter,
+            Name = definition.Name,
+            UnitType = definition.GetUnityTypeString(),
+          };
+          if (rp.StorageType == StorageType.Double)
+          {
+            unitTypeId = rp.GetUnitTypeId();
+            newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
+            newParamData.ApplicationUnits = unitsOverride != null
+              ? UnitsToNative(unitsOverride).ToUniqueString()
+              : unitTypeId.ToUniqueString();
+          }
+          return newParamData;
+        }, out _);
+
+      return paramData.GetParameterObjectWithValue(rp.GetValue(paramData.Definition, unitTypeId));
     }
 
     #endregion
@@ -407,28 +373,24 @@ namespace Objects.Converter.Revit
     /// <param name="cache"></param>
     /// <param name="forgeTypeId"></param>
     /// <returns></returns>
-    public static string GetSymbolUnit(
+    public string GetSymbolUnit(
       DB.Parameter parameter,
       DB.Definition definition,
-      IRevitDocumentAggregateCache cache,
 #if REVIT2020
-      out DisplayUnitType unitTypeId
+      DisplayUnitType unitTypeId
 #else
-      out ForgeTypeId unitTypeId
+      ForgeTypeId unitTypeId
 #endif
     )
     {
-      unitTypeId = default;
       if (parameter.StorageType != StorageType.Double)
       {
         return null;
       }
 
-      unitTypeId = parameter.GetUnitTypeId();
-      var unitTypeIdCopy = unitTypeId;
-      return cache
+      return revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<string>(out _)
-        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeIdCopy.GetSymbol(), out _);
+        .GetOrAdd(unitTypeId.ToUniqueString(), () => unitTypeId.GetSymbol(), out _);
     }
 
     /// <summary>
@@ -483,7 +445,7 @@ namespace Objects.Converter.Revit
 
       foreach (var spk in filteredSpeckleParameters)
       {
-        if (!(spk.Value is Parameter sp) || sp.isReadOnly)
+        if (!(spk.Value is Parameter sp) || sp.isReadOnly || sp.value == null)
           continue;
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
@@ -657,7 +619,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-#endregion
+    #endregion
 
     #region conversion "edit existing if possible" utilities
 
@@ -672,21 +634,20 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
       // TODO: we may not want just the first one
-      return Doc.GetElement(cachedIds.First());
+      return  cachedIds == null ? null : Doc.GetElement(cachedIds.First());
     }
 
     public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
     {
-      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+      if (applicationId == null || ReceiveMode == ReceiveMode.Create)
         yield break;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
+      if (cachedIds == null) yield break;
       foreach (var id in cachedIds)
-      {
         yield return Doc.GetElement(id);
-      }
     }
 
     /// <summary>

@@ -23,6 +23,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ParameterToSpeckleData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
@@ -59,6 +61,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTopRail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFreeformElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertZone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProjectInfo.cs" />

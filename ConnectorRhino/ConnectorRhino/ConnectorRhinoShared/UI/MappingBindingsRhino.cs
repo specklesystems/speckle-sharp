@@ -73,7 +73,10 @@ public class MappingBindingsRhino : MappingsBindings
         result.Add(existingSchema);
 
       if (obj is InstanceObject)
+      {
+        result.Add(new BlockDefinitionViewModel());
         result.Add(new RevitFamilyInstanceViewModel());
+      }
       else
         switch (obj.Geometry)
         {
