@@ -53,6 +53,8 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+#elif ADVANCESTEEL2024
+    public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2024);
 #endif
 
     public ConverterAutocadCivil()
@@ -215,7 +217,7 @@ namespace Objects.Converter.AutocadCivil
               @base = SurfaceToSpeckle(o);
               break;
 
-#elif ADVANCESTEEL2023
+#elif ADVANCESTEEL
 
             default:
               try
@@ -486,10 +488,10 @@ namespace Objects.Converter.AutocadCivil
 
             default:
             {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
                 return CanConvertASToSpeckle(o);
 #else
-              return false;
+                return false;
 #endif
             }
           }

@@ -9,7 +9,7 @@ using Speckle.ConnectorAutocadCivil.Storage;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
