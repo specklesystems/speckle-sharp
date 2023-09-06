@@ -16,13 +16,9 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using static System.Resources.ResXFileRef;
 
 namespace ConnectorRhinoWebUI.Bindings
 {
-  
-  
-  
   public class ReceiveBinding : IReceiveBinding
   {
     public string Name { get; set; } = "receiveBinding";
@@ -43,22 +39,7 @@ namespace ConnectorRhinoWebUI.Bindings
     public async void Receive(string modelCardId, string versionId)
     {
       RhinoDoc doc = RhinoDoc.ActiveDoc;
-      ReceiverModelCard receiverModelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
-      RhinoApp.WriteLine(string.Format("Model Card Type: {0}", receiverModelCard.TypeDiscriminator));
-      RhinoApp.WriteLine(string.Format("Model Card Id: {0}", receiverModelCard.Id));
-      RhinoApp.WriteLine(string.Format("Project Id: {0}", receiverModelCard.ProjectId));
-      RhinoApp.WriteLine(string.Format("Model Id: {0}", receiverModelCard.ModelId));
-      RhinoApp.WriteLine(string.Format("Version Id: {0}", versionId));
-      
-      Account account = AccountManager.GetAccounts().Where(acc => acc.id == receiverModelCard.AccountId).FirstOrDefault();
-      Client client = new(account);
-      
-      Commit version = await client.CommitGet(receiverModelCard.ProjectId, versionId).ConfigureAwait(false);
-
-      Base commitObject = await Utils.Operations.ReceiveCommit(
-        account,
-        receiverModelCard.ProjectId,
-        version.referencedObject).ConfigureAwait(true);
+      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, modelCardId, versionId);
 
       RhinoApp.InvokeOnUiThread(
         (Action)(

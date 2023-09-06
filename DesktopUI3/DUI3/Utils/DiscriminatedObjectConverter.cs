@@ -36,13 +36,13 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
     var typeName = jsonObject.Value<string>("typeDiscriminator");
     if (typeName == null)
     {
-      throw new Operations.SpeckleDeserializeException("DUI3 Discriminator converter deserialization failed: did not find a typeDiscriminator field.");
+      throw new Speckle.Core.Api.Operations.SpeckleDeserializeException("DUI3 Discriminator converter deserialization failed: did not find a typeDiscriminator field.");
     }
     
     var type = GetTypeByName(typeName);
     if (type == null)
     {
-      throw new Operations.SpeckleDeserializeException("DUI3 Discriminator converter deserialization failed, type not found: " + typeName);
+      throw new Speckle.Core.Api.Operations.SpeckleDeserializeException("DUI3 Discriminator converter deserialization failed, type not found: " + typeName);
     }
 
     var obj = Activator.CreateInstance(type);

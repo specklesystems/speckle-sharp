@@ -6,11 +6,10 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
-namespace ConnectorRhinoWebUI.Utils;
+namespace DUI3.Operations;
 
 public static class Operations
 {
- 
   /// <summary>
   /// Convenience wrapper around <see cref="Receive"/> with connector-style error handling
   /// </summary>
