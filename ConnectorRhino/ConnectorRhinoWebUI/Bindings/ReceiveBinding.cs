@@ -1,13 +1,28 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Threading;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using DUI3.Utils;
+using Objects.Converter.RhinoGh;
 using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
+using static System.Resources.ResXFileRef;
 
 namespace ConnectorRhinoWebUI.Bindings
 {
+  
+  
+  
   public class ReceiveBinding : IReceiveBinding
   {
     public string Name { get; set; } = "receiveBinding";
@@ -25,22 +40,130 @@ namespace ConnectorRhinoWebUI.Bindings
       throw new NotImplementedException();
     }
 
-    public void Receive(string modelCardId, string versionId)
+    public async void Receive(string modelCardId, string versionId)
     {
       RhinoDoc doc = RhinoDoc.ActiveDoc;
-      ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
-      RhinoApp.WriteLine(string.Format("Model Card Type: {0}", model.TypeDiscriminator));
-      RhinoApp.WriteLine(string.Format("Model Card Id: {0}", model.Id));
-      RhinoApp.WriteLine(string.Format("Project Id: {0}", model.ProjectId));
-      RhinoApp.WriteLine(string.Format("Model Id: {0}", model.ModelId));
+      ReceiverModelCard receiverModelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      RhinoApp.WriteLine(string.Format("Model Card Type: {0}", receiverModelCard.TypeDiscriminator));
+      RhinoApp.WriteLine(string.Format("Model Card Id: {0}", receiverModelCard.Id));
+      RhinoApp.WriteLine(string.Format("Project Id: {0}", receiverModelCard.ProjectId));
+      RhinoApp.WriteLine(string.Format("Model Id: {0}", receiverModelCard.ModelId));
       RhinoApp.WriteLine(string.Format("Version Id: {0}", versionId));
+      
+      Account account = AccountManager.GetAccounts().Where(acc => acc.id == receiverModelCard.AccountId).FirstOrDefault();
+      Client client = new(account);
+      
+      Commit version = await client.CommitGet(receiverModelCard.ProjectId, versionId).ConfigureAwait(false);
 
-      // TODO: Do here real receive
+      Base commitObject = await Utils.Operations.ReceiveCommit(
+        account,
+        receiverModelCard.ProjectId,
+        version.referencedObject).ConfigureAwait(true);
 
-      Dispatcher.CurrentDispatcher.Invoke(() =>
+      RhinoApp.InvokeOnUiThread(
+        (Action)(
+          () =>
+          {
+            ConverterRhinoGh converter = new ConverterRhinoGh();
+            converter.SetContextDocument(doc);
+
+            var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+
+            var objectsToConvert = traverseFunction
+              .Traverse(commitObject)
+              .Select(
+                tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
+              .Reverse()
+              .ToList();
+
+            var objectsToBake = new List<object>();
+
+            int count = 0;
+            foreach (var objectToConvert in objectsToConvert)
+            {
+              count++;
+              double progress = (double)count / objectsToConvert.Count;
+              Dispatcher.CurrentDispatcher.Invoke(() =>
+              {
+                Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);          
+              }, DispatcherPriority.Background);
+              
+              var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
+              objectsToBake.AddRange(objectsToAddBakeList);
+            }
+            
+            BakeObject(objectsToBake, converter, null, doc);
+
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+            {
+              Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);          
+            }, DispatcherPriority.Background);
+
+            doc.Views.Redraw();
+          }));
+    }
+    
+    // conversion and bake
+    private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
+    {
+      var convertedList = new List<object>();
+
+      var converted = converter.ConvertToNative(obj);
+      if (converted == null)
+        return convertedList;
+
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
       {
-        Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-      }, DispatcherPriority.Background);
+        if (item is IList list)
+          foreach (object child in list)
+            FlattenConvertedObject(child);
+        else
+          convertedList.Add(item);
+      }
+      FlattenConvertedObject(converted);
+
+      return convertedList;
+    }
+    
+    private static bool IsPreviewIgnore(Base @object)
+    {
+      return @object.speckle_type.Contains("Instance")
+          || @object.speckle_type.Contains("View")
+          || @object.speckle_type.Contains("Collection");
+    }
+
+    private void BakeObject(
+      List<object> convertedItems,
+      ISpeckleConverter converter,
+      Layer layer,
+      RhinoDoc doc,
+      ApplicationObject parent = null
+    )
+    {
+      int bakedCount = 0;
+      foreach (var convertedItem in convertedItems)
+      {
+        switch (convertedItem)
+        {
+          case GeometryBase o:
+            var attributes = new ObjectAttributes();
+
+            Guid id = doc.Objects.Add(o, attributes);
+
+            bakedCount++;
+
+            break;
+          case RhinoObject o: // this was prbly a block instance, baked during conversion ???
+          
+            bakedCount++;
+            break;
+          case ViewInfo o: // this is a view, baked during conversion ???
+
+            bakedCount++;
+            break;
+        }
+      }
     }
   }
 }

@@ -52,6 +52,11 @@ public partial class ConverterRhinoGh
 
   private string GetCommitInfo()
   {
+    if (Doc.Notes == null)
+    {
+      return "Unknown commit"; 
+    }
+
     var segments = Doc.Notes.Split(new[] { "%%%" }, StringSplitOptions.None).ToList();
     return segments.Count > 1 ? segments[1] : "Unknown commit";
   }

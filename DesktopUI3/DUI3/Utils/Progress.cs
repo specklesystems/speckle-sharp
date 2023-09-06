@@ -30,7 +30,7 @@ public static class Progress
     var args = new SenderProgress()
     {
       Id = modelCardId,
-      Status = progress == 1 ? "Completed" : "Converting",
+      Status = progress == 1 ? "Completed" : "Constructing",
       Progress = progress
     };
     bridge.SendToBrowser(ReceiveBindingEvents.ReceiverProgress, args);
