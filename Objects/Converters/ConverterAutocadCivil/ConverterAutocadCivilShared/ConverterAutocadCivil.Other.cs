@@ -585,8 +585,11 @@ namespace Objects.Converter.AutocadCivil
     {
       notes = new List<string>();
 
+      // TODO: DUI3! Ignore commit info while implementing DUI3! Later find a similar way or use as below!
+      var commitInfo = "dui3_test";
+
       // get the definition name
-      var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
+      // var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
       string definitionName = definition is BlockDefinition blockDef
         ? RemoveInvalidAutocadChars(blockDef.name)
         : definition is RevitSymbolElementType revitDef
