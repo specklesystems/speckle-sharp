@@ -94,12 +94,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   {
     if (settings is Dictionary<string, string> temp)
       Settings = temp;
-
     // TODO: Both settings bellow are here for backwards compatibility and should be removed after consolidating settings
+    else if (settings is MeshSettings meshSettings)
+      SelectedMeshSettings = meshSettings;
     if (Settings.TryGetValue("preprocessGeometry", out string setting))
       bool.TryParse(setting, out PreprocessGeometry);
-    var s = (MeshSettings)settings;
-    SelectedMeshSettings = s;
   }
 
   public void SetContextDocument(object doc)
