@@ -8,7 +8,7 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
@@ -62,7 +62,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
           else
           {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
             UpdateASObject(appObj, obj);
 #endif
             appObj.Update(

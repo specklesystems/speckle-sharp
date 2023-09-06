@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System;
 using System.Collections;
 using System.Collections.Generic;
