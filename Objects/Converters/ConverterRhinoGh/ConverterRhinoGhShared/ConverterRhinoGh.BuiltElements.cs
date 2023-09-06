@@ -17,6 +17,14 @@ namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
+  // parameters
+  public Tuple<string, string> ParameterToNative(RV.Parameter parameter)
+  {
+    var name = parameter.name;
+    var val = parameter.value?.ToString() ?? string.Empty;
+    return new Tuple<string, string>(name, val);
+  }
+
   // views
   public View3D ViewToSpeckle(ViewInfo view)
   {

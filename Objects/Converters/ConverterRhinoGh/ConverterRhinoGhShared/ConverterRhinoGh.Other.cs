@@ -24,7 +24,7 @@ namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
-  // display, render, and parameters
+  // display, render
   public RH.ObjectAttributes DisplayStyleToNative(DisplayStyle display)
   {
     var attributes = new RH.ObjectAttributes();
@@ -239,13 +239,6 @@ public partial class ConverterRhinoGh
 #endif
 
     return renderMaterial;
-  }
-
-  public Tuple<string, string> ParameterToNative(Objects.BuiltElements.Revit.Parameter parameter)
-  {
-    var name = parameter.name;
-    var val = parameter.value.ToString();
-    return new Tuple<string, string>(name, val);
   }
 
   // hatch
