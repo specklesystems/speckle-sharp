@@ -37,6 +37,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     converter.ReceiveMode = state.ReceiveMode;
 
     // set converter settings
+    bool settingsChanged = CurrentSettings == state.Settings ? false : true;
     CurrentSettings = state.Settings;
     var settings = GetSettingsDict(CurrentSettings);
     converter.SetConverterSettings(settings);
@@ -44,7 +45,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = commit;
 
-    if (SelectedReceiveCommit != commit.id)
+    if (SelectedReceiveCommit != commit.id || settingsChanged) // clear storage if receiving a new commit, or if settings have changed!!
     {
       ClearStorage();
       SelectedReceiveCommit = commit.id;
@@ -69,7 +70,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         () =>
         {
           RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-
           // create preview objects if they don't already exist
           if (Preview.Count == 0)
           {
