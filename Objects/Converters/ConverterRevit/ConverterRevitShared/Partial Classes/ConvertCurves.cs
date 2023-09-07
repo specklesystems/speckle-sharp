@@ -20,8 +20,10 @@ namespace Objects.Converter.Revit
       var docObjs = GetExistingElementsByApplicationId(applicationId);
       var appObj = new ApplicationObject(id, speckle_type) { applicationId = applicationId };
 
+      // TODO: DUI3 -> return appObj directly since we don't have exactly ApplicationObject 
+      return appObj;
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObjs.FirstOrDefault(), appObj))
+      if (IsIgnore(null, appObj))
         return appObj;
 
       foreach (var docObj in docObjs)
