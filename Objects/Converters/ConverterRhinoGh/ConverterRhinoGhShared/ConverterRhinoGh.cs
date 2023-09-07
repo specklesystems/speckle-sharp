@@ -670,7 +670,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #else
       // This types are not supported in GH!
       case Pointcloud _:
-      case Collection _:
       case ModelCurve _:
       case DirectShape _:
       case View3D _:
@@ -679,7 +678,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Level _:
       case Text _:
       case Dimension _:
+      case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;
+
 #endif
 
       default:
