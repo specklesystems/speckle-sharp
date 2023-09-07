@@ -37,7 +37,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     converter.ReceiveMode = state.ReceiveMode;
 
     // set converter settings
-    bool settingsChanged = CurrentSettings == state.Settings ? false : true;
+    bool settingsChanged = CurrentSettings != state.Settings;
     CurrentSettings = state.Settings;
     var settings = GetSettingsDict(CurrentSettings);
     converter.SetConverterSettings(settings);
