@@ -83,18 +83,18 @@ namespace Speckle.ConnectorRevit.UI
         new ListBoxSetting
         {
           Slug = "direct-shape-strategy",
-          Name = "Convert received objects to DirectShape",
+          Name = "Fallback to DirectShape on receive",
           Icon = "Link",
           Values = new List<string> { "Always", "On Error", "Never" },
           Selection = "On Error",
-          Description = "Determines when to attempt conversion of an element into a DirectShape"
+          Description = "Determines when to fallback to DirectShape on receive.\n\nAways: all objects will be received as DirectShapes\nOn Error: only objects that fail or whose types are missing\nNever: disables the fallback behavior"
         },
         new MultiSelectBoxSetting
         {
           Slug = "disallow-join",
           Name = "Disallow Join For Elements",
           Icon = "CallSplit",
-          Description = "Determine which objects should not be allowed to join by default when receiving",
+          Description = "Determines which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming }
         },
         new ListBoxSetting
@@ -109,10 +109,10 @@ namespace Speckle.ConnectorRevit.UI
         new MappingSetting
         {
           Slug = "receive-mappings",
-          Name = "Custom Type Mapping",
+          Name = "Missing Type Mapping",
           Icon = "LocationSearching",
           Values = mappingOptions,
-          Description = "Determine how incoming object types are mapped to object types in the host application"
+          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown when types are missing\nFor New Types: the dialog is only shown if there are new unmapped types"
         },
       };
     }
