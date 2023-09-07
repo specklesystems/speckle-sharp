@@ -199,7 +199,7 @@ public class DeconstructSpeckleObjectTaskComponent
           {
             var isDetached = t.StartsWith("@");
             var name = isDetached ? t.Substring(1) : t;
-            var nickChange = Params.Output[i].NickName != t;
+            var nickChange = Params.Output[i].NickName != name;
             var detachChange = (Params.Output[i] as GenericAccessParam).Detachable != isDetached;
             return nickChange || detachChange;
           }
