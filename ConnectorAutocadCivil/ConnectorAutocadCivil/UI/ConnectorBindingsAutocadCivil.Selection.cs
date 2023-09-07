@@ -7,7 +7,7 @@ using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.Core.Kits;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 

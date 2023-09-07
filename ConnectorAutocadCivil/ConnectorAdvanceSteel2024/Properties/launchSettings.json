@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Debug AdvanceSteel": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\AutoCAD 2024\\acad.exe",
+      "commandLineArgs": "/language \"en-US\" /product \"ADVS\" /p \"<<ADVS>>\""
+    }
+  }
+}

@@ -6,7 +6,7 @@ using System.Threading;
 
 using Autodesk.AutoCAD.ApplicationServices;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
 using Autodesk.AutoCAD.Runtime;
@@ -23,7 +23,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 [assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
 #endif
 
