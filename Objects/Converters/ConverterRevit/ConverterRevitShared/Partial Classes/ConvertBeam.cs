@@ -47,14 +47,14 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      double elevationOffset = 0.0;
-      if (speckleRevitBeam != null)
+      double baseOffset = 0.0;
+      if (speckleRevitBeam != null && speckleRevitBeam.level != null)
       {
         level = ConvertLevelToRevit(speckleRevitBeam.level, out ApplicationObject.State levelState);
       }
       else
       {
-        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out elevationOffset);
+        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out baseOffset);
       }
       var isUpdate = false;
 
@@ -115,11 +115,10 @@ namespace Objects.Converter.Revit
       //reference level, only for beams
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
-      if (!(revitBeam is RevitBeam))
-        TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -elevationOffset);
-
       if (speckleRevitBeam != null)
         SetInstanceParameters(revitBeam, speckleRevitBeam);
+      else
+        TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -baseOffset);
 
       // TODO: get sub families, it's a family! 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;

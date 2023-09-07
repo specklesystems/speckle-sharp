@@ -50,8 +50,8 @@ namespace Objects.Converter.Revit
 
       var speckleRevitColumn = speckleColumn as RevitColumn;
 
-      double elevationOffset = 0.0;
-      double elevationTopOffset = 0.0;
+      double baseOffset = 0.0;
+      double topOffset = 0.0;
       var levelState = ApplicationObject.State.Unknown;
       if (speckleRevitColumn != null)
       {
@@ -64,8 +64,8 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = ConvertLevelToRevit(baseLine, out levelState, out elevationOffset);
-        topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out elevationTopOffset);
+        level = ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
+        topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out topOffset);
       }
 
       //try update existing 
@@ -142,11 +142,6 @@ namespace Objects.Converter.Revit
 
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
       TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, topLevel);
-      if (!(revitColumn is RevitColumn))
-      {
-        TrySetParam(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM, -elevationOffset);
-        TrySetParam(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM, -elevationTopOffset);
-      }
 
       if (speckleRevitColumn != null)
       {
@@ -158,9 +153,13 @@ namespace Objects.Converter.Revit
 
         //don't change offset for slanted columns, it's automatic
         if (!isLineBased)
-          SetOffsets(revitColumn, speckleRevitColumn, level, topLevel);
+          SetOffsets(revitColumn, level, topLevel, ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units), ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units));
 
         SetInstanceParameters(revitColumn, speckleRevitColumn);
+      }
+      else
+      {
+        SetOffsets(revitColumn, level, topLevel, -baseOffset, -topOffset);
       }
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -175,7 +174,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="familyInstance"></param>
-    private void SetOffsets(DB.FamilyInstance familyInstance, RevitColumn speckleRevitColumn, Level level, Level topLevel)
+    private void SetOffsets(DB.FamilyInstance familyInstance, Level level, Level topLevel, double baseOffset, double topOffset)
     {
       var topOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       var baseOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
@@ -184,9 +183,6 @@ namespace Objects.Converter.Revit
 
       if (topLevelParam == null || baseLevelParam == null || baseOffsetParam == null || topOffsetParam == null)
         return;
-
-      var baseOffset = ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units);
-      var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       // the column length cannot be 0 for even an instance or Revit will throw a fit.
       // Make sure that setting the offset on one side of the column before setting the
