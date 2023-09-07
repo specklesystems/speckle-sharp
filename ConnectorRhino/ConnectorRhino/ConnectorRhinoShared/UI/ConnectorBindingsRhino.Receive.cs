@@ -335,7 +335,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       ApplicationObject NewAppObj()
       {
         var speckleType = current.speckle_type
-          .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
 
         return new ApplicationObject(current.id, speckleType)
