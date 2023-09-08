@@ -9,11 +9,11 @@
   <UserControl.Styles>
 
     <Style Selector="ToggleSwitch[IsChecked=true]">
-      <Setter Property="Content" Value="Public stream" />
+      <Setter Property="Content" Value=" Link Shareable" />
     </Style>
 
     <Style Selector="ToggleSwitch[IsChecked=false]">
-      <Setter Property="Content" Value="Private stream" />
+      <Setter Property="Content" Value=" Private" />
     </Style>
 
 
@@ -73,9 +73,8 @@
     <ToggleSwitch
       Name="isPublic"
       Grid.Row="4"
-      Margin="15" />
-
-
+      Margin="15"/>
+    
     <StackPanel
       Grid.Row="5"
       Margin="15"
