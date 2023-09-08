@@ -112,7 +112,7 @@ namespace Speckle.ConnectorRevit.UI
           Name = "Missing Type Mapping",
           Icon = "LocationSearching",
           Values = mappingOptions,
-          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown when types are missing\nFor New Types: the dialog is only shown if there are new unmapped types"
+          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types"
         },
       };
     }
