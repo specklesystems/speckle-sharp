@@ -159,7 +159,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        SetOffsets(revitColumn, level, topLevel, -baseOffset, -topOffset);
+        // this case is always line based, don't change offset for line based columns, it's automatic
       }
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
