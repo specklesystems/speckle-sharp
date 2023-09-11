@@ -239,7 +239,7 @@ namespace Objects.Converter.Revit
         return children;
       }
 
-      var allSubelementsInDoc = revitDocumentAggregateCache
+      var allSubelementsInView = revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
         .GetOrAdd(category.ToString(), () =>
         {
@@ -253,7 +253,7 @@ namespace Objects.Converter.Revit
         }, out _);
 
       return children
-        .Where(allSubelementsInDoc.Contains);
+        .Where(allSubelementsInView.Contains);
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
