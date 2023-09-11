@@ -67,7 +67,6 @@ namespace Objects.Converter.Revit
 
         if (topRailType != null && isTopRailExactMatch)
           railingType.TopRailType = topRailType.Id;
-
       }
 
 

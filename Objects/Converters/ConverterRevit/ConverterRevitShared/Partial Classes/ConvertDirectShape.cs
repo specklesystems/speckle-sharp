@@ -153,9 +153,21 @@ namespace Objects.Converter.Revit
         speckleDs.category = RevitCategory.GenericModel;
       var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
 
-      BuiltInCategory.TryParse(bicName, out bic);
-      var cat = Doc.Settings.Categories.get_Item(bic);
-
+      var res = BuiltInCategory.TryParse(bicName, out bic); 
+      var cat = Doc.Settings.Categories.get_Item(bic); 
+      if (cat is null)
+      {
+        // don't know why, but sometimes the "Railings" category maps to "OST_StairsRailing" instead of "OST_Railings"
+        if (bic == BuiltInCategory.OST_Railings) 
+        {
+          cat = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_StairsRailing);
+        }
+        // default to generic model as last resort
+        if (cat is null)
+        {
+          cat = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel);
+        }
+      }
       try
       {
         var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
