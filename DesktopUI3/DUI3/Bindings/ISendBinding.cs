@@ -85,6 +85,7 @@ public class SenderProgress
 
 public class CreateVersion
 {
+  public string ModelCardId { get; set; }
   public string AccountId { get; set; }
   public string ModelId { get; set; }
   public string ProjectId { get; set; }
