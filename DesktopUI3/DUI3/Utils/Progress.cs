@@ -1,4 +1,4 @@
-﻿using DUI3.Bindings;
+using DUI3.Bindings;
 
 namespace DUI3.Utils;
 
@@ -18,5 +18,21 @@ public static class Progress
       Progress = progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
+  }
+
+  /// <summary>
+  /// Send receiver progress info to browser
+  /// </summary>
+  /// <param name="modelCardId"></param>
+  /// <param name="progress"></param>
+  public static void ReceiverProgressToBrowser(IBridge bridge, string modelCardId, double progress)
+  {
+    var args = new SenderProgress()
+    {
+      Id = modelCardId,
+      Status = progress == 1 ? "Completed" : "Constructing",
+      Progress = progress
+    };
+    bridge.SendToBrowser(ReceiveBindingEvents.ReceiverProgress, args);
   }
 }

@@ -15,6 +15,7 @@ public static class Factory
   {
     var baseBindings = new BasicConnectorBinding(Store);
     var sendBindings = new SendBinding(Store);
+    var receiveBindings = new ReceiveBinding(Store);
     // TODO: expiryBindings (?) maybe part of sendBindings after all...
     // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
@@ -26,6 +27,7 @@ public static class Factory
       new TestBinding(),
       baseBindings,
       sendBindings,
+      receiveBindings,
       selectionBindings
     };
       

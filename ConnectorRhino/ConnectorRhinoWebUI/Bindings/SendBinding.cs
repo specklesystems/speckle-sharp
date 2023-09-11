@@ -146,7 +146,7 @@ public class SendBinding : ISendBinding
 
     var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
-    var objectId = await Operations.Send(
+    var objectId = await Speckle.Core.Api.Operations.Send(
       commitObject,
       transports,
       disposeTransports: true
