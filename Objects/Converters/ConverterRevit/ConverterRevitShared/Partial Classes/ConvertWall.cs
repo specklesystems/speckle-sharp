@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
@@ -309,7 +310,7 @@ namespace Objects.Converter.Revit
 
       try
       {
-        sketchEditScope.Commit(new FailuresPreprocessor());
+        sketchEditScope.Commit(new ErrorEater());
       }
       catch (Exception ex)
       {
@@ -323,14 +324,6 @@ namespace Objects.Converter.Revit
         transactionManager.StartSubtransaction();
       }
 #endif
-    }
-
-    public class FailuresPreprocessor : IFailuresPreprocessor
-    {
-      public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
-      {
-        return FailureProcessingResult.Continue;
-      }
     }
   }
 }
