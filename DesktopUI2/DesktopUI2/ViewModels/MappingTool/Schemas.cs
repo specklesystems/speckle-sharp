@@ -4,8 +4,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
-using Objects.Other;
 using Objects.BuiltElements.Revit.RevitRoof;
+using Objects.Other;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Newtonsoft.Json;
@@ -441,12 +441,12 @@ public class BlockDefinitionViewModel : Schema
 {
   private List<string> _categories;
 
-  private string _selectedCategory = RevitCategory.GenericModel.ToString();
+  private string _selectedCategory = RevitFamilyCategory.GenericModel.ToString();
 
   public BlockDefinitionViewModel()
   {
-    Categories = Enum.GetValues(typeof(RevitCategory))
-      .Cast<RevitCategory>()
+    Categories = Enum.GetValues(typeof(RevitFamilyCategory))
+      .Cast<RevitFamilyCategory>()
       .Select(x => x.ToString())
       .OrderBy(x => x)
       .ToList();
