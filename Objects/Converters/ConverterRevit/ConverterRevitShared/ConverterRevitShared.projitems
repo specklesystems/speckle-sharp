@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AllRevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CategoryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DisplayUnitTypeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ConnectorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />

@@ -4,6 +4,7 @@ using System.DoubleNumerics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using RevitSharedResources.Helpers;
@@ -513,6 +514,13 @@ namespace Objects.Converter.Revit
       if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
+      if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallMullions)
+        || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallPanels))
+      {
+        appObj.Update(logItem: "Revit cannot create standalone curtain panels or mullions", status: ApplicationObject.State.Skipped);
         return appObj;
       }
 
