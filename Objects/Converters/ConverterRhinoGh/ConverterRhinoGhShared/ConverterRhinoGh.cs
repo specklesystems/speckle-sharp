@@ -94,12 +94,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   {
     if (settings is Dictionary<string, string> temp)
       Settings = temp;
-
     // TODO: Both settings bellow are here for backwards compatibility and should be removed after consolidating settings
+    else if (settings is MeshSettings meshSettings)
+      SelectedMeshSettings = meshSettings;
     if (Settings.TryGetValue("preprocessGeometry", out string setting))
       bool.TryParse(setting, out PreprocessGeometry);
-    var s = (MeshSettings)settings;
-    SelectedMeshSettings = s;
   }
 
   public void SetContextDocument(object doc)
@@ -671,7 +670,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #else
       // This types are not supported in GH!
       case Pointcloud _:
-      case Collection _:
       case ModelCurve _:
       case DirectShape _:
       case View3D _:
@@ -680,7 +678,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Level _:
       case Text _:
       case Dimension _:
+      case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;
+
 #endif
 
       default:

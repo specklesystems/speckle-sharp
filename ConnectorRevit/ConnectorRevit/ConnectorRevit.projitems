@@ -51,7 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\TypeMap.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Previews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Receive.cs" />

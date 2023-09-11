@@ -15,7 +15,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
@@ -193,7 +193,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (!converter.CanConvertToSpeckle(obj))
             {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
               UpdateASObject(reportObj, obj);
 #endif
               reportObj.Update(
@@ -322,7 +322,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
     private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
     {
       if (!CheckAdvanceSteelObject(obj))
