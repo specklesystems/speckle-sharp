@@ -224,7 +224,9 @@ namespace Speckle.ConnectorRevit.UI
         {
           // first try to retrieve this object from the preview and the converter report
           // create if none exist
-          var nestedAppObj = Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault()??converter.Report.ReportObjects[obj.id];
+          var nestedAppObj = converter.Report.ReportObjects.ContainsKey(obj.id)
+            ? converter.Report.ReportObjects[obj.id]
+            : Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault();
           if (nestedAppObj == null)
           {
             nestedAppObj = new ApplicationObject(obj.id, ConnectorRevitUtils.SimplifySpeckleType(obj.speckle_type))
