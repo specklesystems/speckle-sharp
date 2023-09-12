@@ -208,12 +208,12 @@ namespace Objects.Converter.Revit
         AddHostedDependentElements(
           revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallMullions) ?? grid.GetMullionIds().ToList()
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallMullions, grid.GetMullionIds()).ToList()
         );
         AddHostedDependentElements(
           revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallPanels) ?? grid.GetPanelIds().ToList()
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallPanels, grid.GetPanelIds()).ToList()
         );
       }
 
@@ -237,18 +237,29 @@ namespace Objects.Converter.Revit
         notes.AddRange(hostedNotes);
       return speckleWall;
     }
-
-    private List<ElementId>? GetWallSubElementsInView(BuiltInCategory category)
+    
+    private IEnumerable<ElementId> GetSubsetOfElementsInView(BuiltInCategory category, IEnumerable<ElementId> children)
     {
       if (ViewSpecificOptions == null)
       {
-        return null;
+        return children;
       }
 
-      using var filter = new ElementCategoryFilter(category);
-      using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+      var allSubelementsInView = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
+        .GetOrAdd(category.ToString(), () =>
+        {
+          using var filter = new ElementCategoryFilter(category);
+          using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
 
-      return collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds().ToList();
+          return new HashSet<ElementId>(collector
+            .WhereElementIsNotElementType()
+            .WherePasses(filter)
+            .ToElementIds());
+        }, out _);
+
+      return children
+        .Where(allSubelementsInView.Contains);
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
