@@ -28,51 +28,24 @@ namespace Objects.Converter.Revit
   {
     #region hosted elements
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
+    // Creates an ApplicationObject with status = Skipped for each object in the `elements` property
+    // This will tell the connector to skip these elements when traversing 
+    private void SkipNestedElementsOnReceive(Base host)
     {
-      //doesn't have a host, go ahead and convert
-      if (host == null)
-        return true;
+      var nestedElements = host["elements"] ?? host["@elements"];
 
-      // has been converted before (from a parent host), skip it
-      if (ConvertedObjects.Contains(element.UniqueId))
+      if (nestedElements == null)
+        return;
+
+      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
       {
-        return false;
+        // create the application object with status = skipped and log to reports
+        var nestedAppObj = Report.ReportObjects.TryGetValue(obj.id, out ApplicationObject value)
+         ? value
+         : new ApplicationObject(obj.id, obj.speckle_type);
+        nestedAppObj.Status = ApplicationObject.State.Skipped;
+        Report.Log(nestedAppObj);
       }
-
-      // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.ContainsKey(host.UniqueId))
-      {
-        return false;
-      }
-      return true;
-    }
-
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, Base extraProps)
-    {
-      // doesn't have a host that will convert the element, go ahead and do it now
-      if (host == null || host is DB.Level)
-        return true;
-
-      // has been converted before (from a parent host), skip it
-      if (ConvertedObjects.Contains(element.UniqueId))
-        return false;
-
-      // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.ContainsKey(host.UniqueId))
-      {
-        // there are certain elements in Revit that can be a host to another element
-        // yet not know it.
-        var hostedElementIds = GetHostedElementIds(host);
-        var elementId = element.Id;
-        if (!hostedElementIds.Contains(elementId))
-        {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name, };
-        }
-        else
-          return false;
-      }
-      return true;
     }
 
     /// <summary>

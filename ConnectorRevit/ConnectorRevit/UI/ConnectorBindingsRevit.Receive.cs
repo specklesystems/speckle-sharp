@@ -222,8 +222,9 @@ namespace Speckle.ConnectorRevit.UI
         // traverse each element member and convert
         foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
         {
-          // create the application object and log to reports
-          var nestedAppObj = Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault();
+          // first try to retrieve this object from the preview and the converter report
+          // create if none exist
+          var nestedAppObj = Preview.Where(o => o.OriginalId == obj.id)?.FirstOrDefault()??converter.Report.ReportObjects[obj.id];
           if (nestedAppObj == null)
           {
             nestedAppObj = new ApplicationObject(obj.id, ConnectorRevitUtils.SimplifySpeckleType(obj.speckle_type))
@@ -234,6 +235,10 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(nestedAppObj);
             converter.Report.Log(nestedAppObj);
           }
+
+          //check status, skip if necessary
+          if (nestedAppObj.Status == ApplicationObject.State.Skipped)
+            continue;
 
           // convert
           var converted = ConvertObject(nestedAppObj, obj, receiveDirectMesh, converter, progress, transactionManager);

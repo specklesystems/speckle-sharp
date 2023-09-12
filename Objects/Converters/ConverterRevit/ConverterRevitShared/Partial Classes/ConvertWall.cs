@@ -148,6 +148,9 @@ namespace Objects.Converter.Revit
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
         TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
+
+        if (revitWall.CurtainGrid is CurtainGrid)
+          SkipNestedElementsOnReceive(spklRevitWall); // handles and skips curtain wall elements for the connector
       }
       else
       {
@@ -163,7 +166,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
 
       SetWallVoids(revitWall, speckleWall);
-      //appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      
       return appObj;
     }
 
