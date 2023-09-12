@@ -118,7 +118,7 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "LocationSearching",
           Values = mappingOptions,
           Selection = forNewTypes,
-          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types"
+          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types\n\nNOTE: no dialog is shown if Fallback to DirectShape is set to Always"
         },
       };
     }
