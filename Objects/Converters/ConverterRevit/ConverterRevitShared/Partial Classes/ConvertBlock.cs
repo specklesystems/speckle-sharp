@@ -186,8 +186,7 @@ public partial class ConverterRevit
       cat = RevitCategory.GenericModel;
 
     // Get the BuiltInCategory corresponding to the RevitCategory
-    var catName = Categories.GetBuiltInFromSchemaBuilderCategory(cat);
-    success = Enum.TryParse(catName, out DB.BuiltInCategory bic);
+    success = Categories.GetBuiltInCategoryFromRevitCategory(cat, out DB.BuiltInCategory bic);
     if (!success)
       bic = DB.BuiltInCategory.OST_GenericModel;
 
