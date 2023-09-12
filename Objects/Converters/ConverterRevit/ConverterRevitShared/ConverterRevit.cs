@@ -634,6 +634,9 @@ namespace Objects.Converter.Revit
         case BE.Topography o:
           return TopographyToNative(o);
 
+        case BER.RevitCurtainWallPanel o:
+          return PanelToNative(o);
+
         case BER.RevitProfileWall o:
           return ProfileWallToNative(o);
 
@@ -836,6 +839,7 @@ namespace Objects.Converter.Revit
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
         BE.Topography _ => true,
+        BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,
         BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
