@@ -232,27 +232,12 @@ public partial class ConverterNavisworks
     return view;
   }
 
-  private static Base CategoryToSpeckle(ModelItem element)
-  {
-    var elementCategory = element.PropertyCategories.FindPropertyByName(
-      PropertyCategoryNames.Item,
-      DataPropertyNames.ItemIcon
-    );
-    var elementCategoryType = elementCategory.Value.ToNamedConstant().DisplayName;
-
-    return elementCategoryType switch
-    {
-      "Geometry" => new GeometryNode(),
-      _ => new Collection { collectionType = elementCategoryType }
-    };
-  }
-
   private static Base ModelItemToSpeckle(ModelItem element)
   {
     if (IsElementHidden(element))
       return null;
 
-    var @base = CategoryToSpeckle(element);
+    var @base = ConvertModelItemToSpeckle(element);
 
     var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
     var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
@@ -297,6 +282,58 @@ public partial class ConverterNavisworks
     AddItemProperties(element, @base);
 
     return @base;
+  }
+
+  /// <summary>
+  /// Converts a ModelItem to a Speckle object based on its properties.
+  /// </summary>
+  /// <param name="element">The ModelItem element to be converted.</param>
+  /// <returns>
+  /// Returns a GeometryNode if the element has geometry; otherwise, returns a Collection object with the category type set.
+  /// </returns>
+  private static Base ConvertModelItemToSpeckle(ModelItem element)
+  {
+    // Find the category property of the ModelItem
+    var elementCategoryProperty = FindCategoryProperty(element);
+
+    // Determine the type of the category
+    var elementCategoryType = GetCategoryDisplayName(elementCategoryProperty);
+
+    // Return either a GeometryNode or a Collection based on the element's properties
+    return CreateSpeckleObject(element, elementCategoryType);
+  }
+
+  /// <summary>
+  /// Finds the category property of a ModelItem element.
+  /// </summary>
+  /// <param name="element">The ModelItem element.</param>
+  /// <returns>The found category property.</returns>
+  private static DataProperty FindCategoryProperty(ModelItem element)
+  {
+    return element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
+  }
+
+  /// <summary>
+  /// Gets the display name of a category property.
+  /// </summary>
+  /// <param name="categoryProperty">The category property.</param>
+  /// <returns>The display name of the category.</returns>
+  private static string GetCategoryDisplayName(DataProperty categoryProperty)
+  {
+    return categoryProperty.Value.ToNamedConstant().DisplayName;
+  }
+
+  /// <summary>
+  /// Creates a Speckle object based on the ModelItem element and its category type.
+  /// </summary>
+  /// <param name="element">The ModelItem element.</param>
+  /// <param name="categoryType">The type of the category.</param>
+  /// <returns>A Speckle object.</returns>
+  private static Base CreateSpeckleObject(ModelItem element, string categoryType)
+  {
+    return element.HasGeometry
+      ? new GeometryNode()
+      : new Collection { collectionType = categoryType };
   }
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
