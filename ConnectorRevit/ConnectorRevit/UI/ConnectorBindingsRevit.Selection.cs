@@ -284,12 +284,12 @@ namespace Speckle.ConnectorRevit.UI
             throw new SpeckleException($"Unknown ISelectionFilterSlug, {filter.Slug}");
         }
       }
+      catch (ModificationForbiddenException ex)
+      {
+        throw new SpeckleException($"Modification Forbidden: please open the selected View/s and try again.", ex);
+      }
       catch (Exception ex)
       {
-        if (ex is ModificationForbiddenException)
-          throw new SpeckleException($"Modification Forbidden: please open another View and try again.", ex);
-
-
         throw new SpeckleException(
           $"Method {nameof(GetSelectionFilterObjects)} threw an error of type {ex.GetType()}. Reason: {ex.Message}",
           ex
