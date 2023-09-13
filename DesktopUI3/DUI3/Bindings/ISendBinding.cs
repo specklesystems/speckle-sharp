@@ -76,13 +76,6 @@ public abstract class DirectSelectionSendFilter : DiscriminatedObject, ISendFilt
   public abstract bool CheckExpiry(string[] changedObjectIds);
 }
 
-public class SenderProgress
-{
-  public string Id { get; set; }
-  public string Status { get; set; }
-  public double Progress { get; set; }
-}
-
 public class CreateVersion
 {
   public string ModelCardId { get; set; }

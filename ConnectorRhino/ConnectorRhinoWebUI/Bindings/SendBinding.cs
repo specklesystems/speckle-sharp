@@ -101,17 +101,6 @@ public class SendBinding : ISendBinding
     return objectByNestedLayers.ToDictionary(k => k.Key, v => v.Value.AsEnumerable());
   }
 
-  private async void SendProgress(string modelCardId, double progress)
-  {
-    var args = new SenderProgress()
-    {
-      Id = modelCardId,
-      Status = progress == 1 ? "Completed" : "Converting",
-      Progress = progress
-    };
-    Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
-  }
-
   public async void Send(string modelCardId)
   {
     RhinoDoc doc = RhinoDoc.ActiveDoc;

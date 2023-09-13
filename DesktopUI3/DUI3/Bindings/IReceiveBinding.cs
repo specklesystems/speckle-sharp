@@ -27,11 +27,4 @@ namespace DUI3.Bindings
   public class ReceiverModelCard : ModelCard
   {
   }
-
-  public class ReceiverProgress
-  {
-    public string Id { get; set; }
-    public string Status { get; set; }
-    public double Progress { get; set; }
-  }
 }
