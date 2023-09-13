@@ -53,5 +53,11 @@ namespace Objects.Converter.Revit
       var revitName = name.Split('_').Last();
       return Enum.TryParse<RevitCategory>(revitName, out c);
     }
+
+    public static string GetBuiltInFromSchemaBuilderCategory(RevitFamilyCategory c)
+    {
+      var name = Enum.GetName(typeof(RevitFamilyCategory), c);
+      return $"OST_{name}";
+    }
   }
 }

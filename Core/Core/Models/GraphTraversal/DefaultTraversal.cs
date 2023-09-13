@@ -40,14 +40,13 @@ public static class DefaultTraversal
   /// <returns></returns>
   public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
   {
-    var convertableRule = TraversalRule.NewTraversalRule().When(converter.CanConvertToNative).ContinueTraversing(None);
-
-    var displayValueRule = TraversalRule
+    var convertableRule = TraversalRule
       .NewTraversalRule()
+      .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
-      .ContinueTraversing(_ => displayValueAndElementsPropAliases);
+      .ContinueTraversing(None);
 
-    return new GraphTraversal(convertableRule, displayValueRule, IgnoreResultsRule, DefaultRule);
+    return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
   }
 
   /// <summary>

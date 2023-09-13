@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
 using Objects.GIS;
 using Objects.Organization;
@@ -274,8 +275,9 @@ namespace Objects.Converter.Revit
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException(
+            "Curtain Grid Lines are handled as part of the parent CurtainWall conversion"
+          );
         case DB.Architecture.BuildingPad o:
           returnObject = BuildingPadToSpeckle(o);
           break;
@@ -284,10 +286,11 @@ namespace Objects.Converter.Revit
           break;
         //these are handled by Stairs
         case DB.Architecture.StairsRun _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(StairsRun)} are handled by the {nameof(Stairs)} conversion");
         case DB.Architecture.StairsLanding _:
-          returnObject = null;
+          throw new ConversionSkippedException(
+            $"{nameof(StairsLanding)} are handled by the {nameof(Stairs)} conversion"
+          );
           break;
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
@@ -296,8 +299,7 @@ namespace Objects.Converter.Revit
           returnObject = TopRailToSpeckle(o);
           break;
         case DB.Architecture.HandRail _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(HandRail)} are handled by the {nameof(Railing)} conversion");
         case DB.Structure.Rebar o:
           returnObject = RebarToSpeckle(o);
           break;
@@ -352,8 +354,7 @@ namespace Objects.Converter.Revit
             returnObject = RevitElementToSpeckle(el, out notes);
             break;
           }
-          returnObject = null;
-          break;
+          throw new NotSupportedException($"Conversion of {@object.GetType().Name} is not supported.");
       }
 
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
@@ -670,7 +671,6 @@ namespace Objects.Converter.Revit
         // gis
         case PolygonElement o:
           return PolygonElementToNative(o);
-
 
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion

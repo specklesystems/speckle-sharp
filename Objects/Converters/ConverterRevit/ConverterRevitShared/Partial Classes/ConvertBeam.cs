@@ -47,7 +47,15 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+      double baseOffset = 0.0;
+      if (speckleRevitBeam != null && speckleRevitBeam.level != null)
+      {
+        level = ConvertLevelToRevit(speckleRevitBeam.level, out ApplicationObject.State levelState);
+      }
+      else
+      {
+        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out baseOffset);
+      }
       var isUpdate = false;
 
       if (docObj != null)
@@ -109,6 +117,8 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitBeam != null)
         SetInstanceParameters(revitBeam, speckleRevitBeam);
+      else
+        TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -baseOffset);
 
       // TODO: get sub families, it's a family! 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -141,5 +151,5 @@ namespace Objects.Converter.Revit
 
       return speckleBeam;
     }
-}
   }
+}

@@ -250,7 +250,9 @@ namespace Speckle.ConnectorRevit.UI
       Base conversionResult = converter.ConvertToSpeckle(revitElement);
 
       if (conversionResult == null)
-        throw new SpeckleException($"Conversion of {revitElement.UniqueId} (ToSpeckle) returned null");
+        throw new SpeckleException(
+          $"Conversion of {revitElement.GetType().Name} with id {revitElement.Id} (ToSpeckle) returned null"
+        );
 
       return conversionResult;
     }
