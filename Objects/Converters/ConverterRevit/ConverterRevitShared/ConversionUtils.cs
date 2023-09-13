@@ -29,22 +29,33 @@ namespace Objects.Converter.Revit
     #region hosted elements
 
     // Creates an ApplicationObject with status = Skipped for each object in the `elements` property
-    // This will tell the connector to skip these elements when traversing 
-    private void SkipNestedElementsOnReceive(Base host)
+    // If specific categories are provided, elements of those categories will be skipped.
+    // Otherwise, all elements will be skipped
+    private void SkipNestedElementsOnReceive(Base host, List<string> skipCategories = null)
     {
       var nestedElements = host["elements"] ?? host["@elements"];
 
       if (nestedElements == null)
         return;
 
+      bool toSkip = skipCategories is null;
       foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
       {
-        // create the application object with status = skipped and log to reports
-        var nestedAppObj = Report.ReportObjects.TryGetValue(obj.id, out ApplicationObject value)
-         ? value
-         : new ApplicationObject(obj.id, obj.speckle_type);
-        nestedAppObj.Status = ApplicationObject.State.Skipped;
-        Report.Log(nestedAppObj);
+        if (!toSkip)
+        {
+          var category = obj["category"] as string;
+          if (!string.IsNullOrEmpty(category))
+            toSkip = skipCategories.Contains(category);
+        }
+        
+        if (toSkip) // create the application object with status = skipped and log to reports
+        {
+          var nestedAppObj = Report.ReportObjects.TryGetValue(obj.id, out ApplicationObject value)
+           ? value
+           : new ApplicationObject(obj.id, obj.speckle_type);
+          nestedAppObj.Status = ApplicationObject.State.Skipped;
+          Report.Log(nestedAppObj);
+        }
       }
     }
 

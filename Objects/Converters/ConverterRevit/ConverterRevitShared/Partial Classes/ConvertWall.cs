@@ -150,7 +150,7 @@ namespace Objects.Converter.Revit
         TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
 
         if (revitWall.CurtainGrid is CurtainGrid)
-          SkipNestedElementsOnReceive(spklRevitWall); // handles and skips curtain wall elements for the connector
+          SkipNestedElementsOnReceive(spklRevitWall, new List<string> { "Curtain Wall Mullions", "Curtain Panel" }); // handles and skips curtain wall elements for the connector
       }
       else
       {
