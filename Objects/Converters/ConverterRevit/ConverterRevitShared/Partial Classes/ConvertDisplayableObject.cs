@@ -30,7 +30,7 @@ public partial class ConverterRevit
       var category = GetSpeckleObjectCategory(obj);
 
       // Create a temp DirectShape and use the DirectShape conversion routine
-      var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList());
+      var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList()) { applicationId = obj.applicationId };
       return DirectShapeToNative(ds, ToNativeMeshSettingEnum.Default);
     }
     else if (obj is Other.Instance instance)
