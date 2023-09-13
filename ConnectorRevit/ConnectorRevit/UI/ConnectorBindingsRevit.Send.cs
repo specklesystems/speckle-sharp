@@ -51,7 +51,10 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
+      var selectedObjects = await APIContext
+        .Run(_ => GetSelectionFilterObjects(converter, state.Filter))
+        .ConfigureAwait(false);
+
       selectedObjects = HandleSelectedObjectDescendants(selectedObjects).ToList();
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).Distinct().ToList();
 
