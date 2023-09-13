@@ -726,7 +726,12 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNativeDisplayable(Base @base)
     {
-      return DisplayableObjectToNative(@base);
+      var nativeObject = DisplayableObjectToNative(@base);
+      if (nativeObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        receivedObjectsCache?.AddConvertedObjects(@base, typedList);
+      }
+      return nativeObject;
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
