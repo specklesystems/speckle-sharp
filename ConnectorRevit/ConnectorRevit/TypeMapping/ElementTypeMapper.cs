@@ -74,7 +74,9 @@ namespace ConnectorRevit.TypeMapping
     {
       // Get Settings for recieve on mapping 
       if (mapOnReceiveSetting is not MappingSetting mappingSetting
-        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
+        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping
+        //skip mappings dialog always when DS fallback is set to always
+        || directShapeStrategySetting.Selection == ConnectorBindingsRevit.DsFallbackAways)
       {
         return;
       }
@@ -84,7 +86,7 @@ namespace ConnectorRevit.TypeMapping
 
       var hostTypesContainer = GetHostTypesAndAddIncomingTypes(currentOperationTypeMap, masterTypeMap, out var numNewTypes);
 
-      if (await ShouldShowCustomMappingDialog(mappingSetting.Selection, directShapeStrategySetting.Selection, numNewTypes).ConfigureAwait(false))
+      if (await ShouldShowCustomMappingDialog(mappingSetting.Selection, numNewTypes).ConfigureAwait(false))
       {
         // show custom mapping dialog if the settings correspond to what is being received
         await ShowCustomMappingDialog(currentOperationTypeMap, hostTypesContainer, numNewTypes).ConfigureAwait(false);
@@ -108,16 +110,13 @@ namespace ConnectorRevit.TypeMapping
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
 
-    private async Task<bool> ShouldShowCustomMappingDialog(string listBoxSelection, string directShapeStartegySelection, int numNewTypes)
+    private async Task<bool> ShouldShowCustomMappingDialog(string listBoxSelection, int numNewTypes)
     {
-      //skip mappings dialog always when DS fallback is set to always
-      if (directShapeStartegySelection == ConnectorBindingsRevit.DsFallbackAways)
-        return false;
       if (listBoxSelection == ConnectorBindingsRevit.everyReceive)
+      {
         return true;
-      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0)
-        return true;
-      else if (listBoxSelection == null
+      }
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes
         && numNewTypes > 0
         && await ShowMissingIncomingTypesDialog().ConfigureAwait(false)
       )
