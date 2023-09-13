@@ -185,7 +185,7 @@ public partial class ConverterRevit
     if (!success)
       cat = RevitFamilyCategory.GenericModel;
 
-    // Get the BuiltInCategory corresponding to the RevitCategory
+    // Get the BuiltInCategory corresponding to the RevitFamilyCategory
     success = Categories.GetBuiltInCategoryFromRevitCategory(cat, out DB.BuiltInCategory bic);
     if (!success)
       bic = DB.BuiltInCategory.OST_GenericModel;

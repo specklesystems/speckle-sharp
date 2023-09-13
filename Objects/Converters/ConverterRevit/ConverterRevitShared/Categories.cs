@@ -41,6 +41,13 @@ namespace Objects.Converter.Revit
       return Enum.TryParse(builtInName, out bic);
     }
 
+    public static bool GetBuiltInCategoryFromRevitCategory(RevitFamilyCategory c, out BuiltInCategory bic)
+    {
+      var name = Enum.GetName(typeof(RevitFamilyCategory), c);
+      var builtInName = $"OST_{name}";
+      return Enum.TryParse(builtInName, out bic);
+    }
+
     /// <summary>
     /// Returns the corresponding RevitCategory enum from a specific BuiltInCategory
     /// </summary>
@@ -52,12 +59,6 @@ namespace Objects.Converter.Revit
       var name = Enum.GetName(typeof(BuiltInCategory), bic);
       var revitName = name.Split('_').Last();
       return Enum.TryParse<RevitCategory>(revitName, out c);
-    }
-
-    public static string GetBuiltInFromSchemaBuilderCategory(RevitFamilyCategory c)
-    {
-      var name = Enum.GetName(typeof(RevitFamilyCategory), c);
-      return $"OST_{name}";
     }
   }
 }
