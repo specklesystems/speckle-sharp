@@ -241,7 +241,7 @@ namespace Speckle.ConnectorRevit.UI
           //check status, skip if this appobject is anything other than unknown or failed state
           if (
             nestedAppObj.Status != ApplicationObject.State.Unknown
-            || nestedAppObj.Status != ApplicationObject.State.Failed
+            && nestedAppObj.Status != ApplicationObject.State.Failed
           )
             continue;
 
