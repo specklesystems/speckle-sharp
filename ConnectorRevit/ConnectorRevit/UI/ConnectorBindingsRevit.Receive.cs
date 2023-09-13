@@ -238,8 +238,11 @@ namespace Speckle.ConnectorRevit.UI
             converter.Report.Log(nestedAppObj);
           }
 
-          //check status, skip if necessary
-          if (nestedAppObj.Status == ApplicationObject.State.Skipped)
+          //check status, skip if this appobject is anything other than unknown or failed state
+          if (
+            nestedAppObj.Status != ApplicationObject.State.Unknown
+            || nestedAppObj.Status != ApplicationObject.State.Failed
+          )
             continue;
 
           // convert
