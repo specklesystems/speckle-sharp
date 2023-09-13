@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.Exceptions;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
@@ -285,6 +286,10 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
+        if (ex is ModificationForbiddenException)
+          throw new SpeckleException($"Modification Forbidden: please open another View and try again.", ex);
+
+
         throw new SpeckleException(
           $"Method {nameof(GetSelectionFilterObjects)} threw an error of type {ex.GetType()}. Reason: {ex.Message}",
           ex
