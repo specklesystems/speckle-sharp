@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -13,6 +14,7 @@ using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
@@ -207,6 +209,9 @@ namespace Objects.Converter.Revit
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
           break;
+        case DB.Toposolid o:
+          returnObject = ToposolidToSpeckle(o, out notes);
+          break;
         case DB.FabricationPart o:
           returnObject = FabricationPartToSpeckle(o, out notes);
           break;
@@ -348,10 +353,13 @@ namespace Objects.Converter.Revit
 #endif
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
+          SpeckleLog.Logger.Debug($"Unsupported Type: {@object.GetType()}");
+
           var el = @object as Element;
           if (el.IsElementSupported())
           {
             returnObject = RevitElementToSpeckle(el, out notes);
+            SpeckleLog.Logger.Debug($"\tConverted as RevitElement");
             break;
           }
           throw new NotSupportedException($"Conversion of {@object.GetType().Name} is not supported.");
@@ -390,6 +398,45 @@ namespace Objects.Converter.Revit
         return $", name: {e.Name}, id: {e.UniqueId}";
 
       return "";
+    }
+
+    private BuiltInCategory GetObjectCategory(Base @object)
+    {
+      switch (@object)
+      {
+        case BE.Beam _:
+        case BE.Brace _:
+        case BE.TeklaStructures.TeklaContourPlate _:
+          return BuiltInCategory.OST_StructuralFraming;
+        case BE.TeklaStructures.Bolts _:
+          return BuiltInCategory.OST_StructConnectionBolts;
+        case BE.TeklaStructures.Welds _:
+          return BuiltInCategory.OST_StructConnectionWelds;
+        case BE.Floor _:
+          return BuiltInCategory.OST_Floors;
+        case BE.SpeckleToposolid _:
+          return BuiltInCategory.OST_Toposolid;
+        case BE.Ceiling _:
+          return BuiltInCategory.OST_Ceilings;
+        case BE.Column _:
+          return BuiltInCategory.OST_Columns;
+        case BE.Pipe _:
+          return BuiltInCategory.OST_PipeSegments;
+        case BE.Rebar _:
+          return BuiltInCategory.OST_Rebar;
+        case BE.Topography _:
+          return BuiltInCategory.OST_Topography;
+        case BE.Wall _:
+          return BuiltInCategory.OST_Walls;
+        case BE.Roof _:
+          return BuiltInCategory.OST_Roofs;
+        case BE.Duct _:
+          return BuiltInCategory.OST_FabricationDuctwork;
+        case BE.CableTray _:
+          return BuiltInCategory.OST_CableTray;
+        default:
+          return BuiltInCategory.OST_GenericModel;
+      }
     }
 
     private Base SwapGeometrySchemaObject(Base @object)
@@ -577,6 +624,9 @@ namespace Objects.Converter.Revit
         case BE.Floor o:
           return FloorToNative(o);
 
+        case BE.SpeckleToposolid o:
+          return SpeckleToposolidToNative(o);
+        
         case BE.Level o:
           return LevelToNative(o);
 
@@ -721,6 +771,7 @@ namespace Objects.Converter.Revit
         DB.Area _ => true,
         DB.Architecture.Room _ => true,
         DB.Architecture.TopographySurface _ => true,
+        DB.Toposolid _ => true,
         DB.Wall _ => true,
         DB.Mechanical.Duct _ => true,
         DB.Mechanical.FlexDuct _ => true,
@@ -806,6 +857,7 @@ namespace Objects.Converter.Revit
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
+        BE.SpeckleToposolid _ => true,
         BE.Topography _ => true,
         BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,

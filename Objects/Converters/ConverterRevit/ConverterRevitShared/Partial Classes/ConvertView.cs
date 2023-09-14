@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using Speckle.Core.Logging;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -19,6 +20,8 @@ namespace Objects.Converter.Revit
     };
     public Base ViewToSpeckle(DB.View revitView)
     {
+      SpeckleLog.Logger.Debug($"View Id: {revitView.Id}");
+      
       switch (revitView)
       {
         case DB.View3D o:
