@@ -255,7 +255,8 @@ namespace Objects.Converter.Revit
       // for the category, we should be mirroring how we handle parsing of built-in-categories for revit 2023/2024
       // this is because different built-in-categories may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
       var category = revitElement.Category;
-      if (category is null)
+      var speckleCategory = speckleElement["category"];
+      if (speckleCategory is null && category is not null)
       {
         var categoryName = revitElement.Category.Name;
 #if !(REVIT2020 || REVIT2021 || REVIT2022)
