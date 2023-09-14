@@ -251,10 +251,11 @@ namespace Objects.Converter.Revit
 
       speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
+      // assign the category *if* it hasn't already been assigned (eg, DirectShape conversion should already have assigned the category).
       // for the category, we should be mirroring how we handle parsing of built-in-categories for revit 2023/2024
       // this is because different built-in-categories may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
       var category = revitElement.Category;
-      if (category is not null)
+      if (category is null)
       {
         var categoryName = revitElement.Category.Name;
 #if !(REVIT2020 || REVIT2021 || REVIT2022)
@@ -345,29 +346,32 @@ namespace Objects.Converter.Revit
       // TODO : could add some generic getOrAdd overloads to avoid creating closures
       var paramData = revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<ParameterToSpeckleData>(out _)
-        .GetOrAdd(paramInternalName, () =>
-        {
-          var definition = rp.Definition;
-          var newParamData = new ParameterToSpeckleData()
+        .GetOrAdd(
+          paramInternalName,
+          () =>
           {
-            Definition = definition,
-            InternalName = paramInternalName,
-            IsReadOnly = rp.IsReadOnly,
-            IsShared = rp.IsShared,
-            IsTypeParameter = isTypeParameter,
-            Name = definition.Name,
-            UnitType = definition.GetUnityTypeString(),
-          };
-          if (rp.StorageType == StorageType.Double)
-          {
-            unitTypeId = rp.GetUnitTypeId();
-            newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
-            newParamData.ApplicationUnits = unitsOverride != null
-              ? UnitsToNative(unitsOverride).ToUniqueString()
-              : unitTypeId.ToUniqueString();
-          }
-          return newParamData;
-        }, out _);
+            var definition = rp.Definition;
+            var newParamData = new ParameterToSpeckleData()
+            {
+              Definition = definition,
+              InternalName = paramInternalName,
+              IsReadOnly = rp.IsReadOnly,
+              IsShared = rp.IsShared,
+              IsTypeParameter = isTypeParameter,
+              Name = definition.Name,
+              UnitType = definition.GetUnityTypeString(),
+            };
+            if (rp.StorageType == StorageType.Double)
+            {
+              unitTypeId = rp.GetUnitTypeId();
+              newParamData.UnitsSymbol = GetSymbolUnit(rp, definition, unitTypeId);
+              newParamData.ApplicationUnits =
+                unitsOverride != null ? UnitsToNative(unitsOverride).ToUniqueString() : unitTypeId.ToUniqueString();
+            }
+            return newParamData;
+          },
+          out _
+        );
 
       return paramData.GetParameterObjectWithValue(rp.GetValue(paramData.Definition, unitTypeId));
     }
@@ -382,9 +386,7 @@ namespace Objects.Converter.Revit
     /// <param name="cache"></param>
     /// <param name="forgeTypeId"></param>
     /// <returns></returns>
-    public string GetSymbolUnit(
-      DB.Parameter parameter,
-      DB.Definition definition,
+    public string GetSymbolUnit(DB.Parameter parameter, DB.Definition definition,
 #if REVIT2020
       DisplayUnitType unitTypeId
 #else
@@ -619,7 +621,7 @@ namespace Objects.Converter.Revit
 
       var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
       // TODO: we may not want just the first one
-      return  cachedIds == null ? null : Doc.GetElement(cachedIds.First());
+      return cachedIds == null ? null : Doc.GetElement(cachedIds.First());
     }
 
     public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
@@ -628,7 +630,8 @@ namespace Objects.Converter.Revit
         yield break;
 
       var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
-      if (cachedIds == null) yield break;
+      if (cachedIds == null)
+        yield break;
       foreach (var id in cachedIds)
         yield return Doc.GetElement(id);
     }
