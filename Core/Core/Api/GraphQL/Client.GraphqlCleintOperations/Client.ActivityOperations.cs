@@ -19,39 +19,16 @@ public partial class Client
   /// <param name="cursor">Time to filter the activity with</param>
   /// <param name="actionType">Time to filter the activity with</param>
   /// <param name="limit">Max number of activity items to get</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<List<ActivityItem>> StreamGetActivity(
+  public async Task<List<ActivityItem>> StreamGetActivity(
     string streamId,
     DateTime? after = null,
     DateTime? before = null,
     DateTime? cursor = null,
     string actionType = "",
-    int limit = 10
-  )
-  {
-    return StreamGetActivity(CancellationToken.None, streamId, after, before, cursor, actionType, limit);
-  }
-
-  /// <summary>
-  /// Gets the activity of a stream
-  /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <param name="id">Id of the stream to get the activity from</param>
-  /// <param name="after">Only show activity after this DateTime</param>
-  /// <param name="before">Only show activity before this DateTime</param>
-  /// <param name="cursor">Time to filter the activity with</param>
-  /// <param name="actionType">Time to filter the activity with</param>
-  /// <param name="limit">Max number of commits to get</param>
-  /// <returns></returns>
-  /// <exception cref="Exception"></exception>
-  public async Task<List<ActivityItem>> StreamGetActivity(
-    CancellationToken cancellationToken,
-    string id,
-    DateTime? after = null,
-    DateTime? before = null,
-    DateTime? cursor = null,
-    string actionType = "",
-    int limit = 25
+    int limit = 10,
+    CancellationToken cancellationToken = default
   )
   {
     var request = new GraphQLRequest
@@ -77,7 +54,7 @@ public partial class Client
                     }",
       Variables = new
       {
-        id,
+        streamId,
         limit,
         actionType,
         after,

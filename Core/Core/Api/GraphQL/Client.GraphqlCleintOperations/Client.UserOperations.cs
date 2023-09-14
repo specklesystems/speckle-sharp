@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
-using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api;
 
@@ -12,19 +11,9 @@ public partial class Client
   /// <summary>
   /// Gets the currently active user profile.
   /// </summary>
-  /// <returns></returns>
-  public Task<User> ActiveUserGet()
-  {
-    return ActiveUserGet(CancellationToken.None);
-  }
-
-  /// <summary>
-  /// Gets the currently active user profile.
-  /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  /// <exception cref="SpeckleException"></exception>
-  public async Task<User> ActiveUserGet(CancellationToken cancellationToken)
+  public async Task<User> ActiveUserGet(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -50,20 +39,9 @@ public partial class Client
   /// Get another user's profile by its user id.
   /// </summary>
   /// <param name="id">Id of the user you are looking for</param>
-  /// <returns></returns>
-  public Task<LimitedUser?> OtherUserGet(string id)
-  {
-    return OtherUserGet(CancellationToken.None, id);
-  }
-
-  /// <summary>
-  /// Get another user's profile by its user id.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="id">Id of the user you are looking for</param>
   /// <returns></returns>
-  /// <exception cref="SpeckleException"></exception>
-  public async Task<LimitedUser?> OtherUserGet(CancellationToken cancellationToken, string id)
+  public async Task<LimitedUser?> OtherUserGet(string userId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -79,7 +57,7 @@ public partial class Client
                         role,
                       }
                     }",
-      Variables = new { id }
+      Variables = new { userId }
     };
     return (await ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken).ConfigureAwait(false)).otherUser;
   }
@@ -90,18 +68,11 @@ public partial class Client
   /// <param name="query">String to search for. Must be at least 3 characters</param>
   /// <param name="limit">Max number of users to return</param>
   /// <returns></returns>
-  public Task<List<LimitedUser>> UserSearch(string query, int limit = 10)
-  {
-    return UserSearch(CancellationToken.None, query, limit);
-  }
-
-  /// <summary>
-  /// Searches for a user on the server.
-  /// </summary>
-  /// <param name="query">String to search for. Must be at least 3 characters</param>
-  /// <param name="limit">Max number of users to return</param>
-  /// <returns></returns>
-  public async Task<List<LimitedUser>> UserSearch(CancellationToken cancellationToken, string query, int limit = 10)
+  public async Task<List<LimitedUser>> UserSearch(
+    string query,
+    int limit = 10,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {
