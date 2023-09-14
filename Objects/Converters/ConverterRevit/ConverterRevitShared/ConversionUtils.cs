@@ -252,20 +252,29 @@ namespace Objects.Converter.Revit
       speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
       // assign the category *if* it hasn't already been assigned (eg, DirectShape conversion should already have assigned the category).
-      // for the category, we should be mirroring how we handle parsing of built-in-categories for revit 2023/2024
-      // this is because different built-in-categories may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
       var category = revitElement.Category;
       var speckleCategory = speckleElement["category"];
       if (speckleCategory is null && category is not null)
       {
-        var categoryName = revitElement.Category.Name;
-#if !(REVIT2020 || REVIT2021 || REVIT2022)
-        if (Categories.GetRevitCategoryFromBuiltInCategory(category.BuiltInCategory, out RevitCategory c))
+        var categoryName = category.Name;
+        switch (speckleElement["category"])
         {
-          categoryName = c.ToString();
-        }
+          case RevitCategory c: // DirectShape as of 2.16 is the only class with `category` prop of type `RevitCategory`
+            speckleElement["category"] = Categories.GetSchemaBuilderCategoryFromBuiltIn(categoryName);
+            break;
+
+          case string:
+            // for the category, we should be mirroring how we handle parsing of built-in-categories for revit 2023/2024
+            // this is because different built-in-categories may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
+#if !(REVIT2020 || REVIT2021 || REVIT2022)
+            if (Categories.GetRevitCategoryFromBuiltInCategory(category.BuiltInCategory, out RevitCategory c))
+            {
+              categoryName = c.ToString();
+            }
 #endif
-        speckleElement["category"] = categoryName;
+            speckleElement["category"] = categoryName;
+            break;
+        }
       }
 
       //NOTE: adds the quantities of all materials to an element
