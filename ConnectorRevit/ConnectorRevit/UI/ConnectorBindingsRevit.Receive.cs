@@ -91,7 +91,7 @@ namespace Speckle.ConnectorRevit.UI
           CurrentDoc.Document
         );
         await elementTypeMapper
-          .Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+          .Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"), state.Settings.FirstOrDefault(x => x.Slug == DsFallbackSlug))
           .ConfigureAwait(false);
       }
       catch (Exception ex)

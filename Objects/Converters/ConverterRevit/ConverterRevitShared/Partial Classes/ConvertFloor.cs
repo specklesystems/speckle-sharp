@@ -38,6 +38,7 @@ namespace Objects.Converter.Revit
 
       DB.Level level;
       double slope = 0;
+      double baseOffset = 0.0;
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
@@ -49,10 +50,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        level = ConvertLevelToRevit(
-          LevelFromCurve(CurveToNative(speckleFloor.outline).get_Item(0)),
-          out ApplicationObject.State state
-        );
+        level = ConvertLevelToRevit(CurveToNative(speckleFloor.outline).get_Item(0), out ApplicationObject.State state, out baseOffset);
       }
 
       var flattenedOutline = GetFlattenedCurve(speckleFloor.outline, level.Elevation);
@@ -113,6 +111,9 @@ namespace Objects.Converter.Revit
           revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, null, 0);
       }
 #endif
+      
+      if (speckleFloor is not RevitFloor)
+        TrySetParam(revitFloor, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, -baseOffset);
 
       Doc.Regenerate();
 

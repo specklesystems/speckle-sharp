@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
@@ -53,13 +54,14 @@ namespace Objects.Converter.Revit
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
+      double baseOffset = 0.0;
       if (speckleWall is RevitWall speckleRevitWall)
       {
         level = ConvertLevelToRevit(speckleRevitWall.level, out levelState);
         structural = speckleRevitWall.structural;
       }
       else
-        level = ConvertLevelToRevit(LevelFromCurve(baseCurve), out levelState);
+        level = ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
 
       //if it's a new element, we don't need to update certain properties
       bool isUpdate = true;
@@ -147,8 +149,13 @@ namespace Objects.Converter.Revit
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
         TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
       }
-      else // Set wall unconnected height.
+      else
+      {
+        // Set wall unconnected height.
         TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
+
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, -baseOffset);
+      }
 
       SetInstanceParameters(revitWall, speckleWall);
 
@@ -201,12 +208,12 @@ namespace Objects.Converter.Revit
         AddHostedDependentElements(
           revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallMullions) ?? grid.GetMullionIds().ToList()
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallMullions, grid.GetMullionIds()).ToList()
         );
         AddHostedDependentElements(
           revitWall,
           speckleWall,
-          GetWallSubElementsInView(BuiltInCategory.OST_CurtainWallPanels) ?? grid.GetPanelIds().ToList()
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallPanels, grid.GetPanelIds()).ToList()
         );
       }
 
@@ -230,18 +237,29 @@ namespace Objects.Converter.Revit
         notes.AddRange(hostedNotes);
       return speckleWall;
     }
-
-    private List<ElementId>? GetWallSubElementsInView(BuiltInCategory category)
+    
+    private IEnumerable<ElementId> GetSubsetOfElementsInView(BuiltInCategory category, IEnumerable<ElementId> children)
     {
       if (ViewSpecificOptions == null)
       {
-        return null;
+        return children;
       }
 
-      using var filter = new ElementCategoryFilter(category);
-      using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+      var allSubelementsInView = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
+        .GetOrAdd(category.ToString(), () =>
+        {
+          using var filter = new ElementCategoryFilter(category);
+          using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
 
-      return collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds().ToList();
+          return new HashSet<ElementId>(collector
+            .WhereElementIsNotElementType()
+            .WherePasses(filter)
+            .ToElementIds());
+        }, out _);
+
+      return children
+        .Where(allSubelementsInView.Contains);
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
@@ -309,7 +327,7 @@ namespace Objects.Converter.Revit
 
       try
       {
-        sketchEditScope.Commit(new FailuresPreprocessor());
+        sketchEditScope.Commit(new ErrorEater());
       }
       catch (Exception ex)
       {
@@ -323,14 +341,6 @@ namespace Objects.Converter.Revit
         transactionManager.StartSubtransaction();
       }
 #endif
-    }
-
-    public class FailuresPreprocessor : IFailuresPreprocessor
-    {
-      public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
-      {
-        return FailureProcessingResult.Continue;
-      }
     }
   }
 }

@@ -181,13 +181,12 @@ public partial class ConverterRevit
   private static void AssignCategoryToFamilyDoc(DB.Document famDoc, string? categoryName)
   {
     // Get the RevitCategory from a string value
-    var success = Enum.TryParse(categoryName, out RevitCategory cat);
+    var success = Enum.TryParse(categoryName, out RevitFamilyCategory cat);
     if (!success)
-      cat = RevitCategory.GenericModel;
+      cat = RevitFamilyCategory.GenericModel;
 
-    // Get the BuiltInCategory corresponding to the RevitCategory
-    var catName = Categories.GetBuiltInFromSchemaBuilderCategory(cat);
-    success = Enum.TryParse(catName, out DB.BuiltInCategory bic);
+    // Get the BuiltInCategory corresponding to the RevitFamilyCategory
+    success = Categories.GetBuiltInCategoryFromRevitCategory(cat, out DB.BuiltInCategory bic);
     if (!success)
       bic = DB.BuiltInCategory.OST_GenericModel;
 
@@ -205,7 +204,7 @@ public partial class ConverterRevit
     }
     catch (Exception e)
     {
-      SpeckleLog.Logger.Warning(e, "Document category could not be modified");
+      SpeckleLog.Logger.Error(e, "Document category could not be modified");
       t.RollBack();
     }
   }

@@ -51,7 +51,13 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
+      // The selectedObjects needs to be collected inside the Revit API context or else, in rare cases,
+      // the filteredElementCollectors will throw a "modification forbidden" exception. This can be reproduced
+      // by opening Snowdon towers in R24 and immediately sending the default 3D view from the landing page
+      var selectedObjects = await APIContext
+        .Run(_ => GetSelectionFilterObjects(converter, state.Filter))
+        .ConfigureAwait(false);
+
       selectedObjects = HandleSelectedObjectDescendants(selectedObjects).ToList();
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).Distinct().ToList();
 
@@ -250,7 +256,9 @@ namespace Speckle.ConnectorRevit.UI
       Base conversionResult = converter.ConvertToSpeckle(revitElement);
 
       if (conversionResult == null)
-        throw new SpeckleException($"Conversion of {revitElement.UniqueId} (ToSpeckle) returned null");
+        throw new SpeckleException(
+          $"Conversion of {revitElement.GetType().Name} with id {revitElement.Id} (ToSpeckle) returned null"
+        );
 
       return conversionResult;
     }

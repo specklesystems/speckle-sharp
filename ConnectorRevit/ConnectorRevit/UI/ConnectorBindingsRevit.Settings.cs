@@ -24,6 +24,11 @@ namespace Speckle.ConnectorRevit.UI
     public const string everyReceive = "Always";
     public const string forNewTypes = "For New Types";
 
+    public const string DsFallbackSlug = "direct-shape-strategy";
+    public const string DsFallbackOnError = "On Error";
+    public const string DsFallbackAways = "Always";
+    public const string DsFallbackNever = "Never";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
@@ -82,19 +87,19 @@ namespace Speckle.ConnectorRevit.UI
         // },
         new ListBoxSetting
         {
-          Slug = "direct-shape-strategy",
-          Name = "Convert received objects to DirectShape",
+          Slug = DsFallbackSlug,
+          Name = "Fallback to DirectShape on receive",
           Icon = "Link",
-          Values = new List<string> { "Always", "On Error", "Never" },
-          Selection = "On Error",
-          Description = "Determines when to attempt conversion of an element into a DirectShape"
+          Values = new List<string> { DsFallbackAways, DsFallbackOnError, DsFallbackNever },
+          Selection = DsFallbackOnError,
+          Description = "Determines when to fallback to DirectShape on receive.\n\nAways: all objects will be received as DirectShapes\nOn Error: only objects that fail or whose types are missing\nNever: disables the fallback behavior"
         },
         new MultiSelectBoxSetting
         {
           Slug = "disallow-join",
           Name = "Disallow Join For Elements",
           Icon = "CallSplit",
-          Description = "Determine which objects should not be allowed to join by default when receiving",
+          Description = "Determines which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming }
         },
         new ListBoxSetting
@@ -109,10 +114,11 @@ namespace Speckle.ConnectorRevit.UI
         new MappingSetting
         {
           Slug = "receive-mappings",
-          Name = "Custom Type Mapping",
+          Name = "Missing Type Mapping",
           Icon = "LocationSearching",
           Values = mappingOptions,
-          Description = "Determine how incoming object types are mapped to object types in the host application"
+          Selection = forNewTypes,
+          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types\n\nNOTE: no dialog is shown if Fallback to DirectShape is set to Always"
         },
       };
     }

@@ -251,10 +251,19 @@ namespace Objects.Converter.Revit
 
       speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
+      // for the category, we should be mirroring how we handle parsing of built-in-categories for revit 2023/2024
+      // this is because different built-in-categories may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
       var category = revitElement.Category;
-      if (category != null)
+      if (category is not null)
       {
-        speckleElement["category"] ??= category.Name;
+        var categoryName = revitElement.Category.Name;
+#if !(REVIT2020 || REVIT2021 || REVIT2022)
+        if (Categories.GetRevitCategoryFromBuiltInCategory(category.BuiltInCategory, out RevitCategory c))
+        {
+          categoryName = c.ToString();
+        }
+#endif
+        speckleElement["category"] = categoryName;
       }
 
       //NOTE: adds the quantities of all materials to an element
@@ -541,14 +550,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-    //private bool IsValid(DB.Parameter rp)
-    //{
-    //  if (rp.IsShared)
-    //    return true;
-    //  else
-    //    return (rp.Definition as InternalDefinition).BuiltInParameter != ;
-    //}
-
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, DB.Element value)
     {
       var param = elem.get_Parameter(bip);
@@ -566,24 +567,6 @@ namespace Objects.Converter.Revit
         param.Set(value ? 1 : 0);
       }
     }
-
-    //private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
-    //{
-    //  var param = elem.get_Parameter(bip);
-    //  if (param != null && !param.IsReadOnly)
-    //  {
-    //    //for angles, we use the default conversion (degrees > radians)
-    //    if (string.IsNullOrEmpty(units))
-    //    {
-    //      param.Set(value);
-    //    }
-    //    else
-    //    {
-    //      param.Set(ScaleToNative(value, units));
-    //    }
-
-    //  }
-    //}
 
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {

@@ -89,12 +89,13 @@ namespace Objects.Converter.Revit
     /// <exception cref="FallbackToDxfException"></exception>
     public ApplicationObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
-      var existingDS = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id) as DB.DirectShape;
+      // get any existing elements. This could be a DirectShape, OR another element if using fallback receive
+      var existingObj = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id);
       var appObj =
         new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(existingDS, appObj))
+      if (IsIgnore(existingObj, appObj))
         return appObj;
 
       var converted = new List<GeometryObject>();
@@ -139,23 +140,25 @@ namespace Objects.Converter.Revit
         }
       });
 
-      if (existingDS != null)
+      if (existingObj != null && existingObj is DB.DirectShape existingDS) // if it's a directShape, just update
       {
-        // Try to update the existing Direct Shape
         existingDS.SetShape(converted);
         appObj.Update(status: ApplicationObject.State.Updated, createdId: existingDS.UniqueId,
-          convertedItem: existingDS);
+        convertedItem: existingDS);
         return appObj;
       }
 
-      BuiltInCategory bic;
+      DB.Category cat = null;
       if ((int)speckleDs.category == -1)
         speckleDs.category = RevitCategory.GenericModel;
-      var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
-
-      BuiltInCategory.TryParse(bicName, out bic);
-      var cat = Doc.Settings.Categories.get_Item(bic);
-
+      if (Categories.GetBuiltInCategoryFromRevitCategory(speckleDs.category, out BuiltInCategory bic))
+      {
+        cat = Doc.Settings.Categories.get_Item(bic);
+      }
+      if (cat is null)
+      {
+        cat = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel); // default to generic model
+      }
       try
       {
         var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
@@ -165,6 +168,18 @@ namespace Objects.Converter.Revit
         revitDs.SetShape(converted);
         revitDs.Name = speckleDs.name;
         SetInstanceParameters(revitDs, speckleDs);
+        // delete any existing objs
+        if (existingObj != null)
+        {
+          try
+          {
+            Doc.Delete(existingObj.Id);
+          }
+          catch (Exception e)
+          {
+            appObj.Log.Add($"Could not delete existing object: {e.Message}");
+          }
+        }
         appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
       }
       catch (Exception ex)

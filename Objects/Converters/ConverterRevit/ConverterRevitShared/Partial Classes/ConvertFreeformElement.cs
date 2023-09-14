@@ -189,18 +189,18 @@ namespace Objects.Converter.Revit
         if (freeformElement != null)
         {
           //subcategory
-          BuiltInCategory bic;
           if (!string.IsNullOrEmpty(freeformElement.subcategory))
           {
             //by default free form elements are always generic models
             //otherwise we'd need to supply base files for each category..?
-            var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(BuiltElements.Revit.RevitCategory.GenericModel);
-            BuiltInCategory.TryParse(bicName, out bic);
-            cat = famDoc.Settings.Categories.get_Item(bic);
-            if (cat.SubCategories.Contains(freeformElement.subcategory))
-              cat = cat.SubCategories.get_Item(freeformElement.subcategory);
-            else
-              cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
+            if (Categories.GetBuiltInCategoryFromRevitCategory(BuiltElements.Revit.RevitCategory.GenericModel, out BuiltInCategory bic))
+            {
+              cat = famDoc.Settings.Categories.get_Item(bic);
+              if (cat.SubCategories.Contains(freeformElement.subcategory))
+                cat = cat.SubCategories.get_Item(freeformElement.subcategory);
+              else
+                cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
+            }
           }
         }
 
