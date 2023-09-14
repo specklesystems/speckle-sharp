@@ -259,7 +259,7 @@ namespace Objects.Converter.Revit
         var categoryName = category.Name;
         switch (speckleElement["category"])
         {
-          case RevitCategory c: // DirectShape as of 2.16 is the only class with `category` prop of type `RevitCategory`
+          case RevitCategory: // DirectShape as of 2.16 is the only class with `category` prop of type `RevitCategory`
             speckleElement["category"] = Categories.GetSchemaBuilderCategoryFromBuiltIn(categoryName);
             break;
 
