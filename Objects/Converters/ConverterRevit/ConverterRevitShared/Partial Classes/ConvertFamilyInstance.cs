@@ -82,6 +82,12 @@ namespace Objects.Converter.Revit
         @base = MEPFamilyInstanceToSpeckle(revitFi);
       }
 
+      // curtain panels
+      if (revitFi is DB.Panel panel)
+      {
+        @base = PanelToSpeckle(panel);
+      }
+
       // elements
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
