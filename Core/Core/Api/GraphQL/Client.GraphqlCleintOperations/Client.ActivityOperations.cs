@@ -13,7 +13,7 @@ public partial class Client
   /// <summary>
   /// Gets the activity of a stream
   /// </summary>
-  /// <param name="streamId">Id of the stream to get the activity from</param>
+  /// <param name="id">Id of the stream to get the activity from</param>
   /// <param name="after">Only show activity after this DateTime</param>
   /// <param name="before">Only show activity before this DateTime</param>
   /// <param name="cursor">Time to filter the activity with</param>
@@ -22,12 +22,12 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   public async Task<List<ActivityItem>> StreamGetActivity(
-    string streamId,
+    string id,
     DateTime? after = null,
     DateTime? before = null,
     DateTime? cursor = null,
     string actionType = "",
-    int limit = 10,
+    int limit = 25,
     CancellationToken cancellationToken = default
   )
   {
@@ -54,7 +54,7 @@ public partial class Client
                     }",
       Variables = new
       {
-        streamId,
+        id,
         limit,
         actionType,
         after,

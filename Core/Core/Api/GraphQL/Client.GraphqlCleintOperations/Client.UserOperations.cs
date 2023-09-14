@@ -41,7 +41,7 @@ public partial class Client
   /// <param name="id">Id of the user you are looking for</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public async Task<LimitedUser?> OtherUserGet(string userId, CancellationToken cancellationToken = default)
+  public async Task<LimitedUser?> OtherUserGet(string id, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -57,7 +57,7 @@ public partial class Client
                         role,
                       }
                     }",
-      Variables = new { userId }
+      Variables = new { id }
     };
     return (await ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken).ConfigureAwait(false)).otherUser;
   }

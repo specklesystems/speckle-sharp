@@ -616,7 +616,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
               if (prevCommit != null)
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
 
-              var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
+              var commitId = await client.CommitCreate(commitCreateInput, CancellationToken);
 
               var wrapper = new StreamWrapper(
                 $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"

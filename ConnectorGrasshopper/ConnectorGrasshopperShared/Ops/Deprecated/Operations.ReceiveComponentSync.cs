@@ -84,7 +84,7 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
 
             // Get last commit from the branch
             var b = ApiClient
-              .BranchGet(source.Token, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1)
+              .BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1, source.Token)
               .Result;
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
