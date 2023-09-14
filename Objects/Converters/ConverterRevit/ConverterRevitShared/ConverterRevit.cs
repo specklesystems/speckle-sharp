@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
@@ -12,6 +13,7 @@ using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
@@ -206,6 +208,9 @@ namespace Objects.Converter.Revit
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
           break;
+        case DB.Toposolid o:
+          returnObject = ToposolidToSpeckle(o, out notes);
+          break;
         case DB.FabricationPart o:
           returnObject = FabricationPartToSpeckle(o, out notes);
           break;
@@ -346,10 +351,13 @@ namespace Objects.Converter.Revit
 #endif
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
+          SpeckleLog.Logger.Debug($"Unsupported Type: {@object.GetType()}");
+
           var el = @object as Element;
           if (el.IsElementSupported())
           {
             returnObject = RevitElementToSpeckle(el, out notes);
+            SpeckleLog.Logger.Debug($"\tConverted as RevitElement");
             break;
           }
           returnObject = null;
@@ -405,6 +413,8 @@ namespace Objects.Converter.Revit
           return BuiltInCategory.OST_StructConnectionWelds;
         case BE.Floor _:
           return BuiltInCategory.OST_Floors;
+        case BE.SpeckleToposolid _:
+          return BuiltInCategory.OST_Toposolid;
         case BE.Ceiling _:
           return BuiltInCategory.OST_Ceilings;
         case BE.Column _:
@@ -613,6 +623,9 @@ namespace Objects.Converter.Revit
         case BE.Floor o:
           return FloorToNative(o);
 
+        case BE.SpeckleToposolid o:
+          return SpeckleToposolidToNative(o);
+        
         case BE.Level o:
           return LevelToNative(o);
 
@@ -750,6 +763,7 @@ namespace Objects.Converter.Revit
         DB.Area _ => true,
         DB.Architecture.Room _ => true,
         DB.Architecture.TopographySurface _ => true,
+        DB.Toposolid _ => true,
         DB.Wall _ => true,
         DB.Mechanical.Duct _ => true,
         DB.Mechanical.FlexDuct _ => true,
@@ -835,6 +849,7 @@ namespace Objects.Converter.Revit
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
+        BE.SpeckleToposolid _ => true,
         BE.Topography _ => true,
         BER.RevitFaceWall _ => true,
         BER.RevitProfileWall _ => true,

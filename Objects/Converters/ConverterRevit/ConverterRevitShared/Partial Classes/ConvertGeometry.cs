@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.DoubleNumerics;
@@ -482,6 +483,8 @@ namespace Objects.Converter.Revit
 
     public ICurve CurveToSpeckle(DB.Curve curve, Document doc, string units = null)
     {
+      Debug.WriteLine(curve.GetType());
+      
       var u = units ?? ModelUnits;
       switch (curve)
       {
