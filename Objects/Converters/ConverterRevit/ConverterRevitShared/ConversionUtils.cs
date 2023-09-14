@@ -255,8 +255,7 @@ namespace Objects.Converter.Revit
       // WARN: DirectShapes have a `category` prop of type `RevitCategory` (enum), NOT `string`. This is the only exception as of 2.16.
       // If the null check is removed, the DirectShape case needs to be handled.
       var category = revitElement.Category;
-      var speckleCategory = speckleElement["category"];
-      if (speckleCategory is null && category is not null)
+      if (speckleElement["category"] is null && category is not null)
       {
         var categoryName = category.Name;
         // we should use RevitCategory values for BuiltInCategory strings where possible (revit 2023+)
