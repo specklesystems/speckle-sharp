@@ -48,6 +48,8 @@ namespace ConnectorRhinoWebUI.Bindings
             ConverterRhinoGh converter = new ConverterRhinoGh();
             converter.SetContextDocument(doc);
 
+            var errors = new List<string>();
+
             var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
             var objectsToConvert = traverseFunction
@@ -70,6 +72,10 @@ namespace ConnectorRhinoWebUI.Bindings
               }, DispatcherPriority.Background);
               
               var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
+              if (objectsToAddBakeList == null)
+              {
+                errors.Add(string.Format("Object couldn't converted with id: {0}, type: {1}\n", objectToConvert.id, objectToConvert.speckle_type));
+              }
               objectsToBake.AddRange(objectsToAddBakeList);
             }
             
@@ -81,7 +87,31 @@ namespace ConnectorRhinoWebUI.Bindings
             }, DispatcherPriority.Background);
 
             doc.Views.Redraw();
+
+            ReportToUI(errors, modelCardId, objectsToConvert.Count);
           }));
+    }
+
+    private void ReportToUI(List<string> errors, string modelCardId, int numberOfObject)
+    {
+      if (errors.Any())
+      {
+        Parent.SendToBrowser(ReceiveBindingEvents.Notify, new ToastInfo(){
+          ModelCardId = modelCardId,
+          Text = string.Join("\n", errors),
+          Level = "warning",
+          Timeout = 5000
+        });
+      }
+      else
+      {
+        Parent.SendToBrowser(ReceiveBindingEvents.Notify, new ToastInfo(){
+          ModelCardId = modelCardId,
+          Text = string.Format("Speckle objects ({0}) are received successfully.", numberOfObject),
+          Level = "success",
+          Timeout = 5000
+        });
+      }
     }
     
     // conversion and bake
