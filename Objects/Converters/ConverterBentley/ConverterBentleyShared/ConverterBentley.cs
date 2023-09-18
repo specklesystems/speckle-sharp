@@ -1,4 +1,4 @@
-﻿using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.DgnEC;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.EC.Persistence.Query;
@@ -62,7 +62,9 @@ namespace Objects.Converter.Bentley
     public string Name => nameof(ConverterBentley);
     public string Author => "Arup";
     public string WebsiteOrEmail => "https://www.arup.com";
+
     public IEnumerable<string> GetServicedApplications() => new string[] { BentleyAppName };
+
     public ProgressReport Report { get; private set; } = new ProgressReport();
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
     public Session Session { get; private set; }
@@ -74,8 +76,11 @@ namespace Objects.Converter.Bentley
 #endif
     public double UoR { get; private set; }
     public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
+
     public void SetConverterSettings(object settings)
     {
       throw new NotImplementedException("This converter does not have any settings.");
@@ -321,6 +326,11 @@ namespace Objects.Converter.Bentley
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects)
     {
       return objects.Select(x => ConvertToNative(x)).ToList();
@@ -390,6 +400,11 @@ namespace Objects.Converter.Bentley
         default:
           return false;
       }
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }

@@ -199,7 +199,7 @@ public class DeconstructSpeckleObjectTaskComponent
           {
             var isDetached = t.StartsWith("@");
             var name = isDetached ? t.Substring(1) : t;
-            var nickChange = Params.Output[i].NickName != t;
+            var nickChange = Params.Output[i].NickName != name;
             var detachChange = (Params.Output[i] as GenericAccessParam).Detachable != isDetached;
             return nickChange || detachChange;
           }
@@ -244,46 +244,50 @@ public class DeconstructSpeckleObjectTaskComponent
       renameParam.Name = cleanName;
       renameParam.Description = $"Data from property: {cleanName}";
       (renameParam as GenericAccessParam).Detachable = isDetached;
-      return;
     }
-    // Check what params must be deleted, and do so when safe.
-    var remove = Params.Output
-      .Select(
-        (p, i) =>
-        {
-          var res = outputList.Find(o => o == p.Name);
-          return res == null ? i : -1;
-        }
-      )
-      .ToList();
-    remove.Reverse();
-    remove.ForEach(b =>
+    else
     {
-      if (b != -1 && Params.Output[b].Recipients.Count == 0)
-        Params.UnregisterOutputParameter(Params.Output[b]);
-    });
-
-    outputList.Sort();
-    outputList.ForEach(s =>
-    {
-      var isDetached = s.StartsWith("@");
-      var name = isDetached ? s.Substring(1) : s;
-      var param = Params.Output.Find(p => p.Name == name);
-      if (param == null)
+      // Check what params must be deleted, and do so when safe.
+      var remove = Params.Output
+        .Select(
+          (p, i) =>
+          {
+            var res = outputList.Find(o => o == p.Name);
+            return res == null ? i : -1;
+          }
+        )
+        .ToList();
+      remove.Reverse();
+      remove.ForEach(b =>
       {
-        var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count) as GenericAccessParam;
-        newParam.Name = name;
-        newParam.NickName = name;
-        newParam.Description = $"Data from property: {name}";
-        newParam.MutableNickName = false;
-        newParam.Access = GH_ParamAccess.list;
-        newParam.Detachable = isDetached;
-        newParam.Optional = false;
-        Params.RegisterOutputParam(newParam);
-      }
-      if (param is GenericAccessParam srParam)
-        srParam.Detachable = isDetached;
-    });
+        if (b != -1 && Params.Output[b].Recipients.Count == 0)
+          Params.UnregisterOutputParameter(Params.Output[b]);
+      });
+
+      outputList.Sort();
+      outputList.ForEach(s =>
+      {
+        var isDetached = s.StartsWith("@");
+        var name = isDetached ? s.Substring(1) : s;
+        var param = Params.Output.Find(p => p.Name == name);
+        if (param == null)
+        {
+          var newParam = CreateParameter(GH_ParameterSide.Output, Params.Output.Count) as GenericAccessParam;
+          newParam.Name = name;
+          newParam.NickName = name;
+          newParam.Description = $"Data from property: {name}";
+          newParam.MutableNickName = false;
+          newParam.Access = GH_ParamAccess.list;
+          newParam.Detachable = isDetached;
+          newParam.Optional = false;
+          Params.RegisterOutputParam(newParam);
+        }
+        if (param is GenericAccessParam srParam)
+          srParam.Detachable = isDetached;
+      });
+    }
+
+    // Regardless of the type of change, we should always sort the params again
     var paramNames = Params.Output.Select(p => p.Name).ToList();
     paramNames.Sort();
     var sortOrder = Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();

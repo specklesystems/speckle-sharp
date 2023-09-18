@@ -680,14 +680,16 @@ namespace Objects.Converter.AutocadCivil
 
     private Featureline FeaturelineToSpeckle(CivilDB.CorridorFeatureLine featureline)
     {
-      // get all points and the display polyines
+      // get all points, the basecurve (no breaks) and the display polylines
       var points = new List<Point>();
       var polylines = new List<Polyline>();
 
       var polylinePoints = new Point3dCollection();
+      var baseCurvePoints = new Point3dCollection();
       for (int i = 0; i < featureline.FeatureLinePoints.Count; i++)
       {
         var point = featureline.FeatureLinePoints[i];
+        baseCurvePoints.Add(point.XYZ);
         if (!point.IsBreak) { polylinePoints.Add(point.XYZ); }
         if (polylinePoints.Count > 0 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
         {
@@ -698,10 +700,12 @@ namespace Objects.Converter.AutocadCivil
         }
         points.Add(PointToSpeckle(point.XYZ));
       }
+      var baseCurve = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, baseCurvePoints, false));
 
       // create featureline
       var _featureline = new Featureline();
       _featureline.points = points;
+      _featureline.curve = baseCurve;
       if (!string.IsNullOrEmpty(featureline.CodeName)) { _featureline.name = featureline.CodeName; }
       _featureline.displayValue = polylines;
       _featureline.units = ModelUnits;

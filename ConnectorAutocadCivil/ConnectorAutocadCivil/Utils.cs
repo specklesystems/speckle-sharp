@@ -18,7 +18,7 @@ using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 using Autodesk.AdvanceSteel.Connection;
@@ -66,6 +66,10 @@ namespace Speckle.ConnectorAutocadCivil
     public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.AdvanceSteel.Name;
     public static string Slug = HostApplications.AdvanceSteel.Slug;
+#elif ADVANCESTEEL2024
+    public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2024);
+    public static string AppName = HostApplications.AdvanceSteel.Name;
+    public static string Slug = HostApplications.AdvanceSteel.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
 
@@ -109,7 +113,7 @@ namespace Speckle.ConnectorAutocadCivil
           DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
           if (obj != null && obj.Visible())
           {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 
             if (CheckAdvanceSteelObject(obj))
             {
@@ -701,7 +705,7 @@ namespace Speckle.ConnectorAutocadCivil
       return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
     }
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 
     public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
     {

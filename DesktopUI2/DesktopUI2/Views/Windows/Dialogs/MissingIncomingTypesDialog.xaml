@@ -5,7 +5,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
-  <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
+  <Grid RowDefinitions="auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
@@ -14,13 +14,20 @@
 
     <TextBlock
       Grid.Row="1"
-      Margin="15"
+      Margin="15,15,15,5"
       Foreground="Gray"
-      Text="You are trying to import objects with family types that are not loaded into the project. Would you like to import family types / map incoming types to existing types in the project?"
+      Text="Some incoming types are missing, would you like to import or map them?"
+      TextWrapping="Wrap" />
+    <TextBlock
+      Grid.Row="2"
+      Margin="15,5,15,15"
+      FontStyle="Italic"
+      Foreground="Gray"
+      Text="You can change the missing types fallback behaviour and how often this dialog is displayed from the Advanced Settings."
       TextWrapping="Wrap" />
 
     <StackPanel
-      Grid.Row="5"
+      Grid.Row="3"
       Margin="15"
       HorizontalAlignment="Right"
       Orientation="Horizontal">

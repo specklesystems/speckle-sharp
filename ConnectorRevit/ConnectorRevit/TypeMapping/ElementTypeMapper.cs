@@ -70,11 +70,13 @@ namespace ConnectorRevit.TypeMapping
         );
       }
     }
-    public async Task Map(ISetting mapOnReceiveSetting)
+    public async Task Map(ISetting mapOnReceiveSetting, ISetting directShapeStrategySetting)
     {
       // Get Settings for recieve on mapping 
       if (mapOnReceiveSetting is not MappingSetting mappingSetting
-        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
+        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping
+        //skip mappings dialog always when DS fallback is set to always
+        || directShapeStrategySetting.Selection == ConnectorBindingsRevit.DsFallbackAways)
       {
         return;
       }
@@ -114,11 +116,7 @@ namespace ConnectorRevit.TypeMapping
       {
         return true;
       }
-      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0)
-      {
-        return true;
-      }
-      else if (listBoxSelection == null
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes
         && numNewTypes > 0
         && await ShowMissingIncomingTypesDialog().ConfigureAwait(false)
       )
@@ -164,7 +162,7 @@ namespace ConnectorRevit.TypeMapping
       {
         try
         {
-          familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
+          familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever, revitDocumentAggregateCache);
           await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
         }
         catch (SpeckleException ex)
