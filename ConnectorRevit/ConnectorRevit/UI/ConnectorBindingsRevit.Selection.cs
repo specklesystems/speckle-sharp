@@ -228,10 +228,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       var linkedDocs = GetLinkedDocuments();
 
-      var allDocs = new List<Document>
-      {
-        CurrentDoc.Document
-      };
+      var allDocs = new List<Document> { CurrentDoc.Document };
       allDocs.AddRange(linkedDocs.Values);
 
       var selection = new List<Element>();
@@ -330,13 +327,17 @@ namespace Speckle.ConnectorRevit.UI
       selection.AddRange(currentDoc.Views2D());
       selection.AddRange(currentDoc.Views3D());
 
-      selection.AddRange(currentDoc.GetSupportedElements(revitDocumentAggregateCache));
+      // We specifically exclude `TableView` elements (Schedules) until schedule extraction has been improved for performance.
+      var elements = currentDoc.GetSupportedElements(revitDocumentAggregateCache).Where(e => e is not TableView);
+      selection.AddRange(elements);
       selection.AddRange(currentDoc.GetSupportedTypes(revitDocumentAggregateCache));
 
       //and these for every linked doc
       foreach (var linkedDoc in linkedDocs.Values)
       {
-        selection.AddRange(linkedDoc.GetSupportedElements(revitDocumentAggregateCache)); // includes levels
+        // We specifically exclude `TableView` elements (Schedules) until schedule extraction has been improved for performance.
+        var linkedElements = linkedDoc.GetSupportedElements(revitDocumentAggregateCache).Where(e => e is not TableView);
+        selection.AddRange(linkedElements); // includes levels
         selection.AddRange(linkedDoc.GetSupportedTypes(revitDocumentAggregateCache));
       }
 
@@ -351,26 +352,20 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach (var cat in catFilter.Selection)
       {
-        var revitCategory = revitDocumentAggregateCache
-          .GetOrInitializeWithDefaultFactory<Category>()
-          .TryGet(cat);
-        if (revitCategory == null) continue;
+        var revitCategory = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<Category>().TryGet(cat);
+        if (revitCategory == null)
+          continue;
 
         catIds.Add(revitCategory.Id);
       }
 
       using var categoryFilter = new ElementMulticategoryFilter(catIds);
 
-
       foreach (var doc in allDocs)
       {
         using var collector = new FilteredElementCollector(doc);
         selection.AddRange(
-          collector
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            .WherePasses(categoryFilter)
-            .ToList()
+          collector.WhereElementIsNotElementType().WhereElementIsViewIndependent().WherePasses(categoryFilter).ToList()
         );
       }
       return selection;
@@ -433,13 +428,12 @@ namespace Speckle.ConnectorRevit.UI
 
         using var docCollector = new FilteredElementCollector(CurrentDoc.Document, view.Id);
         selection.AddRange(
-           docCollector
-             .WhereElementIsNotElementType()
-             .WhereElementIsViewIndependent()
-             .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)) //exclude elements already added from other views
-             .ToList()
-         );
-
+          docCollector
+            .WhereElementIsNotElementType()
+            .WhereElementIsViewIndependent()
+            .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)) //exclude elements already added from other views
+            .ToList()
+        );
 
         foreach (var linkedDoc in linkedDocs)
         {
@@ -452,13 +446,13 @@ namespace Speckle.ConnectorRevit.UI
 #if !REVIT2020 && !REVIT2021 && !REVIT2022 && !REVIT2023
           using var linkedDocCollector = new FilteredElementCollector(CurrentDoc.Document, view.Id, linkedDoc.Key);
           selection.AddRange(
-          linkedDocCollector
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            //.Where(x => x.IsPhysicalElement())
-            .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)) //exclude elements already added from other views
-            .ToList()
-        );
+            linkedDocCollector
+              .WhereElementIsNotElementType()
+              .WhereElementIsViewIndependent()
+              //.Where(x => x.IsPhysicalElement())
+              .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)) //exclude elements already added from other views
+              .ToList()
+          );
 
 #else
           //check if linked doc is visible in main doc
@@ -471,7 +465,6 @@ namespace Speckle.ConnectorRevit.UI
             .AddRange(linkedDoc.Value.GetSupportedElements(revitDocumentAggregateCache)
             .Where(x => !selection.Any(s => s.UniqueId == x.UniqueId)));
 #endif
-
         }
       }
       return selection;
@@ -534,10 +527,7 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionByWorkset(
-      ISelectionFilter filter,
-      List<Document> allDocs
-    )
+    private static List<Element> GetSelectionByWorkset(ISelectionFilter filter, List<Document> allDocs)
     {
       var selection = new List<Element>();
       var worksetFilter = filter as ListSelectionFilter;
