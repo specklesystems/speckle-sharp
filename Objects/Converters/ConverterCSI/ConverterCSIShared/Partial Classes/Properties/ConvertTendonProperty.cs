@@ -27,10 +27,11 @@ namespace Objects.Converter.CSI
       {
         specklePropertyTendon.modelingOption = ModelingOption.Loads;
       }
-      else { specklePropertyTendon.modelingOption = ModelingOption.Elements; }
+      else
+      {
+        specklePropertyTendon.modelingOption = ModelingOption.Elements;
+      }
       return specklePropertyTendon;
-
     }
-
   }
 }

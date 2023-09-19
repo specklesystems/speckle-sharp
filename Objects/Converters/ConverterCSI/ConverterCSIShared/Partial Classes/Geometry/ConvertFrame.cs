@@ -19,7 +19,10 @@ namespace Objects.Converter.CSI
 
       if (end1node == null || end2node == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Frame {element1D.name} does not have valid endpoints");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Frame {element1D.name} does not have valid endpoints"
+        );
         return;
       }
 
@@ -61,7 +64,11 @@ namespace Objects.Converter.CSI
       {
         string guid = null;
         Model.FrameObj.GetGUID(name, ref guid);
-        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{delimiter}{name}");
+        appObj.Update(
+          status: ApplicationObject.State.Updated,
+          createdId: guid,
+          convertedItem: $"Frame{delimiter}{name}"
+        );
       }
       else
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to change frame connectivity");
@@ -107,7 +114,15 @@ namespace Objects.Converter.CSI
       SetFrameElementProperties(element1D, newFrame);
     }
 
-    public int CreateFrame(Point p0, Point p1, out string newFrame, out string guid, ref ApplicationObject appObj, string type = "Default", string nameOverride = null)
+    public int CreateFrame(
+      Point p0,
+      Point p1,
+      out string newFrame,
+      out string guid,
+      ref ApplicationObject appObj,
+      string type = "Default",
+      string nameOverride = null
+    )
     {
       newFrame = string.Empty;
       guid = string.Empty;
@@ -132,7 +147,11 @@ namespace Objects.Converter.CSI
       }
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Frame{delimiter}{newFrame}");
+        appObj.Update(
+          status: ApplicationObject.State.Created,
+          createdId: guid,
+          convertedItem: $"Frame{delimiter}{newFrame}"
+        );
       else
         appObj.Update(status: ApplicationObject.State.Failed);
 
@@ -146,7 +165,8 @@ namespace Objects.Converter.CSI
       var speckleStructFrame = new CSIElement1D();
 
       speckleStructFrame.name = name;
-      string pointI, pointJ;
+      string pointI,
+        pointJ;
       pointI = pointJ = null;
       _ = Model.FrameObj.GetPoints(name, ref pointI, ref pointJ);
       var pointINode = PointToSpeckle(pointI);
@@ -168,36 +188,38 @@ namespace Objects.Converter.CSI
       switch (frameDesignOrientation)
       {
         case eFrameDesignOrientation.Column:
-          {
-            speckleStructFrame.type = ElementType1D.Column;
-            break;
-          }
+        {
+          speckleStructFrame.type = ElementType1D.Column;
+          break;
+        }
         case eFrameDesignOrientation.Beam:
-          {
-            speckleStructFrame.type = ElementType1D.Beam;
-            break;
-          }
+        {
+          speckleStructFrame.type = ElementType1D.Beam;
+          break;
+        }
         case eFrameDesignOrientation.Brace:
-          {
-            speckleStructFrame.type = ElementType1D.Brace;
-            break;
-          }
+        {
+          speckleStructFrame.type = ElementType1D.Brace;
+          break;
+        }
         case eFrameDesignOrientation.Null:
-          {
-            //speckleStructFrame.memberType = MemberType.Generic1D;
-            speckleStructFrame.type = ElementType1D.Null;
-            break;
-          }
+        {
+          //speckleStructFrame.memberType = MemberType.Generic1D;
+          speckleStructFrame.type = ElementType1D.Null;
+          break;
+        }
         case eFrameDesignOrientation.Other:
-          {
-            speckleStructFrame.type = ElementType1D.Other;
-            break;
-          }
+        {
+          speckleStructFrame.type = ElementType1D.Other;
+          break;
+        }
       }
 
-      bool[] iRelease, jRelease;
+      bool[] iRelease,
+        jRelease;
       iRelease = jRelease = null;
-      double[] startV, endV;
+      double[] startV,
+        endV;
       startV = endV = null;
       Model.FrameObj.GetReleases(name, ref iRelease, ref jRelease, ref startV, ref endV);
 
@@ -206,14 +228,13 @@ namespace Objects.Converter.CSI
       SpeckleModel.restraints.Add(speckleStructFrame.end1Releases);
       SpeckleModel.restraints.Add(speckleStructFrame.end2Releases);
 
-
       double localAxis = 0;
       bool advanced = false;
       Model.FrameObj.GetLocalAxes(name, ref localAxis, ref advanced);
       speckleStructFrame.orientationAngle = localAxis;
 
-
-      string property, SAuto;
+      string property,
+        SAuto;
       property = SAuto = null;
       Model.FrameObj.GetSection(name, ref property, ref SAuto);
       speckleStructFrame.property = Property1DToSpeckle(property);
@@ -281,7 +302,10 @@ namespace Objects.Converter.CSI
       }
       double[] modifiers = new double[] { };
       int s = Model.FrameObj.GetModifiers(name, ref modifiers);
-      if (s == 0) { speckleStructFrame.Modifiers = modifiers; }
+      if (s == 0)
+      {
+        speckleStructFrame.Modifiers = modifiers;
+      }
 
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);
@@ -293,7 +317,6 @@ namespace Objects.Converter.CSI
         SpeckleModel.elements.Add(speckleStructFrame);
       }
 
-
       return speckleStructFrame;
     }
 
@@ -301,7 +324,8 @@ namespace Objects.Converter.CSI
     {
       bool[] end1Release = null;
       bool[] end2Release = null;
-      double[] startV, endV;
+      double[] startV,
+        endV;
       startV = null;
       endV = null;
       if (element1D.end1Releases != null && element1D.end2Releases != null)
@@ -327,11 +351,19 @@ namespace Objects.Converter.CSI
       Model.FrameObj.SetReleases(newFrame, ref end1Release, ref end2Release, ref startV, ref endV);
       if (element1D is CSIElement1D)
       {
-
         var CSIelement1D = (CSIElement1D)element1D;
-        if (CSIelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment); }
-        if (CSIelement1D.PierAssignment != null) { Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment); }
-        if (CSIelement1D.CSILinearSpring != null) { Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name); }
+        if (CSIelement1D.SpandrelAssignment != null)
+        {
+          Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment);
+        }
+        if (CSIelement1D.PierAssignment != null)
+        {
+          Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment);
+        }
+        if (CSIelement1D.CSILinearSpring != null)
+        {
+          Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name);
+        }
         if (CSIelement1D.Modifiers != null)
         {
           var modifiers = CSIelement1D.Modifiers;

@@ -13,7 +13,8 @@ namespace ConverterCSIShared.Extensions
       {
         foreach (var point in seg.ToPoints())
         {
-          if (Math.Abs(point.x - prevPoint.x) < .01
+          if (
+            Math.Abs(point.x - prevPoint.x) < .01
             && Math.Abs(point.y - prevPoint.y) < .01
             && Math.Abs(point.z - prevPoint.z) < .01
           )

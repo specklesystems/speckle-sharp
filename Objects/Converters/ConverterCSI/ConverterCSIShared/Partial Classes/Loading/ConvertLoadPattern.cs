@@ -14,6 +14,7 @@ namespace Objects.Converter.CSI
       var LoadType = GetAndConvertToCSIPatternType(gravityLoad.loadCase.loadType);
       Model.LoadPatterns.Add(gravityLoad.name, LoadType, selfweight);
     }
+
     public LoadCase LoadPatternToSpeckle(string loadPatternName)
     {
       var speckleLoadCase = new LoadCase();
@@ -25,7 +26,7 @@ namespace Objects.Converter.CSI
 
       var selfweight = GetSelfWeightMultiplier(loadPatternName);
 
-      //Encoding loadPatterns selfweight multiplier within 
+      //Encoding loadPatterns selfweight multiplier within
       if (selfweight != 0)
       {
         var gravityVector = new Geometry.Vector(0, 0, -selfweight);
@@ -45,8 +46,10 @@ namespace Objects.Converter.CSI
         SpeckleModel.loads.Add(gravityLoad);
       }
       if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
-      else { SpeckleModel.loads.Add(speckleLoadCase); }
-
+      else
+      {
+        SpeckleModel.loads.Add(speckleLoadCase);
+      }
 
       return speckleLoadCase;
     }
@@ -68,7 +71,10 @@ namespace Objects.Converter.CSI
       speckleLoadCase.applicationId = loadPatternName;
 
       if (!SpeckleModel.loads.Contains(speckleLoadCase)) { }
-      else { SpeckleModel.loads.Add(speckleLoadCase); }
+      else
+      {
+        SpeckleModel.loads.Add(speckleLoadCase);
+      }
       return speckleLoadCase;
     }
 
@@ -96,6 +102,7 @@ namespace Objects.Converter.CSI
           return eLoadPatternType.Other;
       }
     }
+
     public LoadType GetAndConvertCSILoadType(string name)
     {
       eLoadPatternType patternType = new eLoadPatternType();
