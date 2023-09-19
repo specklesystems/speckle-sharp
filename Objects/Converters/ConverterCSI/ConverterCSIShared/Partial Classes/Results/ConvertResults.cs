@@ -26,7 +26,8 @@ namespace Objects.Converter.CSI
       if (!sendNodeResults && !send1DResults && !send2DResults)
       {
         var resultsAll = new Base();
-        resultsAll["Data"] = "Did not send any analytical results to Speckle. To send results, change the settings in the \"Advanced Settings\" tab";
+        resultsAll["Data"] =
+          "Did not send any analytical results to Speckle. To send results, change the settings in the \"Advanced Settings\" tab";
         return resultsAll;
       }
 
@@ -58,7 +59,6 @@ namespace Objects.Converter.CSI
       Model.SpandrelLabel.GetNameList(ref numberOfSpandrelNames, ref spandrelNames, ref isMultiStory);
       List<string> convertedSpandrelNames = spandrelNames.ToList();
 
-
       #endregion
 
       #region Retrieve area names
@@ -73,7 +73,9 @@ namespace Objects.Converter.CSI
       #endregion
 
       var resultsNode = sendNodeResults ? AllResultSetNodesToSpeckle() : null;
-      var results1D = send1DResults ? AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames) : null;
+      var results1D = send1DResults
+        ? AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames)
+        : null;
       var results2D = send2DResults ? AreaResultSet2dToSpeckle(convertedAreaNames) : null;
 
       var results = new ResultSetAll(results1D, results2D, new ResultSet3D(), new ResultGlobal(), resultsNode);
@@ -81,5 +83,4 @@ namespace Objects.Converter.CSI
       return results;
     }
   }
-
 }

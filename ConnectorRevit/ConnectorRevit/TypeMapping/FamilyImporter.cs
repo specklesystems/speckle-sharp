@@ -25,11 +25,12 @@ namespace ConnectorRevit.TypeMapping
     private readonly IRevitElementTypeRetriever typeRetriever;
     private readonly IRevitDocumentAggregateCache revitDocumentAggregateCache;
 
-    public FamilyImporter(Document document, IAllRevitCategoriesExposer revitCategoriesExposer, IRevitElementTypeRetriever typeRetriever)
+    public FamilyImporter(Document document, IAllRevitCategoriesExposer revitCategoriesExposer, IRevitElementTypeRetriever typeRetriever, IRevitDocumentAggregateCache revitDocumentAggregateCache)
     {
       this.document = document;
       this.revitCategoriesExposer = revitCategoriesExposer;
       this.typeRetriever = typeRetriever;
+      this.revitDocumentAggregateCache = revitDocumentAggregateCache;
     }
 
     /// <summary>

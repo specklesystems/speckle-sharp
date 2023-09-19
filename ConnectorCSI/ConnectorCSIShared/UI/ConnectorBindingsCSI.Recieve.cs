@@ -22,6 +22,7 @@ namespace Speckle.ConnectorCSI.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public override bool CanPreviewReceive => false;
+
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
@@ -46,17 +47,16 @@ namespace Speckle.ConnectorCSI.UI
       converter.SetContextDocument(Model);
       Exceptions.Clear();
       var previouslyReceivedObjects = state.ReceivedObjects;
-      
-      progress.CancellationToken.ThrowIfCancellationRequested();
-      
-      Exceptions.Clear();
 
+      progress.CancellationToken.ThrowIfCancellationRequested();
+
+      Exceptions.Clear();
 
       Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = commit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
       await ConnectorHelpers.TryCommitReceived(state, commit, GetHostAppVersion(Model), progress.CancellationToken);
-      
+
       Preview.Clear();
       StoredObjects.Clear();
 
@@ -75,7 +75,7 @@ namespace Speckle.ConnectorCSI.UI
         progress.Report.Log(previewObj);
 
       converter.ReceiveMode = state.ReceiveMode;
-      // needs to be set for editing to work 
+      // needs to be set for editing to work
       converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -83,7 +83,7 @@ namespace Speckle.ConnectorCSI.UI
       StreamStateManager.SaveBackupFile(Model);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-      
+
       DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects, progress);
 
       // The following block of code is a hack to properly refresh the view
@@ -144,7 +144,7 @@ namespace Speckle.ConnectorCSI.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it.
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
@@ -155,7 +155,11 @@ namespace Speckle.ConnectorCSI.UI
 
       if (obj is Base @base)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type))
+        {
+          applicationId = @base.applicationId,
+          Status = ApplicationObject.State.Unknown
+        };
 
         if (converter.CanConvertToNative(@base))
         {
@@ -188,13 +192,15 @@ namespace Speckle.ConnectorCSI.UI
           objects.AddRange(FlattenCommitObject(kvp.Value, converter));
         return objects;
       }
-
       else
       {
         if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
         {
           var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in CSI");
+          appObj.Update(
+            status: ApplicationObject.State.Skipped,
+            logItem: $"Receiving this object type is not supported in CSI"
+          );
           objects.Add(appObj);
         }
       }
@@ -213,7 +219,14 @@ namespace Speckle.ConnectorCSI.UI
       int numInfoMsgs = 0;
       int numErrorMsgs = 0;
       string importLog = "";
-      Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+      Model.DatabaseTables.GetTableForEditingArray(
+        floorTableKey,
+        "ThisParamIsNotActiveYet",
+        ref tableVersion,
+        ref fieldsKeysIncluded,
+        ref numberRecords,
+        ref tableData
+      );
 
       double version = 0;
       string versionString = null;
@@ -225,12 +238,29 @@ namespace Speckle.ConnectorCSI.UI
       if (programVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
         fieldsKeysIncluded[0] = "Unique Name";
 
-      Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
-      Model.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+      Model.DatabaseTables.SetTableForEditingArray(
+        floorTableKey,
+        ref tableVersion,
+        ref fieldsKeysIncluded,
+        numberRecords,
+        ref tableData
+      );
+      Model.DatabaseTables.ApplyEditedTables(
+        false,
+        ref numFatalErrors,
+        ref numErrorMsgs,
+        ref numWarnMsgs,
+        ref numInfoMsgs,
+        ref importLog
+      );
     }
 
     // delete previously sent objects that are no longer in this stream
-    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects, ProgressViewModel progress)
+    private void DeleteObjects(
+      List<ApplicationObject> previouslyReceiveObjects,
+      List<ApplicationObject> newPlaceholderObjects,
+      ProgressViewModel progress
+    )
     {
       foreach (var obj in previouslyReceiveObjects)
       {
@@ -239,7 +269,13 @@ namespace Speckle.ConnectorCSI.UI
 
         for (int i = 0; i < obj.Converted.Count; i++)
         {
-          if (!(obj.Converted[i] is string s && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName && typeAndName.Length == 2))
+          if (
+            !(
+              obj.Converted[i] is string s
+              && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName
+              && typeAndName.Length == 2
+            )
+          )
             continue;
 
           switch (typeAndName[0])

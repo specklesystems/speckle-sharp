@@ -24,7 +24,13 @@ namespace Objects.Converter.CSI
       {
         case SpringOption.Link:
           var springOption = 1;
-          success = Model.PropPointSpring.SetPointSpringProp(springProperty.name, springOption, ref k, springProperty.CYs, iGUID: springProperty.applicationId);
+          success = Model.PropPointSpring.SetPointSpringProp(
+            springProperty.name,
+            springOption,
+            ref k,
+            springProperty.CYs,
+            iGUID: springProperty.applicationId
+          );
           break;
         case SpringOption.SoilProfileFooting:
           springOption = 2;
@@ -36,6 +42,7 @@ namespace Objects.Converter.CSI
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public void LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty, ref ApplicationObject appObj)
     {
       var linearOption1 = 0;
@@ -64,13 +71,23 @@ namespace Objects.Converter.CSI
           linearOption2 = 2;
           break;
       }
-      var success = Model.PropLineSpring.SetLineSpringProp(linearSpringProperty.name, linearSpringProperty.stiffnessX, linearSpringProperty.stiffnessY, linearSpringProperty.stiffnessZ, linearSpringProperty.stiffnessXX, linearOption1, linearOption2, iGUID: linearSpringProperty.applicationId);
+      var success = Model.PropLineSpring.SetLineSpringProp(
+        linearSpringProperty.name,
+        linearSpringProperty.stiffnessX,
+        linearSpringProperty.stiffnessY,
+        linearSpringProperty.stiffnessZ,
+        linearSpringProperty.stiffnessXX,
+        linearOption1,
+        linearOption2,
+        iGUID: linearSpringProperty.applicationId
+      );
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: linearSpringProperty.name);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public void AreaSpringPropertyToNative(CSIAreaSpring areaSpring, ref ApplicationObject appObj)
     {
       var linearOption1 = 0;
@@ -86,13 +103,21 @@ namespace Objects.Converter.CSI
           linearOption1 = 2;
           break;
       }
-      var success = Model.PropAreaSpring.SetAreaSpringProp(areaSpring.name, areaSpring.stiffnessX, areaSpring.stiffnessY, areaSpring.stiffnessZ, linearOption1, iGUID: areaSpring.applicationId);
+      var success = Model.PropAreaSpring.SetAreaSpringProp(
+        areaSpring.name,
+        areaSpring.stiffnessX,
+        areaSpring.stiffnessY,
+        areaSpring.stiffnessZ,
+        linearOption1,
+        iGUID: areaSpring.applicationId
+      );
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: areaSpring.name);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public CSISpringProperty SpringPropertyToSpeckle(string name)
     {
       double[] stiffness = null;
@@ -104,11 +129,31 @@ namespace Objects.Converter.CSI
       int color = 0;
       string notes = null;
       string GUID = null;
-      Model.PropPointSpring.GetPointSpringProp(name, ref springOption, ref stiffness, ref Cys, ref soilProfile, ref footing, ref period, ref color, ref notes, ref GUID);
+      Model.PropPointSpring.GetPointSpringProp(
+        name,
+        ref springOption,
+        ref stiffness,
+        ref Cys,
+        ref soilProfile,
+        ref footing,
+        ref period,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       switch (springOption)
       {
         case 1:
-          CSISpringProperty speckleSpringProperty = new CSISpringProperty(name, Cys, stiffness[0], stiffness[1], stiffness[2], stiffness[3], stiffness[4], stiffness[5]);
+          CSISpringProperty speckleSpringProperty = new CSISpringProperty(
+            name,
+            Cys,
+            stiffness[0],
+            stiffness[1],
+            stiffness[2],
+            stiffness[3],
+            stiffness[4],
+            stiffness[5]
+          );
           speckleSpringProperty.applicationId = GUID;
           return speckleSpringProperty;
         case 2:
@@ -120,6 +165,7 @@ namespace Objects.Converter.CSI
           return speckleSpringProperty;
       }
     }
+
     public CSILinearSpring LinearSpringToSpeckle(string name)
     {
       double stiffnessX = 0;
@@ -134,7 +180,18 @@ namespace Objects.Converter.CSI
       NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
       NonLinearOptions nonLinearOptions2 = NonLinearOptions.Linear;
 
-      var s = Model.PropLineSpring.GetLineSpringProp(name, ref stiffnessX, ref stiffnessY, ref stiffnessZ, ref stiffnessXX, ref nonLinearOpt1, ref nonLinearOpt2, ref color, ref notes, ref GUID);
+      var s = Model.PropLineSpring.GetLineSpringProp(
+        name,
+        ref stiffnessX,
+        ref stiffnessY,
+        ref stiffnessZ,
+        ref stiffnessXX,
+        ref nonLinearOpt1,
+        ref nonLinearOpt2,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       switch (nonLinearOpt1)
       {
         case 0:
@@ -162,15 +219,23 @@ namespace Objects.Converter.CSI
 
       if (s == 0)
       {
-        CSILinearSpring speckleLinearSpring = new CSILinearSpring(name, stiffnessX, stiffnessY, stiffnessZ, stiffnessXX, nonLinearOptions1, nonLinearOptions2, GUID);
+        CSILinearSpring speckleLinearSpring = new CSILinearSpring(
+          name,
+          stiffnessX,
+          stiffnessY,
+          stiffnessZ,
+          stiffnessXX,
+          nonLinearOptions1,
+          nonLinearOptions2,
+          GUID
+        );
         return speckleLinearSpring;
       }
       return null;
-
     }
+
     public CSIAreaSpring AreaSpringToSpeckle(string name)
     {
-
       double stiffnessX = 0;
       double stiffnessY = 0;
       double stiffnessZ = 0;
@@ -186,7 +251,20 @@ namespace Objects.Converter.CSI
       string GUID = null;
       NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
 
-      var s = Model.PropAreaSpring.GetAreaSpringProp(name, ref stiffnessX, ref stiffnessY, ref stiffnessZ, ref nonLinearOpt1, ref springOption, ref soilProfile, ref endLengthRatio, ref period, ref color, ref notes, ref GUID);
+      var s = Model.PropAreaSpring.GetAreaSpringProp(
+        name,
+        ref stiffnessX,
+        ref stiffnessY,
+        ref stiffnessZ,
+        ref nonLinearOpt1,
+        ref springOption,
+        ref soilProfile,
+        ref endLengthRatio,
+        ref period,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       switch (nonLinearOpt1)
       {
         case 0:
@@ -202,11 +280,17 @@ namespace Objects.Converter.CSI
 
       if (s == 0)
       {
-        CSIAreaSpring speckleAreaSpring = new CSIAreaSpring(name, stiffnessX, stiffnessY, stiffnessZ, nonLinearOptions1, GUID);
+        CSIAreaSpring speckleAreaSpring = new CSIAreaSpring(
+          name,
+          stiffnessX,
+          stiffnessY,
+          stiffnessZ,
+          nonLinearOptions1,
+          GUID
+        );
         return speckleAreaSpring;
       }
       return null;
-
     }
   }
 }
