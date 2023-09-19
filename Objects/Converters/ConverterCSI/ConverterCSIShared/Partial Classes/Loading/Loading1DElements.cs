@@ -14,6 +14,7 @@ namespace Objects.Converter.CSI
     Dictionary<string, LoadBeam> LoadStoringBeam = new Dictionary<string, LoadBeam>();
     Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
     int counterFrame = 0;
+
     void LoadFrameToNative(LoadBeam loadBeam, ref ApplicationObject appObj)
     {
       int direction = 11;
@@ -119,9 +120,25 @@ namespace Objects.Converter.CSI
         string name = element.name ?? element.id;
 
         if (loadBeam.loadType == BeamLoadType.Point)
-          Model.FrameObj.SetLoadDistributed(name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]);
-        else 
-          Model.FrameObj.SetLoadPoint(name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]);
+          Model.FrameObj.SetLoadDistributed(
+            name,
+            loadBeam.loadCase.name,
+            myType,
+            direction,
+            loadBeam.positions[0],
+            loadBeam.positions[1],
+            loadBeam.values[0],
+            loadBeam.values[1]
+          );
+        else
+          Model.FrameObj.SetLoadPoint(
+            name,
+            loadBeam.loadCase.name,
+            myType,
+            direction,
+            loadBeam.positions[0],
+            loadBeam.values[0]
+          );
 
         if (success == 0)
           appObj.Update(status: ApplicationObject.State.Created, createdId: name);
@@ -129,10 +146,9 @@ namespace Objects.Converter.CSI
           appObj.Update(status: ApplicationObject.State.Failed);
       }
     }
-   
+
     Base LoadFrameToSpeckle(string name, int frameNumber)
     {
-
       int numberItems = 0;
       string[] frameName = null;
       string[] loadPat = null;
@@ -148,18 +164,44 @@ namespace Objects.Converter.CSI
 
       //var element1DList = new List<Base>();
 
-      int s = Model.FrameObj.GetLoadDistributed(name, ref numberItems, ref frameName, ref loadPat, ref MyType, ref csys, ref dir, ref RD1, ref RD2, ref dist1, ref dist2, ref val1, ref val2);
+      int s = Model.FrameObj.GetLoadDistributed(
+        name,
+        ref numberItems,
+        ref frameName,
+        ref loadPat,
+        ref MyType,
+        ref csys,
+        ref dir,
+        ref RD1,
+        ref RD2,
+        ref dist1,
+        ref dist2,
+        ref val1,
+        ref val2
+      );
       if (s == 0)
       {
         foreach (int index in Enumerable.Range(0, numberItems))
         {
           var speckleLoadFrame = new LoadBeam();
           var element = FrameToSpeckle(frameName[index]);
-          var loadID = String.Concat(loadPat[index], val1[index], val2[index], dist1[index], dist2[index], dir[index], MyType[index]);
+          var loadID = String.Concat(
+            loadPat[index],
+            val1[index],
+            val2[index],
+            dist1[index],
+            dist2[index],
+            dir[index],
+            MyType[index]
+          );
           speckleLoadFrame.applicationId = loadID;
           FrameStoring.TryGetValue(loadID, out var element1DList);
-          if (element1DList == null) { element1DList = new List<Base> { }; }
-          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId)) element1DList.Add(element);
+          if (element1DList == null)
+          {
+            element1DList = new List<Base> { };
+          }
+          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId))
+            element1DList.Add(element);
           FrameStoring[loadID] = element1DList;
 
           switch (dir[index])
@@ -213,10 +255,16 @@ namespace Objects.Converter.CSI
               speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
               break;
           }
-          if (speckleLoadFrame.values == null) { speckleLoadFrame.values = new List<double> { }; }
+          if (speckleLoadFrame.values == null)
+          {
+            speckleLoadFrame.values = new List<double> { };
+          }
           speckleLoadFrame.values.Add(val1[index]);
           speckleLoadFrame.values.Add(val2[index]);
-          if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
+          if (speckleLoadFrame.positions == null)
+          {
+            speckleLoadFrame.positions = new List<double> { };
+          }
           speckleLoadFrame.positions.Add(dist1[index]);
           speckleLoadFrame.positions.Add(dist2[index]);
           speckleLoadFrame.loadType = BeamLoadType.Uniform;
@@ -241,7 +289,18 @@ namespace Objects.Converter.CSI
       double[] dist = null;
       double[] relDist = null;
       double[] val = null;
-      s = Model.FrameObj.GetLoadPoint(name, ref numberItems, ref frameName, ref loadPat, ref MyType, ref csys, ref dir, ref relDist, ref dist, ref val);
+      s = Model.FrameObj.GetLoadPoint(
+        name,
+        ref numberItems,
+        ref frameName,
+        ref loadPat,
+        ref MyType,
+        ref csys,
+        ref dir,
+        ref relDist,
+        ref dist,
+        ref val
+      );
       if (s == 0)
       {
         foreach (int index in Enumerable.Range(0, numberItems))
@@ -251,8 +310,12 @@ namespace Objects.Converter.CSI
           var loadID = String.Concat(loadPat[index], val, dist[index], dir[index], MyType[index]);
           speckleLoadFrame.applicationId = loadID;
           FrameStoring.TryGetValue(loadID, out var element1DList);
-          if (element1DList == null) { element1DList = new List<Base> { }; }
-          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId)) element1DList.Add(element);
+          if (element1DList == null)
+          {
+            element1DList = new List<Base> { };
+          }
+          if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId))
+            element1DList.Add(element);
           FrameStoring[loadID] = element1DList;
 
           switch (dir[index])
@@ -305,10 +368,16 @@ namespace Objects.Converter.CSI
               speckleLoadFrame.loadAxisType = Structural.LoadAxisType.Global;
               break;
           }
-          if (speckleLoadFrame.values == null) { speckleLoadFrame.values = new List<double> { }; }
+          if (speckleLoadFrame.values == null)
+          {
+            speckleLoadFrame.values = new List<double> { };
+          }
           speckleLoadFrame.values.Add(val[index]);
 
-          if (speckleLoadFrame.positions == null) { speckleLoadFrame.positions = new List<double> { }; }
+          if (speckleLoadFrame.positions == null)
+          {
+            speckleLoadFrame.positions = new List<double> { };
+          }
           speckleLoadFrame.positions.Add(dist[index]);
           speckleLoadFrame.loadType = BeamLoadType.Point;
           speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
@@ -331,6 +400,5 @@ namespace Objects.Converter.CSI
       var speckleObject = new Base();
       return speckleObject;
     }
-
   }
 }

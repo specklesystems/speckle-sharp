@@ -33,15 +33,25 @@ namespace Objects.Converter.CSI
         spliceAbove[i] = stories.CSIStory[i].SpliceAbove;
         spliceHeight[i] = stories.CSIStory[i].SpliceHeight;
         colors[i] = stories.CSIStory[i].Color;
-
       }
-      var success = Model.Story.SetStories_2(stories.BaseElevation, stories.NumberStories, ref storyNames, ref storyHeights, ref isMasterStory, ref similarToStory, ref spliceAbove, ref spliceHeight, ref colors);
+      var success = Model.Story.SetStories_2(
+        stories.BaseElevation,
+        stories.NumberStories,
+        ref storyNames,
+        ref storyHeights,
+        ref isMasterStory,
+        ref similarToStory,
+        ref spliceAbove,
+        ref spliceHeight,
+        ref colors
+      );
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdIds: storyNames.ToList());
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public CSIStories StoriesToSpeckle()
     {
       double baseElevation = 0;
@@ -55,7 +65,18 @@ namespace Objects.Converter.CSI
       double[] spliceHeight = null;
       int numberOfStories = 0;
 
-      var s = Model.Story.GetStories_2(ref baseElevation, ref numberOfStories, ref names, ref storyElevations, ref storyHeights, ref isMasterStory, ref SimilarToStory, ref spliceAbove, ref spliceHeight, ref colors);
+      var s = Model.Story.GetStories_2(
+        ref baseElevation,
+        ref numberOfStories,
+        ref names,
+        ref storyElevations,
+        ref storyHeights,
+        ref isMasterStory,
+        ref SimilarToStory,
+        ref spliceAbove,
+        ref spliceHeight,
+        ref colors
+      );
 
       var speckleStories = new CSIStories();
       speckleStories.BaseElevation = baseElevation;
@@ -63,7 +84,15 @@ namespace Objects.Converter.CSI
       speckleStories.CSIStory = new List<CSIStorey> { };
       for (int index = 0; index < numberOfStories; index++)
       {
-        var speckleStory = new CSIStorey(names[index], storyElevations[index], storyHeights[index], isMasterStory[index], SimilarToStory[index], spliceAbove[index], spliceHeight[index]);
+        var speckleStory = new CSIStorey(
+          names[index],
+          storyElevations[index],
+          storyHeights[index],
+          isMasterStory[index],
+          SimilarToStory[index],
+          spliceAbove[index],
+          spliceHeight[index]
+        );
         speckleStories.CSIStory.Add(speckleStory);
       }
 

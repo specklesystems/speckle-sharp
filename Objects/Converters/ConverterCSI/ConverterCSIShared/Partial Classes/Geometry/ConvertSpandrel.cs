@@ -18,6 +18,7 @@ namespace Objects.Converter.CSI
     {
       Model.SpandrelLabel.SetSpandrel(spandrel.name, spandrel.multistory);
     }
+
     public CSISpandrel SpandrelToSpeckle(string name)
     {
       int numberStories = 0;
@@ -37,13 +38,48 @@ namespace Objects.Converter.CSI
       double[] centerofGravityRightY = null;
       double[] centerofGravityRightZ = null;
 
-      Model.SpandrelLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref numAreaObjs, ref numLineObjs, ref length, ref depthLeft,
-      ref thickLeft, ref depthRight, ref thickRight, ref matProp, ref centerofGravityLeftX, ref centerofGravityLeftY, ref centerofGravityLeftZ, ref centerofGravityRightX, ref centerofGravityRightY, ref centerofGravityRightZ);
+      Model.SpandrelLabel.GetSectionProperties(
+        name,
+        ref numberStories,
+        ref storyName,
+        ref numAreaObjs,
+        ref numLineObjs,
+        ref length,
+        ref depthLeft,
+        ref thickLeft,
+        ref depthRight,
+        ref thickRight,
+        ref matProp,
+        ref centerofGravityLeftX,
+        ref centerofGravityLeftY,
+        ref centerofGravityLeftZ,
+        ref centerofGravityRightX,
+        ref centerofGravityRightY,
+        ref centerofGravityRightZ
+      );
       bool multistory = false;
       Model.SpandrelLabel.GetSpandrel(name, ref multistory);
 
-
-      var speckleCSISpandrel = new CSISpandrel(name, multistory, numberStories, storyName, numAreaObjs, numLineObjs, length, depthLeft, thickLeft, depthRight, thickRight, matProp, centerofGravityLeftX, centerofGravityLeftY, centerofGravityLeftZ, centerofGravityRightX, centerofGravityRightY, centerofGravityRightZ);
+      var speckleCSISpandrel = new CSISpandrel(
+        name,
+        multistory,
+        numberStories,
+        storyName,
+        numAreaObjs,
+        numLineObjs,
+        length,
+        depthLeft,
+        thickLeft,
+        depthRight,
+        thickRight,
+        matProp,
+        centerofGravityLeftX,
+        centerofGravityLeftY,
+        centerofGravityLeftZ,
+        centerofGravityRightX,
+        centerofGravityRightY,
+        centerofGravityRightZ
+      );
       SpeckleModel.elements.Add(speckleCSISpandrel);
       return speckleCSISpandrel;
     }

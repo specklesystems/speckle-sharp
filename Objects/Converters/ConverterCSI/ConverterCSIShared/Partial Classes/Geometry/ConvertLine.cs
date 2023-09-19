@@ -12,7 +12,6 @@ namespace Objects.Converter.CSI
   {
     public void LineToNative(Line line, ref ApplicationObject appObj)
     {
-
       string newFrame = "";
       Point end1node = line.start;
       Point end2node = line.end;
@@ -31,6 +30,5 @@ namespace Objects.Converter.CSI
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
-
   }
 }
