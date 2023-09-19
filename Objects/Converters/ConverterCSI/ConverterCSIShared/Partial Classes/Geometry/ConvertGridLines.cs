@@ -18,6 +18,7 @@ namespace Objects.Converter.CSI
     {
       throw new NotSupportedException();
     }
+
     public CSIGridLines gridLinesToSpeckle(string name)
     {
       double Xo = 0;
@@ -35,7 +36,23 @@ namespace Objects.Converter.CSI
       string[] BubbleLocX = null;
       string[] BubbleLocY = null;
 
-      Model.GridSys.GetGridSys_2(name, ref Xo, ref Yo, ref RZ, ref GridSysType, ref NumXLines, ref NumYLines, ref GridLineIDX, ref GridLineIDY, ref OrdinateX, ref OrdinateY, ref VisibleX, ref VisibleY, ref BubbleLocX, ref BubbleLocY);
+      Model.GridSys.GetGridSys_2(
+        name,
+        ref Xo,
+        ref Yo,
+        ref RZ,
+        ref GridSysType,
+        ref NumXLines,
+        ref NumYLines,
+        ref GridLineIDX,
+        ref GridLineIDY,
+        ref OrdinateX,
+        ref OrdinateY,
+        ref VisibleX,
+        ref VisibleY,
+        ref BubbleLocX,
+        ref BubbleLocY
+      );
 
       var gridlines = new List<GridLine> { };
       CSIGridLines speckleGridLines = new CSIGridLines();
@@ -64,7 +81,6 @@ namespace Objects.Converter.CSI
         speckleGridLines.Yo = Yo;
         speckleGridLines.Rz = RZ;
       }
-
 
       SpeckleModel.elements.Add(speckleGridLines);
       return speckleGridLines;

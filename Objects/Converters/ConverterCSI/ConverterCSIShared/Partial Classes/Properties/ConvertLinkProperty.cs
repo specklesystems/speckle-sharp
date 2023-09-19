@@ -23,13 +23,21 @@ namespace Objects.Converter.CSI
 
       // TODO: test if this works, because I don't think it will...
       var success1 = Model.PropLink.SetPDelta(linkProperty.name, ref value);
-      var success2 = Model.PropLink.SetWeightAndMass(linkProperty.name, linkProperty.weight, linkProperty.mass, linkProperty.rotationalInertia1, linkProperty.rotationalInertia2, linkProperty.rotationalInertia3);
+      var success2 = Model.PropLink.SetWeightAndMass(
+        linkProperty.name,
+        linkProperty.weight,
+        linkProperty.mass,
+        linkProperty.rotationalInertia1,
+        linkProperty.rotationalInertia2,
+        linkProperty.rotationalInertia3
+      );
 
       if (success1 == 0 && success2 == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: $"{linkProperty.name}");
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public CSILinkProperty LinkPropertyToSpeckle(string name)
     {
       double W = 0;

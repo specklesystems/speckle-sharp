@@ -18,6 +18,7 @@ namespace Objects.Converter.CSI
     {
       Model.PierLabel.SetPier(CSIPier.name);
     }
+
     public CSIPier PierToSpeckle(string name)
     {
       int numberStories = 0;
@@ -37,7 +38,7 @@ namespace Objects.Converter.CSI
       double[] centerofGravityTopY = null;
       double[] centerofGravityTopZ = null;
 
-      // **** ISSUE WITH THIS METHOD HANGING IF PIER LABEL NOT ASSIGNED IN MODEL **** // 
+      // **** ISSUE WITH THIS METHOD HANGING IF PIER LABEL NOT ASSIGNED IN MODEL **** //
       //var s = Model.PierLabel.GetSectionProperties(name, ref numberStories, ref storyName, ref axisAngle, ref numAreaObjs, ref numLineObjs, ref widthBot, ref thicknessBot, ref widthTop, ref thicknessTop, ref matProp
       //, ref centerofGravityBotX, ref centerofGravityBotY, ref centerofGravityBotZ, ref centerofGravityTopX, ref centerofGravityTopY, ref centerofGravityTopZ);
 

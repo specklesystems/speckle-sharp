@@ -15,7 +15,6 @@ namespace Objects.Converter.CSI
   {
     public void LinkToNative(CSIElement1D link, ref ApplicationObject appObj)
     {
-
       PointToNative((CSINode)link.end1Node, ref appObj);
       PointToNative((CSINode)link.end2Node, ref appObj);
       string linkName = null;
@@ -24,7 +23,12 @@ namespace Objects.Converter.CSI
       Model.PropLink.GetNameList(ref numberProps, ref listProp);
       if (listProp.Contains(link.property.name))
       {
-        var success = Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
+        var success = Model.LinkObj.AddByPoint(
+          link.end1Node.name,
+          link.end2Node.name,
+          ref linkName,
+          PropName: link.property.name
+        );
         if (success == 0)
           appObj.Update(status: ApplicationObject.State.Created, createdId: linkName);
         else
@@ -45,7 +49,8 @@ namespace Objects.Converter.CSI
 
       speckleStructLink.type = ElementType1D.Link;
       speckleStructLink.name = name;
-      string pointI, pointJ;
+      string pointI,
+        pointJ;
       pointI = pointJ = null;
       _ = Model.LinkObj.GetPoints(name, ref pointI, ref pointJ);
       var pointINode = PointToSpeckle(pointI);
@@ -82,7 +87,6 @@ namespace Objects.Converter.CSI
       {
         SpeckleModel.elements.Add(speckleStructLink);
       }
-
 
       return speckleStructLink;
     }

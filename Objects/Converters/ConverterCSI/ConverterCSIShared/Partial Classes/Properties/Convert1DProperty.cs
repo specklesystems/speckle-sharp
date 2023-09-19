@@ -21,6 +21,7 @@ namespace Objects.Converter.CSI
       }
       return false;
     }
+
     public string Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
     {
       if (property1D == null)
@@ -38,9 +39,11 @@ namespace Objects.Converter.CSI
       var catalogue = new Catalogue();
       int? success = null;
 
-      if (property1D.profile is Catalogue sectionProfile
+      if (
+        property1D.profile is Catalogue sectionProfile
         && !string.IsNullOrEmpty(sectionProfile.catalogueName)
-        && !string.IsNullOrEmpty(sectionProfile.sectionName))
+        && !string.IsNullOrEmpty(sectionProfile.sectionName)
+      )
       {
         switch (sectionProfile.catalogueName)
         {
@@ -49,7 +52,12 @@ namespace Objects.Converter.CSI
             break;
         }
 
-        success = Model.PropFrame.ImportProp(property1D.name, materialName, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
+        success = Model.PropFrame.ImportProp(
+          property1D.name,
+          materialName,
+          sectionProfile.catalogueName + ".xml",
+          sectionProfile.sectionName.ToUpper()
+        );
 
         if (success == 0)
           appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property1D.name}");
@@ -63,45 +71,46 @@ namespace Objects.Converter.CSI
       {
         case Angle o:
           success = Model.PropFrame.SetAngle(
-            property1D.name, 
+            property1D.name,
             materialName,
-            ScaleToNative(o.depth, o.units), 
-            ScaleToNative(o.width, o.units), 
-            ScaleToNative(o.flangeThickness, o.units), 
-            ScaleToNative(o.webThickness, o.units));
+            ScaleToNative(o.depth, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units),
+            ScaleToNative(o.webThickness, o.units)
+          );
           break;
         case Channel o:
           success = Model.PropFrame.SetChannel(
-            property1D.name, 
-            materialName, 
-            ScaleToNative(o.depth, o.units), 
-            ScaleToNative(o.width, o.units), 
-            ScaleToNative(o.flangeThickness, o.units), 
-            ScaleToNative(o.webThickness, o.units));
+            property1D.name,
+            materialName,
+            ScaleToNative(o.depth, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units),
+            ScaleToNative(o.webThickness, o.units)
+          );
           break;
         case Circular o:
           if (o.wallThickness > 0)
             success = Model.PropFrame.SetPipe(
-              property1D.name, 
-              materialName, 
-              ScaleToNative(o.radius * 2, o.units), 
-              ScaleToNative(o.wallThickness, o.units));
+              property1D.name,
+              materialName,
+              ScaleToNative(o.radius * 2, o.units),
+              ScaleToNative(o.wallThickness, o.units)
+            );
           else
-            success = Model.PropFrame.SetCircle(
-              property1D.name, 
-              materialName, 
-              ScaleToNative(o.radius * 2, o.units));
+            success = Model.PropFrame.SetCircle(property1D.name, materialName, ScaleToNative(o.radius * 2, o.units));
           break;
         case ISection o:
           success = Model.PropFrame.SetISection(
-            property1D.name, 
+            property1D.name,
             materialName,
             ScaleToNative(o.depth, o.units),
             ScaleToNative(o.width, o.units),
             ScaleToNative(o.flangeThickness, o.units),
             ScaleToNative(o.webThickness, o.units),
             ScaleToNative(o.width, o.units),
-            ScaleToNative(o.flangeThickness, o.units));
+            ScaleToNative(o.flangeThickness, o.units)
+          );
           break;
         case Rectangular o:
           if (o.flangeThickness > 0 && o.webThickness > 0)
@@ -111,34 +120,41 @@ namespace Objects.Converter.CSI
               ScaleToNative(o.depth, o.units),
               ScaleToNative(o.width, o.units),
               ScaleToNative(o.flangeThickness, o.units),
-              ScaleToNative(o.webThickness, o.units));
+              ScaleToNative(o.webThickness, o.units)
+            );
           else
             success = Model.PropFrame.SetRectangle(
-              property1D.name, 
+              property1D.name,
               materialName,
-              ScaleToNative(o.depth, o.units), 
-              ScaleToNative(o.width, o.units));
+              ScaleToNative(o.depth, o.units),
+              ScaleToNative(o.width, o.units)
+            );
           break;
         case Tee o:
           success = Model.PropFrame.SetConcreteTee(
-            property1D.name, 
-            materialName, 
-            ScaleToNative(o.depth, o.units), 
-            ScaleToNative(o.width, o.units), 
-            ScaleToNative(o.flangeThickness, o.units), 
-            ScaleToNative(o.webThickness, o.units), 
-            ScaleToNative(o.webThickness, o.units), 
-            false);
+            property1D.name,
+            materialName,
+            ScaleToNative(o.depth, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units),
+            ScaleToNative(o.webThickness, o.units),
+            ScaleToNative(o.webThickness, o.units),
+            false
+          );
           break;
       }
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: property1D.name);
       else
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unable to create section with profile named {property1D.name}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Unable to create section with profile named {property1D.name}"
+        );
 
       return property1D.name;
     }
+
     public Property1D Property1DToSpeckle(string name)
     {
       var speckleStructProperty1D = new Property1D();
@@ -148,11 +164,10 @@ namespace Objects.Converter.CSI
       speckleStructProperty1D.material = MaterialToSpeckle(materialProp);
       speckleStructProperty1D.profile = SectionToSpeckle(name);
 
-      speckleStructProperty1D.applicationId = $"{speckleStructProperty1D.material.applicationId}:{speckleStructProperty1D.profile.applicationId}";
+      speckleStructProperty1D.applicationId =
+        $"{speckleStructProperty1D.material.applicationId}:{speckleStructProperty1D.profile.applicationId}";
 
       return speckleStructProperty1D;
     }
-
-
   }
 }

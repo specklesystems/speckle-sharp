@@ -23,7 +23,16 @@ namespace Objects.Converter.CSI
         double[] frequency = null;
         double[] circFreq = null;
         double[] eigenValue = null;
-        var s = Model.Results.ModalPeriod(ref numberResult, ref loadcase, ref stepType, ref stepNum, ref period, ref frequency, ref circFreq, ref eigenValue);
+        var s = Model.Results.ModalPeriod(
+          ref numberResult,
+          ref loadcase,
+          ref stepType,
+          ref stepNum,
+          ref period,
+          ref frequency,
+          ref circFreq,
+          ref eigenValue
+        );
 
         double[] UX = null;
         double[] UY = null;
@@ -34,7 +43,21 @@ namespace Objects.Converter.CSI
         double[] ModalMass = null;
         double[] ModalStiff = null;
 
-        var i = Model.Results.ModalParticipationFactors(ref numberResult, ref loadcase, ref stepType, ref stepNum, ref period, ref UX, ref UY, ref UZ, ref RX, ref RY, ref RZ, ref ModalMass, ref ModalStiff);
+        var i = Model.Results.ModalParticipationFactors(
+          ref numberResult,
+          ref loadcase,
+          ref stepType,
+          ref stepNum,
+          ref period,
+          ref UX,
+          ref UY,
+          ref UZ,
+          ref RX,
+          ref RY,
+          ref RZ,
+          ref ModalMass,
+          ref ModalStiff
+        );
 
         if (s == 0 && i == 0)
         {
@@ -45,17 +68,19 @@ namespace Objects.Converter.CSI
           speckleResultGlobal.reactionXX = (float)RX[0];
           speckleResultGlobal.reactionYY = (float)RY[0];
           speckleResultGlobal.reactionZZ = (float)RZ[0];
-          speckleResultGlobal.effMassX = speckleResultGlobal.effMassXX = speckleResultGlobal.effMassY = speckleResultGlobal.effMassYY = speckleResultGlobal.effMassZ = speckleResultGlobal.effMassZZ = (float)ModalMass[0];
+          speckleResultGlobal.effMassX =
+            speckleResultGlobal.effMassXX =
+            speckleResultGlobal.effMassY =
+            speckleResultGlobal.effMassYY =
+            speckleResultGlobal.effMassZ =
+            speckleResultGlobal.effMassZZ =
+              (float)ModalMass[0];
 
           speckleResultGlobal.mode = (float)stepNum[0];
           speckleResultGlobal.frequency = (float)frequency[0];
         }
       }
-      catch
-      {
-
-      }
-
+      catch { }
 
       return speckleResultGlobal;
     }
