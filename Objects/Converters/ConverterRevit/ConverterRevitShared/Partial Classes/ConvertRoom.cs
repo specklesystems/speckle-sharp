@@ -26,7 +26,7 @@ namespace Objects.Converter.Revit
       {
         var basePoint = PointToNative(speckleRoom.basePoint);
 
-        // set computation level of Level based on the botton elevation of the Room (Rooms can have offset elevation from Levels)
+        // set computation level of Level based on the bottom elevation of the Room (Rooms can have offset elevation from Levels)
         // it is not guaranteed that the final computation level will fit for all the Rooms, however not generating extra level is preferred
         if (level.get_Parameter(BuiltInParameter.LEVEL_ROOM_COMPUTATION_HEIGHT).AsDouble() < basePoint.Z) {
           TrySetParam(level, BuiltInParameter.LEVEL_ROOM_COMPUTATION_HEIGHT, basePoint.Z);
