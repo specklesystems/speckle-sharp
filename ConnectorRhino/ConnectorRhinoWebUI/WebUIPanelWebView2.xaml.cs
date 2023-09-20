@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using DUI3;
 using Microsoft.Web.WebView2.Core;
 using Speckle.Core.Logging;
@@ -25,7 +26,8 @@ public partial class WebUiPanelWebView2 : UserControl
     {
       throw new SpeckleException("Failed to execute script, Webview2 is not initialized yet.");
     }
-    Browser.ExecuteScriptAsync(script);
+
+    Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
   }
   
   private void OnInitialized(object sender, CoreWebView2InitializationCompletedEventArgs e)
