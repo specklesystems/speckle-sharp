@@ -1,27 +1,31 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api;
 
 #region inputs
 
-public class StreamCreateInput
+// ReSharper disable InconsistentNaming
+public class StreamCreateInput //TODO: discuss - shall we make all of these `sealed`. Just to make it very clear how they are intended to be used
 {
-  public string name { get; set; }
-  public string description { get; set; }
-  public bool isPublic { get; set; } = true;
+  public string? name { get; set; }
+  public string? description { get; set; }
+  public bool? isPublic { get; set; } = true; //TODO: to discuss - nullable value types are a breaking change for sharp, unless it's absolutely necessary, I'd like to avoid it
 }
 
 public class StreamUpdateInput
 {
   public string id { get; set; }
-  public string name { get; set; }
-  public string description { get; set; }
-  public bool isPublic { get; set; } = true;
+  public string? name { get; set; }
+  public string? description { get; set; }
+  public bool? isPublic { get; set; } = true; //TODO: to discuss - nullable value types are a breaking change for sharp, unless it's absolutely necessary, I'd like to avoid it
 }
 
+/// <summary>
+/// Aka StreamUpdatePermissionInput
+/// </summary>
 public class StreamPermissionInput
 {
   public string streamId { get; set; }
@@ -38,25 +42,25 @@ public class StreamRevokePermissionInput
 public class StreamInviteCreateInput
 {
   public string streamId { get; set; }
-  public string userId { get; set; }
-  public string email { get; set; }
-  public string message { get; set; }
-  public string role { get; set; }
+  public string? userId { get; set; } //TODO: to discuss - this one might be acceptable, I guess its userId or email that you need to provide. That would be fine
+  public string? email { get; set; } //TODO: to discuss
+  public string? message { get; set; }
+  public string? role { get; set; }
 }
 
 public class BranchCreateInput
 {
   public string streamId { get; set; }
   public string name { get; set; }
-  public string description { get; set; }
+  public string? description { get; set; }
 }
 
 public class BranchUpdateInput
 {
   public string streamId { get; set; }
   public string id { get; set; }
-  public string name { get; set; }
-  public string description { get; set; }
+  public string? name { get; set; }
+  public string? description { get; set; }
 }
 
 public class BranchDeleteInput
@@ -70,20 +74,20 @@ public class CommitCreateInput
   public string streamId { get; set; }
   public string branchName { get; set; }
   public string objectId { get; set; }
-  public string message { get; set; }
-  public string sourceApplication { get; set; } = ".net";
+  public string? message { get; set; }
+  public string? sourceApplication { get; set; } = ".net";
   public int totalChildrenCount { get; set; }
-  public List<string> parents { get; set; }
+  public List<string?>? parents { get; set; } //TODO: to discuss - I would guess this should actually be List<string>? or List<string>. do we actually respond with null here? or empty list?
 
   [Obsolete("Please use the parents property. This property will be removed in later versions")]
-  public List<string> previousCommitIds { get; set; }
+  public List<string> previousCommitIds { get; set; } //TODO: how old is this? shall we remove it
 }
 
 public class CommitUpdateInput
 {
   public string streamId { get; set; }
   public string id { get; set; }
-  public string message { get; set; }
+  public string? message { get; set; }
 }
 
 public class CommitDeleteInput
@@ -97,7 +101,7 @@ public class CommitReceivedInput
   public string streamId { get; set; }
   public string commitId { get; set; }
   public string sourceApplication { get; set; }
-  public string message { get; set; }
+  public string? message { get; set; }
 }
 
 #endregion
@@ -106,39 +110,39 @@ public class Stream
 {
   public string id { get; set; }
   public string name { get; set; }
-  public string description { get; set; }
+  public string? description { get; set; }
 
-  public bool isPublic { get; set; }
-  public string role { get; set; }
+  public bool? isPublic { get; set; } //TODO: To discuss - nullable value types are a breaking change for sharp, unless it's absolutely necessary, I'd like to avoid it
+  public string? role { get; set; }
   public DateTime createdAt { get; set; }
   public DateTime updatedAt { get; set; }
-  public string favoritedDate { get; set; }
+  public DateTime? favoritedDate { get; set; }
 
   public int commentCount { get; set; }
   public int favoritesCount { get; set; }
 
   public List<Collaborator> collaborators { get; set; }
-  public List<PendingStreamCollaborator> pendingCollaborators { get; set; } = new();
-  public Branches branches { get; set; }
+  public List<PendingStreamCollaborator>? pendingCollaborators { get; set; } = new(); //TODO: to discuss - again, do we actually respond with null here? or empty list?
+  public Branches? branches { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(System.Threading.CancellationToken, string, string, int)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(string, string, int, System.Threading.CancellationToken)"/>.
   /// </summary>
-  public Branch branch { get; set; }
+  public Branch? branch { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(string, string, System.Threading.CancellationToken)"/>.
   /// </summary>
-  public Commit commit { get; set; }
+  public Commit? commit { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(System.Threading.CancellationToken, string, int)"/>
+  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(string, int, System.Threading.CancellationToken)"/>
   /// </summary>
-  public Commits commits { get; set; }
+  public Commits? commits { get; set; }
 
-  public Activity activity { get; set; }
+  public Activity? activity { get; set; }
 
-  public SpeckleObject @object { get; set; }
+  public SpeckleObject? @object { get; set; }
 
   public override string ToString()
   {
@@ -146,22 +150,20 @@ public class Stream
   }
 }
 
+/// <summary>
+/// AKA StreamCollaborator
+/// </summary>
 public class Collaborator
 {
   public string id { get; set; }
   public string name { get; set; }
   public string role { get; set; }
-  public string avatar { get; set; }
+  public string? avatar { get; set; }
 
   public override string ToString()
   {
     return $"Collaborator ({name} | {role} | {id})";
   }
-}
-
-public class StreamInvitesResponse
-{
-  public List<PendingStreamCollaborator> streamInvites { get; set; }
 }
 
 public class PendingStreamCollaborator
@@ -173,38 +175,44 @@ public class PendingStreamCollaborator
   public string title { get; set; }
   public string role { get; set; }
   public User invitedBy { get; set; }
-  public User user { get; set; }
-  public string token { get; set; }
+  public User? user { get; set; }
+  public string? token { get; set; }
 }
 
+/// <summary>
+/// Aka BranchCollection
+/// </summary>
 public class Branches
 {
   public int totalCount { get; set; }
-  public string cursor { get; set; }
-  public List<Branch> items { get; set; }
+  public string? cursor { get; set; }
+  public List<Branch>? items { get; set; } //TODO: to discuss - just want to double check if we actually return null here
 }
 
+/// <summary>
+/// Aka CommitCollection
+/// </summary>
 public class Commits
 {
   public int totalCount { get; set; }
-  public string cursor { get; set; }
-  public List<Commit> items { get; set; }
+  public string? cursor { get; set; }
+  public List<Commit>? items { get; set; } //TODO: to discuss - just want to double check if we actually return null here
 }
 
 public class Commit
 {
   public string id { get; set; }
-  public string message { get; set; }
-  public string branchName { get; set; }
-  public string authorName { get; set; }
-  public string authorId { get; set; }
-  public string authorAvatar { get; set; }
-  public DateTime createdAt { get; set; }
-  public string sourceApplication { get; set; }
+  public string? message { get; set; }
+  public string? branchName { get; set; }
+  public string? authorName { get; set; }
+  public string? authorId { get; set; }
+  public string? authorAvatar { get; set; }
+  public DateTime? createdAt { get; set; } //TODO: discuss - Don't commits always have a created time?
+  public string? sourceApplication { get; set; }
 
   public string referencedObject { get; set; }
-  public int totalChildrenCount { get; set; }
-  public List<string> parents { get; set; }
+  public int? totalChildrenCount { get; set; } //TODO: discuss - nullable value types are a breaking change for sharp, unless it's absolutely necessary, I'd like to avoid it
+  public List<string?>? parents { get; set; } //TODO: discuss - I would guess this should actually be List<string>? or List<string>
 
   public override string ToString()
   {
@@ -212,18 +220,24 @@ public class Commit
   }
 }
 
+/// <summary>
+/// Aka ActivityCollection //TODO: discuss
+/// </summary>
 public class Activity
 {
   public int totalCount { get; set; }
-  public DateTime cursor { get; set; }
-  public List<ActivityItem> items { get; set; }
+  public string? cursor { get; set; } //TODO: discuss - DateTime -> string? change...
+  public List<ActivityItem?>? items { get; set; } //TODO: discuss - again, List<ActivityItem>? potential
 }
 
+/// <summary>
+/// Aka Activity //TODO: discuss
+/// </summary>
 public class ActivityItem
 {
   public string actionType { get; set; }
   public string userId { get; set; }
-  public string streamId { get; set; }
+  public string? streamId { get; set; }
   public string resourceId { get; set; }
   public string resourceType { get; set; }
   public DateTime time { get; set; }
@@ -231,7 +245,7 @@ public class ActivityItem
   public string message { get; set; }
 }
 
-public class Info
+public class Info //TODO: discuss - can't find reference to this one, perhaps it's not documented
 {
   public string message { get; set; }
   public string sourceApplication { get; set; }
@@ -239,28 +253,31 @@ public class Info
   public InfoCommit commit { get; set; }
 }
 
-public class InfoCommit
+public class InfoCommit //TODO: discuss - can't find reference to this one, perhaps it's not documented or deprecated?
 {
   public string message { get; set; }
   public string sourceApplication { get; set; }
   public string branchName { get; set; }
 }
 
+/// <summary>
+/// AKA Object
+/// </summary>
 public class SpeckleObject
 {
   public string id { get; set; }
-  public string speckleType { get; set; }
-  public string applicationId { get; set; }
-  public int totalChildrenCount { get; set; }
-  public DateTime createdAt { get; set; }
+  public string? speckleType { get; set; }
+  public string? applicationId { get; set; }
+  public int? totalChildrenCount { get; set; } //TODO: discuss - value type
+  public DateTime? createdAt { get; set; } //TODO: discuss - value type
 }
 
 public class Branch
 {
   public string id { get; set; }
   public string name { get; set; }
-  public string description { get; set; }
-  public Commits commits { get; set; }
+  public string? description { get; set; }
+  public Commits? commits { get; set; }
 
   public override string ToString()
   {
@@ -268,23 +285,26 @@ public class Branch
   }
 }
 
+/// <summary>
+/// Aka StreamCollection
+/// </summary>
 public class Streams
 {
   public int totalCount { get; set; }
-  public string cursor { get; set; }
-  public List<Stream> items { get; set; }
+  public string? cursor { get; set; }
+  public List<Stream>? items { get; set; }
 }
 
-public class UserBase
+public class UserBase //TODO: If this is just a C# niceity, should it be abstract?
 {
   public string id { get; set; }
   public string name { get; set; }
-  public string bio { get; set; }
-  public string company { get; set; }
-  public string avatar { get; set; }
-  public bool verified { get; set; }
-  public string role { get; set; }
-  public Streams streams { get; set; }
+  public string? bio { get; set; }
+  public string? company { get; set; }
+  public string? avatar { get; set; }
+  public bool? verified { get; set; } //TODO: Discuss - value type
+  public string? role { get; set; }
+  public Streams streams { get; set; } //TODO: Discuss this is marked as non-nullable, but due to requests we make, should it?
 }
 
 public class LimitedUser : UserBase
@@ -297,8 +317,8 @@ public class LimitedUser : UserBase
 
 public class User : UserBase
 {
-  public string email { get; set; }
-  public Streams favoriteStreams { get; set; }
+  public string? email { get; set; }
+  public Streams favoriteStreams { get; set; } //TODO: Need to double check, we might be making queries that don't request this list. Maybe we should mark it nullable for this reason, or request a limit of 0
 
   public override string ToString()
   {
@@ -306,6 +326,9 @@ public class User : UserBase
   }
 }
 
+/// <summary>
+/// AKA ResourceIdentifier
+/// </summary>
 public class Resource
 {
   public string resourceId { get; set; }
@@ -320,18 +343,31 @@ public enum ResourceType
   comment
 }
 
-public class Location
+public class Location //TODO: maybe deprecated, see `Comment` docs
 {
   public double x { get; set; }
   public double y { get; set; }
   public double z { get; set; }
 }
 
-public class UserData
+public class UserData //TODO: Unused, maybe obsolete
 {
   public User user { get; set; }
 }
 
+// TODO: prob remove and bring one level up and shared w Core.Credentials
+public class ServerInfo
+{
+  public string name { get; set; }
+  public string? company { get; set; }
+  public string url { get; set; } //TODO: I see a "canonicalUrl" property, but no url
+  public string? version { get; set; }
+  public string? adminContact { get; set; }
+  public string? description { get; set; }
+}
+
+//TODO: All these response objects are undocumented, so I haven't updated their nullability
+#nullable disable
 /// <summary>
 /// GraphQL DTO model for active user data
 /// </summary>
@@ -365,6 +401,11 @@ public class UserSearch
   public List<LimitedUser> items { get; set; }
 }
 
+public class StreamInvitesResponse
+{
+  public List<PendingStreamCollaborator> streamInvites { get; set; }
+}
+
 public class ServerInfoResponse
 {
   // TODO: server and user models are duplicated here and in Core.Credentials.Responses
@@ -372,17 +413,6 @@ public class ServerInfoResponse
   // all server models that should be consistent? am creating a new obj here as to not reference Credentials in
   // this file but it should prob be refactored in the futrue
   public ServerInfo serverInfo { get; set; }
-}
-
-// TODO: prob remove and bring one level up and shared w Core.Credentials
-public class ServerInfo
-{
-  public string name { get; set; }
-  public string company { get; set; }
-  public string url { get; set; }
-  public string version { get; set; }
-  public string adminContact { get; set; }
-  public string description { get; set; }
 }
 
 public class StreamData
@@ -395,15 +425,23 @@ public class StreamsData
   public Streams streams { get; set; }
 }
 
+#nullable enable
+
 #region comments
+/// <summary>
+/// Aka CommentCollection
+/// </summary>
 public class Comments
 {
   public int totalCount { get; set; }
-  public DateTime? cursor { get; set; }
+  public string? cursor { get; set; } //TODO: discuss - DateTime -> String
   public List<CommentItem> items { get; set; }
 }
 
-public class CommentData
+/// <summary>
+/// Aka LegacyCommentViewerData
+/// </summary>
+public class CommentData //TODO: Deprecated?
 {
   public Comments comments { get; set; }
   public List<double> camPos { get; set; }
@@ -413,29 +451,35 @@ public class CommentData
   public object sectionBox { get; set; }
 }
 
+/// <summary>
+/// Aka Comment
+/// </summary>
 public class CommentItem
 {
   public string id { get; set; }
   public string authorId { get; set; }
   public bool archived { get; set; }
-  public string screenshot { get; set; }
+  public string? screenshot { get; set; }
   public string rawText { get; set; }
-  public CommentData data { get; set; }
+  public CommentData data { get; set; } //TODO: this has been deprecated
   public DateTime createdAt { get; set; }
   public DateTime updatedAt { get; set; }
   public DateTime? viewedAt { get; set; }
-  public object reactions { get; set; }
+  public object reactions { get; set; } //TODO: this has been deprecated
   public Comments replies { get; set; }
   public List<Resource> resources { get; set; }
 }
 
-public class ContentContent
+public class ContentContent //TODO: unused
 {
   public string Type { get; set; }
 
   //public Mark[] Marks { get; set; }
   public string Text { get; set; }
 }
+
+//TODO: Again response objects, undocumented so I've not added nullability syntax.
+#nullable disable
 
 public class CommentsData
 {
