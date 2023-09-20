@@ -185,6 +185,7 @@ namespace Objects.Converter.Revit
       speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
+      speckleWall.displayValue = new List<Mesh>();
 
       //CreateVoids(revitWall, speckleWall);
 
