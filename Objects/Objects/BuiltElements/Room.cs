@@ -80,7 +80,7 @@ namespace Objects.BuiltElements.Archicad
     public override Level level
     {
       get => archicadLevel;
-      set => archicadLevel = value as ArchicadLevel ?? throw new System.ArgumentException("Must be ArchicadLevel");
+      set => archicadLevel = value as ArchicadLevel ?? null;
     }
 
     public double height { get; set; }

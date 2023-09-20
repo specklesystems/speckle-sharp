@@ -41,7 +41,7 @@ namespace DriverCSharp
         return ret;
       }
 
-      // attach to a running program instance 
+      // attach to a running program instance
       try
       {
         // get the active SapObject
@@ -72,20 +72,16 @@ namespace DriverCSharp
             progID = ProgID_SAP2000;
             mySapObject = myHelper.GetObject(progID);
           }
-          catch (Exception ex)
-          {
-          }
+          catch (Exception ex) { }
 
           if (mySapObject == null)
           {
             try
-            { 
+            {
               progID = ProgID_ETABS;
               mySapObject = myHelper.GetObject(progID);
             }
-            catch (Exception ex)
-            { 
-            }
+            catch (Exception ex) { }
           }
           if (mySapObject == null)
           {
@@ -94,9 +90,7 @@ namespace DriverCSharp
               progID = ProgID_CSiBridge;
               mySapObject = myHelper.GetObject(progID);
             }
-            catch (Exception ex)
-            {
-            }
+            catch (Exception ex) { }
           }
         }
       }
@@ -119,8 +113,10 @@ namespace DriverCSharp
 
         // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.
         p.Main(ref mySapModel, ref cb);
-        if(cb.Finished == true)
-        { Environment.Exit(0); }
+        if (cb.Finished == true)
+        {
+          Environment.Exit(0);
+        }
 
         return cb.ErrorFlag;
       }

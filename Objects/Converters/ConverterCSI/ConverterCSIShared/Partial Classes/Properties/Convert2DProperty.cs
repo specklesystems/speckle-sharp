@@ -12,7 +12,6 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
     void setProperties(CSIProperty2D property2D, string matProp, double thickeness, string name)
     {
       property2D.name = name;
@@ -20,15 +19,16 @@ namespace Objects.Converter.CSI
       property2D.material = MaterialToSpeckle(matProp);
       return;
     }
+
     private string Property2DToNative(CSIProperty2D property2D)
     {
       if (property2D.type2D == CSIPropertyType2D.Wall)
       {
         return WallPropertyToNative(property2D);
       }
-      else 
-      { 
-        return FloorPropertyToNative(property2D); 
+      else
+      {
+        return FloorPropertyToNative(property2D);
       }
     }
 
@@ -60,6 +60,5 @@ namespace Objects.Converter.CSI
 
       return null;
     }
-
   }
 }

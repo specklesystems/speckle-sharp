@@ -162,7 +162,7 @@ namespace ConnectorRevit.TypeMapping
       {
         try
         {
-          familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
+          familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever, revitDocumentAggregateCache);
           await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
         }
         catch (SpeckleException ex)

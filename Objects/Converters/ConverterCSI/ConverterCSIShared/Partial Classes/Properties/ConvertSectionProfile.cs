@@ -16,7 +16,13 @@ namespace Objects.Converter.CSI
       string matProp = "";
       string sectionPropertyName = "";
 
-      int s = Model.PropFrame.GetNameInPropFile(property, ref sectionPropertyName, ref catalogue, ref matProp, ref propType);
+      int s = Model.PropFrame.GetNameInPropFile(
+        property,
+        ref sectionPropertyName,
+        ref catalogue,
+        ref matProp,
+        ref propType
+      );
 
       GetSectionProfile(property, matProp, propType, ref speckleSectionProfile);
 
@@ -108,7 +114,12 @@ namespace Objects.Converter.CSI
       #endregion
     }
 
-    public void GetSectionProfile(string property, string matProp, eFramePropType propType, ref SectionProfile speckleSectionProfile)
+    public void GetSectionProfile(
+      string property,
+      string matProp,
+      eFramePropType propType,
+      ref SectionProfile speckleSectionProfile
+    )
     {
       double T3 = 0;
       double T2 = 0;
@@ -127,15 +138,50 @@ namespace Objects.Converter.CSI
       switch (propType)
       {
         case eFramePropType.I:
-          Model.PropFrame.GetISection(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref T2b, ref Tfb, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetISection(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref Tf,
+            ref Tw,
+            ref T2b,
+            ref Tfb,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new ISection(property, T3, T2, Tw, Tf);
           break;
         case eFramePropType.Rectangular:
-          Model.PropFrame.GetRectangle(property, ref FileName, ref matProp, ref T3, ref T2, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetRectangle(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new Rectangular(property, T3, T2);
           break;
         case eFramePropType.ConcreteTee:
-          Model.PropFrame.GetConcreteTee(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref TwF, ref Twt, ref mirrorAbout3, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetConcreteTee(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref Tf,
+            ref TwF,
+            ref Twt,
+            ref mirrorAbout3,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new Tee(property, T3, T2, TwF, Tf);
           break;
         case eFramePropType.Circle:
@@ -143,15 +189,48 @@ namespace Objects.Converter.CSI
           speckleSectionProfile = new Circular(property, T3 / 2);
           break;
         case eFramePropType.Angle:
-          Model.PropFrame.GetAngle(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetAngle(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref Tf,
+            ref Tw,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new Angle(property, T3, T2, Tw, Tf);
           break;
         case eFramePropType.Channel:
-          Model.PropFrame.GetChannel(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetChannel(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref Tf,
+            ref Tw,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new Channel(property, T3, T2, Tw, Tf);
           break;
         case eFramePropType.Box:
-          Model.PropFrame.GetTube(property, ref FileName, ref matProp, ref T3, ref T2, ref Tf, ref Tw, ref color, ref notes, ref GUID);
+          Model.PropFrame.GetTube(
+            property,
+            ref FileName,
+            ref matProp,
+            ref T3,
+            ref T2,
+            ref Tf,
+            ref Tw,
+            ref color,
+            ref notes,
+            ref GUID
+          );
           speckleSectionProfile = new Rectangular(property, T3, T2, Tw, Tf);
           break;
         case eFramePropType.Pipe:
@@ -194,16 +273,31 @@ namespace Objects.Converter.CSI
       //   sectionProfile.J = Torsion;
       //   sectionProfile.applicationId = GUID;
       // }
-      
-      var k = Model.PropFrame.GetSectProps(property, ref Area, ref As2, ref As3, ref Torsion, ref I22, ref I33, ref S22, ref S33, ref Z22, ref Z33, ref R22, ref R33);
-      if(k==0){      
+
+      var k = Model.PropFrame.GetSectProps(
+        property,
+        ref Area,
+        ref As2,
+        ref As3,
+        ref Torsion,
+        ref I22,
+        ref I33,
+        ref S22,
+        ref S33,
+        ref Z22,
+        ref Z33,
+        ref R22,
+        ref R33
+      );
+      if (k == 0)
+      {
         sectionProfile.name = property;
-      sectionProfile.area = Area;
-      sectionProfile.Ky = (Area == 0 || As3 == 0) ? 0 : As3 / Area; 
-      sectionProfile.Kz = (Area == 0 || As2 == 0) ? 0 : As2 / Area;
-      sectionProfile.Iyy = I33;
-      sectionProfile.Izz = I22;
-      sectionProfile.J = Torsion;
+        sectionProfile.area = Area;
+        sectionProfile.Ky = (Area == 0 || As3 == 0) ? 0 : As3 / Area;
+        sectionProfile.Kz = (Area == 0 || As2 == 0) ? 0 : As2 / Area;
+        sectionProfile.Iyy = I33;
+        sectionProfile.Izz = I22;
+        sectionProfile.J = Torsion;
       }
 
       //to be discussed whether radius of gyration and section mod/plastic mod is needed ~ i personally think so
