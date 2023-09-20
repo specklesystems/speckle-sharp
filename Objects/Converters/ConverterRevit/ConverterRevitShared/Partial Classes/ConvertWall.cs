@@ -205,6 +205,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
+        speckleWall.displayValue = new List<Mesh>(); // avoids null value for curtain walls
         AddHostedDependentElements(
           revitWall,
           speckleWall,
