@@ -3,14 +3,14 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Objects.BuiltElements
+namespace Objects.BuiltElements.Revit
 {
-  public class SpeckleToposolid : Base, IDisplayValue<List<Mesh>>
+  public class RevitToposolid : Base, IDisplayValue<List<Mesh>>
   {
-    public SpeckleToposolid() { }
+    public RevitToposolid() { }
 
     [SchemaInfo("SpeckleToposolid", "Creates a Speckle Toposolid", "BIM", "Architecture")]
-    public SpeckleToposolid(
+    public RevitToposolid(
       List<ICurve[]> profiles = null,
       List<Point> topPlanePoints = null,
       [SchemaParamInfo("Any nested elements that this floor might have")]
@@ -28,15 +28,10 @@ namespace Objects.BuiltElements
 
     [DetachProperty] public List<Base> elements { get; set; }
 
-    public string units { get; set; }
-
     [DetachProperty] public List<Mesh> displayValue { get; set; }
     
     public string family { get; set; }
     public string type { get; set; }
     public Level level { get; set; }
-    public bool structural { get; set; }
-    public double slope { get; set; }
-    public Line slopeDirection { get; set; }
   }
 }
