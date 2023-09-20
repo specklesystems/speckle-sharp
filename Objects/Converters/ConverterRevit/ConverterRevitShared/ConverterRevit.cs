@@ -358,13 +358,10 @@ namespace Objects.Converter.Revit
 #endif
         default:
           // if we don't have a direct conversion, still try to send this element as a generic RevitElement
-          SpeckleLog.Logger.Debug($"Unsupported Type: {@object.GetType()}");
-
           var el = @object as Element;
           if (el.IsElementSupported())
           {
             returnObject = RevitElementToSpeckle(el, out notes);
-            SpeckleLog.Logger.Debug($"\tConverted as RevitElement");
             break;
           }
           throw new NotSupportedException($"Conversion of {@object.GetType().Name} is not supported.");

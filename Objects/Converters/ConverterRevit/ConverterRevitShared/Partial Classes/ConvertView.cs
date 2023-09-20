@@ -20,8 +20,6 @@ namespace Objects.Converter.Revit
     };
     public Base ViewToSpeckle(DB.View revitView)
     {
-      SpeckleLog.Logger.Debug($"View Id: {revitView.Id}");
-      
       switch (revitView)
       {
         case DB.View3D o:
