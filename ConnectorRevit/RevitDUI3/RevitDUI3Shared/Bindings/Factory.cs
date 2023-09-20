@@ -13,6 +13,7 @@ public static class Factory
     var baseBinding = new BasicConnectorBindingRevit(store);
     var selectionBinding = new SelectionBinding();
     var sendBinding = new SendBinding(store);
+    var receiveBinding = new ReceiveBinding(store);
     var bindingsList = new List<IBinding>
     {
       new ConfigBinding(),
@@ -20,7 +21,8 @@ public static class Factory
       new TestBinding(),
       baseBinding,
       selectionBinding,
-      sendBinding
+      sendBinding,
+      receiveBinding
     };
       
     return bindingsList;

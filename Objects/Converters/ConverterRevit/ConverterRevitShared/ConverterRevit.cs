@@ -465,7 +465,8 @@ namespace Objects.Converter.Revit
         case ApplicationObject appObject:
           if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
           {
-            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+            // TODO: DUI3 -> commented out we don't have ApplicationObjects
+            // receivedObjectsCache.AddConvertedObjects(@base, typedList);
           }
           break;
         case Element element:

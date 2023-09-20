@@ -89,9 +89,12 @@ namespace Objects.Converter.Revit
     /// <exception cref="FallbackToDxfException"></exception>
     public ApplicationObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
-      var existingDS = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id) as DB.DirectShape;
       var appObj =
         new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
+
+      // TODO: DUI3 -> return appObj directly since we don't have exactly ApplicationObject 
+      return appObj;
+      var existingDS = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id) as DB.DirectShape;
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(existingDS, appObj))

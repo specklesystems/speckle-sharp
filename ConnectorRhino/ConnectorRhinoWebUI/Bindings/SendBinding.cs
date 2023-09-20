@@ -14,7 +14,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Objects.Converter.RhinoGh;
 using DUI3.Utils;
-using Layer = Rhino.DocObjects.Layer;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -68,7 +67,7 @@ public class SendBinding : ISendBinding
       new RhinoLayerFilter()
     };
   }
-  
+
   private async void SendProgress(string modelCardId, double progress)
   {
     var args = new SenderProgress()
@@ -112,13 +111,13 @@ public class SendBinding : ISendBinding
 
     var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
-    var objectId = await Operations.Send(
+    var objectId = await Speckle.Core.Api.Operations.Send(
       commitObject,
       transports,
       disposeTransports: true
     ).ConfigureAwait(true);
 
-    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
+    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { ModelCardId = modelCardId, AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }
 
   public void CancelSend(string modelId)

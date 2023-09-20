@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DUI3.Bindings;
+using DUI3.Objects;
 using DUI3.Utils;
 using JetBrains.Annotations;
 using Speckle.Newtonsoft.Json;
@@ -13,6 +14,8 @@ namespace DUI3.Models;
 /// </summary>
 public abstract class DocumentModelStore : DiscriminatedObject
 {
+  public List<ISpeckleHostObject> SpeckleHostObjects { get; set; } = new List<ISpeckleHostObject>();
+  
   public List<ModelCard> Models { get; set; } = new List<ModelCard>();
 
   private static readonly JsonSerializerSettings SerializerOptions = DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
