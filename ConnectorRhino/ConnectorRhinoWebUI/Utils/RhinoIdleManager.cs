@@ -18,7 +18,7 @@ public static class RhinoIdleManager
   /// <param name="action"> Action to call whenever Rhino become Idle.</param>
   public static void SubscribeToIdle(Action action)
   {
-    calls[action.Method.Name ?? Guid.NewGuid().ToString()] = action;
+    calls[action.Method.Name] = action;
     
     if (_hasSubscribed) return;
     _hasSubscribed = true;
@@ -27,6 +27,8 @@ public static class RhinoIdleManager
 
   private static void RhinoAppOnIdle(object sender, EventArgs e)
   {
+    // NOTE: got a random collection was modified while iterating error. 
+    // we should probably ensure we don't subscribe to idle while this func does work
     foreach (var kvp in calls)
     {
       kvp.Value();

@@ -46,7 +46,7 @@ namespace DUI3
     /// <param name="methodName"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    public string RunMethod(string methodName, string args);
+    public void RunMethod(string methodName, string requestId, string args);
 
     /// <summary>
     /// Sends to the Frontend an event with an optional payload.
@@ -54,4 +54,5 @@ namespace DUI3
     /// <param name="eventData"></param>
     public void SendToBrowser(string eventName, object data = null);
   }
+  
 }
