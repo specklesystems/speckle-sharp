@@ -9,10 +9,10 @@ namespace Objects.BuiltElements.Revit
   {
     public RevitToposolid() { }
 
-    [SchemaInfo("SpeckleToposolid", "Creates a Speckle Toposolid", "BIM", "Architecture")]
+    [SchemaInfo("RevitToposolid", "Creates a Revit Toposolid", "BIM", "Architecture")]
     public RevitToposolid(
-      List<ICurve[]> profiles = null,
-      List<Point> topPlanePoints = null,
+      List<ICurve[]> profiles,
+      List<Point> topPlanePoints,
       [SchemaParamInfo("Any nested elements that this floor might have")]
       List<Base> elements = null
     )
