@@ -25,7 +25,7 @@ namespace Objects.Converter.Revit
       double volume = 0;
       double area=0;
 
-      if(element is DB.MEPCurve )
+      if(element is DB.Plumbing.Pipe || element is DB.Plumbing.FlexPipe)
       {
         // Area and Volume are computed based on geometry elements
         GetGeometry(element, out List<DB.Mesh> meshes, out List<DB.Solid> solids);
