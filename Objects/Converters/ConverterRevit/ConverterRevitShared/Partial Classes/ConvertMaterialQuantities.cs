@@ -22,8 +22,8 @@ namespace Objects.Converter.Revit
     {
       if (material == null || element == null) 
         return null;
-      double volume = 0;
-      double area=0;
+      double volume = double.NaN;
+      double area=double.NaN;
 
       if(element is DB.Plumbing.Pipe || element is DB.Plumbing.FlexPipe)
       {
