@@ -70,7 +70,7 @@ public class SendBinding : ISendBinding
 
   private async void SendProgress(string modelCardId, double progress)
   {
-    var args = new SenderProgress()
+    var args = new ModelProgress()
     {
       Id = modelCardId,
       Status = progress == 1 ? "Completed" : "Converting",
@@ -99,7 +99,7 @@ public class SendBinding : ISendBinding
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      Thread.Sleep(200);
+      Thread.Sleep(1000);
     }
 
     var commitObject = new Base();

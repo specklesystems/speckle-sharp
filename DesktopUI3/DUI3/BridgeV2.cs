@@ -11,10 +11,9 @@ using Speckle.Core.Logging;
 
 namespace DUI3
 {
-
   /// <summary>
-  /// Wraps a binding class, and manages its calls from the Frontend to .NET, and sending events from .NET to the the Frontend. 
-  /// <para>See also: https://github.com/johot/WebView2-better-bridge</para>
+  /// Wraps a binding class, and manages its calls from the Frontend to .NET, and sending events from .NET to the the Frontend.
+  /// <para>Initially inspired by: https://github.com/johot/WebView2-better-bridge</para>
   /// </summary>
   [ClassInterface(ClassInterfaceType.AutoDual)]
   [ComVisible(true)]
@@ -66,12 +65,13 @@ namespace DUI3
 
       ExecuteScriptAsync = executeScriptAsync;
       ShowDevToolsAction = showDevToolsAction;
-
+      
+      // Whenever the ui will call run method inside .net, it will post a message to this action block.
+      // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
       _actionBlock = new ActionBlock<RunMethodArgs>(
         args => ExecuteMethod(args.MethodName, args.RequestId, args.MethodArgs),
         new ExecutionDataflowBlockOptions
         {
-          BoundedCapacity = 10000,
           CancellationToken = new CancellationTokenSource(TimeSpan.FromHours(3)).Token // Not sure we need such a long time.
         });
     }
@@ -84,20 +84,26 @@ namespace DUI3
     {
       return BindingMethodCache.Keys.ToArray();
     }
-
+    
+    /// <summary>
+    /// This method posts the requested call to our action block executor. 
+    /// </summary>
+    /// <param name="methodName"></param>
+    /// <param name="requestId"></param>
+    /// <param name="args"></param>
     public void RunMethod(string methodName, string requestId, string args)
     {
-      _actionBlock.Post( new RunMethodArgs { MethodName = methodName, RequestId = requestId, MethodArgs = args });
+      _actionBlock.Post(new RunMethodArgs { MethodName = methodName, RequestId = requestId, MethodArgs = args });
     }
     
     /// <summary>
-    /// Used by the Frontend bridge to call into .NET.
-    /// TODO: Check and test
+    /// Used by the action block to invoke the actual method called by the UI. 
     /// </summary>
     /// <param name="methodName"></param>
+    /// <param name="requestId"></param>
     /// <param name="args"></param>
-    /// <returns></returns>
-    public void ExecuteMethod(string methodName, string requestId, string args)
+    /// <exception cref="SpeckleException"></exception>
+    private void ExecuteMethod(string methodName, string requestId, string args)
     {
       // Note: You might be tempted to make this method async Task<string> to prevent the task.Wait() below. 
       // Do not do that! Cef65 doesn't like waiting for async .NET methods.
@@ -149,17 +155,57 @@ namespace DUI3
           var taskResult = resultProperty != null ? resultProperty.GetValue(resultTypedTask) : null;
           resultJson = JsonConvert.SerializeObject(taskResult, _serializerOptions);
         }
-        ReturnResultToBinding(requestId, resultJson);
         
+        NotifyUIMethodCallResultReady(requestId, resultJson);
       }
       catch (Exception e)
       {
         // TODO: properly log the exeception.
         var serializedError = JsonConvert.SerializeObject(new { Error = e.Message, InnerError = e.InnerException?.Message }, _serializerOptions);
-        ReturnResultToBinding(requestId, serializedError);
+        
+        NotifyUIMethodCallResultReady(requestId, serializedError);
       }
     }
+    
+    /// <summary>
+    /// NOTE: This method suffers from a limitation: returning strings to the ui via a script invocation is not the same
+    /// as returning strings from a method. The more reliable approach was the latter. Keeping it here for the sake of
+    /// "do not do things this way" demo. 
+    /// </summary>
+    /// <param name="requestId"></param>
+    /// <param name="serializedData"></param>
+    private void ReturnResultToBinding_old(string requestId, string serializedData = null)
+    {
+      string script=  $"{FrontendBoundName}.receiveResponse('{requestId}', '{serializedData}')"; // sending the string this way makes for some strange deserialization issues. 
+      ExecuteScriptAsync(script);
+    }
 
+    private Dictionary<string, string> _resultsStore = new();
+    /// <summary>
+    /// Notifies the UI that the method call is ready. We do not give the result back to the ui here via ExecuteScriptAsync
+    /// because of limitations we discovered along the way (e.g, / chars need to be escaped). 
+    /// </summary>
+    /// <param name="requestId"></param>
+    /// <param name="serializedData"></param>
+    private void NotifyUIMethodCallResultReady(string requestId, string serializedData = null)
+    {
+      _resultsStore[requestId] = serializedData;
+      string script=  $"{FrontendBoundName}.responseReady('{requestId}')";
+      ExecuteScriptAsync(script);
+    }
+    
+    /// <summary>
+    /// Called by the ui to get back the serialized result of the method. See comments above for why.
+    /// </summary>
+    /// <param name="requestId"></param>
+    /// <returns></returns>
+    public string GetCallResult(string requestId)
+    {
+      var res = _resultsStore[requestId];
+      _resultsStore.Remove(requestId);
+      return res;
+    }
+    
     /// <summary>
     /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`. 
     /// </summary>
@@ -179,12 +225,6 @@ namespace DUI3
       ExecuteScriptAsync(script);
     }
 
-    private void ReturnResultToBinding(string requestId, string serializedData = null)
-    {
-      string script=  $"{FrontendBoundName}.receiveResponse('{requestId}', '{serializedData}')";
-      ExecuteScriptAsync(script);
-    }
-
     /// <summary>
     /// Shows the dev tools. This is currently only needed for CefSharp - other browser
     /// controls allow for right click + inspect. 
@@ -196,15 +236,7 @@ namespace DUI3
 
     public void OpenUrl(string url)
     {
-      try
-      {
-        System.Diagnostics.Process.Start(url);
-      }
-      catch (Exception _)
-      {
-        // TODO: Log. If it ever happens.
-      }
-      
+      System.Diagnostics.Process.Start(url);
     }
   }
 
