@@ -868,7 +868,11 @@ namespace Objects.Converter.Revit
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
+
+#if (REVIT2024)
         RevitToposolid _ => true,
+#endif
+        
         BE.Topography _ => true,
         BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,
