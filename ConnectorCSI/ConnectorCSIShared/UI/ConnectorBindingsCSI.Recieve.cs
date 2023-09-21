@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -144,12 +145,77 @@ namespace Speckle.ConnectorCSI.UI
     }
 
     /// <summary>
+    /// Traverses the object graph, returning objects to be converted.
+    /// </summary>
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
+    {
+      void StoreObject(Base b)
+      {
+        if (!StoredObjects.ContainsKey(b.id))
+          StoredObjects.Add(b.id, b);
+      }
+
+      ApplicationObject CreateApplicationObject(Base current)
+      {
+        ApplicationObject NewAppObj()
+        {
+          var speckleType = current.speckle_type
+            .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
+
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, };
+        }
+
+        //Handle convertable objects
+        if (converter.CanConvertToNative(current))
+        {
+          var appObj = NewAppObj();
+          appObj.Convertible = true;
+          StoreObject(current);
+          return appObj;
+        }
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = DefaultTraversal.displayValuePropAliases
+          .Where(o => current[o] != null)
+          .Select(o => current[o])
+          .FirstOrDefault();
+
+        if (fallbackMember != null)
+        {
+          var appObj = NewAppObj();
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember).Select(CreateApplicationObject);
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current);
+          return appObj;
+        }
+
+        return null;
+      }
+
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
+
+      return objectsToConvert;
+    }
+
+    /// <summary>
     /// Recurses through the commit object and flattens it.
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject_old(object obj, ISpeckleConverter converter)
     {
       var objects = new List<ApplicationObject>();
 
@@ -174,7 +240,7 @@ namespace Speckle.ConnectorCSI.UI
         else
         {
           foreach (var prop in @base.GetMembers().Keys)
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            objects.AddRange(FlattenCommitObject_old(@base[prop], converter));
           return objects;
         }
       }
@@ -182,14 +248,14 @@ namespace Speckle.ConnectorCSI.UI
       if (obj is IList list && list != null)
       {
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
+          objects.AddRange(FlattenCommitObject_old(listObj, converter));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+          objects.AddRange(FlattenCommitObject_old(kvp.Value, converter));
         return objects;
       }
       else
