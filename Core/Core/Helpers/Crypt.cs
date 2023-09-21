@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -5,6 +6,7 @@ namespace Speckle.Core.Helpers;
 
 public static class Crypt
 {
+  [SuppressMessage("Security", "CA5351:Do Not Use Broken Cryptographic Algorithms")]
   public static string Hash(string input)
   {
     using (MD5 md5 = MD5.Create())
