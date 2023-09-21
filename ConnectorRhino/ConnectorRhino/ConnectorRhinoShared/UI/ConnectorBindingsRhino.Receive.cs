@@ -596,7 +596,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     if (obj[UserDictionary] is Base userDictionary)
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
 
-    var name = obj["name"] as string;
+    var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
     if (name != null)
       attributes.Name = name;
   }
