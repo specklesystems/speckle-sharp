@@ -181,10 +181,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           {
             if (SelectedFilter == Filter.favorite)
               result = await account.Client
-                .FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25)
+                .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
                 .ConfigureAwait(true);
             else
-              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
+              result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
           }
           //SEARCH
           else
@@ -193,7 +193,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             if (SelectedFilter == Filter.favorite)
               SelectedFilter = Filter.all;
             result = await account.Client
-              .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+              .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
               .ConfigureAwait(true);
           }
 
