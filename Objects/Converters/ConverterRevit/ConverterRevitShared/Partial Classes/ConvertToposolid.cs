@@ -8,6 +8,7 @@ using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+
 using OG = Objects.Geometry;
 using OO = Objects.Other;
 
@@ -34,7 +35,7 @@ namespace Objects.Converter.Revit
       var curveLoops = new List<CurveLoop>();
       foreach (var curveArray in fromSpeckle.profiles)
       {
-        curveLoops.Add(CurveArrayToCurveLoop(CurveToNative(curveArray.ToList())));
+        curveLoops.Add(CurveArrayToCurveLoop(CurveToNative(curveArray.segments)));
       }
     
       var points = fromSpeckle.points.Select(x => PointToNative(x)).ToList();
@@ -62,13 +63,16 @@ namespace Objects.Converter.Revit
       return appObj;
     }
     
-    private List<ICurve[]> GetSketchProfiles(Sketch sketch)
+    private List<OG.Polycurve> GetSketchProfiles(Sketch sketch)
     {
-      var profiles = new List<ICurve[]>();
+      var profiles = new List<OG.Polycurve>();
       foreach (CurveArray curves in sketch.Profile)
       {
         var curveLoop = CurveArrayToCurveLoop(curves);
-        profiles.Add(curveLoop.Select(x => CurveToSpeckle(x, sketch.Document)).ToArray());
+        profiles.Add(new OG.Polycurve
+        {
+          segments = curveLoop.Select(x => CurveToSpeckle(x, sketch.Document)).ToList()
+        });
       }
 
       return profiles;
@@ -91,7 +95,6 @@ namespace Objects.Converter.Revit
 
       var type = topoSolid.Document.GetElement(topoSolid.GetTypeId()) as ElementType;
 
-      //
       toSpeckle.level = ConvertAndCacheLevel(topoSolid, BuiltInParameter.LEVEL_PARAM);
       toSpeckle.family = type?.FamilyName;
       toSpeckle.type = type?.Name;

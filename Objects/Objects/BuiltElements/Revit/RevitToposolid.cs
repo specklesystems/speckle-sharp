@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Objects.Geometry;
+using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -11,18 +12,22 @@ namespace Objects.BuiltElements.Revit
 
     [SchemaInfo("RevitToposolid", "Creates a Revit Toposolid", "BIM", "Architecture")]
     public RevitToposolid(
-      List<ICurve[]> profiles,
-      List<Point> topPlanePoints,
+      Level level,
+      List<Polycurve> profiles,
+      List<Point> topPlanePoints = null,
       [SchemaParamInfo("Any nested elements that this floor might have")]
-      List<Base> elements = null
+      List<Base> elements = null,
+      List<Parameter> parameters = null
     )
     {
       this.profiles = profiles;
+      this.level = level;
       this.points = topPlanePoints;
       this.elements = elements;
+      this.parameters = parameters.ToBase();
     }
 
-    public List<ICurve[]> profiles { get; set; } = new();
+    public List<Polycurve> profiles { get; set; } = new();
 
     public List<Point> points { get; set; } = new();
 
@@ -33,5 +38,6 @@ namespace Objects.BuiltElements.Revit
     public string family { get; set; }
     public string type { get; set; }
     public Level level { get; set; }
+    public Base parameters { get; set; }
   }
 }
