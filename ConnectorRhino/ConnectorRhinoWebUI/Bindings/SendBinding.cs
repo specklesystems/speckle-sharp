@@ -79,8 +79,19 @@ public class SendBinding : ISendBinding
     Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
   }
 
+  private Dictionary<string, CancellationTokenSource> sendOpsInProgress = new();
+
   public async void Send(string modelCardId)
   {
+    if (sendOpsInProgress.ContainsKey(modelCardId))
+    {
+      sendOpsInProgress[modelCardId].Cancel();
+      sendOpsInProgress[modelCardId].Dispose();
+      sendOpsInProgress.Remove(modelCardId);
+    }
+    var cts = new CancellationTokenSource();
+    sendOpsInProgress[modelCardId] = cts;
+    
     RhinoDoc doc = RhinoDoc.ActiveDoc;
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();
@@ -95,13 +106,15 @@ public class SendBinding : ISendBinding
     int count = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
+      if (cts.IsCancellationRequested) return; // NOTE: these calls also probably needs a ui notification
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      Thread.Sleep(1000);
+      Thread.Sleep(5000);
     }
-
+    
+    if (cts.IsCancellationRequested) return;
     var commitObject = new Base();
     commitObject["@elements"] = convertedObjects;
 
@@ -113,6 +126,7 @@ public class SendBinding : ISendBinding
 
     var objectId = await Speckle.Core.Api.Operations.Send(
       commitObject,
+      cts.Token,
       transports,
       disposeTransports: true
     ).ConfigureAwait(true);
@@ -120,9 +134,11 @@ public class SendBinding : ISendBinding
     Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { ModelCardId = modelCardId, AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }
 
-  public void CancelSend(string modelId)
+  public void CancelSend(string modelCardId)
   {
-    throw new System.NotImplementedException();
+    sendOpsInProgress[modelCardId].Cancel();
+    sendOpsInProgress[modelCardId].Dispose();
+    sendOpsInProgress.Remove(modelCardId);
   }
 
   public void Highlight(string modelId)

@@ -72,6 +72,7 @@ namespace DUI3
         args => ExecuteMethod(args.MethodName, args.RequestId, args.MethodArgs),
         new ExecutionDataflowBlockOptions
         {
+          MaxDegreeOfParallelism = 1000,
           CancellationToken = new CancellationTokenSource(TimeSpan.FromHours(3)).Token // Not sure we need such a long time.
         });
     }
