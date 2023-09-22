@@ -91,7 +91,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
 
             // Get last commit from the branch
             var b = ApiClient
-              .BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1)
+              .BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1, BaseWorker.CancellationToken)
               .Result;
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
@@ -619,7 +619,7 @@ public class ReceiveComponentWorker : WorkerInstance
       case StreamWrapperType.Commit:
         try
         {
-          myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+          myCommit = await client.CommitGet(InputWrapper.StreamId, InputWrapper.CommitId, CancellationToken);
           return myCommit;
         }
         catch (Exception e)
