@@ -111,7 +111,7 @@ public class SendBinding : ISendBinding
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      Thread.Sleep(5000);
+      Thread.Sleep(1000);
     }
     
     if (cts.IsCancellationRequested) return;

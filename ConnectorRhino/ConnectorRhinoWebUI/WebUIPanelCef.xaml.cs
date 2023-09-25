@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using CefSharp;
 using DUI3;
 using Speckle.Core.Logging;
@@ -22,7 +23,7 @@ public partial class WebUiPanelCef : UserControl
 
   private void ExecuteScriptAsyncMethod(string script)
   {
-    Browser.EvaluateScriptAsync(script);
+    Browser.Dispatcher.Invoke(() => Browser.EvaluateScriptAsync(script), DispatcherPriority.Background);
   }
   
   private void OnInitialized(object sender, DependencyPropertyChangedEventArgs e)

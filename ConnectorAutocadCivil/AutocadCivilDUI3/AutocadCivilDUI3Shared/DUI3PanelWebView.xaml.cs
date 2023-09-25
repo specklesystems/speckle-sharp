@@ -1,4 +1,5 @@
 using System.Windows.Controls;
+using System.Windows.Threading;
 using AutocadCivilDUI3Shared.Bindings;
 using DUI3;
 using Microsoft.Web.WebView2.Core;
@@ -25,7 +26,7 @@ public partial class DUI3PanelWebView : UserControl
     {
       throw new SpeckleException("Failed to execute script, Webview2 is not initialized yet.");
     }
-    Browser.ExecuteScriptAsync(script);
+    Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
   }
 
   private void Browser_Initialized_Completed(object sender, CoreWebView2InitializationCompletedEventArgs e)
