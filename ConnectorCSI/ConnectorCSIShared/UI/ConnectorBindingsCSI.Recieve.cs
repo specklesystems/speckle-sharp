@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -144,68 +145,68 @@ namespace Speckle.ConnectorCSI.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it.
+    /// Traverses the object graph, returning objects to be converted.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      var objects = new List<ApplicationObject>();
-
-      if (obj is Base @base)
+      void StoreObject(Base b)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type))
-        {
-          applicationId = @base.applicationId,
-          Status = ApplicationObject.State.Unknown
-        };
+        if (!StoredObjects.ContainsKey(b.id))
+          StoredObjects.Add(b.id, b);
+      }
 
-        if (converter.CanConvertToNative(@base))
+      ApplicationObject CreateApplicationObject(Base current)
+      {
+        ApplicationObject NewAppObj()
         {
-          if (StoredObjects.ContainsKey(@base.id))
-            return objects;
+          var speckleType = current.speckle_type
+            .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
 
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, };
+        }
+
+        //Handle convertable objects
+        if (converter.CanConvertToNative(current))
+        {
+          var appObj = NewAppObj();
           appObj.Convertible = true;
-          objects.Add(appObj);
-          StoredObjects.Add(@base.id, @base);
-          return objects;
+          StoreObject(current);
+          return appObj;
         }
-        else
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = DefaultTraversal.displayValuePropAliases
+          .Where(o => current[o] != null)
+          .Select(o => current[o])
+          .FirstOrDefault();
+
+        if (fallbackMember != null)
         {
-          foreach (var prop in @base.GetMembers().Keys)
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          return objects;
+          var appObj = NewAppObj();
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember).Select(CreateApplicationObject);
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current);
+          return appObj;
         }
+
+        return null;
       }
 
-      if (obj is IList list && list != null)
-      {
-        foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        return objects;
-      }
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
-      if (obj is IDictionary dict)
-      {
-        foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        return objects;
-      }
-      else
-      {
-        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
-        {
-          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(
-            status: ApplicationObject.State.Skipped,
-            logItem: $"Receiving this object type is not supported in CSI"
-          );
-          objects.Add(appObj);
-        }
-      }
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
 
-      return objects;
+      return objectsToConvert;
     }
 
     private void RefreshDatabaseTable(string floorTableKey)
