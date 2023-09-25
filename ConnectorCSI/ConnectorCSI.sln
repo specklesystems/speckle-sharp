@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABS", "ConnectorETABS\ConnectorETABS.csproj", "{81299D15-5788-414D-A962-1A568C251323}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorETABS", "ConnectorETABS\ConnectorETABS.csproj", "{81299D15-5788-414D-A962-1A568C251323}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAP2000", "ConnectorSAP2000\ConnectorSAP2000.csproj", "{31E0C098-6813-4571-AB96-A245E0FC1C23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorSAP2000", "ConnectorSAP2000\ConnectorSAP2000.csproj", "{31E0C098-6813-4571-AB96-A245E0FC1C23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCSIBridge", "ConnectorCSIBridge\ConnectorCSIBridge.csproj", "{23BE6E54-96C1-4373-89F3-E18A1C9807FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCSIBridge", "ConnectorCSIBridge\ConnectorCSIBridge.csproj", "{23BE6E54-96C1-4373-89F3-E18A1C9807FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAFE", "ConnectorSAFE\ConnectorSAFE.csproj", "{9D188843-8841-4A76-A844-EFBE8E32EE05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorSAFE", "ConnectorSAFE\ConnectorSAFE.csproj", "{9D188843-8841-4A76-A844-EFBE8E32EE05}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSIVersionProjects", "CSIVersionProjects", "{3DA56828-5C39-4872-A5A4-E3E50D9873BC}"
 EndProject
@@ -37,9 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolygonMesher", "..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj", "{BF1A4F95-ACF7-4353-B60A-4D79C2F44651}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverCSharp", "DriverCSharp\DriverCSharp.csproj", "{C091E499-597D-4077-B83F-08E069091090}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DriverCSharp", "DriverCSharp\DriverCSharp.csproj", "{C091E499-597D-4077-B83F-08E069091090}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverPluginCSharp", "DriverPluginCSharp\DriverPluginCSharp.csproj", "{C59939F6-D383-44E3-A7EF-4E160E3DFB73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DriverPluginCSharp", "DriverPluginCSharp\DriverPluginCSharp.csproj", "{C59939F6-D383-44E3-A7EF-4E160E3DFB73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,15 +131,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{14d40a8a-9f8f-44f6-b256-21b7f5cc4fb6}*SharedItemsImports = 5
-		ConnectorCSIShared\ConnectorCSIShared.projitems*{23be6e54-96c1-4373-89f3-e18a1c9807fd}*SharedItemsImports = 4
-		ConnectorCSIShared\ConnectorCSIShared.projitems*{31e0c098-6813-4571-ab96-a245e0fc1c23}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{5bbde14e-50f8-4d6e-8e35-747667ad4a09}*SharedItemsImports = 13
 		ConnectorCSIShared\ConnectorCSIShared.projitems*{61374cd0-e774-4dcd-bfab-6356b0931283}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{7572e400-c007-48e4-98fc-614fdee0b572}*SharedItemsImports = 5
-		ConnectorCSIShared\ConnectorCSIShared.projitems*{81299d15-5788-414d-a962-1a568c251323}*SharedItemsImports = 4
+		ConnectorCSIShared\ConnectorCSIShared.projitems*{81299d15-5788-414d-a962-1a568c251323}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{8431e383-838b-4f0a-8065-979c3dae9ccb}*SharedItemsImports = 5
-		ConnectorCSIShared\ConnectorCSIShared.projitems*{9d188843-8841-4a76-a844-efbe8e32ee05}*SharedItemsImports = 4
-		ConnectorCSIShared\ConnectorCSIShared.projitems*{c091e499-597d-4077-b83f-08e069091090}*SharedItemsImports = 4
+		ConnectorCSIShared\ConnectorCSIShared.projitems*{9d188843-8841-4a76-a844-efbe8e32ee05}*SharedItemsImports = 5
+		ConnectorCSIShared\ConnectorCSIShared.projitems*{c091e499-597d-4077-b83f-08e069091090}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{c95c0d85-50c2-46d1-9e27-f86d0d40058c}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

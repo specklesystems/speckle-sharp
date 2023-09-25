@@ -9,7 +9,7 @@ using DesktopUI2.ViewModels;
 
 namespace DesktopUI2.Views.Windows.Dialogs;
 
-public class MappingViewDialog : ReactiveUserControl<MappingViewModel>, ICloseable
+public class MappingViewDialog : ReactiveUserControl<TypeMappingOnReceiveViewModel>, ICloseable
 {
   public MappingViewDialog()
   {

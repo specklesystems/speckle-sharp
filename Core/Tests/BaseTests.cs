@@ -2,9 +2,11 @@ using NUnit.Framework;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
+[TestOf(typeof(Base))]
+[TestOf(typeof(DynamicBase))]
 public class BaseTests
 {
   [Test]

@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System.Collections.Generic;
 
 using Objects.BuiltElements.AdvanceSteel;
@@ -12,8 +12,6 @@ namespace Objects.Converter.AutocadCivil
       AsteelGrating asteelGrating = new AsteelGrating();
 
       SetDisplayValue(asteelGrating, grating);
-
-      SetUnits(asteelGrating);
 
       return asteelGrating;
     }

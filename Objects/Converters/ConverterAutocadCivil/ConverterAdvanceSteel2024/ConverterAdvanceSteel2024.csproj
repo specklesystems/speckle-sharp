@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.AdvanceSteel2024</AssemblyName>
+    <RootNamespace>Objects.Converter.AdvanceSteel</RootNamespace>
+    <DefineConstants>$(DefineConstants);ADVANCESTEEL;ADVANCESTEEL2024</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.AdvanceSteel2024</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.AdvanceSteel2024</Product>
+    <Description>Converter for Advance Steel 2024</Description>
+    <PackageTags>$(PackageTags) objects converter advancesteel</PackageTags>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="MathNet.Spatial" Version="0.6.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.AdvanceSteel.API" Version="2024.0.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2024.0.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.Triangle" Version="1.0.0"
+      PrivateAssets="all"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" IncludeAssets="compile;build"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build"/>
+  </ItemGroup>
+
+  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems"
+    Label="Shared"/>
+
+  <Target Name="CopyTriangleToKitfolder" AfterTargets="CopyToKitFolder"
+    Condition="'$(IsDesktopBuild)' == true">
+    <Message Text="Copying Triangle to kit folder"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+      Command="xcopy /Y /S &quot;$(TargetDir)Triangle.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;"/>
+  </Target>
+</Project>

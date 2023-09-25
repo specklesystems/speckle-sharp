@@ -10,25 +10,48 @@ namespace Speckle.Core.Api;
 public partial class Client
 {
   /// <summary>
-  /// Gets a stream by id including basic branch info (id, name, description, and total commit count).
-  /// For detailed commit and branch info, use StreamGetCommits and StreamGetBranches respectively.
+  /// Checks if a stream exists by id.
   /// </summary>
   /// <param name="id">Id of the stream to get</param>
-  /// <param name="branchesLimit">Max number of branches to retrieve</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<Stream> StreamGet(string id, int branchesLimit = 10)
+  public async Task<bool> IsStreamAccessible(string id, CancellationToken cancellationToken = default)
   {
-    return StreamGet(CancellationToken.None, id, branchesLimit);
+    try
+    {
+      var request = new GraphQLRequest
+      {
+        Query =
+          $@"query Stream($id: String!) {{
+                      stream(id: $id) {{
+                        id
+                      }}
+                    }}",
+        Variables = new { id }
+      };
+      var stream = (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
+
+      return stream.id == id;
+    }
+    catch (SpeckleGraphQLForbiddenException<StreamData>)
+    {
+      return false;
+    }
+    catch (SpeckleGraphQLStreamNotFoundException<StreamData>)
+    {
+      return false;
+    }
   }
 
   /// <summary>
   /// Gets a stream by id including basic branch info (id, name, description, and total commit count).
-  /// For detailed commit and branch info, use StreamGetCommits and StreamGetBranches respectively.
+  /// For detailed commit and branch info, use <see cref="StreamGetCommits"/> and <see cref="StreamGetBranches"/> respectively.
   /// </summary>
   /// <param name="id">Id of the stream to get</param>
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public async Task<Stream> StreamGet(CancellationToken cancellationToken, string id, int branchesLimit = 10)
+  public async Task<Stream> StreamGet(string id, int branchesLimit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -74,18 +97,9 @@ public partial class Client
   /// Gets all streams for the current user
   /// </summary>
   /// <param name="limit">Max number of streams to return</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<List<Stream>> StreamsGet(int limit = 10)
-  {
-    return StreamsGet(CancellationToken.None, limit);
-  }
-
-  /// <summary>
-  /// Gets all streams for the current user
-  /// </summary>
-  /// <param name="limit">Max number of streams to return</param>
-  /// <returns></returns>
-  public async Task<List<Stream>> StreamsGet(CancellationToken cancellationToken, int limit = 10)
+  public async Task<List<Stream>> StreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -136,17 +150,13 @@ public partial class Client
     return res.activeUser.streams.items;
   }
 
-  public Task<List<Stream>> FavoriteStreamsGet(int limit = 10)
-  {
-    return FavoriteStreamsGet(CancellationToken.None, limit);
-  }
-
   /// <summary>
   /// Gets all favorite streams for the current user
   /// </summary>
   /// <param name="limit">Max number of streams to return</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public async Task<List<Stream>> FavoriteStreamsGet(CancellationToken cancellationToken, int limit = 10)
+  public async Task<List<Stream>> FavoriteStreamsGet(int limit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -198,19 +208,13 @@ public partial class Client
   /// </summary>
   /// <param name="query">String query to search for</param>
   /// <param name="limit">Max number of streams to return</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<List<Stream>> StreamSearch(string query, int limit = 10)
-  {
-    return StreamSearch(CancellationToken.None, query, limit);
-  }
-
-  /// <summary>
-  /// Searches the user's streams by name, description, and ID
-  /// </summary>
-  /// <param name="query">String query to search for</param>
-  /// <param name="limit">Max number of streams to return</param>
-  /// <returns></returns>
-  public async Task<List<Stream>> StreamSearch(CancellationToken cancellationToken, string query, int limit = 10)
+  public async Task<List<Stream>> StreamSearch(
+    string query,
+    int limit = 10,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {
@@ -240,7 +244,7 @@ public partial class Client
       Variables = new { query, limit }
     };
 
-    var res = await GQLClient.SendMutationAsync<StreamsData>(request, cancellationToken).ConfigureAwait(false);
+    var res = await GQLClient.SendMutationAsync<StreamsData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
     return (await ExecuteGraphQLRequest<StreamsData>(request, cancellationToken).ConfigureAwait(false)).streams.items;
   }
 
@@ -248,18 +252,9 @@ public partial class Client
   /// Creates a stream.
   /// </summary>
   /// <param name="streamInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
-  public Task<string> StreamCreate(StreamCreateInput streamInput)
-  {
-    return StreamCreate(CancellationToken.None, streamInput);
-  }
-
-  /// <summary>
-  /// Creates a stream.
-  /// </summary>
-  /// <param name="streamInput"></param>
-  /// <returns>The stream's id.</returns>
-  public async Task<string> StreamCreate(CancellationToken cancellationToken, StreamCreateInput streamInput)
+  public async Task<string> StreamCreate(StreamCreateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -274,19 +269,9 @@ public partial class Client
   /// Updates a stream.
   /// </summary>
   /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
-  /// <returns>The stream's id.</returns>
-  public Task<bool> StreamUpdate(StreamUpdateInput streamInput)
-  {
-    return StreamUpdate(CancellationToken.None, streamInput);
-  }
-
-  /// <summary>
-  /// Updates a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
   /// <returns>The stream's id.</returns>
-  public async Task<bool> StreamUpdate(CancellationToken cancellationToken, StreamUpdateInput streamInput)
+  public async Task<bool> StreamUpdate(StreamUpdateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -303,19 +288,9 @@ public partial class Client
   /// Deletes a stream.
   /// </summary>
   /// <param name="id">Id of the stream to be deleted</param>
-  /// <returns></returns>
-  public Task<bool> StreamDelete(string id)
-  {
-    return StreamDelete(CancellationToken.None, id);
-  }
-
-  /// <summary>
-  /// Deletes a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="id">Id of the stream to be deleted</param>
   /// <returns></returns>
-  public async Task<bool> StreamDelete(CancellationToken cancellationToken, string id)
+  public async Task<bool> StreamDelete(string id, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -327,61 +302,14 @@ public partial class Client
   }
 
   /// <summary>
-  /// Grants permissions to a user on a given stream.
-  /// </summary>
-  /// <param name="permissionInput"></param>
-  /// <returns></returns>
-  [Obsolete("Please use the `StreamUpdatePermission` method", true)]
-  public Task<bool> StreamGrantPermission(StreamPermissionInput permissionInput)
-  {
-    return StreamGrantPermission(CancellationToken.None, permissionInput);
-  }
-
-  /// <summary>
-  /// Grants permissions to a user on a given stream.
-  /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <param name="permissionInput"></param>
-  /// <returns></returns>
-  [Obsolete("Please use the `StreamUpdatePermission` method", true)]
-  public async Task<bool> StreamGrantPermission(
-    CancellationToken cancellationToken,
-    StreamPermissionInput permissionInput
-  )
-  {
-    var request = new GraphQLRequest
-    {
-      Query =
-        @"
-          mutation streamGrantPermission($permissionParams: StreamGrantPermissionInput!) {
-            streamGrantPermission(permissionParams:$permissionParams)
-          }",
-      Variables = new { permissionParams = permissionInput }
-    };
-
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
-    return (bool)res["streamGrantPermission"];
-  }
-
-  /// <summary>
   /// Revokes permissions of a user on a given stream.
   /// </summary>
   /// <param name="permissionInput"></param>
-  /// <returns></returns>
-  public Task<bool> StreamRevokePermission(StreamRevokePermissionInput permissionInput)
-  {
-    return StreamRevokePermission(CancellationToken.None, permissionInput);
-  }
-
-  /// <summary>
-  /// Revokes permissions of a user on a given stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="permissionInput"></param>
   /// <returns></returns>
   public async Task<bool> StreamRevokePermission(
-    CancellationToken cancellationToken,
-    StreamRevokePermissionInput permissionInput
+    StreamRevokePermissionInput permissionInput,
+    CancellationToken cancellationToken = default
   )
   {
     var request = new GraphQLRequest
@@ -427,21 +355,13 @@ public partial class Client
   /// Gets the pending collaborators of a stream by id.
   /// Requires the user to be an owner of the stream.
   /// </summary>
-  /// <param name="id">Id of the stream to get</param>
+  /// <param name="streamId"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<Stream> StreamGetPendingCollaborators(string id)
-  {
-    return StreamGetPendingCollaborators(CancellationToken.None, id);
-  }
-
-  /// <summary>
-  /// Gets the pending collaborators of a stream by id.
-  /// Requires the user to be an owner of the stream.
-  /// </summary>
-  /// <param name="id">Id of the stream to get</param>
-  /// <param name="branchesLimit">Max number of branches to retrieve</param>
-  /// <returns></returns>
-  public async Task<Stream> StreamGetPendingCollaborators(CancellationToken cancellationToken, string id)
+  public async Task<Stream> StreamGetPendingCollaborators(
+    string streamId,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {
@@ -460,31 +380,21 @@ public partial class Client
                         }
                       }
                     }",
-      Variables = new { id }
+      Variables = new { streamId }
     };
-    var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+    var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
     return (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
   }
 
   /// <summary>
   /// Sends an email invite to join a stream and assigns them a collaborator role.
   /// </summary>
-  /// <param name="streamCreateInput"></param>
-  /// <returns></returns>
-  public Task<bool> StreamInviteCreate(StreamInviteCreateInput streamCreateInput)
-  {
-    return StreamInviteCreate(CancellationToken.None, streamCreateInput);
-  }
-
-  /// <summary>
-  /// Sends an email invite to join a stream and assigns them a collaborator role.
-  /// </summary>
-  /// <param name="cancellationToken"></param>
   /// <param name="inviteCreateInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
   public async Task<bool> StreamInviteCreate(
-    CancellationToken cancellationToken,
-    StreamInviteCreateInput inviteCreateInput
+    StreamInviteCreateInput inviteCreateInput,
+    CancellationToken cancellationToken = default
   )
   {
     if ((inviteCreateInput.email == null) & (inviteCreateInput.userId == null))
@@ -528,21 +438,6 @@ public partial class Client
 
     var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamInviteCancel"];
-  }
-
-  /// <summary>
-  /// Checks if Speckle Server version is at least v2.6.4 meaning stream invites are supported.
-  /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <returns>true if invites are supported</returns>
-  /// <exception cref="SpeckleException">if Speckle Server version is less than v2.6.4</exception>
-  [Obsolete("We're not supporting 2.6.4 version any more", true)]
-  public async Task<bool> _CheckStreamInvitesSupported(CancellationToken cancellationToken = default)
-  {
-    var version = ServerVersion ?? await GetServerVersion(cancellationToken).ConfigureAwait(false);
-    if (version < new System.Version("2.6.4"))
-      throw new SpeckleException("Stream invites are only supported as of Speckle Server v2.6.4.");
-    return true;
   }
 
   /// <summary>

@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="General Config">
-    <LangVersion>latest</LangVersion>
+    <LangVersion>11</LangVersion>
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
@@ -22,16 +22,44 @@
 
     <!-- Ignore some warnings for now -->
     <NoWarn>
+      <!--XML comment-->
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;
       CS1711;CS1734;
+      <!--Nullability-->
       CS8618;CS8602;CS8600;
-      CS1998; IDE0007; CS0618
+      CS1998; IDE0007; CS0618;
       CA1054;
       <!-- Globalization rules disabled -->
-      CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101
+      CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
       $(NoWarn)
     </NoWarn>
+    
+    <WarningsAsErrors>
+      <!--Net6 default enabled analysers-->
+      CA1416; CA1417; CA1418; CA1831; CA2013; CA2014; CA2015; CA2017;
+      CA2018; CA2200; CA2252; CA2247; CA2255; CA2256; CA2257; CA2258;
+      <!--Net7 default enabled analysers-->
+      CA1420; CA1422; CA2259; CA2260;
+      <!--Security analysers -->
+      CA2100; CA2119; CA2153; CA2300; CA2301; CA2302; CA2305;
+      CA2310; CA2311; CA2312; CA2315; CA2321; CA2322; CA2326; CA2327;
+      CA2328; CA2329; CA2330; CA2350; CA2351; CA2352; CA2353; CA2354;
+      CA2355; CA2356; CA2361; CA2362; CA3001; CA3002; CA3003; CA3004;
+      CA3006; CA3007; CA3008; CA3009; CA3010; CA3011; CA3012; CA3061;
+      CA3076; CA3077; CA3147; CA5350; CA5351; CA5358; CA5359;
+      CA5360; CA5361; CA5362; CA5363; CA5364; CA5365; CA5366; CA5367;
+      CA5368; CA5370; CA5371; CA5372; CA5373; CA5374; CA5375;
+      CA5376; CA5377; CA5378; CA5379; CA5380; CA5381; CA5382; CA5383;
+      CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
+      CA5392; CA5393; CA5395; CA5396; CA5397; CA5398; CA5399;
+      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405
+      <!-- The following security anaysers are ommited for the listed reasons -->
+      <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
+      <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
+      <!--"CA3075: Insecure DTD Processing" - we assume loaded XML is trusted-->
+      <!--"CA5369: Use XmlReader for Deserialize" - we assume loaded XML is trusted-->
+    </WarningsAsErrors>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

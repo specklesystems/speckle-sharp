@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
@@ -6,7 +6,7 @@ using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class GetRoomData : ICommand<IEnumerable<ArchicadRoom>>
+  sealed internal class GetRoomData : ICommand<IEnumerable<Archicad.Room>>
   {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
@@ -24,7 +24,7 @@ namespace Archicad.Communication.Commands
     private sealed class Result
     {
       [JsonProperty("zones")]
-      public IEnumerable<ArchicadRoom> Rooms { get; private set; }
+      public IEnumerable<Archicad.Room> Rooms { get; private set; }
     }
 
     private IEnumerable<string> ApplicationIds { get; }
@@ -34,11 +34,9 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadRoom>> Execute()
+    public async Task<IEnumerable<Archicad.Room>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoomData", new Parameters(ApplicationIds));
-      foreach (var room in result.Rooms)
-        room.units = Units.Meters;
 
       return result.Rooms;
     }

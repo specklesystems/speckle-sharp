@@ -5,6 +5,8 @@ using System.Reflection;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.DB.Structure.StructuralSections;
+using ConverterRevitShared.Extensions;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
@@ -74,7 +76,11 @@ namespace Objects.Converter.Revit
         if (isExactMatch)
         {
           //update type
-          analyticalMember.SectionTypeId = familySymbol.Id;
+          if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
+            || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming))
+          {
+            analyticalMember.SectionTypeId = familySymbol.Id;
+          }
           isUpdate = true;
           revitMember = analyticalMember;
 
@@ -93,7 +99,11 @@ namespace Objects.Converter.Revit
       {
         revitMember = AnalyticalMember.Create(Doc, baseLine);
         //set type
-        revitMember.SectionTypeId = familySymbol.Id;
+        if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
+            || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming))
+        {
+          revitMember.SectionTypeId = familySymbol.Id;
+        }
       }
 
       // set or update analytical properties
@@ -141,25 +151,26 @@ namespace Objects.Converter.Revit
           return appObj;
 
         case ElementType1D.Brace:
-          RevitBrace revitBrace = new RevitBrace();
-          revitBrace.type = propertyName;
-          revitBrace.baseLine = speckleStick.baseLine;
+          Brace speckleBrace = new();
+          SetElementType(speckleBrace, propertyName);
+          speckleBrace.baseLine = speckleStick.baseLine;
+          speckleBrace.units = speckleStick.units;
 #if REVIT2020 || REVIT2021 || REVIT2022
-          revitBrace.applicationId = speckleStick.applicationId;
+          speckleBrace.applicationId = speckleStick.applicationId;
 #endif
-          appObj = BraceToNative(revitBrace);
+          appObj = BraceToNative(speckleBrace);
 
           return appObj;
 
         case ElementType1D.Column:
-          RevitColumn revitColumn = new RevitColumn();
-          revitColumn.type = propertyName;
-          revitColumn.baseLine = speckleStick.baseLine;
-          revitColumn.units = speckleStick.units;
+          Column speckleColumn = new();
+          SetElementType(speckleColumn, propertyName);
+          speckleColumn.baseLine = speckleStick.baseLine;
+          speckleColumn.units = speckleStick.units;
 #if REVIT2020 || REVIT2021 || REVIT2022
-          revitColumn.applicationId = speckleStick.applicationId;
+          speckleColumn.applicationId = speckleStick.applicationId;
 #endif
-          appObj = ColumnToNative(revitColumn);
+          appObj = ColumnToNative(speckleColumn);
 
           return appObj;
       }

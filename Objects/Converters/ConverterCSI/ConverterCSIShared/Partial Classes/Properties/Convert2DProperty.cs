@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CSiAPIv1;
@@ -12,7 +12,6 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
     void setProperties(CSIProperty2D property2D, string matProp, double thickeness, string name)
     {
       property2D.name = name;
@@ -20,13 +19,17 @@ namespace Objects.Converter.CSI
       property2D.material = MaterialToSpeckle(matProp);
       return;
     }
-    private void Property2DToNative(CSIProperty2D property2D, ref ApplicationObject appObj)
+
+    private string Property2DToNative(CSIProperty2D property2D)
     {
       if (property2D.type2D == CSIPropertyType2D.Wall)
       {
-        WallPropertyToNative(property2D, ref appObj);
+        return WallPropertyToNative(property2D);
       }
-      else { FloorPropertyToNative(property2D, ref appObj); }
+      else
+      {
+        return FloorPropertyToNative(property2D);
+      }
     }
 
     CSIProperty2D Property2DToSpeckle(string area, string property)
@@ -57,6 +60,5 @@ namespace Objects.Converter.CSI
 
       return null;
     }
-
   }
 }

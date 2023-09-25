@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +22,8 @@ using TriangleNet.Geometry;
 using TriangleVertex = TriangleNet.Geometry.Vertex;
 using TriangleMesh = TriangleNet.Mesh;
 using TriangleNet.Topology;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -60,13 +62,91 @@ namespace Objects.Converter.AutocadCivil
       dynamic dynamicObject = filerObject;
       IAsteelObject asteelObject = FilerObjectToSpeckle(dynamicObject, notes);
 
-      SetUserAttributes(filerObject as AtomicElement, asteelObject);
+      SetUserAttributesToSpeckle(filerObject as AtomicElement, asteelObject);
+
+      SetAsteelObjectPropertiesToSpeckle(asteelObject, filerObject);
+
+      //throw new System.Exception("Test");
 
       Base @base = asteelObject as Base;
 
       SetUnits(@base);
 
+      @base["weight unit"] = UnitWeight;
+      @base["area unit"] = UnitArea;
+      @base["volume unit"] = UnitVolume;
+
+      var objectHandleHierarchy = StructureUtils.GetObjectHandleHierarchy();
+      if (objectHandleHierarchy.ContainsKey(filerObject.Handle))
+      {
+        @base["hierarchy"] = objectHandleHierarchy[filerObject.Handle];
+      }
+
       return @base;
+    }
+
+    private void SetAsteelObjectPropertiesToSpeckle(IAsteelObject asteelObject, FilerObject filerObject)
+    {
+      var propsAsteelObject = new Base();
+
+      try
+      {
+        var type = filerObject.GetType();
+        propsAsteelObject["advance steel type"] = type.Name;
+
+        IEnumerable<ASTypeData> listPropertySets = ASPropertiesCache.Instance.GetPropertiesSetsByType(type);
+
+        foreach (ASTypeData typeData in listPropertySets)
+        {
+          var propsSpecific = new Base();
+          propsAsteelObject[$"{typeData.Description} props"] = propsSpecific;
+
+          foreach (var propItem in typeData.PropertiesSpecific)
+          {
+            if (CheckProperty(propItem.Value, filerObject, out object propValue))
+              propsSpecific[propItem.Key] = propValue;
+          }
+        }
+
+      }
+      catch (System.Exception e)
+      {
+        return;
+      }
+
+      asteelObject.asteelProperties = propsAsteelObject;
+
+    }
+
+    private bool CheckProperty(ASProperty propInfo, object @object, out object value)
+    {
+      value = propInfo.EvaluateValue(@object);
+      if (value is null) return false;
+
+      if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal))
+      {
+        if(propInfo.UnitType.HasValue && value is double)
+        {
+          value = FromInternalUnits((double)value, propInfo.UnitType.Value);
+        }
+
+        return true;
+      }
+
+      if (propInfo.ValueType == typeof(string))
+      {
+        return !string.IsNullOrEmpty(value as string);
+      }
+
+      if (propInfo.ValueType.IsEnum)
+      {
+        value = value.ToString();
+        return true;
+      }
+      
+      value = ConvertValueToSpeckle(value, propInfo.UnitType, out var converted);
+
+      return converted;
     }
 
     private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
@@ -78,7 +158,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var modelerBody = atomicElement.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);
 
-      @base["volume"] = modelerBody.Volume;
+      @base["volume"] = FromInternalUnits(modelerBody.Volume, eUnitType.kVolume);
       @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
     }
 
@@ -188,7 +268,7 @@ namespace Objects.Converter.AutocadCivil
       return DatabaseManager.Open(idFilerObject) as T;
     }
 
-    private void SetUserAttributes(AtomicElement atomicElement, IAsteelObject asteelObject)
+    private void SetUserAttributesToSpeckle(AtomicElement atomicElement, IAsteelObject asteelObject)
     {
       asteelObject.userAttributes = new Base();
       for (int i = 0; i < 10; i++)

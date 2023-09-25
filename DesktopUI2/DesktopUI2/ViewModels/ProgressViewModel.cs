@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Web;
 using Avalonia.Threading;
 using ReactiveUI;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -17,7 +19,7 @@ public class ProgressViewModel : ReactiveObject
 
   private bool _isProgressing;
 
-  private int _max;
+  private double _max;
 
   private ConcurrentDictionary<string, int> _progressDict;
 
@@ -25,7 +27,7 @@ public class ProgressViewModel : ReactiveObject
 
   private string _progressTitle;
 
-  private int _value;
+  private double _value;
 
   /// <summary>
   /// Cancellation token source for the current receive/send/preview.
@@ -65,7 +67,7 @@ public class ProgressViewModel : ReactiveObject
     set => this.RaiseAndSetIfChanged(ref _progressSummary, value);
   }
 
-  public int Value
+  public double Value
   {
     get => _value;
     set
@@ -75,7 +77,7 @@ public class ProgressViewModel : ReactiveObject
     }
   }
 
-  public int Max
+  public double Max
   {
     get => _max;
     set
@@ -85,7 +87,7 @@ public class ProgressViewModel : ReactiveObject
     }
   }
 
-  public bool IsIndeterminate => Value == 0 || Max == Value;
+  public bool IsIndeterminate => Value == 0 || Math.Abs(Max - Value) < Constants.Eps;
 
   public bool IsProgressing
   {
@@ -109,7 +111,7 @@ public class ProgressViewModel : ReactiveObject
     Dispatcher.UIThread.Post(() =>
     {
       ProgressDict = pd;
-      Value = pd.Values.Last();
+      Value = pd.Values.Average();
     });
   }
 

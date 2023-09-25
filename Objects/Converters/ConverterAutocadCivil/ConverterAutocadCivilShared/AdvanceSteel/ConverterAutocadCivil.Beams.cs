@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
 
 using Objects.Structural.Properties.Profiles;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -61,9 +62,10 @@ namespace Objects.Converter.AutocadCivil
 
       asteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
 
-      asteelBeam.area = beam.GetPaintArea();
+      asteelBeam.area = FromInternalUnits(beam.GetPaintArea(), eUnitType.kArea);
 
       //There is a bug in some beams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
+      //Changing area unit using ASTORUNITS, bug doesn´t happen.
       //https://speckle.xyz/streams/1a0090e6fc
       SetDisplayValue(asteelBeam, beam);
     }

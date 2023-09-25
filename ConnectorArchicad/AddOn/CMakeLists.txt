@@ -20,10 +20,12 @@ function (SetCompilerOptions target)
 			-Wno-reorder
 			-Wno-overloaded-virtual
 			-Wno-unused-parameter
-			-Wno-deprecated-copy
+			-Wno-deprecated				# HashTable.hpp:1752 error: 'sprintf' is deprecated
 			-Wno-unknown-pragmas
 			-Wno-missing-braces
-			-Wno-unused-private-field)
+			-Wno-unused-private-field
+			-Wno-shorten-64-to-32		# BrepExternalBufferArray.hpp:34: error: implicit conversion loses integer precision: 'long long' to 'const GS::USize' (aka 'const unsigned int')
+			)
 	endif ()
 endfunction ()
 
@@ -48,6 +50,7 @@ set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
 set (CMAKE_SUPPRESS_REGENERATION 1)
 set (CMAKE_CONFIGURATION_TYPES Debug;Release;RelWithDebInfo)
+set (CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 set (AC_API_DEVKIT_DIR $ENV{AC_API_DEVKIT_DIR} CACHE PATH "API DevKit directory.")
 set (AC_ADDON_NAME "Speckle Connector" CACHE STRING "Add-On name.")
 set (AC_ADDON_LANGUAGE "INT" CACHE STRING "Add-On language code.")

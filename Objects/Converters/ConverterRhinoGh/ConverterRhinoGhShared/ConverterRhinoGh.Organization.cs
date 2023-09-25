@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using Objects.Organization;
 using Objects.Other;
@@ -57,10 +57,7 @@ public partial class ConverterRhinoGh
     var status = ApplicationObject.State.Unknown;
 
     // see if this layer already exists in the doc
-    var layerPath =
-      ReceiveMode == ReceiveMode.Create
-        ? $"{GetCommitInfo()}{Layer.PathSeparator}{RemoveInvalidRhinoChars(collection["path"] as string)}"
-        : RemoveInvalidRhinoChars(collection["path"] as string);
+    var layerPath = RemoveInvalidRhinoChars(collection["path"] as string);
     Layer existingLayer = GetLayer(layerPath);
 
     // update this layer if it exists & receive mode is on update

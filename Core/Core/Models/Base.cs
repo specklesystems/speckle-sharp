@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
@@ -25,7 +26,7 @@ namespace Speckle.Core.Models;
 [Serializable]
 public class Base : DynamicBase
 {
-  private static readonly Regex ChunkSyntax = new(@"^@\((\d*)\)"); //TODO: this same regex is duplicated a few times across the code base, we could consolidate them
+  private static readonly Regex ChunkSyntax = Constants.ChunkPropertyNameRegex;
 
   private string __type;
 
@@ -301,7 +302,7 @@ public class Blob : Base
   public string GetFileHash()
   {
     if ((hashExpired || _hash == null) && filePath != null)
-      _hash = Utilities.hashFile(filePath);
+      _hash = Utilities.HashFile(filePath);
 
     return _hash;
   }

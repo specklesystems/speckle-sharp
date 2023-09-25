@@ -237,8 +237,8 @@ public static class KitManager
               if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
                 _SpeckleKits.Add(assembly.FullName, speckleKit);
         }
-        catch (FileLoadException ex) { }
-        catch (BadImageFormatException ex) { }
+        catch (FileLoadException) { }
+        catch (BadImageFormatException) { }
       }
     }
   }

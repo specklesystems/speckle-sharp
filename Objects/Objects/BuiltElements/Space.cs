@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -53,11 +55,19 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public List<ICurve> voids { get; set; } = new();
   public ICurve outline { get; set; }
   public string spaceType { get; set; }
-  public string zoneName { get; set; }
 
+  // add the zone object for better forward compatibility
+  public RevitZone? zone { get; set; }
+
+  [Obsolete]
+  public string zoneName { get; internal set; }
   public string units { get; set; }
 
-  // additional properties to add: also inclue space separation lines here? Phase? Associated Room? Zone object instead of id?
+  public string roomId { get; set; }
+
+  public string phaseName { get; set; }
+
+  // additional properties to add: also include space separation lines here?
 
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }

@@ -315,9 +315,12 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         //no need to do extra stuff
         if (
           schema is DirectShapeFreeformViewModel
+          || schema is BlockDefinitionViewModel
           || schema is RevitTopographyViewModel
           || schema is RevitDefaultWallViewModel
           || schema is RevitDefaultFloorViewModel
+          || schema is RevitDefaultCeilingViewModel
+          || schema is RevitDefaultRoofViewModel
           || schema is RevitDefaultBeamViewModel
           || schema is RevitDefaultBraceViewModel
           || schema is RevitDefaultColumnViewModel
@@ -356,7 +359,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
               break;
 
             case RevitFaceWallViewModel o:
-              var faceWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              var faceWallFamilies = AvailableRevitTypes.Where(x => x.family == "Basic Wall").ToList();
               if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
                 break;
               var faceWallFamiliesViewModels = faceWallFamilies
@@ -377,6 +380,32 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
                 .ToList();
               o.Families = floorFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
+            case RevitCeilingViewModel o:
+              var ceilingFamilies = AvailableRevitTypes.Where(x => x.category == "Ceilings").ToList();
+              if (!ceilingFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var ceilingFamiliesViewModels = ceilingFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = ceilingFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
+            case RevitFootprintRoofViewModel o:
+              var roofFamilies = AvailableRevitTypes.Where(x => x.category == "Roofs").ToList();
+              if (!roofFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var roofFamiliesViewModels = roofFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = roofFamiliesViewModels;
               o.Levels = AvailableRevitLevels;
               updatedSchemas.Add(o);
               break;

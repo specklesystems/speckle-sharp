@@ -1,52 +1,77 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
-
-using Tekla.Structures.Model;
-using Tekla.Structures.Dialog;
-
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using Assembly = System.Reflection.Assembly;
 using Speckle.ConnectorTeklaStructures.UI;
-using System.Threading;
+using Speckle.Core.Logging;
+using Tekla.Structures.Dialog;
+using Tekla.Structures.Model;
+using Assembly = System.Reflection.Assembly;
 
 namespace Speckle.ConnectorTeklaStructures
 {
   public partial class MainForm : PluginFormBase
   {
-    // Enable inserting of objects in a model
-    private readonly Model model;
-    private static CancellationTokenSource Lifetime = null;
+
+    //window owner call
+    [DllImport("user32.dll", SetLastError = true)]
+    [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
+
     private static Avalonia.Application AvaloniaApp { get; set; }
-    public MainForm()
-    {
-      // Link to model.         
-      model = new Model();
-      Bindings = new ConnectorBindingsTeklaStructures(model);
-     
-      try
-      {
-        base.Load += (s, e) => Close();
-        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-        CreateOrFocusSpeckle();
-        Bindings.OpenTeklaStructures();
-      }
-      catch (Exception ex)
-      {
-
-      }
-    }
-
-    public Model Model
-    {
-      get { return model; }
-    }
+    public Model Model { get; private set; }
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsTeklaStructures Bindings { get; set; }
+    public MainForm()
+    {
+      Load += MainForm_Load;
+      if (MainWindow == null)
+      {
+        // Link to model.         
+        Model = new Model();
+        Bindings = new ConnectorBindingsTeklaStructures(Model);
+
+        try
+        {
+          AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
+
+          Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+          BuildAvaloniaApp().Start(AppMain, null);
+          var viewModel = new MainViewModel(Bindings);
+          MainWindow = new DesktopUI2.Views.MainWindow
+          {
+            DataContext = viewModel
+          };
+
+
+
+          Bindings.OpenTeklaStructures();
+
+        }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Fatal(ex, "Failed to create main form");
+        }
+      }
+
+      MainWindow.Show();
+      MainWindow.Activate();
+      MainWindow.Focus();
+
+      //set Tekla app as owner
+      var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+      SetWindowLongPtr(hwnd, GWL_HWNDPARENT, Tekla.Structures.Dialog.MainWindow.Frame.Handle);
+    }
+
 
     static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
     {
@@ -70,60 +95,14 @@ namespace Speckle.ConnectorTeklaStructures
 
     private static void AppMain(Application app, string[] args)
     {
-      //var viewModel = new MainWindowViewModel(Bindings);
-      //MainWindow = new DesktopUI2.Views.MainWindow
-      //{
-      //    DataContext = viewModel
-      //};
-      //app.Run(MainWindow);
-      //System.Threading.Tasks.Task.Run(() => app.Run(MainWindow));
       AvaloniaApp = app;
     }
-    //public static void CreateOrFocusSpeckle()
-    //{
-    //    if (MainWindow == null)
-    //    {
-    //        BuildAvaloniaApp().Start(AppMain, null);
-    //    }
-    //    MainWindow.Show();
-    //    MainWindow.Activate();
-    //}
-    public static void CreateOrFocusSpeckle(bool showWindow = true)
-    {
-      if (MainWindow == null)
-      {
-        BuildAvaloniaApp().Start(AppMain, null);
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new DesktopUI2.Views.MainWindow
-        {
-          DataContext = viewModel
-        };
-      }
 
-      try
-      {
-        if (showWindow)
-        {
-          MainWindow.Show();
-          MainWindow.Activate();
-
-          //required to gracefully quit avalonia and the skia processes
-          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
-          if (Lifetime == null)
-          {
-            Lifetime = new CancellationTokenSource();
-            System.Threading.Tasks.Task.Run(() => AvaloniaApp.Run(Lifetime.Token));
-          }
-        }
-      }
-      catch (Exception ex)
-      {
-      }
-    }
 
     private void MainForm_Load(object sender, EventArgs e)
     {
-
+      Close();
     }
+
   }
 }

@@ -6,12 +6,13 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
+  public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
   {
     private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
 
     public void AddConvertedObjects(Base converted, IList<Element> created)
     {
+      if (string.IsNullOrEmpty(converted.applicationId)) return;
       convertedObjects[converted.applicationId] = (converted, created.ToList());
     }
 
@@ -55,7 +56,8 @@ namespace ConnectorRevit.Storage
 
     public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
     {
-      return convertedObjects[id].Item2;
+      if (convertedObjects.TryGetValue(id, out var value)) return value.Item2;
+      return Enumerable.Empty<Element>();
     }
 
     public bool HasCreatedObjectWithId(string id)

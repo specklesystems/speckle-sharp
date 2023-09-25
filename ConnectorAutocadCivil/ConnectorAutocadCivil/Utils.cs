@@ -13,12 +13,12 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 using Autodesk.AdvanceSteel.Connection;
@@ -42,6 +42,10 @@ namespace Speckle.ConnectorAutocadCivil
     public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.AutoCAD.Name;
     public static string Slug = HostApplications.AutoCAD.Slug;
+#elif AUTOCAD2024
+    public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
+    public static string AppName = HostApplications.AutoCAD.Name;
+    public static string Slug = HostApplications.AutoCAD.Slug;
 #elif CIVIL2021
     public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.Civil.Name;
@@ -54,8 +58,16 @@ namespace Speckle.ConnectorAutocadCivil
     public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
+#elif CIVIL2024
+    public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
+    public static string AppName = HostApplications.Civil.Name;
+    public static string Slug = HostApplications.Civil.Slug;
 #elif ADVANCESTEEL2023
     public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+    public static string AppName = HostApplications.AdvanceSteel.Name;
+    public static string Slug = HostApplications.AdvanceSteel.Slug;
+#elif ADVANCESTEEL2024
+    public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2024);
     public static string AppName = HostApplications.AdvanceSteel.Name;
     public static string Slug = HostApplications.AdvanceSteel.Slug;
 #endif
@@ -101,7 +113,7 @@ namespace Speckle.ConnectorAutocadCivil
           DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
           if (obj != null && obj.Visible())
           {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 
             if (CheckAdvanceSteelObject(obj))
             {
@@ -235,7 +247,7 @@ namespace Speckle.ConnectorAutocadCivil
       return isVisible;
     }
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
     private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
     {
       switch (prop)
@@ -598,7 +610,7 @@ namespace Speckle.ConnectorAutocadCivil
       var insUnits = doc.Database.Insunits;
       string units = (insUnits == UnitsValue.Undefined) ? Units.None : Units.GetUnitsFromString(insUnits.ToString());
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
       if (units == Units.None)
       {
         // try to get the drawing unit instead
@@ -693,13 +705,7 @@ namespace Speckle.ConnectorAutocadCivil
       return Regex.Replace(cleanDelimiter, $"[{invalidChars}]", string.Empty);
     }
 
-    public static string RemoveInvalidDynamicPropChars(string str)
-    {
-      // remove ./
-      return Regex.Replace(str, @"[./]", "-");
-    }
-
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 
     public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
     {

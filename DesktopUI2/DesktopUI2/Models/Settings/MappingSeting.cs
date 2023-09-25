@@ -1,6 +1,6 @@
 namespace DesktopUI2.Models.Settings;
 
-public class MappingSeting : ListBoxSetting
+public class MappingSetting : ListBoxSetting
 {
   public string MappingJson { get; set; }
 }

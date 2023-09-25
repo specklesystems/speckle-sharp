@@ -52,7 +52,13 @@ namespace Objects.Converter.CSI
 
       if (material.designCode != null)
       {
-        Model.PropMaterial.AddMaterial(ref materialName, eMaterialType, material.designCode, material.codeYear, material.grade);
+        Model.PropMaterial.AddMaterial(
+          ref materialName,
+          eMaterialType,
+          material.designCode,
+          material.codeYear,
+          material.grade
+        );
         Model.PropMaterial.ChangeName(materialName, material.name);
       }
       else
@@ -62,7 +68,8 @@ namespace Objects.Converter.CSI
         {
           SetConcreteMaterial(csiConcrete, material.name);
         }
-        else if (material is Structural.CSI.Materials.CSISteel csiSteel){
+        else if (material is Structural.CSI.Materials.CSISteel csiSteel)
+        {
           SetSteelMaterial(csiSteel, material.name);
         }
       }
@@ -75,7 +82,8 @@ namespace Objects.Converter.CSI
       speckleStructMaterial.name = name;
       eMatType matType = new eMatType();
       int color = 0;
-      string notes, GUID;
+      string notes,
+        GUID;
       notes = GUID = null;
       Model.PropMaterial.GetMaterial(name, ref matType, ref color, ref notes, ref GUID);
 
@@ -97,7 +105,7 @@ namespace Objects.Converter.CSI
           speckleStructMaterial.materialType = Structural.MaterialType.Aluminium;
           break;
         case eMatType.Rebar:
-    
+
           return GetRebarMaterial(name);
           break;
         case eMatType.ColdFormed:
@@ -110,20 +118,27 @@ namespace Objects.Converter.CSI
           speckleStructMaterial.materialType = Structural.MaterialType.Masonry;
           break;
       }
-      
+
       return speckleStructMaterial;
     }
 
     #region Helper functions
     public Structural.CSI.Materials.CSISteel GetSteelMaterial(string materialName)
     {
-      double fy, fu, eFy, eFu, strainAtHardening, strainAtMaxStress, strainAtRupture, finalSlope;
+      double fy,
+        fu,
+        eFy,
+        eFu,
+        strainAtHardening,
+        strainAtMaxStress,
+        strainAtRupture,
+        finalSlope;
       fy = fu = eFy = eFu = strainAtHardening = strainAtMaxStress = strainAtRupture = finalSlope = 0;
-      int sStype, sSHysType;
+      int sStype,
+        sSHysType;
       sStype = sSHysType = 0;
 
       var speckleMaterial = new Structural.CSI.Materials.CSISteel();
-    
 
       // Material is isotropic or elastic - No support for other types currently
       if (sSHysType == 7 || sSHysType == 1)
@@ -131,12 +146,24 @@ namespace Objects.Converter.CSI
         speckleMaterial = (Structural.CSI.Materials.CSISteel)GetIsotropicMaterial(materialName);
       }
 
-      Model.PropMaterial.GetOSteel_1(materialName, ref fy, ref fu, ref eFy, ref eFu, ref sStype, ref sSHysType, ref strainAtHardening, ref strainAtMaxStress, ref strainAtRupture, ref finalSlope);
-  
+      Model.PropMaterial.GetOSteel_1(
+        materialName,
+        ref fy,
+        ref fu,
+        ref eFy,
+        ref eFu,
+        ref sStype,
+        ref sSHysType,
+        ref strainAtHardening,
+        ref strainAtMaxStress,
+        ref strainAtRupture,
+        ref finalSlope
+      );
+
       speckleMaterial.strength = fy;
       speckleMaterial.ultimateStrength = fu;
       speckleMaterial.maxStrain = strainAtRupture;
-      speckleMaterial.strainHardeningModulus = finalSlope ;
+      speckleMaterial.strainHardeningModulus = finalSlope;
       speckleMaterial.strainAtHardening = strainAtHardening;
       speckleMaterial.strainAtMaxStress = strainAtMaxStress;
       speckleMaterial.SSHysType = sSHysType;
@@ -147,34 +174,46 @@ namespace Objects.Converter.CSI
 
       return speckleMaterial;
     }
-    public void SetSteelMaterial(Structural.CSI.Materials.CSISteel structuralMaterial, string etabsMaterialName){
+
+    public void SetSteelMaterial(Structural.CSI.Materials.CSISteel structuralMaterial, string etabsMaterialName)
+    {
       //Support only isotropic Steel Material setting
       //Lossy transformation since Speckle classes are missing material properties
-      Model.PropMaterial.SetOSteel_1(etabsMaterialName, 
-      structuralMaterial.strength, 
-      structuralMaterial.yieldStrength,
-      structuralMaterial.EFy,
-      structuralMaterial.EFu,
-      structuralMaterial.SSType,
-      structuralMaterial.SSHysType,
-      structuralMaterial.strainAtHardening,
-      structuralMaterial.strainAtMaxStress,
-      structuralMaterial.maxStrain,
-      structuralMaterial.strainHardeningModulus);
+      Model.PropMaterial.SetOSteel_1(
+        etabsMaterialName,
+        structuralMaterial.strength,
+        structuralMaterial.yieldStrength,
+        structuralMaterial.EFy,
+        structuralMaterial.EFu,
+        structuralMaterial.SSType,
+        structuralMaterial.SSHysType,
+        structuralMaterial.strainAtHardening,
+        structuralMaterial.strainAtMaxStress,
+        structuralMaterial.maxStrain,
+        structuralMaterial.strainHardeningModulus
+      );
 
-      Model.PropMaterial.SetMPIsotropic(etabsMaterialName,
-      structuralMaterial.elasticModulus,
-      structuralMaterial.poissonsRatio, 
-      structuralMaterial.thermalExpansivity, 
-      structuralMaterial.shearModulus);
-    
-     }
+      Model.PropMaterial.SetMPIsotropic(
+        etabsMaterialName,
+        structuralMaterial.elasticModulus,
+        structuralMaterial.poissonsRatio,
+        structuralMaterial.thermalExpansivity,
+        structuralMaterial.shearModulus
+      );
+    }
 
     public Structural.CSI.Materials.CSIConcrete GetConcreteMaterial(string materialName)
     {
-      double fc, fcsFactor, strainAtFc, strainUltimate, finalSlope, frictionAngle, dilatationalAngle;
+      double fc,
+        fcsFactor,
+        strainAtFc,
+        strainUltimate,
+        finalSlope,
+        frictionAngle,
+        dilatationalAngle;
       fc = fcsFactor = strainAtFc = strainUltimate = finalSlope = frictionAngle = dilatationalAngle = 0;
-      int sStype, sSHysType;
+      int sStype,
+        sSHysType;
       sStype = sSHysType = 0;
       bool isLightweight = false;
 
@@ -185,10 +224,20 @@ namespace Objects.Converter.CSI
         speckleMaterial = (Structural.CSI.Materials.CSIConcrete)GetIsotropicMaterial(materialName);
       }
 
-      Model.PropMaterial.GetOConcrete_1(materialName, ref fc, ref isLightweight, ref fcsFactor, ref sStype, ref sSHysType, ref strainAtFc, ref strainUltimate, ref finalSlope, ref frictionAngle, ref dilatationalAngle);
+      Model.PropMaterial.GetOConcrete_1(
+        materialName,
+        ref fc,
+        ref isLightweight,
+        ref fcsFactor,
+        ref sStype,
+        ref sSHysType,
+        ref strainAtFc,
+        ref strainUltimate,
+        ref finalSlope,
+        ref frictionAngle,
+        ref dilatationalAngle
+      );
 
-
-      
       speckleMaterial.strength = fc;
       speckleMaterial.materialSafetyFactor = fcsFactor;
       speckleMaterial.maxCompressiveStrain = strainUltimate;
@@ -204,34 +253,45 @@ namespace Objects.Converter.CSI
       return speckleMaterial;
     }
 
-    public void SetConcreteMaterial(Structural.CSI.Materials.CSIConcrete structuralMaterial, string etabsMaterialName){
-      Model.PropMaterial.SetOConcrete_1(etabsMaterialName,
-      structuralMaterial.strength,
-      structuralMaterial.lightweight, 
-      structuralMaterial.materialSafetyFactor,
-      structuralMaterial.SSType,
-      structuralMaterial.SSHysType,
-      structuralMaterial.maxTensileStrain,
-      structuralMaterial.maxCompressiveStrain,
-      structuralMaterial.finalSlope,
-      structuralMaterial.frictionAngle,
-      structuralMaterial.dialationalAngle);
+    public void SetConcreteMaterial(Structural.CSI.Materials.CSIConcrete structuralMaterial, string etabsMaterialName)
+    {
+      Model.PropMaterial.SetOConcrete_1(
+        etabsMaterialName,
+        structuralMaterial.strength,
+        structuralMaterial.lightweight,
+        structuralMaterial.materialSafetyFactor,
+        structuralMaterial.SSType,
+        structuralMaterial.SSHysType,
+        structuralMaterial.maxTensileStrain,
+        structuralMaterial.maxCompressiveStrain,
+        structuralMaterial.finalSlope,
+        structuralMaterial.frictionAngle,
+        structuralMaterial.dialationalAngle
+      );
 
-
-      Model.PropMaterial.SetMPIsotropic(etabsMaterialName,
-      structuralMaterial.elasticModulus,
-      structuralMaterial.poissonsRatio,
-      structuralMaterial.thermalExpansivity,
-      structuralMaterial.shearModulus);
+      Model.PropMaterial.SetMPIsotropic(
+        etabsMaterialName,
+        structuralMaterial.elasticModulus,
+        structuralMaterial.poissonsRatio,
+        structuralMaterial.thermalExpansivity,
+        structuralMaterial.shearModulus
+      );
     }
 
-    public Structural.CSI.Materials.CSIRebar GetRebarMaterial(string materialName ){ 
-      double fy, fu, eFy, eFu, strainAtHardening, strainUltimate, finalSlope;
+    public Structural.CSI.Materials.CSIRebar GetRebarMaterial(string materialName)
+    {
+      double fy,
+        fu,
+        eFy,
+        eFu,
+        strainAtHardening,
+        strainUltimate,
+        finalSlope;
       fy = fu = eFy = eFu = strainAtHardening = strainUltimate = finalSlope = 0;
-      int sStype, sSHysType;
+      int sStype,
+        sSHysType;
       sStype = sSHysType = 0;
       bool useCaltransSSDefaults = false;
-
 
       Structural.CSI.Materials.CSIRebar rebarMaterial = new Structural.CSI.Materials.CSIRebar();
       // Rebar can only be set to uniaxial
@@ -241,17 +301,24 @@ namespace Objects.Converter.CSI
 
       //speckleMaterial.strength = fy;
       return rebarMaterial;
-
     }
 
-    public void SetRebarMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName){
+    public void SetRebarMaterial(StructuralMaterial structuralMaterial, string etabsMaterialName)
+    {
       Model.PropMaterial.SetORebar_1(etabsMaterialName, structuralMaterial.strength, 0, 0, 0, 0, 0, 0, 0, 0, false);
-      Model.PropMaterial.SetMPUniaxial(etabsMaterialName, structuralMaterial.elasticModulus, structuralMaterial.thermalExpansivity);
+      Model.PropMaterial.SetMPUniaxial(
+        etabsMaterialName,
+        structuralMaterial.elasticModulus,
+        structuralMaterial.thermalExpansivity
+      );
     }
 
     public object GetIsotropicMaterial(string materialName)
     {
-      double e, u, a, g;
+      double e,
+        u,
+        a,
+        g;
       e = u = a = g = 0;
 
       Model.PropMaterial.GetMPIsotropic(materialName, ref e, ref u, ref a, ref g);
@@ -262,8 +329,8 @@ namespace Objects.Converter.CSI
       speckleMaterial.shearModulus = g;
       return speckleMaterial;
     }
-  
-    public void GetUniaxialMaterial(string materialName,ref Structural.Materials.StructuralMaterial speckleMaterial)
+
+    public void GetUniaxialMaterial(string materialName, ref Structural.Materials.StructuralMaterial speckleMaterial)
     {
       double e = 0;
       double a = 0;

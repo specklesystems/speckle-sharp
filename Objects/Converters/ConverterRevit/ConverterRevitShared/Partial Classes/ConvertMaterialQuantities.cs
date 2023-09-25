@@ -64,9 +64,7 @@ namespace Objects.Converter.Revit
         materialQuantity["length"] = (element as DB.Architecture.TopRail).GetPath().Sum(e => e.Length) * factor;
       return materialQuantity;
     }
-
     #endregion
-
     #region MaterialQuantities
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
@@ -97,7 +95,6 @@ namespace Objects.Converter.Revit
 
       return quantities;
     }
-
     #endregion
     /// <summary>
     /// Revit API default methods for computing volumes and areas is malfunctioning for some objects
@@ -170,7 +167,5 @@ namespace Objects.Converter.Revit
         meshes = meshs;
       }
     }
-
   }
-
 }

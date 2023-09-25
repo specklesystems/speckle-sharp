@@ -16,6 +16,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)MainPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PolygonMesherReferencer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Settings.cs" />

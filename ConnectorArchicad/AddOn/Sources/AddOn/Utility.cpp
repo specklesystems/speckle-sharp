@@ -4,7 +4,8 @@
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
-#include "ResourceIds.hpp"
+#include "ResourceStrings.hpp"
+#include "Polygon2DData.h"
 using namespace FieldNames;
 
 namespace Utility {
@@ -30,6 +31,121 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 		return GetElementType (elemHead);
 
 	return API_ZombieElemID;
+}
+
+
+GSErrCode GetElementTypeStringItem (const API_Elem_Head& header, ResourceStrings::ElementTypeStringItems& elementTypeStringItem)
+{
+#ifdef ServerMainVers_2600
+	switch (header.type.typeID) {
+#else
+	switch (header.typeID) {
+#endif
+	case API_WallID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::WallString; break;
+	case API_ColumnID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ColumnString; break;
+	case API_BeamID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::BeamString; break;
+	case API_WindowID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::WindowString; break;
+	case API_DoorID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::DoorString; break;
+	case API_ObjectID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ObjectString; break;
+	case API_LampID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::LampString; break;
+	case API_SlabID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::SlabString; break;
+	case API_RoofID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RoofString; break;
+	case API_MeshID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::MeshString; break;
+	case API_DimensionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::DimensionString; break;
+	case API_RadialDimensionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RadialDimensionString; break;
+	case API_LevelDimensionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::LevelDimensionString; break;
+	case API_AngleDimensionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::AngleDimensionString; break;
+	case API_TextID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::TextString; break;
+	case API_LabelID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::LabelString; break;
+	case API_ZoneID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ZoneString; break;
+	case API_HatchID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::HatchString; break;
+	case API_LineID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::LineString; break;
+	case API_PolyLineID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::PolyLineString; break;
+	case API_ArcID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ArcString; break;
+	case API_CircleID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CircleString; break;
+	case API_SplineID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::SplineString; break;
+	case API_HotspotID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::HotspotString; break;
+	case API_CutPlaneID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CutPlaneString; break;
+	case API_CameraID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CameraString; break;
+	case API_CamSetID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CamSetString; break;
+	case API_GroupID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::GroupString; break;
+	case API_SectElemID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::SectElemString; break;
+	case API_DrawingID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::DrawingString; break;
+	case API_PictureID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::PictureString; break;
+	case API_DetailID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::DetailString; break;
+	case API_ElevationID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ElevationString; break;
+	case API_InteriorElevationID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::InteriorElevationString; break;
+	case API_WorksheetID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::WorksheetString; break;
+	case API_HotlinkID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::HotlinkString; break;
+	case API_CurtainWallID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallString; break;
+	case API_CurtainWallSegmentID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallSegmentString; break;
+	case API_CurtainWallFrameID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallFrameString; break;
+	case API_CurtainWallPanelID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallPanelString; break;
+	case API_CurtainWallJunctionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallJunctionString; break;
+	case API_CurtainWallAccessoryID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::CurtainWallAccessoryString; break;
+	case API_ShellID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ShellString; break;
+	case API_SkylightID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::SkylightString; break;
+	case API_MorphID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::MorphString; break;
+	case API_ChangeMarkerID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ChangeMarkerString; break;
+	case API_StairID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::StairString; break;
+	case API_RiserID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RiserString; break;
+	case API_TreadID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::TreadString; break;
+	case API_StairStructureID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::StairStructureString; break;
+	case API_RailingID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingString; break;
+	case API_RailingToprailID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingToprailString; break;
+	case API_RailingHandrailID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingHandrailString; break;
+	case API_RailingRailID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingRailString; break;
+	case API_RailingPostID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingPostString; break;
+	case API_RailingInnerPostID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingInnerPostString; break;
+	case API_RailingBalusterID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingBalusterString; break;
+	case API_RailingPanelID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingPanelString; break;
+	case API_RailingSegmentID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingSegmentString; break;
+	case API_RailingNodeID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingNodeString; break;
+	case API_RailingBalusterSetID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingBalusterSetString; break;
+	case API_RailingPatternID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingPatternString; break;
+	case API_RailingToprailEndID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingToprailEndString; break;
+	case API_RailingHandrailEndID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingHandrailEndString; break;
+	case API_RailingRailEndID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingRailEndString; break;
+	case API_RailingToprailConnectionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingToprailConnectionString; break;
+	case API_RailingHandrailConnectionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingHandrailConnectionString; break;
+	case API_RailingRailConnectionID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingRailConnectionString; break;
+	case API_RailingEndFinishID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::RailingEndFinishString; break;
+#ifndef ServerMainVers_2600
+	case API_AnalyticalSupportID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::AnalyticalSupportString; break;
+	case API_AnalyticalLinkID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::AnalyticalLinkString; break;
+#endif
+	case API_BeamSegmentID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::BeamSegmentString; break;
+	case API_ColumnSegmentID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::ColumnSegmentString; break;
+	case API_OpeningID: elementTypeStringItem = ResourceStrings::ElementTypeStringItems::OpeningString; break;
+	default:
+		return Error;
+	}
+			
+	return Error;
+}
+
+
+GS::ErrCode GetNonLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName)
+{
+	ResourceStrings::ElementTypeStringItems elementTypeStringItem;
+	GetElementTypeStringItem (header, elementTypeStringItem);
+	typeName = GetFixElementTypeStringFromResource (elementTypeStringItem);
+
+	return typeName.IsEmpty () ? Error : NoError;
+}
+
+
+GS::ErrCode GetLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName)
+{
+#ifdef ServerMainVers_2600
+	return ACAPI_Goodies_GetElemTypeName (header.type, typeName);
+#else
+	ResourceStrings::ElementTypeStringItems elementTypeStringItem;
+	GetElementTypeStringItem (header, elementTypeStringItem);
+	typeName = GetElementTypeStringFromResource (elementTypeStringItem);
+
+	return typeName.IsEmpty () ? Error : NoError;
+#endif
 }
 
 
@@ -251,8 +367,8 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 {
 	GS::Array<API_Guid> result;
 
-	API_ElemTypeID elementType = GetElementType(element.header);
-				
+	API_ElemTypeID elementType = GetElementType (element.header);
+
 	if (elementType == API_WallID) {
 		if (element.wall.hasDoor) {
 			GS::Array<API_Guid> doors;
@@ -475,15 +591,15 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 		defaultSegmentScheme = memo->assemblySegmentSchemes[0];
 
 		switch (Utility::GetElementType (element.header)) {
-			case API_BeamID:
-				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-				break;
-			case API_ColumnID:
-				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-				break;
-			default:  // In case if not beam or column
-				return Error;
-				break;
+		case API_BeamID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		default:  // In case if not beam or column
+			return Error;
+			break;
 		}
 	} else {
 		return Error;
@@ -505,7 +621,7 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 	return err;
 }
 
-	
+
 GSErrCode GetOneCutData (const API_AssemblySegmentCutData& cutData, GS::ObjectState& out)
 {
 	out.Add (AssemblySegmentCutData::cutType, assemblySegmentCutTypeNames.Get (cutData.cutType));
@@ -564,14 +680,14 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 		defaultSegmentCut = memo->assemblySegmentCuts[0];
 
 		switch (GetElementType (element.header)) {
-			case API_BeamID:
-				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-				break;
-			case API_ColumnID:
-				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-			default: // In case if not beam or column
-				return Error;
-				break;
+		case API_BeamID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+		default: // In case if not beam or column
+			return Error;
+			break;
 		}
 
 	} else {
@@ -762,7 +878,7 @@ GSErrCode CreateOnePivotPolyEdgeData (GS::ObjectState& currentPivotPolyEdge, API
 }
 
 
-GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo * memo)
+GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo* memo)
 {
 	memo->pivotPolyEdges = (API_PivotPolyEdgeData*) BMAllocatePtr ((numberOfPivotPolyEdges + 1) * sizeof (API_PivotPolyEdgeData), ALLOCATE_CLEAR, 0);
 
@@ -944,8 +1060,8 @@ GSErrCode GetCoverFillTransformation (bool coverFillOrientationComesFrom3D,
 }
 
 
-GSErrCode CreateCoverFillTransformation (const GS::ObjectState& os, 
-	bool& coverFillOrientationComesFrom3D, 
+GSErrCode CreateCoverFillTransformation (const GS::ObjectState& os,
+	bool& coverFillOrientationComesFrom3D,
 	API_CoverFillTransformationTypeID& coverFillTransformationType)
 {
 	coverFillOrientationComesFrom3D = false;
@@ -1032,7 +1148,7 @@ GSErrCode CreateTransform (const GS::ObjectState& os, API_Tranmat& transform)
 {
 	GS::ObjectState matrixOs;
 	os.Get ("matrix", matrixOs);
-	
+
 	for (GSSize idx1 = 0; idx1 < 3; ++idx1) {
 		for (GSSize idx2 = 0; idx2 < 4; ++idx2) {
 			matrixOs.Get (GS::String::SPrintf ("M%d%d", idx1 + 1, idx2 + 1), transform.tmx[idx1 * 4 + idx2]);
@@ -1041,5 +1157,53 @@ GSErrCode CreateTransform (const GS::ObjectState& os, API_Tranmat& transform)
 
 	return NoError;
 }
+
+
+GSErrCode ConstructPoly2DDataFromElementMemo (const API_ElementMemo& memo, Geometry::Polygon2DData& polygon2DData)
+{
+	GSErrCode err = NoError;
+
+	Geometry::InitPolygon2DData (&polygon2DData);
+
+	static_assert (sizeof (API_Coord) == sizeof (Coord), "sizeof (API_Coord) != sizeof (Coord)");
+	static_assert (sizeof (API_PolyArc) == sizeof (PolyArcRec), "sizeof (API_PolyArc) != sizeof (PolyArcRec)");
+
+	polygon2DData.nVertices = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (Coord) - 1;
+	polygon2DData.vertices = reinterpret_cast<Coord**> (BMAllocateHandle ((polygon2DData.nVertices + 1) * sizeof (Coord), ALLOCATE_CLEAR, 0));
+	if (polygon2DData.vertices != nullptr)
+		BNCopyMemory (*polygon2DData.vertices, *memo.coords, (polygon2DData.nVertices + 1) * sizeof (Coord));
+	else
+		err = APIERR_MEMFULL;
+
+	if (err == NoError && memo.parcs != nullptr) {
+		polygon2DData.nArcs = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.parcs)) / sizeof (PolyArcRec);
+		if (polygon2DData.nArcs > 0) {
+			polygon2DData.arcs = reinterpret_cast<PolyArcRec**> (BMAllocateHandle ((polygon2DData.nArcs + 1) * sizeof (PolyArcRec), ALLOCATE_CLEAR, 0));
+			if (polygon2DData.arcs != nullptr)
+				BNCopyMemory (*polygon2DData.arcs + 1, *memo.parcs, polygon2DData.nArcs * sizeof (PolyArcRec));
+			else
+				err = APIERR_MEMFULL;
+		}
+	}
+
+	if (err == NoError) {
+		polygon2DData.nContours = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32) - 1;
+		polygon2DData.contourEnds = reinterpret_cast<UIndex**> (BMAllocateHandle ((polygon2DData.nContours + 1) * sizeof (UIndex), ALLOCATE_CLEAR, 0));
+		if (polygon2DData.contourEnds != nullptr)
+			BNCopyMemory (*polygon2DData.contourEnds, *memo.pends, (polygon2DData.nContours + 1) * sizeof (UIndex));
+		else
+			err = APIERR_MEMFULL;
+	}
+
+	if (err == NoError) {
+		Geometry::GetPolygon2DDataBoundBox (polygon2DData, &polygon2DData.boundBox);
+		polygon2DData.status.isBoundBoxValid = true;
+	} else {
+		Geometry::FreePolygon2DData (&polygon2DData);
+	}
+
+	return err;
+}
+
 
 }

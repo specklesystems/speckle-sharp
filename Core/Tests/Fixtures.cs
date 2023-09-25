@@ -5,7 +5,7 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
-namespace Tests;
+namespace TestsUnit;
 
 [SetUpFixture]
 public class SetUp

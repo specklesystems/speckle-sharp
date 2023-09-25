@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
 public class Serialization

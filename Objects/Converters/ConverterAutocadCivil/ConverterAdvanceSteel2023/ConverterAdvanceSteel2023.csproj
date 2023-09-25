@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Objects.Converter.AdvanceSteel2023</AssemblyName>
     <RootNamespace>Objects.Converter.AdvanceSteel</RootNamespace>
-    <DefineConstants>$(DefineConstants);ADVANCESTEEL2023</DefineConstants>
+    <DefineConstants>$(DefineConstants);ADVANCESTEEL;ADVANCESTEEL2023</DefineConstants>
     <PackageId>Speckle.Objects.Converter.AdvanceSteel2023</PackageId>
     <Authors>Speckle</Authors>
     <Company>Speckle</Company>

@@ -73,7 +73,10 @@ public class MappingBindingsRhino : MappingsBindings
         result.Add(existingSchema);
 
       if (obj is InstanceObject)
+      {
+        result.Add(new BlockDefinitionViewModel());
         result.Add(new RevitFamilyInstanceViewModel());
+      }
       else
         switch (obj.Geometry)
         {
@@ -117,9 +120,9 @@ public class MappingBindingsRhino : MappingsBindings
               result.Add(new RevitDefaultPipeViewModel());
               result.Add(new RevitDefaultDuctViewModel());
             }
-            else if (c.IsPlanar())
+            else if (c.IsPlanar() && !c.IsPolyline())
             {
-              // If the curve is non-linear, but is planar, it can still be a beam.
+              // If the curve is non-linear, but is planar and is not a polyline, it can still be a beam.
               result.Add(new RevitDefaultBeamViewModel());
               result.Add(new RevitBeamViewModel());
             }
@@ -201,6 +204,10 @@ public class MappingBindingsRhino : MappingsBindings
       {
         schemas.Add(new RevitFloorViewModel());
         schemas.Add(new RevitDefaultFloorViewModel());
+        schemas.Add(new RevitCeilingViewModel());
+        schemas.Add(new RevitDefaultCeilingViewModel());
+        schemas.Add(new RevitFootprintRoofViewModel());
+        schemas.Add(new RevitDefaultRoofViewModel());
       }
       else if (isVertical)
       {

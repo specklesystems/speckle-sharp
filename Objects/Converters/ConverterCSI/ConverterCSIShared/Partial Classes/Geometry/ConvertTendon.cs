@@ -15,9 +15,9 @@ namespace Objects.Converter.CSI
   {
     public void CSITendonToSpeckle(CSITendon tendon)
     {
-
       throw new NotSupportedException();
     }
+
     public CSITendon CSITendonToSpeckle(string name)
     {
       var speckleCSITendon = new CSITendon();
@@ -43,7 +43,6 @@ namespace Objects.Converter.CSI
       speckleCSITendon.CSITendonProperty = TendonPropToSpeckle(tendonProp);
       SpeckleModel.elements.Add(speckleCSITendon);
       return speckleCSITendon;
-
     }
   }
 }

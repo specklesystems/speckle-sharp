@@ -24,7 +24,7 @@ public class Account : IEquatable<Account>
       {
         if (serverInfo == null || userInfo == null)
           throw new SpeckleException("Incomplete account info: cannot generate id.");
-        _id = Utilities.hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5).ToUpper();
+        _id = Utilities.HashString(userInfo.email + serverInfo.url, Utilities.HashingFunctions.MD5).ToUpper();
       }
       return _id;
     }
@@ -71,24 +71,7 @@ public class Account : IEquatable<Account>
 
   public async Task<UserInfo> Validate()
   {
-    using var httpClient = Http.GetHttpProxyClient();
-
-    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
-    using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
-      new NewtonsoftJsonSerializer(),
-      httpClient
-    );
-
-    var request = new GraphQLRequest { Query = @" query { activeUser { name email id company } }" };
-
-    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
-
-    if (response.Errors != null)
-      return null;
-
-    return response.Data.user;
+    return await AccountManager.GetUserInfo(token, serverInfo.url).ConfigureAwait(false);
   }
 
   public override string ToString()

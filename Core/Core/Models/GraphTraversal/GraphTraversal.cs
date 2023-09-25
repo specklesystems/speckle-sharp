@@ -4,25 +4,57 @@ using System.Collections.Generic;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
-public sealed class TraversalContext
+public class TraversalContext
 {
-  public readonly Base current;
-  public readonly TraversalContext? parent;
-  public readonly string? propName;
+  public Base current { get; }
+  public virtual TraversalContext? parent { get; }
+  public string? propName { get; }
 
-  public TraversalContext(Base current, string? propName = null, TraversalContext? parent = null)
+  public TraversalContext(Base current, string? propName = null, TraversalContext? parent = default)
+    : this(current, propName)
+  {
+    this.parent = parent;
+  }
+
+  protected TraversalContext(Base current, string? propName = null)
   {
     this.current = current;
-    this.parent = parent;
     this.propName = propName;
   }
 }
 
-public sealed class GraphTraversal
+public class TraversalContext<T> : TraversalContext
+  where T : TraversalContext
+{
+  public override TraversalContext? parent => typedParent;
+  public T? typedParent { get; }
+
+  public TraversalContext(Base current, string? propName = null, T? parent = default)
+    : base(current, propName)
+  {
+    this.typedParent = parent;
+  }
+}
+
+public class GraphTraversal : GraphTraversal<TraversalContext>
+{
+  public GraphTraversal(params ITraversalRule[] traversalRule)
+    : base(traversalRule) { }
+
+  public static readonly string traversalContextId = "traversalContextId";
+
+  protected override TraversalContext NewContext(Base current, string? propName, TraversalContext? parent)
+  {
+    return new TraversalContext<TraversalContext>(current, propName, parent);
+  }
+}
+
+public abstract class GraphTraversal<T>
+  where T : TraversalContext
 {
   private readonly ITraversalRule[] rules;
 
-  public GraphTraversal(params ITraversalRule[] traversalRule)
+  protected GraphTraversal(params ITraversalRule[] traversalRule)
   {
     rules = traversalRule;
   }
@@ -32,16 +64,17 @@ public sealed class GraphTraversal
   /// </summary>
   /// <param name="root">The object to traverse members</param>
   /// <returns>Lazily returns <see cref="Base"/> objects found during traversal (including <paramref name="root"/>), wrapped within a <see cref="TraversalContext"/></returns>
-  public IEnumerable<TraversalContext> Traverse(Base root)
+  public IEnumerable<T> Traverse(Base root)
   {
-    var stack = new List<TraversalContext>();
-    stack.Add(new TraversalContext(root));
+    var stack = new List<T>();
+    stack.Add(NewContext(root, null, default));
 
     while (stack.Count > 0)
     {
       int headIndex = stack.Count - 1;
-      TraversalContext head = stack[headIndex];
+      T head = stack[headIndex];
       stack.RemoveAt(headIndex);
+
       yield return head;
 
       Base current = head.current;
@@ -52,18 +85,18 @@ public sealed class GraphTraversal
     }
   }
 
-  private static void TraverseMemberToStack(
-    ICollection<TraversalContext> stack,
+  private void TraverseMemberToStack(
+    ICollection<T> stack,
     object? value,
     string? memberName = null,
-    TraversalContext? parent = null
+    T? parent = default
   )
   {
     //test
     switch (value)
     {
       case Base o:
-        stack.Add(new TraversalContext(o, memberName, parent));
+        stack.Add(NewContext(o, memberName, parent));
         break;
       case IList list:
       {
@@ -79,6 +112,8 @@ public sealed class GraphTraversal
       }
     }
   }
+
+  protected abstract T NewContext(Base current, string? propName, T? parent);
 
   /// <summary>
   /// Traverses supported Collections yielding <see cref="Base"/> objects.

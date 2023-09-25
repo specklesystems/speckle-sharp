@@ -1,0 +1,46 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Windows.Dialogs.MissingIncomingTypesDialog"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d">
+  <Grid RowDefinitions="auto, auto, auto, auto">
+    <TextBlock
+      Margin="15,15,15,0"
+      Classes="Subtitle1"
+      Text="Missing Types Detected"
+      TextTrimming="CharacterEllipsis" />
+
+    <TextBlock
+      Grid.Row="1"
+      Margin="15,15,15,5"
+      Foreground="Gray"
+      Text="Some incoming types are missing, would you like to import or map them?"
+      TextWrapping="Wrap" />
+    <TextBlock
+      Grid.Row="2"
+      Margin="15,5,15,15"
+      FontStyle="Italic"
+      Foreground="Gray"
+      Text="You can change the missing types fallback behaviour and how often this dialog is displayed from the Advanced Settings."
+      TextWrapping="Wrap" />
+
+    <StackPanel
+      Grid.Row="3"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal">
+      <Button
+        Margin="0,0,10,0"
+        Classes="Outline"
+        Click="IgnoreCommand"
+        Content="Ignore" />
+      <Button
+        Margin="0,0,10,0"
+        Click="MapCommand"
+        Content="Map Types" />
+
+    </StackPanel>
+  </Grid>
+</UserControl>

@@ -70,4 +70,17 @@ public partial class ConverterNavisworks
       return (Units)Enum.Parse(typeof(Units), value, true);
     }
   }
+
+  private static bool UseInternalPropertyNames
+  {
+    get
+    {
+      if (!Settings.ContainsKey("internal-property-names"))
+        return false;
+
+      var value = Settings["internal-property-names"];
+
+      return value == "True";
+    }
+  }
 }

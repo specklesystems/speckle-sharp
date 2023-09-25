@@ -6,6 +6,7 @@ using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
@@ -33,6 +34,52 @@ namespace Objects.Other
     /// The units of this Instance, should be the same as the instance transform units
     /// </summary>
     public string units { get; set; }
+
+    // helper method that scans an Instance for all transformable geometry and nested instances
+    protected virtual IEnumerable<Base> GetTransformableGeometry()
+    {
+      var displayValueRule = TraversalRule
+        .NewTraversalRule()
+        .When(DefaultTraversal.HasDisplayValue)
+        .ContinueTraversing(_ => DefaultTraversal.displayValueAndElementsPropAliases);
+
+      var instanceRule = TraversalRule.NewTraversalRule()
+        .When(b => b is Instance instance && instance != null)
+        .ContinueTraversing(DefaultTraversal.None);
+
+      var traversal = new GraphTraversal(instanceRule, displayValueRule, DefaultTraversal.DefaultRule);
+
+      return traversal
+        .Traverse(definition)
+        .Select(tc => tc.current)
+        .Where(b => b is ITransformable || b is Instance)
+        .Where(b => b != null);
+    }
+
+    [SchemaComputed("transformedGeometry")]
+    public virtual IEnumerable<ITransformable> GetTransformedGeometry()
+    {
+      return GetTransformableGeometry()
+        .SelectMany(b =>
+        {
+          switch (b)
+          {
+            case Instance i:
+              return i.GetTransformedGeometry()
+                .Select(b => 
+                {
+                  b.TransformTo(transform, out var tranformed);
+                  return tranformed;
+                });
+            case ITransformable bt:
+              var res = bt.TransformTo(transform, out var transformed);
+              return res ? new List<ITransformable> { transformed } : new();
+            default:
+              return new List<ITransformable>();
+          }
+        })
+        .Where(b => b != null);
+    }
   }
 
   /// <summary>
@@ -89,31 +136,9 @@ namespace Objects.Other
       set => typedDefinition = value;
     }
 
-    [SchemaComputed("transformedGeometry")]
-    public List<ITransformable> GetTransformedGeometry()
+    protected override IEnumerable<Base> GetTransformableGeometry()
     {
-      return typedDefinition.geometry
-        .SelectMany(b =>
-        {
-          switch (b)
-          {
-            case BlockInstance bi:
-              return bi.GetTransformedGeometry()
-                ?.Select(b =>
-                {
-                  ITransformable childTransformed = null;
-                  b?.TransformTo(transform, out childTransformed);
-                  return childTransformed;
-                });
-            case ITransformable bt:
-              var res = bt.TransformTo(transform, out var transformed);
-              return new List<ITransformable> { res ? transformed : null };
-            default:
-              return new List<ITransformable>();
-          }
-        })
-        .Where(b => b != null)
-        .ToList();
+      return typedDefinition.geometry;
     }
 
     /// <summary>
@@ -149,36 +174,18 @@ namespace Objects.Other.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
-    [SchemaComputed("transformedGeometry")]
-    public List<ITransformable> GetTransformedGeometry()
+    protected override IEnumerable<Base> GetTransformableGeometry()
     {
       var allChildren = typedDefinition.elements ?? new List<Base>();
       if (typedDefinition.displayValue.Any())
         allChildren.AddRange(typedDefinition.displayValue);
+      return allChildren;
+    }
 
-      // get transformed definition objs
-      var transformed = allChildren
-        .SelectMany(b =>
-        {
-          switch (b)
-          {
-            case RevitInstance ri:
-              return ri.GetTransformedGeometry()
-                ?.Select(b =>
-                {
-                  ITransformable childTransformed = null;
-                  b?.TransformTo(transform, out childTransformed);
-                  return childTransformed;
-                });
-            case ITransformable bt:
-              var res = bt.TransformTo(transform, out var transformed);
-              return new List<ITransformable> { res ? transformed : null };
-            default:
-              return new List<ITransformable>();
-          }
-        })
-        .Where(b => b != null)
-        .ToList();
+    [SchemaComputed("transformedGeometry")]
+    public override IEnumerable<ITransformable> GetTransformedGeometry()
+    {
+      var transformed = base.GetTransformedGeometry().ToList();
 
       // add any dynamically attached elements on this instance
       var elements = (this["elements"] ?? this["@elements"]) as List<object>;

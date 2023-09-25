@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
@@ -9,26 +9,31 @@
     <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
     <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems" Label="Shared"/>
+  <Import Project="..\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj"/>
-    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj" />
+    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3"/>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build"/>
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
+    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
+    <PackageReference Include="Grasshopper" Version="7.10.21256.17001" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   
   <Target Name="GenerateT4">
-    <Message Text="Generating T4 templates..." Importance="high"/>
-    <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)"/>
+    <Message Text="Generating T4 templates..." Importance="high" />
+    <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)" />
   </Target>
 </Project>

@@ -50,6 +50,8 @@ namespace Objects.Converter.Revit
 
       var speckleRevitColumn = speckleColumn as RevitColumn;
 
+      double baseOffset = 0.0;
+      double topOffset = 0.0;
       var levelState = ApplicationObject.State.Unknown;
       if (speckleRevitColumn != null)
       {
@@ -62,8 +64,8 @@ namespace Objects.Converter.Revit
 
       if (level == null)
       {
-        level = ConvertLevelToRevit(LevelFromCurve(baseLine), out levelState);
-        topLevel = ConvertLevelToRevit(LevelFromPoint(baseLine.GetEndPoint(1)), out levelState);
+        level = ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
+        topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out topOffset);
       }
 
       //try update existing 
@@ -151,15 +153,19 @@ namespace Objects.Converter.Revit
 
         //don't change offset for slanted columns, it's automatic
         if (!isLineBased)
-          SetOffsets(revitColumn, speckleRevitColumn, level, topLevel);
+          SetOffsets(revitColumn, level, topLevel, ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units), ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units));
 
         SetInstanceParameters(revitColumn, speckleRevitColumn);
+      }
+      else
+      {
+        // this case is always line based, don't change offset for line based columns, it's automatic
       }
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitColumn.UniqueId, convertedItem: revitColumn);
       // TODO: nested elements.
-      appObj = SetHostedElements(speckleColumn, revitColumn, appObj);
+      //appObj = SetHostedElements(speckleColumn, revitColumn, appObj);
       return appObj;
     }
 
@@ -168,7 +174,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="familyInstance"></param>
-    private void SetOffsets(DB.FamilyInstance familyInstance, RevitColumn speckleRevitColumn, Level level, Level topLevel)
+    private void SetOffsets(DB.FamilyInstance familyInstance, Level level, Level topLevel, double baseOffset, double topOffset)
     {
       var topOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       var baseOffsetParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
@@ -177,9 +183,6 @@ namespace Objects.Converter.Revit
 
       if (topLevelParam == null || baseLevelParam == null || baseOffsetParam == null || topOffsetParam == null)
         return;
-
-      var baseOffset = ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units);
-      var topOffset = ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units);
 
       // the column length cannot be 0 for even an instance or Revit will throw a fit.
       // Make sure that setting the offset on one side of the column before setting the
@@ -247,13 +250,7 @@ namespace Objects.Converter.Revit
       if (revitColumn.Location is LocationPoint)
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
 
-      // structural connection modifiers alter family instance geometry, but the modifiers are view specific
-      // so we need to pass in the view we want in order to get the correct geometry
-      // TODO: we need to make sure we are passing in the correct view
-      var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      var options = revitColumn.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitColumn.GetDependentElements(connectionHandlerFilter).Any() ?
-        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
-      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, options);
+      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, SolidDisplayValueOptions);
 
       return speckleColumn;
     }

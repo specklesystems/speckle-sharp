@@ -1,7 +1,5 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExternalService;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -11,32 +9,19 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
-using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
-using Revit.Async;
-using DynamicData;
-using ConnectorRevit.Storage;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
+using ConnectorRevit.Revit;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-    public override bool CanPreviewReceive => true;
+    public override bool CanPreviewReceive => false;
     private string SelectedReceiveCommit { get; set; }
     List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
 
@@ -50,7 +35,7 @@ namespace Speckle.ConnectorRevit.UI
 
         if (commit.id != SelectedReceiveCommit)
         {
-          // check for converter 
+          // check for converter
           var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
           converter.SetContextDocument(CurrentDoc.Document);
 
@@ -72,18 +57,19 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await RevitTask.RunAsync(
-            app =>
+          await APIContext
+            .Run(app =>
             {
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                convertedObjects = ConvertReceivedObjects(converter, progress);
+                convertedObjects = ConvertReceivedObjects(converter, progress, new TransactionManager(null, null));
                 t.Commit();
               }
 
               AddMultipleRevitElementServers(convertedObjects);
-            });
+            })
+            .ConfigureAwait(false);
         }
         else // just generate the log
         {
@@ -93,11 +79,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(
-          ex,
-          "Failed to preview receive: {exceptionMessage}",
-          ex.Message
-        );
+        SpeckleLog.Logger.Error(ex, "Failed to preview receive: {exceptionMessage}", ex.Message);
       }
 
       return null;
@@ -110,8 +92,9 @@ namespace Speckle.ConnectorRevit.UI
 
     public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
     {
-      ExternalService directContext3DService =
-        ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.DirectContext3DService);
+      ExternalService directContext3DService = ExternalServiceRegistry.GetService(
+        ExternalServices.BuiltInExternalServices.DirectContext3DService
+      );
       MultiServerService msDirectContext3DService = directContext3DService as MultiServerService;
       IList<Guid> serverIds = msDirectContext3DService.GetActiveServerIds();
 
@@ -168,7 +151,8 @@ namespace Speckle.ConnectorRevit.UI
           if (!converter.CanConvertToSpeckle(filterObj))
             reportObj.Update(
               status: ApplicationObject.State.Skipped,
-              logItem: $"Sending this object type is not supported in Revit");
+              logItem: $"Sending this object type is not supported in Revit"
+            );
           else
             reportObj.Update(status: ApplicationObject.State.Created);
           progress.Report.Log(reportObj);
@@ -178,11 +162,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(
-          ex,
-          "Failed to preview send: {exceptionMessage}",
-          ex.Message
-        );
+        SpeckleLog.Logger.Error(ex, "Failed to preview send: {exceptionMessage}", ex.Message);
       }
     }
   }

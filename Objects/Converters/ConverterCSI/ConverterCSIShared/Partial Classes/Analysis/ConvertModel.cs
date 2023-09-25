@@ -22,9 +22,9 @@ namespace Objects.Converter.CSI
   {
     public object ModelToNative(Model model, ref ApplicationObject appObj)
     {
-      
       return null;
     }
+
     Base ModelElementsCountToSpeckle()
     {
       var ElementsCount = new Base();
@@ -33,6 +33,7 @@ namespace Objects.Converter.CSI
       ElementsCount.applicationId = count.ToString();
       return ElementsCount;
     }
+
     public Model ModelToSpeckle()
     {
       var model = new Model();
@@ -47,7 +48,7 @@ namespace Objects.Converter.CSI
       string[] properties1D = { };
 
       //var stories = StoriesToSpeckle();
-      ////Should stories belong here ? not sure 
+      ////Should stories belong here ? not sure
       //model.elements.Add(stories);
 
 
@@ -129,7 +130,6 @@ namespace Objects.Converter.CSI
         }
       }
 
-
       string[] materials = { };
       Model.PropMaterial.GetNameList(ref number, ref materials);
       foreach (string material in materials)
@@ -137,10 +137,6 @@ namespace Objects.Converter.CSI
         var speckleMaterial = MaterialToSpeckle(material);
         model.materials.Add(speckleMaterial);
       }
-
-
-
-
 
       return model;
     }

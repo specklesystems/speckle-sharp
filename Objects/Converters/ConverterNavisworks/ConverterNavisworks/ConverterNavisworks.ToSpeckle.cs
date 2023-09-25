@@ -6,12 +6,12 @@ using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Core.Models;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
-
 
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
@@ -97,7 +97,9 @@ public partial class ConverterNavisworks
     {
       var parts = referenceOrGuid.Split(':');
       using var savedItemReference = new SavedItemReference(parts[0], parts[1]);
-      savedViewpoint = parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
+      savedViewpoint = parts.Length != 2
+        ? null
+        : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
     }
 
     return savedViewpoint;
@@ -123,19 +125,19 @@ public partial class ConverterNavisworks
 
     var camera = viewPoint.Camera;
 
-    var viewDirection = ToVector(camera.GetViewDir());
-    var viewUp = ToVector(camera.GetUpVector());
+    var cameraDirection = camera.GetViewDir();
+    var cameraUp = camera.GetUpVector();
+    var cameraPosition = camera.Position;
 
-    var focalDistance = viewPoint.FocalDistance;
+    var viewDirection = ToVector(cameraDirection);
+    var viewUp = ToVector(cameraUp);
+    var viewPosition = ToPoint(cameraPosition);
 
-    var position = ToPoint(camera.Position);
-
-    var origin = ScalePoint(position, scaleFactor);
-    var target = ScalePoint(GetViewTarget(position, viewDirection, focalDistance), scaleFactor);
+    var focalDistance = 1.0;
 
     string cameraType;
     string zoom;
-    double zoomValue = 1;
+    double zoomValue;
 
     switch (vp.Projection)
     {
@@ -155,18 +157,37 @@ public partial class ConverterNavisworks
 
         try
         {
-          zoomValue = vp.FocalDistance * scaleFactor;
+          focalDistance = vp.FocalDistance;
         }
-        catch (NullReferenceException err)
+        catch (Exception ex)
         {
-          Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
+          switch (ex)
+          {
+            case NullReferenceException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the prop is null. The focal distance will be set to 1m"
+              );
+              break;
+            case System.Runtime.InteropServices.COMException:
+            case NotSupportedException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the getter throws either of two errors, this is rare but possible and frankly terrible from Navisworks. The focal distance will be set to 1m"
+              );
+              break;
+            default:
+              throw;
+          }
         }
 
+        zoomValue = focalDistance * scaleFactor;
         break;
       default:
         Console.WriteLine("No View");
         return null;
     }
+
+    var origin = ScalePoint(viewPosition, scaleFactor);
+    var target = ScalePoint(GetViewTarget(viewPosition, viewDirection, focalDistance), scaleFactor);
 
     var view = new View3D
     {
@@ -211,36 +232,33 @@ public partial class ConverterNavisworks
     return view;
   }
 
-  private static Base CategoryToSpeckle(ModelItem element)
-  {
-    var elementCategory = element.PropertyCategories.FindPropertyByName(
-      PropertyCategoryNames.Item,
-      DataPropertyNames.ItemIcon
-    );
-    var elementCategoryType = elementCategory.Value.ToNamedConstant().DisplayName;
-
-    return elementCategoryType switch
-    {
-      "Geometry" => new GeometryNode(),
-      _ => new Collection { collectionType = elementCategoryType }
-    };
-  }
-
   private static Base ModelItemToSpeckle(ModelItem element)
   {
     if (IsElementHidden(element))
       return null;
 
-    var @base = CategoryToSpeckle(element);
+    var @base = ConvertModelItemToSpeckle(element);
+
+    var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
+    var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
+
+    var resolvedName = string.IsNullOrEmpty(element.DisplayName)
+      ? string.IsNullOrEmpty(firstChild?.DisplayName)
+        ? parent?.DisplayName
+        : firstChild.DisplayName
+      : element.DisplayName;
+
+    @base["name"] = string.IsNullOrEmpty(resolvedName)
+      ? (
+        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
+      ).ToString()
+      : GetSanitizedPropertyName(resolvedName);
 
     // Geometry items have no children
     if (element.HasGeometry)
     {
       GeometryToSpeckle(element, @base);
       AddItemProperties(element, @base);
-      @base["name"] = string.IsNullOrEmpty(element.DisplayName)
-        ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-        : element.DisplayName;
 
       return @base;
     }
@@ -254,10 +272,6 @@ public partial class ConverterNavisworks
     if (element.Descendants.All(x => x.IsHidden))
       return null;
 
-    ((Collection)@base).name = string.IsNullOrEmpty(element.DisplayName)
-      ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-      : element.DisplayName;
-
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
     if (!element.Children.Any(CanConvertToSpeckle))
@@ -268,6 +282,58 @@ public partial class ConverterNavisworks
     AddItemProperties(element, @base);
 
     return @base;
+  }
+
+  /// <summary>
+  /// Converts a ModelItem to a Speckle object based on its properties.
+  /// </summary>
+  /// <param name="element">The ModelItem element to be converted.</param>
+  /// <returns>
+  /// Returns a GeometryNode if the element has geometry; otherwise, returns a Collection object with the category type set.
+  /// </returns>
+  private static Base ConvertModelItemToSpeckle(ModelItem element)
+  {
+    // Find the category property of the ModelItem
+    var elementCategoryProperty = FindCategoryProperty(element);
+
+    // Determine the type of the category
+    var elementCategoryType = GetCategoryDisplayName(elementCategoryProperty);
+
+    // Return either a GeometryNode or a Collection based on the element's properties
+    return CreateSpeckleObject(element, elementCategoryType);
+  }
+
+  /// <summary>
+  /// Finds the category property of a ModelItem element.
+  /// </summary>
+  /// <param name="element">The ModelItem element.</param>
+  /// <returns>The found category property.</returns>
+  private static DataProperty FindCategoryProperty(ModelItem element)
+  {
+    return element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
+  }
+
+  /// <summary>
+  /// Gets the display name of a category property.
+  /// </summary>
+  /// <param name="categoryProperty">The category property.</param>
+  /// <returns>The display name of the category.</returns>
+  private static string GetCategoryDisplayName(DataProperty categoryProperty)
+  {
+    return categoryProperty.Value.ToNamedConstant().DisplayName;
+  }
+
+  /// <summary>
+  /// Creates a Speckle object based on the ModelItem element and its category type.
+  /// </summary>
+  /// <param name="element">The ModelItem element.</param>
+  /// <param name="categoryType">The type of the category.</param>
+  /// <returns>A Speckle object.</returns>
+  private static Base CreateSpeckleObject(ModelItem element, string categoryType)
+  {
+    return element.HasGeometry
+      ? new GeometryNode()
+      : new Collection { collectionType = categoryType };
   }
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
@@ -287,7 +353,8 @@ public partial class ConverterNavisworks
     if (!item.HasGeometry || item.Children.Any())
       return true;
 
-    const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints;
+    const PrimitiveTypes allowedTypes =
+      PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
 
     var primitives = item.Geometry.PrimitiveTypes;
     var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
@@ -304,7 +371,10 @@ public partial class ConverterNavisworks
       pathArray = @string
         .ToString()
         .Split('-')
-        .Select(x => int.TryParse(x, out var value) ? value : throw new FormatException("malformed path pseudoId"))
+        .Select(
+          x => int.TryParse(x, out var value)
+            ? value
+            : throw new FormatException("malformed path pseudoId"))
         .ToArray();
     }
     catch (FormatException)

@@ -18,6 +18,7 @@ namespace Speckle.ConnectorCSI.UI
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
     public override bool CanPreviewSend => false;
+
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // TODO!
@@ -51,7 +52,9 @@ namespace Speckle.ConnectorCSI.UI
 
       if (totalObjectCount == 0)
       {
-        throw new InvalidOperationException( "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+        throw new InvalidOperationException(
+          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
+        );
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -66,7 +69,12 @@ namespace Speckle.ConnectorCSI.UI
       return await SendCommitObj(state, progress, commitObj, conversionProgressDict);
     }
 
-    public void BuildSendCommitObj(ISpeckleConverter converter, List<string> selectedObjIds, ref ProgressViewModel progress, ref ConcurrentDictionary<string, int> conversionProgressDict)
+    public void BuildSendCommitObj(
+      ISpeckleConverter converter,
+      List<string> selectedObjIds,
+      ref ProgressViewModel progress,
+      ref ConcurrentDictionary<string, int> conversionProgressDict
+    )
     {
       foreach (var applicationId in selectedObjIds)
       {
@@ -75,10 +83,10 @@ namespace Speckle.ConnectorCSI.UI
         Base converted = null;
         string containerName = string.Empty;
 
-
         var selectedObjectType = ConnectorCSIUtils.ObjectIDsTypesAndNames
-            .Where(pair => pair.Key == applicationId)
-            .Select(pair => pair.Value.Item1).FirstOrDefault();
+          .Where(pair => pair.Key == applicationId)
+          .Select(pair => pair.Value.Item1)
+          .FirstOrDefault();
 
         var reportObj = new ApplicationObject(applicationId, selectedObjectType) { applicationId = applicationId };
 
@@ -89,8 +97,9 @@ namespace Speckle.ConnectorCSI.UI
         }
 
         var typeAndName = ConnectorCSIUtils.ObjectIDsTypesAndNames
-            .Where(pair => pair.Key == applicationId)
-            .Select(pair => pair.Value).FirstOrDefault();
+          .Where(pair => pair.Key == applicationId)
+          .Select(pair => pair.Value)
+          .FirstOrDefault();
 
         try
         {
@@ -110,7 +119,10 @@ namespace Speckle.ConnectorCSI.UI
           continue;
         }
 
-        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}");
+        reportObj.Update(
+          status: ApplicationObject.State.Created,
+          logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}"
+        );
         progress.Report.Log(reportObj);
 
         conversionProgressDict["Conversion"]++;
@@ -118,7 +130,11 @@ namespace Speckle.ConnectorCSI.UI
       }
     }
 
-    public Base GetCommitObj(ISpeckleConverter converter, ProgressViewModel progress, ConcurrentDictionary<string, int> conversionProgressDict)
+    public Base GetCommitObj(
+      ISpeckleConverter converter,
+      ProgressViewModel progress,
+      ConcurrentDictionary<string, int> conversionProgressDict
+    )
     {
       var commitObj = new Base();
       var reportObj = new ApplicationObject("model", "ModelInfo");
@@ -163,7 +179,13 @@ namespace Speckle.ConnectorCSI.UI
       return commitObj;
     }
 
-    public async Task<string> SendCommitObj(StreamState state, ProgressViewModel progress, Base commitObj, ConcurrentDictionary<string, int> conversionProgressDict, string branchName = null)
+    public async Task<string> SendCommitObj(
+      StreamState state,
+      ProgressViewModel progress,
+      Base commitObj,
+      ConcurrentDictionary<string, int> conversionProgressDict,
+      string branchName = null
+    )
     {
       var streamId = state.StreamId;
       var client = state.Client;
@@ -172,25 +194,29 @@ namespace Speckle.ConnectorCSI.UI
       progress.Max = conversionProgressDict["Conversion"];
 
       var objectId = await Operations.Send(
-          @object: commitObj,
-          cancellationToken: progress.CancellationToken,
-          transports: transports,
-          onProgressAction: dict =>
-          {
-            progress.Update(dict);
-          },
-          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-          disposeTransports: true
-          );
-      
-      
+        @object: commitObj,
+        cancellationToken: progress.CancellationToken,
+        transports: transports,
+        onProgressAction: dict =>
+        {
+          progress.Update(dict);
+        },
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
+        disposeTransports: true
+      );
+
       if (branchName != null)
       {
         var branchesSplit = state.BranchName.Split('/');
         branchesSplit[branchesSplit.Count() - 1] = branchName;
         branchName = string.Join("", branchesSplit);
 
-        var branchInput = new BranchCreateInput() { streamId = streamId, name = branchName, description = "This branch holds the comprehensive reports generated by Speckle"};
+        var branchInput = new BranchCreateInput()
+        {
+          streamId = streamId,
+          name = branchName,
+          description = "This branch holds the comprehensive reports generated by Speckle"
+        };
         var branch = await client.BranchGet(streamId, branchName);
         if (branch == null)
           await client.BranchCreate(branchInput);
@@ -203,14 +229,19 @@ namespace Speckle.ConnectorCSI.UI
         streamId = streamId,
         objectId = objectId,
         branchName = branchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {conversionProgressDict["Conversion"]} elements from CSI.",
+        message =
+          state.CommitMessage != null
+            ? state.CommitMessage
+            : $"Pushed {conversionProgressDict["Conversion"]} elements from CSI.",
         sourceApplication = GetHostAppVersion(Model)
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null)
+      {
+        actualCommit.parents = new List<string>() { state.PreviousCommitId };
+      }
 
       return await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
-      
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands

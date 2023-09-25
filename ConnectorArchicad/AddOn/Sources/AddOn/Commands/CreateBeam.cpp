@@ -58,8 +58,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.beam.offset);
-	}
-	else {
+	} else {
 		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.beam.offset);
 	}
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_Elem_Head, floorInd);
@@ -147,154 +146,156 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, nProfiles);
 	}
 
-	API_BeamSegmentType defaultBeamSegment;
-	if (memo.beamSegments != nullptr) {
-		defaultBeamSegment = memo.beamSegments[0];
-		memo.beamSegments = (API_BeamSegmentType*) BMAllocatePtr ((element.beam.nSegments) * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0);
-	} else {
-		return Error;
-	}
-
-	memoMask = APIMemoMask_BeamSegment |
-		APIMemoMask_AssemblySegmentScheme |
-		APIMemoMask_BeamHole |
-		APIMemoMask_AssemblySegmentCut;
-
 #pragma region Segment
 	GS::ObjectState allSegments;
 	if (os.Contains (Beam::segments))
 		os.Get (Beam::segments, allSegments);
 
-	for (UInt32 idx = 0; idx < element.beam.nSegments; ++idx) {
-		GS::ObjectState currentSegment;
-		allSegments.Get (GS::String::SPrintf (AssemblySegment::SegmentName, idx + 1), currentSegment);
+	if (!allSegments.IsEmpty ()) {
+		API_BeamSegmentType defaultBeamSegment;
+		if (memo.beamSegments != nullptr) {
+			defaultBeamSegment = memo.beamSegments[0];
+			memo.beamSegments = (API_BeamSegmentType*) BMAllocatePtr ((element.beam.nSegments) * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0);
+		} else {
+			return Error;
+		}
 
-		if (!currentSegment.IsEmpty ()) {
+		memoMask = APIMemoMask_BeamSegment |
+			APIMemoMask_AssemblySegmentScheme |
+			APIMemoMask_BeamHole |
+			APIMemoMask_AssemblySegmentCut;
 
-			memo.beamSegments[idx] = defaultBeamSegment;
-			GS::ObjectState assemblySegment;
-			currentSegment.Get (Beam::BeamSegment::segmentData, assemblySegment);
-			Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
+		for (UInt32 idx = 0; idx < element.beam.nSegments; ++idx) {
+			GS::ObjectState currentSegment;
+			allSegments.Get (GS::String::SPrintf (AssemblySegment::SegmentName, idx + 1), currentSegment);
 
-			// The left overridden material name - in case of circle or profiled segment the left surface is the extrusion surface, but the import does not work properly in API
-			memo.beamSegments[idx].leftMaterial.overridden = false;
-			if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
-				memo.beamSegments[idx].leftMaterial.overridden = true;
+			if (!currentSegment.IsEmpty ()) {
 
-				GS::UniString attrName;
-				currentSegment.Get (Beam::BeamSegment::LeftMaterial, attrName);
+				memo.beamSegments[idx] = defaultBeamSegment;
+				GS::ObjectState assemblySegment;
+				currentSegment.Get (Beam::BeamSegment::segmentData, assemblySegment);
+				Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
 
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_MaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
+				// The left overridden material name - in case of circle or profiled segment the left surface is the extrusion surface, but the import does not work properly in API
+				memo.beamSegments[idx].leftMaterial.overridden = false;
+				if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
+					memo.beamSegments[idx].leftMaterial.overridden = true;
 
-					if (err == NoError) {
-						memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
-						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
+					GS::UniString attrName;
+					currentSegment.Get (Beam::BeamSegment::LeftMaterial, attrName);
+
+					if (!attrName.IsEmpty ()) {
+						API_Attribute attrib;
+						BNZeroMemory (&attrib, sizeof (API_Attribute));
+						attrib.header.typeID = API_MaterialID;
+						CHCopyC (attrName.ToCStr (), attrib.header.name);
+						err = ACAPI_Attribute_Get (&attrib);
+
+						if (err == NoError) {
+							memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
+						}
 					}
 				}
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
 
-			// The top overridden material name
-			memo.beamSegments[idx].topMaterial.overridden = false;
-			if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
-				memo.beamSegments[idx].topMaterial.overridden = true;
+				// The top overridden material name
+				memo.beamSegments[idx].topMaterial.overridden = false;
+				if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
+					memo.beamSegments[idx].topMaterial.overridden = true;
 
-				GS::UniString attrName;
-				currentSegment.Get (Beam::BeamSegment::TopMaterial, attrName);
+					GS::UniString attrName;
+					currentSegment.Get (Beam::BeamSegment::TopMaterial, attrName);
 
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_MaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
+					if (!attrName.IsEmpty ()) {
+						API_Attribute attrib;
+						BNZeroMemory (&attrib, sizeof (API_Attribute));
+						attrib.header.typeID = API_MaterialID;
+						CHCopyC (attrName.ToCStr (), attrib.header.name);
+						err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError) {
-						memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
-						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
+						if (err == NoError) {
+							memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
+						}
 					}
 				}
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
 
-			// The right overridden material name
-			memo.beamSegments[idx].rightMaterial.overridden = false;
-			if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
-				memo.beamSegments[idx].rightMaterial.overridden = true;
+				// The right overridden material name
+				memo.beamSegments[idx].rightMaterial.overridden = false;
+				if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
+					memo.beamSegments[idx].rightMaterial.overridden = true;
 
-				GS::UniString attrName;
-				currentSegment.Get (Beam::BeamSegment::RightMaterial, attrName);
+					GS::UniString attrName;
+					currentSegment.Get (Beam::BeamSegment::RightMaterial, attrName);
 
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_MaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
+					if (!attrName.IsEmpty ()) {
+						API_Attribute attrib;
+						BNZeroMemory (&attrib, sizeof (API_Attribute));
+						attrib.header.typeID = API_MaterialID;
+						CHCopyC (attrName.ToCStr (), attrib.header.name);
+						err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError) {
-						memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
-						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
+						if (err == NoError) {
+							memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
+						}
 					}
 				}
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
 
-			// The bottom overridden material name
-			memo.beamSegments[idx].bottomMaterial.overridden = false;
-			if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
-				memo.beamSegments[idx].bottomMaterial.overridden = true;
+				// The bottom overridden material name
+				memo.beamSegments[idx].bottomMaterial.overridden = false;
+				if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
+					memo.beamSegments[idx].bottomMaterial.overridden = true;
 
-				GS::UniString attrName;
-				currentSegment.Get (Beam::BeamSegment::BottomMaterial, attrName);
+					GS::UniString attrName;
+					currentSegment.Get (Beam::BeamSegment::BottomMaterial, attrName);
 
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_MaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
+					if (!attrName.IsEmpty ()) {
+						API_Attribute attrib;
+						BNZeroMemory (&attrib, sizeof (API_Attribute));
+						attrib.header.typeID = API_MaterialID;
+						CHCopyC (attrName.ToCStr (), attrib.header.name);
+						err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError) {
-						memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
-						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
+						if (err == NoError) {
+							memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
+						}
 					}
 				}
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
 
-			// The ends overridden material name
-			memo.beamSegments[idx].endsMaterial.overridden = false;
-			if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
-				memo.beamSegments[idx].endsMaterial.overridden = true;
+				// The ends overridden material name
+				memo.beamSegments[idx].endsMaterial.overridden = false;
+				if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
+					memo.beamSegments[idx].endsMaterial.overridden = true;
 
-				GS::UniString attrName;
-				currentSegment.Get (Beam::BeamSegment::EndsMaterial, attrName);
+					GS::UniString attrName;
+					currentSegment.Get (Beam::BeamSegment::EndsMaterial, attrName);
 
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_MaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
+					if (!attrName.IsEmpty ()) {
+						API_Attribute attrib;
+						BNZeroMemory (&attrib, sizeof (API_Attribute));
+						attrib.header.typeID = API_MaterialID;
+						CHCopyC (attrName.ToCStr (), attrib.header.name);
+						err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError) {
-						memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
-						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
+						if (err == NoError) {
+							memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
+						}
 					}
 				}
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
 
-			// The overridden materials are chained
-			if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained)) {
-				currentSegment.Get (Beam::BeamSegment::MaterialsChained, memo.beamSegments[idx].materialsChained);
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, materialsChained);
+				// The overridden materials are chained
+				if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained)) {
+					currentSegment.Get (Beam::BeamSegment::MaterialsChained, memo.beamSegments[idx].materialsChained);
+					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, materialsChained);
+				}
 			}
 		}
 	}

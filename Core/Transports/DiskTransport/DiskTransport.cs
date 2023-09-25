@@ -16,7 +16,7 @@ namespace DiskTransport;
 /// </summary>
 public class DiskTransport : ICloneable, ITransport
 {
-  public DiskTransport(string basePath = null)
+  public DiskTransport(string? basePath = null)
   {
     if (basePath == null)
       basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
@@ -47,9 +47,9 @@ public class DiskTransport : ICloneable, ITransport
 
   public CancellationToken CancellationToken { get; set; }
 
-  public Action<string, int> OnProgressAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 
   public int SavedObjectCount { get; private set; }
 
@@ -62,10 +62,9 @@ public class DiskTransport : ICloneable, ITransport
 
   public void EndWrite() { }
 
-  public string GetObject(string id)
+  public string? GetObject(string id)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null; // Check for cancellation
+    CancellationToken.ThrowIfCancellationRequested();
 
     var filePath = Path.Combine(RootPath, id);
     if (File.Exists(filePath))
@@ -77,8 +76,7 @@ public class DiskTransport : ICloneable, ITransport
   public void SaveObject(string id, string serializedObject)
   {
     var stopwatch = Stopwatch.StartNew();
-    if (CancellationToken.IsCancellationRequested)
-      return; // Check for cancellation
+    CancellationToken.ThrowIfCancellationRequested();
 
     var filePath = Path.Combine(RootPath, id);
     if (File.Exists(filePath))
@@ -93,10 +91,16 @@ public class DiskTransport : ICloneable, ITransport
 
   public void SaveObject(string id, ITransport sourceTransport)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return; // Check for cancellation
+    CancellationToken.ThrowIfCancellationRequested();
 
     var serializedObject = sourceTransport.GetObject(id);
+
+    if (serializedObject is null)
+      throw new TransportException(
+        this,
+        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
+      );
+
     SaveObject(id, serializedObject);
   }
 
@@ -105,28 +109,33 @@ public class DiskTransport : ICloneable, ITransport
   public async Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int> onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null; // Check for cancellation
+    CancellationToken.ThrowIfCancellationRequested();
 
     var parent = GetObject(id);
+    if (parent is null)
+      throw new InvalidOperationException($"Requested id {id} was not found within this transport {TransportName}");
 
     targetTransport.SaveObject(id, parent);
 
     var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
-    if (partial.__closure == null || partial.__closure.Count == 0)
+    if (partial?.__closure is null || partial.__closure.Count == 0)
       return parent;
 
     int i = 0;
     foreach (var kvp in partial.__closure)
     {
-      if (CancellationToken.IsCancellationRequested)
-        return null; // Check for cancellation
+      CancellationToken.ThrowIfCancellationRequested();
 
       var child = GetObject(kvp.Key);
+      if (child is null)
+        throw new InvalidOperationException(
+          $"Closure id {kvp.Key} was not found within this transport {TransportName}"
+        );
+
       targetTransport.SaveObject(kvp.Key, child);
       OnProgressAction?.Invoke($"{TransportName}", i++);
     }
@@ -134,7 +143,7 @@ public class DiskTransport : ICloneable, ITransport
     return parent;
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new();
     foreach (string objectId in objectIds)
@@ -150,7 +159,7 @@ public class DiskTransport : ICloneable, ITransport
     return $"Disk Transport @{RootPath}";
   }
 
-  private class Placeholder
+  private sealed class Placeholder
   {
     public Dictionary<string, int> __closure { get; set; } = new();
   }

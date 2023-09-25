@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -22,22 +23,24 @@ namespace Speckle.Core.Transports;
 /// <summary>
 /// Sends data to a speckle server.
 /// </summary>
-public class ServerTransportV1 : IDisposable, ICloneable, ITransport
+[Obsolete("Use " + nameof(ServerTransportV2))]
+public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 {
-  private int DOWNLOAD_BATCH_SIZE = 1000;
+  private const int DownloadBatchSize = 1000;
 
-  private bool IS_WRITING;
+  private bool _isWriting;
 
-  private int MAX_BUFFER_SIZE = 1_000_000;
+  private const int MaxBufferSize = 1_000_000;
 
-  private int MAX_MULTIPART_COUNT = 50;
+  private const int MaxMultipartCount = 50;
 
-  private ConcurrentQueue<(string, string, int)> Queue = new();
+  private ConcurrentQueue<(string, string, int)> _queue = new();
 
-  private int TotalElapsed,
-    PollInterval = 100;
+  private int _totalElapsed;
 
-  private Timer WriteTimer;
+  private const int PollInterval = 100;
+
+  private Timer _writeTimer;
 
   public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60)
   {
@@ -71,7 +74,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     // TODO: check if it's writing first?
     Client?.Dispose();
-    WriteTimer.Dispose();
+    _writeTimer.Dispose();
   }
 
   public string TransportName { get; set; } = "RemoteTransport";
@@ -100,7 +103,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public void EndWrite() { }
 
-  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     var payload = new Dictionary<string, string> { { "objects", JsonConvert.SerializeObject(objectIds) } };
     var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
@@ -131,18 +134,15 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     Client.BaseAddress = new Uri(baseUri);
     Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
+    Http.AddAuthHeader(Client, authorizationToken);
 
-    if (authorizationToken.ToLowerInvariant().Contains("bearer"))
-      Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
-    else
-      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
-    WriteTimer = new Timer
+    _writeTimer = new Timer
     {
       AutoReset = true,
       Enabled = false,
       Interval = PollInterval
     };
-    WriteTimer.Elapsed += WriteTimerElapsed;
+    _writeTimer.Elapsed += WriteTimerElapsed;
   }
 
   public override string ToString()
@@ -172,24 +172,24 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public bool GetWriteCompletionStatus()
   {
-    return Queue.Count == 0 && !IS_WRITING;
+    return _queue.Count == 0 && !_isWriting;
   }
 
   private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
   {
-    TotalElapsed += PollInterval;
+    _totalElapsed += PollInterval;
 
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
+      _queue = new ConcurrentQueue<(string, string, int)>();
+      _isWriting = false;
       return;
     }
 
-    if (TotalElapsed > 300 && IS_WRITING == false && Queue.Count != 0)
+    if (_totalElapsed > 300 && _isWriting == false && _queue.Count != 0)
     {
-      TotalElapsed = 0;
-      WriteTimer.Enabled = false;
+      _totalElapsed = 0;
+      _writeTimer.Enabled = false;
 #pragma warning disable CS4014
       ConsumeQueue();
 #pragma warning restore CS4014
@@ -212,12 +212,12 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     List<string> queuedBatchIds = new();
     ValueTuple<string, string, int> queueElement;
     var payloadBufferSize = 0;
-    while (Queue.TryPeek(out queueElement) && payloadBufferSize < MAX_BUFFER_SIZE)
+    while (_queue.TryPeek(out queueElement) && payloadBufferSize < MaxBufferSize)
     {
       if (CancellationToken.IsCancellationRequested)
         return (queuedBatch.Count, null);
 
-      Queue.TryDequeue(out queueElement);
+      _queue.TryDequeue(out queueElement);
       queuedBatch.Add(queueElement);
       queuedBatchIds.Add(queueElement.Item1);
       payloadBufferSize += queueElement.Item3;
@@ -249,15 +249,15 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
+      _queue = new ConcurrentQueue<(string, string, int)>();
+      _isWriting = false;
       return;
     }
 
-    if (Queue.Count == 0)
+    if (_queue.Count == 0)
       return;
 
-    IS_WRITING = true;
+    _isWriting = true;
     using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}", UriKind.Relative),
@@ -269,12 +269,12 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     SavedObjectCount = 0;
     var addedMpCount = 0;
 
-    while (addedMpCount < MAX_MULTIPART_COUNT && Queue.Count != 0)
+    while (addedMpCount < MaxMultipartCount && _queue.Count != 0)
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
-        IS_WRITING = false;
+        _queue = new ConcurrentQueue<(string, string, int)>();
+        _isWriting = false;
         return;
       }
 
@@ -282,8 +282,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       if (batch == null)
       {
         // Canceled or error happened (which was already reported)
-        Queue = new ConcurrentQueue<(string, string, int)>();
-        IS_WRITING = false;
+        _queue = new ConcurrentQueue<(string, string, int)>();
+        _isWriting = false;
         return;
       }
 
@@ -324,8 +324,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
+      _queue = new ConcurrentQueue<(string, string, int)>();
+      _isWriting = false;
       return;
     }
 
@@ -337,24 +337,24 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       }
       catch (Exception e)
       {
-        IS_WRITING = false;
+        _isWriting = false;
         OnErrorAction?.Invoke(
           TransportName,
           new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e)
         );
 
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        _queue = new ConcurrentQueue<(string, string, int)>();
         return;
       }
 
-    IS_WRITING = false;
+    _isWriting = false;
 
     OnProgressAction?.Invoke(TransportName, SavedObjectCount);
 
-    if (!WriteTimer.Enabled)
+    if (!_writeTimer.Enabled)
     {
-      WriteTimer.Enabled = true;
-      WriteTimer.Start();
+      _writeTimer.Enabled = true;
+      _writeTimer.Start();
     }
   }
 
@@ -362,17 +362,17 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
+      _queue = new ConcurrentQueue<(string, string, int)>();
+      _isWriting = false;
       return;
     }
 
-    Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
+    _queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
-    if (!WriteTimer.Enabled && !IS_WRITING)
+    if (!_writeTimer.Enabled && !_isWriting)
     {
-      WriteTimer.Enabled = true;
-      WriteTimer.Start();
+      _writeTimer.Enabled = true;
+      _writeTimer.Start();
     }
   }
 
@@ -380,19 +380,19 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
+      _queue = new ConcurrentQueue<(string, string, int)>();
+      _isWriting = false;
       return;
     }
 
     var serializedObject = sourceTransport.GetObject(hash);
 
-    Queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
+    _queue.Enqueue((hash, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
-    if (!WriteTimer.Enabled && !IS_WRITING)
+    if (!_writeTimer.Enabled && !_isWriting)
     {
-      WriteTimer.Enabled = true;
-      WriteTimer.Start();
+      _writeTimer.Enabled = true;
+      _writeTimer.Start();
     }
   }
 
@@ -400,17 +400,17 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   #region Getting objects
 
-  public string GetObject(string hash)
+  public string GetObject(string id)
   {
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
+      _queue = new ConcurrentQueue<(string, string, int)>();
       return null;
     }
 
     using var message = new HttpRequestMessage
     {
-      RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
+      RequestUri = new Uri($"/objects/{StreamId}/{id}/single", UriKind.Relative),
       Method = HttpMethod.Get
     };
 
@@ -421,21 +421,21 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   }
 
   public async Task<string> CopyObjectAndChildren(
-    string hash,
+    string id,
     ITransport targetTransport,
     Action<int> onTotalChildrenCountKnown
   )
   {
     if (CancellationToken.IsCancellationRequested)
     {
-      Queue = new ConcurrentQueue<(string, string, int)>();
+      _queue = new ConcurrentQueue<(string, string, int)>();
       return null;
     }
 
     // Get root object
     using var rootHttpMessage = new HttpRequestMessage
     {
-      RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
+      RequestUri = new Uri($"/objects/{StreamId}/{id}/single", UriKind.Relative),
       Method = HttpMethod.Get
     };
 
@@ -466,17 +466,17 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     targetTransport.BeginWrite();
 
     // Get the children that are not already in the targetTransport
-    List<string> childrenIdBatch = new(DOWNLOAD_BATCH_SIZE);
+    List<string> childrenIdBatch = new(DownloadBatchSize);
     bool downloadBatchResult;
     foreach (var objectId in newChildrenIds)
     {
       childrenIdBatch.Add(objectId);
-      if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
+      if (childrenIdBatch.Count >= DownloadBatchSize)
       {
         downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
         if (!downloadBatchResult)
           return null;
-        childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
+        childrenIdBatch = new List<string>(DownloadBatchSize);
       }
     }
     if (childrenIdBatch.Count > 0)
@@ -486,7 +486,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         return null;
     }
 
-    targetTransport.SaveObject(hash, rootObjectStr);
+    targetTransport.SaveObject(id, rootObjectStr);
     await targetTransport.WriteComplete().ConfigureAwait(false);
     return rootObjectStr;
   }
@@ -537,7 +537,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     {
       if (CancellationToken.IsCancellationRequested)
       {
-        Queue = new ConcurrentQueue<(string, string, int)>();
+        _queue = new ConcurrentQueue<(string, string, int)>();
         return false;
       }
 
@@ -556,16 +556,14 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 /// <summary>
 /// https://cymbeline.ch/2014/03/16/gzip-encoding-an-http-post-request-body/
 /// </summary>
+[Obsolete("Use " + nameof(ServerUtils.GzipContent))]
 internal sealed class GzipContent : HttpContent
 {
-  private readonly HttpContent content;
+  private readonly HttpContent _content;
 
   public GzipContent(HttpContent content)
   {
-    if (content == null)
-      return;
-
-    this.content = content;
+    this._content = content;
 
     // Keep the original content's headers ...
     if (content != null)
@@ -579,12 +577,11 @@ internal sealed class GzipContent : HttpContent
   protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
   {
     // Open a GZipStream that writes to the specified output stream.
-    using (GZipStream gzip = new(stream, CompressionMode.Compress, true))
-      // Copy all the input content to the GZip stream.
-      if (content != null)
-        await content.CopyToAsync(gzip).ConfigureAwait(false);
-      else
-        await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
+    using GZipStream gzip = new(stream, CompressionMode.Compress, true);
+    if (_content != null)
+      await _content.CopyToAsync(gzip).ConfigureAwait(false);
+    else
+      await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
   }
 
   protected override bool TryComputeLength(out long length)

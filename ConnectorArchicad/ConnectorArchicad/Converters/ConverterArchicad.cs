@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Archicad;
@@ -50,12 +50,16 @@ namespace Objects.Converter.Archicad
       return null;
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public bool CanConvertToNativeImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Speckle BIM elements
         Objects.BuiltElements.Beam _ => true,
@@ -67,18 +71,21 @@ namespace Objects.Converter.Archicad
         Objects.BuiltElements.Wall _ => true,
 
         // Archicad elements
-        Objects.BuiltElements.Archicad.ArchicadDoor => true,
-        Objects.BuiltElements.Archicad.ArchicadWindow => true,
-        Objects.BuiltElements.Archicad.ArchicadSkylight => true,
+        Objects.BuiltElements.Archicad.ArchicadDoor _ => true,
+        Objects.BuiltElements.Archicad.ArchicadWindow _ => true,
+        Objects.BuiltElements.Archicad.ArchicadSkylight _ => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
-        Objects.BuiltElements.Revit.FamilyInstance => true,
-        Objects.Other.Revit.RevitInstance => true,
+        Objects.BuiltElements.Revit.FamilyInstance _ => true,
+        Objects.Other.Revit.RevitInstance _ => true,
+
+        // Other
+        Objects.Other.BlockInstance _ => true,
 
         // Speckle geomtries
-        Mesh _ => true,
-        Brep _ => true,
+        Objects.Geometry.Mesh _ => true,
+        Objects.Geometry.Brep _ => true,
 
         _ => false
       };
@@ -86,8 +93,7 @@ namespace Objects.Converter.Archicad
 
     public bool CanConvertToNativeNotImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Project info
         Objects.Organization.ModelInfo _ => true,
@@ -99,6 +105,11 @@ namespace Objects.Converter.Archicad
     public bool CanConvertToNative(Base @object)
     {
       return CanConvertToNativeImplemented(@object) || CanConvertToNativeNotImplemented(@object);
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
 
     /// <summary>
@@ -113,9 +124,7 @@ namespace Objects.Converter.Archicad
     /// </summary>
     public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
-    public void SetContextDocument(object doc)
-    {
-    }
+    public void SetContextDocument(object doc) { }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
@@ -147,9 +156,7 @@ namespace Objects.Converter.Archicad
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
-    public void SetConverterSettings(object settings)
-    {
-    }
+    public void SetConverterSettings(object settings) { }
 
     public ConverterArchicad(ConversionOptions conversionOptions)
     {

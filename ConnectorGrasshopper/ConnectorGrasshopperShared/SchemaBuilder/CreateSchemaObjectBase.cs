@@ -136,7 +136,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
 
   public string GenerateSeed()
   {
-    return new string(Utilities.hashString(Guid.NewGuid().ToString()).Take(20).ToArray());
+    return new string(Utilities.HashString(Guid.NewGuid().ToString()).Take(20).ToArray());
   }
 
   public override bool Read(GH_IReader reader)

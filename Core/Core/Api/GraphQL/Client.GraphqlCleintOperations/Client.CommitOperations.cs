@@ -1,6 +1,5 @@
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,20 +14,9 @@ public partial class Client
   /// </summary>
   /// <param name="streamId">Id of the stream to get the commit from</param>
   /// <param name="commitId">Id of the commit to get</param>
-  /// <returns></returns>
-  public Task<Commit> CommitGet(string streamId, string commitId)
-  {
-    return CommitGet(CancellationToken.None, streamId, commitId);
-  }
-
-  /// <summary>
-  /// Gets a given commit from a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamId">Id of the stream to get the commit from</param>
-  /// <param name="commitId">Id of the commit to get</param>
   /// <returns></returns>
-  public async Task<Commit> CommitGet(CancellationToken cancellationToken, string streamId, string commitId)
+  public async Task<Commit> CommitGet(string streamId, string commitId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -60,21 +48,13 @@ public partial class Client
   /// </summary>
   /// <param name="streamId">Id of the stream to get the commits from</param>
   /// <param name="limit">Max number of commits to get</param>
-  /// <returns></returns>
-  public Task<List<Commit>> StreamGetCommits(string streamId, int limit = 10)
-  {
-    return StreamGetCommits(CancellationToken.None, streamId, limit);
-  }
-
-  /// <summary>
-  /// Gets the latest commits from a stream
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamId">Id of the stream to get the commits from</param>
-  /// <param name="limit">Max number of commits to get</param>
-  /// <returns></returns>
-  /// <exception cref="Exception"></exception>
-  public async Task<List<Commit>> StreamGetCommits(CancellationToken cancellationToken, string streamId, int limit = 10)
+  /// <returns>The requested commits</returns>
+  public async Task<List<Commit>> StreamGetCommits(
+    string streamId,
+    int limit = 10,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {
@@ -110,14 +90,7 @@ public partial class Client
   /// </summary>
   /// <param name="commitInput"></param>
   /// <returns>The commit id.</returns>
-  public Task<string> CommitCreate(CommitCreateInput commitInput)
-  {
-    return CommitCreate(CancellationToken.None, commitInput);
-  }
-
-  /// <inheritdoc cref="CommitCreate(CommitCreateInput)"/>
-  /// <param name="cancellationToken"></param>
-  public async Task<string> CommitCreate(CancellationToken cancellationToken, CommitCreateInput commitInput)
+  public async Task<string> CommitCreate(CommitCreateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -133,18 +106,9 @@ public partial class Client
   /// Updates a commit.
   /// </summary>
   /// <param name="commitInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
-  public Task<bool> CommitUpdate(CommitUpdateInput commitInput)
-  {
-    return CommitUpdate(CancellationToken.None, commitInput);
-  }
-
-  /// <summary>
-  /// Updates a commit.
-  /// </summary>
-  /// <param name="commitInput"></param>
-  /// <returns>The stream's id.</returns>
-  public async Task<bool> CommitUpdate(CancellationToken cancellationToken, CommitUpdateInput commitInput)
+  public async Task<bool> CommitUpdate(CommitUpdateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -160,18 +124,9 @@ public partial class Client
   /// Deletes a commit.
   /// </summary>
   /// <param name="commitInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<bool> CommitDelete(CommitDeleteInput commitInput)
-  {
-    return CommitDelete(CancellationToken.None, commitInput);
-  }
-
-  /// <summary>
-  /// Deletes a commit.
-  /// </summary>
-  /// <param name="commitInput"></param>
-  /// <returns></returns>
-  public async Task<bool> CommitDelete(CancellationToken cancellationToken, CommitDeleteInput commitInput)
+  public async Task<bool> CommitDelete(CommitDeleteInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -188,15 +143,12 @@ public partial class Client
   /// </summary>
   /// <remarks>Used for read receipts</remarks>
   /// <param name="commitReceivedInput"></param>
-  /// <returns></returns>
-  public Task<bool> CommitReceived(CommitReceivedInput commitReceivedInput)
-  {
-    return CommitReceived(CancellationToken.None, commitReceivedInput);
-  }
-
-  /// <inheritdoc cref="CommitReceived(CommitReceivedInput)"/>
   /// <param name="cancellationToken"></param>
-  public async Task<bool> CommitReceived(CancellationToken cancellationToken, CommitReceivedInput commitReceivedInput)
+  /// <returns></returns>
+  public async Task<bool> CommitReceived(
+    CommitReceivedInput commitReceivedInput,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {

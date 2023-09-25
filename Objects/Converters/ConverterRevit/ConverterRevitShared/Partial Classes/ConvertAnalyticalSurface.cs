@@ -176,11 +176,12 @@ namespace Objects.Converter.Revit
         default:
           var polycurve = PolycurveFromTopology(speckleElement.topology);
           var level = LevelFromPoint(PointToNative(speckleElement.topology[0].basePoint));
-          var revitFloor = new RevitFloor(speckleElement.property.name, speckleElement.property.name, polycurve, level, true);
+          var speckleFloor = new BuiltElements.Floor(polycurve);
+          SetElementType(speckleFloor, speckleElement.property.name);
 #if REVIT2020 || REVIT2021 || REVIT2022
-          revitFloor.applicationId = speckleElement.applicationId;
+          speckleFloor.applicationId = speckleElement.applicationId;
 #endif
-          return FloorToNative(revitFloor);
+          return FloorToNative(speckleFloor);
       }
     }
 

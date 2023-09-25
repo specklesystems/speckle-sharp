@@ -1,5 +1,5 @@
-using Autodesk.Revit.DB;
 using System.Linq;
+using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -50,14 +50,16 @@ namespace Objects.Converter.Revit
       speckleArea.number = revitArea.Number;
       speckleArea.center = (Point)LocationToSpeckle(revitArea);
       speckleArea.level = ConvertAndCacheLevel(revitArea, BuiltInParameter.ROOM_LEVEL_ID);
-      speckleArea.outline = profiles[0];
+      if (profiles.Any())
+        speckleArea.outline = profiles[0];
       speckleArea.area = GetParamValue<double>(revitArea, BuiltInParameter.ROOM_AREA);
       if (profiles.Count > 1)
         speckleArea.voids = profiles.Skip(1).ToList();
 
       GetAllRevitParamsAndIds(speckleArea, revitArea);
 
-      speckleArea.displayValue = GetElementDisplayValue(revitArea);
+      //no mesh seems to be retriavable, not even using the SpatialElementGeometryCalculator 
+      //speckleArea.displayValue = GetElementDisplayValue(revitArea);
       return speckleArea;
     }
   }

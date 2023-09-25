@@ -32,6 +32,111 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
+    // Layers
+    public Collection LayerToSpeckle(LayerTableRecord layer)
+    {
+      var collection = new Collection(layer.Name, "layer") { applicationId = layer.Id.ToString() };
+
+      // add dynamic autocad props
+      var style = new DisplayStyle() { units = Units.Millimeters };
+      style.color = layer.Color.ColorValue.ToArgb();
+      var linetype = (LinetypeTableRecord)Trans.GetObject(layer.LinetypeObjectId, OpenMode.ForRead);
+      style.linetype = linetype.Name;
+      var lineWeight =
+        (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
+          ? (int)LineWeight.LineWeight025
+          : (int)layer.LineWeight;
+      style.lineweight = lineWeight / 100; // convert to mm
+      collection["displayStyle"] = style;
+
+      collection["visible"] = !layer.IsHidden;
+
+      return collection;
+    }
+
+    public ApplicationObject CollectionToNative(Collection collection)
+    {
+      // get layer table
+      var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForWrite);
+
+      #region local functions
+      LayerTableRecord GetLayer(string path)
+      {
+        if (layerTable.Has(path))
+          return (LayerTableRecord)Trans.GetObject(layerTable[path], OpenMode.ForWrite);
+        return null;
+      }
+      LayerTableRecord MakeLayer(string name)
+      {
+        try
+        {
+          var _layer = new LayerTableRecord();
+
+          // Assign the layer properties
+          _layer.Name = name;
+
+          // Append the new layer to the layer table and the transaction
+          layerTable.Add(_layer);
+          Trans.AddNewlyCreatedDBObject(_layer, true);
+
+          return _layer;
+        }
+        catch (Exception e)
+        {
+          return null;
+        }
+      }
+      #endregion
+
+      var appObj = new ApplicationObject(collection.id, collection.speckle_type)
+      {
+        applicationId = collection.applicationId
+      };
+      LayerTableRecord layer = null;
+      var status = ApplicationObject.State.Unknown;
+
+      // see if this layer already exists in the doc
+      var layerPath = collection["path"] as string;
+      LayerTableRecord existingLayer = GetLayer(layerPath);
+
+      // update this layer if it exists & receive mode is on update
+      if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
+      {
+        layer = existingLayer;
+        status = ApplicationObject.State.Updated;
+      }
+      else // create this layer
+      {
+        layer = MakeLayer(layerPath);
+        status = ApplicationObject.State.Created;
+      }
+
+      if (layer == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create layer");
+        return appObj;
+      }
+
+      // get attributes
+      var displayStyle = collection["displayStyle"] as DisplayStyle;
+      var renderMaterial = collection["renderMaterial"] as RenderMaterial;
+      Base styleBase = displayStyle != null ? displayStyle : renderMaterial;
+      DisplayStyleToNative(
+        styleBase,
+        out Color color,
+        out Transparency transparency,
+        out LineWeight lineWeight,
+        out ObjectId lineType
+      );
+      layer.Color = color;
+      layer.Transparency = transparency;
+      layer.LineWeight = lineWeight;
+      layer.LinetypeObjectId = lineType;
+
+      appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
+      return appObj;
+    }
+
     // Display Style
     private static LineWeight GetLineWeight(double weight)
     {
@@ -41,33 +146,47 @@ namespace Objects.Converter.AutocadCivil
       return (LineWeight)closest;
     }
 
-    public Entity DisplayStyleToNative(Base styleBase, Entity entity)
+    public void DisplayStyleToNative(
+      Base styleBase,
+      out Color color,
+      out Transparency transparency,
+      out LineWeight lineWeight,
+      out ObjectId lineType
+    )
     {
-      var color = new System.Drawing.Color();
+      var systemColor = new System.Drawing.Color();
+      byte alpha = 255;
+      lineWeight = LineWeight.ByLineWeightDefault;
+      lineType = LineTypeDictionary.First().Value;
       if (styleBase is DisplayStyle style)
       {
-        color = System.Drawing.Color.FromArgb(style.color);
-        entity.LineWeight = GetLineWeight(style.lineweight);
+        systemColor = System.Drawing.Color.FromArgb(style.color);
+        alpha = systemColor.A;
+
+        double conversionFactor =
+          (style.units != null)
+            ? Units.GetConversionFactor(Units.GetUnitsFromString(style.units), Units.Millimeters)
+            : 1;
+        lineWeight = GetLineWeight(style.lineweight * conversionFactor);
+
         if (LineTypeDictionary.ContainsKey(style.linetype))
-          entity.LinetypeId = LineTypeDictionary[style.linetype];
-        entity.Transparency = new Transparency(color.A);
+          lineType = LineTypeDictionary[style.linetype];
       }
       else if (styleBase is RenderMaterial material) // this is the fallback value if a rendermaterial is passed instead
       {
-        color = System.Drawing.Color.FromArgb(material.diffuse);
-        var alpha = (byte)(material.opacity * 255d);
-        entity.Transparency = new Transparency(alpha);
+        systemColor = System.Drawing.Color.FromArgb(material.diffuse);
+        alpha = (byte)(material.opacity * 255d);
       }
-      entity.Color = Color.FromRgb(color.R, color.G, color.B);
-
-      return entity;
+      color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
+      transparency = new Transparency(alpha);
     }
 
     public DisplayStyle DisplayStyleToSpeckle(Entity entity)
     {
-      var style = new DisplayStyle();
       if (entity is null)
-        return style;
+        return null;
+
+      var style = new DisplayStyle();
 
       // get color
       int color = System.Drawing.Color.Black.ToArgb();
@@ -351,7 +470,8 @@ namespace Objects.Converter.AutocadCivil
       };
 
       // add attributes
-      instance["attributes"] = attributes;
+      if (attributes.Any())
+        instance["attributes"] = attributes;
 
       return instance;
     }
@@ -729,9 +849,21 @@ namespace Objects.Converter.AutocadCivil
       {
         if (entity != null)
         {
-          var displayedEntity =
-            (style != null) ? DisplayStyleToNative(style, entity) : DisplayStyleToNative(material, entity);
-          converted.Add(displayedEntity);
+          // get display attributes
+          Base styleBase = style != null ? style : material;
+          DisplayStyleToNative(
+            styleBase,
+            out Color color,
+            out Transparency transparency,
+            out LineWeight lineWeight,
+            out ObjectId lineType
+          );
+          entity.Color = color;
+          entity.Transparency = transparency;
+          entity.LineWeight = lineWeight;
+          entity.LinetypeId = lineType;
+
+          converted.Add(entity);
         }
       }
     }

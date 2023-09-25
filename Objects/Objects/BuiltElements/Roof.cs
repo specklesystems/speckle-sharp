@@ -138,10 +138,15 @@ namespace Objects.BuiltElements.Archicad
       public short? showRelBelow { get; set; }
     }
 
+    // Element base
+    public string? /*APINullabe*/ elementType { get; set; }
+    public List<Classification>? /*APINullabe*/ classifications { get; set; }
+
+    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+
     // Geometry and positioning
-    public Level level { get; set; }
     public double? thickness { get; set; }
-    public string structure { get; set; }
+    public string? /*APINullabe*/ structure { get; set; }
     public string? compositeName { get; set; }
     public string? buildingMaterialName { get; set; }
 
@@ -150,26 +155,26 @@ namespace Objects.BuiltElements.Archicad
     public double? edgeAngle { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string showOnStories { get; set; }
+    public string? /*APINullabe*/ showOnStories { get; set; }
     public Visibility? visibilityCont { get; set; }
     public Visibility? visibilityFill { get; set; }
-    public string displayOptionName { get; set; }
-    public string showProjectionName { get; set; }
+    public string? /*APINullabe*/ displayOptionName { get; set; }
+    public string? /*APINullabe*/ showProjectionName { get; set; }
 
     // Floor Plan and Section - Cut Surfaces
-    public short sectContPen { get; set; }
-    public string sectContLtype { get; set; }
+    public short? /*APINullabe*/ sectContPen { get; set; }
+    public string? /*APINullabe*/ sectContLtype { get; set; }
     public short? cutFillPen { get; set; }
     public short? cutFillBackgroundPen { get; set; }
 
     // Floor Plan and Section - Outlines
-    public short contourPen { get; set; }
-    public string contourLineType { get; set; }
-    public short overheadLinePen { get; set; }
-    public string overheadLinetype { get; set; }
+    public short? /*APINullabe*/ contourPen { get; set; }
+    public string? /*APINullabe*/ contourLineType { get; set; }
+    public short? /*APINullabe*/ overheadLinePen { get; set; }
+    public string? /*APINullabe*/ overheadLinetype { get; set; }
 
     // Floor Plan and Section - Cover Fills
-    public bool useFloorFill { get; set; }
+    public bool? /*APINullabe*/ useFloorFill { get; set; }
     public short? floorFillPen { get; set; }
     public short? floorFillBGPen { get; set; }
     public string? floorFillName { get; set; }
@@ -189,7 +194,7 @@ namespace Objects.BuiltElements.Archicad
     public string? sideMat { get; set; }
     public string? botMat { get; set; }
     public bool? materialsChained { get; set; }
-    public string trimmingBodyName { get; set; }
+    public string? /*APINullabe*/ trimmingBodyName { get; set; }
   }
 
   /*
@@ -232,9 +237,9 @@ namespace Objects.BuiltElements.Archicad
     public ElementShape shape { get; set; }
     public BaseLine? baseLine { get; set; }
     public bool? posSign { get; set; }
-    public ElementShape pivotPolygon { get; set; }
+    public ElementShape? /*APINullabe*/ pivotPolygon { get; set; }
     public short? levelNum { get; set; }
-    public Dictionary<string, RoofLevel> levels { get; set; }
+    public Dictionary<string, RoofLevel>? /*APINullabe*/ levels { get; set; }
     public Dictionary<string, PivotPolyEdge>? roofPivotPolyEdges { get; set; }
   }
 
@@ -262,13 +267,13 @@ namespace Objects.BuiltElements.Archicad
     }
 
     // Geometry and positioning
-    public string shellClassName { get; set; }
-    public Transform basePlane { get; set; }
-    public bool flipped { get; set; }
-    public bool hasContour { get; set; }
-    public int numHoles { get; set; }
+    public string? /*APINullabe*/ shellClassName { get; set; }
+    public Transform? /*APINullabe*/ basePlane { get; set; }
+    public bool? /*APINullabe*/ flipped { get; set; }
+    public bool? /*APINullabe*/ hasContour { get; set; }
+    public int? /*APINullabe*/ numHoles { get; set; }
     public Dictionary<string, ShellContourData>? shellContours { get; set; }
-    public string defaultEdgeType { get; set; }
+    public string? /*APINullabe*/ defaultEdgeType { get; set; }
 
     public double? slantAngle { get; set; }
     public double? revolutionAngle { get; set; }
@@ -278,11 +283,11 @@ namespace Objects.BuiltElements.Archicad
     public double? begPlaneTilt { get; set; }
     public double? endPlaneTilt { get; set; }
     public ElementShape shape { get; set; }
-    public ElementShape shape1 { get; set; }
-    public ElementShape shape2 { get; set; }
-    public Transform axisBase { get; set; }
-    public Transform plane1 { get; set; }
-    public Transform plane2 { get; set; }
+    public ElementShape? /*APINullabe*/ shape1 { get; set; }
+    public ElementShape? /*APINullabe*/ shape2 { get; set; }
+    public Transform? /*APINullabe*/ axisBase { get; set; }
+    public Transform? /*APINullabe*/ plane1 { get; set; }
+    public Transform? /*APINullabe*/ plane2 { get; set; }
     public Point? begC { get; set; }
     public double? begAngle { get; set; }
     public Vector? extrusionVector { get; set; }

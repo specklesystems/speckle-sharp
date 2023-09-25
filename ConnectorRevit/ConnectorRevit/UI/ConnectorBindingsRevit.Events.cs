@@ -9,7 +9,7 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
-using Revit.Async;
+using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
@@ -25,7 +25,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
-        await RevitTask.RunAsync(
+        await APIContext.Run(
           app =>
           {
             using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
@@ -197,13 +197,22 @@ namespace Speckle.ConnectorRevit.UI
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
-
-
       try
       {
-
         if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
+
+        // if the dialog body is open, then avalonia will freak out and crash Revit when trying to re-initialize
+        // so we need to close the dialog and cancel any ongoing send / receive operation. (Maybe we can somehow 
+        // save the operation state and let the user come back to it later)
+        if (MainViewModel.Instance.DialogBody != null)
+        {
+          CurrentOperationCancellation?.Cancel();
+          MainViewModel.CloseDialog();
+        }
+
+        // invalidate all revit elements in the cache
+        revitDocumentAggregateCache.InvalidateAll();
 
         SpeckleRevitCommand.RegisterPane();
 
@@ -315,7 +324,7 @@ namespace Speckle.ConnectorRevit.UI
 
         var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
 
-        await RevitTask.RunAsync(app =>
+        await APIContext.Run(app =>
         {
 
           using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))

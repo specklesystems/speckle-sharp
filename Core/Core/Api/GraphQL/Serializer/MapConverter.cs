@@ -1,4 +1,4 @@
-#nullable enable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,21 +31,20 @@ public class MapConverter : JsonConverter<Map>
     throw new ArgumentException("This converter can only parse when the root element is a JSON Object.");
   }
 
-  private object? ReadToken(JToken? token)
+  private object ReadToken(JToken token)
   {
     return token switch
     {
       JObject jObject => ReadDictionary(jObject, new Dictionary<string, object>()),
       JArray jArray => ReadArray(jArray).ToList(),
       JValue jValue => jValue.Value,
-      JConstructor _
-        => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON constructor"),
-      JProperty _ => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON property"),
-      JContainer _ => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON comment"),
-      _ => throw new ArgumentOutOfRangeException(nameof(token.Type))
+      JConstructor => throw new ArgumentOutOfRangeException(nameof(token), "cannot deserialize a JSON constructor"),
+      JProperty => throw new ArgumentOutOfRangeException(nameof(token), "cannot deserialize a JSON property"),
+      JContainer => throw new ArgumentOutOfRangeException(nameof(token), "cannot deserialize a JSON comment"),
+      _ => throw new ArgumentOutOfRangeException(nameof(token), $"Invalid token type {token?.Type}")
     };
   }
-
+  
   private Dictionary<string, object> ReadDictionary(JToken element, Dictionary<string, object> to)
   {
     foreach (var property in ((JObject)element).Properties())
@@ -57,7 +56,7 @@ public class MapConverter : JsonConverter<Map>
     return to;
   }
 
-  private IEnumerable<object?> ReadArray(JArray element)
+  private IEnumerable<object> ReadArray(JArray element)
   {
     foreach (var item in element)
     {

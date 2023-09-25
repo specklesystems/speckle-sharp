@@ -1,14 +1,13 @@
 using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
-using Point = Objects.Geometry.Point;
-using Wall = Objects.BuiltElements.Wall;
+using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -16,10 +15,14 @@ namespace Objects.Converter.Revit
   {
     public Base LocationToSpeckle(DB.Element revitElement)
     {
-      if (revitElement is DB.FamilyInstance familyInstance 
+      if (
+        revitElement is DB.FamilyInstance familyInstance
         && familyInstance.Location is LocationPoint lp
-        && (Categories.columnCategories.Contains(familyInstance.Category)
-          || familyInstance.StructuralType == StructuralType.Column))
+        && (
+          SHC.Column.BuiltInCategories.HasCategory(familyInstance.Category)
+          || familyInstance.StructuralType == StructuralType.Column
+        )
+      )
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
         return TryGetColumnLocationAsCurve(familyInstance, lp);
@@ -29,24 +32,24 @@ namespace Objects.Converter.Revit
       switch (revitLocation)
       {
         case LocationCurve locationCurve:
+        {
+          var curve = locationCurve.Curve;
+
+          //apply revit offset as transfrom
+          if (revitElement is DB.Wall)
           {
-            var curve = locationCurve.Curve;
-
-            //apply revit offset as transfrom
-            if (revitElement is DB.Wall)
-            {
-              var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
-              XYZ vector = new XYZ(0, 0, offset);
-              Transform tf = Transform.CreateTranslation(vector);
-              curve = curve.CreateTransformed(tf);
-            }
-
-            return CurveToSpeckle(curve, revitElement.Document) as Base;
+            var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
+            XYZ vector = new XYZ(0, 0, offset);
+            Transform tf = Transform.CreateTranslation(vector);
+            curve = curve.CreateTransformed(tf);
           }
+
+          return CurveToSpeckle(curve, revitElement.Document) as Base;
+        }
         case LocationPoint locationPoint:
-          {
-            return PointToSpeckle(locationPoint.Point, revitElement.Document);
-          }
+        {
+          return PointToSpeckle(locationPoint.Point, revitElement.Document);
+        }
         // TODO what is the correct way to handle this?
         case null:
           return null;
@@ -73,11 +76,16 @@ namespace Objects.Converter.Revit
 
       if (baseLevel == null || topLevel == null)
       {
-        SpeckleLog.Logger.Error("Failed to get baseCurve from vertical column because the baseLevel or topLevel (or both) parameters were null");
+        SpeckleLog.Logger.Error(
+          "Failed to get baseCurve from vertical column because the baseLevel or topLevel (or both) parameters were null"
+        );
         return point;
       }
 
-      var baseLine = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
+      var baseLine = new Line(
+        new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset },
+        ModelUnits
+      );
       baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
 
       return baseLine;

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorAutocad</RootNamespace>
+    <AssemblyName>SpeckleConnectorAutocad</AssemblyName>
+    <TargetFramework>net48</TargetFramework>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2024\acad.exe</StartProgram>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyTitle>ConnectorAutocad2024</AssemblyTitle>
+    <Product>ConnectorAutocad2024</Product>
+    <DefineConstants>$(DefineConstants);AUTOCAD2024</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
+  <Target Name="Clean">
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024" />
+  </Target>
+  <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <Message Text="Calling 2024 post build" Importance="high" />
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+  </Target>
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2024.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+  </ItemGroup>
+</Project>

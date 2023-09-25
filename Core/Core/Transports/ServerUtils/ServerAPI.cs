@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,38 +16,33 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
-public class ServerApi : IDisposable, IServerApi
+public sealed class ServerApi : IDisposable, IServerApi
 {
-  private string BaseUri;
-  private int BATCH_SIZE_GET_OBJECTS = 10000;
-  private int BATCH_SIZE_HAS_OBJECTS = 100000;
+  private const int BatchSizeGetObjects = 10000;
+  private const int BatchSizeHasObjects = 100000;
 
-  private HttpClient Client;
-  private int MAX_MULTIPART_COUNT = 5;
-  private int MAX_MULTIPART_SIZE = 25_000_000;
-  private int MAX_OBJECT_SIZE = 25_000_000;
-  private int MAX_REQUEST_SIZE = 100_000_000;
-  private HashSet<int> RETRY_CODES = new() { 408, 502, 503, 504 };
-  private int RETRY_COUNT = 3;
+  private readonly HttpClient _client;
+  private const int MaxMultipartCount = 5;
+  private const int MaxMultipartSize = 25_000_000;
+  private const int MaxObjectSize = 25_000_000;
+  private const int MaxRequestSize = 100_000_000;
+  private readonly HashSet<int> _retryCodes = new() { 408, 502, 503, 504 };
+  private const int RetryCount = 3;
 
-  public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
+  public ServerApi(string baseUri, string? authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
   {
-    BaseUri = baseUri;
     CancellationToken = CancellationToken.None;
 
     BlobStorageFolder = blobStorageFolder;
 
-    Client = Http.GetHttpProxyClient(
+    _client = Http.GetHttpProxyClient(
       new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
-    Client.BaseAddress = new Uri(baseUri);
-    Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
+    _client.BaseAddress = new Uri(baseUri);
+    _client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
 
-    if (authorizationToken.ToLowerInvariant().Contains("bearer"))
-      Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
-    else
-      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
+    Http.AddAuthHeader(_client, authorizationToken);
   }
 
   private int RetriedCount { get; set; }
@@ -62,7 +58,7 @@ public class ServerApi : IDisposable, IServerApi
 
   public void Dispose()
   {
-    Client.Dispose();
+    _client.Dispose();
   }
 
   public async Task<string> DownloadSingleObject(string streamId, string objectId)
@@ -78,7 +74,7 @@ public class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage rootHttpResponse = null;
     while (ShouldRetry(rootHttpResponse))
-      rootHttpResponse = await Client
+      rootHttpResponse = await _client
         .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
         .ConfigureAwait(false);
     rootHttpResponse.EnsureSuccessStatusCode();
@@ -87,11 +83,15 @@ public class ServerApi : IDisposable, IServerApi
     return rootObjectStr;
   }
 
-  public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+  public async Task DownloadObjects(
+    string streamId,
+    IReadOnlyList<string> objectIds,
+    CbObjectDownloaded onObjectCallback
+  )
   {
     if (objectIds.Count == 0)
       return;
-    if (objectIds.Count < BATCH_SIZE_GET_OBJECTS)
+    if (objectIds.Count < BatchSizeGetObjects)
     {
       await DownloadObjectsImpl(streamId, objectIds, onObjectCallback).ConfigureAwait(false);
       return;
@@ -100,7 +100,7 @@ public class ServerApi : IDisposable, IServerApi
     List<string> crtRequest = new();
     foreach (string id in objectIds)
     {
-      if (crtRequest.Count >= BATCH_SIZE_GET_OBJECTS)
+      if (crtRequest.Count >= BatchSizeGetObjects)
       {
         await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback).ConfigureAwait(false);
         crtRequest = new List<string>();
@@ -110,22 +110,22 @@ public class ServerApi : IDisposable, IServerApi
     await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback).ConfigureAwait(false);
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(string streamId, IReadOnlyList<string> objectIds)
   {
-    if (objectIds.Count <= BATCH_SIZE_HAS_OBJECTS)
+    if (objectIds.Count <= BatchSizeHasObjects)
       return await HasObjectsImpl(streamId, objectIds).ConfigureAwait(false);
 
     Dictionary<string, bool> ret = new();
-    List<string> crtBatch = new(BATCH_SIZE_HAS_OBJECTS);
+    List<string> crtBatch = new(BatchSizeHasObjects);
     foreach (string objectId in objectIds)
     {
       crtBatch.Add(objectId);
-      if (crtBatch.Count >= BATCH_SIZE_HAS_OBJECTS)
+      if (crtBatch.Count >= BatchSizeHasObjects)
       {
         Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch).ConfigureAwait(false);
         foreach (KeyValuePair<string, bool> kv in batchResult)
           ret[kv.Key] = kv.Value;
-        crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
+        crtBatch = new List<string>(BatchSizeHasObjects);
       }
     }
     if (crtBatch.Count > 0)
@@ -137,7 +137,7 @@ public class ServerApi : IDisposable, IServerApi
     return ret;
   }
 
-  public async Task UploadObjects(string streamId, List<(string, string)> objects)
+  public async Task UploadObjects(string streamId, IReadOnlyList<(string, string)> objects)
   {
     if (objects.Count == 0)
       return;
@@ -152,12 +152,13 @@ public class ServerApi : IDisposable, IServerApi
     foreach ((string id, string json) in objects)
     {
       int objSize = Encoding.UTF8.GetByteCount(json);
-      if (objSize > MAX_OBJECT_SIZE)
-        throw new Exception(
-          $"Object too large (size {objSize}, max size {MAX_OBJECT_SIZE}). Consider using detached/chunked properties"
+      if (objSize > MaxObjectSize)
+        throw new ArgumentException(
+          $"Object {id} too large (size {objSize}, max size {MaxObjectSize}). Consider using detached/chunked properties",
+          nameof(objects)
         );
 
-      if (crtMultipartSize + objSize <= MAX_MULTIPART_SIZE)
+      if (crtMultipartSize + objSize <= MaxMultipartSize)
       {
         crtMultipart.Add((id, json));
         crtMultipartSize += objSize;
@@ -185,7 +186,7 @@ public class ServerApi : IDisposable, IServerApi
     {
       List<(string, string)> multipart = multipartedObjects[i];
       int multipartSize = multipartedObjectsSize[i];
-      if (crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT)
+      if (crtRequestSize + multipartSize > MaxRequestSize || crtRequest.Count >= MaxMultipartCount)
       {
         await UploadObjectsImpl(streamId, crtRequest).ConfigureAwait(false);
         OnBatchSent?.Invoke(crtObjectCount, crtRequestSize);
@@ -204,15 +205,15 @@ public class ServerApi : IDisposable, IServerApi
     }
   }
 
-  public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
+  public async Task UploadBlobs(string streamId, IReadOnlyList<(string, string)> objects)
   {
     CancellationToken.ThrowIfCancellationRequested();
-    if (blobs.Count == 0)
+    if (objects.Count == 0)
       return;
 
     var multipartFormDataContent = new MultipartFormDataContent();
     var streams = new List<Stream>();
-    foreach (var (id, filePath) in blobs)
+    foreach (var (id, filePath) in objects)
     {
       var fileName = Path.GetFileName(filePath);
       var stream = File.OpenRead(filePath);
@@ -234,23 +235,23 @@ public class ServerApi : IDisposable, IServerApi
     {
       HttpResponseMessage response = null;
       while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-        response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
+        response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
       response.EnsureSuccessStatusCode();
 
       foreach (var stream in streams)
         stream.Dispose();
     }
-    catch (Exception ex)
+    finally
     {
       foreach (var stream in streams)
         stream.Dispose();
-      throw;
     }
   }
 
-  public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+  public async Task DownloadBlobs(string streamId, IReadOnlyList<string> blobIds, CbBlobdDownloaded onBlobCallback)
   {
     foreach (var blobId in blobIds)
+    {
       try
       {
         using var blobMessage = new HttpRequestMessage
@@ -259,9 +260,8 @@ public class ServerApi : IDisposable, IServerApi
           Method = HttpMethod.Get
         };
 
-        var response = await Client.SendAsync(blobMessage, CancellationToken).ConfigureAwait(false);
-        IEnumerable<string> cdHeaderValues;
-        response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
+        var response = await _client.SendAsync(blobMessage, CancellationToken).ConfigureAwait(false);
+        response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string> cdHeaderValues);
 
         var cdHeader = cdHeaderValues.First();
         var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
@@ -274,15 +274,20 @@ public class ServerApi : IDisposable, IServerApi
           await response.Content.CopyToAsync(fs).ConfigureAwait(false);
 
         response.Dispose();
-        onBlobDownloaded();
+        onBlobCallback();
       }
       catch (Exception ex)
       {
         throw new Exception($"Failed to download blob {blobId}", ex);
       }
+    }
   }
 
-  private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+  private async Task DownloadObjectsImpl(
+    string streamId,
+    IReadOnlyList<string> objectIds,
+    CbObjectDownloaded onObjectCallback
+  )
   {
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -302,7 +307,7 @@ public class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage childrenHttpResponse = null;
     while (ShouldRetry(childrenHttpResponse))
-      childrenHttpResponse = await Client
+      childrenHttpResponse = await _client
         .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
         .ConfigureAwait(false);
     childrenHttpResponse.EnsureSuccessStatusCode();
@@ -312,8 +317,7 @@ public class ServerApi : IDisposable, IServerApi
     using (childrenStream)
     using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
     {
-      string line;
-      while ((line = reader.ReadLine()) != null)
+      while (reader.ReadLine() is { } line)
       {
         CancellationToken.ThrowIfCancellationRequested();
 
@@ -325,7 +329,7 @@ public class ServerApi : IDisposable, IServerApi
     // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
   }
 
-  private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, List<string> objectIds)
+  private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, IReadOnlyList<string> objectIds)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -338,15 +342,15 @@ public class ServerApi : IDisposable, IServerApi
     HttpResponseMessage response = null;
     using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
     while (ShouldRetry(response))
-      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+      response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
     var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     Dictionary<string, bool> hasObjects = new();
 
     JObject doc = JObject.Parse(hasObjectsJson);
-    foreach (KeyValuePair<string, JToken> prop in doc)
-      hasObjects[prop.Key] = (bool)prop.Value;
+    foreach (KeyValuePair<string, JToken?> prop in doc)
+      hasObjects[prop.Key] = (bool)prop!.Value!;
 
     // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
@@ -372,37 +376,37 @@ public class ServerApi : IDisposable, IServerApi
     {
       mpId++;
 
-      var _ctBuilder = new StringBuilder("[");
+      var ctBuilder = new StringBuilder("[");
       for (int i = 0; i < mpData.Count; i++)
       {
         if (i > 0)
-          _ctBuilder.Append(",");
-        _ctBuilder.Append(mpData[i].Item2);
+          ctBuilder.Append(',');
+        ctBuilder.Append(mpData[i].Item2);
       }
-      _ctBuilder.Append("]");
-      string _ct = _ctBuilder.ToString();
+      ctBuilder.Append(']');
+      string ct = ctBuilder.ToString();
 
       if (CompressPayloads)
       {
-        var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
+        var content = new GzipContent(new StringContent(ct, Encoding.UTF8));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/gzip");
         multipart.Add(content, $"batch-{mpId}", $"batch-{mpId}");
       }
       else
       {
-        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{mpId}", $"batch-{mpId}");
+        multipart.Add(new StringContent(ct, Encoding.UTF8), $"batch-{mpId}", $"batch-{mpId}");
       }
     }
     message.Content = multipart;
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
-      response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
+      response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
     // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
   }
 
-  public async Task<List<string>> HasBlobs(string streamId, List<string> blobIds)
+  public async Task<List<string>> HasBlobs(string streamId, IReadOnlyList<string> blobIds)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -413,34 +417,36 @@ public class ServerApi : IDisposable, IServerApi
     using StringContent stringContent = new(payload, Encoding.UTF8, "application/json");
     //TODO: can we get rid of this now we have polly?
     while (ShouldRetry(response))
-      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+      response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
 
     response.EnsureSuccessStatusCode();
 
     var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
+    if (parsed is null)
+      throw new Exception($"Failed to deserialize successful response {response.Content}");
     return parsed;
   }
 
   //TODO: can we get rid of this now we have polly?
-  private bool ShouldRetry(HttpResponseMessage serverResponse)
+  private bool ShouldRetry(HttpResponseMessage? serverResponse)
   {
     if (serverResponse == null)
       return true;
-    if (!RETRY_CODES.Contains((int)serverResponse.StatusCode))
+    if (!_retryCodes.Contains((int)serverResponse.StatusCode))
       return false;
-    if (RetriedCount >= RETRY_COUNT)
+    if (RetriedCount >= RetryCount)
       return false;
     RetriedCount += 1;
     return true;
   }
 
-  private class BlobUploadResult
+  private sealed class BlobUploadResult
   {
     public List<BlobUploadResultItem> uploadResults { get; set; }
   }
 
-  private class BlobUploadResultItem
+  private sealed class BlobUploadResultItem
   {
     public string blobId { get; set; }
     public string formKey { get; set; }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>DA353F82-DE8A-4982-B5A4-F02A49C11EBD</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>RevitSharedResources</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitDocumentAggregateCacheExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitObjectCacheExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Categories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCommitObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategoriesExposer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCommitObjectBuilderExposer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitDocumentAggregateCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitObjectCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IConvertedObjectsCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IReceivedObjectIdMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\APIContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RevitConverterState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ErrorEater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TransactionManager.cs" />
+  </ItemGroup>
+</Project>

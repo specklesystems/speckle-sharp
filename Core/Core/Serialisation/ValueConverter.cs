@@ -1,16 +1,18 @@
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
-using System.Numerics;
+using Numerics = System.Numerics;
+using System.DoubleNumerics;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Serialisation;
 
 internal static class ValueConverter
 {
-  public static bool ConvertValue(Type type, object value, out object convertedValue)
+  public static bool ConvertValue(Type type, object? value, out object? convertedValue)
   {
     // TODO: Document list of supported values in the SDK. (and grow it as needed)
 
@@ -48,11 +50,6 @@ internal static class ValueConverter
     switch (type.Name)
     {
       case "Nullable`1":
-        if (value == null)
-        {
-          convertedValue = null;
-          return true;
-        }
         return ConvertValue(type.GenericTypeArguments[0], value, out convertedValue);
       #region Numbers
       case "Int64":
@@ -179,19 +176,17 @@ internal static class ValueConverter
     // Handle Dictionary<string,?>
     if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
     {
-      if (!(value is Dictionary<string, object>))
+      if (value is not Dictionary<string, object> valueDict)
         return false;
-      Dictionary<string, object> valueDict = (Dictionary<string, object>)value;
 
       if (type.GenericTypeArguments[0] != typeof(string))
-        throw new Exception("Dictionaries with non-string keys are not supported");
+        throw new ArgumentException("Dictionaries with non-string keys are not supported", nameof(type));
       Type dictValueType = type.GenericTypeArguments[1];
       IDictionary ret = Activator.CreateInstance(type) as IDictionary;
 
       foreach (KeyValuePair<string, object> kv in valueDict)
       {
-        object convertedDictValue;
-        if (!ConvertValue(dictValueType, kv.Value, out convertedDictValue))
+        if (!ConvertValue(dictValueType, kv.Value, out object convertedDictValue))
           return false;
         ret[kv.Key] = convertedDictValue;
       }
@@ -204,13 +199,14 @@ internal static class ValueConverter
     {
       if (!isList)
         return false;
-      Type arrayElementType = type.GetElementType();
+      Type arrayElementType =
+        type.GetElementType() ?? throw new ArgumentException("IsArray yet not valid element type", nameof(type));
+
       Array ret = Activator.CreateInstance(type, valueList.Count) as Array;
       for (int i = 0; i < valueList.Count; i++)
       {
         object inputListElement = valueList[i];
-        object convertedListElement;
-        if (!ConvertValue(arrayElementType, inputListElement, out convertedListElement))
+        if (!ConvertValue(arrayElementType, inputListElement, out object convertedListElement))
           return false;
         ret.SetValue(convertedListElement, i);
       }
@@ -219,28 +215,54 @@ internal static class ValueConverter
     }
 
     // Handle simple classes/structs
-    if (type == typeof(Guid) && valueType == typeof(string))
+    if (type == typeof(Guid) && value is string str)
     {
-      convertedValue = Guid.Parse(value as string);
+      convertedValue = Guid.Parse(str);
       return true;
     }
 
-    if (type == typeof(Color) && valueType == typeof(long))
+    if (type == typeof(Color) && value is long integer)
     {
-      convertedValue = Color.FromArgb((int)(long)value);
+      convertedValue = Color.FromArgb((int)integer);
       return true;
     }
 
-    if (type == typeof(DateTime) && valueType == typeof(string))
+    if (type == typeof(DateTime) && value is string s)
     {
-      convertedValue = DateTime.ParseExact((string)value, "o", CultureInfo.InvariantCulture);
+      convertedValue = DateTime.ParseExact(s, "o", CultureInfo.InvariantCulture);
       return true;
     }
 
-    if (type == typeof(Matrix4x4) && valueType == typeof(List<object>))
+    #region BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
+    if (type == typeof(Numerics.Matrix4x4) && value is IReadOnlyList<object> lMatrix)
     {
-      var l = (value as List<object>).ToList();
-      float I(int index) => Convert.ToSingle(l[index]);
+      SpeckleLog.Logger.Warning("This kept for backwards compatibility, no one should be using {this}", "ValueConverter deserialize to System.Numerics.Matrix4x4");
+      float I(int index) => Convert.ToSingle(lMatrix[index]);
+      convertedValue = new Numerics.Matrix4x4(
+        I(0),
+        I(1),
+        I(2),
+        I(3),
+        I(4),
+        I(5),
+        I(6),
+        I(7),
+        I(8),
+        I(9),
+        I(10),
+        I(11),
+        I(12),
+        I(13),
+        I(14),
+        I(15)
+      );
+      return true;
+    }
+    #endregion
+
+    if (type == typeof(Matrix4x4) && value is IReadOnlyList<object> l)
+    {
+      double I(int index) => Convert.ToDouble(l[index]);
       convertedValue = new Matrix4x4(
         I(0),
         I(1),

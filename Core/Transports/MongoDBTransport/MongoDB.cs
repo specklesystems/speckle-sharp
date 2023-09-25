@@ -94,7 +94,7 @@ public class MongoDBTransport : IDisposable, ITransport
 
   public void EndWrite() { }
 
-  public Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     throw new NotImplementedException();
   }

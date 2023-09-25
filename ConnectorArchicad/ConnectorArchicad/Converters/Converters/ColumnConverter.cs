@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,29 +19,37 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var columns = new List<Objects.BuiltElements.Archicad.ArchicadColumn>();
-      foreach (var tc in elements)
-      {
-        switch (tc.current)
-        {
-          case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
-            columns.Add(archicadColumn);
-            break;
-          case Objects.BuiltElements.Column column:
-            var baseLine = (Line)column.baseLine;
-            Objects.BuiltElements.Archicad.ArchicadColumn newColumn = new Objects.BuiltElements.Archicad.ArchicadColumn
-            {
-              id = column.id,
-              applicationId = column.applicationId,
-              origoPos = Utils.ScaleToNative(baseLine.start),
-              height = Math.Abs(Utils.ScaleToNative(baseLine.end.z, baseLine.end.units) - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units))
-            };
 
-            columns.Add(newColumn);
-            break;
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      {
+        foreach (var tc in elements)
+        {
+          token.ThrowIfCancellationRequested();
+
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
+              columns.Add(archicadColumn);
+              break;
+            case Objects.BuiltElements.Column column:
+              var baseLine = (Line)column.baseLine;
+              Objects.BuiltElements.Archicad.ArchicadColumn newColumn = new Objects.BuiltElements.Archicad.ArchicadColumn
+              {
+                id = column.id,
+                applicationId = column.applicationId,
+                origoPos = Utils.ScaleToNative(baseLine.start),
+                height = Math.Abs(Utils.ScaleToNative(baseLine.end.z, baseLine.end.units) - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units))
+              };
+
+              columns.Add(newColumn);
+              break;
+          }
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateColumn(columns), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateColumn(columns), token);
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
@@ -64,7 +72,7 @@ namespace Archicad.Converters
         column.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == column.applicationId)
             .model);
-        //column.baseLine = ...
+        column.baseLine = new Line(column.origoPos, column.origoPos + new Point (0, 0, column.height));
         columns.Add(column);
       }
 

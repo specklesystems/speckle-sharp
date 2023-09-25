@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ConnectorTeklaStructures2023": {
+      "commandName": "Project"
+    },
+    "Run 2023": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Tekla Structures\\2023.0\\bin\\TeklaStructures.exe"
+    }
+  }
+}

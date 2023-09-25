@@ -4,7 +4,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
 public class Closures

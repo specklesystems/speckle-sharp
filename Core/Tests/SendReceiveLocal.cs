@@ -4,7 +4,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
 public class SendReceiveLocal
@@ -83,12 +83,7 @@ public class SendReceiveLocal
   public async Task LocalUploadDownloadListDic()
   {
     var myList = new List<object> { 1, 2, 3, "ciao" };
-    var myDic = new Dictionary<string, object>
-    {
-      { "a", myList },
-      { "b", 2 },
-      { "c", "ciao" }
-    };
+    var myDic = new Dictionary<string, object> { { "a", myList }, { "b", 2 }, { "c", "ciao" } };
 
     var myObject = new Base();
     myObject["@dictionary"] = myDic;

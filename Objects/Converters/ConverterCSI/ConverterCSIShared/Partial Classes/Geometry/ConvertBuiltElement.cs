@@ -14,7 +14,10 @@ namespace Objects.Converter.CSI
     {
       if (!(curve is Line baseLine))
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based frames are currently supported");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "Only line based frames are currently supported"
+        );
         return;
       }
 

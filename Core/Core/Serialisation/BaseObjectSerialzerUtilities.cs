@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,46 +22,43 @@ internal static class SerializationUtilities
 {
   #region Value handling
 
-  internal static object HandleValue(
-    JToken value,
+  internal static object? HandleValue(
+    JToken? value,
     JsonSerializer serializer,
-    CancellationToken CancellationToken,
-    JsonProperty jsonProperty = null,
-    string TypeDiscriminator = "speckle_type"
+    CancellationToken cancellationToken,
+    JsonProperty? jsonProperty = null,
+    string typeDiscriminator = "speckle_type"
   )
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null; // Check for cancellation
-
-    if (value is JValue)
+    cancellationToken.ThrowIfCancellationRequested();
+    
+    if (jsonProperty is { PropertyType: null })
+      throw new ArgumentException(
+        $"Expected {nameof(JsonProperty.PropertyType)} to be non-null",
+        nameof(jsonProperty));
+    
+    switch (value)
     {
-      if (jsonProperty != null)
-        return value.ToObject(jsonProperty.PropertyType);
-      return ((JValue)value).Value;
-    }
-
-    // Lists
-    if (value is JArray)
-    {
-      if (CancellationToken.IsCancellationRequested)
-        return null; // Check for cancellation
-
-      if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
+      case JValue jValue when jsonProperty != null:
+        return jValue.ToObject(jsonProperty.PropertyType);
+      case JValue jValue:
+        return jValue.Value;
+      // Lists
+      case JArray array when jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null:
       {
         var arr = Activator.CreateInstance(jsonProperty.PropertyType);
 
-        var addMethod = arr.GetType().GetMethod("Add");
-        var hasGenericType = jsonProperty.PropertyType.GenericTypeArguments.Count() != 0;
+        var addMethod = arr.GetType().GetMethod(nameof(IList.Add))!;
+        var hasGenericType = jsonProperty.PropertyType.GenericTypeArguments.Length != 0;
 
-        foreach (var val in (JArray)value)
+        foreach (var val in array)
         {
-          if (CancellationToken.IsCancellationRequested)
-            return null; // Check for cancellation
+          cancellationToken.ThrowIfCancellationRequested();
 
           if (val == null)
             continue;
 
-          var item = HandleValue(val, serializer, CancellationToken);
+          var item = HandleValue(val, serializer, cancellationToken);
 
           if (item is DataChunk chunk)
           {
@@ -97,58 +95,49 @@ internal static class SerializationUtilities
         }
         return arr;
       }
-
-      if (jsonProperty != null)
+      case JArray array when jsonProperty != null:
       {
-        if (CancellationToken.IsCancellationRequested)
-          return null; // Check for cancellation
+        var arr = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
 
-        var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
-
-        foreach (var val in (JArray)value)
+        foreach (var val in array)
         {
-          if (CancellationToken.IsCancellationRequested)
-            return null; // Check for cancellation
-
+          cancellationToken.ThrowIfCancellationRequested();
+          
           if (val == null)
             continue;
 
-          var item = HandleValue(val, serializer, CancellationToken);
+          var item = HandleValue(val, serializer, cancellationToken);
           if (item is DataChunk chunk)
           {
             foreach (var dataItem in chunk.data)
-              if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-                ((IList)arr).Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()));
+              if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+                arr.Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()!));
               else
-                ((IList)arr).Add(dataItem);
+                arr.Add(dataItem);
           }
           else
           {
-            if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-              ((IList)arr).Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()));
+            if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+              arr.Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()!));
             else
-              ((IList)arr).Add(item);
+              arr.Add(item);
           }
         }
-        var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((IList)arr).Count);
-        ((IList)arr).CopyTo(actualArr, 0);
+        var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType()!, arr.Count);
+        arr.CopyTo(actualArr, 0);
         return actualArr;
       }
-      else
+      case JArray array:
       {
-        if (CancellationToken.IsCancellationRequested)
-          return null; // Check for cancellation
-
-        var arr = new List<object>();
-        foreach (var val in (JArray)value)
+        var arr = new List<object?>();
+        foreach (var val in array)
         {
-          if (CancellationToken.IsCancellationRequested)
-            return null; // Check for cancellation
+          cancellationToken.ThrowIfCancellationRequested();
 
           if (val == null)
             continue;
 
-          var item = HandleValue(val, serializer, CancellationToken);
+          var item = HandleValue(val, serializer, cancellationToken);
 
           if (item is DataChunk chunk)
             arr.AddRange(chunk.data);
@@ -157,52 +146,48 @@ internal static class SerializationUtilities
         }
         return arr;
       }
-    }
-
-    if (CancellationToken.IsCancellationRequested)
-      return null; // Check for cancellation
-
-    if (value is JObject)
-    {
-      if (((JObject)value).Property(TypeDiscriminator) != null)
-        return value.ToObject<Base>(serializer);
-
-      var dict =
-        jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
-      foreach (var prop in (JObject)value)
+      case JObject jObject when jObject.Property(typeDiscriminator) != null:
+        return jObject.ToObject<Base>(serializer);
+      case JObject jObject:
       {
-        if (CancellationToken.IsCancellationRequested)
-          return null; // Check for cancellation
+        var dict = jsonProperty != null 
+          ? Activator.CreateInstance(jsonProperty.PropertyType) as IDictionary
+          : new Dictionary<string, object>();
+        foreach (var prop in jObject)
+        {
+          cancellationToken.ThrowIfCancellationRequested();
 
-        object key = prop.Key;
-        if (jsonProperty != null)
-          key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-        ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
+          object key = prop.Key;
+          if (jsonProperty != null)
+            key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
+          dict[key] = HandleValue(prop.Value, serializer, cancellationToken);
+        }
+        return dict;
       }
-      return dict;
+      default:
+        return null;
     }
-    return null;
   }
 
   #endregion
 
   #region Getting Types
 
-  private static Dictionary<string, Type> cachedTypes = new();
+  private static Dictionary<string, Type> _cachedTypes = new();
 
-  private static Dictionary<string, Dictionary<string, PropertyInfo>> typeProperties = new();
+  private static readonly Dictionary<string, Dictionary<string, PropertyInfo>> TypeProperties = new();
 
-  private static Dictionary<string, List<MethodInfo>> onDeserializedCallbacks = new();
+  private static readonly Dictionary<string, List<MethodInfo>> OnDeserializedCallbacks = new();
 
   internal static Type GetType(string objFullType)
   {
-    lock (cachedTypes)
+    lock (_cachedTypes)
     {
-      if (cachedTypes.ContainsKey(objFullType))
-        return cachedTypes[objFullType];
+      if (_cachedTypes.TryGetValue(objFullType, out Type? type1))
+        return type1;
 
       var type = GetAtomicType(objFullType);
-      cachedTypes[objFullType] = type;
+      _cachedTypes[objFullType] = type;
       return type;
     }
   }
@@ -238,28 +223,28 @@ internal static class SerializationUtilities
 
   internal static Dictionary<string, PropertyInfo> GetTypePropeties(string objFullType)
   {
-    lock (typeProperties)
+    lock (TypeProperties)
     {
-      if (!typeProperties.ContainsKey(objFullType))
+      if (!TypeProperties.ContainsKey(objFullType))
       {
         Dictionary<string, PropertyInfo> ret = new();
         Type type = GetType(objFullType);
         PropertyInfo[] properties = type.GetProperties();
         foreach (PropertyInfo prop in properties)
           ret[prop.Name.ToLower()] = prop;
-        typeProperties[objFullType] = ret;
+        TypeProperties[objFullType] = ret;
       }
-      return typeProperties[objFullType];
+      return TypeProperties[objFullType];
     }
   }
 
   internal static List<MethodInfo> GetOnDeserializedCallbacks(string objFullType)
   {
     // return new List<MethodInfo>();
-    lock (onDeserializedCallbacks)
+    lock (OnDeserializedCallbacks)
     {
       // System.Runtime.Serialization.Ca
-      if (!onDeserializedCallbacks.ContainsKey(objFullType))
+      if (!OnDeserializedCallbacks.ContainsKey(objFullType))
       {
         List<MethodInfo> ret = new();
         Type type = GetType(objFullType);
@@ -272,9 +257,9 @@ internal static class SerializationUtilities
           if (onDeserializedAttributes.Count > 0)
             ret.Add(method);
         }
-        onDeserializedCallbacks[objFullType] = ret;
+        OnDeserializedCallbacks[objFullType] = ret;
       }
-      return onDeserializedCallbacks[objFullType];
+      return OnDeserializedCallbacks[objFullType];
     }
   }
 
@@ -291,23 +276,26 @@ internal static class SerializationUtilities
   /// </summary>
   public static void FlushCachedTypes()
   {
-    cachedTypes = new Dictionary<string, Type>();
+    lock (_cachedTypes)
+    {
+      _cachedTypes = new Dictionary<string, Type>();
+    }
   }
 
   #endregion
 
   #region Abstract Handling
 
-  private static Dictionary<string, Type> cachedAbstractTypes = new();
+  private static readonly Dictionary<string, Type> CachedAbstractTypes = new();
 
-  internal static object HandleAbstractOriginalValue(
+  internal static object? HandleAbstractOriginalValue(
     JToken jToken,
     string assemblyQualifiedName,
     JsonSerializer serializer
   )
   {
-    if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
-      return jToken.ToObject(cachedAbstractTypes[assemblyQualifiedName]);
+    if (CachedAbstractTypes.TryGetValue(assemblyQualifiedName, out Type? type))
+      return jToken.ToObject(type);
 
     var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
 
@@ -319,7 +307,7 @@ internal static class SerializationUtilities
     if (myType == null)
       throw new SpeckleException("Could not load abstract object's assembly.");
 
-    cachedAbstractTypes[assemblyQualifiedName] = myType;
+    CachedAbstractTypes[assemblyQualifiedName] = myType;
 
     return jToken.ToObject(myType);
   }
@@ -336,16 +324,16 @@ internal static class CallSiteCache
   // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
   // by Marc Gravell, https://github.com/mgravell
 
-  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters = new();
+  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object?, object>>> Setters = new();
 
-  public static void SetValue(string propertyName, object target, object value)
+  public static void SetValue(string propertyName, object target, object? value)
   {
-    lock (setters)
+    lock (Setters)
     {
-      CallSite<Func<CallSite, object, object, object>> site;
+      CallSite<Func<CallSite, object, object?, object>> site;
 
-      lock (setters)
-        if (!setters.TryGetValue(propertyName, out site))
+      lock (Setters)
+        if (!Setters.TryGetValue(propertyName, out site))
         {
           var binder = Binder.SetMember(
             CSharpBinderFlags.None,
@@ -357,10 +345,10 @@ internal static class CallSiteCache
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
             }
           );
-          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+          Setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
         }
 
-      site.Target(site, target, value);
+      site.Target.Invoke(site, target, value);
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,14 +8,12 @@ using Archicad.Model;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
@@ -94,6 +92,34 @@ namespace Archicad.Launcher
           Name = "Everything",
           Icon = "CubeScan",
           Description = "Sends all supported elements and project information."
+        },
+        new ListSelectionFilter
+        {
+          Slug = "elementType",
+          Name = "Element Type",
+          Icon = "Category",
+          Values = new List<string>
+          {
+            "Wall",
+            "Column",
+            "Beam",
+            "Slab",
+            "Roof",
+            "Shell",
+            "Stair",
+            "Railing",
+            "Curtain Wall",
+            "Door",
+            "Window",
+            "Skylight",
+            "Opening",
+            "Zone",
+            "Mesh",
+            "Morph",
+            "Object",
+            "Lamp"
+          },
+          Description = "Adds all elements with the selected Element Types"
         }
       };
     }
@@ -122,14 +148,38 @@ namespace Archicad.Launcher
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      Base commitObject = await Helpers.Receive(IdentifyStream(state));
-      if (commitObject is not null)
-        await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+      try
+      {
+        using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
+        {
+          Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
+          if (commitObject is not null)
+            await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
-      await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+          await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
 
-      if (commitObject == null)
-        throw new SpeckleException("Failed to receive specified");
+          if (commitObject == null)
+          {
+            timer.Cancel();
+            throw new SpeckleException("Failed to receive specified");
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        // log
+        if (ex is not OperationCanceledException)
+          SpeckleLog.Logger.Error("Conversion to native failed.");
+
+        // throw
+        switch (ex)
+        {
+          case OperationCanceledException:
+            throw new OperationCanceledException(ex.Message);
+          default:
+            throw new SpeckleException(ex.Message, ex);
+        }
+      }
 
       return state;
     }
@@ -151,7 +201,7 @@ namespace Archicad.Launcher
       if (commitObject == null)
         throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
 
-      return await Helpers.Send(
+      return await Speckle.Core.Api.Helpers.Send(
         IdentifyStream(state),
         commitObject,
         state.CommitMessage,
@@ -171,14 +221,6 @@ namespace Archicad.Launcher
         CommitId = state.CommitId != "latest" ? state.CommitId : null
       };
       return stream.ToString();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-      Dictionary<string, List<MappingValue>> Mapping
-    )
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

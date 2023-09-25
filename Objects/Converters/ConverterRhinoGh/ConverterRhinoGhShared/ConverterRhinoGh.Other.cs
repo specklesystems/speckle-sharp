@@ -24,7 +24,7 @@ namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
-  // display and render
+  // display, render
   public RH.ObjectAttributes DisplayStyleToNative(DisplayStyle display)
   {
     var attributes = new RH.ObjectAttributes();
@@ -207,6 +207,35 @@ public partial class ConverterRhinoGh
       renderMaterial.metalness = pbrMaterial.Metallic;
       renderMaterial.roughness = pbrMaterial.Roughness;
     }
+#endif
+
+    return renderMaterial;
+  }
+
+  public Other.RenderMaterial RenderMaterialToSpeckle(Rhino.Render.RenderMaterial material)
+  {
+    var renderMaterial = new Other.RenderMaterial();
+    if (material == null)
+      return renderMaterial;
+
+    renderMaterial.name = material.Name ?? "default"; // default rhino material has no name or id
+#if RHINO6
+    var simulatedMaterial = material.SimulateMaterial(true);
+    renderMaterial.diffuse = simulatedMaterial.DiffuseColor.ToArgb();
+    renderMaterial.emissive = simulatedMaterial.EmissionColor.ToArgb();
+    renderMaterial.opacity = 1 - simulatedMaterial.Transparency;
+
+    // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
+    if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
+      renderMaterial.opacity = 0.3;
+#else
+    RH.PhysicallyBasedMaterial pbrMaterial = material.ConvertToPhysicallyBased(RenderTexture.TextureGeneration.Allow);
+    renderMaterial.diffuse = pbrMaterial.BaseColor.AsSystemColor().ToArgb();
+    renderMaterial.emissive = pbrMaterial.Emission.AsSystemColor().ToArgb();
+    renderMaterial.opacity = pbrMaterial.Opacity;
+    renderMaterial.metalness = pbrMaterial.Metallic;
+    renderMaterial.roughness = pbrMaterial.Roughness;
+
 #endif
 
     return renderMaterial;
@@ -419,7 +448,7 @@ public partial class ConverterRhinoGh
       var attribute = new RH.ObjectAttributes();
 
       // layer
-      var geoLayer = item.Key["layer"] is string s ? s : item.Value; // blocks sent from rhino will have a layer prop dynamically attached
+      var geoLayer = geo["layer"] is string s ? s : item.Value; // blocks sent from rhino will have a layer prop dynamically attached
       var layerName =
         ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{RH.Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
       int index = 1;
@@ -471,7 +500,103 @@ public partial class ConverterRhinoGh
     return blockDefinition;
   }
 
-  #region block def flattening
+  // Rhino convention seems to order the origin of the vector space last instead of first
+  // This results in a transposed transformation matrix - may need to be addressed later
+  public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
+  {
+    var t = instance.InstanceXform;
+    var matrix = new System.DoubleNumerics.Matrix4x4(
+      t.M00,
+      t.M01,
+      t.M02,
+      t.M03,
+      t.M10,
+      t.M11,
+      t.M12,
+      t.M13,
+      t.M20,
+      t.M21,
+      t.M22,
+      t.M23,
+      t.M30,
+      t.M31,
+      t.M32,
+      t.M33
+    );
+
+    var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
+
+    var _instance = new BlockInstance
+    {
+      transform = new Other.Transform(matrix, ModelUnits),
+      typedDefinition = def,
+      applicationId = instance.Id.ToString(),
+      units = ModelUnits
+    };
+
+    return _instance;
+  }
+
+  public ApplicationObject InstanceToNative(Instance instance, bool AppendToModelSpace = true)
+  {
+    var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+
+    // get the definition
+    var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
+    if (definition == null)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
+      return appObj;
+    }
+
+    // convert the definition
+    RH.InstanceDefinition instanceDef = DefinitionToNative(definition, out List<string> notes);
+    if (notes.Count > 0)
+      appObj.Update(log: notes);
+    if (instanceDef == null)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
+      return appObj;
+    }
+
+    // get the transform
+    var transform = TransformToNative(instance.transform);
+
+    // get any parameters
+    var parameters = instance["parameters"] as Base;
+    var attributes = new RH.ObjectAttributes();
+    if (parameters != null)
+    {
+      foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        if (member.Value is Parameter parameter)
+        {
+          var convertedParameter = ParameterToNative(parameter);
+          var name = $"{convertedParameter.Item1}({member.Key})";
+          attributes.SetUserString(name, convertedParameter.Item2);
+        }
+      }
+    }
+
+    // create the instance
+    Guid instanceId = Doc.Objects.AddInstanceObject(instanceDef.Index, transform, attributes);
+
+    if (instanceId == Guid.Empty)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add instance to doc");
+      return appObj;
+    }
+
+    var _instance = Doc.Objects.FindId(instanceId) as RH.InstanceObject;
+
+    // update appobj
+    appObj.Update(convertedItem: _instance);
+    if (AppendToModelSpace)
+      appObj.CreatedIds.Add(instanceId.ToString());
+    return appObj;
+  }
+
+  #region instance methods
 
   /// <summary>
   /// Traverses the object graph, returning objects that can be converted.
@@ -525,68 +650,6 @@ public partial class ConverterRhinoGh
   }
 
   #endregion
-
-  // Rhino convention seems to order the origin of the vector space last instead of first
-  // This results in a transposed transformation matrix - may need to be addressed later
-  public BlockInstance BlockInstanceToSpeckle(RH.InstanceObject instance)
-  {
-    var t = instance.InstanceXform.ToFloatArray(true);
-
-    var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
-
-    var _instance = new BlockInstance
-    {
-      transform = new Other.Transform(t, ModelUnits),
-      typedDefinition = def,
-      applicationId = instance.Id.ToString(),
-      units = ModelUnits
-    };
-
-    return _instance;
-  }
-
-  public ApplicationObject InstanceToNative(Instance instance, bool AppendToModelSpace = true)
-  {
-    var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
-
-    // get the definition
-    var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
-    if (definition == null)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
-      return appObj;
-    }
-
-    // convert the definition
-    RH.InstanceDefinition instanceDef = DefinitionToNative(definition, out List<string> notes);
-    if (notes.Count > 0)
-      appObj.Update(log: notes);
-    if (instanceDef == null)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
-      return appObj;
-    }
-
-    // get the transform
-    var transform = TransformToNative(instance.transform);
-
-    // create the instance
-    Guid instanceId = Doc.Objects.AddInstanceObject(instanceDef.Index, transform);
-
-    if (instanceId == Guid.Empty)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add instance to doc");
-      return appObj;
-    }
-
-    var _instance = Doc.Objects.FindId(instanceId) as RH.InstanceObject;
-
-    // update appobj
-    appObj.Update(convertedItem: _instance);
-    if (AppendToModelSpace)
-      appObj.CreatedIds.Add(instanceId.ToString());
-    return appObj;
-  }
 
   public DisplayMaterial RenderMaterialToDisplayMaterial(Other.RenderMaterial material)
   {

@@ -1,5 +1,7 @@
+#nullable enable
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Speckle.Core.Api;
@@ -10,7 +12,7 @@ namespace Speckle.Core.Credentials;
 
 public class StreamWrapper
 {
-  private Account _Account;
+  private Account? _account;
 
   public StreamWrapper() { }
 
@@ -35,7 +37,7 @@ public class StreamWrapper
   /// <param name="streamId"></param>
   /// <param name="userId"></param>
   /// <param name="serverUrl"></param>
-  public StreamWrapper(string streamId, string userId, string serverUrl)
+  public StreamWrapper(string streamId, string? userId, string serverUrl)
   {
     UserId = userId;
     ServerUrl = serverUrl;
@@ -45,14 +47,14 @@ public class StreamWrapper
   }
 
   //this needs to be public so it's serialized and stored in Dynamo
-  public string OriginalInput { get; set; }
+  public string? OriginalInput { get; set; }
 
-  public string UserId { get; set; }
+  public string? UserId { get; set; }
   public string ServerUrl { get; set; }
   public string StreamId { get; set; }
-  public string CommitId { get; set; }
-  public string BranchName { get; set; }
-  public string ObjectId { get; set; }
+  public string? CommitId { get; set; }
+  public string? BranchName { get; set; }
+  public string? ObjectId { get; set; }
 
   /// <summary>
   /// Determines if the current stream wrapper contains a valid stream.
@@ -90,11 +92,75 @@ public class StreamWrapper
     StreamId = streamId;
   }
 
+  /// <summary>
+  /// The ReGex pattern to determine if a URL's AbsolutePath is a Frontend2 URL or not.
+  /// This is used in conjunction with <see cref="ParseFe2ModelValue"/> to extract the correct values into the instance.
+  /// </summary>
+  private static readonly Regex Fe2UrlRegex =
+    new(
+      @"/projects/(?<projectId>[\w\d]+)(?:/models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
+    );
+
+  /// <summary>
+  /// Parses a FrontEnd2 URL Regex match and assigns it's data to this StreamWrapper instance.
+  /// </summary>
+  /// <param name="match">A regex match coming from <see cref="Fe2UrlRegex"/></param>
+  /// <exception cref="SpeckleException">Will throw when the URL is not properly formatted.</exception>
+  /// <exception cref="NotSupportedException">Will throw when the URL is correct, but is not currently supported by the StreamWrapper class.</exception>
+  private void ParseFe2RegexMatch(Match match)
+  {
+    var projectId = match.Groups["projectId"];
+    var model = match.Groups["model"];
+    var additionalModels = match.Groups["additionalModels"];
+
+    if (!projectId.Success)
+      throw new SpeckleException("The provided url is not a valid Speckle url");
+    if (!model.Success)
+      throw new SpeckleException("The provided url is not pointing to any model in the project.");
+    if (additionalModels.Success || model.Value == "all")
+      throw new NotSupportedException("Multi-model urls are not supported yet");
+
+    var modelRes = ParseFe2ModelValue(model.Value);
+
+    // INFO: The Branch endpoint is being updated to fallback to checking a branch ID if no name is found.
+    // Assigning the BranchID as the BranchName is a workaround to support FE2 links in the old StreamWrapper.
+    // A better solution must be redesigned taking into account all the new Frontend2 URL features.
+    StreamId = projectId.Value;
+    BranchName = modelRes.branchId;
+    CommitId = modelRes.commitId;
+    ObjectId = modelRes.objectId;
+  }
+
+  /// <summary>
+  /// Parses the segment of the FE2 URL that represents a modelID, modelID@versionID or objectID.
+  /// It is meant to parse a single value. If url is multi-model it should be used once per model.
+  /// </summary>
+  /// <param name="modelValue">The a single value of the model url segment</param>
+  /// <returns>A tuple containing the branch, commit and object information for that value. Each value can be null</returns>
+  /// <remarks>Determines if a modelValue is an ObjectId by checking it's length is exactly 32 chars long.</remarks>
+  private static (string? branchId, string? commitId, string? objectId) ParseFe2ModelValue(string modelValue)
+  {
+    if (modelValue.Length == 32)
+      return (null, null, modelValue); // Model value is an ObjectID
+    if (!modelValue.Contains('@'))
+      return (modelValue, null, null); // Model has no version attached
+    var res = modelValue.Split('@');
+    return (res[0], res[1], null); // Model has version attached
+  }
+
   private void StreamWrapperFromUrl(string streamUrl)
   {
     Uri uri = new(streamUrl, true);
-
     ServerUrl = uri.GetLeftPart(UriPartial.Authority);
+
+    var fe2Match = Fe2UrlRegex.Match(uri.AbsolutePath);
+    if (fe2Match.Success)
+    {
+      //NEW FRONTEND URL!
+      ParseFe2RegexMatch(fe2Match);
+      return;
+    }
+
     // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
     // Tests pass in Core without this hack.
     if (uri.Segments.Length >= 4 && uri.Segments[3]?.ToLowerInvariant() == "branches/")
@@ -179,8 +245,8 @@ public class StreamWrapper
   {
     Exception err = null;
 
-    if (_Account != null)
-      return _Account;
+    if (_account != null)
+      return _account;
 
     // Step 1: check if direct account id (?u=)
     if (OriginalInput != null && OriginalInput.Contains("?u="))
@@ -190,7 +256,7 @@ public class StreamWrapper
       if (acc != null)
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
-        _Account = acc;
+        _account = acc;
         return acc;
       }
     }
@@ -200,7 +266,7 @@ public class StreamWrapper
     try
     {
       await ValidateWithAccount(defAcc).ConfigureAwait(false);
-      _Account = defAcc;
+      _account = defAcc;
       return defAcc;
     }
     catch (Exception e)
@@ -209,15 +275,15 @@ public class StreamWrapper
     }
 
     // Step 3: all the rest
-    var accs = AccountManager.GetAccounts(ServerUrl);
-    if (accs.Count() == 0)
+    var accs = AccountManager.GetAccounts(ServerUrl).ToList();
+    if (accs.Count == 0)
       throw new SpeckleException($"You don't have any accounts for {ServerUrl}.");
 
     foreach (var acc in accs)
       try
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
-        _Account = acc;
+        _account = acc;
         return acc;
       }
       catch (Exception e)
@@ -230,11 +296,11 @@ public class StreamWrapper
 
   public void SetAccount(Account acc)
   {
-    _Account = acc;
-    UserId = _Account.userInfo.id;
+    _account = acc;
+    UserId = _account.userInfo.id;
   }
 
-  public bool Equals(StreamWrapper wrapper)
+  public bool Equals(StreamWrapper? wrapper)
   {
     if (wrapper == null)
       return false;
@@ -253,7 +319,7 @@ public class StreamWrapper
   public async Task ValidateWithAccount(Account acc)
   {
     if (ServerUrl != acc.serverInfo.url)
-      throw new SpeckleException($"Account is not from server {ServerUrl}", false);
+      throw new SpeckleException($"Account is not from server {ServerUrl}");
 
     var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
     if (!hasInternet)
@@ -268,19 +334,17 @@ public class StreamWrapper
     catch
     {
       throw new SpeckleException(
-        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
-        false
+        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist."
       );
     }
 
     // Check if the branch exists
     if (Type == StreamWrapperType.Branch)
     {
-      var branch = await client.BranchGet(StreamId, BranchName, 1).ConfigureAwait(false);
+      var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
       if (branch == null)
         throw new SpeckleException(
-          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}",
-          false
+          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
     }
   }

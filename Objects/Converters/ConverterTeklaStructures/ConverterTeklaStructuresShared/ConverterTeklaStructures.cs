@@ -1,19 +1,15 @@
-﻿using Speckle.Core.Kits;
+using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using System;
+using Speckle.Core.Models.GraphTraversal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Tekla.Structures;
 using Tekla.Structures.Model;
 using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;
-
 
 namespace Objects.Converter.TeklaStructures
 {
@@ -48,6 +44,7 @@ namespace Objects.Converter.TeklaStructures
     {
       Model = (Model)doc;
     }
+
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
@@ -67,9 +64,13 @@ namespace Objects.Converter.TeklaStructures
     public bool CanConvertToNative(Base @object)
     {
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.TryParse(recieveModelMesh, out var receiveAsMesh) && receiveAsMesh)
       {
-        return true;
+        if (DefaultTraversal.HasDefinition(@object) || DefaultTraversal.HasDisplayValue(@object))
+        {
+          return true;
+        }
+        return false;
       }
 
       switch (@object)
@@ -93,8 +94,14 @@ namespace Objects.Converter.TeklaStructures
         //    return true;
         default:
           return false;
-          //_ => (@object as ModelObject).IsElementSupported()
-      };
+        //_ => (@object as ModelObject).IsElementSupported()
+      }
+      ;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -122,39 +129,33 @@ namespace Objects.Converter.TeklaStructures
           return true;
         default:
           return false;
-          //_ => (@object as ModelObject).IsElementSupported()
-      };
+        //_ => (@object as ModelObject).IsElementSupported()
+      }
+      ;
     }
 
     public object ConvertToNative(Base @object)
     {
-
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.TryParse(recieveModelMesh, out var receiveAsMesh) && receiveAsMesh)
       {
-        try
+        if (@object is Instance instance)
+        {
+          MeshToNative(instance, instance.GetTransformedGeometry().Where(t => t is Mesh).Cast<Mesh>().ToList());
+        }
+        else
         {
           var bases = BaseExtensions.Flatten(@object);
           foreach (var @base in bases)
           {
-            try
+            foreach (var displayAlias in DefaultTraversal.displayValuePropAliases)
             {
-              List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-              var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
-              //dynamic property = propInfo;
-              //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+              if (@base[displayAlias] is not List<GE.Mesh> meshes)
+                continue;
+
               MeshToNative(@base, meshes);
             }
-            catch
-            {
-
-            }
           }
-          return true;
-        }
-        catch
-        {
-
         }
       }
 
@@ -186,11 +187,15 @@ namespace Objects.Converter.TeklaStructures
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public Base ConvertToSpeckle(object @object)
     {
-
       Base returnObject = null;
       switch (@object)
       {
@@ -235,10 +240,11 @@ namespace Objects.Converter.TeklaStructures
           Report.Log($"Created Fitting");
           break;
         default:
-          ConversionErrors.Add(new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}"));
+          ConversionErrors.Add(
+            new Exception($"Skipping not supported type: {@object.GetType()}{GetElemInfo(@object)}")
+          );
           returnObject = null;
           break;
-
       }
       return returnObject;
     }

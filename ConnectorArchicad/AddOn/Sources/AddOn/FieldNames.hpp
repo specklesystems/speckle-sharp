@@ -26,6 +26,7 @@ static const char* ApplicationId = "applicationId";
 static const char* ApplicationIds = "applicationIds";
 static const char* ParentElementId = "parentApplicationId";
 static const char* ElementFilter = "elementFilter";
+static const char* FilterBy = "filterBy";
 static const char* ElementType = "elementType";
 static const char* ElementTypes = "elementTypes";
 static const char* Elements = "elements";
@@ -34,8 +35,17 @@ static const char* Level = "level";
 static const char* Shape = "shape";
 static const char* Shape1 = "shape1";
 static const char* Shape2 = "shape2";
+
+static const char* Classifications = "classifications";
+namespace Classification
+{
+static const char* System = "system";
+static const char* Code = "code"; // id is reserved for Speckle id
+static const char* Name = "name";
+}
 }
 
+static const char* Elements = "elements";
 static const char* Beams = "beams";
 static const char* Columns = "columns";
 static const char* DirectShapes = "directShapes";
@@ -728,6 +738,7 @@ static const char* Edges = "edges";
 
 namespace Level
 {
+static const char* TypeName		= "level";
 static const char* Index		= "index";
 static const char* Name			= "name";
 static const char* Elevation	= "elevation";

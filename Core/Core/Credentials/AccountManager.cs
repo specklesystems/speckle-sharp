@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -27,9 +27,9 @@ namespace Speckle.Core.Credentials;
 /// </summary>
 public static class AccountManager
 {
-  private static SQLiteTransport AccountStorage = new(scope: "Accounts");
+  private static readonly SQLiteTransport AccountStorage = new(scope: "Accounts");
   private static bool _isAddingAccount;
-  private static SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
+  private static readonly SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
 
   /// <summary>
   /// Gets the basic information about a server.
@@ -67,7 +67,7 @@ public static class AccountManager
   public static async Task<UserInfo> GetUserInfo(string token, string server)
   {
     using var httpClient = Http.GetHttpProxyClient();
-    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+    Http.AddAuthHeader(httpClient, token);
 
     using var gqlClient = new GraphQLHttpClient(
       new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
@@ -77,12 +77,12 @@ public static class AccountManager
 
     var request = new GraphQLRequest { Query = @" query { activeUser { name email id company } }" };
 
-    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
+    var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
       return null;
 
-    return response.Data.user;
+    return response.Data.activeUser;
   }
 
   /// <summary>
@@ -91,12 +91,12 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  private static async Task<UserServerInfoResponse> GetUserServerInfo(string token, string server)
+  private static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, string server)
   {
     try
     {
       using var httpClient = Http.GetHttpProxyClient();
-      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+      Http.AddAuthHeader(httpClient, token);
 
       using var client = new GraphQLHttpClient(
         new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
@@ -107,10 +107,10 @@ public static class AccountManager
       var request = new GraphQLRequest
       {
         Query =
-          @"query { user { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
+          @"query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
       };
 
-      var res = await client.SendQueryAsync<UserServerInfoResponse>(request).ConfigureAwait(false);
+      var res = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
       if (res.Errors != null && res.Errors.Any())
         throw new SpeckleException(res.Errors[0].Message, res.Errors);
@@ -168,7 +168,7 @@ public static class AccountManager
   /// <returns>The default account or null.</returns>
   public static Account GetDefaultAccount()
   {
-    var defaultAccount = GetAccounts().Where(acc => acc.isDefault).FirstOrDefault();
+    var defaultAccount = GetAccounts().FirstOrDefault(acc => acc.isDefault);
     if (defaultAccount == null)
     {
       var firstAccount = GetAccounts().FirstOrDefault();
@@ -182,20 +182,27 @@ public static class AccountManager
   /// <summary>
   /// Gets all the accounts present in this environment.
   /// </summary>
-  /// <returns></returns>
+  /// <remarks>This function does have potential side effects. Any invalid accounts found while enumerating will be removed</remarks>
+  /// <returns>Un-enumerated enumerable of accounts</returns>
   public static IEnumerable<Account> GetAccounts()
   {
+    static bool IsInvalid(Account ac) => ac?.userInfo == null || ac.serverInfo == null;
+
     var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
     var localAccounts = GetLocalAccounts();
 
-    //prevent invalid account from slipping out
-    var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
-    foreach (var acc in invalidAccounts)
-      RemoveAccount(acc.id);
+    foreach (var acc in sqlAccounts)
+    {
+      if (IsInvalid(acc))
+        RemoveAccount(acc.id);
+      else
+        yield return acc;
+    }
 
-    var allAccounts = sqlAccounts.Concat(localAccounts);
-
-    return allAccounts;
+    foreach (var acc in localAccounts)
+    {
+      yield return acc;
+    }
   }
 
   /// <summary>
@@ -209,6 +216,7 @@ public static class AccountManager
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
     if (!Directory.Exists(accountsDir))
       return accounts;
+
     var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
       try
@@ -217,7 +225,8 @@ public static class AccountManager
         var account = JsonConvert.DeserializeObject<Account>(json);
 
         if (
-          !string.IsNullOrEmpty(account.token)
+          account is not null
+          && !string.IsNullOrEmpty(account.token)
           && !string.IsNullOrEmpty(account.userInfo.id)
           && !string.IsNullOrEmpty(account.userInfo.email)
           && !string.IsNullOrEmpty(account.userInfo.name)
@@ -250,12 +259,12 @@ public static class AccountManager
 
         //the token has expired
         //TODO: once we get a token expired exception from the server use that instead
-        if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
+        if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
         {
           var tokenResponse = await GetRefreshedToken(account.refreshToken, url).ConfigureAwait(false);
           userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
-          if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
+          if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
             throw new SpeckleException("Could not refresh token");
 
           account.token = tokenResponse.token;
@@ -263,11 +272,11 @@ public static class AccountManager
         }
 
         account.isOnline = true;
-        account.userInfo = userServerInfo.user;
+        account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         account.isOnline = false;
       }
@@ -416,7 +425,7 @@ public static class AccountManager
         refreshToken = tokenResponse.refreshToken,
         isDefault = GetAccounts().Count() == 0,
         serverInfo = userResponse.serverInfo,
-        userInfo = userResponse.user
+        userInfo = userResponse.activeUser
       };
       SpeckleLog.Logger.Information("Successfully created account for {serverUrl}", server);
       account.serverInfo.url = server;
@@ -527,9 +536,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {
@@ -557,9 +564,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {

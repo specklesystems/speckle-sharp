@@ -31,10 +31,12 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	const API_WallType wall = element.wall;
+	GS::ErrCode err = NoError;
+	err = GetDataCommand::SerializeElementType (element, memo, os);
+	if (NoError != err)
+		return err;
 
-	// The identifier of the wall
-	os.Add (ElementBase::ApplicationId, APIGuidToString (wall.head.guid));
+	const API_WallType wall = element.wall;
 
 	// Wall geometry
 

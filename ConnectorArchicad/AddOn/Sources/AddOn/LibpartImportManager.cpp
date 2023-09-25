@@ -347,7 +347,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_SectParamDef;
 
-		short nPars = 2;
+		short nPars = 3;
 		API_AddParType** addPars = reinterpret_cast<API_AddParType**>(BMAllocateHandle (nPars * sizeof (API_AddParType), ALLOCATE_CLEAR, 0));
 		if (addPars != nullptr) {
 			API_AddParType* pAddPar = &(*addPars)[0];
@@ -369,6 +369,12 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 			for (Int32 k = 0; k < pAddPar->dim1; k++)
 				for (Int32 j = 0; j < pAddPar->dim2; j++)
 					(*arrHdl)[k * pAddPar->dim2 + j] = (k == j ? 1.0 : 0.0);
+
+			pAddPar = &(*addPars)[2];
+			pAddPar->typeID = APIParT_Boolean;
+			CHTruncate ("AC_show2DHotspotsIn3D", pAddPar->name, sizeof (pAddPar->name));
+			GS::ucscpy (pAddPar->uDescname, L ("Show 2D Hotspots in 3D"));
+			pAddPar->value.real = 0;
 
 			double aa = 1.0;
 			double bb = 1.0;

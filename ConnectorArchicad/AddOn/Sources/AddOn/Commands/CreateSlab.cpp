@@ -149,10 +149,11 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// Setting side materials and edge angles
 	BMhKill ((GSHandle*) &memo.edgeTrims);
 	BMhKill ((GSHandle*) &memo.edgeIDs);
-	BMpFree (reinterpret_cast<GSPtr> (memo.sideMaterials));
 
 	memo.edgeTrims = (API_EdgeTrim**) BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0);
-	//Ignore memo side materials because of export and import do not work properly
+
+	//Ignore memo side materials because export and import do not work properly
+	//BMpFree (reinterpret_cast<GSPtr> (memo.sideMaterials));
 	//memo.sideMaterials = (API_OverriddenAttribute*) BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
 	for (Int32 k = 1; k <= element.slab.poly.nCoords; ++k) {
 		//memo.sideMaterials[k] = element.slab.sideMat;

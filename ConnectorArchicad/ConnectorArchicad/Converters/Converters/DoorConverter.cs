@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,26 +20,34 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
-            archicadDoor.parentApplicationId = tc.parent.current.id;
-            doors.Add(archicadDoor);
-            break;
-            //case Objects.BuiltElements.Opening window:
-            //  var baseLine = (Line)wall.baseLine;
-            //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
-            //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-            //  if (el is RevitWall revitWall)
-            //    newWall.flipped = revitWall.flipped;
-            //  walls.Add(newWall);
-            //  break;
+          token.ThrowIfCancellationRequested();
+
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
+              archicadDoor.parentApplicationId = tc.parent.current.id;
+              doors.Add(archicadDoor);
+              break;
+              //case Objects.BuiltElements.Opening window:
+              //  var baseLine = (Line)wall.baseLine;
+              //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
+              //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+              //  if (el is RevitWall revitWall)
+              //    newWall.flipped = revitWall.flipped;
+              //  walls.Add(newWall);
+              //  break;
+          }
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }

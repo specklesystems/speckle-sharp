@@ -1,20 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.DoubleNumerics;
 using System.Linq;
-using System.Numerics;
-
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using DB = Autodesk.Revit.DB;
-
+using ConverterRevitShared.Extensions;
+using Objects.BuiltElements.Revit;
+using Objects.Organization;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
-
+using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
+using SHC = RevitSharedResources.Helpers.Categories;
 using Vector = Objects.Geometry.Vector;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -38,17 +40,20 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
+      if (@base == null &&
+        (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
+        || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else if (
-          Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category)
-        )
+        else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
-          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
+          {
+            var direction = locationLine.Direction;
+            // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
+            isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          }
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -56,7 +61,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && Categories.beamCategories.Contains(revitFi.Category))
+      if (@base == null && SHC.StructuralFraming.BuiltInCategories.HasCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -66,10 +71,22 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && Categories.columnCategories.Contains(revitFi.Category)
+        @base == null && SHC.Column.BuiltInCategories.HasCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);
+
+      // MEP elements
+      if (revitFi.MEPModel?.ConnectorManager?.Connectors?.Size > 0)
+      {
+        @base = MEPFamilyInstanceToSpeckle(revitFi);
+      }
+
+      // curtain panels
+      if (revitFi is DB.Panel panel)
+      {
+        @base = PanelToSpeckle(panel);
+      }
 
       // elements
       var baseGeometry = LocationToSpeckle(revitFi);
@@ -80,26 +97,19 @@ namespace Objects.Converter.Revit
       // point based, convert these as revit instances
       if (@base == null)
       {
-        if (
-          (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation // don't know why, but the transforms on structural foundation elements are really messed up
-          || (
-            (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_GenericModel
-            && revitFi.HostFace != null
-            && revitFi.HasModifiedGeometry()
-          ) // don't know why, but the transforms on face-based generic model instances are really messed up
-        )
-        {
-          @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
-        }
-        else
-        {
-          @base = RevitInstanceToSpeckle(revitFi, out notes, null);
-        }
+        @base = RevitInstanceToSpeckle(revitFi, out notes, null);
       }
 
       // add additional props to base object
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
+      if (revitFi.Room != null)
+        @base["roomId"] = revitFi.Room.Id.ToString();
+      if (revitFi.ToRoom != null)
+        @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
+      if (revitFi.FromRoom != null)
+        @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
+
 
       return @base;
     }
@@ -364,74 +374,6 @@ namespace Objects.Converter.Revit
       return familyInstance;
     }
 
-    private Base PointBasedFamilyInstanceToSpeckle(DB.FamilyInstance revitFi, Point basePoint, out List<string> notes)
-    {
-      notes = new List<string>();
-
-      var symbol = revitFi.Document.GetElement(revitFi.GetTypeId()) as DB.FamilySymbol;
-
-      var speckleFi = new BuiltElements.Revit.FamilyInstance();
-      speckleFi.basePoint = basePoint;
-      speckleFi.family = symbol.FamilyName;
-      speckleFi.type = symbol.Name;
-      speckleFi.category = revitFi.Category.Name;
-      speckleFi.facingFlipped = revitFi.FacingFlipped;
-      speckleFi.handFlipped = revitFi.HandFlipped;
-      speckleFi.mirrored = revitFi.Mirrored;
-      speckleFi.level = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
-      speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM);
-
-      // if a family instance is twoLevelBased, then store the top level
-      if (revitFi.Symbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased)
-      {
-        speckleFi["topLevel"] = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-        speckleFi["topLevel"] ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.SCHEDULE_TOP_LEVEL_PARAM);
-      }
-
-      if (revitFi.Location is LocationPoint locationPoint)
-        speckleFi.rotation = locationPoint.Rotation;
-
-      speckleFi.displayValue = GetElementDisplayValue(revitFi, SolidDisplayValueOptions);
-
-      var material = ConverterRevit.GetMEPSystemMaterial(revitFi);
-
-      if (material != null)
-        foreach (var mesh in speckleFi.displayValue)
-          mesh["renderMaterial"] = material;
-
-      GetAllRevitParamsAndIds(speckleFi, revitFi);
-
-      #region sub elements capture
-
-      var subElementIds = revitFi.GetSubComponentIds();
-      var convertedSubElements = new List<Base>();
-
-      foreach (var elemId in subElementIds)
-      {
-        var subElem = revitFi.Document.GetElement(elemId);
-        if (CanConvertToSpeckle(subElem))
-        {
-          var obj = ConvertToSpeckle(subElem);
-
-          if (obj != null)
-          {
-            convertedSubElements.Add(obj);
-            ConvertedObjects.Add(obj.applicationId);
-          }
-        }
-      }
-
-      if (convertedSubElements.Any())
-      {
-        speckleFi.elements = convertedSubElements;
-      }
-
-      #endregion
-
-      return speckleFi;
-    }
-
     #endregion
 
     private void GetReferencePlane(
@@ -482,8 +424,6 @@ namespace Objects.Converter.Revit
 
     #region new instancing
 
-
-
     // transforms
     private Other.Transform TransformToSpeckle(
       Transform transform,
@@ -527,7 +467,7 @@ namespace Objects.Converter.Revit
       );
 
       // get the scale: TODO: do revit transforms ever have scaling?
-      var scale = (float)transform.Scale;
+      var scale = transform.Scale;
 
       return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }
@@ -563,11 +503,11 @@ namespace Objects.Converter.Revit
     }
 
     // revit instances
-    public ApplicationObject RevitInstanceToNative(RevitInstance instance)
+    public ApplicationObject RevitInstanceToNative(RevitInstance instance, ApplicationObject appObj = null)
     {
       DB.FamilyInstance familyInstance = null;
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
-      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      appObj ??= new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
       var isUpdate = false;
 
       // skip if element already exists in doc & receive mode is set to ignore
@@ -580,6 +520,13 @@ namespace Objects.Converter.Revit
       if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
+      if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallMullions)
+        || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallPanels))
+      {
+        appObj.Update(logItem: "Revit cannot create standalone curtain panels or mullions", status: ApplicationObject.State.Skipped);
         return appObj;
       }
 
@@ -685,12 +632,12 @@ namespace Objects.Converter.Revit
             IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
             if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
               InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
-            try
+
+            if (lvlParams.ElementAtOrDefault(0) != null && level != null)
             {
-              if (lvlParams.ElementAtOrDefault(0) != null)
-                lvlParams[0].Set(level.Id); // this can be null
+              lvlParams[0].Set(level.Id);
             }
-            catch { }
+
             break;
 
           case FamilyPlacementType.OneLevelBased when CurrentHostElement is FootPrintRoof roof: // handle receiving mullions on a curtain roof
@@ -731,7 +678,15 @@ namespace Objects.Converter.Revit
       {
         // mirroring
         // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
-        Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        Group group = null;
+        try
+        {
+          group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        }
+        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+        {
+          // sometimes the group can't be made. Just try to mirror the element on its own
+        }
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
 
         try
@@ -763,8 +718,10 @@ namespace Objects.Converter.Revit
 
       // rotation about the z axis (signed)
       var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
-        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
+        Vector.DotProduct(
+          Vector.CrossProduct(desiredBasisX, currentBasisX),
+          new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)
+        ),
         Vector.DotProduct(desiredBasisX, currentBasisX)
       );
 
@@ -784,7 +741,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
-      appObj = SetHostedElements(instance, familyInstance, appObj);
+      //appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
     }
 
@@ -792,7 +749,8 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance instance,
       out List<string> notes,
       Transform parentTransform,
-      bool useParentTransform = false
+      bool useParentTransform = false,
+      RevitInstance existingInstance = null
     )
     {
       notes = new List<string>();
@@ -814,7 +772,7 @@ namespace Objects.Converter.Revit
       );
       notes.AddRange(definitionNotes);
 
-      var _instance = new RevitInstance();
+      var _instance = existingInstance ?? new RevitInstance();
       _instance.transform = transform;
       _instance.typedDefinition = definition;
       _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
@@ -861,7 +819,12 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true);
+        var meshes = GetElementDisplayValue(
+          instance,
+          new Options() { DetailLevel = ViewDetailLevel.Fine },
+          true,
+          parentTransform
+        );
         symbol.displayValue = meshes;
       }
       catch (Exception e)

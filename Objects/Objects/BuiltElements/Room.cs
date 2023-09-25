@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
@@ -46,7 +47,7 @@ namespace Objects.BuiltElements
 
     public string name { get; set; }
     public string number { get; set; }
-    public Level level { get; set; }
+    virtual public Level level { get; set; }
     public Point basePoint { get; set; }
     public List<ICurve> voids { get; set; } = new();
     public ICurve outline { get; set; }
@@ -69,7 +70,18 @@ namespace Objects.BuiltElements.Archicad
   */
   public class ArchicadRoom : Room
   {
-    public ArchicadLevel level { get; set; }
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
+    [JsonIgnore]
+    public ArchicadLevel archicadLevel { get; set; }
+
+    public override Level level
+    {
+      get => archicadLevel;
+      set => archicadLevel = value as ArchicadLevel ?? null;
+    }
 
     public double height { get; set; }
 

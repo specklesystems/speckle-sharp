@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System.Collections.Generic;
 using Objects.BuiltElements.AdvanceSteel;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
@@ -10,17 +10,17 @@ namespace Objects.Converter.AutocadCivil
   {
     private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
-      AsteelSlab asteelSlab = new AsteelSlab();
+      AsteelPlate asteelPlate = new AsteelPlate();
 
       plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
-      asteelSlab.outline = PolycurveToSpeckle(ptsContour);
+      asteelPlate.outline = PolycurveToSpeckle(ptsContour);
 
-      asteelSlab.area = plate.GetPaintArea();
+      asteelPlate.area = plate.GetPaintArea();
 
-      SetDisplayValue(asteelSlab, plate);
+      SetDisplayValue(asteelPlate, plate);
 
-      return asteelSlab;
+      return asteelPlate;
     }
   }
 }

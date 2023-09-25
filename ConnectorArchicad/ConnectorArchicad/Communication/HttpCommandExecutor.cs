@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
@@ -32,21 +32,28 @@ namespace Archicad.Communication
 
     public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters) where TParameters : class where TResult : class
     {
-      AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
+      {
+        AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
-      string requestMsg = SerializeRequest(request);
-      //Console.WriteLine(requestMsg);
-      string responseMsg = await ConnectionManager.Instance.Send(requestMsg);
-      //Console.WriteLine(responseMsg);
-      AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);
+        string requestMsg = SerializeRequest(request);
+        //Console.WriteLine(requestMsg);
+        string responseMsg;
 
-      // TODO
-      //if (!response.Succeeded)
-      //{
-      //	throw new CommandFailedException (response.ErrorStatus.Code, response.ErrorStatus.Message);
-      //}
+        using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
+          responseMsg = await ConnectionManager.Instance.Send(requestMsg);
+        //Console.WriteLine(responseMsg);
+        AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);
 
-      return response.Result;
+        // TODO
+        //if (!response.Succeeded)
+        //{
+        //	throw new CommandFailedException (response.ErrorStatus.Code, response.ErrorStatus.Message);
+        //}
+
+        return response.Result;
+      }
     }
 
     #endregion

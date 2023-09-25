@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
+using Objects.Organization;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -69,7 +71,7 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitDuct : Duct
+  public class RevitDuct : Duct, IHasMEPConnectors
   {
     public RevitDuct() { }
 
@@ -166,6 +168,7 @@ namespace Objects.BuiltElements.Revit
     public Level level { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
+    public List<RevitMEPConnector> Connectors { get; set; } = new();
   }
 
   public class RevitFlexDuct : RevitDuct

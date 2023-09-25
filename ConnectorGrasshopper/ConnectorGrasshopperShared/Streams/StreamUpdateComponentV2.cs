@@ -54,7 +54,7 @@ public class StreamUpdateComponentV2 : GH_SpeckleTaskCapableComponent<bool>
       GH_SpeckleStream ghSpeckleStream = null;
       string name = null;
       string description = null;
-      bool isPublic = false;
+      bool? isPublic = null;
 
       if (!DA.GetData(0, ref ghSpeckleStream))
         return;
@@ -82,19 +82,21 @@ public class StreamUpdateComponentV2 : GH_SpeckleTaskCapableComponent<bool>
     DA.SetData(0, success);
   }
 
-  private async Task<bool> UpdateStream(StreamWrapper streamWrapper, string name, string description, bool isPublic)
+  private static async Task<bool> UpdateStream(
+    StreamWrapper streamWrapper,
+    string name,
+    string description,
+    bool? isPublic
+  )
   {
-    var account = streamWrapper.GetAccount().Result;
-    var client = new Client(account);
+    var account = await streamWrapper.GetAccount().ConfigureAwait(false);
+    using var client = new Client(account);
     var input = new StreamUpdateInput();
-    var stream = client.StreamGet(streamWrapper.StreamId).Result;
+    var stream = await client.StreamGet(streamWrapper.StreamId).ConfigureAwait(false);
     input.id = streamWrapper.StreamId;
-
     input.name = name ?? stream.name;
     input.description = description ?? stream.description;
-    if (stream.isPublic != isPublic)
-      input.isPublic = isPublic;
-
-    return await client.StreamUpdate(input);
+    input.isPublic = isPublic ?? stream.isPublic;
+    return await client.StreamUpdate(input).ConfigureAwait(false);
   }
 }

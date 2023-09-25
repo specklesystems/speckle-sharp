@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 
-namespace Tests;
+namespace TestsUnit;
 
 public class GraphQLClientTests
 {

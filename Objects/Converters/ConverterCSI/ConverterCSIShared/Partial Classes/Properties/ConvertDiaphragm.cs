@@ -21,8 +21,12 @@ namespace Objects.Converter.CSI
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: CSIDiaphragm.name);
       else
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unable to create diaphragm with id {CSIDiaphragm.id}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Unable to create diaphragm with id {CSIDiaphragm.id}"
+        );
     }
+
     CSIDiaphragm diaphragmToSpeckle(string name)
     {
       bool semiRigid = false;

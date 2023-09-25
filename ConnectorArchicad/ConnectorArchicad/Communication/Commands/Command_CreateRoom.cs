@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
@@ -12,9 +11,9 @@ namespace Archicad.Communication.Commands
     public sealed class Parameters
     {
       [JsonProperty("zones")]
-      private IEnumerable<ArchicadRoom> Datas { get; }
+      private IEnumerable<Archicad.Room> Datas { get; }
 
-      public Parameters(IEnumerable<ArchicadRoom> datas)
+      public Parameters(IEnumerable<Archicad.Room> datas)
       {
         Datas = datas;
       }
@@ -27,9 +26,9 @@ namespace Archicad.Communication.Commands
       public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
     }
 
-    private IEnumerable<ArchicadRoom> Datas { get; }
+    private IEnumerable<Archicad.Room> Datas { get; }
 
-    public CreateRoom(IEnumerable<ArchicadRoom> datas)
+    public CreateRoom(IEnumerable<Archicad.Room> datas)
     {
       Datas = datas;
     }

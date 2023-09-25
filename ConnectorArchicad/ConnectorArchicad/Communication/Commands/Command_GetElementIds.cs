@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
@@ -12,7 +12,8 @@ namespace Archicad.Communication.Commands
     public enum ElementFilter
     {
       All,
-      Selection
+      Selection,
+      ElementType
     }
 
     #region --- Classes ---
@@ -26,13 +27,16 @@ namespace Archicad.Communication.Commands
       [JsonConverter(typeof(StringEnumConverter))]
       private ElementFilter Filter { get; }
 
+      [JsonProperty("filterBy")]
+      private List<string>? FilterBy { get; }
       #endregion
 
       #region --- Ctor \ Dtor ---
 
-      public Parameters(ElementFilter filter)
+      public Parameters(ElementFilter filter, List<string>? filterBy = null)
       {
         Filter = filter;
+        FilterBy = filterBy;
       }
 
       #endregion
@@ -54,14 +58,16 @@ namespace Archicad.Communication.Commands
     #region --- Fields ---
 
     private ElementFilter Filter { get; }
+    private List<string>? FilterBy { get; }
 
     #endregion
 
     #region --- Ctor \ Dtor ---
 
-    public GetElementIds(ElementFilter filter)
+    public GetElementIds(ElementFilter filter, List<string>? filterBy = null)
     {
       Filter = filter;
+      FilterBy = filterBy;
     }
 
     #endregion
@@ -70,7 +76,10 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<string>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementIds", new Parameters(Filter));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetElementIds",
+        new Parameters(Filter, FilterBy)
+      );
       return result.ApplicationIds;
     }
 

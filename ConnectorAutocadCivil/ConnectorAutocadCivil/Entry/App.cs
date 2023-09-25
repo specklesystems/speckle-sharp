@@ -8,15 +8,16 @@ using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Speckle.Core.Logging;
 using Forms = System.Windows.Forms;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
 using Autodesk.AutoCAD.Runtime;
 #endif
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 [assembly: ExtensionApplication(typeof(Speckle.ConnectorAutocadCivil.Entry.App))]
 #endif
 
@@ -33,7 +34,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       {
         //Advance Steel addon is initialized after ribbon creation
         bool advanceSteel = false;
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
         advanceSteel = true;
 #endif
 
@@ -52,10 +53,11 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         //Some dlls fail to load due to versions matching (0.10.7 vs 0.10.0)
         //the below should fix it! This affects Avalonia and Material 
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-
+        
         // DUI2
-        SpeckleAutocadCommand.InitAvalonia();
         var bindings = new ConnectorBindingsAutocad();
+        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
+        SpeckleAutocadCommand.InitAvalonia();
         bindings.RegisterAppEvents();
         SpeckleAutocadCommand.Bindings = bindings;
       }
@@ -148,7 +150,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         ribbon.Tabs.Add(tab);
       }
 
-#if !ADVANCESTEEL2023
+#if !ADVANCESTEEL
       tab.IsActive = true; // optional debug: set ribbon tab active
 #endif
       return tab;

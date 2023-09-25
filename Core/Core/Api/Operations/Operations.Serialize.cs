@@ -11,7 +11,12 @@ namespace Speckle.Core.Api;
 public static partial class Operations
 {
   /// <summary>
-  /// Serializes a given object. Note: if you want to save and persist an object to a Speckle Transport or Server, please use any of the "Send" methods. See <see cref="Send(Base, System.Collections.Generic.List{Speckle.Core.Transports.ITransport}, bool, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}), Action{string, Exception})"/>.
+  /// Serializes a given object.
+  /// <remarks>
+  /// if you want to save and persist an object to a Speckle Transport or Server,
+  /// please use any of the "Send" methods.
+  /// See <see cref="Send(Speckle.Core.Models.Base,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  /// </remarks>
   /// </summary>
   /// <param name="object"></param>
   /// <returns>A json string representation of the object.</returns>
@@ -21,8 +26,13 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Serializes a given object. Note: if you want to save and persist an object to Speckle Transport or Server, please use any of the "Send" methods. See <see cref="Send(Base, System.Collections.Generic.List{Speckle.Core.Transports.ITransport}, bool, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}), Action{string, Exception})"/>.
+  /// Serializes a given object.
   /// </summary>
+  /// <remarks>
+  /// If you want to save and persist an object to Speckle Transport or Server,
+  /// please use any of the "Send" methods.
+  /// <see cref="Send(Speckle.Core.Models.Base,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  /// </remarks>
   /// <param name="object"></param>
   /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
   /// <returns>A json string representation of the object.</returns>
@@ -72,8 +82,12 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}))"/>.
+  /// Deserializes a given object.
   /// </summary>
+  /// <remarks>
+  /// Note: if you want to pull an object from a Speckle Transport or Server,
+  /// please use any of the <see cref="Receive(string,Speckle.Core.Transports.ITransport?,Speckle.Core.Transports.ITransport?,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,System.Action{int}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  /// </remarks>
   /// <param name="object">The json string representation of a speckle object that you want to deserialise.</param>
   /// <returns></returns>
   public static Base Deserialize(string @object)
@@ -82,8 +96,13 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}))"/>.
+  /// Deserializes a given object.
   /// </summary>
+  /// <remarks>
+  /// Note: if you want to pull an object from a Speckle Transport or Server,
+  /// please use any of the
+  /// <see cref="Receive(string,Speckle.Core.Transports.ITransport?,Speckle.Core.Transports.ITransport?,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,System.Action{int}?,bool,Speckle.Core.Api.SerializerVersion)"/>.
+  /// </remarks>
   /// <param name="object">The json string representation of a speckle object that you want to deserialise.</param>
   /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
   /// <returns></returns>

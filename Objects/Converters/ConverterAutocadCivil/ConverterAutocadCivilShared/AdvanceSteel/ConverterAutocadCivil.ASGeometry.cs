@@ -1,5 +1,6 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,6 +28,12 @@ using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 using ASBoundBlock3d = Autodesk.AdvanceSteel.Geometry.BoundBlock3d;
 
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using Autodesk.AdvanceSteel.DotNetRoots.Units;
+using Autodesk.AutoCAD.PlottingServices;
+using Speckle.Newtonsoft.Json.Linq;
+
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
@@ -41,12 +48,12 @@ namespace Objects.Converter.AutocadCivil
 
     private Point3d PointASToAcad(ASPoint3d point)
     {
-      return new Point3d(point.x * Factor, point.y * Factor, point.z * Factor);
+      return new Point3d(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     private Point3D PointToMath(ASPoint3d point)
     {
-      return new Point3D(point.x * Factor, point.y * Factor, point.z * Factor);
+      return new Point3D(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     public Vector VectorToSpeckle(ASVector3d vector, string units = null)
@@ -57,7 +64,7 @@ namespace Objects.Converter.AutocadCivil
     }
     private Vector3d VectorASToAcad(ASVector3d vector)
     {
-      return new Vector3d(vector.x * Factor, vector.y * Factor, vector.z * Factor);
+      return new Vector3d(vector.x * FactorFromNative, vector.y * FactorFromNative, vector.z * FactorFromNative);
     }
 
     private Box BoxToSpeckle(ASBoundBlock3d bound)
@@ -218,6 +225,183 @@ namespace Objects.Converter.AutocadCivil
       return new Plane(PointToSpeckle(origin), VectorToSpeckle(plane.Normal), VectorToSpeckle(vectorX), VectorToSpeckle(vectorY), ModelUnits);
     }
 
+    private object ConvertValueToSpeckle(object @object, eUnitType? unitType, out bool converted)
+    {
+      converted = true;
+      if (@object is ASPoint3d)
+      {
+        return PointToSpeckle(@object as ASPoint3d);
+      }
+      else if (@object is ASVector3d)
+      {
+        return VectorToSpeckle(@object as ASVector3d);
+      }
+      else if (IsValueGenericList(@object))
+      {
+        IList list = @object as IList;
+        if (list.Count == 0) return null;
+
+        List<object> listReturn = new List<object>();
+        foreach (var item in list)
+          listReturn.Add(ConvertValueToSpeckle(item, unitType, out _));
+
+        return listReturn;
+      }
+      else if (IsValueGenericDictionary(@object))
+      {
+        IDictionary dictionary = @object as IDictionary;
+        if (dictionary.Count == 0) return null;
+
+        Dictionary<object, object> dictionaryReturn = new Dictionary<object, object>();
+        foreach (var key in dictionary.Keys)
+          dictionaryReturn.Add(key, ConvertValueToSpeckle(dictionary[key], unitType, out _));
+
+        return dictionaryReturn;
+      }
+      else
+      {
+        if(unitType.HasValue && @object is double)
+        {
+          @object = FromInternalUnits((double)@object, unitType.Value);
+        }
+
+        converted = false;
+        return @object;
+      }
+    }
+
+    private static bool IsValueGenericList(object value)
+    {
+      var type = value.GetType();
+      return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>));
+    }
+
+    private static bool IsValueGenericDictionary(object value)
+    {
+      var type = value.GetType();
+      return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>));
+    }
+
+    private double FromInternalUnits(double value, eUnitType unitType)
+    {
+      double valueScaled = value * GetUnitScaleFromNative(unitType);
+
+      if (unitType == eUnitType.kWeight)
+      {
+        valueScaled = RoundBigDecimalNumbers(valueScaled, 5);
+      }
+      else if (unitType == eUnitType.kVolume)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 3);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 9);
+        }
+      }
+      else if (unitType == eUnitType.kArea)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 2);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 6);
+        }
+      }
+
+      return valueScaled;
+    }
+
+    private static double RoundBigDecimalNumbers(double value, int digits)
+    {
+      return Math.Round(value, digits, MidpointRounding.AwayFromZero);
+    }
+
+    #region Units
+
+    private UnitsSet _unitsSet;
+
+    private UnitsSet UnitsSet
+    {
+      get
+      {
+        if (_unitsSet == null)
+        {
+          _unitsSet = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
+
+          //Workaround to fix strange beahaviour when we are using the modeler of some beams(lost some faces)
+          var unitOriginal = _unitsSet.UnitOfArea;
+          _unitsSet.UnitOfArea = new Unit();
+          _unitsSet.UnitOfArea = unitOriginal;
+        }
+
+        return _unitsSet;
+      }
+    }
+
+    private double GetUnitScaleFromNative(eUnitType unitType)
+    {
+      return 1 / UnitsSet.GetUnit(unitType).Factor;
+    }
+
+    private double _factorFromNative;
+    private double FactorFromNative
+    {
+      get
+      {
+        if (_factorFromNative.Equals(0.0))
+        {
+          _factorFromNative = 1 / DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
+        }
+
+        return _factorFromNative;
+      }
+    }
+
+    private string unitWeight;
+    private string UnitWeight
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitWeight))
+        {
+          unitWeight = UnitsSet.GetUnit(eUnitType.kWeight).Symbol;
+        }
+        return unitWeight;
+      }
+    }
+
+    private string unitVolume;
+    private string UnitVolume
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitVolume))
+        {
+          unitVolume = UnitsSet.GetUnit(eUnitType.kVolume).Symbol;
+        }
+        return unitVolume;
+      }
+    }
+
+    private string unitArea;
+    private string UnitArea
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitArea))
+        {
+          unitArea = UnitsSet.GetUnit(eUnitType.kArea).Symbol;
+        }
+        return unitArea;
+      }
+    }
+
+    #endregion
   }
 }
 #endif

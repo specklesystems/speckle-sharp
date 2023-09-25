@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api;
@@ -121,17 +122,17 @@ public class Stream
   public Branches branches { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(System.Threading.CancellationToken, string, string, int)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(string, string, int, System.Threading.CancellationToken)"/>.
   /// </summary>
   public Branch branch { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(string, string, System.Threading.CancellationToken)"/>.
   /// </summary>
   public Commit commit { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(System.Threading.CancellationToken, string, int)"/>
+  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(string, int, System.Threading.CancellationToken)"/>
   /// </summary>
   public Commits commits { get; set; }
 

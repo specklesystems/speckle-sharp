@@ -1,7 +1,8 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -20,17 +21,17 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 {
   /// <summary>Special appId symbol for the root object</summary>
   protected const string Root = "__Root";
+  private const string Elements = nameof(Collection.elements);
 
   /// <summary>app id -> base</summary>
   protected readonly IDictionary<string, Base> converted;
 
-  /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
-  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> _parentInfos;
+  /// <summary>Base -> NestingInstructions ordered by priority</summary>
+  private readonly Dictionary<Base, IList<NestingInstructions>> _nestingInstructions = new();
 
   protected CommitObjectBuilder()
   {
     converted = new Dictionary<string, Base>();
-    _parentInfos = new Dictionary<Base, IList<(string?, string)>>();
   }
 
   /// <summary>
@@ -54,6 +55,11 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     ApplyRelationships(converted.Values, rootCommitObject);
   }
 
+  protected void SetRelationship(Base conversionResult, NestingInstructions nestingInstructions)
+  {
+    SetRelationship(conversionResult, new List<NestingInstructions> { nestingInstructions });
+  }
+
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
   /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
@@ -61,7 +67,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// </summary>
   /// <param name="conversionResult">The object to be nested</param>
   /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
-  protected void SetRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
+  protected void SetRelationship(Base conversionResult, IList<NestingInstructions> nestingInstructionsList)
   {
     string appId = conversionResult.applicationId;
     if (appId != null)
@@ -76,13 +82,13 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       }
     }
 
-    if (!_parentInfos.ContainsKey(conversionResult))
+    if (!_nestingInstructions.ContainsKey(conversionResult))
     {
-      _parentInfos[conversionResult] = parentInfo;
+      _nestingInstructions[conversionResult] = nestingInstructionsList;
     }
     else
     {
-      _parentInfos.Add(conversionResult, parentInfo);
+      _nestingInstructions.Add(conversionResult, nestingInstructionsList);
     }
   }
 
@@ -124,41 +130,50 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="_parentInfos"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
-    var parents = _parentInfos[current];
-    foreach ((string? parentAppId, string propName) in parents)
+    var instructions = _nestingInstructions[current];
+    foreach (var instruction in instructions)
     {
-      if (parentAppId is null)
+      if (instruction.ParentApplicationId is null)
         continue;
 
       Base? parent;
-      if (parentAppId == Root)
+      if (instruction.ParentApplicationId == Root)
         parent = rootCommitObject;
       else
-        converted.TryGetValue(parentAppId, out parent);
+        converted.TryGetValue(instruction.ParentApplicationId, out parent);
 
       if (parent is null)
         continue;
 
       try
       {
-        if (parent.GetDetachedProp(propName) is not IList elements)
-        {
-          elements = new List<Base>();
-          parent.SetDetachedProp(propName, elements);
-        }
-
-        elements.Add(current);
+        instruction.Nest(parent, current);
         return;
       }
       catch (Exception ex)
       {
         // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
-        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current?.GetType());
+        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current.GetType());
       }
     }
 
     throw new InvalidOperationException(
-      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!"
+      $"Could not find a valid parent for object of type {current.GetType()}. Checked {instructions.Count} potential parent, and non were converted!"
     );
+  }
+
+  protected static void NestUnderElementsProperty(Base parent, Base child)
+  {
+    NestUnderProperty(parent, child, Elements);
+  }
+  protected static void NestUnderProperty(Base parent, Base child, string property)
+  {
+    if (parent.GetDetachedProp(property) is not IList elements)
+    {
+      elements = new List<Base>();
+      parent.SetDetachedProp(property, elements);
+    }
+
+    elements.Add(child);
   }
 }

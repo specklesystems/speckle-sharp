@@ -22,7 +22,7 @@
 
   </UserControl.Styles>
   <Design.DataContext>
-    <viewModels:MappingViewModel />
+    <viewModels:TypeMappingOnReceiveViewModel />
   </Design.DataContext>
 
   <Grid MinHeight="600" RowDefinitions="auto, auto,*,auto">
@@ -50,7 +50,7 @@
           Padding="10,0,30,0"
           VerticalAlignment="Center"
           FontSize="100"
-          Items="{Binding Mapping.Keys}"
+          Items="{Binding Mapping.Categories}"
           SelectedItem="{Binding SelectedCategory}" />
       </Grid>
     </Border>
@@ -74,55 +74,53 @@
         FontWeight="Bold">
         Assigned To
       </TextBlock>
-      <ScrollViewer
-        Name="ScrollParent"
+      <Border
         Grid.Row="1"
         Grid.ColumnSpan="2"
+        Margin="10,5,10,10"
         assists:ShadowAssist.ShadowDepth="Depth2"
-        Background="Transparent"
-        VerticalScrollBarVisibility="Auto">
-        <Border
-          Margin="10,5,15,10"
-          assists:ShadowAssist.ShadowDepth="Depth2"
-          Background="{DynamicResource MaterialDesignCardBackground}"
-          CornerRadius="5">
-          <StackPanel>
-            <ListBox
-              Items="{Binding VisibleMappingValues}"
-              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-              SelectedItem="{Binding SelectedMappingValue}">
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <Grid ColumnDefinitions="*,*">
-                    <TextBlock
-                      Grid.Column="0"
-                      Margin="5"
-                      VerticalAlignment="Center"
-                      Text="{Binding IncomingType}"
-                      TextTrimming="CharacterEllipsis" />
-                    <TextBlock
-                      Name="OutgoingType"
-                      Grid.Column="1"
-                      Margin="0"
-                      VerticalAlignment="Center"
-                      Focusable="False"
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                      Text="{Binding OutgoingType}" />
-                    <TextBlock
-                      Grid.Column="1"
-                      Margin="0"
-                      VerticalAlignment="Center"
-                      Focusable="False"
-                      Foreground="Gray"
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                      Text="{Binding InitialGuess}" />
-                  </Grid>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-          </StackPanel>
-        </Border>
-      </ScrollViewer>
+        Background="{DynamicResource MaterialDesignCardBackground}"
+        CornerRadius="5">
+        <ListBox
+          Height="{Binding $parent[Border].Bounds.Height}"
+          Items="{Binding VisibleMappingValues}"
+          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+          SelectedItems="{Binding SelectedMappingValues}"
+          SelectionMode="Multiple">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*,*">
+                <TextBlock
+                  Grid.Column="0"
+                  Margin="5"
+                  Text="{Binding IncomingTypeDisplayName}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+                <TextBlock
+                  Name="OutgoingType"
+                  Grid.Column="1"
+                  Margin="0"
+                  VerticalAlignment="Center"
+                  Focusable="False"
+                  IsVisible="{Binding MappedHostType, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  Text="{Binding MappedHostType.HostTypeDisplayName}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+                <TextBlock
+                  Grid.Column="1"
+                  Margin="0"
+                  VerticalAlignment="Center"
+                  Focusable="False"
+                  Foreground="Gray"
+                  IsVisible="{Binding MappedHostType, Converter={x:Static ObjectConverters.IsNull}}"
+                  Text="{Binding InitialGuess.HostTypeDisplayName}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
     </Grid>
 
 
@@ -171,7 +169,13 @@
             Margin="0,0,0,8"
             Classes="Chip"
             Items="{Binding SearchResults}"
-            SelectedItem="{Binding SelectedType}" />
+            SelectedItem="{Binding SelectedType}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding HostTypeDisplayName}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
         </StackPanel>
       </ScrollViewer>
       <Grid ColumnDefinitions="*, auto, *">

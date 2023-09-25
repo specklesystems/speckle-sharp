@@ -37,8 +37,10 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	// The identifier of the column
-	os.Add (ElementBase::ApplicationId, APIGuidToString (elem.column.head.guid));
+	GS::ErrCode err = NoError;
+	err = GetDataCommand::SerializeElementType (elem, memo, os);
+	if (NoError != err)
+		return err;
 
 	// Positioning - geometry
 	API_StoryType story = Utility::GetStory (elem.column.head.floorInd);

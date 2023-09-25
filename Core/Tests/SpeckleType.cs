@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Speckle.Core.Models;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
 public class SpeckleTypeTests
@@ -15,9 +15,9 @@ public class SpeckleTypeTests
   private static object[] Cases =
   {
     new object[] { new Base(), "Base" },
-    new object[] { new Foo(), "Tests.Foo" },
-    new object[] { new Bar(), "Tests.Foo:Tests.Bar" },
-    new object[] { new Baz(), "Tests.Foo:Tests.Bar:Tests.Baz" }
+    new object[] { new Foo(), "TestsUnit.Foo" },
+    new object[] { new Bar(), "TestsUnit.Foo:TestsUnit.Bar" },
+    new object[] { new Baz(), "TestsUnit.Foo:TestsUnit.Bar:TestsUnit.Baz" }
   };
 }
 

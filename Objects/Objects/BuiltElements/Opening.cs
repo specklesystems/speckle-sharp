@@ -45,26 +45,26 @@ namespace Objects.BuiltElements.Revit
       SchemaDeprecated,
       SchemaInfo("Revit Wall Opening (Deprecated)", "Creates a Speckle Wall opening for revit", "BIM", "Architecture")
     ]
-    public RevitWallOpening(ICurve outline, RevitWall host = null)
+    public RevitWallOpening(ICurve outline, RevitWall? host = null)
     {
-      if (!(outline is Polyline))
+      if (outline is not Polyline)
         throw new SpeckleException("Outline should be a rectangular-shaped polyline", false);
       this.outline = outline;
       this.host = host;
     }
 
     [SchemaInfo("Revit Wall Opening", "Creates a Speckle Wall opening for revit", "Revit", "Architecture")]
-    public RevitWallOpening(Polyline outline, RevitWall host = null)
+    public RevitWallOpening(Polyline outline, RevitWall? host = null)
     {
       if (outline == null)
-        throw new SpeckleException("Outline cannot be null", false);
-      if (outline?.GetPoints().Count != 4)
-        throw new SpeckleException("Outline should be a rectangular-shaped polyline", false);
+        throw new SpeckleException("Outline cannot be null");
+      if (outline.GetPoints().Count != 4)
+        throw new SpeckleException("Outline should be a rectangular-shaped polyline");
       this.outline = outline;
       this.host = host;
     }
 
-    public RevitWall host { get; set; }
+    public RevitWall? host { get; set; }
   }
 
   public class RevitShaft : RevitOpening

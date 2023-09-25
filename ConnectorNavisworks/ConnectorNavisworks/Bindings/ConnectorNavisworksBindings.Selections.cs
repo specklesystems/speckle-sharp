@@ -22,6 +22,9 @@ public partial class ConnectorBindingsNavisworks
 
     // Current document, models and selected elements.
     _doc = Application.ActiveDocument;
+
+    IsFileAndModelsPresent();
+
     var appSelectedItems = _doc.CurrentSelection.SelectedItems;
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.

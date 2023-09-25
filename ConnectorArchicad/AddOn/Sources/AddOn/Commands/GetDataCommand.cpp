@@ -7,10 +7,70 @@
 namespace AddOnCommands
 {
 
+	
+GS::ErrCode GetDataCommand::ExportClassificationsAndProperties (const API_Element& elem, GS::ObjectState& os) const
+{
+	GS::ErrCode err = NoError;
+
+	{
+		GS::UniString typeName;
+		err = Utility::GetLocalizedElementTypeName (elem.header, typeName);
+		if (err != NoError)
+			return err;
+		
+		os.Add(FieldNames::ElementBase::ElementType, typeName);
+	}
+	
+	GS::Array<GS::Pair<API_Guid, API_Guid>> systemItemPairs;
+	err = ACAPI_Element_GetClassificationItems (elem.header.guid, systemItemPairs);
+	if (err != NoError)
+		return err;
+
+	const auto& classificationListAdder = os.AddList<GS::ObjectState> (FieldNames::ElementBase::Classifications);
+	for (const auto& systemItemPair : systemItemPairs) {
+		GS::ObjectState classificationOs;
+		API_ClassificationSystem system;
+		system.guid = systemItemPair.first;
+		err = ACAPI_Classification_GetClassificationSystem (system);
+		if (err != NoError)
+			break;
+
+		classificationOs.Add (FieldNames::ElementBase::Classification::System, system.name);
+		
+		API_ClassificationItem item;
+		item.guid = systemItemPair.second;
+		err = ACAPI_Classification_GetClassificationItem (item);
+		if (err != NoError)
+			break;
+
+		if (!item.id.IsEmpty())
+			classificationOs.Add (FieldNames::ElementBase::Classification::Code, item.id);
+
+		if (!item.name.IsEmpty())
+			classificationOs.Add (FieldNames::ElementBase::Classification::Name, item.name);
+
+		classificationListAdder (classificationOs);
+	}
+
+	return err;
+}
+
 
 GS::UInt64 GetDataCommand::GetMemoMask () const
 {
 	return APIMemoMask_All;
+}
+
+
+GS::ErrCode GetDataCommand::SerializeElementType(const API_Element& elem, const API_ElementMemo& /*memo*/, GS::ObjectState& os) const
+{
+	GS::ErrCode err = NoError;
+
+	os.Add(FieldNames::ElementBase::ApplicationId, APIGuidToString (elem.header.guid));
+
+	err = ExportClassificationsAndProperties (elem, os);
+
+	return err;
 }
 
 
@@ -36,10 +96,13 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 			continue;
 		}
 
-		API_ElemTypeID elementType = Utility::GetElementType (element.header);
-		if (elementType != GetElemTypeID ())
-		{
-			continue;
+		// check for elem type
+		if (API_ZombieElemID != GetElemTypeID ()) {
+			API_ElemTypeID elementType = Utility::GetElementType (element.header);
+			if (elementType != GetElemTypeID ())
+			{
+				continue;
+			}
 		}
 
 		err = ACAPI_Element_GetMemo (guid, &memo, GetMemoMask ());

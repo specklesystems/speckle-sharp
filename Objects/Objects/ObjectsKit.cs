@@ -68,8 +68,8 @@ public class ObjectsKit : ISpeckleKit
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Warning(ex, "Failed to load converter for app {app}", app);
-      throw new KitException($"Failed to load converter for app {app}", this, ex);
+      SpeckleLog.Logger.Fatal(ex, "Failed to load converter for app {app}", app);
+      throw new KitException($"Failed to load converter for app {app}:\n\n{ex.Message}", this, ex);
     }
   }
 
@@ -85,6 +85,13 @@ public class ObjectsKit : ISpeckleKit
 
     if (!File.Exists(path))
       throw new FileNotFoundException($"Converter for {app} was not found in kit {basePath}", path);
+
+    AssemblyName assemblyToLoad = AssemblyName.GetAssemblyName(path);
+    var objects = Assembly.GetExecutingAssembly().GetName();
+
+    //only get assemblies matching the Major and Minor version of Objects
+    if (assemblyToLoad.Version.Major != objects.Version.Major || assemblyToLoad.Version.Minor != objects.Version.Minor)
+      throw new SpeckleException($"Mismatch between Objects library v{objects.Version} Converter v{assemblyToLoad.Version}.\nEnsure the same 2.x version of Speckle connectors is installed.");
 
     var assembly = Assembly.LoadFrom(path);
 
@@ -106,18 +113,22 @@ public class ObjectsKit : ISpeckleKit
   public List<string> GetAvailableConverters()
   {
     var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-    var availableConverters = Directory
-      .EnumerateFiles(basePath!, "Objects.Converter.*")
-      .Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1))
-      .ToList();
+    var allConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*.dll");
 
     //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
-    if (!availableConverters.Any())
-      availableConverters = Directory
-        .EnumerateFiles(ObjectsFolder, "Objects.Converter.*")
-        .Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1))
-        .ToList();
+    if (!allConverters.Any())
+      allConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*.dll");
 
-    return availableConverters;
+    //only get assemblies matching the Major and Minor version of Objects
+    var objects = Assembly.GetExecutingAssembly().GetName();
+    var availableConverters = new List<string>();
+    foreach (var converter in allConverters)
+    {
+      AssemblyName assemblyName = AssemblyName.GetAssemblyName(converter);
+      if (assemblyName.Version.Major == objects.Version.Major && assemblyName.Version.Minor == objects.Version.Minor)
+        availableConverters.Add(converter);
+    }
+
+    return availableConverters.Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1)).ToList();
   }
 }

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);REVIT2021</DefineConstants>
+    <RootNamespace>RevitSharedResources</RootNamespace>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\RevitSharedResources\RevitSharedResources.projitems" Label="Shared" />
+
+</Project>

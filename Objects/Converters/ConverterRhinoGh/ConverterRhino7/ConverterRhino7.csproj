@@ -15,11 +15,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*"/>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build"/>
+    <PackageReference Include="Grasshopper" Version="7.10.21256.17001" IncludeAssets="compile;build" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,5 +39,5 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
-  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared"/>
+  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
 </Project>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CSiAPIv1;
@@ -11,7 +11,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void FloorPropertyToNative(CSIProperty2D property2D, ref ApplicationObject appObj)
+    public string FloorPropertyToNative(CSIProperty2D property2D)
     {
       int? success = null;
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
@@ -21,35 +21,41 @@ namespace Objects.Converter.CSI
         {
           case Structural.CSI.Analysis.DeckType.Filled:
             var deckFilled = (CSIProperty2D.DeckFilled)property2D;
-            success = Model.PropArea.SetDeckFilled(deckFilled.name,
-                deckFilled.SlabDepth,
-                deckFilled.RibDepth,
-                deckFilled.RibWidthTop,
-                deckFilled.RibWidthBot,
-                deckFilled.RibSpacing,
-                deckFilled.ShearThickness,
-                deckFilled.UnitWeight,
-                deckFilled.ShearStudDia,
-                deckFilled.ShearStudHt,
-                deckFilled.ShearStudFu);
+            success = Model.PropArea.SetDeckFilled(
+              deckFilled.name,
+              deckFilled.SlabDepth,
+              deckFilled.RibDepth,
+              deckFilled.RibWidthTop,
+              deckFilled.RibWidthBot,
+              deckFilled.RibSpacing,
+              deckFilled.ShearThickness,
+              deckFilled.UnitWeight,
+              deckFilled.ShearStudDia,
+              deckFilled.ShearStudHt,
+              deckFilled.ShearStudFu
+            );
             break;
           case Structural.CSI.Analysis.DeckType.Unfilled:
             var deckUnfilled = (CSIProperty2D.DeckUnFilled)property2D;
-            success = Model.PropArea.SetDeckUnfilled(deckUnfilled.name,
-                deckUnfilled.RibDepth,
-                deckUnfilled.RibWidthTop,
-                deckUnfilled.RibWidthBot,
-                deckUnfilled.RibSpacing,
-                deckUnfilled.ShearThickness,
-                deckUnfilled.UnitWeight);
+            success = Model.PropArea.SetDeckUnfilled(
+              deckUnfilled.name,
+              deckUnfilled.RibDepth,
+              deckUnfilled.RibWidthTop,
+              deckUnfilled.RibWidthBot,
+              deckUnfilled.RibSpacing,
+              deckUnfilled.ShearThickness,
+              deckUnfilled.UnitWeight
+            );
             break;
           case Structural.CSI.Analysis.DeckType.SolidSlab:
             var deckSlab = (CSIProperty2D.DeckSlab)property2D;
-            success = Model.PropArea.SetDeckSolidSlab(deckSlab.name,
-                deckSlab.SlabDepth,
-                deckSlab.ShearStudDia,
-                deckSlab.ShearStudHt,
-                deckSlab.ShearStudFu);
+            success = Model.PropArea.SetDeckSolidSlab(
+              deckSlab.name,
+              deckSlab.SlabDepth,
+              deckSlab.ShearStudDia,
+              deckSlab.ShearStudHt,
+              deckSlab.ShearStudFu
+            );
             break;
         }
       }
@@ -60,40 +66,60 @@ namespace Objects.Converter.CSI
           case Structural.CSI.Analysis.SlabType.Slab:
             var SolidSlab = property2D;
             var shell = shellType(SolidSlab);
-            success = Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shell, SolidSlab.material.name, SolidSlab.thickness);
+            success = Model.PropArea.SetSlab(
+              SolidSlab.name,
+              eSlabType.Slab,
+              shell,
+              SolidSlab.material.name,
+              SolidSlab.thickness
+            );
             break;
           case Structural.CSI.Analysis.SlabType.Ribbed:
             var slabRibbed = (CSIProperty2D.RibbedSlab)property2D;
             shell = shellType(slabRibbed);
-            Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shell, slabRibbed.material.name, slabRibbed.thickness);
-            success = Model.PropArea.SetSlabRibbed(slabRibbed.name,
-                slabRibbed.OverAllDepth,
-                slabRibbed.thickness,
-                slabRibbed.StemWidthTop,
-                slabRibbed.StemWidthTop,
-                slabRibbed.RibSpacing,
-                slabRibbed.RibsParallelTo);
+            Model.PropArea.SetSlab(
+              slabRibbed.name,
+              eSlabType.Ribbed,
+              shell,
+              slabRibbed.material.name,
+              slabRibbed.thickness
+            );
+            success = Model.PropArea.SetSlabRibbed(
+              slabRibbed.name,
+              slabRibbed.OverAllDepth,
+              slabRibbed.thickness,
+              slabRibbed.StemWidthTop,
+              slabRibbed.StemWidthTop,
+              slabRibbed.RibSpacing,
+              slabRibbed.RibsParallelTo
+            );
             break;
           case Structural.CSI.Analysis.SlabType.Waffle:
             var slabWaffled = (CSIProperty2D.WaffleSlab)property2D;
             shell = shellType(slabWaffled);
-            Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shell, slabWaffled.material.name, slabWaffled.thickness);
+            Model.PropArea.SetSlab(
+              slabWaffled.name,
+              eSlabType.Waffle,
+              shell,
+              slabWaffled.material.name,
+              slabWaffled.thickness
+            );
             success = Model.PropArea.SetSlabWaffle(
-                slabWaffled.name,
-                slabWaffled.OverAllDepth,
-                slabWaffled.thickness,
-                slabWaffled.StemWidthTop,
-                slabWaffled.StemWidthBot,
-                slabWaffled.RibSpacingDir1,
-                slabWaffled.RibSpacingDir2);
+              slabWaffled.name,
+              slabWaffled.OverAllDepth,
+              slabWaffled.thickness,
+              slabWaffled.StemWidthTop,
+              slabWaffled.StemWidthBot,
+              slabWaffled.RibSpacingDir1,
+              slabWaffled.RibSpacingDir2
+            );
             break;
         }
       }
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property2D.name}");
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+        return property2D.name;
+      throw new Exception($"Unable to create floor property from CSIProperty2D with Id {property2D.id}");
     }
 
     public eShellType shellType(CSIProperty2D property)
@@ -116,6 +142,7 @@ namespace Objects.Converter.CSI
       }
       return shellType;
     }
+
     public void SetDeck(CSIProperty2D deck)
     {
       var deckType = eDeckType.Filled;
@@ -134,6 +161,7 @@ namespace Objects.Converter.CSI
       var shell = shellType(deck);
       Model.PropArea.SetDeck(deck.name, deckType, shell, deck.material.name, deck.thickness);
     }
+
     public CSIProperty2D FloorPropertyToSpeckle(string property)
     {
       eDeckType deckType = eDeckType.Filled;
@@ -145,10 +173,18 @@ namespace Objects.Converter.CSI
       string notes = "";
       string GUID = "";
 
-      int d = Model.PropArea.GetDeck(property, ref deckType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
+      int d = Model.PropArea.GetDeck(
+        property,
+        ref deckType,
+        ref shellType,
+        ref matProp,
+        ref thickness,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       if (d == 0)
       {
-
         var speckleProperties2D = new CSIProperty2D();
         double slabDepth = 0;
         double shearStudDia = 0;
@@ -164,17 +200,19 @@ namespace Objects.Converter.CSI
         if (deckType == eDeckType.Filled)
         {
           var speckleProperty2D = new CSIProperty2D.DeckFilled();
-          Model.PropArea.GetDeckFilled(property,
-              ref slabDepth,
-              ref ribDepth,
-              ref ribWidthTop,
-              ref ribWidthBot,
-              ref ribSpacing,
-              ref shearThickness,
-              ref unitWeight,
-              ref shearStudDia,
-              ref shearStudHt,
-              ref shearStudFu);
+          Model.PropArea.GetDeckFilled(
+            property,
+            ref slabDepth,
+            ref ribDepth,
+            ref ribWidthTop,
+            ref ribWidthBot,
+            ref ribSpacing,
+            ref shearThickness,
+            ref unitWeight,
+            ref shearStudDia,
+            ref shearStudHt,
+            ref shearStudFu
+          );
           speckleProperty2D.SlabDepth = slabDepth;
           speckleProperty2D.ShearStudDia = shearStudDia;
           speckleProperty2D.ShearStudFu = shearStudFu;
@@ -195,13 +233,15 @@ namespace Objects.Converter.CSI
         else if (deckType == eDeckType.Unfilled)
         {
           var speckleProperty2D = new CSIProperty2D.DeckUnFilled();
-          Model.PropArea.GetDeckUnfilled(property,
-              ref ribDepth,
-              ref ribWidthTop,
-              ref ribWidthBot,
-              ref ribSpacing,
-              ref shearThickness,
-              ref unitWeight);
+          Model.PropArea.GetDeckUnfilled(
+            property,
+            ref ribDepth,
+            ref ribWidthTop,
+            ref ribWidthBot,
+            ref ribSpacing,
+            ref shearThickness,
+            ref unitWeight
+          );
           speckleProperty2D.RibDepth = ribDepth;
           speckleProperty2D.RibWidthTop = ribWidthTop;
           speckleProperty2D.RibWidthBot = ribWidthBot;
@@ -214,7 +254,6 @@ namespace Objects.Converter.CSI
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
           return speckleProperty2D;
-
         }
         else if (deckType == eDeckType.SolidSlab)
         {
@@ -232,7 +271,16 @@ namespace Objects.Converter.CSI
           return speckleProperty2D;
         }
       }
-      int s = Model.PropArea.GetSlab(property, ref slabType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
+      int s = Model.PropArea.GetSlab(
+        property,
+        ref slabType,
+        ref shellType,
+        ref matProp,
+        ref thickness,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       if (s == 0)
       {
         var specklePropery2DSlab = new CSIProperty2D();
@@ -250,7 +298,15 @@ namespace Objects.Converter.CSI
         if (slabType == eSlabType.Waffle)
         {
           var speckleProperty2D = new CSIProperty2D.WaffleSlab();
-          Model.PropArea.GetSlabWaffle(property, ref overallDepth, ref slabThickness, ref stemWidthTop, ref stemWidthBot, ref ribSpacingDir1, ref ribSpacingDir2);
+          Model.PropArea.GetSlabWaffle(
+            property,
+            ref overallDepth,
+            ref slabThickness,
+            ref stemWidthTop,
+            ref stemWidthBot,
+            ref ribSpacingDir1,
+            ref ribSpacingDir2
+          );
           speckleProperty2D.OverAllDepth = overallDepth;
           speckleProperty2D.StemWidthBot = stemWidthBot;
           speckleProperty2D.StemWidthTop = stemWidthTop;
@@ -266,7 +322,15 @@ namespace Objects.Converter.CSI
         else if (slabType == eSlabType.Ribbed)
         {
           var speckleProperty2D = new CSIProperty2D.RibbedSlab();
-          Model.PropArea.GetSlabRibbed(property, ref overallDepth, ref slabThickness, ref stemWidthTop, ref stemWidthBot, ref ribSpacing, ref ribParrallelTo);
+          Model.PropArea.GetSlabRibbed(
+            property,
+            ref overallDepth,
+            ref slabThickness,
+            ref stemWidthTop,
+            ref stemWidthBot,
+            ref ribSpacing,
+            ref ribParrallelTo
+          );
           speckleProperty2D.OverAllDepth = overallDepth;
           speckleProperty2D.StemWidthBot = stemWidthBot;
           speckleProperty2D.StemWidthTop = stemWidthTop;
@@ -278,7 +342,6 @@ namespace Objects.Converter.CSI
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
           return speckleProperty2D;
-
         }
         else
         {

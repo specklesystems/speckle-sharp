@@ -30,13 +30,14 @@ namespace SpeckleConnectorCSI
 
     public static ConnectorBindingsCSI Bindings { get; set; }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
-      .UsePlatformDetect()
-      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
-      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
-      .LogToTrace()
-      .UseReactiveUI();
-
+    public static AppBuilder BuildAvaloniaApp() =>
+      AppBuilder
+        .Configure<DesktopUI2.App>()
+        .UsePlatformDetect()
+        .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+        .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+        .LogToTrace()
+        .UseReactiveUI();
 
     public static void CreateOrFocusSpeckle()
     {
@@ -117,7 +118,7 @@ namespace SpeckleConnectorCSI
       }
       catch (Exception e)
       {
-        throw e;
+        throw;
         ISapPlugin.Finish(0);
         //return;
       }
@@ -125,6 +126,4 @@ namespace SpeckleConnectorCSI
       return;
     }
   }
-
-
 }

@@ -19,13 +19,16 @@ namespace TestGenerator
       var sb = new StringBuilder();
       sb.Append(TestTemplate.StartNamespace);
 
-      var assemblyLocationArrray = context.Compilation.Assembly.Locations.First().ToString().Split('\\');
-      assemblyLocationArrray[0] = assemblyLocationArrray[0].Replace("SourceFile(", "");
-      var assemblyLocation = string.Join("\\", assemblyLocationArrray.Take(assemblyLocationArrray.Length - 1));
+      // get any directory in the speckle sharp repo
+      var directoryInSharp = context.Compilation.Assembly.Locations.First().ToString();
+      directoryInSharp = directoryInSharp.Replace("SourceFile(", "");
 
+      // get the year for the test project as a string
       var assemblyName = context.Compilation.AssemblyName;
       var year = assemblyName.Substring(assemblyName.Length - 4);
-      var subdirectories = Directory.GetDirectories(Globals.TestModelsFolderForRevitVersion(assemblyLocation, year));
+
+      string testFolderLocation = Globals.GetTestModelFolderLocation(directoryInSharp, year);
+      var subdirectories = Directory.GetDirectories(testFolderLocation);
 
       foreach (var subdir in subdirectories)
       {

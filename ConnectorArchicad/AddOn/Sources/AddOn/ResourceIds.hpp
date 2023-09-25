@@ -1,10 +1,12 @@
 #ifndef RESOURCEIDS_HPP
 #define RESOURCEIDS_HPP
 
-#define ID_ADDON_INFO			32000
-#define ID_ADDON_MENU			32500
-#define ID_DEFAULT_STORY_FORMAT	32800
-#define ID_LOG_MESSAGES			33000
+#define ID_ADDON_INFO				32000
+#define ID_ADDON_MENU				32010
+#define ID_DEFAULT_STORY_FORMAT		32020
+#define ID_LOG_MESSAGES				33030
+#define	ID_ELEMENT_TYPE_STRINGS		32040
+#define ID_FIX_ELEMENT_TYPE_STRINGS 32050
 
 #define ID_LOG_MESSAGE_LIBPART_SEARCH_ERROR			1
 #define ID_LOG_MESSAGE_ATTRIBUTE_SEARCH_ERROR		2
@@ -19,6 +21,7 @@
 #define GetWindowCommandName					"GetWindowData";
 #define GetBeamDataCommandName					"GetBeamData";
 #define GetColumnDataCommandName				"GetColumnData";
+#define GetElementBaseDataCommandName			"GetElementBaseData";
 #define GetObjectDataCommandName				"GetObjectData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetRoomDataCommandName					"GetRoomData";

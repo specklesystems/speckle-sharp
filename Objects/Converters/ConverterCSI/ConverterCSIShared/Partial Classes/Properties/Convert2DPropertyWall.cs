@@ -1,4 +1,5 @@
-﻿using CSiAPIv1;
+using System;
+using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Models;
 
@@ -6,10 +7,11 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void WallPropertyToNative(CSIProperty2D Wall, ref ApplicationObject appObj)
+    public string WallPropertyToNative(CSIProperty2D Wall)
     {
-      appObj.Update(status: ApplicationObject.State.Skipped, logItem: "Wall properties are not currently supported on receive");
+      throw new Exception("Wall properties are not currently supported on receive");
     }
+
     public CSIProperty2D WallPropertyToSpeckle(string property)
     {
       eWallPropType wallPropType = eWallPropType.Specified;
@@ -21,7 +23,16 @@ namespace Objects.Converter.CSI
       string GUID = "";
       var specklePropery2DWall = new CSIProperty2D();
       specklePropery2DWall.type = Structural.PropertyType2D.Wall;
-      Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
+      Model.PropArea.GetWall(
+        property,
+        ref wallPropType,
+        ref shellType,
+        ref matProp,
+        ref thickness,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       var speckleShellType = ConvertShellType(shellType);
       specklePropery2DWall.shellType = speckleShellType;
       setProperties(specklePropery2DWall, matProp, thickness, property);

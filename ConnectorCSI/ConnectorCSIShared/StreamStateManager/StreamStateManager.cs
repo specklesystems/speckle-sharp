@@ -12,6 +12,7 @@ namespace ConnectorCSI.Storage
   public static class StreamStateManager
   {
     private static string _speckleFilePath;
+
     public static List<StreamState> ReadState(cSapModel model)
     {
       var strings = ReadSpeckleFile(model);
@@ -37,9 +38,14 @@ namespace ConnectorCSI.Storage
     /// <param name="streamStates"></param>
     public static void WriteStreamStateList(cSapModel model, List<StreamState> streamStates)
     {
-      if (_speckleFilePath == null) 
+      if (_speckleFilePath == null)
         GetOrCreateSpeckleFilePath(model);
-      FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+      FileStream fileStream = new FileStream(
+        _speckleFilePath,
+        FileMode.Open,
+        FileAccess.ReadWrite,
+        FileShare.ReadWrite
+      );
 
       using (var streamWriter = new StreamWriter(fileStream))
       {
@@ -50,8 +56,14 @@ namespace ConnectorCSI.Storage
 
     public static void ClearStreamStateList(cSapModel model)
     {
-      if (_speckleFilePath == null) GetOrCreateSpeckleFilePath(model);
-      FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+      if (_speckleFilePath == null)
+        GetOrCreateSpeckleFilePath(model);
+      FileStream fileStream = new FileStream(
+        _speckleFilePath,
+        FileMode.Open,
+        FileAccess.ReadWrite,
+        FileShare.ReadWrite
+      );
       try
       {
         fileStream.SetLength(0);
@@ -106,7 +118,8 @@ namespace ConnectorCSI.Storage
       if (_speckleFilePath == null)
         GetOrCreateSpeckleFilePath(model);
 
-      if (_speckleFilePath == null) return "";
+      if (_speckleFilePath == null)
+        return "";
       FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
       try
       {
@@ -115,7 +128,10 @@ namespace ConnectorCSI.Storage
           return streamReader.ReadToEnd();
         }
       }
-      catch { return ""; }
+      catch
+      {
+        return "";
+      }
     }
 
     /// <summary>
@@ -136,9 +152,12 @@ namespace ConnectorCSI.Storage
       string speckleFolderPath = Path.Combine(CSIModelFolder, "speckle");
 
       var backups = new List<(DateTime, string)>();
-      foreach (var fileName in Directory.GetFiles(speckleFolderPath)) 
-      { 
-        if (fileName.Contains($"{CSIFileName}_speckleBackup") && fileName.Split('.').Last().ToLower() == fileExtension.ToLower())
+      foreach (var fileName in Directory.GetFiles(speckleFolderPath))
+      {
+        if (
+          fileName.Contains($"{CSIFileName}_speckleBackup")
+          && fileName.Split('.').Last().ToLower() == fileExtension.ToLower()
+        )
         {
           backups.Add((File.GetLastWriteTime(fileName), fileName));
         }
@@ -146,7 +165,9 @@ namespace ConnectorCSI.Storage
 
       if (backups.Count < 3)
       {
-        model.File.Save(Path.Combine(speckleFolderPath, $"{CSIFileName}_speckleBackup{backups.Count + 1}.{fileExtension}"));
+        model.File.Save(
+          Path.Combine(speckleFolderPath, $"{CSIFileName}_speckleBackup{backups.Count + 1}.{fileExtension}")
+        );
       }
       else
       {

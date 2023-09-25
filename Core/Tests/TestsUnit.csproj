@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"/>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0">
@@ -25,7 +25,7 @@
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj"/>
-    <ProjectReference Include="..\Transports\DiskTransport\DiskTransport.csproj"/>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Transports\DiskTransport\DiskTransport.csproj" />
   </ItemGroup>
 </Project>

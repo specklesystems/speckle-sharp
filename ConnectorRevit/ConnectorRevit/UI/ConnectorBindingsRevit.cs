@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Timers;
-using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
+using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Timer = System.Timers.Timer;
 
 namespace Speckle.ConnectorRevit.UI
@@ -32,9 +31,11 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
 
+    private static IRevitDocumentAggregateCache revitDocumentAggregateCache;
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
+      revitDocumentAggregateCache = new RevitDocumentAggregateCache(new UIDocumentProvider(revitApp));
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
@@ -80,43 +81,5 @@ namespace Speckle.ConnectorRevit.UI
     {
       return new List<MenuItem>();
     }
-
-    // WARNING: Everything in the 'interop' section must match a corrosponding element in the converter
-    // which can be found in the namespace commented above the element
-    #region interop
-
-    // Objects.Structural.Geometry
-    public enum ElementType1D
-    {
-      Beam,
-      Brace,
-      Bar,
-      Column,
-      Rod,
-      Spring,
-      Tie,
-      Strut,
-      Link,
-      Damper,
-      Cable,
-      Spacer,
-      Other,
-      Null
-    }
-
-    // Objects.Structural
-    public enum PropertyType2D
-    {
-      Stress,
-      Fabric,
-      Plate,
-      Shell,
-      Curved,
-      Wall,
-      Strain,
-      Axi,
-      Load
-    }
-    #endregion
   }
 }

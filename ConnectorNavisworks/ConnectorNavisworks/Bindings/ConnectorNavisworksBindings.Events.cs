@@ -44,5 +44,10 @@ public partial class ConnectorBindingsNavisworks
     MainViewModel.GoHome();
 
     _navisworksConverter.SetContextDocument(doc);
+
+    // Nullify any cached commit and conversions
+    _cachedCommit = null;
+    CachedConvertedElements = null;
+    _cachedState = null;
   }
 }

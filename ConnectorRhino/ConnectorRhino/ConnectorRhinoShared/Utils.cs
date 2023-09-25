@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -103,6 +103,7 @@ public static class Utils
   /// <param name="path">Full path of layer</param>
   /// <param name="MakeIfNull">Create the layer if it doesn't already exist</param>
   /// <returns>Null on failure</returns>
+  /// <remarks>Note: The created layer path may be different from the input path, due to removal of invalid chars</remarks>
   public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
   {
     Layer MakeLayer(string name, Layer parentLayer = null)

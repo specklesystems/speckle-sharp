@@ -5,13 +5,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
-using Avalonia.Controls;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
 using Objects.BuiltElements.Archicad;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 using Beam = Objects.BuiltElements.Beam;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Column = Objects.BuiltElements.Column;
@@ -62,6 +60,18 @@ namespace Archicad
         elementIds = AsyncCommandProcessor
           .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
           ?.Result;
+      else if (filter.Slug == "elementType")
+      {
+        var elementTypes = filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
+        elementIds = AsyncCommandProcessor
+          .Execute(
+            new Communication.Commands.GetElementIds(
+              Communication.Commands.GetElementIds.ElementFilter.ElementType,
+              elementTypes
+            )
+          )
+          ?.Result;
+      }
 
       SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken); // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
@@ -156,8 +166,8 @@ namespace Archicad
         return Converters[typeof(Floor)];
       if (elementType.IsSubclassOf(typeof(Roof)))
         return Converters[typeof(Roof)];
-      if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
-        return Converters[typeof(Objects.BuiltElements.Room)];
+      if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))
+        return Converters[typeof(Archicad.Room)];
 
       return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
     }
@@ -214,7 +224,14 @@ namespace Archicad
     {
       var subElementsAsBases = new List<Base>();
 
-      if (convertedObject is not (Objects.BuiltElements.Archicad.ArchicadWall or Objects.BuiltElements.Archicad.ArchicadRoof or Objects.BuiltElements.Archicad.ArchicadShell))
+      if (
+        convertedObject
+        is not (
+          Objects.BuiltElements.Archicad.ArchicadWall
+          or Objects.BuiltElements.Archicad.ArchicadRoof
+          or Objects.BuiltElements.Archicad.ArchicadShell
+        )
+      )
         return subElementsAsBases;
 
       var subElements = await GetAllSubElements(convertedObject.applicationId);

@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CSiAPIv1" Version="1.0.0" />

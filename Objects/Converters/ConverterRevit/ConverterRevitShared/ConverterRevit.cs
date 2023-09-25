@@ -2,11 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
+using Objects.BuiltElements.Revit;
+using Objects.GIS;
 using Objects.Organization;
+using Objects.Other;
 using Objects.Structural.Properties.Profiles;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -51,7 +59,8 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } =
+      new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
@@ -62,7 +71,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public Element CurrentHostElement { get; set; }
+    public Element CurrentHostElement => RevitConverterState.Peek?.CurrentHostElement;
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -70,8 +79,6 @@ namespace Objects.Converter.Revit
     public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
-
-    public Transaction T { get; private set; }
 
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
@@ -102,11 +109,23 @@ namespace Objects.Converter.Revit
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
+    private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+    private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+    private TransactionManager transactionManager;
+
     public void SetContextDocument(object doc)
     {
-      if (doc is Transaction t)
+      if (doc is TransactionManager transactionManager)
       {
-        T = t;
+        this.transactionManager = transactionManager;
+      }
+      else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
+      {
+        this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+      }
+      else if (doc is IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      {
+        this.receivedObjectsCache = receivedObjectsCache;
       }
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
@@ -128,7 +147,9 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
+        throw new ArgumentException(
+          $"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}"
+        );
       }
     }
 
@@ -168,6 +189,7 @@ namespace Objects.Converter.Revit
       Base returnObject = null;
       List<string> notes = new List<string>();
       string id = @object is Element element ? element.UniqueId : string.Empty;
+
       switch (@object)
       {
         case DB.Document o:
@@ -180,10 +202,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject =
-            o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
-              ? NetworkToSpeckle(o, out notes)
-              : FamilyInstanceToSpeckle(o, out notes);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -231,33 +250,34 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = CableTrayToSpeckle(o);
           break;
         case DB.Electrical.Conduit o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = ConduitToSpeckle(o);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException(
+            "Curtain Grid Lines are handled as part of the parent CurtainWall conversion"
+          );
         case DB.Architecture.BuildingPad o:
           returnObject = BuildingPadToSpeckle(o);
           break;
@@ -266,10 +286,11 @@ namespace Objects.Converter.Revit
           break;
         //these are handled by Stairs
         case DB.Architecture.StairsRun _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(StairsRun)} are handled by the {nameof(Stairs)} conversion");
         case DB.Architecture.StairsLanding _:
-          returnObject = null;
+          throw new ConversionSkippedException(
+            $"{nameof(StairsLanding)} are handled by the {nameof(Stairs)} conversion"
+          );
           break;
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
@@ -278,8 +299,7 @@ namespace Objects.Converter.Revit
           returnObject = TopRailToSpeckle(o);
           break;
         case DB.Architecture.HandRail _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(HandRail)} are handled by the {nameof(Railing)} conversion");
         case DB.Structure.Rebar o:
           returnObject = RebarToSpeckle(o);
           break;
@@ -334,8 +354,7 @@ namespace Objects.Converter.Revit
             returnObject = RevitElementToSpeckle(el, out notes);
             break;
           }
-          returnObject = null;
-          break;
+          throw new NotSupportedException($"Conversion of {@object.GetType().Name} is not supported.");
       }
 
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
@@ -344,7 +363,7 @@ namespace Objects.Converter.Revit
         returnObject != null
         && returnObject["renderMaterial"] == null
         && returnObject["displayValue"] == null
-        && !(returnObject is Model)
+        && !(returnObject is Collection)
       )
       {
         try
@@ -373,43 +392,6 @@ namespace Objects.Converter.Revit
       return "";
     }
 
-    private BuiltInCategory GetObjectCategory(Base @object)
-    {
-      switch (@object)
-      {
-        case BE.Beam _:
-        case BE.Brace _:
-        case BE.TeklaStructures.TeklaContourPlate _:
-          return BuiltInCategory.OST_StructuralFraming;
-        case BE.TeklaStructures.Bolts _:
-          return BuiltInCategory.OST_StructConnectionBolts;
-        case BE.TeklaStructures.Welds _:
-          return BuiltInCategory.OST_StructConnectionWelds;
-        case BE.Floor _:
-          return BuiltInCategory.OST_Floors;
-        case BE.Ceiling _:
-          return BuiltInCategory.OST_Ceilings;
-        case BE.Column _:
-          return BuiltInCategory.OST_Columns;
-        case BE.Pipe _:
-          return BuiltInCategory.OST_PipeSegments;
-        case BE.Rebar _:
-          return BuiltInCategory.OST_Rebar;
-        case BE.Topography _:
-          return BuiltInCategory.OST_Topography;
-        case BE.Wall _:
-          return BuiltInCategory.OST_Walls;
-        case BE.Roof _:
-          return BuiltInCategory.OST_Roofs;
-        case BE.Duct _:
-          return BuiltInCategory.OST_FabricationDuctwork;
-        case BE.CableTray _:
-          return BuiltInCategory.OST_CableTray;
-        default:
-          return BuiltInCategory.OST_GenericModel;
-      }
-    }
-
     private Base SwapGeometrySchemaObject(Base @object)
     {
       // schema check
@@ -427,6 +409,13 @@ namespace Objects.Converter.Revit
         // item in the list.
         ds.baseGeometries = new List<Base> { @object };
       }
+      else if (speckleSchema is MappedBlockWrapper mbw)
+      {
+        if (@object is not BlockInstance bi)
+          throw new Exception($"{nameof(MappedBlockWrapper)} can only be used with {nameof(BlockInstance)} objects.");
+
+        mbw.instance = bi;
+      }
       else
       {
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
@@ -442,7 +431,27 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var nativeObject = ConvertToNativeObject(@base);
+
+      switch (nativeObject)
+      {
+        case ApplicationObject appObject:
+          if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+          {
+            receivedObjectsCache?.AddConvertedObjects(@base, typedList);
+          }
+          break;
+        case Element element:
+          receivedObjectsCache?.AddConvertedObjects(@base, new List<Element> { element });
+          break;
+      }
+
+      return nativeObject;
+    }
+
+    public object ConvertToNativeObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -451,25 +460,12 @@ namespace Objects.Converter.Revit
 
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh ?? "false") == true)
-      {
-        try
-        {
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
-          var cat = GetObjectCategory(@object);
-          var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
-          return TryDirectShapeToNative(
-            new ApplicationObject(@object.id, @object.speckle_type),
-            meshes,
-            ToNativeMeshSetting,
-            speckleCat
-          );
-        }
-        catch { }
-      }
+      if (bool.Parse(recieveModelMesh ?? "false"))
+        if ((@object is Other.Instance || @object.IsDisplayableObject()) && @object is not BE.Room)
+          return DisplayableObjectToNative(@object);
+        else
+          return null;
+
       //Family Document
       if (Doc.IsFamilyDocument)
       {
@@ -478,9 +474,9 @@ namespace Objects.Converter.Revit
           case ICurve o:
             return ModelCurveToNative(o);
           case Geometry.Brep o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case Geometry.Mesh o:
-            return FreeformElementToNativeFamily(o);
+            return TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default);
           case BER.FreeformElement o:
             return FreeformElementToNative(o);
           default:
@@ -517,7 +513,11 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(
+            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
+            o.displayValue,
+            ToNativeMeshSetting
+          );
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -598,6 +598,9 @@ namespace Objects.Converter.Revit
         case BE.Topography o:
           return TopographyToNative(o);
 
+        case BER.RevitCurtainWallPanel o:
+          return PanelToNative(o);
+
         case BER.RevitProfileWall o:
           return ProfileWallToNative(o);
 
@@ -632,6 +635,9 @@ namespace Objects.Converter.Revit
         case BE.View3D o:
           return ViewToNative(o);
 
+        case RevitMEPFamilyInstance o:
+          return FittingOrMEPInstanceToNative(o);
+
         case Other.Revit.RevitInstance o:
           return RevitInstanceToNative(o);
 
@@ -663,9 +669,17 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Other.MappedBlockWrapper o:
+          return MappedBlockWrapperToNative(o);
+        // gis
+        case PolygonElement o:
+          return PolygonElementToNative(o);
+
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
         case Base b:
+          //hacky but the current comments camera is not a Base object
+          //used only from DUI and not for normal geometry conversion
           var boo = b["isHackySpeckleCamera"] as bool?;
           if (boo == true)
             return ViewOrientation3DToNative(b);
@@ -674,6 +688,16 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
+    }
+
+    public object ConvertToNativeDisplayable(Base @base)
+    {
+      var nativeObject = DisplayableObjectToNative(@base);
+      if (nativeObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        receivedObjectsCache?.AddConvertedObjects(@base, typedList);
+      }
+      return nativeObject;
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
@@ -754,7 +778,7 @@ namespace Objects.Converter.Revit
       if (schema != null)
         return CanConvertToNative(schema);
 
-      return @object switch
+      var objRes = @object switch
       {
         //geometry
         ICurve _ => true,
@@ -783,6 +807,7 @@ namespace Objects.Converter.Revit
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
         BE.Topography _ => true,
+        BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,
         BER.RevitProfileWall _ => true,
         BE.Wall _ => true,
@@ -803,9 +828,26 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Other.MappedBlockWrapper => true,
         Organization.DataTable _ => true,
+        // GIS
+        PolygonElement _ => true,
         _ => false,
       };
+      if (objRes)
+        return true;
+
+      return false;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      // check for schema
+      var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
+      if (schema != null)
+        return CanConvertToNativeDisplayable(schema);
+
+      return @object.IsDisplayableObject();
     }
   }
 }
