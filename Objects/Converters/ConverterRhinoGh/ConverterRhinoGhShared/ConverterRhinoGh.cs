@@ -458,7 +458,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           break;
 
         case GridLine o:
-          rhinoObj = CurveToNative(o.baseLine);
+          rhinoObj = GridlineToNative(o);
           break;
 
         case Alignment o:

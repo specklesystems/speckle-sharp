@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements;
 using Objects.Geometry;
+using Objects.Other;
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
@@ -201,6 +202,55 @@ public partial class ConverterRhinoGh
     {
       var namedCPlane = Doc.NamedConstructionPlanes[res];
       appObj.Update(bakedLevelName, convertedItem: namedCPlane);
+    }
+
+    return appObj;
+  }
+
+  // gridline
+  public ApplicationObject GridlineToNative(GridLine gridline)
+  {
+    var appObj = new ApplicationObject(gridline.id, gridline.speckle_type) { applicationId = gridline.applicationId };
+
+    // create the curve
+    var curve = CurveToNative(gridline.baseLine);
+    if (curve == null)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not convert curve");
+      return appObj;
+    }
+    // get linetype
+    ObjectAttributes atts = null;
+    if (gridline[@"displayStyle"] as DisplayStyle == null)
+    {
+      var linetypeIndex = Doc.Linetypes.Find("Dashed");
+      if (linetypeIndex >= 0)
+        atts = new ObjectAttributes()
+        {
+          LinetypeIndex = linetypeIndex,
+          LinetypeSource = ObjectLinetypeSource.LinetypeFromObject
+        };
+    }
+
+    // bake the curve
+    Guid id = atts != null ? Doc.Objects.Add(curve, atts) : Doc.Objects.Add(curve);
+    if (id == Guid.Empty)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add curve to doc");
+      return appObj;
+    }
+    var _gridLine = Doc.Objects.FindId(id);
+    appObj.Update(convertedItem: _gridLine, createdId: id.ToString());
+
+    // create and bake two textdots at the endpoints of the curve
+    if (!string.IsNullOrEmpty(gridline.label))
+    {
+      var labelStartId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtStart);
+      if (labelStartId != Guid.Empty)
+        appObj.Update(convertedItem: Doc.Objects.FindId(labelStartId), createdId: labelStartId.ToString());
+      var labelEndId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtEnd);
+      if (labelEndId != Guid.Empty)
+        appObj.Update(convertedItem: Doc.Objects.FindId(labelEndId), createdId: labelEndId.ToString());
     }
 
     return appObj;
