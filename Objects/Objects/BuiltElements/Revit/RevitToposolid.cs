@@ -10,7 +10,7 @@ namespace Objects.BuiltElements.Revit
   {
     public RevitToposolid() { }
 
-    [SchemaInfo("RevitToposolid", "Creates a Revit Toposolid", "BIM", "Architecture")]
+    [SchemaInfo("RevitToposolid", "Creates a Revit Toposolid", "Revit", "Architecture")]
     public RevitToposolid(
       Level level,
       List<Polycurve> profiles,
