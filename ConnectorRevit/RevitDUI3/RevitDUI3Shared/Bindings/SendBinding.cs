@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Threading;
@@ -5,6 +6,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Operations;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Api;
@@ -13,29 +15,33 @@ using Speckle.Core.Transports;
 using Speckle.Core.Models;
 using Revit.Async;
 using DUI3.Utils;
+using Operations = Speckle.Core.Api.Operations;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
-public class SendBinding : ISendBinding
+public class SendBinding : ISendBinding, ICancellable
 {
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
-  
+
   private RevitDocumentStore _store;
 
   private static UIApplication RevitApp;
 
+  public CancellationManager CancellationManager { get; } = new();
+
   private HashSet<string> _changedObjectIds { get; set; } = new();
+
   public SendBinding(RevitDocumentStore store)
   {
     RevitApp = RevitAppProvider.RevitApp;
     _store = store;
-    
+
     // TODO expiry events
     // TODO filters need refresh events
     RevitApp.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
   }
-  
+
   public List<ISendFilter> GetSendFilters()
   {
     return new List<ISendFilter>
@@ -47,65 +53,97 @@ public class SendBinding : ISendBinding
 
   public async void Send(string modelCardId)
   {
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-    // TODO: Here send warning to UI if somehow model return null!
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    Document doc = RevitApp.ActiveUIDocument.Document;
+    try
+    {
+      if (CancellationManager.IsExist(modelCardId))
+      {
+        CancellationManager.CancelOperation(modelCardId);
+      }
 
-    List<Element> elements = objectsIds.Select(x => doc.GetElement(x)).Where(x => x != null).ToList();
+      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-    var converter = KitManager.GetDefaultKit().LoadConverter("Revit2023");
-    converter.SetContextDocument(doc);
+      SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+      // TODO: Here send warning to UI if somehow model return null!
+      List<string> objectsIds = model.SendFilter.GetObjectIds();
+      Document doc = RevitApp.ActiveUIDocument.Document;
 
-    var convertedObjects = new List<Base>();
+      List<Element> elements = objectsIds.Select(x => doc.GetElement(x)).Where(x => x != null).ToList();
 
-    await RevitTask
-        .RunAsync(_ =>
-        {
-          int count = 0;
-          foreach (var revitElement in elements)
+      var converter = KitManager.GetDefaultKit().LoadConverter("Revit2023");
+      converter.SetContextDocument(doc);
+
+      var convertedObjects = new List<Base>();
+      
+      // TBD: RevitTask complicates cancellation operation. Do we really need it after new
+      // Bridge implementation with threading?
+      // If we remove this RevitTask.RunAsync, we don't need to wrap all into try catch
+      await RevitTask
+        .RunAsync(
+          _ =>
           {
-            count++;
-            convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
-            double progress = (double)count / elements.Count;
-            // To send progressbar immediately.
-            Dispatcher.CurrentDispatcher.Invoke(() =>
+            int count = 0;
+            foreach (var revitElement in elements)
             {
-              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
-            }, DispatcherPriority.Background);
-          }
-        })
+              if (cts.IsCancellationRequested)
+              {
+                Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+                return;
+              }
+              count++;
+              convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
+              double progress = (double)count / elements.Count;
+              Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+            }
+          })
         .ConfigureAwait(false);
 
-    var commitObject = new Base();
-    commitObject["@elements"] = convertedObjects;
+      var commitObject = new Base();
+      commitObject["@elements"] = convertedObjects;
 
-    var projectId = model.ProjectId;
-    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
-    var client = new Client(account);
+      var projectId = model.ProjectId;
+      Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
+      var client = new Client(account);
 
-    var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
+      var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
-    // TODO: Fix send operations haven't succeeded
-    var objectId = await Operations.Send(
-      commitObject,
-      transports,
-      disposeTransports: true
-    ).ConfigureAwait(true);
+      // TODO: Fix send operations haven't succeeded
+      var objectId = await Operations.Send(
+          commitObject,
+          cts.Token,
+          transports,
+          disposeTransports: true
+        )
+        .ConfigureAwait(true);
 
-    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Revit" });
+      Parent.SendToBrowser(
+        SendBindingEvents.CreateVersion,
+        new CreateVersion()
+        {
+          AccountId = account.id,
+          ModelId = model.ModelId,
+          ModelCardId = modelCardId,
+          ProjectId = model.ProjectId,
+          ObjectId = objectId,
+          Message = "Test",
+          SourceApplication = "Revit"
+        });
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+    }
   }
 
   public void CancelSend(string modelCardId)
   {
-    throw new System.NotImplementedException();
+    CancellationManager.CancelOperation(modelCardId);
   }
 
   public void Highlight(string modelCardId)
   {
     throw new System.NotImplementedException();
   }
-  
+
   /// <summary>
   /// Keeps track of the changed element ids as well as checks if any of them need to trigger
   /// a filter refresh (e.g., views being added). 
@@ -122,21 +160,22 @@ public class SendBinding : ISendBinding
     {
       _changedObjectIds.Add(elementId.IntegerValue.ToString());
     }
+
     foreach (ElementId elementId in deletedElementIds)
     {
       _changedObjectIds.Add(elementId.IntegerValue.ToString());
     }
-    
+
     foreach (ElementId elementId in modifiedElementIds)
     {
       _changedObjectIds.Add(elementId.IntegerValue.ToString());
     }
-    
+
     // TODO: CHECK IF ANY OF THE ABOVE ELEMENTS NEED TO TRIGGER A FILTER REFRESH
-    
+
     RevitIdleManager.SubscribeToIdle(RunExpirationChecks);
   }
-  
+
   private void RunExpirationChecks()
   {
     var senders = _store.GetSenders();
@@ -150,7 +189,7 @@ public class SendBinding : ISendBinding
         expiredSenderIds.Add(sender.Id);
       }
     }
-    
+
     Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
     _changedObjectIds = new HashSet<string>();
   }
