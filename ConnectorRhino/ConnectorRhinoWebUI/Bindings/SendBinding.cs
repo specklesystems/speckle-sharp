@@ -6,6 +6,7 @@ using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
+using DUI3.Operations;
 using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
@@ -17,12 +18,14 @@ using DUI3.Utils;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
-public class SendBinding : ISendBinding
+public class SendBinding : ISendBinding, ICancellable
 {
   public string Name { get; set; } = "sendBinding";
   private static string ApplicationIdKey = "applicationId";
   public IBridge Parent { get; set; }
   private DocumentModelStore _store;
+
+  public CancellationManager CancellationManager { get; } = new();
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
   
@@ -79,18 +82,13 @@ public class SendBinding : ISendBinding
     Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
   }
 
-  private Dictionary<string, CancellationTokenSource> sendOpsInProgress = new();
-
   public async void Send(string modelCardId)
   {
-    if (sendOpsInProgress.ContainsKey(modelCardId))
+    if (CancellationManager.IsExist(modelCardId))
     {
-      sendOpsInProgress[modelCardId].Cancel();
-      sendOpsInProgress[modelCardId].Dispose();
-      sendOpsInProgress.Remove(modelCardId);
+      CancellationManager.CancelOperation(modelCardId);
     }
-    var cts = new CancellationTokenSource();
-    sendOpsInProgress[modelCardId] = cts;
+    var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
     
     RhinoDoc doc = RhinoDoc.ActiveDoc;
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
@@ -106,15 +104,15 @@ public class SendBinding : ISendBinding
     int count = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
-      if (cts.IsCancellationRequested) return; // NOTE: these calls also probably needs a ui notification
+      if (cts.IsCancellationRequested) return;
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      Thread.Sleep(1000);
+      Thread.Sleep(5000);
     }
     
-    if (cts.IsCancellationRequested) return;
+    if (CancellationManager.IsCancellationRequested(modelCardId)) return;
     var commitObject = new Base();
     commitObject["@elements"] = convertedObjects;
 
@@ -136,12 +134,10 @@ public class SendBinding : ISendBinding
 
   public void CancelSend(string modelCardId)
   {
-    sendOpsInProgress[modelCardId].Cancel();
-    sendOpsInProgress[modelCardId].Dispose();
-    sendOpsInProgress.Remove(modelCardId);
+    CancellationManager.CancelOperation(modelCardId);
   }
 
-  public void Highlight(string modelId)
+  public void Highlight(string modelCardId)
   {
     throw new System.NotImplementedException();
   }
@@ -163,4 +159,6 @@ public class SendBinding : ISendBinding
     Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
+
+  
 }

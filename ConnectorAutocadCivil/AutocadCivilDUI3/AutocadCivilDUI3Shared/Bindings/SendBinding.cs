@@ -1,22 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Operations;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Operations = Speckle.Core.Api.Operations;
 
 namespace AutocadCivilDUI3Shared.Bindings
 {
-  public class SendBinding : ISendBinding
+  public class SendBinding : ISendBinding, ICancellable
   {
     public string Name { get; set; } = "sendBinding";
 
@@ -52,21 +53,17 @@ namespace AutocadCivilDUI3Shared.Bindings
       };
     }
 
-    private Dictionary<string, CancellationTokenSource> sendOpsInProgress = new();
+    public CancellationManager CancellationManager { get; } = new();
 
     public async void Send(string modelCardId)
     {
       try
       {
-        if (sendOpsInProgress.ContainsKey(modelCardId))
+        if (CancellationManager.IsExist(modelCardId))
         {
-          sendOpsInProgress[modelCardId].Cancel();
-          sendOpsInProgress[modelCardId].Dispose();
-          sendOpsInProgress.Remove(modelCardId);
+          CancellationManager.CancelOperation(modelCardId);
         }
-
-        var cts = new CancellationTokenSource();
-        sendOpsInProgress[modelCardId] = cts;
+        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
         SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
         List<string> objectsIds = model.SendFilter.GetObjectIds();
@@ -170,9 +167,7 @@ namespace AutocadCivilDUI3Shared.Bindings
 
     public void CancelSend(string modelCardId)
     {
-      sendOpsInProgress[modelCardId].Cancel();
-      sendOpsInProgress[modelCardId].Dispose();
-      sendOpsInProgress.Remove(modelCardId);
+      CancellationManager.CancelOperation(modelCardId);
     }
 
     public void Highlight(string modelCardId)
