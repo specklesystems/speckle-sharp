@@ -16,6 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\GridLineDefinitionTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\GridLineManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelInfo.cs" />
