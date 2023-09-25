@@ -2,6 +2,7 @@
 using System.Windows.Controls;
 using Autodesk.Revit.UI;
 using CefSharp;
+using System.Windows.Threading;
 
 namespace Speckle.ConnectorRevitDUI3;
 
@@ -14,7 +15,7 @@ public partial class CefSharpPanel : Page, Autodesk.Revit.UI.IDockablePaneProvid
 
   public void ExecuteScriptAsync(string script)
   {
-    Browser.ExecuteScriptAsync(script);
+    Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
   }
 
   public void ShowDevTools()
