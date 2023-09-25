@@ -104,6 +104,7 @@ namespace AutocadCivilDUI3Shared.Bindings
               continue;
             }
           }
+          tr.Commit();
         }
       }
 
