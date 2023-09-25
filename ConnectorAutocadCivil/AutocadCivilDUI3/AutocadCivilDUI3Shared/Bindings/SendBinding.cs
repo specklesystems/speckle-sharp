@@ -123,7 +123,7 @@ namespace AutocadCivilDUI3Shared.Bindings
         disposeTransports: true
       ).ConfigureAwait(true);
 
-      Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Autocad" });
+      Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ModelCardId = modelCardId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Autocad" });
     }
 
     private void RunExpirationChecks()
