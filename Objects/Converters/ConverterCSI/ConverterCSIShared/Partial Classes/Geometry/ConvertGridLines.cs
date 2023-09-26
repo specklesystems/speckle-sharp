@@ -13,13 +13,6 @@ namespace Objects.Converter.CSI
     private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
     public void GridLineToNative(GridLine gridline)
     {
-      // TODO: this should potentially be a singleton of some sort
-      //ETABSGridLineDefinitionTable gridLineDefinitionTable = ETABSGridLineDefinitionTable ?? new(Model);
-
-      if (gridline.baseLine is not Line line)
-      {
-        throw new ArgumentException("Non line based gridlines are not supported");
-      }
       GridLineDefinitionTable.AddCartesian(gridline);
       GridLineDefinitionTable.ApplyEditedTables();
     }

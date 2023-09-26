@@ -95,23 +95,23 @@ namespace ConverterCSIShared.Models
       var newUy = Math.Abs(transformedLine.start.y - transformedLine.end.y);
 
       string lineType;
-      double location;
+      double gridLineOffset;
       if (newUx < .1)
       {
         lineType = YGridLineType;
-        location = toNativeScalingService.ScaleLength(transformedLine.start.x, transformedLine.start.units);
+        gridLineOffset = toNativeScalingService.ScaleLength(transformedLine.start.x, transformedLine.start.units);
       }
       else if (newUy < .1)
       {
         lineType = XGridLineType;
-        location = toNativeScalingService.ScaleLength(transformedLine.start.y, transformedLine.start.units);
+        gridLineOffset = toNativeScalingService.ScaleLength(transformedLine.start.y, transformedLine.start.units);
       }
       else
       {
         throw new SpeckleException($"Error in transforming line from global coordinates to grid system with rotation {gridSystem.Rotation} and x,y offsets {gridSystem.XOrigin}, {gridSystem.YOrigin}");
       }
 
-      AddCartesian(gridSystem.Name, lineType, gridLine.label, location);
+      AddCartesian(gridSystem.Name, lineType, gridLine.label, gridLineOffset);
     }
 
     private GridSystemRepresentation GetOrCreateGridSystem(double gridRotation)
@@ -146,21 +146,25 @@ namespace ConverterCSIShared.Models
 
     private Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
     {
-      var rotationComponent = new Transform(new double[]
-      {
-        Math.Cos(sys.Rotation), -Math.Sin(sys.Rotation), 0, 0,
-        Math.Sin(sys.Rotation), Math.Cos(sys.Rotation), 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-      });
+      var rotationComponent = new Transform(
+        new double[]
+        {
+          Math.Cos(sys.Rotation), -Math.Sin(sys.Rotation), 0, 0,
+          Math.Sin(sys.Rotation), Math.Cos(sys.Rotation), 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1
+        }
+      );
 
-      var translationComponent = new Transform(new double[]
-      {
-        1, 0, 0, sys.XOrigin,
-        0, 1, 0, sys.YOrigin,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-      });
+      var translationComponent = new Transform(
+        new double[]
+        {
+          1, 0, 0, sys.XOrigin,
+          0, 1, 0, sys.YOrigin,
+          0, 0, 1, 0,
+          0, 0, 0, 1
+        }
+      );
 
       return translationComponent * rotationComponent;
     }

@@ -21,12 +21,6 @@ namespace ConverterCSIShared.Models
       this.toNativeScalingService = toNativeScalingService;
       this.tableData = new List<string>(GetTableData());
     }
-    //public DatabaseTableWrapper(cSapModel cSapModel, string tableKey)
-    //{
-    //  this.TableKey = tableKey;
-    //  this.cSapModel = cSapModel;
-    //  this.tableData = new List<string>(GetTableData());
-    //}
     private string[] GetTableData()
     {
       var tableData = Array.Empty<string>();
@@ -63,13 +57,5 @@ namespace ConverterCSIShared.Models
       string importLog = "";
       cSapModel.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
     }
-
-    //public string[] GetLastNTableEntries(int n)
-    //{
-    //  if (tableData.Count > n)
-    //  {
-    //    throw new ArgumentException($"User tried to get {}");
-    //  }
-    //}
   }
 }
