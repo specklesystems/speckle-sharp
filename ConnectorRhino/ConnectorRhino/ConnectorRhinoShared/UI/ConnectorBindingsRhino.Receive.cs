@@ -37,6 +37,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     converter.ReceiveMode = state.ReceiveMode;
 
     // set converter settings
+    bool settingsChanged = CurrentSettings != state.Settings;
     CurrentSettings = state.Settings;
     var settings = GetSettingsDict(CurrentSettings);
     converter.SetConverterSettings(settings);
@@ -44,7 +45,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = commit;
 
-    if (SelectedReceiveCommit != commit.id)
+    if (SelectedReceiveCommit != commit.id || settingsChanged) // clear storage if receiving a new commit, or if settings have changed!!
     {
       ClearStorage();
       SelectedReceiveCommit = commit.id;
@@ -69,7 +70,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         () =>
         {
           RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
-
           // create preview objects if they don't already exist
           if (Preview.Count == 0)
           {
@@ -143,7 +143,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           var containers = Preview
             .Select(o => o.Container)
             .Distinct()
-            .ToList()
+            .Where(o => !string.IsNullOrEmpty(o))
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
           // if on create mode, make sure the parent commit layer is created first
@@ -219,8 +219,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
                 // Check converter (ViewToNative and LevelToNative) to make sure these names correspond!
                 var name =
                   state.ReceiveMode == ReceiveMode.Create
-                    ? $"{commitLayerName} - {previewObj.applicationId}"
-                    : previewObj.applicationId;
+                    ? $"{commitLayerName} - {StoredObjects[previewObj.OriginalId]["name"] as string}"
+                    : StoredObjects[previewObj.OriginalId]["name"] as string;
                 var viewId = Doc.NamedViews.FindByName(name);
                 var planeId = Doc.NamedConstructionPlanes.Find(name);
                 if (viewId != -1)
@@ -335,17 +335,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       ApplicationObject NewAppObj()
       {
         var speckleType = current.speckle_type
-          .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
           .LastOrDefault();
 
-        // get the application id and container
-        // special cases for views and levels, since we are searching for them by name instead of application id
-        var applicationId =
-          speckleType.Contains("View") || speckleType.Contains("Level")
-            ? current["name"] as string
-            : current.applicationId;
-        var container = speckleType.Contains("View") || speckleType.Contains("Level") ? null : containerId;
-        return new ApplicationObject(current.id, speckleType) { applicationId = applicationId, Container = container };
+        return new ApplicationObject(current.id, speckleType)
+        {
+          applicationId = current.applicationId,
+          Container = containerId
+        };
       }
 
       // skip if it is the base commit collection

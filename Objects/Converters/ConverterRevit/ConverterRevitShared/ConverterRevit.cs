@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
 using Objects.GIS;
 using Objects.Organization;
@@ -274,8 +275,9 @@ namespace Objects.Converter.Revit
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException(
+            "Curtain Grid Lines are handled as part of the parent CurtainWall conversion"
+          );
         case DB.Architecture.BuildingPad o:
           returnObject = BuildingPadToSpeckle(o);
           break;
@@ -284,10 +286,11 @@ namespace Objects.Converter.Revit
           break;
         //these are handled by Stairs
         case DB.Architecture.StairsRun _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(StairsRun)} are handled by the {nameof(Stairs)} conversion");
         case DB.Architecture.StairsLanding _:
-          returnObject = null;
+          throw new ConversionSkippedException(
+            $"{nameof(StairsLanding)} are handled by the {nameof(Stairs)} conversion"
+          );
           break;
         case DB.Architecture.Railing o:
           returnObject = RailingToSpeckle(o);
@@ -296,8 +299,7 @@ namespace Objects.Converter.Revit
           returnObject = TopRailToSpeckle(o);
           break;
         case DB.Architecture.HandRail _:
-          returnObject = null;
-          break;
+          throw new ConversionSkippedException($"{nameof(HandRail)} are handled by the {nameof(Railing)} conversion");
         case DB.Structure.Rebar o:
           returnObject = RebarToSpeckle(o);
           break;
@@ -352,8 +354,7 @@ namespace Objects.Converter.Revit
             returnObject = RevitElementToSpeckle(el, out notes);
             break;
           }
-          returnObject = null;
-          break;
+          throw new NotSupportedException($"Conversion of {@object.GetType().Name} is not supported.");
       }
 
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
@@ -389,43 +390,6 @@ namespace Objects.Converter.Revit
         return $", name: {e.Name}, id: {e.UniqueId}";
 
       return "";
-    }
-
-    private BuiltInCategory GetObjectCategory(Base @object)
-    {
-      switch (@object)
-      {
-        case BE.Beam _:
-        case BE.Brace _:
-        case BE.TeklaStructures.TeklaContourPlate _:
-          return BuiltInCategory.OST_StructuralFraming;
-        case BE.TeklaStructures.Bolts _:
-          return BuiltInCategory.OST_StructConnectionBolts;
-        case BE.TeklaStructures.Welds _:
-          return BuiltInCategory.OST_StructConnectionWelds;
-        case BE.Floor _:
-          return BuiltInCategory.OST_Floors;
-        case BE.Ceiling _:
-          return BuiltInCategory.OST_Ceilings;
-        case BE.Column _:
-          return BuiltInCategory.OST_Columns;
-        case BE.Pipe _:
-          return BuiltInCategory.OST_PipeSegments;
-        case BE.Rebar _:
-          return BuiltInCategory.OST_Rebar;
-        case BE.Topography _:
-          return BuiltInCategory.OST_Topography;
-        case BE.Wall _:
-          return BuiltInCategory.OST_Walls;
-        case BE.Roof _:
-          return BuiltInCategory.OST_Roofs;
-        case BE.Duct _:
-          return BuiltInCategory.OST_FabricationDuctwork;
-        case BE.CableTray _:
-          return BuiltInCategory.OST_CableTray;
-        default:
-          return BuiltInCategory.OST_GenericModel;
-      }
     }
 
     private Base SwapGeometrySchemaObject(Base @object)
@@ -634,6 +598,9 @@ namespace Objects.Converter.Revit
         case BE.Topography o:
           return TopographyToNative(o);
 
+        case BER.RevitCurtainWallPanel o:
+          return PanelToNative(o);
+
         case BER.RevitProfileWall o:
           return ProfileWallToNative(o);
 
@@ -708,7 +675,6 @@ namespace Objects.Converter.Revit
         case PolygonElement o:
           return PolygonElementToNative(o);
 
-
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
         case Base b:
@@ -726,7 +692,12 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNativeDisplayable(Base @base)
     {
-      return DisplayableObjectToNative(@base);
+      var nativeObject = DisplayableObjectToNative(@base);
+      if (nativeObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        receivedObjectsCache?.AddConvertedObjects(@base, typedList);
+      }
+      return nativeObject;
     }
 
     public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
@@ -836,6 +807,7 @@ namespace Objects.Converter.Revit
         BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => true,
         BE.Topography _ => true,
+        BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,
         BER.RevitProfileWall _ => true,
         BE.Wall _ => true,

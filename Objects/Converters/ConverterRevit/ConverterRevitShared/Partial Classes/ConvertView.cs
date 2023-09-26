@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using View = Objects.BuiltElements.View;
@@ -55,7 +56,7 @@ namespace Objects.Converter.Revit
       {
         // some views have null origin, not sure why, but for now we just ignore them and don't bother the user
         if (rv3d.Origin == null)
-          return null;
+          throw new ConversionSkippedException($"Views with no origin are not supported");
 
         // get orientation
         var forward = rv3d.GetSavedOrientation().ForwardDirection; // this is unit vector
