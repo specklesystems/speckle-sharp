@@ -18,7 +18,7 @@ using DUI3.Utils;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
-public class SendBinding : ISendBinding, ICancellable
+public class SendBinding : ISendBinding, ICancelable
 {
   public string Name { get; set; } = "sendBinding";
   private static string ApplicationIdKey = "applicationId";
@@ -104,12 +104,16 @@ public class SendBinding : ISendBinding, ICancellable
     int count = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
-      if (cts.IsCancellationRequested) return;
+      if (cts.IsCancellationRequested)
+      {
+        Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+        return;
+      }
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / objectsIds.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      Thread.Sleep(5000);
+      // Thread.Sleep(5000);
     }
     
     if (CancellationManager.IsCancellationRequested(modelCardId)) return;

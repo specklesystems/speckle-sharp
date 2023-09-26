@@ -69,7 +69,11 @@ namespace ConnectorRhinoWebUI.Bindings
       int count = 0;
       foreach (var objectToConvert in objectsToConvert)
       {
-        if (cts.IsCancellationRequested) return;
+        if (cts.IsCancellationRequested)
+        {
+          Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+          return;
+        }
         count++;
         double progress = (double)count / objectsToConvert.Count;
         Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
