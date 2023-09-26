@@ -19,7 +19,7 @@ using Operations = Speckle.Core.Api.Operations;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
-public class SendBinding : ISendBinding, ICancellable
+public class SendBinding : ISendBinding, ICancelable
 {
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
@@ -53,9 +53,7 @@ public class SendBinding : ISendBinding, ICancellable
 
   public async void Send(string modelCardId)
   {
-    try
-    {
-      if (CancellationManager.IsExist(modelCardId))
+    if (CancellationManager.IsExist(modelCardId))
       {
         CancellationManager.CancelOperation(modelCardId);
       }
@@ -127,11 +125,7 @@ public class SendBinding : ISendBinding, ICancellable
           Message = "Test",
           SourceApplication = "Revit"
         });
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-    }
+
   }
 
   public void CancelSend(string modelCardId)

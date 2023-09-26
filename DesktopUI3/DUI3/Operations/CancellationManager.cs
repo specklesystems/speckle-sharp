@@ -6,7 +6,7 @@ namespace DUI3.Operations;
 /// <summary>
 /// Provides a mechanism for cancelling operations.
 /// </summary>
-public interface ICancellable
+public interface ICancelable
 {
   public CancellationManager CancellationManager { get; }
 }

@@ -1,30 +1,27 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DUI3;
-using DUI3.Bindings;
-using DUI3.Models;
 using DUI3.Utils;
+using DUI3.Operations;
 using Objects.Converter.Revit;
 using Revit.Async;
 using Speckle.ConnectorRevitDUI3.Utils;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings
 {
-  public class ReceiveBinding : IBinding
+  public class ReceiveBinding : IBinding, ICancelable
   {
     public string Name { get; set; } = "receiveBinding";
     public IBridge Parent { get; set; }
     private RevitDocumentStore _store;
     private static UIApplication RevitApp;
+
+    public CancellationManager CancellationManager { get; } = new();
 
     public ReceiveBinding(RevitDocumentStore store)
     {
@@ -34,13 +31,20 @@ namespace Speckle.ConnectorRevitDUI3.Bindings
     
     public void CancelReceive(string modelCardId)
     {
-      throw new NotImplementedException();
+      CancellationManager.CancelOperation(modelCardId);
     }
 
     public async void Receive(string modelCardId, string versionId)
     {
+      if (CancellationManager.IsExist(modelCardId))
+      {
+        CancellationManager.CancelOperation(modelCardId);
+      }
+
+      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      
       Document doc = RevitApp.ActiveUIDocument.Document;
-      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, modelCardId, versionId);
+      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, cts.Token, modelCardId, versionId);
       
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
@@ -67,11 +71,21 @@ namespace Speckle.ConnectorRevitDUI3.Bindings
         {
           converter.SetContextDocument(t);
 
+          int count = 0;
           foreach (var objectToConvert in objectsToConvert)
           {
+            if (cts.IsCancellationRequested)
+            {
+              Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
+              break;
+            }
+            
             try
             {
               var convertedObject = converter.ConvertToNative(objectToConvert);
+              count++;
+              double progress = (double)count / objectsToConvert.Count;
+              Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
               RefreshView();
             }
             catch (Exception e)

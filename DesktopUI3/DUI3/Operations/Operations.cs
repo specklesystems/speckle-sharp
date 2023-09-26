@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -17,13 +18,14 @@ public static class Operations
   /// <returns>The requested commit data</returns>
   /// <exception cref="SpeckleException">Thrown when any receive operation errors</exception>
   /// <exception cref="OperationCanceledException">Thrown when <paramref name="progress"/> requests a cancellation</exception>
-  public static async Task<Base> ReceiveCommit(Account account, string projectId, string referencedObjectId)
+  public static async Task<Base> ReceiveCommit(Account account, CancellationToken token, string projectId, string referencedObjectId)
   {
     using ServerTransport transport = new(account, projectId);
 
     Base? commitObject = await Speckle.Core.Api.Operations
       .Receive(
         referencedObjectId,
+        token,
         transport,
         onErrorAction: (s, ex) =>
         {

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -10,7 +11,7 @@ namespace DUI3.Utils;
 
 public static class Receive
 {
-  public static async Task<Base> GetCommitBase(IBridge parent, DocumentModelStore store, string modelCardId, string versionId)
+  public static async Task<Base> GetCommitBase(IBridge parent, DocumentModelStore store, CancellationToken token, string modelCardId, string versionId)
   {
     ReceiverModelCard receiverModelCard = store.GetModelById(modelCardId) as ReceiverModelCard;
 
@@ -32,6 +33,7 @@ public static class Receive
 
     Base commitObject = await DUI3.Operations.Operations.ReceiveCommit(
       account,
+      token,
       receiverModelCard.ProjectId,
       version.referencedObject).ConfigureAwait(true);
     return commitObject;

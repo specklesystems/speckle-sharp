@@ -17,7 +17,7 @@ using Operations = Speckle.Core.Api.Operations;
 
 namespace AutocadCivilDUI3Shared.Bindings
 {
-  public class SendBinding : ISendBinding, ICancellable
+  public class SendBinding : ISendBinding, ICancelable
   {
     public string Name { get; set; } = "sendBinding";
 
