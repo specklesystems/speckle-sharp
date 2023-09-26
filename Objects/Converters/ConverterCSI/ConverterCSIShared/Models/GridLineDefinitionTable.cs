@@ -11,6 +11,7 @@ namespace ConverterCSIShared.Models
 {
   internal class ETABSGridLineDefinitionTable : DatabaseTableWrapper
   {
+    private int numberOfGridSystems;
     public override string TableKey => "Grid Definitions - Grid Lines";
     public string[] DefaultRow => new string[] { 
       null, // Name : Grid System name
@@ -32,7 +33,13 @@ namespace ConverterCSIShared.Models
     public const string YGridLineType = "Y (Cartesian)";
     public const string RGridLineType = "R (Cylindrical)";
     public const string TGridLineType = "T (Cylindrical)";
-    public void AddCartesian(string gridSystemName, string gridLineType, string gridName, double location)
+    public void AddCartesian(
+      string gridSystemName, 
+      string gridLineType, 
+      string gridName, 
+      double location,
+      string visible = "Yes"
+    )
     {
       if (gridLineType != XGridLineType && gridLineType != YGridLineType)
       {
@@ -58,6 +65,10 @@ namespace ConverterCSIShared.Models
         {
           newRow[index] = location.ToString();
         }
+        else if (fieldKey == "Visible")
+        {
+          newRow[index] = visible;
+        }
         else
         {
           newRow[index] = DefaultRow[index];
@@ -76,15 +87,15 @@ namespace ConverterCSIShared.Models
       var ux = Math.Abs(line.start.x - line.end.x);
       var uy = Math.Abs(line.start.y - line.end.y);
 
-      // get rotation from global x and y
+      // get rotation from global x and y in the counter-clockwise direction
       double gridRotation;
       if (ux > .01)
       {
-        gridRotation = Math.Asin(uy / ux);
+        gridRotation = Math.Atan(uy / ux);
       }
       else
       {
-        gridRotation = 90;
+        gridRotation = Math.PI / 2;
       }
 
       var gridSystem = GetOrCreateGridSystem(gridRotation);
@@ -132,16 +143,23 @@ namespace ConverterCSIShared.Models
           continue;
         }
 
-        var combinedRotationsNormalized = Math.Abs((rotationDeg - gridRotation) / 90);
+        var rotationRad = rotationDeg * Math.PI / 180;
+        var combinedRotationsNormalized = Math.Abs((rotationRad - gridRotation) / (Math.PI / 2));
         var combinedRotationsRemainder = combinedRotationsNormalized - Math.Floor(combinedRotationsNormalized);
 
         if (combinedRotationsRemainder < .1)
         {
-          return new GridSystemRepresentation(gridSysName, GridType.None, xOrigin, yOrigin, rotationDeg);
+          return new GridSystemRepresentation(gridSysName, GridType.None, xOrigin, yOrigin, rotationRad);
         }
       }
 
-      throw new SpeckleException("TODO : create grid system if missing");
+      var systemName = $"SpeckleGridSystem{numberOfGridSystems++}";
+      _ = cSapModel.GridSys.SetGridSys(systemName, 0, 0, gridRotation * 180 / Math.PI);
+
+      // when a grid system is created, it doesn't show up unless it has at least one grid in each direction
+      AddCartesian(systemName, XGridLineType, "Default0", 0);
+      AddCartesian(systemName, YGridLineType, "Default1", 0);
+      return new GridSystemRepresentation(systemName, GridType.None, 0, 0, gridRotation);
     }
 
     private Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
