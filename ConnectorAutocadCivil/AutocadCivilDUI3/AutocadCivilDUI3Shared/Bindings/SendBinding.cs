@@ -86,7 +86,7 @@ namespace AutocadCivilDUI3Shared.Bindings
               if (cts.IsCancellationRequested)
               {
                 tr.Commit();
-                Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+                Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
                 return;
               }
 
@@ -127,6 +127,11 @@ namespace AutocadCivilDUI3Shared.Bindings
             tr.Commit();
           }
         }
+        if (cts.IsCancellationRequested)
+        {
+          Progress.Cancel(Parent, modelCardId);
+          return;
+        }
 
         var commitObject = new Base();
         commitObject["@elements"] = convertedObjects;
@@ -137,6 +142,8 @@ namespace AutocadCivilDUI3Shared.Bindings
 
         var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
+        // Pass null progress value to let UI swooshing progress bar
+        Progress.SerializerProgressToBrowser(Parent, modelCardId, null);
         var objectId = await Operations.Send(
             commitObject,
             cts.Token,
@@ -144,6 +151,8 @@ namespace AutocadCivilDUI3Shared.Bindings
             disposeTransports: true
           )
           .ConfigureAwait(true);
+        // Pass 1 progress value to let UI finish progress
+        Progress.SerializerProgressToBrowser(Parent, modelCardId, 1);
 
         Parent.SendToBrowser(
           SendBindingEvents.CreateVersion,
@@ -160,8 +169,10 @@ namespace AutocadCivilDUI3Shared.Bindings
       }
       catch (Exception e)
       {
-        // Memory error happens when we try to cancel operation. This is a hack for now.
-        Console.WriteLine(e);
+        if (e is OperationCanceledException)
+        {
+          Progress.Cancel(Parent, modelCardId);
+        }
       }
     }
 

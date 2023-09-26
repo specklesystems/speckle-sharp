@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -106,7 +107,7 @@ public class SendBinding : ISendBinding, ICancelable
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+        Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
         return;
       }
       count++;
@@ -115,8 +116,12 @@ public class SendBinding : ISendBinding, ICancelable
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
       // Thread.Sleep(5000);
     }
-    
-    if (CancellationManager.IsCancellationRequested(modelCardId)) return;
+
+    if (CancellationManager.IsCancellationRequested(modelCardId))
+    {
+      Progress.Cancel(Parent, modelCardId);
+      return;
+    }
     var commitObject = new Base();
     commitObject["@elements"] = convertedObjects;
 
@@ -126,12 +131,17 @@ public class SendBinding : ISendBinding, ICancelable
 
     var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
+    // Pass null progress value to let UI swooshing progress bar
+    Progress.SerializerProgressToBrowser(Parent, modelCardId, null);
     var objectId = await Speckle.Core.Api.Operations.Send(
       commitObject,
       cts.Token,
       transports,
+      // onProgressAction: dict => Update(dict), -> FIXME if possible, we don't know total number to get progress value
       disposeTransports: true
     ).ConfigureAwait(true);
+    // Pass 1 progress value to let UI finish progress
+    Progress.SerializerProgressToBrowser(Parent, modelCardId, 1);
 
     Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { ModelCardId = modelCardId, AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }

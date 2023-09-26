@@ -53,7 +53,9 @@ public class SendBinding : ISendBinding, ICancelable
 
   public async void Send(string modelCardId)
   {
-    if (CancellationManager.IsExist(modelCardId))
+    try
+    {
+      if (CancellationManager.IsExist(modelCardId))
       {
         CancellationManager.CancelOperation(modelCardId);
       }
@@ -71,7 +73,7 @@ public class SendBinding : ISendBinding, ICancelable
       converter.SetContextDocument(doc);
 
       var convertedObjects = new List<Base>();
-      
+
       // TBD: RevitTask complicates cancellation operation. Do we really need it after new
       // Bridge implementation with threading?
       // If we remove this RevitTask.RunAsync, we don't need to wrap all into try catch
@@ -84,9 +86,10 @@ public class SendBinding : ISendBinding, ICancelable
             {
               if (cts.IsCancellationRequested)
               {
-                Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+                Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
                 return;
               }
+
               count++;
               convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
               double progress = (double)count / elements.Count;
@@ -94,7 +97,12 @@ public class SendBinding : ISendBinding, ICancelable
             }
           })
         .ConfigureAwait(false);
-
+      if (cts.IsCancellationRequested)
+      {
+        Progress.Cancel(Parent, modelCardId);
+        return;
+      }
+      
       var commitObject = new Base();
       commitObject["@elements"] = convertedObjects;
 
@@ -105,6 +113,8 @@ public class SendBinding : ISendBinding, ICancelable
       var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
 
       // TODO: Fix send operations haven't succeeded
+      // Pass null progress value to let UI swooshing progress bar
+      Progress.SerializerProgressToBrowser(Parent, modelCardId, null);
       var objectId = await Operations.Send(
           commitObject,
           cts.Token,
@@ -112,6 +122,9 @@ public class SendBinding : ISendBinding, ICancelable
           disposeTransports: true
         )
         .ConfigureAwait(true);
+      // Pass 1 progress value to let UI finish progress
+      Progress.SerializerProgressToBrowser(Parent, modelCardId, 1);
+      if (cts.IsCancellationRequested) return;
 
       Parent.SendToBrowser(
         SendBindingEvents.CreateVersion,
@@ -125,7 +138,14 @@ public class SendBinding : ISendBinding, ICancelable
           Message = "Test",
           SourceApplication = "Revit"
         });
-
+    }
+    catch (Exception e)
+    {
+      if (e is OperationCanceledException)
+      {
+        Progress.Cancel(Parent, modelCardId);
+      }
+    }
   }
 
   public void CancelSend(string modelCardId)
