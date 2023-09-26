@@ -17,27 +17,26 @@ namespace BatchUploadOperationDriver
   public class BatchUploadOperationDriver
   {
     private readonly BatchUploaderClient client;
-    private readonly Process process;
     private readonly IApplicationFunctionalityController applicationController;
     private readonly ConnectorBindings connectorBindings;
     private int jobCounter;
+
     public BatchUploadOperationDriver(
       BatchUploaderClient client,
-      IApplicationFunctionalityController applicationController, 
+      IApplicationFunctionalityController applicationController,
       ConnectorBindings connectorBindings
     )
     {
       this.client = client;
-      this.process = Process.GetCurrentProcess();
       this.applicationController = applicationController;
       this.connectorBindings = connectorBindings;
     }
 
     public async Task ProcessAllJobs()
     {
-//#if DEBUG
-//      Debugger.Launch();
-//#endif
+      //#if DEBUG
+      //      Debugger.Launch();
+      //#endif
       while (await GetNextJobId().ConfigureAwait(false) is Guid jobId)
       {
         // currently using this counter to determine wether this process was started by the batch uploader
@@ -61,7 +60,7 @@ namespace BatchUploadOperationDriver
 
       if (jobCounter > 0)
       {
-        process.Kill();
+        Environment.Exit(0);
       }
     }
 
@@ -85,15 +84,27 @@ namespace BatchUploadOperationDriver
         },
       };
       var progress = new ProgressViewModel();
-
+      ListenForProgress(client, jobId, progress);
       await connectorBindings.SendStream(state, progress).ConfigureAwait(false);
+    }
+
+    private static void ListenForProgress(BatchUploaderClient client, Guid jobId, ProgressViewModel viewModel)
+    {
+      viewModel.PropertyChanged += (_, p) =>
+      {
+        if (p.PropertyName is not (nameof(ProgressViewModel.Value) or nameof(ProgressViewModel.Max)))
+          return;
+
+        JobProgress newProgress = new((long)viewModel.Value, (long)viewModel.Max); //TODO: Why is value and max double not int64?
+        Task.Run(() => client.UpdateJobProgress(jobId, newProgress)).ConfigureAwait(false);
+      };
     }
 
     private async Task<Guid?> GetNextJobId()
     {
       try
       {
-        return await client.GetJob(process.Id.ToString()).ConfigureAwait(false);
+        return await client.GetJob().ConfigureAwait(false);
       }
       catch (Exception ex)
       {
