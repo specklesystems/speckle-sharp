@@ -15,7 +15,7 @@ namespace Objects.Converter.CSI
     Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
     int counterFrame = 0;
 
-    void LoadFrameToNative(LoadBeam loadBeam, ref ApplicationObject appObj)
+    void LoadFrameToNative(LoadBeam loadBeam, ApplicationObject appObj)
     {
       int direction = 11;
       int myType = 1;

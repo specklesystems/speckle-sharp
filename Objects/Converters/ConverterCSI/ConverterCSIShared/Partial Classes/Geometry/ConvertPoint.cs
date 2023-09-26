@@ -79,7 +79,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void PointToNative(Node speckleStructNode, ref ApplicationObject appObj)
+    public void PointToNative(Node speckleStructNode, ApplicationObject appObj)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))
       {
@@ -92,26 +92,25 @@ namespace Objects.Converter.CSI
       var point = speckleStructNode.basePoint;
       if (point == null)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
-        return;
+        throw new ArgumentException($"Node does not have a valid location, {nameof(Node.basePoint)} was null");
       }
 
       var success = CreatePoint(point, out string name);
       UpdatePointProperties(speckleStructNode, ref name);
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: speckleStructNode.name);
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new InvalidOperationException("Failed create point");
     }
 
     public int CreatePoint(Point point, out string name)
     {
+      var scaleFactor = Speckle.Core.Kits.Units.GetConversionFactor(point.units, ModelUnits());
+
       name = null;
       var success = Model.PointObj.AddCartesian(
-        ScaleToNative(point.x, point.units),
-        ScaleToNative(point.y, point.units),
-        ScaleToNative(point.z, point.units),
+        point.x * scaleFactor,
+        point.x * scaleFactor,
+        point.x * scaleFactor,
         ref name
       );
       return success;

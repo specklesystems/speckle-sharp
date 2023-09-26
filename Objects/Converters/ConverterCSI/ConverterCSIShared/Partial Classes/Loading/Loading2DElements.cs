@@ -17,7 +17,7 @@ namespace Objects.Converter.CSI
     int counterAreaLoadUniform = 0;
     int counterAreaLoadWind = 0;
 
-    void LoadFaceToNative(LoadFace loadFace, ref ApplicationObject appObj)
+    void LoadFaceToNative(LoadFace loadFace, ApplicationObject appObj)
     {
       foreach (Element2D element in loadFace.elements)
       {

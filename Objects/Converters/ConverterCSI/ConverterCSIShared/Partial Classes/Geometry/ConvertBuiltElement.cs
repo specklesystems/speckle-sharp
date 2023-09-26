@@ -10,7 +10,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void CurveBasedElementToNative(Base @base, ICurve curve, ref ApplicationObject appObj)
+    public void CurveBasedElementToNative(Base @base, ICurve curve, ApplicationObject appObj)
     {
       if (!(curve is Line baseLine))
       {
@@ -28,7 +28,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        CreateFrame(baseLine.start, baseLine.end, out var frameName, out var _, ref appObj);
+        CreateFrame(baseLine.start, baseLine.end, out var frameName, out _, appObj);
         SetProfileSection(frameName, @base, appObj);
       }
     }

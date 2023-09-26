@@ -32,7 +32,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    CSIProperty2D Property2DToSpeckle(string area, string property)
+    private CSIProperty2D Property2DToSpeckle(string area, string property)
     {
       eAreaDesignOrientation areaDesignOrientation = eAreaDesignOrientation.Null;
       Model.AreaObj.GetDesignOrientation(area, ref areaDesignOrientation);

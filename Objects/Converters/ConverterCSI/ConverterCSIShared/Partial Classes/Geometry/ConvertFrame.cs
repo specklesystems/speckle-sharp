@@ -7,6 +7,7 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -30,7 +31,7 @@ namespace Objects.Converter.CSI
       SetFrameElementProperties(element1D, name);
     }
 
-    public void UpdateFrameLocation(string name, Point p1, Point p2, ApplicationObject appObj)
+    public void UpdateFrameLocation(string name, Point p1, Point p2, ApplicationObject appObj) //TODO: how is this called?
     {
       string pt1 = "";
       string pt2 = "";
@@ -60,25 +61,19 @@ namespace Objects.Converter.CSI
           Model.PointObj.DeleteSpecialPoint(pt2);
       }
 
-      if (success == 0)
-      {
-        string guid = null;
-        Model.FrameObj.GetGUID(name, ref guid);
-        appObj.Update(
-          status: ApplicationObject.State.Updated,
-          createdId: guid,
-          convertedItem: $"Frame{delimiter}{name}"
-        );
-      }
-      else
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to change frame connectivity");
+      if (success != 0)
+        throw new ConversionException("Fialed to change frame connectivity");
+
+      string guid = null;
+      Model.FrameObj.GetGUID(name, ref guid);
+      appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{delimiter}{name}");
     }
 
-    public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
+    public void FrameToNative(Element1D element1D, ApplicationObject appObj)
     {
       if (element1D.type == ElementType1D.Link)
       {
-        LinkToNative((CSIElement1D)element1D, ref appObj);
+        LinkToNative((CSIElement1D)element1D, appObj);
         return;
       }
 
@@ -94,7 +89,7 @@ namespace Objects.Converter.CSI
       Model.PropFrame.GetNameList(ref number, ref properties);
       if (!properties.Contains(element1D.property.name))
       {
-        Property1DToNative(element1D.property, ref appObj);
+        Property1DToNative(element1D.property, appObj);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
       Point end1node;
@@ -110,7 +105,7 @@ namespace Objects.Converter.CSI
         end2node = element1D.end2Node.basePoint;
       }
 
-      CreateFrame(end1node, end2node, out var newFrame, out var _, ref appObj);
+      CreateFrame(end1node, end2node, out var newFrame, out _, appObj);
       SetFrameElementProperties(element1D, newFrame);
     }
 
@@ -119,7 +114,7 @@ namespace Objects.Converter.CSI
       Point p1,
       out string newFrame,
       out string guid,
-      ref ApplicationObject appObj,
+      ApplicationObject appObj,
       string type = "Default",
       string nameOverride = null
     )
@@ -337,7 +332,7 @@ namespace Objects.Converter.CSI
       }
 
       var propAppObj = new ApplicationObject(element1D.applicationId, element1D.speckle_type);
-      var propertyName = Property1DToNative(element1D.property, ref propAppObj);
+      var propertyName = Property1DToNative(element1D.property, propAppObj);
       if (propertyName != null)
         Model.FrameObj.SetSection(newFrame, propertyName);
 

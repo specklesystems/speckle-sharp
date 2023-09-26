@@ -12,7 +12,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void StoriesToNative(CSIStories stories, ref ApplicationObject appObj)
+    public void StoriesToNative(CSIStories stories, ApplicationObject appObj)
     {
       string[] storyNames = new string[stories.NumberStories];
       double[] storyElevations = new double[stories.NumberStories];
@@ -46,10 +46,8 @@ namespace Objects.Converter.CSI
         ref colors
       );
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdIds: storyNames.ToList());
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new InvalidOperationException("Failed to set the stories");
     }
 
     public CSIStories StoriesToSpeckle()

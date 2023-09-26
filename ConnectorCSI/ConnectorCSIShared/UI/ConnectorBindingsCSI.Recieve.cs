@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorCSI.UI
@@ -118,24 +119,26 @@ namespace Speckle.ConnectorCSI.UI
 
         try
         {
-          var convRes = converter.ConvertToNative(@base);
+          var convRes = (ApplicationObject)converter.ConvertToNative(@base);
 
-          switch (convRes)
-          {
-            case ApplicationObject o:
-              placeholders.Add(o);
-              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
-              progress.Report.UpdateReportObject(obj);
-              break;
-            default:
-              break;
-          }
+          placeholders.Add(convRes);
+          obj.Update(createdIds: convRes.CreatedIds, converted: convRes.Converted, log: convRes.Log);
         }
-        catch (Exception e)
+        catch (ConversionSkippedException ex)
         {
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
-          progress.Report.UpdateReportObject(obj);
+          obj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
         }
+        catch (ConversionException ex)
+        {
+          SpeckleLog.Logger.Warning("Object failed conversion"); //TODO
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+        }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Error("Object failed conversion"); //TODO
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+        }
+        progress.Report.UpdateReportObject(obj);
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);

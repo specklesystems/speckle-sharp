@@ -22,7 +22,7 @@ namespace Objects.Converter.CSI
       return false;
     }
 
-    public string Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
+    public string Property1DToNative(Property1D property1D, ApplicationObject appObj)
     {
       if (property1D == null)
         return null;

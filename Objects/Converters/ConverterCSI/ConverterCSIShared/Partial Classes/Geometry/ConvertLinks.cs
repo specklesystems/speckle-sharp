@@ -13,10 +13,10 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkToNative(CSIElement1D link, ref ApplicationObject appObj)
+    public void LinkToNative(CSIElement1D link, ApplicationObject appObj)
     {
-      PointToNative((CSINode)link.end1Node, ref appObj);
-      PointToNative((CSINode)link.end2Node, ref appObj);
+      PointToNative((CSINode)link.end1Node, appObj);
+      PointToNative((CSINode)link.end2Node, appObj);
       string linkName = null;
       int numberProps = 0;
       string[] listProp = null;
@@ -29,14 +29,12 @@ namespace Objects.Converter.CSI
           ref linkName,
           PropName: link.property.name
         );
-        if (success == 0)
-          appObj.Update(status: ApplicationObject.State.Created, createdId: linkName);
-        else
-          appObj.Update(status: ApplicationObject.State.Failed);
+        if (success != 0)
+          throw new InvalidOperationException("Failed to add new link by point");
       }
       else
       {
-        LinkPropertyToNative((CSILinkProperty)link.property, ref appObj);
+        LinkPropertyToNative((CSILinkProperty)link.property, appObj);
         Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
       }
     }

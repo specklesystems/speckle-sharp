@@ -13,7 +13,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkPropertyToNative(CSILinkProperty linkProperty, ref ApplicationObject appObj)
+    public void LinkPropertyToNative(CSILinkProperty linkProperty, ApplicationObject appObj)
     {
       double[] value = new double[4];
       value[0] = linkProperty.M2PdeltaEnd1;
@@ -32,10 +32,12 @@ namespace Objects.Converter.CSI
         linkProperty.rotationalInertia3
       );
 
-      if (success1 == 0 && success2 == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{linkProperty.name}");
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success1 != 0)
+        throw new InvalidOperationException($"Failed to assign P-delta value to link property {linkProperty.name}");
+      if (success2 != 0)
+        throw new InvalidOperationException(
+          $"Failed to assign Weight and Mass value to link property {linkProperty.name}"
+        );
     }
 
     public CSILinkProperty LinkPropertyToSpeckle(string name)

@@ -10,7 +10,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LineToNative(Line line, ref ApplicationObject appObj)
+    public void LineToNative(Line line, ApplicationObject appObj)
     {
       string newFrame = "";
       Point end1node = line.start;
