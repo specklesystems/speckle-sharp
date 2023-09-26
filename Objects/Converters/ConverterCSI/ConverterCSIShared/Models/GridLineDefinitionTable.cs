@@ -98,7 +98,7 @@ namespace ConverterCSIShared.Models
         gridRotation = Math.PI / 2;
       }
 
-      var gridSystem = GetExistingGridSystem(gridRotation);
+      var gridSystem = GetExistingGridSystem(gridRotation) ?? CreateGridSystem(gridRotation);
       var transform = GetTransformFromGridSystem(gridSystem);
       _ = line.TransformTo(transform.Inverse(), out Line transformedLine);
 
@@ -154,13 +154,18 @@ namespace ConverterCSIShared.Models
           return new GridSystemRepresentation(gridSysName, GridType.None, xOrigin, yOrigin, rotationRad);
         }
       }
+      // could not find compatible existing grid system
+      return null;
+    }
 
+    private GridSystemRepresentation CreateGridSystem(double gridRotation)
+    {
       var systemName = $"SpeckleGridSystem{numberOfGridSystems++}";
       _ = cSapModel.GridSys.SetGridSys(systemName, 0, 0, gridRotation * 180 / Math.PI);
 
       // when a grid system is created, it doesn't show up unless it has at least one grid in each direction
-      AddCartesian(systemName, XGridLineType, "Default0", 0);
-      AddCartesian(systemName, YGridLineType, "Default1", 0);
+      AddCartesian(systemName, XGridLineType, "Default0", 0, "No");
+      AddCartesian(systemName, YGridLineType, "Default1", 0, "No");
       return new GridSystemRepresentation(systemName, GridType.None, 0, 0, gridRotation);
     }
 
