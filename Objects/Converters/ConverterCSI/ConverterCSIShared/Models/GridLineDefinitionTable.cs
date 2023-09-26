@@ -84,12 +84,12 @@ namespace ConverterCSIShared.Models
         throw new ArgumentException("Non line based gridlines are not supported");
       }
 
-      var ux = Math.Abs(line.start.x - line.end.x);
-      var uy = Math.Abs(line.start.y - line.end.y);
+      var ux = line.start.x - line.end.x;
+      var uy = line.start.y - line.end.y;
 
       // get rotation from global x and y in the counter-clockwise direction
       double gridRotation;
-      if (ux > .01)
+      if (Math.Abs(ux) > .01)
       {
         gridRotation = Math.Atan(uy / ux);
       }
@@ -98,9 +98,9 @@ namespace ConverterCSIShared.Models
         gridRotation = Math.PI / 2;
       }
 
-      var gridSystem = GetOrCreateGridSystem(gridRotation);
+      var gridSystem = GetExistingGridSystem(gridRotation);
       var transform = GetTransformFromGridSystem(gridSystem);
-      _ = line.TransformTo(transform, out Line transformedLine);
+      _ = line.TransformTo(transform.Inverse(), out Line transformedLine);
 
       var newUx = Math.Abs(transformedLine.start.x - transformedLine.end.x);
       var newUy = Math.Abs(transformedLine.start.y - transformedLine.end.y);
@@ -109,13 +109,15 @@ namespace ConverterCSIShared.Models
       double gridLineOffset;
       if (newUx < .1)
       {
-        lineType = YGridLineType;
-        gridLineOffset = toNativeScalingService.ScaleLength(transformedLine.start.x, transformedLine.start.units);
+        lineType = XGridLineType;
+        gridLineOffset = toNativeScalingService
+          .ScaleLength(transformedLine.start.x, transformedLine.units ?? transformedLine.start.units);
       }
       else if (newUy < .1)
       {
-        lineType = XGridLineType;
-        gridLineOffset = toNativeScalingService.ScaleLength(transformedLine.start.y, transformedLine.start.units);
+        lineType = YGridLineType;
+        gridLineOffset = toNativeScalingService
+          .ScaleLength(transformedLine.start.y, transformedLine.units ?? transformedLine.start.units);
       }
       else
       {
@@ -125,7 +127,7 @@ namespace ConverterCSIShared.Models
       AddCartesian(gridSystem.Name, lineType, gridLine.label, gridLineOffset);
     }
 
-    private GridSystemRepresentation GetOrCreateGridSystem(double gridRotation)
+    private GridSystemRepresentation? GetExistingGridSystem(double gridRotation)
     {
       var numGridSys = 0;
       var gridSysNames = Array.Empty<string>();
@@ -147,7 +149,7 @@ namespace ConverterCSIShared.Models
         var combinedRotationsNormalized = Math.Abs((rotationRad - gridRotation) / (Math.PI / 2));
         var combinedRotationsRemainder = combinedRotationsNormalized - Math.Floor(combinedRotationsNormalized);
 
-        if (combinedRotationsRemainder < .1)
+        if (combinedRotationsRemainder < .1 || combinedRotationsRemainder > .9)
         {
           return new GridSystemRepresentation(gridSysName, GridType.None, xOrigin, yOrigin, rotationRad);
         }
@@ -163,28 +165,16 @@ namespace ConverterCSIShared.Models
     }
 
     private Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
-    {
-      var rotationComponent = new Transform(
+    {   
+      return new Transform(
         new double[]
         {
-          Math.Cos(sys.Rotation), -Math.Sin(sys.Rotation), 0, 0,
-          Math.Sin(sys.Rotation), Math.Cos(sys.Rotation), 0, 0,
+          Math.Cos(sys.Rotation), -Math.Sin(sys.Rotation), 0, sys.XOrigin,
+          Math.Sin(sys.Rotation), Math.Cos(sys.Rotation), 0, sys.YOrigin,
           0, 0, 1, 0,
           0, 0, 0, 1
         }
       );
-
-      var translationComponent = new Transform(
-        new double[]
-        {
-          1, 0, 0, sys.XOrigin,
-          0, 1, 0, sys.YOrigin,
-          0, 0, 1, 0,
-          0, 0, 0, 1
-        }
-      );
-
-      return translationComponent * rotationComponent;
     }
   }
 

@@ -214,6 +214,16 @@ public class Transform : Base
     };
   }
 
+  public Transform Inverse()
+  {
+    var success = Matrix4x4.Invert(matrix, out var transformed);
+    if (success)
+    {
+      return new Transform(transformed);
+    }
+    throw new SpeckleException("Could not create inverse transform");
+  }
+
   /// <summary>
   /// Returns the matrix that results from multiplying two matrices together.
   /// </summary>
