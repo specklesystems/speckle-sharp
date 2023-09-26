@@ -58,5 +58,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ToNativeScalingService.cs" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ConverterCSIShared.Services;
 using CSiAPIv1;
 using Objects.BuiltElements;
 using Objects.Geometry;
@@ -24,7 +25,8 @@ namespace ConverterCSIShared.Models
       "Start", // BubbleLoc
       "Yes", // Visible
     };
-    public ETABSGridLineDefinitionTable(cSapModel cSapModel) : base(cSapModel) { }
+    public ETABSGridLineDefinitionTable(cSapModel cSapModel, ToNativeScalingService toNativeScalingService) 
+      : base(cSapModel, toNativeScalingService) { }
 
     public const string XGridLineType = "X (Cartesian)";
     public const string YGridLineType = "Y (Cartesian)";
@@ -96,13 +98,13 @@ namespace ConverterCSIShared.Models
       double location;
       if (newUx < .1)
       {
-        lineType = XGridLineType;
-        location = newUy;
+        lineType = YGridLineType;
+        location = toNativeScalingService.ScaleLength(transformedLine.start.x, transformedLine.start.units);
       }
       else if (newUy < .1)
       {
-        lineType = YGridLineType;
-        location = newUx;
+        lineType = XGridLineType;
+        location = toNativeScalingService.ScaleLength(transformedLine.start.y, transformedLine.start.units);
       }
       else
       {

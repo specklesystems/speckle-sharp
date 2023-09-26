@@ -10,7 +10,7 @@ namespace Objects.Converter.CSI
   public partial class ConverterCSI
   {
     private ETABSGridLineDefinitionTable gridLineDefinitionTable;
-    private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model);
+    private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
     public void GridLineToNative(GridLine gridline)
     {
       // TODO: this should potentially be a singleton of some sort
