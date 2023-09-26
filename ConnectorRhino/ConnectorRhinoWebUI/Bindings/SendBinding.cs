@@ -107,7 +107,7 @@ public class SendBinding : ISendBinding, ICancelable
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
+        Progress.CancelSend(Parent, modelCardId, (double)count / objectsIds.Count);
         return;
       }
       count++;
@@ -119,7 +119,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     if (CancellationManager.IsCancellationRequested(modelCardId))
     {
-      Progress.Cancel(Parent, modelCardId);
+      Progress.CancelSend(Parent, modelCardId);
       return;
     }
     var commitObject = new Base();

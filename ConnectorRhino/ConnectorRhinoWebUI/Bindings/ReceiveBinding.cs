@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Threading;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -48,8 +47,12 @@ namespace ConnectorRhinoWebUI.Bindings
       var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       RhinoDoc doc = RhinoDoc.ActiveDoc;
+      // Pass null progress value to let UI swooshing progress bar
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, null);
       Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, cts.Token, modelCardId, versionId);
-
+      // Pass 1 progress value to let UI finish progress
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, 1);
+      
       ConverterRhinoGh converter = new ConverterRhinoGh();
       converter.SetContextDocument(doc);
 
@@ -71,7 +74,7 @@ namespace ConnectorRhinoWebUI.Bindings
       {
         if (cts.IsCancellationRequested)
         {
-          Progress.SenderProgressToBrowser(Parent, modelCardId, 1);
+          Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
           return;
         }
         count++;

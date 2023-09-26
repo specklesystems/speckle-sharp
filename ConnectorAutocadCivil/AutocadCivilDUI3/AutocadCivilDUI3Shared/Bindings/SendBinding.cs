@@ -86,7 +86,7 @@ namespace AutocadCivilDUI3Shared.Bindings
               if (cts.IsCancellationRequested)
               {
                 tr.Commit();
-                Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
+                Progress.CancelSend(Parent, modelCardId, (double)count / objectsIds.Count);
                 return;
               }
 
@@ -129,7 +129,7 @@ namespace AutocadCivilDUI3Shared.Bindings
         }
         if (cts.IsCancellationRequested)
         {
-          Progress.Cancel(Parent, modelCardId);
+          Progress.CancelSend(Parent, modelCardId);
           return;
         }
 
@@ -171,7 +171,7 @@ namespace AutocadCivilDUI3Shared.Bindings
       {
         if (e is OperationCanceledException)
         {
-          Progress.Cancel(Parent, modelCardId);
+          Progress.CancelSend(Parent, modelCardId);
         }
       }
     }

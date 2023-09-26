@@ -5,7 +5,7 @@ namespace DUI3.Utils;
 
 public static class Progress
 {
-  public static void Cancel(IBridge bridge, string modelCardId, double? progress = null)
+  public static void CancelSend(IBridge bridge, string modelCardId, double? progress = null)
   {
     var args = new ModelProgress()
     {
@@ -14,6 +14,33 @@ public static class Progress
       Progress = progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
+  }
+  
+  public static void CancelReceive(IBridge bridge, string modelCardId, double? progress = null)
+  {
+    var args = new ModelProgress()
+    {
+      Id = modelCardId,
+      Status = "Cancelled",
+      Progress = progress
+    };
+    bridge.SendToBrowser(ReceiveBindingEvents.ReceiverProgress, args);
+  }
+  
+  /// <summary>
+  /// Send deserializer progress info to browser
+  /// </summary>
+  /// <param name="modelCardId"></param>
+  /// <param name="progress"></param>
+  public static void DeserializerProgressToBrowser(IBridge bridge, string modelCardId, double? progress)
+  {
+    var args = new ModelProgress()
+    {
+      Id = modelCardId,
+      Status = progress == 1 ? "Receiving Completed" : "Receiving from Server..",
+      Progress = progress
+    };
+    bridge.SendToBrowser(ReceiveBindingEvents.ReceiverProgress, args);
   }
 
   /// <summary>

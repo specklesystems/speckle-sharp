@@ -44,7 +44,11 @@ namespace Speckle.ConnectorRevitDUI3.Bindings
       var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
       
       Document doc = RevitApp.ActiveUIDocument.Document;
+      // Pass null progress value to let UI swooshing progress bar
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, null);
       Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, cts.Token, modelCardId, versionId);
+      // Pass 1 progress value to let UI finish progress
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, 1);
       
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
@@ -76,7 +80,7 @@ namespace Speckle.ConnectorRevitDUI3.Bindings
           {
             if (cts.IsCancellationRequested)
             {
-              Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
+              Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
               break;
             }
             

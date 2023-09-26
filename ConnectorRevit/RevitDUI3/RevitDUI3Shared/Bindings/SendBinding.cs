@@ -86,7 +86,7 @@ public class SendBinding : ISendBinding, ICancelable
             {
               if (cts.IsCancellationRequested)
               {
-                Progress.Cancel(Parent, modelCardId, (double)count / objectsIds.Count);
+                Progress.CancelSend(Parent, modelCardId, (double)count / objectsIds.Count);
                 return;
               }
 
@@ -99,7 +99,7 @@ public class SendBinding : ISendBinding, ICancelable
         .ConfigureAwait(false);
       if (cts.IsCancellationRequested)
       {
-        Progress.Cancel(Parent, modelCardId);
+        Progress.CancelSend(Parent, modelCardId);
         return;
       }
       
@@ -143,7 +143,7 @@ public class SendBinding : ISendBinding, ICancelable
     {
       if (e is OperationCanceledException)
       {
-        Progress.Cancel(Parent, modelCardId);
+        Progress.CancelSend(Parent, modelCardId);
       }
     }
   }

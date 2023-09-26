@@ -43,8 +43,11 @@ namespace ConnectorAutocadDUI3.Bindings
 
       var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
       
+      // Pass null progress value to let UI swooshing progress bar
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, null);
       Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, cts.Token, modelCardId, versionId);
-
+      // Pass 1 progress value to let UI finish progress
+      Progress.DeserializerProgressToBrowser(Parent, modelCardId, 1);
       Document doc = Application.DocumentManager.MdiActiveDocument;
 
       using (DocumentLock l = doc.LockDocument())
@@ -70,8 +73,8 @@ namespace ConnectorAutocadDUI3.Bindings
           {
             if (cts.IsCancellationRequested)
             {
+              Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
               tr.Commit();
-              Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
               return;
             }
             count++;
