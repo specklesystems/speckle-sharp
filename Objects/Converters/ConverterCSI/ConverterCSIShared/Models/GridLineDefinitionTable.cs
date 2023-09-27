@@ -1,5 +1,5 @@
+#nullable enable
 using System;
-using System.Linq;
 using ConverterCSIShared.Services;
 using CSiAPIv1;
 using Objects.BuiltElements;
@@ -12,8 +12,9 @@ namespace ConverterCSIShared.Models
   internal class ETABSGridLineDefinitionTable : DatabaseTableWrapper
   {
     private int numberOfGridSystems;
+    private const double gridTolerance = .001; // .05 degrees as radians
     public override string TableKey => "Grid Definitions - Grid Lines";
-    public string[] DefaultRow => new string[] { 
+    public static string?[] DefaultRow => new string?[] { 
       null, // Name : Grid System name
       null, // LineType
       null, // Id : Grid name
@@ -45,34 +46,18 @@ namespace ConverterCSIShared.Models
       {
         throw new ArgumentException($"Argument gridLineType must be either {XGridLineType} or {YGridLineType}");
       }
-      var newRow = new string[fieldKeysIncluded.Length];
+      var newRow = new string?[fieldKeysIncluded.Length];
       for (var index = 0; index < fieldKeysIncluded.Length; index++)
       {
-        var fieldKey = fieldKeysIncluded[index];
-        if (fieldKey == "Name")
+        newRow[index] = fieldKeysIncluded[index] switch
         {
-          newRow[index] = gridSystemName;
-        }
-        else if (fieldKey == "LineType")
-        {
-          newRow[index] = gridLineType;
-        }
-        else if (fieldKey == "ID")
-        {
-          newRow[index] = gridName;
-        }
-        else if (fieldKey == "Ordinate")
-        {
-          newRow[index] = location.ToString();
-        }
-        else if (fieldKey == "Visible")
-        {
-          newRow[index] = visible;
-        }
-        else
-        {
-          newRow[index] = DefaultRow[index];
-        }
+          "Name" => gridSystemName,
+          "LineType" => gridLineType,
+          "ID" => gridName,
+          "Ordinate" => location.ToString(),
+          "Visible" => visible,
+          _ => DefaultRow[index],
+        };
       }
 
       AddRow(newRow);
@@ -84,19 +69,7 @@ namespace ConverterCSIShared.Models
         throw new ArgumentException("Non line based gridlines are not supported");
       }
 
-      var ux = line.start.x - line.end.x;
-      var uy = line.start.y - line.end.y;
-
-      // get rotation from global x and y in the counter-clockwise direction
-      double gridRotation;
-      if (Math.Abs(ux) > .01)
-      {
-        gridRotation = Math.Atan(uy / ux);
-      }
-      else
-      {
-        gridRotation = Math.PI / 2;
-      }
+      var gridRotation = GetAngleOffsetFromGlobalCoordinateSystem(line);
 
       var gridSystem = GetExistingGridSystem(gridRotation) ?? CreateGridSystem(gridRotation);
       var transform = GetTransformFromGridSystem(gridSystem);
@@ -107,13 +80,13 @@ namespace ConverterCSIShared.Models
 
       string lineType;
       double gridLineOffset;
-      if (newUx < .1)
+      if (newUx < gridTolerance)
       {
         lineType = XGridLineType;
         gridLineOffset = toNativeScalingService
           .ScaleLength(transformedLine.start.x, transformedLine.units ?? transformedLine.start.units);
       }
-      else if (newUy < .1)
+      else if (newUy < gridTolerance)
       {
         lineType = YGridLineType;
         gridLineOffset = toNativeScalingService
@@ -127,6 +100,29 @@ namespace ConverterCSIShared.Models
       AddCartesian(gridSystem.Name, lineType, gridLine.label, gridLineOffset);
     }
 
+    /// <summary>
+    /// Returns the rotation counter-clockwise from from the global x axis in radians
+    /// </summary>
+    /// <param name="line"></param>
+    /// <returns></returns>
+    private static double GetAngleOffsetFromGlobalCoordinateSystem(Line line)
+    {
+      var ux = line.start.x - line.end.x;
+      var uy = line.start.y - line.end.y;
+
+      if (Math.Abs(ux) < gridTolerance)
+      {
+        return Math.PI / 2;
+      }
+      return Math.Atan(uy / ux);
+    }
+
+    /// <summary>
+    /// Find a GridSystem in the CSi model whose local x axis is either parallel or perpendicular to the provided 
+    /// grid angle.
+    /// </summary>
+    /// <param name="gridRotation">Rotation counter-clockwise from the global x axis in radians</param>
+    /// <returns></returns>
     private GridSystemRepresentation? GetExistingGridSystem(double gridRotation)
     {
       var numGridSys = 0;
@@ -149,9 +145,9 @@ namespace ConverterCSIShared.Models
         var combinedRotationsNormalized = Math.Abs((rotationRad - gridRotation) / (Math.PI / 2));
         var combinedRotationsRemainder = combinedRotationsNormalized - Math.Floor(combinedRotationsNormalized);
 
-        if (combinedRotationsRemainder < .1 || combinedRotationsRemainder > .9)
+        if (combinedRotationsRemainder < gridTolerance || combinedRotationsRemainder > 1 - gridTolerance)
         {
-          return new GridSystemRepresentation(gridSysName, GridType.None, xOrigin, yOrigin, rotationRad);
+          return new GridSystemRepresentation(gridSysName, xOrigin, yOrigin, rotationRad);
         }
       }
       // could not find compatible existing grid system
@@ -166,11 +162,11 @@ namespace ConverterCSIShared.Models
       // when a grid system is created, it doesn't show up unless it has at least one grid in each direction
       AddCartesian(systemName, XGridLineType, "Default0", 0, "No");
       AddCartesian(systemName, YGridLineType, "Default1", 0, "No");
-      return new GridSystemRepresentation(systemName, GridType.None, 0, 0, gridRotation);
+      return new GridSystemRepresentation(systemName, 0, 0, gridRotation);
     }
 
-    private Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
-    {   
+    private static Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
+    {
       return new Transform(
         new double[]
         {
@@ -185,26 +181,17 @@ namespace ConverterCSIShared.Models
 
   public class GridSystemRepresentation
   {
-    public GridSystemRepresentation(string name, GridType type, double xOrigin, double yOrigin, double rotation)
+    public GridSystemRepresentation(string name, double xOrigin, double yOrigin, double rotation)
     {
       Name = name;
-      Type = type;
       XOrigin = xOrigin;
       YOrigin = yOrigin;
       Rotation = rotation;
     }
 
     public string Name { get; }
-    public GridType Type { get; }
     public double XOrigin { get; set; }
     public double YOrigin { get; set; }
     public double Rotation { get; set; }
-  }
-
-  public enum GridType
-  {
-    None = 0,
-    Cartesian = 1,
-    Cylindrical = 2
   }
 }
