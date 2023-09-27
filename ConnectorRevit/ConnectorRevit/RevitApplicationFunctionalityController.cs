@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Autodesk.Revit.UI;
 using RevitSharedResources.Models;
-using Speckle.BatchUploader.ClientSdk.Interfaces;
+using Speckle.BatchUploader.Sdk.Interfaces;
 
 namespace ConnectorRevit
 {
@@ -20,7 +20,8 @@ namespace ConnectorRevit
         .Run(() =>
         {
           application.OpenAndActivateDocument(path);
-        }).ConfigureAwait(false);
+        })
+        .ConfigureAwait(false);
     }
   }
 }

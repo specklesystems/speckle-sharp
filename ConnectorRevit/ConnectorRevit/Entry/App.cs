@@ -8,11 +8,11 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using ConnectorRevit;
 using RevitSharedResources.Models;
-using Speckle.BatchUploader.ClientSdk;
+using Speckle.BatchUploader.Sdk;
+using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using BUOD = BatchUploadOperationDriver;
 
 namespace Speckle.ConnectorRevit.Entry
 {
@@ -143,7 +143,7 @@ namespace Speckle.ConnectorRevit.Entry
 
         BatchUploaderClient client = new(new Uri("http://localhost:5001"));
         RevitApplicationController revitAppController = new(AppInstance);
-        BUOD.BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
+        BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
 
         batchUploadOperationDriver.ProcessAllJobs();
 
