@@ -9,6 +9,9 @@ using Speckle.Core.Logging;
 
 namespace ConverterCSIShared.Models
 {
+  /// <summary>
+  /// Encapsulates the logic dealing with creating and manipulating gridlines via the interactive database in ETABS
+  /// </summary>
   internal class ETABSGridLineDefinitionTable : DatabaseTableWrapper
   {
     private int numberOfGridSystems;
@@ -34,6 +37,16 @@ namespace ConverterCSIShared.Models
     public const string YGridLineType = "Y (Cartesian)";
     public const string RGridLineType = "R (Cylindrical)";
     public const string TGridLineType = "T (Cylindrical)";
+
+    /// <summary>
+    /// Add a gridline that is represented by a straight line to the ETABS document
+    /// </summary>
+    /// <param name="gridSystemName"></param>
+    /// <param name="gridLineType"></param>
+    /// <param name="gridName"></param>
+    /// <param name="location"></param>
+    /// <param name="visible"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void AddCartesian(
       string gridSystemName, 
       string gridLineType, 
@@ -62,6 +75,13 @@ namespace ConverterCSIShared.Models
 
       AddRow(newRow);
     }
+
+    /// <summary>
+    /// Add a gridline that is represented by a straight line to the ETABS document
+    /// </summary>
+    /// <param name="gridLine"></param>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="SpeckleException"></exception>
     public void AddCartesian(GridLine gridLine)
     {
       if (gridLine.baseLine is not Line line)
