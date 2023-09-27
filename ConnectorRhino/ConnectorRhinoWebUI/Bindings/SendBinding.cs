@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,21 +9,20 @@ using DUI3.Models;
 using DUI3.Operations;
 using Rhino;
 using Rhino.DocObjects;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Objects.Converter.RhinoGh;
 using DUI3.Utils;
+using Speckle.Core.Kits;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
 public class SendBinding : ISendBinding, ICancelable
 {
   public string Name { get; set; } = "sendBinding";
-  private static string ApplicationIdKey = "applicationId";
   public IBridge Parent { get; set; }
-  private DocumentModelStore _store;
+  
+  private readonly DocumentModelStore _store;
 
   public CancellationManager CancellationManager { get; } = new();
 
@@ -72,78 +70,50 @@ public class SendBinding : ISendBinding, ICancelable
     };
   }
 
-  private async void SendProgress(string modelCardId, double progress)
-  {
-    var args = new ModelProgress()
-    {
-      Id = modelCardId,
-      Status = progress == 1 ? "Completed" : "Converting",
-      Progress = progress
-    };
-    Parent.SendToBrowser(SendBindingEvents.SenderProgress, args);
-  }
-
   public async void Send(string modelCardId)
   {
-    if (CancellationManager.IsExist(modelCardId))
+    try
     {
-      CancellationManager.CancelOperation(modelCardId);
+      // 0 - Init cancellation token source -> Manager also cancel it if exist before
+      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+
+      // 1 - Get model
+      SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+      
+      // 2 - Check account exist
+      Account account = Accounts.GetAccount(model.AccountId);
+      
+      // 3 - Get elements to convert
+      List<RhinoObject> rhinoObjects = GetObjectsFromDocument(model);
+
+      // 4 - Get converter
+      ISpeckleConverter converter = Converters.GetConverter(RhinoDoc.ActiveDoc, "Rhino7");
+
+      // 5 - Convert objects
+      Base commitObject = ConvertObjects(rhinoObjects, converter, modelCardId, cts);
+      
+      if (cts.IsCancellationRequested) return;
+
+      // 6 - Get transports
+      var transports = new List<ITransport> { new ServerTransport(account, model.ProjectId) };
+
+      // 7 - Serialize and Send objects
+      string objectId = await Operations.Send(Parent, modelCardId, commitObject, cts.Token, transports).ConfigureAwait(true);
+      
+      if (cts.IsCancellationRequested) return;
+
+      // 8 - Create Version
+      Operations.CreateVersion(Parent, model, objectId, "Rhino");
     }
-    var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
-    
-    RhinoDoc doc = RhinoDoc.ActiveDoc;
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    
-    // Collect RhinoObjects from their guids
-    IEnumerable<RhinoObject> rhinoObjects = objectsIds.Select((id) => doc.Objects.FindId(new Guid(id)));
-
-    ConverterRhinoGh converter = new ConverterRhinoGh();
-    converter.SetContextDocument(doc);
-
-    var convertedObjects = new List<Base>();
-    int count = 0;
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+    catch (Exception e)
     {
-      if (cts.IsCancellationRequested)
+      if (e is OperationCanceledException)
       {
-        Progress.CancelSend(Parent, modelCardId, (double)count / objectsIds.Count);
-        return;
+        Progress.CancelSend(Parent, modelCardId);
       }
-      count++;
-      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
-      double progress = (double)count / objectsIds.Count;
-      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-      // Thread.Sleep(5000);
+      // TODO: Init here class to handle send errors to report UI, Seq etc..
+      throw;
     }
-
-    if (CancellationManager.IsCancellationRequested(modelCardId))
-    {
-      Progress.CancelSend(Parent, modelCardId);
-      return;
-    }
-    var commitObject = new Base();
-    commitObject["@elements"] = convertedObjects;
-
-    var projectId = model.ProjectId;
-    Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
-    var client = new Client(account);
-
-    var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
-
-    // Pass null progress value to let UI swooshing progress bar
-    Progress.SerializerProgressToBrowser(Parent, modelCardId, null);
-    var objectId = await Speckle.Core.Api.Operations.Send(
-      commitObject,
-      cts.Token,
-      transports,
-      // onProgressAction: dict => Update(dict), -> FIXME if possible, we don't know total number to get progress value
-      disposeTransports: true
-    ).ConfigureAwait(true);
-    // Pass 1 progress value to let UI finish progress
-    Progress.SerializerProgressToBrowser(Parent, modelCardId, 1);
-
-    Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { ModelCardId = modelCardId, AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Rhino" });
   }
 
   public void CancelSend(string modelCardId)
@@ -174,5 +144,34 @@ public class SendBinding : ISendBinding, ICancelable
     ChangedObjectIds = new HashSet<string>();
   }
 
-  
+  private Base ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+  {
+    var commitObject = new Base();
+    
+    var convertedObjects = new List<Base>();
+    int count = 0;
+    foreach (RhinoObject rhinoObject in rhinoObjects)
+    {
+      if (cts.IsCancellationRequested)
+      {
+        Progress.CancelSend(Parent, modelCardId, (double)count / rhinoObjects.Count);
+        break;
+      }
+      
+      count++;
+      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
+      double progress = (double)count / rhinoObjects.Count;
+      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+    }
+    
+    commitObject["@elements"] = convertedObjects;
+
+    return commitObject;
+  }
+
+  private List<RhinoObject> GetObjectsFromDocument(SenderModelCard model)
+  {
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    return objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).ToList();
+  }
 }

@@ -48,6 +48,11 @@ public class CancellationManager
   /// <returns> Initialized cancellation token source.</returns>
   public CancellationTokenSource InitCancellationTokenSource(string id)
   {
+    if (IsExist(id))
+    {
+      CancelOperation(id);
+    }
+    
     var cts = new CancellationTokenSource();
     operationsInProgress[id] = cts;
     return cts;
@@ -59,9 +64,12 @@ public class CancellationManager
   /// <param name="id">Id to cancel operation.</param>
   public void CancelOperation(string id)
   {
-    operationsInProgress[id].Cancel();
-    operationsInProgress[id].Dispose();
-    operationsInProgress.Remove(id);
+    if (operationsInProgress.TryGetValue(id, out CancellationTokenSource cts))
+    {
+      cts.Cancel();
+      cts.Dispose();
+      operationsInProgress.Remove(id);
+    }
   }
 
   /// <summary>
