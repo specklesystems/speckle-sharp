@@ -110,6 +110,7 @@ public class SendBinding : ISendBinding, ICancelable
       if (e is OperationCanceledException)
       {
         Progress.CancelSend(Parent, modelCardId);
+        return;
       }
       // TODO: Init here class to handle send errors to report UI, Seq etc..
       throw;

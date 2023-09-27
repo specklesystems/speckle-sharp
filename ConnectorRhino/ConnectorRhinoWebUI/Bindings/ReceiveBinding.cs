@@ -2,18 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using DUI3.Operations;
 using DUI3.Utils;
-using Objects.Converter.RhinoGh;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 using ICancelable = DUI3.Operations.ICancelable;
 
 namespace ConnectorRhinoWebUI.Bindings
@@ -23,7 +22,9 @@ namespace ConnectorRhinoWebUI.Bindings
     public string Name { get; set; } = "receiveBinding";
     public IBridge Parent { get; set; }
 
-    private DocumentModelStore _store;
+    private readonly DocumentModelStore _store;
+
+    private RhinoDoc Doc => RhinoDoc.ActiveDoc;
 
     public CancellationManager CancellationManager { get; } = new();
 
@@ -36,74 +37,51 @@ namespace ConnectorRhinoWebUI.Bindings
     {
       CancellationManager.CancelOperation(modelCardId);
     }
-
+    
     public async void Receive(string modelCardId, string versionId)
     {
-      if (CancellationManager.IsExist(modelCardId))
+      try
       {
-        CancellationManager.CancelOperation(modelCardId);
-      }
+        // 0 - Init cancellation token source -> Manager also cancel it if exist before
+        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
-
-      RhinoDoc doc = RhinoDoc.ActiveDoc;
-      // Pass null progress value to let UI swooshing progress bar
-      Progress.DeserializerProgressToBrowser(Parent, modelCardId, null);
-      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, cts.Token, modelCardId, versionId);
-      // Pass 1 progress value to let UI finish progress
-      Progress.DeserializerProgressToBrowser(Parent, modelCardId, 1);
+        // 1 - Get receiver card
+        ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
       
-      ConverterRhinoGh converter = new ConverterRhinoGh();
-      converter.SetContextDocument(doc);
+        // 2 - Get commit object from server
+        Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+        
+        if (cts.IsCancellationRequested) return;
+      
+        // 3 - Get converter
+        ISpeckleConverter converter = Converters.GetConverter(Doc, "Rhino7");
 
-      var errors = new List<string>();
+        // 4 - Traverse commit object
+        List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
+      
+        // 5 - Convert bases to Rhino preview objects
+        List<object> objectsToBake = ConvertPreviewObjects(objectsToConvert, converter, modelCardId, cts);
 
-      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+        // 6 - Bake preview objects to RhinoObject
+        BakeObjects(objectsToBake, Doc, modelCardId, cts);
 
-      var objectsToConvert = traverseFunction
-        .Traverse(commitObject)
-        .Select(
-          tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
-        .Reverse()
-        .ToList();
-
-      var objectsToBake = new List<object>();
-
-      int count = 0;
-      foreach (var objectToConvert in objectsToConvert)
+        // 7 - Redraw the view to render baked objects
+        Doc.Views.Redraw();
+      }
+      catch (Exception e)
       {
-        if (cts.IsCancellationRequested)
+        if (e is OperationCanceledException)
         {
-          Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
+          Progress.CancelReceive(Parent, modelCardId);
           return;
         }
-        count++;
-        double progress = (double)count / objectsToConvert.Count;
-        Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
-
-        var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
-        if (objectsToAddBakeList == null)
-        {
-          errors.Add(
-            string.Format(
-              "Object couldn't converted with id: {0}, type: {1}\n",
-              objectToConvert.id,
-              objectToConvert.speckle_type));
-        }
-
-        objectsToBake.AddRange(objectsToAddBakeList);
+        // TODO: Init here class to handle send errors to report UI, Seq etc..
+        throw;
       }
-
-      BakeObject(objectsToBake, converter, null, doc);
-
-      Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-
-      doc.Views.Redraw();
-
-      ReportToUI(errors, modelCardId, objectsToConvert.Count);
+      
     }
 
-    private void ReportToUI(List<string> errors, string modelCardId, int numberOfObject)
+    private void ReportToUi(IReadOnlyCollection<string> errors, string modelCardId, int numberOfObject, CancellationTokenSource cts)
     {
       if (errors.Any())
       {
@@ -119,12 +97,13 @@ namespace ConnectorRhinoWebUI.Bindings
       }
       else
       {
+        if (cts.IsCancellationRequested) return;
         Parent.SendToBrowser(
           ReceiveBindingEvents.Notify,
           new ToastInfo()
           {
             ModelCardId = modelCardId,
-            Text = string.Format("Speckle objects ({0}) are received successfully.", numberOfObject),
+            Text = $"Speckle objects ({numberOfObject}) are received successfully.",
             Level = "success",
             Timeout = 5000
           });
@@ -155,24 +134,21 @@ namespace ConnectorRhinoWebUI.Bindings
       return convertedList;
     }
 
-    private static bool IsPreviewIgnore(Base @object)
-    {
-      return @object.speckle_type.Contains("Instance") ||
-             @object.speckle_type.Contains("View") ||
-             @object.speckle_type.Contains("Collection");
-    }
-
-    private void BakeObject(
-      List<object> convertedItems,
-      ISpeckleConverter converter,
-      Layer layer,
+    private void BakeObjects(
+      List<object> previewObjects,
       RhinoDoc doc,
-      ApplicationObject parent = null
+      string modelCardId,
+      CancellationTokenSource cts
     )
     {
       int bakedCount = 0;
-      foreach (var convertedItem in convertedItems)
+      foreach (var convertedItem in previewObjects)
       {
+        if (cts.IsCancellationRequested)
+        {
+          Progress.CancelReceive(Parent, modelCardId, (double)bakedCount / previewObjects.Count);
+          return;
+        }
         switch (convertedItem)
         {
           case GeometryBase o:
@@ -183,7 +159,7 @@ namespace ConnectorRhinoWebUI.Bindings
             bakedCount++;
 
             break;
-          case RhinoObject o: // this was prbly a block instance, baked during conversion ???
+          case RhinoObject o: // this was probably a block instance, baked during conversion ???
 
             bakedCount++;
             break;
@@ -192,7 +168,41 @@ namespace ConnectorRhinoWebUI.Bindings
             bakedCount++;
             break;
         }
+        Progress.ReceiverProgressToBrowser(Parent, modelCardId, (double)bakedCount / previewObjects.Count);
       }
+      Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
+    }
+    
+    private List<object> ConvertPreviewObjects(List<Base> objectsToConvert, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+    {
+      var objectsToBake = new List<object>();
+      var errors = new List<string>();
+      int count = 0;
+      foreach (var objToConvert in objectsToConvert)
+      {
+        if (cts.IsCancellationRequested)
+        {
+          Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
+          break;
+        }
+
+        count++;
+        double progress = (double)count / objectsToConvert.Count;
+        Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+
+        var objectsToAddBakeList = ConvertObject(objToConvert, converter);
+        if (objectsToAddBakeList == null)
+        {
+          errors.Add($"Object couldn't converted with id: {objToConvert.id}, type: {objToConvert.speckle_type}\n");
+        }
+        else
+        {
+          objectsToBake.AddRange(objectsToAddBakeList);
+        }
+      }
+      
+      ReportToUi(errors, modelCardId, objectsToConvert.Count, cts);
+      return objectsToBake;
     }
   }
 }

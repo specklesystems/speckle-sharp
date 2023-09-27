@@ -96,6 +96,7 @@ namespace AutocadCivilDUI3Shared.Bindings
         if (e is OperationCanceledException)
         {
           Progress.CancelSend(Parent, modelCardId);
+          return;
         }
         // TODO: Init here class to handle send errors to report UI, Seq etc..
         throw;
