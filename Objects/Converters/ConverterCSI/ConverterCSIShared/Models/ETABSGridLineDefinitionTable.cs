@@ -14,7 +14,6 @@ namespace ConverterCSIShared.Models
   /// </summary>
   internal class ETABSGridLineDefinitionTable : DatabaseTableWrapper
   {
-    private int numberOfGridSystems;
     private const double gridTolerance = .001; // .05 degrees as radians
     public override string TableKey => "Grid Definitions - Grid Lines";
     public static string?[] DefaultRow => new string?[] { 
@@ -176,13 +175,42 @@ namespace ConverterCSIShared.Models
 
     private GridSystemRepresentation CreateGridSystem(double gridRotation)
     {
-      var systemName = $"SpeckleGridSystem{numberOfGridSystems++}";
+      var systemName = GetUniqueGridSystemName();
       _ = cSapModel.GridSys.SetGridSys(systemName, 0, 0, gridRotation * 180 / Math.PI);
 
       // when a grid system is created, it doesn't show up unless it has at least one grid in each direction
       AddCartesian(systemName, XGridLineType, "Default0", 0, "No");
       AddCartesian(systemName, YGridLineType, "Default1", 0, "No");
       return new GridSystemRepresentation(systemName, 0, 0, gridRotation);
+    }
+
+    /// <summary>
+    /// Returns a unique name to be used for a new speckle-created grid system.
+    /// </summary>
+    /// <returns></returns>
+    private string GetUniqueGridSystemName()
+    {
+      var numGridSys = 0;
+      var gridSysNames = Array.Empty<string>();
+      this.cSapModel.GridSys.GetNameList(ref numGridSys, ref gridSysNames);
+
+      var numberOfGridSystems = 0;
+      var gridSystemNamePrefix = "SpeckleGridSystem";
+      foreach (var gridSysName in gridSysNames)
+      {
+        // test if this grid system is one that we already created. If it is, then we need to adjust our 
+        // numberOfGridSystems so that if we do end up creating a new one, it doesn't override an existing one.
+        if (!gridSysName.StartsWith(gridSystemNamePrefix))
+        {
+          continue;
+        }
+
+        if (int.TryParse(gridSysName.Replace(gridSystemNamePrefix, ""), out int gridSysNum))
+        {
+          numberOfGridSystems = Math.Max(numberOfGridSystems, gridSysNum + 1);
+        }
+      }
+      return $"{gridSystemNamePrefix}{numberOfGridSystems}"; ;
     }
 
     private static Transform GetTransformFromGridSystem(GridSystemRepresentation sys)

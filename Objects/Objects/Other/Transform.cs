@@ -216,8 +216,7 @@ public class Transform : Base
 
   public Transform Inverse()
   {
-    var success = Matrix4x4.Invert(matrix, out var transformed);
-    if (success)
+    if (Matrix4x4.Invert(matrix, out var transformed))
     {
       return new Transform(transformed);
     }
