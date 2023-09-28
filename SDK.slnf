@@ -2,6 +2,8 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "ConnectorCore\\BatchUploader.OperationDriver\\BatchUploader.OperationDriver.csproj",
+      "ConnectorCore\\BatchUploader.Sdk\\BatchUploader.Sdk.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\IntegrationTests\\TestsIntegration.csproj",
       "Core\\Tests\\TestsUnit.csproj",
