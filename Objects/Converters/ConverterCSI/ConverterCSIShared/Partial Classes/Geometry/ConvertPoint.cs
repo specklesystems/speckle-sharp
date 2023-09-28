@@ -31,7 +31,7 @@ namespace Objects.Converter.CSI
     {
       if (speckleStructNode == null)
         return;
-    
+
       if (speckleStructNode.restraint != null)
       {
         var restraint = RestraintToNative(speckleStructNode.restraint);
@@ -47,7 +47,7 @@ namespace Objects.Converter.CSI
       if (!(speckleStructNode is CSINode csiNode))
         return;
 
-      if (csiNode.CSISpringProperty != null) 
+      if (csiNode.CSISpringProperty != null)
         Model.PointObj.SetSpringAssignment(csiNode.name, csiNode.CSISpringProperty.name);
 
       if (csiNode.DiaphragmAssignment != null)
@@ -55,22 +55,38 @@ namespace Objects.Converter.CSI
         switch (csiNode.DiaphragmOption)
         {
           case DiaphragmOption.Disconnect:
-            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.Disconnect, DiaphragmName: csiNode.DiaphragmAssignment);
+            Model.PointObj.SetDiaphragm(
+              csiNode.name,
+              eDiaphragmOption.Disconnect,
+              DiaphragmName: csiNode.DiaphragmAssignment
+            );
             break;
           case DiaphragmOption.DefinedDiaphragm:
-            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.DefinedDiaphragm, DiaphragmName: csiNode.DiaphragmAssignment);
+            Model.PointObj.SetDiaphragm(
+              csiNode.name,
+              eDiaphragmOption.DefinedDiaphragm,
+              DiaphragmName: csiNode.DiaphragmAssignment
+            );
             break;
           case DiaphragmOption.FromShellObject:
-            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.FromShellObject, DiaphragmName: csiNode.DiaphragmAssignment);
+            Model.PointObj.SetDiaphragm(
+              csiNode.name,
+              eDiaphragmOption.FromShellObject,
+              DiaphragmName: csiNode.DiaphragmAssignment
+            );
             break;
         }
       }
     }
+
     public void PointToNative(Node speckleStructNode, ref ApplicationObject appObj)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"node with name {speckleStructNode.name} already exists");
+        appObj.Update(
+          status: ApplicationObject.State.Skipped,
+          logItem: $"node with name {speckleStructNode.name} already exists"
+        );
         return;
       }
       var point = speckleStructNode.basePoint;
@@ -79,7 +95,7 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
         return;
       }
-      
+
       var success = CreatePoint(point, out string name);
       UpdatePointProperties(speckleStructNode, ref name);
 
@@ -88,21 +104,25 @@ namespace Objects.Converter.CSI
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
+
     public int CreatePoint(Point point, out string name)
     {
       name = null;
       var success = Model.PointObj.AddCartesian(
-       ScaleToNative(point.x, point.units),
-       ScaleToNative(point.y, point.units),
-       ScaleToNative(point.z, point.units),
-       ref name
+        ScaleToNative(point.x, point.units),
+        ScaleToNative(point.y, point.units),
+        ScaleToNative(point.z, point.units),
+        ref name
       );
       return success;
     }
+
     public CSINode PointToSpeckle(string name)
     {
       var speckleStructNode = new CSINode();
-      double x, y, z;
+      double x,
+        y,
+        z;
       x = y = z = 0;
       int v = Model.PointObj.GetCoordCartesian(name, ref x, ref y, ref z);
       speckleStructNode.basePoint = new Point();
@@ -122,7 +142,10 @@ namespace Objects.Converter.CSI
 
       string SpringProp = null;
       Model.PointObj.GetSpringAssignment(name, ref SpringProp);
-      if (SpringProp != null) { speckleStructNode.CSISpringProperty = SpringPropertyToSpeckle(SpringProp); }
+      if (SpringProp != null)
+      {
+        speckleStructNode.CSISpringProperty = SpringPropertyToSpeckle(SpringProp);
+      }
 
       string diaphragmAssignment = null;
       eDiaphragmOption eDiaphragmOption = eDiaphragmOption.Disconnect;
@@ -157,6 +180,5 @@ namespace Objects.Converter.CSI
 
       return speckleStructNode;
     }
-
   }
 }

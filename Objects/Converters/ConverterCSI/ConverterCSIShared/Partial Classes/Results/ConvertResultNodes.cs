@@ -67,8 +67,38 @@ namespace Objects.Converter.CSI
       int numberGroundResults = 0;
       string[] loadCasesGround = null;
 
-      Model.Results.JointReact(pointName, eItemTypeElm.Element, ref numberResults, ref obj, ref elm, ref loadCases, ref stepType, ref stepNum, ref F1, ref F2, ref F3, ref M1, ref M2, ref M3);
-      Model.Results.JointDispl(pointName, eItemTypeElm.Element, ref numberResults, ref obj, ref elm, ref loadCases, ref stepType, ref stepNum, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
+      Model.Results.JointReact(
+        pointName,
+        eItemTypeElm.Element,
+        ref numberResults,
+        ref obj,
+        ref elm,
+        ref loadCases,
+        ref stepType,
+        ref stepNum,
+        ref F1,
+        ref F2,
+        ref F3,
+        ref M1,
+        ref M2,
+        ref M3
+      );
+      Model.Results.JointDispl(
+        pointName,
+        eItemTypeElm.Element,
+        ref numberResults,
+        ref obj,
+        ref elm,
+        ref loadCases,
+        ref stepType,
+        ref stepNum,
+        ref U1,
+        ref U2,
+        ref U3,
+        ref R1,
+        ref R2,
+        ref R3
+      );
 
       foreach (int index in Enumerable.Range(0, numberResults))
       {
@@ -90,12 +120,40 @@ namespace Objects.Converter.CSI
 
         speckleResultNode.resultCase = LoadPatternCaseToSpeckle(loadCases[index]);
         resultSetNode.resultsNode.Add(speckleResultNode);
-
       }
 
-
-      var s = Model.Results.JointVelAbs(pointName, eItemTypeElm.Element, ref numberGroundResults, ref obj, ref elm, ref loadCasesGround, ref stepType, ref stepNum, ref U1Vel, ref U2Vel, ref U3Vel, ref R1Vel, ref R2Vel, ref R3Vel);
-      var z = Model.Results.JointAccAbs(pointName, eItemTypeElm.Element, ref numberGroundResults, ref obj, ref elm, ref loadCasesGround, ref stepType, ref stepNum, ref U1Acc, ref U2Acc, ref U3Acc, ref R1Acc, ref R2Acc, ref R3Acc);
+      var s = Model.Results.JointVelAbs(
+        pointName,
+        eItemTypeElm.Element,
+        ref numberGroundResults,
+        ref obj,
+        ref elm,
+        ref loadCasesGround,
+        ref stepType,
+        ref stepNum,
+        ref U1Vel,
+        ref U2Vel,
+        ref U3Vel,
+        ref R1Vel,
+        ref R2Vel,
+        ref R3Vel
+      );
+      var z = Model.Results.JointAccAbs(
+        pointName,
+        eItemTypeElm.Element,
+        ref numberGroundResults,
+        ref obj,
+        ref elm,
+        ref loadCasesGround,
+        ref stepType,
+        ref stepNum,
+        ref U1Acc,
+        ref U2Acc,
+        ref U3Acc,
+        ref R1Acc,
+        ref R2Acc,
+        ref R3Acc
+      );
       if (s == 0 && z == 0)
       {
         foreach (int index in Enumerable.Range(0, numberGroundResults))
@@ -118,7 +176,6 @@ namespace Objects.Converter.CSI
 
           speckleResultNode.resultCase = LoadPatternCaseToSpeckle(loadCases[index]);
           resultSetNode.resultsNode.Add(speckleResultNode);
-
         }
       }
 

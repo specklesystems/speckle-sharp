@@ -11,7 +11,11 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public ResultSet1D AllResultSet1dToSpeckle(List<string> frameNames, List<string> pierNames, List<string> spandrelNames)
+    public ResultSet1D AllResultSet1dToSpeckle(
+      List<string> frameNames,
+      List<string> pierNames,
+      List<string> spandrelNames
+    )
     {
       ResultSet1D frameResults = new ResultSet1D();
       ResultSet1D pierResults = new ResultSet1D();
@@ -53,7 +57,9 @@ namespace Objects.Converter.CSI
     {
       List<Result1D> results = new List<Result1D>();
 
-      var element = SpeckleModel.elements.Where(o => (string)o["name"] == elementName && o is Element1D).FirstOrDefault() as Element1D;
+      var element =
+        SpeckleModel.elements.Where(o => (string)o["name"] == elementName && o is Element1D).FirstOrDefault()
+        as Element1D;
 
       // if the element is null, then it was not part of the user's selection, so don't send its results
       if (element == null)
@@ -63,12 +69,40 @@ namespace Objects.Converter.CSI
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] obj, elm, loadCase, stepType;
+      string[] obj,
+        elm,
+        loadCase,
+        stepType;
       obj = elm = loadCase = stepType = new string[1];
-      double[] objSta, elmSta, stepNum, p, v2, v3, t, m2, m3;
+      double[] objSta,
+        elmSta,
+        stepNum,
+        p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3;
       objSta = elmSta = stepNum = p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      Model.Results.FrameForce(elementName, eItemTypeElm.ObjectElm, ref numberOfResults, ref obj, ref objSta, ref elm, ref elmSta, ref loadCase, ref stepType, ref stepNum, ref p, ref v2, ref v3, ref t, ref m2, ref m3);
+      Model.Results.FrameForce(
+        elementName,
+        eItemTypeElm.ObjectElm,
+        ref numberOfResults,
+        ref obj,
+        ref objSta,
+        ref elm,
+        ref elmSta,
+        ref loadCase,
+        ref stepType,
+        ref stepNum,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       // Value used to normalized output station of forces between 0 and 1
       var lengthOf1dElement = objSta.Max();
@@ -107,9 +141,6 @@ namespace Objects.Converter.CSI
       }
 
       return new ResultSet1D() { results1D = results };
-
-
-
     }
 
     public ResultSet1D PierResultSet1dToSpeckle(string elementName)
@@ -120,12 +151,32 @@ namespace Objects.Converter.CSI
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] storyName, pierName, loadCase, location;
+      string[] storyName,
+        pierName,
+        loadCase,
+        location;
       storyName = pierName = loadCase = location = new string[1];
-      double[] p, v2, v3, t, m2, m3;
+      double[] p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      Model.Results.PierForce(ref numberOfResults, ref storyName, ref pierName, ref loadCase, ref location, ref p, ref v2, ref v3, ref t, ref m2, ref m3);
+      Model.Results.PierForce(
+        ref numberOfResults,
+        ref storyName,
+        ref pierName,
+        ref loadCase,
+        ref location,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       for (int i = 0; i < numberOfResults; i++)
       {
@@ -165,9 +216,6 @@ namespace Objects.Converter.CSI
       }
 
       return new ResultSet1D() { results1D = results };
-
-
-
     }
 
     public ResultSet1D SpandrelResultSet1dToSpeckle(string elementName)
@@ -178,12 +226,32 @@ namespace Objects.Converter.CSI
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] storyName, spandrelName, loadCase, location;
+      string[] storyName,
+        spandrelName,
+        loadCase,
+        location;
       storyName = spandrelName = loadCase = location = new string[1];
-      double[] p, v2, v3, t, m2, m3;
+      double[] p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      Model.Results.SpandrelForce(ref numberOfResults, ref storyName, ref spandrelName, ref loadCase, ref location, ref p, ref v2, ref v3, ref t, ref m2, ref m3);
+      Model.Results.SpandrelForce(
+        ref numberOfResults,
+        ref storyName,
+        ref spandrelName,
+        ref loadCase,
+        ref location,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       for (int i = 0; i < numberOfResults; i++)
       {
@@ -223,9 +291,6 @@ namespace Objects.Converter.CSI
       }
 
       return new ResultSet1D() { results1D = results };
-
-
-
     }
 
     public void SetLoadCombinationsForResults()

@@ -59,7 +59,7 @@ GS::ErrCode GetZoneData::SerializeElementType (const API_Element& element,
 	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The base point of the room
-	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev;
+	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev + element.zone.roomFlThick;
 	{
 		Geometry::Polygon2DData polygon;
 		Utility::ConstructPoly2DDataFromElementMemo (memo, polygon);

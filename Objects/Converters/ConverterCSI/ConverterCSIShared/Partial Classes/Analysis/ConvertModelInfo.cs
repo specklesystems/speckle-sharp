@@ -15,22 +15,28 @@ namespace Objects.Converter.CSI
       Model.SetProjectInfo("Model Description", modelInfo.description);
       Model.SetProjectInfo("Project Number", modelInfo.projectNumber);
       Model.SetProjectInfo("Project Name", modelInfo.projectName);
-      if (modelInfo.settings != null) { modelSettingsToNative(modelInfo.settings); }
+      if (modelInfo.settings != null)
+      {
+        modelSettingsToNative(modelInfo.settings);
+      }
 
       return;
-
     }
+
     public ModelInfo ModelInfoToSpeckle()
     {
       var modelInfo = new ModelInfo();
       modelInfo.name = Model.GetModelFilename(false);
-      string programName, programVersion, programLevel;
+      string programName,
+        programVersion,
+        programLevel;
       programVersion = programName = programLevel = null;
       Model.GetProgramInfo(ref programName, ref programVersion, ref programLevel);
       modelInfo.application = programName;
       modelInfo.settings = modelSettingsToSpeckle();
       int numberItems = 0;
-      string[] items, data;
+      string[] items,
+        data;
       items = data = null;
       Model.GetProjectInfo(ref numberItems, ref items, ref data);
       if (numberItems != 0)
@@ -57,7 +63,6 @@ namespace Objects.Converter.CSI
         }
       }
       return modelInfo;
-
     }
   }
 }
