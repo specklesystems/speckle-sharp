@@ -1,122 +1,157 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Threading;
+using System.Threading;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
-using DUI3.Models;
 using DUI3.Utils;
-using Objects.Converter.Revit;
+using DUI3.Operations;
 using Revit.Async;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings
 {
-  public class ReceiveBinding : IBinding
+  public class ReceiveBinding : IBinding, ICancelable
   {
     public string Name { get; set; } = "receiveBinding";
     public IBridge Parent { get; set; }
-    private RevitDocumentStore _store;
-    private static UIApplication RevitApp;
+    private readonly RevitDocumentStore _store;
+    private static UIApplication _revitApp;
+    
+    private static Document Doc => UiDoc.Document;
+    private static UIDocument UiDoc => _revitApp.ActiveUIDocument;
+
+    public CancellationManager CancellationManager { get; } = new();
 
     public ReceiveBinding(RevitDocumentStore store)
     {
-      RevitApp = RevitAppProvider.RevitApp;
+      _revitApp = RevitAppProvider.RevitApp;
       _store = store;
     }
     
     public void CancelReceive(string modelCardId)
     {
-      throw new NotImplementedException();
+      CancellationManager.CancelOperation(modelCardId);
     }
 
     public async void Receive(string modelCardId, string versionId)
     {
-      Document doc = RevitApp.ActiveUIDocument.Document;
-      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, modelCardId, versionId);
-      
-      var (success, exception) = await RevitTask.RunAsync(app =>
+      try
       {
-        string transactionName = $"Baking model from {modelCardId}";
-        using var g = new TransactionGroup(doc, transactionName);
-        using var t = new Transaction(doc, transactionName);
+        // 0 - Init cancellation token source -> Manager also cancel it if exist before
+        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-        var converter = new ConverterRevit();
-        converter.SetContextDocument(doc);
-
-        var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
-
-        var objectsToConvert = traverseFunction
-          .Traverse(commitObject)
-          .Select(
-            tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
-          .Reverse()
-          .ToList();
-
-        g.Start();
-        t.Start();
-
-        try
+        // 1 - Get receiver card
+        ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      
+        // 2 - Get commit object from server
+        Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+      
+        if (cts.IsCancellationRequested) return;
+      
+        // 3 - Get converter
+        ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
+      
+        // 4 - Traverse commit object
+        List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
+      
+        // 5 - Bake objects
+        BakeObjects(objectsToConvert, converter, modelCardId, cts);
+      }
+      catch (Exception e)
+      {
+        if (e is OperationCanceledException)
         {
-          converter.SetContextDocument(t);
-
-          foreach (var objectToConvert in objectsToConvert)
-          {
-            try
-            {
-              var convertedObject = converter.ConvertToNative(objectToConvert);
-              RefreshView();
-            }
-            catch (Exception e)
-            {
-              Console.WriteLine(e);
-            }
-          }
-          
-          t.Commit();
-
-          if (t.GetStatus() == TransactionStatus.RolledBack)
-          {
-            int numberOfErrors = 0; // Previously get from errorEater
-            return (false, new SpeckleException($"The Revit API could not resolve {numberOfErrors} unique errors and {numberOfErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
-          }
-
-          g.Assimilate();
-          return (true, null);
+          Progress.CancelReceive(Parent, modelCardId);
+          return;
         }
-        catch (Exception ex)
+        throw;
+      }
+    }
+
+    private async void BakeObjects(List<Base> objectsToConvert, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+    {
+      (bool success, Exception exception) = await RevitTask.RunAsync(
+        app =>
         {
-          t.RollBack();
-          g.RollBack();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
-        }
-      }).ConfigureAwait(false);
+          string transactionName = $"Baking model from {modelCardId}";
+          using var g = new TransactionGroup(Doc, transactionName);
+          using var t = new Transaction(Doc, transactionName);
+          g.Start();
+          t.Start();
+
+          try
+          {
+            converter.SetContextDocument(t);
+            var errors = new List<string>();
+            int count = 0;
+            foreach (var objToConvert in objectsToConvert)
+            {
+              count++;
+              if (cts.IsCancellationRequested)
+              {
+                Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
+                break;
+              }
+              try
+              {
+                double progress = (double)count / objectsToConvert.Count;
+                Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+                var convertedObject = converter.ConvertToNative(objToConvert);
+                RefreshView();
+              }
+              catch (Exception e)
+              {
+                errors.Add($"Object couldn't converted with id: {objToConvert.id}, type: {objToConvert.speckle_type}\n");
+                Console.WriteLine(e);
+              }
+            }
+            Notification.ReportReceive(Parent, errors, modelCardId, objectsToConvert.Count);
+
+            t.Commit();
+
+            if (t.GetStatus() == TransactionStatus.RolledBack)
+            {
+              int numberOfErrors = 0; // Previously get from errorEater
+              return (false,
+                new SpeckleException(
+                  $"The Revit API could not resolve {numberOfErrors} unique errors and {numberOfErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
+            }
+
+            g.Assimilate();
+            return (true, null);
+          }
+          catch (Exception ex)
+          {
+            t.RollBack();
+            g.RollBack();
+            return
+              (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+          }
+        }).ConfigureAwait(false);
     }
     
     private void RefreshView()
     {
-      UIDocument doc = RevitApp.ActiveUIDocument;
-      //regenerate the document and then implement a hack to "refresh" the view
-      doc.Document.Regenerate();
+      // regenerate the document and then implement a hack to "refresh" the view
+      UiDoc.Document.Regenerate();
 
       // get the active ui view
-      var view = doc.ActiveGraphicalView ?? doc.ActiveView;
+      var view = UiDoc.ActiveGraphicalView ?? UiDoc.ActiveView;
       if (view is TableView)
       {
         return;
       }
 
-      var uiView = doc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+      var uiView = UiDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view
-      uiView.Zoom(1);
+      uiView?.Zoom(1);
     }
   }
 }

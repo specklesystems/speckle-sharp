@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Threading;
+using System.Threading;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Operations;
 using DUI3.Utils;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -16,30 +16,32 @@ using Speckle.Core.Transports;
 
 namespace AutocadCivilDUI3Shared.Bindings
 {
-  public class SendBinding : IBinding
+  public class SendBinding : ISendBinding, ICancelable
   {
     public string Name { get; set; } = "sendBinding";
 
     public IBridge Parent { get; set; }
-    
-    private AutocadDocumentModelStore _store;
-    
-    private HashSet<string> _changedObjectIds { get; set; } = new();
+
+    private readonly AutocadDocumentModelStore _store;
+
+    private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+
+    private HashSet<string> ChangedObjectIds { get; set; } = new();
 
     public SendBinding(AutocadDocumentModelStore store)
     {
       _store = store;
 
       Database db = HostApplicationServices.WorkingDatabase;
-      db.ObjectAppended += (sender, e) => OnChangeChangedObjectIds(e.DBObject);
-      db.ObjectErased += (sender, e) => OnChangeChangedObjectIds(e.DBObject);
-      db.ObjectModified += (sender, e) => OnChangeChangedObjectIds(e.DBObject);
+      db.ObjectAppended += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+      db.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+      db.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
     }
 
     private void OnChangeChangedObjectIds(DBObject dBObject)
     {
       if (!_store.IsDocumentInit) return;
-      _changedObjectIds.Add(dBObject.Id.ToString());
+      ChangedObjectIds.Add(dBObject.Id.ToString());
       RunExpirationChecks();
     }
 
@@ -52,87 +54,69 @@ namespace AutocadCivilDUI3Shared.Bindings
       };
     }
 
+    public CancellationManager CancellationManager { get; } = new();
+
     public async void Send(string modelCardId)
     {
-      SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-      List<string> objectsIds = model.SendFilter.GetObjectIds();
-
-      Document doc = Application.DocumentManager.MdiActiveDocument;
-      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.Utils.VersionedAppName);
-      converter.SetContextDocument(doc);
-
-      // TODO: Reject here deleted elements
-
-      var convertedObjects = new List<Base>();
-
-      using (DocumentLock acLckDoc = doc.LockDocument())
+      try
       {
-        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
-        {
-          var count = 0;
-          foreach (var autocadObjectHandle in objectsIds)
-          {
-            count++;
-            // get the db object from id
-            DBObject obj = null;
-            string layer = null;
-            string applicationId = null;
-            if (Utils.Utils.GetHandle(autocadObjectHandle, out Handle hn))
-            {
-              obj = hn.GetObject(tr, out string type, out layer, out applicationId);
-            }
-            else
-            {
-              continue;
-            }
+        // 0 - Init cancellation token source -> Manager also cancel it if exist before
+        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-            try
-            {
-              // convert obj
-              Base converted = converter.ConvertToSpeckle(obj);
-              if (converted == null)
-              {
-                // TODO: report!
-                continue;
-              }
+        // 1 - Get model
+        SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+      
+        // 2 - Check account exist
+        Account account = Accounts.GetAccount(model.AccountId);
+        
+        // 3 - Get elements to convert
+        List<DBObject> dbObjects = GetObjectsFromDocument(model);
+        
+        // 4 - Get converter
+        ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.Utils.VersionedAppName);
 
-              convertedObjects.Add(converted);
-              double progress = (double)count / objectsIds.Count;
-              Dispatcher.CurrentDispatcher.Invoke(() =>
-              {
-                Progress.SenderProgressToBrowser(Parent, modelCardId, progress);          
-              }, DispatcherPriority.Background);
-            }
-            catch (Exception)
-            {
-              continue;
-            }
-          }
-        }
+        // 5 - Convert objects
+        Base commitObject = ConvertObjects(dbObjects, converter, modelCardId, cts);
+
+        if (cts.IsCancellationRequested) return;
+
+        // 6 - Get transports
+        var transports = new List<ITransport> { new ServerTransport(account, model.ProjectId) };
+
+        // 7 - Serialize and Send objects
+        string objectId = await Operations.Send(Parent, modelCardId, commitObject, cts.Token, transports).ConfigureAwait(true);
+      
+        if (cts.IsCancellationRequested) return;
+
+        // 8 - Create Version
+        Operations.CreateVersion(Parent, model, objectId, "Autocad");
       }
+      catch (Exception e)
+      {
+        if (e is OperationCanceledException)
+        {
+          Progress.CancelSend(Parent, modelCardId);
+          return;
+        }
+        // TODO: Init here class to handle send errors to report UI, Seq etc..
+        throw;
+      }
+    }
 
-      var commitObject = new Base();
-      commitObject["@elements"] = convertedObjects;
+    public void CancelSend(string modelCardId)
+    {
+      CancellationManager.CancelOperation(modelCardId);
+    }
 
-      var projectId = model.ProjectId;
-      Account account = AccountManager.GetAccounts().Where(acc => acc.id == model.AccountId).FirstOrDefault();
-      var client = new Client(account);
-
-      var transports = new List<ITransport> { new ServerTransport(client.Account, projectId) };
-
-      var objectId = await Operations.Send(
-        commitObject,
-        transports,
-        disposeTransports: true
-      ).ConfigureAwait(true);
-
-      Parent.SendToBrowser(SendBindingEvents.CreateVersion, new CreateVersion() { AccountId = account.id, ModelId = model.ModelId, ProjectId = model.ProjectId, ObjectId = objectId, Message = "Test", SourceApplication = "Autocad" });
+    public void Highlight(string modelCardId)
+    {
+      throw new NotImplementedException();
     }
 
     private void RunExpirationChecks()
     {
       var senders = _store.GetSenders();
-      var objectIdsList = _changedObjectIds.ToArray();
+      var objectIdsList = ChangedObjectIds.ToArray();
       var expiredSenderIds = new List<string>();
 
       foreach (var sender in senders)
@@ -140,8 +124,69 @@ namespace AutocadCivilDUI3Shared.Bindings
         var isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
         if (isExpired) expiredSenderIds.Add(sender.Id);
       }
+
       Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
-      _changedObjectIds = new HashSet<string>();
+      ChangedObjectIds = new HashSet<string>();
+    }
+    
+    private Base ConvertObjects(List<DBObject> dbObjects, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+    {
+      var commitObject = new Base();
+    
+      var convertedObjects = new List<Base>();
+      int count = 0;
+      foreach (DBObject obj in dbObjects)
+      {
+        if (cts.IsCancellationRequested)
+        {
+          Progress.CancelSend(Parent, modelCardId, (double)count / dbObjects.Count);
+          break;
+        }
+        count++;
+
+        try
+        {
+          // convert obj
+          Base converted = converter.ConvertToSpeckle(obj);
+          if (converted == null)
+          {
+            // TODO: report!
+            continue;
+          }
+
+          convertedObjects.Add(converted);
+          double progress = (double)count / dbObjects.Count;
+          Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+        }
+        catch
+        {
+          // FIXME: Figure it out why it's happening!
+          continue;
+        }
+      }
+    
+      commitObject["@elements"] = convertedObjects;
+
+      return commitObject;
+    }
+
+    private List<DBObject> GetObjectsFromDocument(SenderModelCard model)
+    {
+      List<string> objectsIds = model.SendFilter.GetObjectIds();
+      var dbObjects = new List<DBObject>();
+      using DocumentLock acLckDoc = Doc.LockDocument();
+      using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
+      foreach (var autocadObjectHandle in objectsIds)
+      {
+        // TODO: also provide here cancel operation
+        // get the db object from id
+        if (!Utils.Utils.GetHandle(autocadObjectHandle, out Handle hn)) continue;
+        DBObject obj = hn.GetObject(tr, out string _, out string _, out string _);
+        dbObjects.Add(obj);
+      }
+      tr.Commit();
+
+      return dbObjects;
     }
   }
 }

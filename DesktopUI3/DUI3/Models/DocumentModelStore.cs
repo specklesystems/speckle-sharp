@@ -30,6 +30,10 @@ public abstract class DocumentModelStore : DiscriminatedObject
   public ModelCard GetModelById(string id)
   {
     var model = Models.First(model => model.Id == id);
+    if (model == null)
+    {
+      throw new ModelNotFoundException();
+    }
     return model;
   }
 

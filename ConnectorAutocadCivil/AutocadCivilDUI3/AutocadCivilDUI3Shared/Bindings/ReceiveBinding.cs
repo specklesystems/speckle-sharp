@@ -1,100 +1,111 @@
-using System.Linq;
-using System.Windows.Threading;
+using System;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 using System.Collections.Generic;
 using System.Collections;
+using System.Threading;
+using DUI3.Operations;
 using DUI3.Utils;
 
 namespace ConnectorAutocadDUI3.Bindings
 {
-  public class ReceiveBinding : IReceiveBinding
+  public class ReceiveBinding : IReceiveBinding, ICancelable
   {
     public string Name { get; set; } = "receiveBinding";
     public IBridge Parent { get; set; }
     
     private DocumentModelStore _store;
+    
+    public CancellationManager CancellationManager { get; } = new();
+    
+    private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
 
     public ReceiveBinding(DocumentModelStore store)
     {
       _store = store;
     }
     
+    public void CancelReceive(string modelCardId)
+    {
+      CancellationManager.CancelOperation(modelCardId);
+    }
+    
     public async void Receive(string modelCardId, string versionId)
     {
-      Base commitObject = await DUI3.Utils.Receive.GetCommitBase(Parent, _store, modelCardId, versionId);
-
-      Document doc = Application.DocumentManager.MdiActiveDocument;
-
-      using (DocumentLock l = doc.LockDocument())
+      try
       {
-        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
-        {
-          var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
-          converter.SetContextDocument(doc);
+        // 0 - Init cancellation token source -> Manager also cancel it if exist before
+        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-          var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+        // 1 - Get receiver card
+        ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      
+        // 2 - Get commit object from server
+        Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+      
+        if (cts.IsCancellationRequested) return;
+      
+        // 3 - Get converter
+        ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.VersionedAppName);
+      
+        // 4 - Traverse commit object
+        List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
 
-          var objectsToConvert = traverseFunction
-            .Traverse(commitObject)
-            .Select(
-              tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
-            .Reverse()
-            .ToList();
-
-          var objectsToBake = new List<object>();
-
-          int count = 0;
-          foreach (var objectToConvert in objectsToConvert)
-          {
-            count++;
-            double progress = (double)count / objectsToConvert.Count;
-            Dispatcher.CurrentDispatcher.Invoke(() =>
-            {
-              Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
-            }, DispatcherPriority.Background);
-
-            var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
-            objectsToBake.AddRange(objectsToAddBakeList);
-          }
-          BakeObject(objectsToBake, converter, tr, null, null);
-
-          Dispatcher.CurrentDispatcher.Invoke(() =>
-          {
-            Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-          }, DispatcherPriority.Background);
-
-          tr.Commit();
-        }
+        // 5 - Convert and Bake objects
+        ConvertObjects(objectsToConvert, converter, modelCardId, cts);
       }
-
-      Dispatcher.CurrentDispatcher.Invoke(() =>
+      catch (Exception e)
       {
-        
-      }, DispatcherPriority.Background);
-      
-      
+        if (e is OperationCanceledException)
+        {
+          Progress.CancelReceive(Parent, modelCardId);
+          return;
+        }
+        // throw;
+      }
     }
 
-    private void BakeObject(
+    private void ConvertObjects(List<Base> objectsToConvert, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+    {
+      using DocumentLock l = Doc.LockDocument();
+      using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
+      var objectsToBake = new List<object>();
+
+      int count = 0;
+      foreach (var objectToConvert in objectsToConvert)
+      {
+        if (cts.IsCancellationRequested)
+        {
+          Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
+          tr.Commit();
+          return;
+        }
+        count++;
+        double progress = (double)count / objectsToConvert.Count;
+        Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+
+        var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
+        objectsToBake.AddRange(objectsToAddBakeList);
+      }
+      BakeObjects(objectsToBake, tr);
+
+      Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
+
+      tr.Commit();
+    }
+
+    private void BakeObjects(
       List<object> convertedItems,
-      ISpeckleConverter converter,
-      Transaction tr,
-      string layer,
-      List<ObjectId> toRemove,
-      ApplicationObject parent = null
+      Transaction tr
     )
     {
-      int bakedCount = 0;
+      // int bakedCount = 0;
       foreach (var convertedItem in convertedItems)
       {
         switch (convertedItem)
@@ -104,7 +115,7 @@ namespace ConnectorAutocadDUI3.Bindings
             if (res.IsValid)
             {
               tr.TransactionManager.QueueForGraphicsFlush();
-              bakedCount++;
+              // bakedCount++;
             }
             else
             {
@@ -116,8 +127,6 @@ namespace ConnectorAutocadDUI3.Bindings
         }
       }
     }
-
-
 
     // conversion and bake
     private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
@@ -140,11 +149,6 @@ namespace ConnectorAutocadDUI3.Bindings
       FlattenConvertedObject(converted);
 
       return convertedList;
-    }
-
-    public void CancelReceive(string modelCardId)
-    {
-      throw new System.NotImplementedException();
     }
   }
 }
