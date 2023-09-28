@@ -1,6 +1,6 @@
-﻿namespace DUI3.Models;
+﻿namespace DUI3.Models.Card;
 
-public class ModelProgress
+public class ModelCardProgress
 {
   public string Id { get; set; }
   public string Status { get; set; }

@@ -72,6 +72,7 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public void RemoveModel(ModelCard model)
   {
-    throw new System.NotImplementedException();
+    var index = _store.Models.FindIndex(m => m.Id == model.Id);
+    _store.Models.RemoveAt(index);
   }
 }

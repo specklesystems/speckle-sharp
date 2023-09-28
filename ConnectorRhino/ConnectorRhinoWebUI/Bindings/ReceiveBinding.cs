@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using DUI3;
 using DUI3.Bindings;
@@ -79,35 +78,6 @@ namespace ConnectorRhinoWebUI.Bindings
         throw;
       }
       
-    }
-
-    private void ReportToUi(IReadOnlyCollection<string> errors, string modelCardId, int numberOfObject, CancellationTokenSource cts)
-    {
-      if (errors.Any())
-      {
-        Parent.SendToBrowser(
-          ReceiveBindingEvents.Notify,
-          new ToastInfo()
-          {
-            ModelCardId = modelCardId,
-            Text = string.Join("\n", errors),
-            Level = "warning",
-            Timeout = 5000
-          });
-      }
-      else
-      {
-        if (cts.IsCancellationRequested) return;
-        Parent.SendToBrowser(
-          ReceiveBindingEvents.Notify,
-          new ToastInfo()
-          {
-            ModelCardId = modelCardId,
-            Text = $"Speckle objects ({numberOfObject}) are received successfully.",
-            Level = "success",
-            Timeout = 5000
-          });
-      }
     }
 
     // conversion and bake
@@ -201,7 +171,7 @@ namespace ConnectorRhinoWebUI.Bindings
         }
       }
       
-      ReportToUi(errors, modelCardId, objectsToConvert.Count, cts);
+      Notification.ReportReceive(Parent, errors, modelCardId, objectsToConvert.Count);
       return objectsToBake;
     }
   }

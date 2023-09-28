@@ -1,5 +1,6 @@
 using DUI3.Bindings;
 using DUI3.Models;
+using DUI3.Models.Card;
 
 namespace DUI3.Utils;
 
@@ -7,7 +8,7 @@ public static class Progress
 {
   public static void CancelSend(IBridge bridge, string modelCardId, double? progress = null)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = "Cancelled",
@@ -18,7 +19,7 @@ public static class Progress
   
   public static void CancelReceive(IBridge bridge, string modelCardId, double? progress = null)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = "Cancelled",
@@ -34,7 +35,7 @@ public static class Progress
   /// <param name="progress"></param>
   public static void DeserializerProgressToBrowser(IBridge bridge, string modelCardId, double? progress)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = progress == 1 ? "Receiving Completed" : "Receiving from Server..",
@@ -50,7 +51,7 @@ public static class Progress
   /// <param name="progress"></param>
   public static void SerializerProgressToBrowser(IBridge bridge, string modelCardId, double? progress)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = progress == 1 ? "Completed" : "Sending to Server..",
@@ -66,7 +67,7 @@ public static class Progress
   /// <param name="progress"></param>
   public static void SenderProgressToBrowser(IBridge bridge, string modelCardId, double progress)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = progress == 1 ? "Converting Completed" : "Converting",
@@ -82,7 +83,7 @@ public static class Progress
   /// <param name="progress"></param>
   public static void ReceiverProgressToBrowser(IBridge bridge, string modelCardId, double progress)
   {
-    var args = new ModelProgress()
+    var args = new ModelCardProgress()
     {
       Id = modelCardId,
       Status = progress == 1 ? "Completed" : "Constructing",

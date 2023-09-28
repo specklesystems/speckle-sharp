@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DUI3.Bindings;
-using DUI3.Models;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
