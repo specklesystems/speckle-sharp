@@ -11,6 +11,7 @@ namespace Objects.Converter.CSI
     {
       throw new Exception("Wall properties are not currently supported on receive");
     }
+
     public CSIProperty2D WallPropertyToSpeckle(string property)
     {
       eWallPropType wallPropType = eWallPropType.Specified;
@@ -22,7 +23,16 @@ namespace Objects.Converter.CSI
       string GUID = "";
       var specklePropery2DWall = new CSIProperty2D();
       specklePropery2DWall.type = Structural.PropertyType2D.Wall;
-      Model.PropArea.GetWall(property, ref wallPropType, ref shellType, ref matProp, ref thickness, ref color, ref notes, ref GUID);
+      Model.PropArea.GetWall(
+        property,
+        ref wallPropType,
+        ref shellType,
+        ref matProp,
+        ref thickness,
+        ref color,
+        ref notes,
+        ref GUID
+      );
       var speckleShellType = ConvertShellType(shellType);
       specklePropery2DWall.shellType = speckleShellType;
       setProperties(specklePropery2DWall, matProp, thickness, property);

@@ -34,19 +34,19 @@ namespace Objects.Converter.Revit
     public DB.Level ConvertLevelToRevit(XYZ point, out ApplicationObject.State state, out double elevationOffset)
     {
       var elevation = ElevationFromPoint(point);
-      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), out state, out elevationOffset);
+      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), false, out state, out elevationOffset);
     }
 
     public DB.Level ConvertLevelToRevit(Curve curve, out ApplicationObject.State state, out double elevationOffset)
     {
       var elevation = ElevationFromCurve(curve);
-      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), out state, out elevationOffset);
+      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), false, out state, out elevationOffset);
     }
 
     public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, out ApplicationObject.State state)
     {
       double elevationOffset = 0.0;
-      return ConvertLevelToRevit(speckleLevel, out state, out elevationOffset);
+      return ConvertLevelToRevit(speckleLevel, true, out state, out elevationOffset);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleLevel"></param>
     /// <returns></returns>
-    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, out ApplicationObject.State state, out double elevationOffset)
+    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, bool exactElevation, out ApplicationObject.State state, out double elevationOffset)
     {
       state = ApplicationObject.State.Unknown;
       elevationOffset = 0.0;
@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
         state = ApplicationObject.State.Updated;
       }
       //match by elevation
-      else if (elevationMatch && (GetExistingLevelByClosestElevation(docLevels, speckleLevelElevation, out elevationOffset) is DB.Level existingLevelWithClosestElevation))
+      else if (!exactElevation && elevationMatch && (GetExistingLevelByClosestElevation(docLevels, speckleLevelElevation, out elevationOffset) is DB.Level existingLevelWithClosestElevation))
       {
         revitLevel = existingLevelWithClosestElevation;
         state = ApplicationObject.State.Skipped; // state should be eliminated

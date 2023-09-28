@@ -128,7 +128,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
             // Get last commit from the branch
             var b = ApiClient
-              .BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1)
+              .BranchGet(StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1, BaseWorker.CancellationToken)
               .Result;
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
@@ -740,7 +740,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       case StreamWrapperType.Commit:
         try
         {
-          myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
+          myCommit = await client.CommitGet(InputWrapper.StreamId, InputWrapper.CommitId, CancellationToken);
           if (myCommit == null)
             OnFail(
               GH_RuntimeMessageLevel.Warning,
@@ -758,7 +758,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         return myCommit;
       case StreamWrapperType.Stream:
       case StreamWrapperType.Undefined:
-        var mb = await client.BranchGet(CancellationToken, InputWrapper.StreamId, "main", 1);
+        var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1, CancellationToken);
         if (mb.commits.totalCount == 0)
           // TODO: Warn that we're not pulling from the main branch
           OnFail(
@@ -768,7 +768,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         else
           return mb.commits.items[0];
 
-        var cms = await client.StreamGetCommits(CancellationToken, InputWrapper.StreamId, 1);
+        var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1, CancellationToken);
         if (cms.Count == 0)
         {
           OnFail(GH_RuntimeMessageLevel.Warning, "This stream has no commits.");
@@ -777,7 +777,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
 
         return cms[0];
       case StreamWrapperType.Branch:
-        var br = await client.BranchGet(CancellationToken, InputWrapper.StreamId, InputWrapper.BranchName, 1);
+        var br = await client.BranchGet(InputWrapper.StreamId, InputWrapper.BranchName, 1, CancellationToken);
         if (br == null)
         {
           OnFail(

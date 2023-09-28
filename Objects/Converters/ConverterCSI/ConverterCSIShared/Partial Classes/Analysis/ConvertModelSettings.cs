@@ -11,8 +11,12 @@ namespace Objects.Converter.CSI
     {
       Model.DesignConcrete.SetCode(modelSettings.concreteCode);
       Model.DesignSteel.SetCode(modelSettings.steelCode);
-      if (modelSettings.modelUnits != null) { UnitsToNative(modelSettings.modelUnits); }
+      if (modelSettings.modelUnits != null)
+      {
+        UnitsToNative(modelSettings.modelUnits);
+      }
     }
+
     public ModelSettings modelSettingsToSpeckle()
     {
       var speckleModelSettings = new ModelSettings();
@@ -25,6 +29,5 @@ namespace Objects.Converter.CSI
       speckleModelSettings.steelCode = steelCode;
       return speckleModelSettings;
     }
-
   }
 }

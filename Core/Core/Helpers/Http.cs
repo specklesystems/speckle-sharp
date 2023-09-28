@@ -181,7 +181,9 @@ public static class Http
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    var client = new HttpClient(handler ?? new SpeckleHttpClientHandler());
+    handler ??= new SpeckleHttpClientHandler();
+    handler.CheckCertificateRevocationList = true;
+    var client = new HttpClient(handler);
     client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
     return client;
   }

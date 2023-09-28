@@ -58,11 +58,11 @@ public class StreamSelectorViewModel : ReactiveObject
 
         //NO SEARCH
         if (string.IsNullOrEmpty(SearchQuery))
-          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
+          result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
         //SEARCH
         else
           result = await account.Client
-            .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+            .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
             .ConfigureAwait(true);
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
