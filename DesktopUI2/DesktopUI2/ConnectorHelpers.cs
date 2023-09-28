@@ -74,8 +74,6 @@ public static class ConnectorHelpers
     return commitObject;
   }
 
-
-
   /// <param name="cancellationToken">Progress cancellation token</param>
   /// <param name="state">Current Stream card state (does not mutate)</param>
   /// <returns>Requested Commit</returns>
@@ -91,13 +89,13 @@ public static class ConnectorHelpers
       if (state.CommitId == LatestCommitString) //if "latest", always make sure we get the latest commit
       {
         var res = await state.Client
-          .BranchGet(cancellationToken, state.StreamId, state.BranchName, 1)
+          .BranchGet(state.StreamId, state.BranchName, 1, cancellationToken)
           .ConfigureAwait(false);
         commit = res.commits.items.First();
       }
       else
       {
-        var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId).ConfigureAwait(false);
+        var res = await state.Client.CommitGet(state.StreamId, state.CommitId, cancellationToken).ConfigureAwait(false);
         commit = res;
       }
     }
@@ -118,7 +116,7 @@ public static class ConnectorHelpers
   }
 
   /// <summary>
-  /// Try catch wrapper around <see cref="Client.CommitReceived(CancellationToken, CommitReceivedInput)"/> with logging
+  /// Try catch wrapper around <see cref="Client.CommitReceived(CommitReceivedInput, CancellationToken)"/> with logging
   /// </summary>
   public static async Task TryCommitReceived(
     Client client,
@@ -128,7 +126,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      await client.CommitReceived(cancellationToken, commitReceivedInput).ConfigureAwait(false);
+      await client.CommitReceived(commitReceivedInput, cancellationToken).ConfigureAwait(false);
     }
     catch (SpeckleException ex)
     {
@@ -159,9 +157,9 @@ public static class ConnectorHelpers
 
   //TODO: should this just be how `CommitCreate` id implemented?
   /// <summary>
-  /// Wrapper around <see cref="Client.CommitCreate(CancellationToken, CommitCreateInput)"/> with Error handling.
+  /// Wrapper around <see cref="Client.CommitCreate(CommitCreateInput, CancellationToken)"/> with Error handling.
   /// </summary>
-  /// <inheritdoc cref="Client.CommitCreate(CancellationToken, CommitCreateInput)"/>
+  /// <inheritdoc cref="Client.CommitCreate(CommitCreateInput, CancellationToken)"/>
   /// <exception cref="OperationCanceledException"></exception>
   /// <exception cref="SpeckleException">All other exceptions</exception>
   public static async Task<string> CreateCommit(
@@ -172,7 +170,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      var commitId = await client.CommitCreate(cancellationToken, commitInput).ConfigureAwait(false);
+      var commitId = await client.CommitCreate(commitInput, cancellationToken).ConfigureAwait(false);
       return commitId;
     }
     catch (OperationCanceledException)
@@ -199,9 +197,9 @@ public static class ConnectorHelpers
     //Treat all operation errors as fatal
     throw new SpeckleException($"Failed to send objects to server - {error}", ex);
   }
-  
+
   #region deprecated members
-  
+
   [Obsolete("Use overload that has cancellation token last", true)]
   public static async Task TryCommitReceived(
     CancellationToken cancellationToken,
@@ -211,13 +209,13 @@ public static class ConnectorHelpers
   {
     await TryCommitReceived(client, commitReceivedInput, cancellationToken).ConfigureAwait(false);
   }
-  
+
   [Obsolete("Use overload that has cancellation token last", true)]
   public static async Task<Commit> GetCommitFromState(CancellationToken cancellationToken, StreamState state)
   {
     return await GetCommitFromState(state, cancellationToken).ConfigureAwait(false);
   }
-  
+
   [Obsolete("Use overload that has cancellation token last", true)]
   public static async Task TryCommitReceived(
     CancellationToken cancellationToken,
@@ -228,7 +226,7 @@ public static class ConnectorHelpers
   {
     await TryCommitReceived(state, commit, sourceApplication, cancellationToken).ConfigureAwait(false);
   }
-  
+
   [Obsolete("Use overload that has cancellation token last", true)]
   public static async Task<string> CreateCommit(
     CancellationToken cancellationToken,
