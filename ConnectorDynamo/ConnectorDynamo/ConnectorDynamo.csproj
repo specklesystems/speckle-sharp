@@ -7,7 +7,6 @@
         <AssemblyTitle>ConnectorDynamo</AssemblyTitle>
         <Product>ConnectorDynamo</Product>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
         <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
         <UseWpf>true</UseWpf>
         <EnableDefaultPageItems>false</EnableDefaultPageItems>
