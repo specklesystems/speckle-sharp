@@ -13,7 +13,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    private void DiaphragmToNative(CSIDiaphragm CSIDiaphragm, ApplicationObject appObj)
+    private string DiaphragmToNative(CSIDiaphragm CSIDiaphragm)
     {
       //TODO: test this bad boy, I'm not sure how it would create anything meaningful with just a name and a bool
       var success = Model.Diaphragm.SetDiaphragm(CSIDiaphragm.name, CSIDiaphragm.SemiRigid);
@@ -21,13 +21,7 @@ namespace Objects.Converter.CSI
       if (success != 0)
         throw new InvalidOperationException($"Failed to create/modify diaphragm {CSIDiaphragm.name}");
 
-      // if (success == 0)
-      //   appObj.Update(status: ApplicationObject.State.Created, createdId: CSIDiaphragm.name);
-      // else
-      //   appObj.Update(
-      //     status: ApplicationObject.State.Failed,
-      //     logItem: $"Unable to create diaphragm with id {CSIDiaphragm.id}"
-      //   );
+      return CSIDiaphragm.name;
     }
 
     CSIDiaphragm diaphragmToSpeckle(string name)

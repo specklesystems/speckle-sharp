@@ -13,18 +13,14 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void UpdateFrame(Element1D element1D, string name, ref ApplicationObject appObj)
+    public void UpdateFrame(Element1D element1D, string name, ApplicationObject appObj)
     {
       var end1node = element1D.end1Node?.basePoint ?? element1D.baseLine?.start;
       var end2node = element1D.end2Node?.basePoint ?? element1D.baseLine?.end;
 
       if (end1node == null || end2node == null)
       {
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: $"Frame {element1D.name} does not have valid endpoints"
-        );
-        return;
+        throw new ArgumentException($"Frame {element1D.name} does not have valid endpoints");
       }
 
       UpdateFrameLocation(name, end1node, end2node, appObj);
@@ -62,7 +58,7 @@ namespace Objects.Converter.CSI
       }
 
       if (success != 0)
-        throw new ConversionException("Fialed to change frame connectivity");
+        throw new ConversionException("Failed to change frame connectivity");
 
       string guid = null;
       Model.FrameObj.GetGUID(name, ref guid);
@@ -73,18 +69,19 @@ namespace Objects.Converter.CSI
     {
       if (element1D.type == ElementType1D.Link)
       {
-        LinkToNative((CSIElement1D)element1D, appObj);
+        string createdName = LinkToNative((CSIElement1D)element1D, appObj.Log);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: createdName);
         return;
       }
 
       if (ElementExistsWithApplicationId(element1D.applicationId, out string name))
       {
-        UpdateFrame(element1D, name, ref appObj);
+        UpdateFrame(element1D, name, appObj);
         return;
       }
 
       Line baseline = element1D.baseLine;
-      string[] properties = new string[] { };
+      string[] properties = Array.Empty<string>();
       int number = 0;
       Model.PropFrame.GetNameList(ref number, ref properties);
       if (!properties.Contains(element1D.property.name))

@@ -79,16 +79,14 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void PointToNative(Node speckleStructNode, ApplicationObject appObj)
+    public string PointToNative(Node speckleStructNode, IList<string>? notes)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))
       {
-        appObj.Update(
-          status: ApplicationObject.State.Skipped,
-          logItem: $"node with name {speckleStructNode.name} already exists"
-        );
-        return;
+        notes?.Add($"node with name {speckleStructNode.name} already exists");
+        return speckleStructNode.name;
       }
+
       var point = speckleStructNode.basePoint;
       if (point == null)
       {
@@ -100,6 +98,8 @@ namespace Objects.Converter.CSI
 
       if (success != 0)
         throw new InvalidOperationException("Failed create point");
+
+      return speckleStructNode.name;
     }
 
     public int CreatePoint(Point point, out string name)

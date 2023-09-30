@@ -11,7 +11,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void SpringPropertyToNative(CSISpringProperty springProperty, ApplicationObject appObj)
+    public string SpringPropertyToNative(CSISpringProperty springProperty)
     {
       double[] k = new double[6];
       k[0] = springProperty.stiffnessX;
@@ -20,7 +20,7 @@ namespace Objects.Converter.CSI
       k[3] = springProperty.stiffnessXX;
       k[4] = springProperty.stiffnessYY;
       k[5] = springProperty.stiffnessZZ;
-      
+
       switch (springProperty.springOption)
       {
         case SpringOption.Link:
@@ -34,7 +34,7 @@ namespace Objects.Converter.CSI
           );
           if (success != 0)
             throw new InvalidOperationException("Failed to ");
-          break;
+          return springProperty.name;
         default:
           //springOption = 2;
           throw new ConversionSkippedException(
@@ -43,7 +43,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty, ApplicationObject appObj)
+    public string LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty)
     {
       var linearOption1 = 0;
       var linearOption2 = 0;
@@ -86,9 +86,11 @@ namespace Objects.Converter.CSI
         throw new InvalidOperationException(
           $"Failed to create/modify named line spring property {linearSpringProperty.name}"
         );
+
+      return linearSpringProperty.name;
     }
 
-    public void AreaSpringPropertyToNative(CSIAreaSpring areaSpring, ApplicationObject appObj)
+    public string AreaSpringPropertyToNative(CSIAreaSpring areaSpring)
     {
       var linearOption1 = 0;
       switch (areaSpring.LinearOption3)
@@ -114,6 +116,8 @@ namespace Objects.Converter.CSI
 
       if (success != 0)
         throw new InvalidOperationException($"Failed to create/modify named area spring property {areaSpring.name}");
+
+      return areaSpring.name;
     }
 
     public CSISpringProperty SpringPropertyToSpeckle(string name)

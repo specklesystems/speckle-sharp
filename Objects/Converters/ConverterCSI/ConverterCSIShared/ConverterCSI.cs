@@ -148,31 +148,36 @@ namespace Objects.Converter.CSI
 
     public object ConvertToNative(Base @object)
     {
-      ApplicationObject appObj = new(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
-      List<string> notes = new();
+      List<string> createdIds = new();
+
+      ApplicationObject appObj =
+        new(@object.id, @object.speckle_type) { applicationId = @object.applicationId, CreatedIds = createdIds };
+
+      List<string> convertedNames;
+      string convertedName;
 
       switch (@object)
       {
         case CSIAreaSpring o:
-          AreaSpringPropertyToNative(o, appObj);
+          convertedName = AreaSpringPropertyToNative(o);
           break;
         case CSIDiaphragm o:
-          DiaphragmToNative(o, appObj);
+          convertedName = DiaphragmToNative(o);
           break;
         case CSILinearSpring o:
-          LinearSpringPropertyToNative(o, appObj);
+          convertedName = LinearSpringPropertyToNative(o);
           break;
         case CSILinkProperty o:
-          LinkPropertyToNative(o, appObj);
+          convertedName = LinkPropertyToNative(o);
           break;
         case CSIProperty2D o:
-          Property2DToNative(o);
+          convertedName = Property2DToNative(o);
           break;
         case CSISpringProperty o:
-          SpringPropertyToNative(o, appObj);
+          convertedName = SpringPropertyToNative(o);
           break;
         case CSIStories o:
-          StoriesToNative(o, appObj);
+          convertedNames = StoriesToNative(o, appObj);
           break;
         //case CSIWindLoadingFace o:
         //  LoadFaceToNative(o, ref appObj);
@@ -185,18 +190,16 @@ namespace Objects.Converter.CSI
           AreaToNative(o, appObj);
           break;
         case LoadBeam o:
-          LoadFrameToNative(o, appObj);
+          convertedNames = LoadFrameToNative(o, appObj.Log);
           break;
         case LoadFace o:
-          LoadFaceToNative(o, appObj);
+          convertedName = LoadFaceToNative(o, appObj.Log);
           break;
-        //case osg.node o:
-        //    return pointtonative(o);
         case Geometry.Line o:
-          LineToNative(o, appObj); // do we really want to assume any line is a frame object?
+          convertedName = LineToNative(o); // do we really want to assume any line is a frame object?
           break;
         case OSG.Node o:
-          PointToNative(o, appObj);
+          convertedName = PointToNative(o, appObj.Log);
           break;
         case Property1D o:
           Property1DToNative(o, appObj);
@@ -215,11 +218,6 @@ namespace Objects.Converter.CSI
         default:
           throw new ConversionSkippedException($"{@object.GetType()} is an unsupported type");
       }
-
-      // log
-      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? Report.ReportObjects[@object.id] : null;
-      if (reportObj != null && notes.Count > 0)
-        reportObj.Update(log: notes);
 
       return appObj;
     }

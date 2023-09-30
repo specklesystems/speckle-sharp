@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using System.Linq;
 using System.Text;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
@@ -15,12 +16,12 @@ namespace Objects.Converter.CSI
     Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
     int counterFrame = 0;
 
-    void LoadFrameToNative(LoadBeam loadBeam, ApplicationObject appObj)
+    List<string> LoadFrameToNative(LoadBeam loadBeam, IList<string>? notes)
     {
       int direction = 11;
       int myType = 1;
 
-      if (loadBeam.isProjected == true)
+      if (loadBeam.isProjected)
       {
         switch (loadBeam.direction)
         {
@@ -111,16 +112,21 @@ namespace Objects.Converter.CSI
         }
       }
 
+      List<string> createdElements = new(loadBeam.elements.Count);
+
       foreach (var el in loadBeam.elements)
       {
-        if (!(el is Element1D element))
+        if (el is not Element1D element)
+        {
+          notes?.Add($"Skipping converting sub-element {el} as is not an {nameof(Element1D)}"); //TODO: is the term "sub-element" correct here? or is there a better word to use?
           continue;
+        }
 
-        int? success = null;
+        int success;
         string name = element.name ?? element.id;
 
         if (loadBeam.loadType == BeamLoadType.Point)
-          Model.FrameObj.SetLoadDistributed(
+          success = Model.FrameObj.SetLoadDistributed(
             name,
             loadBeam.loadCase.name,
             myType,
@@ -131,7 +137,7 @@ namespace Objects.Converter.CSI
             loadBeam.values[1]
           );
         else
-          Model.FrameObj.SetLoadPoint(
+          success = Model.FrameObj.SetLoadPoint(
             name,
             loadBeam.loadCase.name,
             myType,
@@ -140,11 +146,14 @@ namespace Objects.Converter.CSI
             loadBeam.values[0]
           );
 
-        if (success == 0)
-          appObj.Update(status: ApplicationObject.State.Created, createdId: name);
-        else
-          appObj.Update(status: ApplicationObject.State.Failed);
+        if (success != 0)
+          notes?.Add($"Failed to convert sub-element {element.name}");
       }
+
+      if (!createdElements.Any())
+        throw new ConversionException($"Zero out of {loadBeam.elements.Count} elements converted successfully");
+
+      return createdElements;
     }
 
     Base LoadFrameToSpeckle(string name, int frameNumber)

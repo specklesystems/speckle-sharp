@@ -13,7 +13,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkPropertyToNative(CSILinkProperty linkProperty, ApplicationObject appObj)
+    public string LinkPropertyToNative(CSILinkProperty linkProperty)
     {
       double[] value = new double[4];
       value[0] = linkProperty.M2PdeltaEnd1;
@@ -38,6 +38,8 @@ namespace Objects.Converter.CSI
         throw new InvalidOperationException(
           $"Failed to assign Weight and Mass value to link property {linkProperty.name}"
         );
+
+      return linkProperty.name;
     }
 
     public CSILinkProperty LinkPropertyToSpeckle(string name)

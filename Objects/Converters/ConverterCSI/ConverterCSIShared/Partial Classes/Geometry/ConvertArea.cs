@@ -12,6 +12,7 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.Properties;
 using Objects.Geometry;
 using ConverterCSIShared.Extensions;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -185,11 +186,7 @@ namespace Objects.Converter.CSI
 
       if (GetAllAreaNames(Model).Contains(area.name))
       {
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: $"There is already a frame object named {area.name} in the model"
-        );
-        return;
+        throw new ConversionException("There is already a frame object named {area.name} in the model");
       }
 
       var propName = CreateOrGetProp(area.property, out bool isExactMatch);

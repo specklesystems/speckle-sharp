@@ -11,7 +11,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    private void FloorDeckPropertyToNative(CSIProperty2D property2D)
+    private string FloorDeckPropertyToNative(CSIProperty2D property2D)
     {
       var success = SetDeck(property2D);
       if (success != 0)
@@ -63,9 +63,11 @@ namespace Objects.Converter.CSI
 
       if (success != 0)
         throw new InvalidOperationException("Failed to set deck property");
+
+      return property2D.name;
     }
 
-    private void FloorSlabPropertyToNative(CSIProperty2D property2D)
+    private string FloorSlabPropertyToNative(CSIProperty2D property2D)
     {
       int success;
       switch (property2D.slabType)
@@ -127,20 +129,20 @@ namespace Objects.Converter.CSI
 
       if (success != 0)
         throw new InvalidOperationException("Failed to set slab property");
+
+      return property2D.name;
     }
 
     public string FloorPropertyToNative(CSIProperty2D property2D)
     {
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
       {
-        FloorDeckPropertyToNative(property2D);
+        return FloorDeckPropertyToNative(property2D);
       }
       else
       {
-        FloorSlabPropertyToNative(property2D);
+        return FloorSlabPropertyToNative(property2D);
       }
-
-      return property2D.name;
     }
 
     public eShellType shellType(CSIProperty2D property)
