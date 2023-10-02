@@ -22,6 +22,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utils\ApplicationIdManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\AutocadDocumentModelStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\EditorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Extends3dExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Objects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\TransactionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\Utils.cs" />
   </ItemGroup>
