@@ -221,7 +221,7 @@ public partial class ConverterRhinoGh
     }
     // get linetype
     ObjectAttributes atts = null;
-    if (gridline[@"displayStyle"] as DisplayStyle == null)
+    if (gridline["@displayStyle"] as DisplayStyle == null)
     {
       var linetypeIndex = Doc.Linetypes.Find("Dashed");
       if (linetypeIndex >= 0)
