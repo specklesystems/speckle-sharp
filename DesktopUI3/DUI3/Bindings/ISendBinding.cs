@@ -19,12 +19,6 @@ public interface ISendBinding : IBinding
   /// </summary>
   /// <param name="modelCardId"></param>
   public void CancelSend(string modelCardId);
-  
-  /// <summary>
-  /// Highlights the objects attached to this sender in the host application.
-  /// </summary>
-  /// <param name="modelCardId"></param>
-  public void Highlight(string modelCardId); 
 }
 
 public static class SendBindingEvents
