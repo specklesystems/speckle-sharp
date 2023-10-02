@@ -16,6 +16,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ETABSGridLineDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelInfo.cs" />
@@ -55,5 +57,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Results\ConvertResultSet2D.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ToNativeScalingService.cs" />
   </ItemGroup>
 </Project>
