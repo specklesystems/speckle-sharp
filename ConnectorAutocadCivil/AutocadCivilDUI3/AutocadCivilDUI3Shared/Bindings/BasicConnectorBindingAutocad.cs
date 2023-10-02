@@ -1,10 +1,19 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using Speckle.Core.Credentials;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
 namespace Speckle.ConnectorAutocadDUI3.Bindings;
 
@@ -15,8 +24,7 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
 
   private static Document Doc => Application.DocumentManager.MdiActiveDocument;
   private readonly AutocadDocumentModelStore _store;
-  private static string _previousDocName;
-  
+
   public BasicConnectorBindingAutocad(AutocadDocumentModelStore store)
   {
     _store = store;
@@ -77,5 +85,29 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
   {
     var index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
+  }
+
+  public void HighlightModel(string modelCardId)
+  {
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    List<DBObject> dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
+    Database database = Doc.Database;
+    Editor editor = Doc.Editor;
+    editor.SetImpliedSelection(Array.Empty<ObjectId>());
+    Transaction tr = database.TransactionManager.StartTransaction();
+
+    ObjectId[] objectIds = dbObjects.Select(dbObject => dbObject.Id).ToArray();
+    editor.SetImpliedSelection(objectIds);
+    editor.UpdateScreen();
+    
+    Parent.RunOnMainThread(
+      () =>
+      {
+        editor.Zoom(Extends3dExtensions.FromObjectIds(editor, objectIds));
+        // ZoomObjects(objectIds);
+      });
+
+    Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+    tr.Commit();
   }
 }
