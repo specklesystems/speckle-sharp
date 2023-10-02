@@ -47,6 +47,13 @@ namespace DUI3
     /// <param name="args"></param>
     /// <returns></returns>
     public void RunMethod(string methodName, string requestId, string args);
+    
+    /// <summary>
+    /// Run actions on main thread.
+    /// Some applications might need to run some operations on main thread as deferred actions.
+    /// </summary>
+    /// <param name="action"> Action to run on main thread.</param>
+    public void RunOnMainThread(Action action);
 
     /// <summary>
     /// Sends to the Frontend an event with an optional payload.

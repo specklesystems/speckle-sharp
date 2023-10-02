@@ -32,6 +32,7 @@ namespace DUI3
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
     private JsonSerializerSettings _serializerOptions = DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
     private ActionBlock<RunMethodArgs> _actionBlock;
+    private readonly SynchronizationContext _mainThreadContext;
 
     private struct RunMethodArgs
     {
@@ -66,6 +67,9 @@ namespace DUI3
       ExecuteScriptAsync = executeScriptAsync;
       ShowDevToolsAction = showDevToolsAction;
       
+      // Capture the main thread's SynchronizationContext
+      _mainThreadContext = SynchronizationContext.Current;
+      
       // Whenever the ui will call run method inside .net, it will post a message to this action block.
       // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
       _actionBlock = new ActionBlock<RunMethodArgs>(
@@ -95,6 +99,19 @@ namespace DUI3
     public void RunMethod(string methodName, string requestId, string args)
     {
       _actionBlock.Post(new RunMethodArgs { MethodName = methodName, RequestId = requestId, MethodArgs = args });
+    }
+
+    /// <summary>
+    /// Run actions on main thread.
+    /// </summary>
+    /// <param name="action"> Action to run on main thread.</param>
+    public void RunOnMainThread(Action action)
+    {
+      _mainThreadContext.Post(_ =>
+      {
+        // Execute the action on the main thread
+        action.Invoke();
+      }, null);
     }
     
     /// <summary>
