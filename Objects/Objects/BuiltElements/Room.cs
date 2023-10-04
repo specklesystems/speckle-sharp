@@ -49,6 +49,7 @@ namespace Objects.BuiltElements
     public string number { get; set; }
     virtual public Level level { get; set; }
     public Point basePoint { get; set; }
+    public double height { get; set; }
     public List<ICurve> voids { get; set; } = new();
     public ICurve outline { get; set; }
 
@@ -82,8 +83,6 @@ namespace Objects.BuiltElements.Archicad
       get => archicadLevel;
       set => archicadLevel = value as ArchicadLevel ?? null;
     }
-
-    public double height { get; set; }
 
     public ElementShape shape { get; set; }
   }
