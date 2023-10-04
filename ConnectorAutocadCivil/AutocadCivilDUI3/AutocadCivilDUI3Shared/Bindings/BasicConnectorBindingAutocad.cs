@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Threading;
+using AutocadCivilDUI3Shared.Extensions;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
-using Autodesk.AutoCAD.Geometry;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -104,7 +101,6 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       () =>
       {
         editor.Zoom(Extends3dExtensions.FromObjectIds(editor, objectIds));
-        // ZoomObjects(objectIds);
       });
 
     Autodesk.AutoCAD.Internal.Utils.FlushGraphics();

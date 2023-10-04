@@ -2,7 +2,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 
-namespace AutocadCivilDUI3Shared.Utils;
+namespace AutocadCivilDUI3Shared.Extensions;
 
 public static class Extends3dExtensions
 {
