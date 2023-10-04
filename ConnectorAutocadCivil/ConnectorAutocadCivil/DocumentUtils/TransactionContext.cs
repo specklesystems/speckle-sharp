@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Document = Autodesk.AutoCAD.ApplicationServices.Document;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using Autodesk.AdvanceSteel.DocumentManagement;
 #else
 using Autodesk.AutoCAD.DatabaseServices;
@@ -12,7 +12,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.ConnectorAutocadCivil.DocumentUtils
 {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
   public class TransactionContext : IDisposable
   {
     private bool DocumentLocked = false;

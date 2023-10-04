@@ -1,4 +1,4 @@
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using System.Collections.Generic;
 using Objects.BuiltElements.AdvanceSteel;
 using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;

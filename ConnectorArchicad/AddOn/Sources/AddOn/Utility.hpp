@@ -4,6 +4,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "ResourceIds.hpp"
+#include "Polygon2DData.h"
 
 #define UNUSED(x) (void)(x)
 
@@ -13,7 +14,8 @@ namespace Utility {
 // Element Type
 API_ElemTypeID GetElementType (const API_Elem_Head& header);
 API_ElemTypeID GetElementType (const API_Guid& guid);
-GS::ErrCode GetTypeNameFromElementType (const API_Elem_Head& header, GS::UniString& typeName);
+GS::ErrCode GetNonLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName);
+GS::ErrCode GetLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName);
 void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType);
 
 bool ElementExists (const API_Guid& guid);
@@ -84,6 +86,9 @@ GS::UniString ComposeLogMessage (const Int32 resourceIndex, Args... args)
 	RSGetIndString (&errMsgFromatString, ID_LOG_MESSAGES, resourceIndex, ACAPI_GetOwnResModule ());
 	return GS::UniString::Printf (errMsgFromatString, args...);
 }
+
+// Geometry helpers
+GSErrCode ConstructPoly2DDataFromElementMemo (const API_ElementMemo& memo, Geometry::Polygon2DData& polygon2DData);
 
 }
 

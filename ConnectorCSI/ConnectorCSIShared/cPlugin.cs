@@ -117,7 +117,7 @@ namespace SpeckleConnectorCSI
       }
       catch (Exception e)
       {
-        throw e;
+        throw;
         ISapPlugin.Finish(0);
         //return;
       }

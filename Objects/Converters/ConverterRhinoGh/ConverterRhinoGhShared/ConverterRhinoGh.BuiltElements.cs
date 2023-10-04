@@ -17,6 +17,14 @@ namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
+  // parameters
+  public Tuple<string, string> ParameterToNative(RV.Parameter parameter)
+  {
+    var name = parameter.name;
+    var val = parameter.value?.ToString() ?? string.Empty;
+    return new Tuple<string, string>(name, val);
+  }
+
   // views
   public View3D ViewToSpeckle(ViewInfo view)
   {
@@ -171,6 +179,31 @@ public partial class ConverterRhinoGh
     }
 
     return nativeObjects;
+  }
+
+  // level
+  public ApplicationObject LevelToNative(Level level)
+  {
+    var appObj = new ApplicationObject(level.id, level.speckle_type) { applicationId = level.applicationId };
+
+    var commitInfo = GetCommitInfo();
+    var bakedLevelName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {level.name}" : $"{level.name}";
+
+    var elevation = ScaleToNative(level.elevation, level.units);
+    var plane = new RH.Plane(new RH.Point3d(0, 0, elevation), RH.Vector3d.ZAxis);
+    var res = Doc.NamedConstructionPlanes.Add(bakedLevelName, plane);
+
+    if (res == -1)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add named construction plane to doc");
+    }
+    else
+    {
+      var namedCPlane = Doc.NamedConstructionPlanes[res];
+      appObj.Update(bakedLevelName, convertedItem: namedCPlane);
+    }
+
+    return appObj;
   }
 
   #region CIVIL

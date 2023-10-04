@@ -72,7 +72,7 @@ namespace Archicad.Converters
         column.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == column.applicationId)
             .model);
-        //column.baseLine = ...
+        column.baseLine = new Line(column.origoPos, column.origoPos + new Point (0, 0, column.height));
         columns.Add(column);
       }
 

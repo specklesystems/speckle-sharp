@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using Rhino.DocObjects;
 using RH = Rhino.Geometry;
 using Speckle.Core.Api;
@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Other;
 using Plane = Objects.Geometry.Plane;
 
 namespace Objects.Converter.RhinoGh;
@@ -84,11 +85,27 @@ public partial class ConverterRhinoGh
           break;
 
         case Floor o:
+          var floorBrep = (RH.Brep)@object.Geometry;
+          var extFloorCurves = GetSurfaceBrepEdges(floorBrep); // extract outline
+          var intFloorCurves = GetSurfaceBrepEdges(floorBrep, getInterior: true); // extract voids
+          o.outline = extFloorCurves.First();
+          o.voids = intFloorCurves;
+          break;
+
+        case Ceiling o:
+          var ceilingBrep = (RH.Brep)@object.Geometry;
+          var extCeilingCurves = GetSurfaceBrepEdges(ceilingBrep); // extract outline
+          var intCeilingCurves = GetSurfaceBrepEdges(ceilingBrep, getInterior: true); // extract voids
+          o.outline = extCeilingCurves.First();
+          o.voids = intCeilingCurves;
+          break;
+
+        case Roof o:
           var brep = (RH.Brep)@object.Geometry;
-          var extCurves = GetSurfaceBrepEdges(brep); // extract outline
-          var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
-          o.outline = extCurves.First();
-          o.voids = intCurves;
+          var extRoofCurves = GetSurfaceBrepEdges(brep); // extract outline
+          var intRoofCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
+          o.outline = extRoofCurves.First();
+          o.voids = intRoofCurves;
           break;
 
         case Beam o:
@@ -143,6 +160,12 @@ public partial class ConverterRhinoGh
             o.basePoint = plane.origin;
             var angle = RH.Vector3d.VectorAngle(RH.Vector3d.XAxis, VectorToNative(plane.xdir), RH.Plane.WorldXY);
             o.rotation = angle;
+          }
+          break;
+        case MappedBlockWrapper o:
+          if (@object is InstanceObject instance)
+          {
+            o.instance = BlockInstanceToSpeckle(instance);
           }
 
           break;

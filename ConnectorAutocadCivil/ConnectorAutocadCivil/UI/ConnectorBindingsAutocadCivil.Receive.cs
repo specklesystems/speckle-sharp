@@ -17,7 +17,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 

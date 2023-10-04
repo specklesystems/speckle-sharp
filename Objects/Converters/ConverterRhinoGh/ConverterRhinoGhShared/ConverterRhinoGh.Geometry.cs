@@ -724,22 +724,19 @@ public partial class ConverterRhinoGh
     }
     m.Faces.CullDegenerateFaces();
 
-    return m;
-  }
+#if RHINO7
+    // get receive mesh setting
+    var meshSetting = Settings.ContainsKey("receive-mesh")
+      ? Settings["receive-mesh"]
+      : string.Empty;
 
-  private bool HasInvalidMultiplicity(RH.NurbsCurve curve)
-  {
-    var knots = curve.Knots;
-    var degree = curve.Degree;
-
-    for (int i = degree; i < knots.Count - degree; i++)
+    if (meshSetting == "Merge Coplanar Faces")
     {
-      var mult = knots.KnotMultiplicity(i);
-      i += mult - 1;
-      if (mult > degree - 2)
-        return true;
+      m.MergeAllCoplanarFaces(Doc.ModelAbsoluteTolerance, Doc.ModelAngleToleranceRadians);
     }
-    return false;
+#endif
+
+    return m;
   }
 
   // Pointcloud
@@ -910,14 +907,18 @@ public partial class ConverterRhinoGh
   {
     var joinedMesh = new RH.Mesh();
 
-    var mySettings = RH.MeshingParameters.Default;
+    // get from settings
+    //Settings.TryGetValue("sendMeshSetting", out string meshSetting);
+
+    RH.MeshingParameters mySettings;
     switch (SelectedMeshSettings)
     {
-      case MeshSettings.Default:
-        mySettings = new RH.MeshingParameters(0.05, 0.05);
-        break;
       case MeshSettings.CurrentDoc:
         mySettings = RH.MeshingParameters.DocumentCurrentSetting(Doc);
+        break;
+      case MeshSettings.Default:
+      default:
+        mySettings = new RH.MeshingParameters(0.05, 0.05);
         break;
     }
 

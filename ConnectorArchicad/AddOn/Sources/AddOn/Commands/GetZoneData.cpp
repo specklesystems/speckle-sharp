@@ -1,4 +1,4 @@
-﻿#include "GetRoomData.hpp"
+#include "GetZoneData.hpp"
 #include <locale>
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
@@ -14,19 +14,19 @@ namespace AddOnCommands
 {
 
 
-GS::String GetRoomData::GetFieldName () const
+GS::String GetZoneData::GetFieldName () const
 {
 	return Zones;
 }
 
 
-API_ElemTypeID GetRoomData::GetElemTypeID () const
+API_ElemTypeID GetZoneData::GetElemTypeID () const
 {
 	return API_ZoneID;
 }
 
 
-GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
+GS::ErrCode GetZoneData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
@@ -59,31 +59,40 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The base point of the room
-	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev;
-	os.Add (Room::BasePoint, Objects::Point3D (0, 0, level));
+	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev + element.zone.roomFlThick;
+	{
+		Geometry::Polygon2DData polygon;
+		Utility::ConstructPoly2DDataFromElementMemo (memo, polygon);
+		
+		const Box2DData boundingBox = polygon.boundBox;
+		GS::Array<Sector> sectors;
+		bool res = Geometry::IntersectLineWithPolygon (polygon,
+													   boundingBox.GetMidPoint(),
+													   boundingBox.GetWidth() > boundingBox.GetHeight() ? Vector2D (1.0, 0.0) : Vector2D (0.0, 1.0),
+													   &sectors);
+		
+		Geometry::FreePolygon2DData (&polygon);
+		
+		Objects::Point3D basePoint (0, 0, level);
+		if (res && sectors.GetSize() > 0) {
+			Sector sector = sectors[sectors.GetSize() / 2];
+			basePoint = Objects::Point3D (sector.GetMidPoint ().GetX (), sector.GetMidPoint ().GetY (), level);
+		}
+				
+		os.Add (Room::BasePoint, Objects::Point3D (basePoint.x, basePoint.y, basePoint.z));
+	}
 	os.Add (ElementBase::Shape, Objects::ElementShape (element.zone.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
-
-	// double polyCoords [zone.poly.nCoords*3];
-	//
-	// for (Int32 point_index = 0, coord_index = 0; point_index < zone.poly.nCoords; ++point_index, coord_index+=3)
-	// {
-	//     const API_Coord coord = (*memo.coords)[point_index];
-	//     polyCoords[coord_index] = coord.x;
-	//     polyCoords[coord_index+1] = coord.y;
-	//     polyCoords[coord_index+2] = level;
-	// }
 
 	// Room Props
 	os.Add (Room::Height, element.zone.roomHeight);
 	os.Add (Room::Area, quantity.zone.area);
 	os.Add (Room::Volume, quantity.zone.volume);
 
-
 	return NoError;
 }
 
 
-GS::String GetRoomData::GetName () const
+GS::String GetZoneData::GetName () const
 {
 	return GetRoomDataCommandName;
 }

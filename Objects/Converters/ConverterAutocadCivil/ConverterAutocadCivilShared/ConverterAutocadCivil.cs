@@ -53,6 +53,8 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+#elif ADVANCESTEEL2024
+    public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2024);
 #endif
 
     public ConverterAutocadCivil()
@@ -215,7 +217,7 @@ namespace Objects.Converter.AutocadCivil
               @base = SurfaceToSpeckle(o);
               break;
 
-#elif ADVANCESTEEL2023
+#elif ADVANCESTEEL
 
             default:
               try
@@ -226,7 +228,7 @@ namespace Objects.Converter.AutocadCivil
               {
                 //Update report because AS object type
                 Report.UpdateReportObject(reportObj);
-                throw ex;
+                throw;
               }
 
               break;
@@ -428,6 +430,11 @@ namespace Objects.Converter.AutocadCivil
       return acadObj;
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects)
     {
       return objects.Select(x => ConvertToNative(x)).ToList();
@@ -481,10 +488,10 @@ namespace Objects.Converter.AutocadCivil
 
             default:
             {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
                 return CanConvertASToSpeckle(o);
 #else
-              return false;
+                return false;
 #endif
             }
           }
@@ -533,6 +540,11 @@ namespace Objects.Converter.AutocadCivil
         default:
           return false;
       }
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }

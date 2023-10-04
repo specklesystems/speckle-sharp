@@ -117,6 +117,61 @@ public enum RevitCategory
   Railings = 110
 }
 
+/// <summary>
+/// FamilyDocuments can only be assigned these categories
+/// This is a subset of the list above which was manually retrieved from Revit's UI
+/// </summary>
+public enum RevitFamilyCategory
+{
+  AudioVisualDevices = 9,
+  CableTrayFitting = 16,
+  Casework = 19,
+  Columns = 21,
+  CommunicationDevices = 22,
+  ConduitFitting = 23,
+  DataDevices = 30,
+  Doors = 32,
+  DuctAccessory = 33,
+  DuctFitting = 34,
+  ElectricalEquipment = 38,
+  ElectricalFixtures = 39,
+  Entourage = 40,
+  FireAlarmDevices = 42,
+  FireProtection = 43,
+  FoodServiceEquipment = 45,
+  Furniture = 46,
+  FurnitureSystems = 47,
+  GenericModel = 49,
+  Hardscape = 51,
+  LightingDevices = 52,
+  LightingFixtures = 53,
+  Mass = 55,
+  MechanicalEquipment = 56,
+  MedicalEquipment = 57,
+  NurseCallDevices = 58,
+  Parking = 59,
+  PipeAccessory = 68,
+  PipeFitting = 69,
+  Planting = 74,
+  PlumbingFixtures = 76,
+  Roads = 80,
+  SecurityDevices = 82,
+  Signage = 84,
+  Site = 85,
+  SpecialityEquipment = 86,
+  Sprinklers = 87,
+  StructuralFramingSystem = 89,
+  StructuralColumns = 90,
+  StructConnections = 91,
+  StructuralFoundation = 93,
+  StructuralFraming = 94,
+  StructuralStiffener = 97,
+  TemporaryStructure = 100,
+  VerticalCirculation = 103,
+  Windows = 109,
+  Railings = 110
+}
+
 public enum LocationLine
 {
   Centerline,
