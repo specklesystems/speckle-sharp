@@ -75,7 +75,7 @@ public partial class Client : IDisposable
 
   public string ApiToken => Account.token;
 
-  public System.Version ServerVersion { get; set; }
+  public System.Version? ServerVersion { get; set; }
 
   [JsonIgnore]
   public Account Account { get; set; }

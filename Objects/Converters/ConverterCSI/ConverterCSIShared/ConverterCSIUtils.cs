@@ -19,9 +19,10 @@ namespace Objects.Converter.CSI
     readonly string Send2DResults = "send2DResults";
 
     private string _modelUnits;
+
     public string ModelUnits()
     {
-      if (_modelUnits != null) 
+      if (_modelUnits != null)
         return _modelUnits;
 
       var units = Model.GetPresentUnits();
@@ -33,11 +34,13 @@ namespace Objects.Converter.CSI
       }
       return null;
     }
+
     public double ScaleToNative(double value, string units)
     {
       var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits());
       return value * f;
     }
+
     public static List<string> GetAllFrameNames(cSapModel model)
     {
       int num = 0;
@@ -47,7 +50,10 @@ namespace Objects.Converter.CSI
         model.FrameObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
 
     public static List<string> GetColumnNames(cSapModel model)
@@ -115,6 +121,7 @@ namespace Objects.Converter.CSI
 
       return braceNames;
     }
+
     public static List<string> GetAllAreaNames(cSapModel model)
     {
       int num = 0;
@@ -124,8 +131,12 @@ namespace Objects.Converter.CSI
         model.AreaObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllWallNames(cSapModel model)
     {
       var WallNames = GetAllAreaNames(model);
@@ -147,6 +158,7 @@ namespace Objects.Converter.CSI
 
       return WallName;
     }
+
     public static List<string> GetAllFloorNames(cSapModel model)
     {
       var FloorNames = GetAllAreaNames(model);
@@ -235,11 +247,13 @@ namespace Objects.Converter.CSI
       if (string.IsNullOrEmpty(csiAppId))
         return csiAppId;
 
-      var originalAppId = PreviousContextObjects.Where(o => o.CreatedIds.Contains(csiAppId)).FirstOrDefault()?.applicationId;
+      var originalAppId = PreviousContextObjects
+        .Where(o => o.CreatedIds.Contains(csiAppId))
+        .FirstOrDefault()
+        ?.applicationId;
 
       return originalAppId ?? csiAppId;
     }
-
 
     public ShellType ConvertShellType(eShellType eShellType)
     {
@@ -262,8 +276,6 @@ namespace Objects.Converter.CSI
         default:
           shellType = ShellType.Null;
           break;
-
-
       }
 
       return shellType;
@@ -278,7 +290,7 @@ namespace Objects.Converter.CSI
       int i = 0;
       foreach (char c in code)
       {
-        restraints[i] = c.Equals('F') ? true : false; // other assume default of released 
+        restraints[i] = c.Equals('F') ? true : false; // other assume default of released
         i++;
       }
 
@@ -304,13 +316,15 @@ namespace Objects.Converter.CSI
       {
         for (int i = 0; i < releases.Length; i++)
         {
-          if (releases[i]) code[i] = "F";
+          if (releases[i])
+            code[i] = "F";
         }
       }
 
       var restraint = new Restraint(string.Join("", code));
       return restraint;
     }
+
     public static List<string> GetAllPointNames(cSapModel model)
     {
       int num = 0;
@@ -320,8 +334,10 @@ namespace Objects.Converter.CSI
         model.PointObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
-
+      catch
+      {
+        return null;
+      }
     }
 
     public enum CSIConverterSupported
@@ -351,6 +367,7 @@ namespace Objects.Converter.CSI
       Spandrel,
       Pier,
       Grids,
+
       //Diaphragm,
       BeamLoading,
       ColumnLoading,
@@ -360,6 +377,7 @@ namespace Objects.Converter.CSI
       AreaLoading,
       WallLoading,
       NodeLoading,
+
       //ColumnResults,
       //BeamResults,
       //BraceResults,

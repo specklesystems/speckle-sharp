@@ -108,7 +108,7 @@ public class StreamCreateComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrap
 
     var client = new Client(account);
 
-    var streamId = client.StreamCreate(CancelToken, new StreamCreateInput { isPublic = false }).Result;
+    var streamId = client.StreamCreate(new StreamCreateInput { isPublic = false }, CancelToken).Result;
     var sw = new StreamWrapper(streamId, account.userInfo.id, account.serverInfo.url);
     sw.SetAccount(account);
 

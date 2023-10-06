@@ -16,14 +16,15 @@ namespace Objects.Converter.CSI
     Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
     int counterAreaLoadUniform = 0;
     int counterAreaLoadWind = 0;
+
     void LoadFaceToNative(LoadFace loadFace, ref ApplicationObject appObj)
     {
       foreach (Element2D element in loadFace.elements)
       {
         string elementName = null;
-        if (element.name != null) 
+        if (element.name != null)
           elementName = element.name;
-        else 
+        else
           elementName = element.id;
 
         if (loadFace.loadType != FaceLoadType.Constant) // TODO: support other load types
@@ -74,7 +75,15 @@ namespace Objects.Converter.CSI
       string[] csys = null;
       int[] dir = null;
       double[] value = null;
-      int s = Model.AreaObj.GetLoadUniform(name, ref numberItems, ref areaName, ref loadPat, ref csys, ref dir, ref value);
+      int s = Model.AreaObj.GetLoadUniform(
+        name,
+        ref numberItems,
+        ref areaName,
+        ref loadPat,
+        ref csys,
+        ref dir,
+        ref value
+      );
       if (s == 0)
       {
         foreach (int index in Enumerable.Range(0, numberItems))
@@ -84,7 +93,10 @@ namespace Objects.Converter.CSI
           var loadID = string.Concat(loadPat[index], csys[index], dir[index], value[index]);
           speckleLoadFace.applicationId = loadID;
           AreaStoring.TryGetValue(loadID, out var element2Dlist);
-          if (element2Dlist == null) { element2Dlist = new List<Base> { }; }
+          if (element2Dlist == null)
+          {
+            element2Dlist = new List<Base> { };
+          }
           element2Dlist.Add(element);
           AreaStoring[loadID] = element2Dlist;
 
@@ -138,7 +150,10 @@ namespace Objects.Converter.CSI
               speckleLoadFace.loadAxisType = Structural.LoadAxisType.Global;
               break;
           }
-          if (speckleLoadFace.values == null) { speckleLoadFace.values = new List<double> { }; }
+          if (speckleLoadFace.values == null)
+          {
+            speckleLoadFace.values = new List<double> { };
+          }
           speckleLoadFace.values.Add(value[index]);
           speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
           LoadStoringArea[loadID] = speckleLoadFace;
@@ -156,7 +171,6 @@ namespace Objects.Converter.CSI
           }
           counterAreaLoadUniform = 0;
         }
-
       }
 
       int[] myType = null;
@@ -171,10 +185,16 @@ namespace Objects.Converter.CSI
           var loadID = string.Concat(loadPat[index], myType[index], cp[index]);
           speckleLoadFace.applicationId = loadID;
           AreaStoring.TryGetValue(loadID, out var element2Dlist);
-          if (element2Dlist == null) { element2Dlist = new List<Base> { }; }
+          if (element2Dlist == null)
+          {
+            element2Dlist = new List<Base> { };
+          }
           element2Dlist.Add(element);
           AreaStoring[loadID] = element2Dlist;
-          if (speckleLoadFace.values == null) { speckleLoadFace.values = new List<double> { }; }
+          if (speckleLoadFace.values == null)
+          {
+            speckleLoadFace.values = new List<double> { };
+          }
           speckleLoadFace.Cp = cp[index];
           switch (myType[index])
           {
@@ -204,6 +224,5 @@ namespace Objects.Converter.CSI
       var speckleBase = new Base();
       return speckleBase;
     }
-
   }
 }

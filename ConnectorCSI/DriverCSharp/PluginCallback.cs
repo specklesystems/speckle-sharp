@@ -9,18 +9,12 @@ namespace DriverCSharp
 
     public int ErrorFlag
     {
-      get
-      {
-        return m_ErrorFlag;
-      }
+      get { return m_ErrorFlag; }
     }
 
     public bool Finished
     {
-      get
-      {
-        return m_IsFinished;
-      }
+      get { return m_IsFinished; }
     }
 
     public void Finish(int iVal)
