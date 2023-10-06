@@ -1,18 +1,21 @@
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 using Speckle.Newtonsoft.Json;
 
-namespace SpeckleAutomate;
+namespace Speckle.Automate.Sdk;
 
 public static class AutomationRunner
 {
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   public static async Task<AutomationContext> RunFunction<T>(
-      Func<AutomationContext, T, Task> automateFunction,
-      AutomationRunData automationRunData,
-      string speckleToken,
-      T inputs
-  ) where T : struct
+    Func<AutomationContext, T, Task> automateFunction,
+    AutomationRunData automationRunData,
+    string speckleToken,
+    T inputs
+  )
+    where T : struct
   {
     var automationContext = await AutomationContext.Initialize(automationRunData, speckleToken).ConfigureAwait(false);
 
@@ -23,52 +26,45 @@ public static class AutomationRunner
         automationContext.MarkRunSuccess(
           "WARNING: Automate assumed a success status, but it was not marked as so by the function."
         );
-
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
-      Console.WriteLine(e.ToString());
-      automationContext.MarkRunFailed(
-          "Function error. Check the automation run logs for details."
-          );
+      Console.WriteLine(ex.ToString());
+      automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
     }
     finally
     {
       await automationContext.ReportRunStatus().ConfigureAwait(false);
     }
     return automationContext;
-
-
   }
 
   public static async Task<AutomationContext> RunFunction(
-      Func<AutomationContext, Task> automateFunction,
-      AutomationRunData automationRunData,
-      string speckleToken
-      )
+    Func<AutomationContext, Task> automateFunction,
+    AutomationRunData automationRunData,
+    string speckleToken
+  )
   {
     return await RunFunction(
-      async (context, fake) => await automateFunction(context).ConfigureAwait(false),
-      automationRunData, 
-      speckleToken,
-      new Fake()
-      ).ConfigureAwait(false);
+        async (context, _) => await automateFunction(context).ConfigureAwait(false),
+        automationRunData,
+        speckleToken,
+        new Fake()
+      )
+      .ConfigureAwait(false);
   }
-  
-  private struct Fake{}
 
-  
+  private struct Fake { }
+
   public static async Task Main(string[] args, Func<AutomationContext, Task> automateFunction)
   {
-    await Main(
-      args,
-      async (AutomationContext context, Fake fake) => await automateFunction(context)
-        .ConfigureAwait(false)).ConfigureAwait(false);
+    await Main(args, async (AutomationContext context, Fake _) => await automateFunction(context).ConfigureAwait(false))
+      .ConfigureAwait(false);
   }
-  
-  public static async Task Main<T>(string[] args, Func<AutomationContext, T, Task> automateFunction) where T : struct
-  {
 
+  public static async Task Main<T>(string[] args, Func<AutomationContext, T, Task> automateFunction)
+    where T : struct
+  {
     var speckleProjectDataArg = new Argument<string>(
       name: "Speckle project data",
       description: "The values of the project / model / version that triggered this function"
@@ -91,8 +87,8 @@ public static class AutomationRunner
         var automationRunData = JsonConvert.DeserializeObject<AutomationRunData>(speckleProjectData);
         var functionInputsParsed = JsonConvert.DeserializeObject<T>(functionInputs);
 
-
-        await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed).ConfigureAwait(false);
+        await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed)
+          .ConfigureAwait(false);
       },
       speckleProjectDataArg,
       functionInputsArg,
@@ -104,21 +100,18 @@ public static class AutomationRunner
       description: "A token to talk to the Speckle server with"
     );
 
-    var generateSchemaCommand = new Command(
-      "generate-schema",
-      "Generate JSON schema for the function inputs"
-    );
+    var generateSchemaCommand = new Command("generate-schema", "Generate JSON schema for the function inputs");
     generateSchemaCommand.AddArgument(schemaFilePathArg);
-    generateSchemaCommand.SetHandler(async (schemaFilePath) =>
-    {
-      var generator = new JSchemaGenerator
+    generateSchemaCommand.SetHandler(
+      async (schemaFilePath) =>
       {
-        ContractResolver = new CamelCasePropertyNamesContractResolver()
-      };
-      var schema = generator.Generate(typeof(T));
-      schema.ToString(Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
-      await File.WriteAllTextAsync(schemaFilePath, schema.ToString()).ConfigureAwait(false);
-    }, schemaFilePathArg);
+        var generator = new JSchemaGenerator { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+        var schema = generator.Generate(typeof(T));
+        schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
+        await File.WriteAllTextAsync(schemaFilePath, schema.ToString()).ConfigureAwait(false);
+      },
+      schemaFilePathArg
+    );
     rootCommand.Add(generateSchemaCommand);
 
     await rootCommand.InvokeAsync(args).ConfigureAwait(false);

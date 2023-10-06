@@ -1,8 +1,6 @@
 # nullable enable
-using System;
-using System.Collections.Generic;
+namespace Speckle.Automate.Sdk;
 
-namespace SpeckleAutomate;
 ///<summary>
 ///Values of the project, model and automation that triggere this function run.
 ///</summary>
@@ -44,7 +42,6 @@ public enum AutomationStatus
   Succeeded
 }
 
-
 public abstract class AutomationStatusMapping
 {
   private const string Initializing = "INITIALIZING";
@@ -64,7 +61,6 @@ public abstract class AutomationStatusMapping
     };
   }
 }
-
 
 public enum ObjectResultLevel
 {
@@ -90,7 +86,6 @@ public abstract class ObjectResultLevelMapping
     };
   }
 }
-
 
 public struct ResultCase
 {
