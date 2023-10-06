@@ -27,7 +27,9 @@ namespace Objects.Converter.Dynamo
 {
   public partial class ConverterDynamo : ISpeckleConverter
   {
-#if REVIT2023
+#if REVIT2024
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2024);
+#elif REVIT2023
     public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
 #elif REVIT2022
     public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);

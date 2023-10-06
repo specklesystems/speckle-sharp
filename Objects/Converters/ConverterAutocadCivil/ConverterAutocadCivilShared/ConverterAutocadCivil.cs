@@ -1,5 +1,6 @@
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Objects.BuiltElements;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
@@ -395,6 +396,10 @@ namespace Objects.Converter.AutocadCivil
           acadObj = CurveToNativeDB(o.baseCurve);
           break;
 
+        case GridLine o:
+          acadObj = CurveToNativeDB(o.baseLine);
+          break;
+
         default:
           if (reportObj != null)
           {
@@ -491,7 +496,7 @@ namespace Objects.Converter.AutocadCivil
 #if ADVANCESTEEL
                 return CanConvertASToSpeckle(o);
 #else
-                return false;
+              return false;
 #endif
             }
           }
@@ -524,7 +529,6 @@ namespace Objects.Converter.AutocadCivil
         case Polyline _:
         case Polycurve _:
         case Curve _:
-        //case Brep _:
         case Mesh _:
 
         case Dimension _:
@@ -535,6 +539,7 @@ namespace Objects.Converter.AutocadCivil
 
         case Alignment _:
         case ModelCurve _:
+        case GridLine _:
           return true;
 
         default:

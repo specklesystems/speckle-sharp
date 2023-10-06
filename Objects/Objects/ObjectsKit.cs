@@ -99,7 +99,10 @@ public class ObjectsKit : ISpeckleKit
       .GetTypes()
       .Where(type => typeof(ISpeckleConverter).IsAssignableFrom(type))
       .Select(type => (ISpeckleConverter)Activator.CreateInstance(type))
-      .First(converter => converter.GetServicedApplications().Contains(app));
+      .FirstOrDefault(converter => converter.GetServicedApplications().Contains(app));
+
+    if (converterInstance == null)
+      throw new SpeckleException($"No suitable converter instance found for {app}");
 
     SpeckleLog.Logger
       .ForContext<ObjectsKit>()

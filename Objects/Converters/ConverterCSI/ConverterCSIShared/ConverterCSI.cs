@@ -1,4 +1,5 @@
 using CSiAPIv1;
+using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Geometry;
@@ -112,6 +113,7 @@ namespace Objects.Converter.CSI
         case Load _:
         //case Geometry.Line line:
         case Node _:
+        case GridLine _:
         //case Model o:
         //case Property property:
 
@@ -213,6 +215,9 @@ namespace Objects.Converter.CSI
           break;
         case BuiltElements.Column o:
           CurveBasedElementToNative(o, o.baseLine, appObj);
+          break;
+        case GridLine o:
+          GridLineToNative(o);
           break;
         #endregion
         default:
