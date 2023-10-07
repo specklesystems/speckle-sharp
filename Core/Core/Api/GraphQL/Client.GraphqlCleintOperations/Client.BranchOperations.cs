@@ -133,11 +133,7 @@ public partial class Client
   /// <param name="projectId">Id of the project to get the model from</param>
   /// <param name="modelId">Id of the model</param>
   /// <returns></returns>
-  public async Task<Branch> ModelGet(
-    CancellationToken cancellationToken,
-    string projectId,
-    string modelId
-  )
+  public async Task<Branch> ModelGet(string projectId, string modelId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -154,27 +150,16 @@ public partial class Client
       Variables = new { projectId, modelId }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(request, cancellationToken).ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(
+        request,
+        cancellationToken
+      )
+      .ConfigureAwait(false);
     var branch = new Branch();
     branch.description = res["project"]["model"]["description"];
     branch.id = res["project"]["model"]["id"];
     branch.name = res["project"]["model"]["name"];
     return branch;
-  }
-
-  /// <summary>
-  /// Gets a given model from a project.
-  /// </summary>
-  /// <param name="cancellationToken"></param>
-  /// <param name="projectId">Id of the project to get the model from</param>
-  /// <param name="modelId">Id of the model</param>
-  /// <returns></returns>
-  public async Task<Branch> ModelGet(
-    string projectId,
-    string modelId
-  )
-  {
-    return await ModelGet(CancellationToken.None, projectId, modelId);
   }
 
   /// <summary>

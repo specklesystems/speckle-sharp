@@ -2,10 +2,11 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "Automate\\Speckle.Automate.Sdk.Tests.Integration\\Speckle.Automate.Sdk.Tests.Integration.csproj",
+      "Automate\\Speckle.Automate.Sdk\\Speckle.Automate.Sdk.csproj",
       "Core\\AutomateExample\\AutomateExample.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\IntegrationTests\\TestsIntegration.csproj",
-      "Core\\SpeckleAutomate\\SpeckleAutomate.csproj",
       "Core\\Tests\\TestsUnit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",

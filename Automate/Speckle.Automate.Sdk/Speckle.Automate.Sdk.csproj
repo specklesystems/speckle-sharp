@@ -12,6 +12,10 @@
         <RootNamespace>Speckle.Automate.Sdk</RootNamespace>
     </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  
   <ItemGroup>
     <InternalsVisibleTo Include="Speckle.Automate.Sdk.Tests.Integration" />
   </ItemGroup>
