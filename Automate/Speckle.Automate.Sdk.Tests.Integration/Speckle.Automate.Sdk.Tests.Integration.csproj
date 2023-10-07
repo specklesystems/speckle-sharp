@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Core\IntegrationTests\TestsIntegration.csproj" />
       <ProjectReference Include="..\Speckle.Automate.Sdk\Speckle.Automate.Sdk.csproj" />
     </ItemGroup>
 
