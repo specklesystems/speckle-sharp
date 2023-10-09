@@ -46,12 +46,13 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationObject TryDirectShapeToNative(Brep brep, ToNativeMeshSettingEnum fallbackSetting,  RevitCategory cat = RevitCategory.GenericModel)
+    public ApplicationObject TryDirectShapeToNative(Brep brep, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
     {
       DirectShape ds = new(
         $"Brep {brep.applicationId ?? brep.id}",
         cat,
-        new List<Base> { brep }) { applicationId = brep.applicationId, id = brep.id };
+        new List<Base> { brep })
+      { applicationId = brep.applicationId, id = brep.id };
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
 
@@ -60,10 +61,11 @@ namespace Objects.Converter.Revit
       DirectShape ds = new(
         $"Mesh {mesh.applicationId ?? mesh.id}",
         cat,
-        new List<Base> { mesh }) { applicationId = mesh.applicationId, id = mesh.id };
+        new List<Base> { mesh })
+      { applicationId = mesh.applicationId, id = mesh.id };
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
-    
+
     public ApplicationObject TryDirectShapeToNative(ApplicationObject appObj, List<Mesh> meshes, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
     {
       if (meshes.Count == 0)
@@ -75,11 +77,12 @@ namespace Objects.Converter.Revit
       var ds = new DirectShape(
         $"{appObj.Descriptor.Split(':').LastOrDefault() ?? "Meshes"} {appObj.applicationId}",
         cat,
-        meshes.Cast<Base>().ToList()) { applicationId = appObj.applicationId, id = appObj.OriginalId };
-      
+        meshes.Cast<Base>().ToList())
+      { applicationId = appObj.applicationId, id = appObj.OriginalId };
+
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
-    
+
     /// <summary>
     /// The default DirectShape conversion method. Will return a Revit DirectShape with the containing geometry.
     /// </summary>
@@ -148,12 +151,19 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      BuiltInCategory bic;
-      if ((int)speckleDs.category == -1)
-        speckleDs.category = RevitCategory.GenericModel;
-      var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
+      //from 2.16 onwards use the builtInCategory field for direct shape fallback
+      BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
+      if (!BuiltInCategory.TryParse(speckleDs["builtInCategory"] as string, out bic))
+      {
+        //pre 2.16 or coming from grasshopper, using the enum
+        //TODO: move away from enum logic
+        if ((int)speckleDs.category != -1)
+        {
+          var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
+          _ = BuiltInCategory.TryParse(bicName, out bic);
+        }
+      }
 
-      BuiltInCategory.TryParse(bicName, out bic);
       var cat = Doc.Settings.Categories.get_Item(bic);
 
       try
