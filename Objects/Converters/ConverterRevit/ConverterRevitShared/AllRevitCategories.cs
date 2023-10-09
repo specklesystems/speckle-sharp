@@ -143,11 +143,13 @@ namespace Objects.Converter.Revit
     private IRevitCategoryInfo? GetCategoryInfoForObjectWithExactName(string unformattedCatName)
     {
       var bic = BuiltInCategory.INVALID;
+      string formattedName = "";
       // 2.16 onwards we're passing the "builtInCategory" string
       if (unformattedCatName.StartsWith("OST"))
       {
         if (!Enum.TryParse(unformattedCatName, out bic))
           return null;
+        formattedName = unformattedCatName.Replace("OST_", "");
       }
       // pre 2.16 we're passing the "category" string
       else
@@ -159,10 +161,8 @@ namespace Objects.Converter.Revit
         if (revitCat == null) return null;
 
         bic = Categories.GetBuiltInCategory(revitCat);
+        formattedName = CategoryNameFormatted(unformattedCatName);
       }
-
-
-      var formattedName = CategoryNameFormatted(unformattedCatName);
 
       return revitDocumentAggregateCache
         .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
