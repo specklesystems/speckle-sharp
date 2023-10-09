@@ -425,7 +425,7 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
               if (prevCommit != null)
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
 
-              var commitId = await client.CommitCreate(source.Token, commitCreateInput);
+              var commitId = await client.CommitCreate(commitCreateInput, source.Token);
 
               var wrapper = new StreamWrapper(
                 $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"

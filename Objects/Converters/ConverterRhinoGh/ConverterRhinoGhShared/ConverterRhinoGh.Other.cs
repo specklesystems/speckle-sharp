@@ -133,8 +133,8 @@ public partial class ConverterRhinoGh
   public RenderMaterial RenderMaterialToNative(Other.RenderMaterial speckleMaterial)
   {
     var commitInfo = GetCommitInfo();
-    var speckleName =
-      ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {speckleMaterial.name}" : $"{speckleMaterial.name}";
+    var name = speckleMaterial.name ?? speckleMaterial.id;
+    var speckleName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {name}" : $"{name}";
 
     // check if the doc already has a material with speckle material name, or a previously created speckle material
     //NOTE: Looking up renderMaterials this way is slow, maybe we can create a dictionary?
