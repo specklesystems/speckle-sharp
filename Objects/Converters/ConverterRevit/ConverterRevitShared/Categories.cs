@@ -34,31 +34,16 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="c">The RevitCategory to convert</param>
     /// <returns>The name of the built-in category that corresponds to the input RevitCategory</returns>
-    public static bool GetBuiltInCategoryFromRevitCategory(RevitCategory c, out BuiltInCategory bic)
+    public static string GetBuiltInFromSchemaBuilderCategory(RevitCategory c)
     {
       var name = Enum.GetName(typeof(RevitCategory), c);
-      var builtInName = $"OST_{name}";
-      return Enum.TryParse(builtInName, out bic);
+      return $"OST_{name}";
     }
 
-    public static bool GetBuiltInCategoryFromRevitCategory(RevitFamilyCategory c, out BuiltInCategory bic)
+    public static string GetBuiltInFromSchemaBuilderCategory(RevitFamilyCategory c)
     {
       var name = Enum.GetName(typeof(RevitFamilyCategory), c);
-      var builtInName = $"OST_{name}";
-      return Enum.TryParse(builtInName, out bic);
-    }
-
-    /// <summary>
-    /// Returns the corresponding RevitCategory enum from a specific BuiltInCategory
-    /// </summary>
-    /// <param name="c"></param>
-    /// <returns></returns>
-    /// <remarks>This method should mirror <see cref="GetBuiltInCategoryFromRevitCategory"/> logic for built in categories </remarks>
-    public static bool GetRevitCategoryFromBuiltInCategory(BuiltInCategory bic, out RevitCategory c)
-    {
-      var name = Enum.GetName(typeof(BuiltInCategory), bic);
-      var revitName = name.Split('_').Last();
-      return Enum.TryParse<RevitCategory>(revitName, out c);
+      return $"OST_{name}";
     }
   }
 }

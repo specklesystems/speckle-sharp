@@ -251,21 +251,16 @@ namespace Objects.Converter.Revit
 
       speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
+
       // assign the category if it is null
       // WARN: DirectShapes have a `category` prop of type `RevitCategory` (enum), NOT `string`. This is the only exception as of 2.16.
       // If the null check is removed, the DirectShape case needs to be handled.
       var category = revitElement.Category;
       if (speckleElement["category"] is null && category is not null)
       {
-        var categoryName = category.Name;
-        // we should use RevitCategory values for BuiltInCategory strings where possible (revit 2023+)
-        // different BuiltInCategory may have the same name, eg "OST_Railings" and "OST_StairsRailing" both have a Category name of "Railing"
-#if !(REVIT2020 || REVIT2021 || REVIT2022)
-        if (Categories.GetRevitCategoryFromBuiltInCategory(category.BuiltInCategory, out RevitCategory c))
-          categoryName = c.ToString();
-#endif
-        speckleElement["category"] = categoryName;
+        speckleElement["category"] = category.Name;
       }
+
 
       //NOTE: adds the quantities of all materials to an element
       var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);

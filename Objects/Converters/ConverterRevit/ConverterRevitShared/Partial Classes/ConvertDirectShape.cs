@@ -148,17 +148,14 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      DB.Category cat = null;
+      BuiltInCategory bic;
       if ((int)speckleDs.category == -1)
         speckleDs.category = RevitCategory.GenericModel;
-      if (Categories.GetBuiltInCategoryFromRevitCategory(speckleDs.category, out BuiltInCategory bic))
-      {
-        cat = Doc.Settings.Categories.get_Item(bic);
-      }
-      if (cat is null)
-      {
-        cat = Doc.Settings.Categories.get_Item(BuiltInCategory.OST_GenericModel); // default to generic model
-      }
+      var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
+
+      BuiltInCategory.TryParse(bicName, out bic);
+      var cat = Doc.Settings.Categories.get_Item(bic);
+
       try
       {
         var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
