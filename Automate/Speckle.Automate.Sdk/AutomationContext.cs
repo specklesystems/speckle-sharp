@@ -188,6 +188,7 @@ public class AutomationContext
       .ConfigureAwait(false);
     request.EnsureSuccessStatusCode();
     var responseString = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+    Console.WriteLine("RESPONSE - " + responseString);
     var uploadResponse = JsonConvert.DeserializeObject<BlobUploadResponse>(responseString);
     if (uploadResponse.UploadResults.Count != 1)
       throw new Exception("Expected one upload result.");

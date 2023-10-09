@@ -63,7 +63,7 @@ public class AutomationContextTest
         }
       );
 
-    await speckleClient.ExecuteGraphQLRequest<bool>(query);
+    await speckleClient.ExecuteGraphQLRequest<object>(query);
   }
 
   private static Base TestObject()
@@ -86,7 +86,14 @@ public class AutomationContextTest
       new List<ITransport> { new ServerTransport(_client.Account, projectId) }
     );
 
-    string versionId = await _client.CommitCreate(new() { streamId = projectId, objectId = rootObjId, });
+    string versionId = await _client.CommitCreate(
+      new()
+      {
+        streamId = projectId,
+        objectId = rootObjId,
+        branchName = model.name
+      }
+    );
 
     var automationName = RandomString(10);
     var automationId = RandomString(10);
