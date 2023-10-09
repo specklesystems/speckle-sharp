@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
         var elementId = element.Id;
         if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name, };
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name };
         }
         else
           return false;
@@ -254,12 +254,18 @@ namespace Objects.Converter.Revit
 
       // assign the category if it is null
       // WARN: DirectShapes have a `category` prop of type `RevitCategory` (enum), NOT `string`. This is the only exception as of 2.16.
+      // In all other cases this should be the display value string (localized name) of the catogory
       // If the null check is removed, the DirectShape case needs to be handled.
       var category = revitElement.Category;
       if (speckleElement["category"] is null && category is not null)
       {
         speckleElement["category"] = category.Name;
       }
+      // from 2.16 onward we're also passing the full BuiltInCategory for better handling on receive
+      //TODO: move this to a typed property, define full list of categories in Objects
+      BuiltInCategory builtInCategory = Categories.GetBuiltInCategory(category);
+      speckleElement["builtInCategory"] = builtInCategory.ToString();
+
 
 
       //NOTE: adds the quantities of all materials to an element
