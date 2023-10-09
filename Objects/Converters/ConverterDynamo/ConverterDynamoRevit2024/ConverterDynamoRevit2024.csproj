@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
+        <AssemblyName>Objects.Converter.DynamoRevit2024</AssemblyName>
+        <Configurations>Debug;Release</Configurations>
+        <DefineConstants>$(DefineConstants);REVIT;REVIT2024</DefineConstants>
+        <PackageId>Speckle.Objects.Converter.DynamoRevit</PackageId>
+        <Product>Objects.Converter.DynamoRevit</Product>
+        <Description>Converter for Dynamo 2 for Revit 2024</Description>
+        <PackageTags>$(PackageTags) objects converter dynamo revit</PackageTags>
+        <CopyToKitFolder>true</CopyToKitFolder>
+    </PropertyGroup>
+
+    <!-- Revit 2024 uses Dynamo 2.10 -->
+    <ItemGroup>
+        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.10.1.3976">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.10.1.3976" />
+        <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.10.1.3976">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Speckle.Revit.API" Version="2024.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources2024\RevitSharedResources2024.csproj" />
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+        <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="RevitNodes">
+            <HintPath>..\..\..\..\ConnectorDynamo\RevitNodes-2.6.1.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
+
+    <Import Project="..\..\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
+</Project>

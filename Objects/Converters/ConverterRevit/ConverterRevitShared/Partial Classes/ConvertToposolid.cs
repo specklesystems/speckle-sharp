@@ -62,22 +62,7 @@ namespace Objects.Converter.Revit
 
       return appObj;
     }
-    
-    private List<OG.Polycurve> GetSketchProfiles(Sketch sketch)
-    {
-      var profiles = new List<OG.Polycurve>();
-      foreach (CurveArray curves in sketch.Profile)
-      {
-        var curveLoop = CurveArrayToCurveLoop(curves);
-        profiles.Add(new OG.Polycurve
-        {
-          segments = curveLoop.Select(x => CurveToSpeckle(x, sketch.Document)).ToList()
-        });
-      }
 
-      return profiles;
-    }
-    
     private RevitToposolid ToposolidToSpeckle(Toposolid topoSolid, out List<string> notes)
     { 
       var toSpeckle = new RevitToposolid();
