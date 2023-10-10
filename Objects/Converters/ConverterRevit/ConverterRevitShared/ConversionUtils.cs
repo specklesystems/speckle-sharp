@@ -67,7 +67,12 @@ namespace Objects.Converter.Revit
         var elementId = element.Id;
         if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name };
+          extraProps["speckleHost"] = new Base()
+          {
+            applicationId = host.UniqueId,
+            ["category"] = host.Category.Name,
+            ["builtInCategory"] = Categories.GetBuiltInCategory(host.Category)
+          };
         }
         else
           return false;
