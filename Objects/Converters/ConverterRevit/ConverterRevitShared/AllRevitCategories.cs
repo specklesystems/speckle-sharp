@@ -148,7 +148,9 @@ namespace Objects.Converter.Revit
       if (unformattedCatName.StartsWith("OST"))
       {
         if (!Enum.TryParse(unformattedCatName, out bic))
+        {
           return null;
+        }
         formattedName = unformattedCatName.Replace("OST_", "");
       }
       // pre 2.16 we're passing the "category" string
