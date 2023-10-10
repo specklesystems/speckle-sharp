@@ -282,7 +282,7 @@ namespace Objects.Converter.Revit
       }
       catch (Exception e)
       {
-
+        SpeckleLog.Logger.Error(e, "Error retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
       }
       if (materialQuantities != null)
         speckleElement["materialQuantities"] = materialQuantities;
