@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -127,8 +127,8 @@ namespace Objects.Converter.Revit
         .SelectMany(
         m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort) ?? new List<GeometryObject>());
       var notNull = allMeshes.Where(m => m != null);
-       var solids = notNull.Select(m => m as DB.Solid);
-       return solids;
+      var solids = notNull.Select(m => m as DB.Solid);
+      return solids;
     }
 
     private ApplicationObject FreeformElementToNative(Brep brep)
@@ -161,7 +161,7 @@ namespace Objects.Converter.Revit
       var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
 
       SetInstanceParameters(freeform, brep);
-      
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, convertedItem: freeform);
       return appObj;
     }
@@ -189,17 +189,20 @@ namespace Objects.Converter.Revit
         if (freeformElement != null)
         {
           //subcategory
+
           if (!string.IsNullOrEmpty(freeformElement.subcategory))
           {
             //by default free form elements are always generic models
             //otherwise we'd need to supply base files for each category..?
-            if (Categories.GetBuiltInCategoryFromRevitCategory(BuiltElements.Revit.RevitCategory.GenericModel, out BuiltInCategory bic))
+            BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
+            cat = famDoc.Settings.Categories.get_Item(bic);
+            if (cat.SubCategories.Contains(freeformElement.subcategory))
             {
-              cat = famDoc.Settings.Categories.get_Item(bic);
-              if (cat.SubCategories.Contains(freeformElement.subcategory))
-                cat = cat.SubCategories.get_Item(freeformElement.subcategory);
-              else
-                cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
+              cat = cat.SubCategories.get_Item(freeformElement.subcategory);
+            }
+            else
+            {
+              cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
             }
           }
         }
@@ -221,13 +224,13 @@ namespace Objects.Converter.Revit
       notes.Add($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
-    
+
     private DB.FamilyInstance CreateFreeformElementFamily(List<Solid> solids, string name, string templateName)
     {
       var templatePath = GetTemplatePath(templateName);
       if (!File.Exists(templatePath))
         throw new FileNotFoundException($"Could not find Generic Model rft file - {templatePath}");
-      
+
       var famDoc = Doc.Application.NewFamilyDocument(templatePath);
 
       using (var t = new Transaction(famDoc, "Create Freeform Elements"))
@@ -237,15 +240,15 @@ namespace Objects.Converter.Revit
           FreeFormElement.Create(famDoc, s);
         t.Commit();
       }
-      
+
       var famName = "SpeckleFreeform_" + name;
       var tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
-      var so = new SaveAsOptions { OverwriteExistingFile = true};
+      var so = new SaveAsOptions { OverwriteExistingFile = true };
       famDoc.SaveAs(tempFamilyPath, so);
       famDoc.Close();
-      
+
       Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var fam);
-        
+
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
       symbol.Activate();
       return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
