@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
@@ -62,15 +63,7 @@ namespace Speckle.ConnectorCSI.UI
       Preview.Clear();
       StoredObjects.Clear();
 
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
-
-      Action updateProgressAction = () =>
-      {
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-      };
 
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
@@ -103,26 +96,37 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationObject>();
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
+      List<ApplicationObject> conversionResults = new();
+      ConcurrentDictionary<string, int> conversionProgressDict = new() { ["Conversion"] = 1 };
 
       foreach (var obj in Preview)
       {
         if (!StoredObjects.ContainsKey(obj.OriginalId))
           continue;
 
-        var @base = StoredObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
+
+        var @base = StoredObjects[obj.OriginalId];
 
         try
         {
-          var convRes = (ApplicationObject)converter.ConvertToNative(@base);
+          var conversionResult = (ApplicationObject)converter.ConvertToNative(@base);
 
-          placeholders.Add(convRes);
-          obj.Update(createdIds: convRes.CreatedIds, converted: convRes.Converted, log: convRes.Log);
+          var finalStatus =
+            conversionResult.Status != ApplicationObject.State.Unknown
+              ? conversionResult.Status
+              : ApplicationObject.State.Created;
+
+          obj.Update(
+            status: finalStatus,
+            createdIds: conversionResult.CreatedIds,
+            converted: conversionResult.Converted,
+            log: conversionResult.Log,
+            descriptor: conversionResult.Descriptor
+          );
         }
         catch (ConversionSkippedException ex)
         {
@@ -138,13 +142,16 @@ namespace Speckle.ConnectorCSI.UI
           SpeckleLog.Logger.Error("Object failed conversion"); //TODO
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
         }
+
+        conversionResults.Add(obj);
+
         progress.Report.UpdateReportObject(obj);
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
 
-      return placeholders;
+      return conversionResults;
     }
 
     /// <summary>
