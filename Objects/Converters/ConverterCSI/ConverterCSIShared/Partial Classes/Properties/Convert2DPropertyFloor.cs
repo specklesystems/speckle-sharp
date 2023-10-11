@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using CSiAPIv1;
-using Objects.Structural.Properties;
-using Objects.Structural.Materials;
 using Objects.Structural.CSI.Properties;
-using Speckle.Core.Models;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -15,7 +11,7 @@ namespace Objects.Converter.CSI
     {
       var success = SetDeck(property2D);
       if (success != 0)
-        throw new InvalidOperationException("Failed to initialize deck property");
+        throw new ConversionException("Failed to initialize deck property");
 
       switch (property2D.deckType)
       {
@@ -62,7 +58,7 @@ namespace Objects.Converter.CSI
       }
 
       if (success != 0)
-        throw new InvalidOperationException("Failed to set deck property");
+        throw new ConversionException("Failed to set deck property");
 
       return property2D.name;
     }
@@ -128,7 +124,7 @@ namespace Objects.Converter.CSI
       }
 
       if (success != 0)
-        throw new InvalidOperationException("Failed to set slab property");
+        throw new ConversionException("Failed to set slab property");
 
       return property2D.name;
     }

@@ -1,8 +1,5 @@
 ﻿using CSiAPIv1;
 using Objects.Structural.Loading;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Objects.Converter.CSI
 {
@@ -11,8 +8,8 @@ namespace Objects.Converter.CSI
     public void LoadPatternToNative(LoadGravity gravityLoad)
     {
       var selfweight = -1 * gravityLoad.gravityFactors.z;
-      var LoadType = GetAndConvertToCSIPatternType(gravityLoad.loadCase.loadType);
-      Model.LoadPatterns.Add(gravityLoad.name, LoadType, selfweight);
+      var loadType = GetAndConvertToCSIPatternType(gravityLoad.loadCase.loadType);
+      Model.LoadPatterns.Add(gravityLoad.name, loadType, selfweight);
     }
 
     public LoadCase LoadPatternToSpeckle(string loadPatternName)

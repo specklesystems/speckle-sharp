@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
-using CSiAPIv1;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -30,7 +28,7 @@ namespace Objects.Converter.CSI
           PropName: link.property.name
         );
         if (success != 0)
-          throw new InvalidOperationException("Failed to add new link by point");
+          throw new ConversionException("Failed to add new link by point");
         return linkName;
       }
       else

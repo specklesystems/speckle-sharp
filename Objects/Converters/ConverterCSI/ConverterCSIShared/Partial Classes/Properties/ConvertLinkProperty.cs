@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
-using Objects.Structural.Properties;
-using Objects.Structural.Materials;
-using Objects.Structural.Properties.Profiles;
-using Objects.Structural.CSI.Properties;
-using System.Linq;
-using Speckle.Core.Models;
+﻿using Objects.Structural.CSI.Properties;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -33,9 +25,9 @@ namespace Objects.Converter.CSI
       );
 
       if (success1 != 0)
-        throw new InvalidOperationException($"Failed to assign P-delta value to link property {linkProperty.name}");
+        throw new ConversionException($"Failed to assign P-delta value to link property {linkProperty.name}");
       if (success2 != 0)
-        throw new InvalidOperationException(
+        throw new ConversionException(
           $"Failed to assign Weight and Mass value to link property {linkProperty.name}"
         );
 

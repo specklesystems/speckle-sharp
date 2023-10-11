@@ -2,7 +2,6 @@ using CSiAPIv1;
 using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
-using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
@@ -150,13 +149,10 @@ namespace Objects.Converter.CSI
 
     public object ConvertToNative(Base @object)
     {
-      List<string> createdIds = new();
+      ApplicationObject appObj = new(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
 
-      ApplicationObject appObj =
-        new(@object.id, @object.speckle_type) { applicationId = @object.applicationId, CreatedIds = createdIds };
-
-      List<string> convertedNames;
-      string convertedName;
+      List<string> convertedNames = new();
+      string? convertedName = null;
 
       switch (@object)
       {
@@ -179,12 +175,12 @@ namespace Objects.Converter.CSI
           convertedName = SpringPropertyToNative(o);
           break;
         case CSIStories o:
-          convertedNames = StoriesToNative(o, appObj);
+          convertedNames = StoriesToNative(o);
           break;
-        //case CSIWindLoadingFace o:
-        //  LoadFaceToNative(o, ref appObj);
-        //  break;
-        //case CSITendonProperty o:
+        // case CSIWindLoadingFace o:
+        //   convertedName = LoadFaceToNative(o, appObj.Log);
+        //   break;
+        // case CSITendonProperty o:
         case OSG.Element1D o:
           FrameToNative(o, appObj);
           break;
@@ -206,7 +202,6 @@ namespace Objects.Converter.CSI
         case Property1D o:
           Property1DToNative(o, appObj);
           break;
-        #region BuiltElements
         case BuiltElements.Beam o:
           CurveBasedElementToNative(o, o.baseLine, appObj);
           break;
@@ -219,10 +214,14 @@ namespace Objects.Converter.CSI
         case GridLine o:
           GridLineToNative(o);
           break;
-        #endregion
         default:
           throw new ConversionSkippedException($"{@object.GetType()} is an unsupported type");
       }
+
+      if (convertedName is not null)
+        convertedNames.Add(convertedName);
+
+      appObj.Update(createdIds: convertedNames);
 
       return appObj;
     }

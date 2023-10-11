@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using Objects.Structural.Materials;
+﻿using Objects.Structural.Materials;
 using CSiAPIv1;
-using Objects.Structural.Properties;
 using System.Linq;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public string MaterialToNative(Objects.Structural.Materials.StructuralMaterial material)
+    public string MaterialToNative(StructuralMaterial? material)
     {
       material = material ?? new StructuralMaterial("undefined", Structural.MaterialType.Other, null, null, null);
       int numbMaterial = 0;

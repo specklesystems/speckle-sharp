@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Objects.Structural.Properties.Profiles;
-using CSiAPIv1;
-using System.Linq;
-using Objects.Structural.CSI.Properties;
+﻿using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
@@ -33,7 +27,7 @@ namespace Objects.Converter.CSI
             iGUID: springProperty.applicationId
           );
           if (success != 0)
-            throw new InvalidOperationException("Failed to ");
+            throw new ConversionException("Failed to create or modify named point spring property");
           return springProperty.name;
         default:
           //springOption = 2;
@@ -83,7 +77,7 @@ namespace Objects.Converter.CSI
       );
 
       if (success != 0)
-        throw new InvalidOperationException(
+        throw new ConversionException(
           $"Failed to create/modify named line spring property {linearSpringProperty.name}"
         );
 
@@ -115,7 +109,7 @@ namespace Objects.Converter.CSI
       );
 
       if (success != 0)
-        throw new InvalidOperationException($"Failed to create/modify named area spring property {areaSpring.name}");
+        throw new ConversionException($"Failed to create/modify named area spring property {areaSpring.name}");
 
       return areaSpring.name;
     }

@@ -1,7 +1,6 @@
 ﻿using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
-using Objects.Structural.Analysis;
 using System.Collections.Generic;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
@@ -9,6 +8,7 @@ using Speckle.Core.Models;
 
 using CSiAPIv1;
 using System.Linq;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -97,7 +97,7 @@ namespace Objects.Converter.CSI
       UpdatePointProperties(speckleStructNode, ref name);
 
       if (success != 0)
-        throw new InvalidOperationException("Failed create point");
+        throw new ConversionException("Failed create point");
 
       return speckleStructNode.name;
     }

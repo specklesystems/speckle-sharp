@@ -11,8 +11,9 @@ namespace Objects.Converter.CSI
       Point lineStart = line.start;
       Point end2Node = line.end;
 
-      var end1NodeSf = Units.GetConversionFactor(lineStart.units, ModelUnits());
-      var end2NodeSf = Units.GetConversionFactor(end2Node.units, ModelUnits());
+      var modelUnits = ModelUnits();
+      var end1NodeSf = Units.GetConversionFactor(lineStart.units, modelUnits);
+      var end2NodeSf = Units.GetConversionFactor(end2Node.units, modelUnits);
 
       var success = Model.FrameObj.AddByCoord(
         lineStart.x * end1NodeSf,

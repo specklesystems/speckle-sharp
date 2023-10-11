@@ -1,20 +1,16 @@
-﻿using CSiAPIv1;
-using Objects.Structural.Loading;
-using System;
+﻿using Objects.Structural.Loading;
 using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using System.Linq;
-using System.Text;
 using Speckle.Core.Models;
-using Objects.Structural.CSI.Loading;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    Dictionary<string, LoadNode> LoadStoringNode = new Dictionary<string, LoadNode>();
-    Dictionary<string, List<Node>> NodeStoring = new Dictionary<string, List<Node>>();
-    int counterPoint = 0;
+    readonly Dictionary<string, LoadNode> _loadStoringNode = new();
+    readonly Dictionary<string, List<Node>> _nodeStoring = new();
+    int counterPoint;
 
     //need to figure out how to recombine forces into val6
     //void LoadNodeToNative(LoadNode loadNode)
@@ -104,10 +100,10 @@ namespace Objects.Converter.CSI
 
         if (counterPoint == pointNumber)
         {
-          foreach (var entry in NodeStoring.Keys)
+          foreach (var entry in _nodeStoring.Keys)
           {
-            NodeStoring.TryGetValue(entry, out var listNode);
-            LoadStoringNode.TryGetValue(entry, out var loadStoringNode);
+            _nodeStoring.TryGetValue(entry, out var listNode);
+            _loadStoringNode.TryGetValue(entry, out var loadStoringNode);
             loadStoringNode.nodes = listNode;
             SpeckleModel.loads.Add(loadStoringNode);
           }
@@ -123,14 +119,14 @@ namespace Objects.Converter.CSI
       speckleLoadNode.value = value;
       Node speckleNode = PointToSpeckle(nodeName);
       speckleLoadNode.loadCase = LoadPatternCaseToSpeckle(loadPat);
-      NodeStoring.TryGetValue(loadID, out var nodeList);
+      _nodeStoring.TryGetValue(loadID, out var nodeList);
       if (nodeList == null)
       {
         nodeList = new List<Node> { };
       }
       nodeList.Add(speckleNode);
-      NodeStoring[loadID] = nodeList;
-      LoadStoringNode[loadID] = speckleLoadNode;
+      _nodeStoring[loadID] = nodeList;
+      _loadStoringNode[loadID] = speckleLoadNode;
     }
   }
 }
