@@ -14,6 +14,8 @@ namespace Objects.Converter.CSI
     public string FloorPropertyToNative(CSIProperty2D property2D)
     {
       int? success = null;
+      var materialName = MaterialToNative(property2D.material);
+
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
       {
         SetDeck(property2D);
@@ -70,7 +72,7 @@ namespace Objects.Converter.CSI
               SolidSlab.name,
               eSlabType.Slab,
               shell,
-              SolidSlab.material.name,
+              materialName,
               SolidSlab.thickness
             );
             break;
@@ -81,7 +83,7 @@ namespace Objects.Converter.CSI
               slabRibbed.name,
               eSlabType.Ribbed,
               shell,
-              slabRibbed.material.name,
+              materialName,
               slabRibbed.thickness
             );
             success = Model.PropArea.SetSlabRibbed(
@@ -101,7 +103,7 @@ namespace Objects.Converter.CSI
               slabWaffled.name,
               eSlabType.Waffle,
               shell,
-              slabWaffled.material.name,
+              materialName,
               slabWaffled.thickness
             );
             success = Model.PropArea.SetSlabWaffle(
