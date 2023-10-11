@@ -12,6 +12,7 @@
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2021\\ConverterDynamoRevit2021.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2022\\ConverterDynamoRevit2022.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2023\\ConverterDynamoRevit2023.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2024\\ConverterDynamoRevit2024.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit\\ConverterDynamoRevit.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoSandbox\\ConverterDynamoSandbox.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoShared\\ConverterDynamoShared.shproj",
@@ -19,6 +20,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2021\\ConverterRevit2021.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2022\\ConverterRevit2022.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2024\\ConverterRevit2024.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Tests.csproj"

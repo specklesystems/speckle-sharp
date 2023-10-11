@@ -73,6 +73,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
 
       DB.Floor revitFloor = null;
+      
 #if (REVIT2020 || REVIT2021)
       if (floorType == null)
       {
@@ -138,9 +139,13 @@ namespace Objects.Converter.Revit
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor, out List<string> notes)
     {
       notes = new List<string>();
-      var profiles = GetProfiles(revitFloor);
-
       var speckleFloor = new RevitFloor();
+    #if REVIT2020 || REVIT2021  
+      var profiles = GetProfiles(revitFloor);
+    #else
+      var sketch = Doc.GetElement(revitFloor.SketchId) as Sketch;
+      var profiles = GetSketchProfiles(sketch).Cast<ICurve>().ToList();
+    #endif
       var type = revitFloor.Document.GetElement(revitFloor.GetTypeId()) as ElementType;
       speckleFloor.family = type?.FamilyName;
       speckleFloor.type = type?.Name;
@@ -441,5 +446,22 @@ namespace Objects.Converter.Revit
       }
       throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
     }
+    
+        
+    public List<OG.Polycurve> GetSketchProfiles(Sketch sketch)
+    {
+      var profiles = new List<OG.Polycurve>();
+      foreach (CurveArray curves in sketch.Profile)
+      {
+        var curveLoop = CurveArrayToCurveLoop(curves);
+        profiles.Add(new OG.Polycurve
+        {
+          segments = curveLoop.Select(x => CurveToSpeckle(x, sketch.Document)).ToList()
+        });
+      }
+
+      return profiles;
+    }
+
   }
 }

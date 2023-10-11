@@ -1,22 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
-using Objects.Structural.CSI.Properties;
 using Objects.BuiltElements;
-using System.Linq;
-using CSiAPIv1;
+using ConverterCSIShared.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void gridLinesToNative(CSIGridLines gridlines)
+    private ETABSGridLineDefinitionTable gridLineDefinitionTable;
+    private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
+    public void GridLineToNative(GridLine gridline)
     {
-      throw new NotSupportedException();
+      GridLineDefinitionTable.AddCartesian(gridline);
+      GridLineDefinitionTable.ApplyEditedTables();
     }
 
     public CSIGridLines gridLinesToSpeckle(string name)
