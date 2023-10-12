@@ -602,13 +602,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  public bool UseFe2
+  public bool IsFe2Server(string url)
   {
-    get
-    {
-      var config = ConfigManager.Load();
-      return config.UseFe2;
-    }
+    if (url.Contains("latest.speckle.systems") || url.Contains("app.speckle.systems"))
+      return true;
+    var config = ConfigManager.Load();
+    return config.UseFe2;
+
   }
 
   private bool _isRemovingStream;
