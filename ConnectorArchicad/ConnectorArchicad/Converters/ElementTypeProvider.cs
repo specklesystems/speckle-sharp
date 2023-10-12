@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Beam = Objects.BuiltElements.Archicad.ArchicadBeam;
 using Column = Objects.BuiltElements.Archicad.ArchicadColumn;
 using DirectShape = Objects.BuiltElements.Archicad.DirectShape;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Archicad.ArchicadFloor;
+using GridElement = Archicad.GridElement;
 using Roof = Objects.BuiltElements.Archicad.ArchicadRoof;
 using Room = Archicad.Room;
 using Shell = Objects.BuiltElements.Archicad.ArchicadShell;
@@ -28,7 +29,8 @@ namespace Archicad
         { "Column", typeof(Column) },
         { "Door", typeof(Door) },
         { "Window", typeof(Window) },
-        { "Skylight", typeof(Skylight) }
+        { "Skylight", typeof(Skylight) },
+        { "GridElement", typeof(GridElement) }
       };
 
     public static Type GetTypeByName(string name)
