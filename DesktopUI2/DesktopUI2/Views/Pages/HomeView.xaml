@@ -89,7 +89,7 @@
           Background="Transparent"
           Classes="Mini"
           Command="{Binding ToggleFe2Command}"
-          ToolTip.Tip="Toggle NEW Frontend support">
+          ToolTip.Tip="Toggle NEW Frontend terminology">
           <Button.Content>
             <Grid>
               <icons:MaterialIcon
@@ -220,7 +220,7 @@
                   Grid.Column="1"
                   Margin="2,0,0,0"
                   VerticalAlignment="Center"
-                  ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Filter streams by ownership of favorite'}">
+                  ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Filter streams by ownership or favorite'}">
 
                   <MenuItem
                     Width="30"

@@ -66,7 +66,7 @@
       Name="name"
       Grid.Row="2"
       Margin="15,5"
-      Watermark="Stream Name (optional)" />
+      Watermark="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Stream Name (optional)'}" />
 
     <TextBox
       Name="description"
