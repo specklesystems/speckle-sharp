@@ -104,6 +104,8 @@ GSErrCode CreateGridElement::GetElementFromObjectState (const GS::ObjectState& o
 			GS::ucscpy (parameter.value.uStr, markerText.ToUStr ().Get ());
 		} else if (CHCompareCStrings (parameter.name, "AC_LineVisibility_i", CS_CaseSensitive) == 0) {
 			parameter.value.real = (int)1;
+		} else if (CHCompareCStrings (parameter.name, "AC_StaggerDist", CS_CaseSensitive) == 0) {
+			parameter.value.real = .0;
 		} else if (CHCompareCStrings (parameter.name, "AC_Type_i", CS_CaseSensitive) == 0) {
 			if (isArc) {
 				parameter.value.real = (int)2;
