@@ -383,6 +383,10 @@ public class ServerInfo
   public string version { get; set; }
   public string adminContact { get; set; }
   public string description { get; set; }
+  //NOTE: this field is not returned from the GQL API
+  //it is manually populated by checking against the response headers
+  //TODO: deprecate after the transition from fe1 to fe2
+  public bool frontend2 { get; set; }
 }
 
 public class StreamData
