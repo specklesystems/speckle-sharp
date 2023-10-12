@@ -82,7 +82,7 @@ static void GetModelInfoForElement (const Modeler::Elem& elem,
 			modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
 		}
 
-		// polygon
+		// polygons
 		CollectPolygonsFromBody (body, attributes, vetrexOffset, modelInfo);
 	}
 }
