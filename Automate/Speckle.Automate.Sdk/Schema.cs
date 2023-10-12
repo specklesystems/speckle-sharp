@@ -101,11 +101,11 @@ public class AutomationResult
 {
   public double Elapsed { get; set; }
   public string? ResultView { get; set; }
-  public List<string> ResultVersions { get; set; }
-  public List<string> Blobs { get; set; }
+  public List<string> ResultVersions { get; set; } = new ();
+  public List<string> Blobs { get; set; } = new();
   public string RunStatus { get; set; }
   public string? StatusMessage { get; set; }
-  public List<ResultCase> ObjectResults { get; set; }
+  public List<ResultCase> ObjectResults { get; set; } = new();
 }
 
 public struct UploadResult

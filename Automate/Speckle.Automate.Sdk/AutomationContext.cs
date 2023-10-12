@@ -168,7 +168,7 @@ public class AutomationContext
         objectResults,
       }
     };
-    await SpeckleClient.ExecuteGraphQLRequest<bool>(request).ConfigureAwait(false);
+    await SpeckleClient.ExecuteGraphQLRequest<Dictionary<string, object>>(request).ConfigureAwait(false);
   }
 
   public async Task StoreFileResult(string filePath)
@@ -179,7 +179,7 @@ public class AutomationContext
 
     var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
     using var streamContent = new StreamContent(fileStream);
-    formData.Add(streamContent, "files");
+    formData.Add(streamContent, "files", Path.GetFileName(filePath));
     var request = await SpeckleClient.GQLClient.HttpClient
       .PostAsync(
         new Uri($"{AutomationRunData.SpeckleServerUrl}/api/stream/{AutomationRunData.ProjectId}/blob"),
@@ -188,6 +188,7 @@ public class AutomationContext
       .ConfigureAwait(false);
     request.EnsureSuccessStatusCode();
     var responseString = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+    Console.WriteLine("RESPONSE - " + responseString);
     var uploadResponse = JsonConvert.DeserializeObject<BlobUploadResponse>(responseString);
     if (uploadResponse.UploadResults.Count != 1)
       throw new Exception("Expected one upload result.");

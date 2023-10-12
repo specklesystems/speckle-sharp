@@ -63,13 +63,12 @@ public class AutomationContextTest
         }
       );
 
-    await speckleClient.ExecuteGraphQLRequest<bool>(query);
+    await speckleClient.ExecuteGraphQLRequest<object>(query);
   }
 
   private static Base TestObject()
   {
-    Base rootObject = new();
-    rootObject["foo"] = "bar";
+    Base rootObject = new() { ["foo"] = "bar" };
     return rootObject;
   }
 
@@ -86,7 +85,14 @@ public class AutomationContextTest
       new List<ITransport> { new ServerTransport(_client.Account, projectId) }
     );
 
-    string versionId = await _client.CommitCreate(new() { streamId = projectId, objectId = rootObjId, });
+    string versionId = await _client.CommitCreate(
+      new()
+      {
+        streamId = projectId,
+        objectId = rootObjId,
+        branchName = model.name
+      }
+    );
 
     var automationName = RandomString(10);
     var automationId = RandomString(10);
@@ -113,52 +119,7 @@ public class AutomationContextTest
     };
   }
 
-  private static async Task<dynamic> GetAutomationStatus(string projectId, string modelId, Client speckleClient)
-  {
-    GraphQLRequest query =
-      new(
-        """
-        query AutomationRuns(
-            $projectId: String!
-            $modelId: String!
-        )
-        {
-        project(id: $projectId) {
-        model(id: $modelId) {
-        automationStatus {
-        id
-        status
-        statusMessage
-        automationRuns {
-          id
-          automationId
-          versionId
-          createdAt
-          updatedAt
-          status
-          functionRuns {
-            id
-            functionId
-            elapsed
-            status
-            contextView
-            statusMessage
-            results
-            resultVersions {
-              id
-            }
-          }
-        }
-        }
-        }
-        }
-        }
-        """,
-        variables: new { projectId, modelId, }
-      );
-    var response = await speckleClient.ExecuteGraphQLRequest<Dictionary<string, dynamic>>(query);
-    return response["project"]["model"]["automationStatus"];
-  }
+  
 
   private Client _client;
   private Account _account;
@@ -183,14 +144,14 @@ public class AutomationContextTest
 
     Assert.That(automationContext.RunStatus, Is.EqualTo("FAILED"));
 
-    var status = await GetAutomationStatus(
+    var status = await AutomationStatusOperations.Get(
       automationRunData.ProjectId,
       automationRunData.ModelId,
       automationContext.SpeckleClient
     );
 
     Assert.That(status.Status, Is.EqualTo(automationContext.RunStatus));
-    var statusMessage = status["automationRuns"][0]["functionRuns"][0]["statusMessage"];
+    var statusMessage = status.AutomationRuns[0].FunctionRuns[0].StatusMessage;
 
     Assert.That(statusMessage, Is.EqualTo(automationContext.AutomationResult.StatusMessage));
   }
@@ -203,8 +164,16 @@ public class AutomationContextTest
 
     string filePath = $"./{RandomString(10)}";
     await File.WriteAllTextAsync(filePath, "foobar");
+    try
+    {
+      await automationContext.StoreFileResult(filePath);
 
-    await automationContext.StoreFileResult(filePath);
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      throw;
+    }
 
     File.Delete(filePath);
     Assert.That(automationContext.AutomationResult.Blobs, Has.Count.EqualTo(1));
