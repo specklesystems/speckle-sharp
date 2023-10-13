@@ -108,7 +108,7 @@ public static class AutomationRunner
         var generator = new JSchemaGenerator { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         var schema = generator.Generate(typeof(T));
         schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
-        await File.WriteAllTextAsync(schemaFilePath, schema.ToString()).ConfigureAwait(false);
+        File.WriteAllText(schemaFilePath, schema.ToString());
       },
       schemaFilePathArg
     );
