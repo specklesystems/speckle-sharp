@@ -1,14 +1,15 @@
 # nullable enable
 using System.Diagnostics;
+using GraphQL;
 using Speckle.Core.Api;
-using Speckle.Core.Transports;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
-using GraphQL;
 
-namespace SpeckleAutomate;
+namespace Speckle.Automate.Sdk;
+
 public class AutomationContext
 {
   public AutomationRunData AutomationRunData { get; set; }
@@ -23,17 +24,14 @@ public class AutomationContext
   // added for performance measuring
   private Stopwatch InitTime { get; set; }
 
-  private AutomationResult AutomationResult { get; set; }
+  internal AutomationResult AutomationResult { get; set; }
 
   public static async Task<AutomationContext> Initialize(AutomationRunData automationRunData, string speckleToken)
   {
     var account = new Account
     {
       token = speckleToken,
-      serverInfo = new ServerInfo
-      {
-        url = automationRunData.SpeckleServerUrl
-      }
+      serverInfo = new ServerInfo { url = automationRunData.SpeckleServerUrl }
     };
     await account.Validate().ConfigureAwait(false);
     var client = new Client(account);
@@ -55,7 +53,10 @@ public class AutomationContext
 
   public static async Task<AutomationContext> Initialize(string automationRunData, string speckleToken)
   {
-    var runData = JsonConvert.DeserializeObject<AutomationRunData>(automationRunData, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+    var runData = JsonConvert.DeserializeObject<AutomationRunData>(
+      automationRunData,
+      new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }
+    );
     return await Initialize(runData, speckleToken).ConfigureAwait(false);
   }
 
@@ -66,27 +67,42 @@ public class AutomationContext
 
   public async Task<Base> ReceiveVersion()
   {
-    var commit = await SpeckleClient.CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId).ConfigureAwait(false);
-    var commitRootObject = await Operations.Receive(commit.referencedObject, ServerTransport, MemoryTransport).ConfigureAwait(false);
-    if (commitRootObject == null) throw new Exception("Commit root object was null");
-    Console.WriteLine($"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {AutomationRunData.VersionId}");
+    var commit = await SpeckleClient
+      .CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId)
+      .ConfigureAwait(false);
+    var commitRootObject = await Operations
+      .Receive(commit.referencedObject, ServerTransport, MemoryTransport)
+      .ConfigureAwait(false);
+    if (commitRootObject == null)
+      throw new Exception("Commit root object was null");
+    Console.WriteLine(
+      $"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {AutomationRunData.VersionId}"
+    );
     return commitRootObject;
-
   }
 
   public async Task<string> CreateNewVersionInProject(Base rootObject, string modelId, string versionMessage = "")
   {
-    if (modelId == AutomationRunData.ModelId) throw new Exception($"The target model id: {modelId} cannot match the model id that triggered this automation: {AutomationRunData.ModelId}");
-    var rootObjectId = await Operations.Send(rootObject, new List<ITransport> { ServerTransport, MemoryTransport }, useDefaultCache: false).ConfigureAwait(false);
+    if (modelId == AutomationRunData.ModelId)
+      throw new ArgumentException(
+        $"The target model id: {modelId} cannot match the model id that triggered this automation: {AutomationRunData.ModelId}",
+        nameof(modelId)
+      );
+    var rootObjectId = await Operations
+      .Send(rootObject, new List<ITransport> { ServerTransport, MemoryTransport }, useDefaultCache: false)
+      .ConfigureAwait(false);
     var model = await SpeckleClient.ModelGet(AutomationRunData.ProjectId, modelId).ConfigureAwait(false);
-    var versionId = await SpeckleClient.CommitCreate(new CommitCreateInput
-    {
-      streamId = AutomationRunData.ProjectId,
-      branchName = model.name,
-      objectId = rootObjectId,
-      message = versionMessage,
-
-    }).ConfigureAwait(false);
+    var versionId = await SpeckleClient
+      .CommitCreate(
+        new CommitCreateInput
+        {
+          streamId = AutomationRunData.ProjectId,
+          branchName = model.name,
+          objectId = rootObjectId,
+          message = versionMessage,
+        }
+      )
+      .ConfigureAwait(false);
     return versionId;
   }
 
@@ -106,7 +122,8 @@ public class AutomationContext
     }
     var request = new GraphQLRequest
     {
-      Query = @"
+      Query =
+        @"
             mutation ReportFunctionRunStatus(
                 $automationId: String!,
                 $automationRevisionId: String!,
@@ -151,22 +168,30 @@ public class AutomationContext
         objectResults,
       }
     };
-    await SpeckleClient.ExecuteGraphQLRequest<bool>(request).ConfigureAwait(false);
+    await SpeckleClient.ExecuteGraphQLRequest<Dictionary<string, object>>(request).ConfigureAwait(false);
   }
 
   public async Task StoreFileResult(string filePath)
   {
-    if (!File.Exists(filePath)) throw new Exception("The given file path doesn't exist");
-    using var formData =new MultipartFormDataContent();
-    
+    if (!File.Exists(filePath))
+      throw new FileNotFoundException("The given file path doesn't exist", fileName: filePath);
+    using var formData = new MultipartFormDataContent();
+
     var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-    using var streamContent = new StreamContent(fileStream); 
-    formData.Add(streamContent, "files");
-    var request = await SpeckleClient.GQLClient.HttpClient.PostAsync(new Uri($"{AutomationRunData.SpeckleServerUrl}/api/stream/{AutomationRunData.ProjectId}/blob"), formData).ConfigureAwait(false);
+    using var streamContent = new StreamContent(fileStream);
+    formData.Add(streamContent, "files", Path.GetFileName(filePath));
+    var request = await SpeckleClient.GQLClient.HttpClient
+      .PostAsync(
+        new Uri($"{AutomationRunData.SpeckleServerUrl}/api/stream/{AutomationRunData.ProjectId}/blob"),
+        formData
+      )
+      .ConfigureAwait(false);
     request.EnsureSuccessStatusCode();
     var responseString = await request.Content.ReadAsStringAsync().ConfigureAwait(false);
+    Console.WriteLine("RESPONSE - " + responseString);
     var uploadResponse = JsonConvert.DeserializeObject<BlobUploadResponse>(responseString);
-    if (uploadResponse.UploadResults.Count != 1) throw new Exception("Expected one upload result.");
+    if (uploadResponse.UploadResults.Count != 1)
+      throw new Exception("Expected one upload result.");
     AutomationResult.Blobs.AddRange(uploadResponse.UploadResults.Select(r => r.BlobId));
   }
 
@@ -179,7 +204,8 @@ public class AutomationContext
     AutomationResult.Elapsed = duration;
 
     var msg = $"Automation run {statusValue} after {duration} seconds.";
-    if (statusMessage is not null) msg += "\n{statusMessage}";
+    if (statusMessage is not null)
+      msg += "\n{statusMessage}";
     Console.WriteLine(msg);
   }
 
@@ -193,28 +219,53 @@ public class AutomationContext
     _markRun(AutomationStatus.Succeeded, statusMessage);
   }
 
-  public void AttachErrorToObjects(string category, IEnumerable<string> objectIds, string? message = null, Dictionary<string, object>? metadata = null, Dictionary<string, object>? visualOverrides = null)
+  public void AttachErrorToObjects(
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  )
   {
     AttachResultToObjects(ObjectResultLevel.Error, category, objectIds, message, metadata, visualOverrides);
-
   }
 
-  public void AttachWarningToObjects(string category, IEnumerable<string> objectIds, string? message = null, Dictionary<string, object>? metadata = null, Dictionary<string, object>? visualOverrides = null)
+  public void AttachWarningToObjects(
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  )
   {
     AttachResultToObjects(ObjectResultLevel.Warning, category, objectIds, message, metadata, visualOverrides);
-
   }
 
-  public void AttachInfoToObjects(string category, IEnumerable<string> objectIds, string? message = null, Dictionary<string, object>? metadata = null, Dictionary<string, object>? visualOverrides = null)
+  public void AttachInfoToObjects(
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  )
   {
     AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
   }
 
-  public void AttachResultToObjects(ObjectResultLevel level, string category, IEnumerable<string> objectIds, string? message = null, Dictionary<string, object>? metadata = null, Dictionary<string, object>? visualOverrides = null)
+  public void AttachResultToObjects(
+    ObjectResultLevel level,
+    string category,
+    IEnumerable<string> objectIds,
+    string? message = null,
+    Dictionary<string, object>? metadata = null,
+    Dictionary<string, object>? visualOverrides = null
+  )
   {
     var levelString = ObjectResultLevelMapping.Get(level);
     var objectIdList = objectIds.ToList();
-    Console.WriteLine($"Object(s) {string.Join(". ", objectIdList)}, was marked with {levelString.ToUpper()}/{category} cause: {message}");
+    Console.WriteLine(
+      $"Object(s) {string.Join(". ", objectIdList)}, was marked with {levelString.ToUpper()}/{category} cause: {message}"
+    );
 
     var resultCase = new ResultCase
     {

@@ -17,7 +17,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="TestsUnit" />
     <InternalsVisibleTo Include="TestsIntegration" />
-    <InternalsVisibleTo Include="SpeckleAutomate" />
   </ItemGroup>
 
   <!--Do

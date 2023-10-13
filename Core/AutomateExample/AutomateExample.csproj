@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\SpeckleAutomate\SpeckleAutomate.csproj" />
+    <ProjectReference Include="..\..\Automate\Speckle.Automate.Sdk\Speckle.Automate.Sdk.csproj" />
   </ItemGroup>
 
 

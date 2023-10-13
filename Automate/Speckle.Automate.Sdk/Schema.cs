@@ -1,8 +1,6 @@
 # nullable enable
-using System;
-using System.Collections.Generic;
+namespace Speckle.Automate.Sdk;
 
-namespace SpeckleAutomate;
 ///<summary>
 ///Values of the project, model and automation that triggere this function run.
 ///</summary>
@@ -44,7 +42,6 @@ public enum AutomationStatus
   Succeeded
 }
 
-
 public abstract class AutomationStatusMapping
 {
   private const string Initializing = "INITIALIZING";
@@ -64,7 +61,6 @@ public abstract class AutomationStatusMapping
     };
   }
 }
-
 
 public enum ObjectResultLevel
 {
@@ -91,7 +87,6 @@ public abstract class ObjectResultLevelMapping
   }
 }
 
-
 public struct ResultCase
 {
   public string Category { get; set; }
@@ -106,11 +101,11 @@ public class AutomationResult
 {
   public double Elapsed { get; set; }
   public string? ResultView { get; set; }
-  public List<string> ResultVersions { get; set; }
-  public List<string> Blobs { get; set; }
+  public List<string> ResultVersions { get; set; } = new ();
+  public List<string> Blobs { get; set; } = new();
   public string RunStatus { get; set; }
   public string? StatusMessage { get; set; }
-  public List<ResultCase> ObjectResults { get; set; }
+  public List<ResultCase> ObjectResults { get; set; } = new();
 }
 
 public struct UploadResult
