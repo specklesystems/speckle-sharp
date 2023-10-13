@@ -80,6 +80,13 @@ GSErrCode CreateGridElement::GetElementFromObjectState (const GS::ObjectState& o
 		length = beginToEnd.GetLength ();
 
 	} else {
+		
+		// reflected
+		if (arcAngle < 0.0) {
+			arcAngle *= -1.0;
+			element.object.reflected = true;
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, reflected);
+		}
 		// circle position
 		GenArc arc = GenArc::CreateCircleArc (Point2D(begin.x,begin.y), Point2D(end.x, end.y), arcAngle);
 		Point2D origo = arc.GetOrigo ();

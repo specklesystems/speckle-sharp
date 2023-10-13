@@ -78,6 +78,8 @@ GS::ErrCode	GetGridElementData::SerializeElementType (const API_Element& element
 			Geometry::Transformation2D rotationMirrorY = Geometry::Transformation2D::CreateMirrorY ();
 			beginVector = rotationMirrorY.Apply (beginVector);
 			endVector = rotationMirrorY.Apply (endVector);
+			
+			arcAngle *= -1;
 		}
 
 		Geometry::Transformation2D rotationGlobal = Geometry::Transformation2D::CreateOrigoRotation (angle);
