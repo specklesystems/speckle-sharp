@@ -74,6 +74,7 @@ GS::ErrCode	GetGridElementData::SerializeElementType (const API_Element& element
 	}
 
 	{
+		// mirror
 		if (element.object.reflected) {
 			Geometry::Transformation2D rotationMirrorY = Geometry::Transformation2D::CreateMirrorY ();
 			beginVector = rotationMirrorY.Apply (beginVector);
@@ -82,10 +83,12 @@ GS::ErrCode	GetGridElementData::SerializeElementType (const API_Element& element
 			arcAngle *= -1;
 		}
 
+		// rotation
 		Geometry::Transformation2D rotationGlobal = Geometry::Transformation2D::CreateOrigoRotation (angle);
 		beginVector = rotationGlobal.Apply (beginVector);
 		endVector = rotationGlobal.Apply (endVector);
 		
+		// offset
 		Geometry::Transformation2D transformationGlobal = Geometry::Transformation2D::CreateTranslation (Vector2D (element.object.pos.x, element.object.pos.y));
 		Point2D beginPoint = transformationGlobal.Apply (Point2D (beginVector));
 		Point2D endPoint = transformationGlobal.Apply (Point2D (endVector));

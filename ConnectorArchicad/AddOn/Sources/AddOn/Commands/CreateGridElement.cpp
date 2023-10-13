@@ -80,26 +80,35 @@ GSErrCode CreateGridElement::GetElementFromObjectState (const GS::ObjectState& o
 		length = beginToEnd.GetLength ();
 
 	} else {
-		
-		// reflected
-		if (arcAngle < 0.0) {
-			arcAngle *= -1.0;
-			element.object.reflected = true;
-			ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, reflected);
-		}
-		// circle position
+		// offset
 		GenArc arc = GenArc::CreateCircleArc (Point2D(begin.x,begin.y), Point2D(end.x, end.y), arcAngle);
 		Point2D origo = arc.GetOrigo ();
 		element.object.pos.x = origo.GetX ();
 		element.object.pos.y = origo.GetY ();
 
-		// angle
-		Vector2D posToBegin (begin.x - origo.GetX (), begin.y - origo.GetY ());
-		element.object.angle = posToBegin.CalcAngleToReference (Vector2D (1.0, 0));
+		Point2D beginPoint (begin.x, begin.y);
+		Point2D endPoint (end.x, end.y);
+
+		Geometry::Transformation2D transformationGlobal = Geometry::Transformation2D::CreateTranslation (Vector2D(origo) * -1.0);
+		beginPoint = transformationGlobal.Apply (beginPoint);
+		endPoint = transformationGlobal.Apply (endPoint);
+
+		// rotation
+		bool mirror = (arcAngle < 0.0);
+	
+		Vector2D beginVector (beginPoint);
+		element.object.angle = beginVector.CalcAngleToReference (Vector2D (mirror ? -1.0 : 1.0, 0));
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, angle);
 
+		// mirror
+		if (mirror) {
+			arcAngle *= -1.0;
+			element.object.reflected = true;
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, reflected);
+		}
+		
 		// radius
-		radius = posToBegin.GetLength ();
+		radius = beginVector.GetLength ();
 	}
 
 	GSSize addParCount = BMGetHandleSize (reinterpret_cast<GSHandle>(memo.params)) / sizeof (API_AddParType);
