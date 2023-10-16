@@ -3,14 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using RevitSharedResources.Helpers;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
-using OSG = Objects.Structural.Geometry;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
-using RevitSharedResources.Helpers;
+using OSG = Objects.Structural.Geometry;
 using SHC = RevitSharedResources.Helpers.Categories;
-using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit
 {
@@ -90,8 +90,14 @@ namespace Objects.Converter.Revit
         return categoryInfo;
       }
 
-      var instanceCategory = @base["category"] as string;
-      if (string.IsNullOrEmpty(instanceCategory)) return categoryInfo;
+      //2.16 onwards we check for "builtInCategory"
+      var instanceCategory = @base["builtInCategory"] as string;
+      //pre 2.16 we used the inconsistent, display value "category"
+      if (string.IsNullOrEmpty(instanceCategory))
+        instanceCategory = @base["category"] as string;
+
+      if (string.IsNullOrEmpty(instanceCategory))
+        return categoryInfo;
 
       var newCategoryInfo = GetRevitCategoryInfo(instanceCategory);
 
@@ -132,21 +138,33 @@ namespace Objects.Converter.Revit
     }
     #endregion
 
+
+
     private IRevitCategoryInfo? GetCategoryInfoForObjectWithExactName(string unformattedCatName)
     {
-      var revitCat = revitDocumentAggregateCache
-        .GetOrInitializeWithDefaultFactory<Category>()
-        .TryGet(unformattedCatName);
+      var bic = BuiltInCategory.INVALID;
+      string formattedName = "";
+      // 2.16 onwards we're passing the "builtInCategory" string
+      if (unformattedCatName.StartsWith("OST"))
+      {
+        if (!Enum.TryParse(unformattedCatName, out bic))
+        {
+          return null;
+        }
+        formattedName = unformattedCatName.Replace("OST_", "");
+      }
+      // pre 2.16 we're passing the "category" string
+      else
+      {
+        var revitCat = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<Category>()
+          .TryGet(unformattedCatName);
 
-      if (revitCat == null) return null;
+        if (revitCat == null) return null;
 
-#if REVIT2020 || REVIT2021 || REVIT2022
-      var bic = (BuiltInCategory)revitCat.Id.IntegerValue;
-#else
-      var bic = revitCat.BuiltInCategory;
-#endif
-
-      var formattedName = CategoryNameFormatted(unformattedCatName);
+        bic = Categories.GetBuiltInCategory(revitCat);
+        formattedName = CategoryNameFormatted(unformattedCatName);
+      }
 
       return revitDocumentAggregateCache
         .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
