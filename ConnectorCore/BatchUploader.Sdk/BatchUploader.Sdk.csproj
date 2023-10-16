@@ -12,13 +12,9 @@
     <Description>SDK for connector batch uploader</Description>
     <PackageTags>$(PackageTags) revit uploader batch</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsPackable>true</IsPackable>
-    <DebugSymbols>true</DebugSymbols>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsDesktopBuild)' == true">
+  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   
