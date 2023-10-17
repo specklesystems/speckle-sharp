@@ -1,9 +1,14 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using ConnectorRhinoWebUI.Extensions;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -54,13 +59,34 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void UpdateModel(ModelCard model)
   {
-     var idx = _store.Models.FindIndex(m => model.Id == m.Id);
+     int idx = _store.Models.FindIndex(m => model.Id == m.Id);
     _store.Models[idx] = model;
   }
   
   public void RemoveModel(ModelCard model)
   {
-    var index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
+  }
+
+  public void HighlightModel(string modelCardId)
+  {
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    List<RhinoObject> rhinoObjects = objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).ToList();
+    
+    RhinoDoc.ActiveDoc.Objects.UnselectAll();
+    RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
+    
+    // Calculate the bounding box of the selected objects
+    BoundingBox boundingBox = BoundingBoxExtensions.UnionRhinoObjects(rhinoObjects);
+    
+    // Zoom to the calculated bounding box
+    if (boundingBox.IsValid)
+    {
+      RhinoDoc.ActiveDoc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(boundingBox);
+    }
+
+    RhinoDoc.ActiveDoc.Views.Redraw();
   }
 }
