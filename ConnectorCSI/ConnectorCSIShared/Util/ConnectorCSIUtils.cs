@@ -131,7 +131,7 @@ namespace Speckle.ConnectorCSI.Util
     public static List<string> GetAllPointNames(cSapModel model)
     {
       int num = 0;
-      string[] names = null;
+      var names = new string[] { };
       try
       {
         model.PointObj.GetNameList(ref num, ref names);

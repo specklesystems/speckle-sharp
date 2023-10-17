@@ -134,12 +134,12 @@ namespace Speckle.ConnectorCSI.UI
         }
         catch (ConversionException ex)
         {
-          SpeckleLog.Logger.Warning("Object failed conversion"); //TODO
+          SpeckleLog.Logger.Warning("Object failed conversion");
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error("Object failed conversion"); //TODO
+          SpeckleLog.Logger.Error("Object failed conversion");
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
         }
 
