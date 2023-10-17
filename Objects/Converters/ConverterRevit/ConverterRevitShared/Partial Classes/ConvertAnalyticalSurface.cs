@@ -1,22 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.Structure;
-using ConverterRevitShared.Extensions;
 using ConverterRevitShared.Models;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Structural;
 using Objects.Structural.Geometry;
-using Objects.Structural.Materials;
 using Objects.Structural.Properties;
-using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
-using Opening = Objects.BuiltElements.Opening;
 using Point = Objects.Geometry.Point;
 
 
