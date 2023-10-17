@@ -63,50 +63,50 @@ namespace ConverterRevitShared.Models
 
     public List<Point> GetOutline()
     {
-      //foreach (Polyline polyline in openingPolylines)
-      //{
-      //  List<LineOverlappingOutlineData> lineOverlapData = EnumeratePolyline(polyline)
-      //    .Select(GetLineOverlappingOutlineData)
-      //    .ToList();
+      foreach (Polyline polyline in openingPolylines)
+      {
+        List<LineOverlappingOutlineData> lineOverlapData = EnumeratePolyline(polyline)
+          .Select(GetLineOverlappingOutlineData)
+          .ToList();
 
-      //  if (!lineOverlapData.Any(data => data.OverlapsOutline))
-      //  {
-      //    continue;
-      //  }
+        if (!lineOverlapData.Any(data => data.OverlapsOutline))
+        {
+          continue;
+        }
 
-      //  //if (lineOverlapData.Any(data => data.OutlineIndexForStartPoint > data.OutlineIndexForEndPoint))
-      //  //{
-      //  //  lineOverlapData.Reverse();
-      //  //  lineOverlapData = lineOverlapData
-      //  //    .Select(data => new LineOverlappingOutlineData(
-      //  //      new Line(data.Line.end, data.Line.start, data.Line.units),
-      //  //      data.OverlapsOutline,
-      //  //      data.OutlineIndexForEndPoint,
-      //  //      data.OutlineIndexForStartPoint
-      //  //    ))
-      //  //    .ToList();
-      //  //}
+        //if (lineOverlapData.Any(data => data.OutlineIndexForStartPoint > data.OutlineIndexForEndPoint))
+        //{
+        //  lineOverlapData.Reverse();
+        //  lineOverlapData = lineOverlapData
+        //    .Select(data => new LineOverlappingOutlineData(
+        //      new Line(data.Line.end, data.Line.start, data.Line.units),
+        //      data.OverlapsOutline,
+        //      data.OutlineIndexForEndPoint,
+        //      data.OutlineIndexForStartPoint
+        //    ))
+        //    .ToList();
+        //}
 
-      //  int? indexToAddTo = RemoveIndiciesFromOutline(lineOverlapData);
-      //  if (!indexToAddTo.HasValue)
-      //  {
-      //    continue;
-      //  }
+        int? indexToAddTo = RemoveIndiciesFromOutline(lineOverlapData);
+        if (!indexToAddTo.HasValue)
+        {
+          continue;
+        }
 
-      //  List<Line> linesToAddToOutline = lineOverlapData
-      //    .Where(data => !data.OverlapsOutline)
-      //    .Select(data => data.Line)
-      //    .ToList();
+        List<Line> linesToAddToOutline = lineOverlapData
+          .Where(data => !data.OverlapsOutline)
+          .Select(data => data.Line)
+          .ToList();
 
-      //  List<Point> pointsToAddToOutline = linesToAddToOutline
-      //    .Select(line => line.start)
-      //    .ToList();
-      //  pointsToAddToOutline.Add(linesToAddToOutline.Last().end);
+        List<Point> pointsToAddToOutline = linesToAddToOutline
+          .Select(line => line.start)
+          .ToList();
+        pointsToAddToOutline.Add(linesToAddToOutline.Last().end);
 
-      //  AddPointsToOutline(pointsToAddToOutline, indexToAddTo);
-      //}
+        AddPointsToOutline(pointsToAddToOutline, indexToAddTo);
+      }
 
-      //CleanOutline();
+      CleanOutline();
 
       return outlinePoints;
     }

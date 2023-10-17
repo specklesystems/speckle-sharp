@@ -214,14 +214,10 @@ namespace Objects.Converter.Revit
       })
       .ToList();
 
-      //speckleElement2D.topology = GetEdgePointsForSurface(revitSurface).
-      //  .Select(p => new Node(p))
-      //  .ToList();
       speckleElement2D.topology = outlineBuilder
         .GetOutline()
         .Select(p => new Node(p))
         .ToList();
-
 
       speckleElement2D.displayValue = GetElementDisplayValue(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
@@ -283,7 +279,7 @@ namespace Objects.Converter.Revit
     private IEnumerable<Point> GetSurfaceOuterLoop(AnalyticalModelSurface surface)
     {
       var loops = surface.GetLoops(AnalyticalLoopType.External);
-      foreach (var xyz in EnumerateCurveLoopsAsPoints(loops))
+      foreach (var xyz in EnumerateCurveLoopWithMostPoints(loops))
       {
         yield return PointToSpeckle(xyz, surface.Document);
       }
@@ -294,7 +290,7 @@ namespace Objects.Converter.Revit
       surface.GetOpenings(out ICollection<ElementId> openingIds);
       foreach (ElementId openingId in openingIds)
       {
-        var points = EnumerateCurveLoopsAsPoints(surface.GetOpeningLoops(openingId));
+        var points = EnumerateCurveLoopWithMostPoints(surface.GetOpeningLoops(openingId));
         var pointsList = points
           .Select(p => PointToSpeckle(p, surface.Document))
           .SelectMany(specklePoint => specklePoint.ToList())
@@ -308,19 +304,41 @@ namespace Objects.Converter.Revit
       }
     }
 
-    IEnumerable<XYZ> EnumerateCurveLoopsAsPoints(IEnumerable<CurveLoop> curveLoops)
+    /// <summary>
+    /// Revit walls and floors can have multiple different areas that are part of the same wall.
+    /// This isn't currently supported by our object model, and currently it is not possible to return multiple
+    /// floors from floorToNative, so right now we're just converting the area that has the most line segments
+    /// </summary>
+    /// <param name="curveLoops"></param>
+    /// <returns></returns>
+    IEnumerable<XYZ> EnumerateCurveLoopWithMostPoints(IEnumerable<CurveLoop> curveLoops)
     {
-      foreach (var loop in curveLoops)
+      List<CurveLoop> curveLoopList = curveLoops.ToList();
+      if (curveLoopList.Count == 1)
       {
-        foreach (var curve in loop)
+        return EnumerateCurveLoopAsPoints(curveLoopList[0]);
+      }
+
+      Dictionary<CurveLoop, int> loopCounts = new();
+      foreach (var loop in curveLoopList)
+      {
+        loopCounts.Add(loop, loop.Count());
+      }
+
+      var largestLoop = loopCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+      return EnumerateCurveLoopAsPoints(largestLoop);
+    }
+
+    IEnumerable<XYZ> EnumerateCurveLoopAsPoints(CurveLoop loop)
+    {
+      foreach (var curve in loop)
+      {
+        var points = curve.Tessellate();
+        // here we are skipping the first point each time because
+        // it is always the same as the last point of the previous curve
+        foreach (var point in points.Skip(1))
         {
-          var points = curve.Tessellate();
-          // here we are skipping the first point each time because
-          // it is always the same as the last point of the previous curve
-          foreach (var point in points.Skip(1))
-          {
-            yield return point;
-          }
+          yield return point;
         }
       }
     }
