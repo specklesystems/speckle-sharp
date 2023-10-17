@@ -2,13 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ConverterRevitShared.Extensions;
-using Objects;
-using Objects.BuiltElements;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 
 namespace ConverterRevitShared.Models
 {
+  /// <summary>
+  /// Responsible for taking the outermost loop of an analytical 2D element (as a list of points) and
+  /// adding back the sections that have been removed due to openings being present. This way, instead of sending
+  /// a wall with a door as 8-sided n-gon, we'll send it as a rectangle with the polyline representing the door
+  /// opening in a separate property. The latter format is much easier for structural software to represent and
+  /// is a more clear representation of the design intent.
+  /// </summary>
   internal class Element2DOutlineBuilder
   {
     private const double pointTolerance = .1;
@@ -26,41 +30,61 @@ namespace ConverterRevitShared.Models
     {
       if (outlinePoints.Count == 0)
       {
-        if (indexToBeInserted == null || indexToBeInserted.Value == 0)
-        {
-          outlinePoints.AddRange(pointsToAdd);
-        }
+        AddPointsToEmptyOutline(pointsToAdd, indexToBeInserted);
+      }
+      else
+      {
+        AddPointsToPopulatedOutline(pointsToAdd, indexToBeInserted);
+      }
+    }
+
+    private void AddPointsToEmptyOutline(List<Point> pointsToAdd, int? indexToBeInserted)
+    {
+      if (indexToBeInserted == null || indexToBeInserted.Value == 0)
+      {
+        outlinePoints.AddRange(pointsToAdd);
+      }
+      else
+      {
         throw new ArgumentException($"Outline current has 0 points, cannot add point at index {indexToBeInserted}");
       }
+    }
 
+    private void AddPointsToPopulatedOutline(List<Point> pointsToAdd, int? indexToBeInserted)
+    {
       int insertIndex = indexToBeInserted == null ? outlinePoints.Count : indexToBeInserted.Value;
       Point previousPoint = outlinePoints[insertIndex];
 
       if (previousPoint.DistanceTo(pointsToAdd.First()) < pointTolerance)
       {
         int prevNumOrLast = insertIndex == 0 ? outlinePoints.Count - 1 : insertIndex - 1;
-        Point nextPoint = outlinePoints[prevNumOrLast];
-
-        if (nextPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
-        {
-          pointsToAdd.RemoveAt(pointsToAdd.Count - 1);
-        }
+        RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, prevNumOrLast);
         outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
       }
       else if (previousPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
       {
         pointsToAdd.Reverse();
         int nextNumOrZero = insertIndex == outlinePoints.Count - 1 ? 0 : insertIndex + 1;
-        Point nextPoint = outlinePoints[nextNumOrZero];
-
-        if (nextPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
-        {
-          pointsToAdd.RemoveAt(pointsToAdd.Count - 1);
-        }
+        RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, nextNumOrZero);
         outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
       }
     }
 
+    private void RemoveLastPointToAddIfItAlreadyExists(List<Point> pointsToAdd, int nextPointIndex)
+    {
+      Point nextPoint = outlinePoints[nextPointIndex];
+      if (nextPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
+      {
+        pointsToAdd.RemoveAt(pointsToAdd.Count - 1);
+      }
+    }
+
+    /// <summary>
+    /// Will go through each opening and, if the opening is partially on the edge of an area topology,
+    /// then it will alter the topology such that the section of the opening that is part of the topology
+    /// is removed and the rest, the section of the opening that is not on the topology, will be added to it
+    /// </summary>
+    /// <returns></returns>
     public List<Point> GetOutline()
     {
       foreach (Polyline polyline in openingPolylines)
@@ -73,19 +97,6 @@ namespace ConverterRevitShared.Models
         {
           continue;
         }
-
-        //if (lineOverlapData.Any(data => data.OutlineIndexForStartPoint > data.OutlineIndexForEndPoint))
-        //{
-        //  lineOverlapData.Reverse();
-        //  lineOverlapData = lineOverlapData
-        //    .Select(data => new LineOverlappingOutlineData(
-        //      new Line(data.Line.end, data.Line.start, data.Line.units),
-        //      data.OverlapsOutline,
-        //      data.OutlineIndexForEndPoint,
-        //      data.OutlineIndexForStartPoint
-        //    ))
-        //    .ToList();
-        //}
 
         int? indexToAddTo = RemoveIndiciesFromOutline(lineOverlapData);
         if (!indexToAddTo.HasValue)
@@ -106,12 +117,12 @@ namespace ConverterRevitShared.Models
         AddPointsToOutline(pointsToAddToOutline, indexToAddTo);
       }
 
-      CleanOutline();
+      RemoveRedundantPointsFromOutline();
 
       return outlinePoints;
     }
 
-    void CleanOutline()
+    void RemoveRedundantPointsFromOutline()
     {
       Point previousPoint = outlinePoints[0];
       for (int i = outlinePoints.Count - 1; i >= 0; i--)

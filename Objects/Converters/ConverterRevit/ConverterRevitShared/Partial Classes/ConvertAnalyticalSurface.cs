@@ -262,24 +262,10 @@ namespace Objects.Converter.Revit
       return speckleElement2D;
     }
 
-    private IEnumerable<Point> GetEdgePointsForSurface(AnalyticalModelSurface revitSurface)
-    {
-      return TransactionManager.ExecuteInTemporaryTransaction(() =>
-      {
-        revitSurface.GetOpenings(out ICollection<ElementId> openingIds);
-        foreach (ElementId openingId in openingIds)
-        {
-          revitSurface.HideOpening(openingId);
-        }
-        revitSurface.Document.Regenerate();
-        return GetSurfaceOuterLoop(revitSurface).ToList();
-      }, revitSurface.Document);
-    }
-
     private IEnumerable<Point> GetSurfaceOuterLoop(AnalyticalModelSurface surface)
     {
-      var loops = surface.GetLoops(AnalyticalLoopType.External);
-      foreach (var xyz in EnumerateCurveLoopWithMostPoints(loops))
+      IList<CurveLoop> loops = surface.GetLoops(AnalyticalLoopType.External);
+      foreach (XYZ xyz in EnumerateCurveLoopWithMostPoints(loops))
       {
         yield return PointToSpeckle(xyz, surface.Document);
       }
@@ -290,17 +276,20 @@ namespace Objects.Converter.Revit
       surface.GetOpenings(out ICollection<ElementId> openingIds);
       foreach (ElementId openingId in openingIds)
       {
-        var points = EnumerateCurveLoopWithMostPoints(surface.GetOpeningLoops(openingId));
-        var pointsList = points
-          .Select(p => PointToSpeckle(p, surface.Document))
-          .SelectMany(specklePoint => specklePoint.ToList())
-          .ToList();
+        foreach (CurveLoop loop in surface.GetOpeningLoops(openingId))
+        {
+          IEnumerable<XYZ> points = EnumerateCurveLoopAsPoints(loop);
+          List<double> coordinateList = points
+            .Select(p => PointToSpeckle(p, surface.Document))
+            .SelectMany(specklePoint => specklePoint.ToList())
+            .ToList();
 
-        // add back first point to close the polyline
-        pointsList.Add(pointsList[0]);
-        pointsList.Add(pointsList[1]);
-        pointsList.Add(pointsList[2]);
-        yield return new Polyline(pointsList, ModelUnits);
+          // add back first point to close the polyline
+          coordinateList.Add(coordinateList[0]);
+          coordinateList.Add(coordinateList[1]);
+          coordinateList.Add(coordinateList[2]);
+          yield return new Polyline(coordinateList, ModelUnits);
+        }
       }
     }
 
@@ -325,7 +314,7 @@ namespace Objects.Converter.Revit
         loopCounts.Add(loop, loop.Count());
       }
 
-      var largestLoop = loopCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+      CurveLoop largestLoop = loopCounts.OrderByDescending(kvp => kvp.Value).First().Key;
       return EnumerateCurveLoopAsPoints(largestLoop);
     }
 
@@ -381,12 +370,7 @@ namespace Objects.Converter.Revit
         speckleElement2D.displayValue = GetElementDisplayValue(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine });
       }
 
-      speckleElement2D.openings = GetOpenings(revitSurface)
-        .Select(polyLine => new Polycurve(ModelUnits)
-        {
-          segments = new() { polyLine }
-        })
-        .ToList();
+      speckleElement2D.openings = GetOpenings(revitSurface);
 
       var prop = new Property2D();
 
