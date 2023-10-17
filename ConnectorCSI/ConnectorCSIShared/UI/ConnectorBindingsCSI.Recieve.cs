@@ -124,8 +124,7 @@ namespace Speckle.ConnectorCSI.UI
             status: finalStatus,
             createdIds: conversionResult.CreatedIds,
             converted: conversionResult.Converted,
-            log: conversionResult.Log,
-            descriptor: conversionResult.Descriptor
+            log: conversionResult.Log
           );
         }
         catch (ConversionSkippedException ex)
