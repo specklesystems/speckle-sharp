@@ -39,6 +39,9 @@ namespace Objects.Converter.Revit
       revitRoom.Name = speckleRoom.name;
       revitRoom.Number = speckleRoom.number;
 
+      if (speckleRoom.height > 0.0)
+        TrySetParam(revitRoom, BuiltInParameter.ROOM_UPPER_OFFSET, ScaleToNative(speckleRoom.height, speckleRoom.units));
+
       SetInstanceParameters(revitRoom, speckleRoom);
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
