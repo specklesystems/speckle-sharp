@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -275,6 +276,7 @@ public static class AccountManager
         account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
+        account.serverInfo.frontend2 = await IsFrontend2Server(url).ConfigureAwait(false);
       }
       catch (Exception)
       {
@@ -584,6 +586,29 @@ public static class AccountManager
     catch (Exception e)
     {
       throw new SpeckleException(e.Message, e);
+    }
+  }
+
+  private static async Task<bool> IsFrontend2Server(string server)
+  {
+    try
+    {
+      using var client = Http.GetHttpProxyClient();
+      var response = await client.GetAsync(server).ConfigureAwait(false);
+
+      if (response.Headers.TryGetValues("x-speckle-frontend-2", out IEnumerable<string> values))
+      {
+        if (values.Any() && bool.Parse(values.FirstOrDefault()))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+    catch (Exception e)
+    {
+      return false;
     }
   }
 
