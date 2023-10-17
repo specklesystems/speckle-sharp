@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
+using DUI3.Utils;
 using JetBrains.Annotations;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace DUI3.Bindings;
 
@@ -10,44 +12,100 @@ public class ConfigBinding : IBinding
 {
   public string Name { get; set; } = "configBinding";
   public IBridge Parent { get; set; }
-
+  private string HostAppName { get; }
   private static readonly SQLiteTransport ConfigStorage = new(scope: "Config");
+  private readonly JsonSerializerSettings _serializerOptions = SerializationSettingsFactory.GetSerializerSettings();
+
+  public ConfigBinding(string hostAppName)
+  {
+    this.HostAppName = hostAppName;
+  }
   
   [PublicAPI]
-  public Config GetConfig()
+  public UiConfig GetConfig()
   {
-    try
-    {
-      var config = ConfigStorage.GetObject("configDUI3");
-      if (string.IsNullOrEmpty(config)) return new Config();
-      return JsonSerializer.Deserialize<Config>(config);
-    }
-    catch (Exception _)
-    {
-      // TODO: Log error
-      return new Config();
-    }
+    return GetOrInitConfig();
   }
-
-  public void UpdateConfig(Config config)
+  
+  public void UpdateGlobalConfig(GlobalConfig newGlobalConfig)
   {
     try
     {
-      ConfigStorage.UpdateObject("configDUI3", JsonSerializer.Serialize(config));
+      UiConfig uiConfig = GetOrInitConfig();
+      uiConfig.Global = newGlobalConfig;
+      ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(uiConfig, _serializerOptions));
     }
     catch (Exception e)
     {
       // TODO: Log error
     }
   }
+  
+  public void UpdateConnectorConfig(ConnectorConfig newConnectorConfig)
+  {
+    try
+    {
+      UiConfig uiConfig = GetOrInitConfig();
+      uiConfig.Connectors[HostAppName] = newConnectorConfig;
+      ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(uiConfig, _serializerOptions));
+    }
+    catch (Exception e)
+    {
+      // TODO: Log error
+    }
+  }
+  
+  private UiConfig GetOrInitConfig()
+  {
+    string configDui3String = ConfigStorage.GetObject("configDUI3");
+
+    if (string.IsNullOrEmpty(configDui3String))
+    {
+      return InitDefaultConfig();
+    }
+    
+    UiConfig config = JsonConvert.DeserializeObject<UiConfig>(configDui3String, _serializerOptions);
+
+    if (config.Connectors.ContainsKey(HostAppName.ToLower())) return config;
+    
+    ConnectorConfig connectorConfig = new (HostAppName);
+    config.Connectors.Add(HostAppName, connectorConfig);
+    ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(config, _serializerOptions));
+    return config;
+  }
+
+  private UiConfig InitDefaultConfig()
+  {
+    Dictionary<string, ConnectorConfig> defaultConfigs = new() { { HostAppName, new ConnectorConfig(HostAppName) } };
+    UiConfig defaultConfig = new() { Global = new GlobalConfig(), Connectors = defaultConfigs };
+    string serializedConfigs = JsonConvert.SerializeObject(defaultConfig, _serializerOptions);
+    ConfigStorage.UpdateObject("configDUI3", serializedConfigs);
+    return defaultConfig;
+  }
 }
 
-public class Config
+public class GlobalConfig : DiscriminatedObject
 {
+  public bool OnboardingCompleted { get; set; }
+}
+
+public class ConnectorConfig : DiscriminatedObject
+{
+  public string HostApp { set; get; }
+  
   public bool DarkTheme { set; get; }
-  /**
-   * Meant to keep track of whether the v0 onboarding has been completed or not, separated by host app. E.g.:
-   * { "Rhino" : true, "Revit": false }
-   */
-  public Dictionary<string, bool> OnboardingV0 { get; set; } = new Dictionary<string, bool>();
+
+  public ConnectorConfig() { }
+
+  public ConnectorConfig(string hostApp)
+  {
+    HostApp = hostApp;
+  }
+}
+
+public class UiConfig : DiscriminatedObject
+{
+  public GlobalConfig Global { get; set; }
+  
+  public Dictionary<string, ConnectorConfig> Connectors { get; set; }
 }

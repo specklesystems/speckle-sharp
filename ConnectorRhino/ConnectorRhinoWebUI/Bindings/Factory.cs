@@ -16,13 +16,11 @@ public static class Factory
     var baseBindings = new BasicConnectorBinding(Store);
     var sendBindings = new SendBinding(Store);
     var receiveBindings = new ReceiveBinding(Store);
-    // TODO: expiryBindings (?) maybe part of sendBindings after all...
-    // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
 
     var bindingsList = new List<IBinding>
     {
-      new ConfigBinding(),
+      new ConfigBinding(Utils.Utils.AppName),
       new AccountBinding(),
       new TestBinding(),
       baseBindings,

@@ -121,11 +121,6 @@ public class SendBinding : ISendBinding, ICancelable
   {
     CancellationManager.CancelOperation(modelCardId);
   }
-
-  public void Highlight(string modelCardId)
-  {
-    throw new System.NotImplementedException();
-  }
   
   private void RunExpirationChecks()
   {

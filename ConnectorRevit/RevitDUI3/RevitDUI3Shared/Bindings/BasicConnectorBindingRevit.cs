@@ -1,8 +1,14 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
+using Revit.Async;
+using Sentry.Reflection;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -14,7 +20,8 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
   private static UIApplication RevitApp { get; set; }
-  private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
+  private static UIDocument UiDocument => RevitApp.ActiveUIDocument;
+  private static Document Doc => UiDocument.Document;
   private readonly RevitDocumentStore _store;
   
   public BasicConnectorBindingRevit(RevitDocumentStore store)
@@ -25,6 +32,11 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
+  }
+  
+  public string GetConnectorVersion()
+  {
+    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
   }
   
   public string GetSourceApplicationName()
@@ -44,13 +56,13 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public DocumentInfo GetDocumentInfo()
   {
-    if (CurrentDoc == null) return null;
+    if (UiDocument == null) return null;
     
     return new DocumentInfo
     {
-      Name = CurrentDoc.Document.Title,
-      Id = CurrentDoc.Document.GetHashCode().ToString(),
-      Location = CurrentDoc.Document.PathName
+      Name = UiDocument.Document.Title,
+      Id = UiDocument.Document.GetHashCode().ToString(),
+      Location = UiDocument.Document.PathName
     };
   }
 
@@ -74,5 +86,62 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
   {
     var index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
+  }
+
+  public void HighlightModel(string modelCardId)
+  {
+    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    List<Element> elements = Utils.Objects.GetObjectsFromDocument(Doc, objectsIds);
+
+    var elementIds = elements.Select(e => e.Id).ToList();
+
+    // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
+    RevitTask.RunAsync(
+      () =>
+      {
+        UiDocument.Selection.SetElementIds(elementIds);
+        UiDocument.ShowElements(elementIds);
+        
+        // Create a BoundingBoxXYZ to encompass the selected elements
+        BoundingBoxXYZ selectionBoundingBox = new BoundingBoxXYZ();
+        bool first = true;
+
+        foreach (ElementId elementId in elementIds)
+        {
+          Element element = Doc.GetElement(elementId);
+
+          if (element != null)
+          {
+            BoundingBoxXYZ elementBoundingBox = element.get_BoundingBox(null);
+
+            if (elementBoundingBox != null)
+            {
+              if (first)
+              {
+                selectionBoundingBox = elementBoundingBox;
+                first = false;
+              }
+              else
+              {
+                // selectionBoundingBox.Min = XYZ.Min(selectionBoundingBox.Min, elementBoundingBox.Min);
+                // selectionBoundingBox.Max = XYZ.Max(selectionBoundingBox.Max, elementBoundingBox.Max);
+              }
+            }
+          }
+        }
+
+        // Zoom the view to the selection bounding box
+        if (!first)
+        {
+          View activeView = UiDocument.ActiveView;
+
+          using Transaction tr = new Transaction(Doc, "Zoom to Selection");
+          tr.Start();
+          activeView.CropBox = selectionBoundingBox;
+          Doc.Regenerate();
+          tr.Commit();
+        }
+      });
   }
 }

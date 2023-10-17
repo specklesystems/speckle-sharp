@@ -70,7 +70,7 @@ namespace AutocadCivilDUI3Shared.Bindings
         Account account = Accounts.GetAccount(model.AccountId);
         
         // 3 - Get elements to convert
-        List<DBObject> dbObjects = GetObjectsFromDocument(model);
+        List<DBObject> dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
         
         // 4 - Get converter
         ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.Utils.VersionedAppName);
@@ -106,11 +106,6 @@ namespace AutocadCivilDUI3Shared.Bindings
     public void CancelSend(string modelCardId)
     {
       CancellationManager.CancelOperation(modelCardId);
-    }
-
-    public void Highlight(string modelCardId)
-    {
-      throw new NotImplementedException();
     }
 
     private void RunExpirationChecks()
@@ -164,29 +159,10 @@ namespace AutocadCivilDUI3Shared.Bindings
           continue;
         }
       }
-    
+
       commitObject["@elements"] = convertedObjects;
 
       return commitObject;
-    }
-
-    private List<DBObject> GetObjectsFromDocument(SenderModelCard model)
-    {
-      List<string> objectsIds = model.SendFilter.GetObjectIds();
-      var dbObjects = new List<DBObject>();
-      using DocumentLock acLckDoc = Doc.LockDocument();
-      using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
-      foreach (var autocadObjectHandle in objectsIds)
-      {
-        // TODO: also provide here cancel operation
-        // get the db object from id
-        if (!Utils.Utils.GetHandle(autocadObjectHandle, out Handle hn)) continue;
-        DBObject obj = hn.GetObject(tr, out string _, out string _, out string _);
-        dbObjects.Add(obj);
-      }
-      tr.Commit();
-
-      return dbObjects;
     }
   }
 }

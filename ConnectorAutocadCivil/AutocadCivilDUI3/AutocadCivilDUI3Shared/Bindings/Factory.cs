@@ -22,7 +22,7 @@ namespace AutocadCivilDUI3Shared.Bindings
 
       var bindingsList = new List<IBinding>
       {
-        new ConfigBinding(),
+        new ConfigBinding("Autocad"),
         new AccountBinding(),
         new TestBinding(),
         baseBindings,

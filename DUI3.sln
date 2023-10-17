@@ -16,8 +16,14 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutocadCivilDUI3Shared", "ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.shproj", "{2BDE80E8-5F26-4E57-BBA6-109120F5D4EE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2023DUI3", "ConnectorAutocadCivil\AutocadCivilDUI3\Autocad2023\ConnectorAutocad2023DUI3.csproj", "{6CD69B4E-73D5-49FA-AF3B-6FD81EBA4A47}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F5D45975-670E-45DA-BD7F-9F2ACC93378C} = {F5D45975-670E-45DA-BD7F-9F2ACC93378C}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2022DUI3", "ConnectorAutocadCivil\AutocadCivilDUI3\Autocad2022\ConnectorAutocad2022DUI3.csproj", "{1EBAA135-7D72-4EA9-BBB6-316646F3DBA5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AD03E736-4D8A-4879-9E3C-9F865FC3C7C1} = {AD03E736-4D8A-4879-9E3C-9F865FC3C7C1}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{574B03A6-8B43-467B-A9FD-82EA4D62D52D}"
 EndProject

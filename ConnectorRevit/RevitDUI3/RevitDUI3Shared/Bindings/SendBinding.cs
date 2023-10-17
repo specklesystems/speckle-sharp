@@ -50,14 +50,6 @@ public class SendBinding : ISendBinding, ICancelable
     };
   }
 
-  private List<Element> GetObjectsFromDocument(SenderModelCard model)
-  {
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    return objectsIds
-      .Select(x => _revitApp.ActiveUIDocument.Document.GetElement(x))
-      .Where(x => x != null).ToList();
-  }
-
   private Base ConvertElements(
     List<Element> elements,
     ISpeckleConverter converter,
@@ -103,7 +95,7 @@ public class SendBinding : ISendBinding, ICancelable
       Account account = Accounts.GetAccount(model.AccountId);
       
       // 3 - Get elements to convert
-      List<Element> elements = GetObjectsFromDocument(model);
+      List<Element> elements = Utils.Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
 
       // 4 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
@@ -139,11 +131,6 @@ public class SendBinding : ISendBinding, ICancelable
   public void CancelSend(string modelCardId)
   {
     CancellationManager.CancelOperation(modelCardId);
-  }
-
-  public void Highlight(string modelCardId)
-  {
-    throw new System.NotImplementedException();
   }
 
   /// <summary>
