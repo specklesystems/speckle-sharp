@@ -2,15 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.Structure;
+using ConverterRevitShared.Extensions;
+using ConverterRevitShared.Models;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Structural;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using Opening = Objects.BuiltElements.Opening;
+using Point = Objects.Geometry.Point;
 
 
 namespace Objects.Converter.Revit
@@ -196,55 +203,27 @@ namespace Objects.Converter.Revit
       var mark = GetParamValue<string>(structuralElement, BuiltInParameter.ALL_MODEL_MARK);
       speckleElement2D.name = mark;
 
-      var edgeNodes = new List<Node> { };
-      var loops = revitSurface.GetLoops(AnalyticalLoopType.External);
+      var openings = GetOpeningsAsPolylineFromSurface(revitSurface).ToList();
+      var edgePoints = GetSurfaceOuterLoop(revitSurface).ToList();
 
-      var displayLine = new Polycurve();
-      foreach (var loop in loops)
+      Element2DOutlineBuilder outlineBuilder = new(openings, edgePoints);
+      
+      speckleElement2D.openings = openings.Select(polyLine => new Polycurve(ModelUnits)
       {
-        var coor = new List<double>();
-        foreach (var curve in loop)
-        {
-          var points = curve.Tessellate();
+        segments = new() { polyLine }
+      })
+      .ToList();
 
-          foreach (var p in points.Skip(1))
-          {
-            var vertex = PointToSpeckle(p, revitSurface.Document);
-            var edgeNode = new Node(vertex, null, null, null);
-            edgeNodes.Add(edgeNode);
-          }
+      //speckleElement2D.topology = GetEdgePointsForSurface(revitSurface).
+      //  .Select(p => new Node(p))
+      //  .ToList();
+      speckleElement2D.topology = outlineBuilder
+        .GetOutline()
+        .Select(p => new Node(p))
+        .ToList();
 
-          displayLine.segments.Add(CurveToSpeckle(curve, revitSurface.Document));
-        }
-      }
 
-      speckleElement2D.topology = edgeNodes;
       speckleElement2D.displayValue = GetElementDisplayValue(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine });
-
-      var voidNodes = new List<List<Node>> { };
-      var voidLoops = revitSurface.GetLoops(AnalyticalLoopType.Void);
-      foreach (var loop in voidLoops)
-      {
-        var loopNodes = new List<Node>();
-        foreach (var curve in loop)
-        {
-          var points = curve.Tessellate();
-
-          foreach (var p in points.Skip(1))
-          {
-            var vertex = PointToSpeckle(p, revitSurface.Document);
-            var voidNode = new Node(vertex, null, null, null);
-            loopNodes.Add(voidNode);
-          }
-        }
-        voidNodes.Add(loopNodes);
-      }
-      //speckleElement2D.voids = voidNodes;
-
-      //var mesh = new Geometry.Mesh();
-      //var solidGeom = GetElementSolids(structuralElement);
-      //(mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solidGeom);
-      //speckleElement2D.baseMesh = mesh;	  
 
       var prop = new Property2D();
 
@@ -286,6 +265,65 @@ namespace Objects.Converter.Revit
 
       return speckleElement2D;
     }
+
+    private IEnumerable<Point> GetEdgePointsForSurface(AnalyticalModelSurface revitSurface)
+    {
+      return TransactionManager.ExecuteInTemporaryTransaction(() =>
+      {
+        revitSurface.GetOpenings(out ICollection<ElementId> openingIds);
+        foreach (ElementId openingId in openingIds)
+        {
+          revitSurface.HideOpening(openingId);
+        }
+        revitSurface.Document.Regenerate();
+        return GetSurfaceOuterLoop(revitSurface).ToList();
+      }, revitSurface.Document);
+    }
+
+    private IEnumerable<Point> GetSurfaceOuterLoop(AnalyticalModelSurface surface)
+    {
+      var loops = surface.GetLoops(AnalyticalLoopType.External);
+      foreach (var xyz in EnumerateCurveLoopsAsPoints(loops))
+      {
+        yield return PointToSpeckle(xyz, surface.Document);
+      }
+    }
+
+    private IEnumerable<Polyline> GetOpeningsAsPolylineFromSurface(AnalyticalModelSurface surface)
+    {
+      surface.GetOpenings(out ICollection<ElementId> openingIds);
+      foreach (ElementId openingId in openingIds)
+      {
+        var points = EnumerateCurveLoopsAsPoints(surface.GetOpeningLoops(openingId));
+        var pointsList = points
+          .Select(p => PointToSpeckle(p, surface.Document))
+          .SelectMany(specklePoint => specklePoint.ToList())
+          .ToList();
+
+        // add back first point to close the polyline
+        pointsList.Add(pointsList[0]);
+        pointsList.Add(pointsList[1]);
+        pointsList.Add(pointsList[2]);
+        yield return new Polyline(pointsList, ModelUnits);
+      }
+    }
+
+    IEnumerable<XYZ> EnumerateCurveLoopsAsPoints(IEnumerable<CurveLoop> curveLoops)
+    {
+      foreach (var loop in curveLoops)
+      {
+        foreach (var curve in loop)
+        {
+          var points = curve.Tessellate();
+          // here we are skipping the first point each time because
+          // it is always the same as the last point of the previous curve
+          foreach (var point in points.Skip(1))
+          {
+            yield return point;
+          }
+        }
+      }
+    }
 #else
     private Element2D AnalyticalSurfaceToSpeckle(AnalyticalPanel revitSurface)
     {
@@ -325,7 +363,12 @@ namespace Objects.Converter.Revit
         speckleElement2D.displayValue = GetElementDisplayValue(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine });
       }
 
-      speckleElement2D.openings = GetOpenings(revitSurface);
+      speckleElement2D.openings = GetOpenings(revitSurface)
+        .Select(polyLine => new Polycurve(ModelUnits)
+        {
+          segments = new() { polyLine }
+        })
+        .ToList();
 
       var prop = new Property2D();
 
