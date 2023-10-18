@@ -41,6 +41,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DriverCSharp", "DriverCShar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DriverPluginCSharp", "DriverPluginCSharp\DriverPluginCSharp.csproj", "{C59939F6-D383-44E3-A7EF-4E160E3DFB73}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSiSharedResources", "CSiSharedResources\CSiSharedResources.csproj", "{243588C4-F481-42B2-B799-793F83C9A157}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,10 @@ Global
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{243588C4-F481-42B2-B799-793F83C9A157}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{243588C4-F481-42B2-B799-793F83C9A157}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{243588C4-F481-42B2-B799-793F83C9A157}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{243588C4-F481-42B2-B799-793F83C9A157}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -125,6 +131,7 @@ Global
 		{BF1A4F95-ACF7-4353-B60A-4D79C2F44651} = {37D16D91-5EF3-4889-9BFD-082CC425CB0D}
 		{C091E499-597D-4077-B83F-08E069091090} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
 		{C59939F6-D383-44E3-A7EF-4E160E3DFB73} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
+		{243588C4-F481-42B2-B799-793F83C9A157} = {3DA56828-5C39-4872-A5A4-E3E50D9873BC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61234D5B-1E5E-4C97-89A1-FA97E4B63D95}

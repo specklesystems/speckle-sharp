@@ -1,4 +1,5 @@
 using ConnectorCSI.Storage;
+using CSiSharedResources.Interfaces;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -15,7 +16,6 @@ using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
 using Speckle.Core.Models.GraphTraversal;
-using CSiConnectorConverterShared.Interfaces;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorCSI.UI

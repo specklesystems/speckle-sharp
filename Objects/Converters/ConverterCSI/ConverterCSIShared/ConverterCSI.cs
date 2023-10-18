@@ -1,5 +1,5 @@
 using CSiAPIv1;
-using CSiConnectorConverterShared.Interfaces;
+using CSiSharedResources.Interfaces;
 using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;

@@ -2,7 +2,7 @@
   "solution": {
     "path": "..\\All.sln",
     "projects": [
-      "CSiConnectorConverterShared\\CSiConnectorConverterShared.csproj",
+      "ConnectorCSI\\CSiSharedResources\\CSiSharedResources.csproj",
       "ConnectorCSI\\ConnectorCSIBridge\\ConnectorCSIBridge.csproj",
       "ConnectorCSI\\ConnectorCSIShared\\ConnectorCSIShared.shproj",
       "ConnectorCSI\\ConnectorETABS\\ConnectorETABS.csproj",

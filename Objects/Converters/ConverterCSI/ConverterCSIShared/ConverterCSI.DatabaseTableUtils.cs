@@ -1,5 +1,5 @@
 using ConverterCSIShared.Models;
-using CSiConnectorConverterShared.Interfaces;
+using CSiSharedResources.Interfaces;
 
 namespace Objects.Converter.CSI
 {

@@ -1,6 +1,6 @@
 using Speckle.Core.Kits;
 
-namespace CSiConnectorConverterShared.Interfaces
+namespace CSiSharedResources.Interfaces
 {
   public interface ICSiSpeckleConverter : ISpeckleConverter
   {
