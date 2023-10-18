@@ -1,6 +1,7 @@
 # nullable enable
 using System.Diagnostics;
 using GraphQL;
+using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -15,14 +16,14 @@ public class AutomationContext
   public AutomationRunData AutomationRunData { get; set; }
   public Client SpeckleClient { get; set; }
 
-  private ServerTransport ServerTransport { get; set; }
-  private string SpeckleToken { get; set; }
+  private ServerTransport serverTransport;
+  private string speckleToken;
 
   // keep a memory transport at hand, to speed up things if needed
-  private MemoryTransport MemoryTransport { get; set; }
+  private MemoryTransport memoryTransport;
 
   // added for performance measuring
-  private Stopwatch InitTime { get; set; }
+  private Stopwatch initTime;
 
   internal AutomationResult AutomationResult { get; set; }
 
@@ -43,10 +44,10 @@ public class AutomationContext
     {
       AutomationRunData = automationRunData,
       SpeckleClient = client,
-      ServerTransport = serverTransport,
-      SpeckleToken = speckleToken,
-      MemoryTransport = new MemoryTransport(),
-      InitTime = initTime,
+      serverTransport = serverTransport,
+      speckleToken = speckleToken,
+      memoryTransport = new MemoryTransport(),
+      initTime = initTime,
       AutomationResult = new AutomationResult(),
     };
   }
@@ -63,7 +64,7 @@ public class AutomationContext
   public string RunStatus => AutomationResult.RunStatus;
 
   public string? StatusMessage => AutomationResult.StatusMessage;
-  public TimeSpan Elapsed => InitTime.Elapsed;
+  public TimeSpan Elapsed => initTime.Elapsed;
 
   public async Task<Base> ReceiveVersion()
   {
@@ -71,7 +72,7 @@ public class AutomationContext
       .CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId)
       .ConfigureAwait(false);
     var commitRootObject = await Operations
-      .Receive(commit.referencedObject, ServerTransport, MemoryTransport)
+      .Receive(commit.referencedObject, serverTransport, memoryTransport)
       .ConfigureAwait(false);
     if (commitRootObject == null)
       throw new Exception("Commit root object was null");
@@ -89,7 +90,7 @@ public class AutomationContext
         nameof(modelId)
       );
     var rootObjectId = await Operations
-      .Send(rootObject, new List<ITransport> { ServerTransport, MemoryTransport }, useDefaultCache: false)
+      .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport }, useDefaultCache: false)
       .ConfigureAwait(false);
     var model = await SpeckleClient.ModelGet(AutomationRunData.ProjectId, modelId).ConfigureAwait(false);
     var versionId = await SpeckleClient
@@ -205,7 +206,7 @@ public class AutomationContext
 
     var msg = $"Automation run {statusValue} after {duration} seconds.";
     if (statusMessage is not null)
-      msg += "\n{statusMessage}";
+      msg += $"\n{statusMessage}";
     Console.WriteLine(msg);
   }
 

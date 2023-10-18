@@ -2,20 +2,24 @@ using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
+using Speckle.Automate.Sdk.Schema;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Automate.Sdk;
 
+/// <summary>
+/// Provides mechanisms to execute any function that conforms to the AutomateFunction "interface"
+/// </summary>
 public static class AutomationRunner
 {
   [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
-  public static async Task<AutomationContext> RunFunction<T>(
-    Func<AutomationContext, T, Task> automateFunction,
+  public static async Task<AutomationContext> RunFunction<TInput>(
+    Func<AutomationContext, TInput, Task> automateFunction,
     AutomationRunData automationRunData,
     string speckleToken,
-    T inputs
+    TInput inputs
   )
-    where T : struct
+    where TInput : struct
   {
     var automationContext = await AutomationContext.Initialize(automationRunData, speckleToken).ConfigureAwait(false);
 
@@ -56,14 +60,27 @@ public static class AutomationRunner
 
   private struct Fake { }
 
+  /// <summary>
+  /// Main entrypoint to execute an Automate function with no input data
+  /// </summary>
+  /// <param name="args">The command line arguments passed into the function by automate</param>
+  /// <param name="automateFunction">The automate function that should be run.</param>
+  /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
   public static async Task Main(string[] args, Func<AutomationContext, Task> automateFunction)
   {
     await Main(args, async (AutomationContext context, Fake _) => await automateFunction(context).ConfigureAwait(false))
       .ConfigureAwait(false);
   }
 
-  public static async Task Main<T>(string[] args, Func<AutomationContext, T, Task> automateFunction)
-    where T : struct
+  /// <summary>
+  /// Main entrypoint to execute an Automate function with input data of type <see cref="TInput"/>
+  /// </summary>
+  /// <param name="args">The command line arguments that were passed to the function CLI</param>
+  /// <param name="automateFunction">The automate function to execute</param>
+  /// <typeparam name="TInput">The provided input data</typeparam>
+  /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
+  public static async Task Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
+    where TInput : struct
   {
     var speckleProjectDataArg = new Argument<string>(
       name: "Speckle project data",
@@ -85,7 +102,7 @@ public static class AutomationRunner
       async (speckleProjectData, functionInputs, speckleToken) =>
       {
         var automationRunData = JsonConvert.DeserializeObject<AutomationRunData>(speckleProjectData);
-        var functionInputsParsed = JsonConvert.DeserializeObject<T>(functionInputs);
+        var functionInputsParsed = JsonConvert.DeserializeObject<TInput>(functionInputs);
 
         await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed)
           .ConfigureAwait(false);
@@ -106,7 +123,7 @@ public static class AutomationRunner
       async (schemaFilePath) =>
       {
         var generator = new JSchemaGenerator { ContractResolver = new CamelCasePropertyNamesContractResolver() };
-        var schema = generator.Generate(typeof(T));
+        var schema = generator.Generate(typeof(TInput));
         schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
         File.WriteAllText(schemaFilePath, schema.ToString());
       },
