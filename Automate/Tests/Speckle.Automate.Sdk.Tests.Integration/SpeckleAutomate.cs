@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using GraphQL;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;

@@ -1,4 +1,3 @@
-using System.Collections;
 using GraphQL;
 using Speckle.Core.Api;
 
@@ -13,7 +12,6 @@ public class AutomationRun
 {
   public string Status { get; set; }
   public IList<FunctionRun> FunctionRuns { get; set; }
-  
 }
 
 public class AutomationStatus
