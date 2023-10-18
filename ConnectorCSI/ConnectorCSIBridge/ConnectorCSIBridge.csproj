@@ -5,6 +5,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj"/>
+    <ProjectReference Include="..\..\CSiConnectorConverterShared\CSiConnectorConverterShared.csproj" />
+    <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 using CSiAPIv1;
+using CSiConnectorConverterShared.Interfaces;
 using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
@@ -19,7 +20,7 @@ using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {
-  public partial class ConverterCSI : ISpeckleConverter
+  public partial class ConverterCSI : ICSiSpeckleConverter
   {
 #if ETABS
     public static string CSIAppName = HostApplications.ETABS.Name;

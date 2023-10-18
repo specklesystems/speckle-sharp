@@ -72,7 +72,7 @@ namespace ConverterCSIShared.Models
         };
       }
 
-      AddRow(newRow);
+      AddRowToBeCommitted(newRow);
     }
 
     /// <summary>
