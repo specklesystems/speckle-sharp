@@ -64,7 +64,7 @@ public static class AutomationRunner
   /// Main entrypoint to execute an Automate function with no input data
   /// </summary>
   /// <param name="args">The command line arguments passed into the function by automate</param>
-  /// <param name="automateFunction">The automate function that should be run.</param>
+  /// <param name="automateFunction">The automate function to execute</param>
   /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
   public static async Task Main(string[] args, Func<AutomationContext, Task> automateFunction)
   {
@@ -75,7 +75,7 @@ public static class AutomationRunner
   /// <summary>
   /// Main entrypoint to execute an Automate function with input data of type <see cref="TInput"/>
   /// </summary>
-  /// <param name="args">The command line arguments that were passed to the function CLI</param>
+  /// <param name="args">The command line arguments passed into the function by automate</param>
   /// <param name="automateFunction">The automate function to execute</param>
   /// <typeparam name="TInput">The provided input data</typeparam>
   /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
