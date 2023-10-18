@@ -1,91 +1,32 @@
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using GraphQL;
+using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using TestsIntegration;
+using Utils = Speckle.Automate.Sdk.Tests.Integration.TestAutomateUtils;
 
 namespace Speckle.Automate.Sdk.Tests.Integration;
 
 [TestFixture]
-public class AutomationContextTest
+public sealed class AutomationContextTest : IDisposable
 {
-  [SuppressMessage("Security", "CA5394:Do not use insecure randomness")]
-  private static string RandomString(int length)
-  {
-    Random rand = new();
-    const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
-    var chars = Enumerable.Range(0, length).Select(_ => pool[rand.Next(0, pool.Length)]);
-    return new string(chars.ToArray());
-  }
-
-  private static async Task RegisterNewAutomation(
-    string projectId,
-    string modelId,
-    Client speckleClient,
-    string automationId,
-    string automationName,
-    string automationRevisionId
-  )
-  {
-    GraphQLRequest query =
-      new(
-        query: """
-               mutation CreateAutomation(
-                   $projectId: String!
-                   $modelId: String!
-                   $automationName: String!
-                   $automationId: String!
-                   $automationRevisionId: String!
-               ) {
-                       automationMutations {
-                           create(
-                               input: {
-                                   projectId: $projectId
-                                   modelId: $modelId
-                                   automationName: $automationName
-                                   automationId: $automationId
-                                   automationRevisionId: $automationRevisionId
-                               }
-                           )
-                       }
-                   }
-               """,
-        variables: new
-        {
-          projectId,
-          modelId,
-          automationName,
-          automationId,
-          automationRevisionId,
-        }
-      );
-
-    await speckleClient.ExecuteGraphQLRequest<object>(query);
-  }
-
-  private static Base TestObject()
-  {
-    Base rootObject = new() { ["foo"] = "bar" };
-    return rootObject;
-  }
-
   private async Task<AutomationRunData> AutomationRunData(Base testObject)
   {
-    string projectId = await _client.StreamCreate(new() { name = "Automate function e2e test" });
+    string projectId = await client.StreamCreate(new() { name = "Automate function e2e test" });
     const string branchName = "main";
 
-    Branch model = await _client.BranchGet(projectId, branchName, 1);
+    Branch model = await client.BranchGet(projectId, branchName, 1);
     string modelId = model.id;
 
     string rootObjId = await Operations.Send(
       testObject,
-      new List<ITransport> { new ServerTransport(_client.Account, projectId) }
+      new List<ITransport> { new ServerTransport(client.Account, projectId) }
     );
 
-    string versionId = await _client.CommitCreate(
+    string versionId = await client.CommitCreate(
       new()
       {
         streamId = projectId,
@@ -94,23 +35,23 @@ public class AutomationContextTest
       }
     );
 
-    var automationName = RandomString(10);
-    var automationId = RandomString(10);
-    var automationRevisionId = RandomString(10);
+    var automationName = Utils.RandomString(10);
+    var automationId = Utils.RandomString(10);
+    var automationRevisionId = Utils.RandomString(10);
 
-    await RegisterNewAutomation(projectId, modelId, _client, automationId, automationName, automationRevisionId);
+    await Utils.RegisterNewAutomation(projectId, modelId, client, automationId, automationName, automationRevisionId);
 
-    var automationRunId = RandomString(10);
-    var functionId = RandomString(10);
-    var functionRelease = RandomString(10);
+    var automationRunId = Utils.RandomString(10);
+    var functionId = Utils.RandomString(10);
+    var functionRelease = Utils.RandomString(10);
 
-    return new AutomationRunData()
+    return new AutomationRunData
     {
       ProjectId = projectId,
       ModelId = modelId,
       BranchName = branchName,
       VersionId = versionId,
-      SpeckleServerUrl = _client.ServerUrl,
+      SpeckleServerUrl = client.ServerUrl,
       AutomationId = automationId,
       AutomationRevisionId = automationRevisionId,
       AutomationRunId = automationRunId,
@@ -119,27 +60,25 @@ public class AutomationContextTest
     };
   }
 
-  
-
-  private Client _client;
-  private Account _account;
+  private Client client;
+  private Account account;
 
   [OneTimeSetUp]
   public async Task Setup()
   {
-    _account = await Fixtures.SeedUser().ConfigureAwait(false);
-    _client = new Client(_account);
+    account = await Fixtures.SeedUser().ConfigureAwait(false);
+    client = new Client(account);
   }
 
   [Test]
   public async Task TestFunctionRun()
   {
-    var automationRunData = await AutomationRunData(TestObject());
+    var automationRunData = await AutomationRunData(Utils.TestObject());
     var automationContext = await AutomationRunner.RunFunction(
-      AutomateFunction.Run,
+      TestAutomateFunction.Run,
       automationRunData,
-      _account.token,
-      new FunctionInputs { ForbiddenSpeckleType = "Base" }
+      account.token,
+      new TestFunctionInputs { ForbiddenSpeckleType = "Base" }
     );
 
     Assert.That(automationContext.RunStatus, Is.EqualTo("FAILED"));
@@ -159,15 +98,14 @@ public class AutomationContextTest
   [Test]
   public async Task TestFileUploads()
   {
-    var automationRunData = await AutomationRunData(TestObject());
-    var automationContext = await AutomationContext.Initialize(automationRunData, _account.token);
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
 
-    string filePath = $"./{RandomString(10)}";
+    string filePath = $"./{Utils.RandomString(10)}";
     await File.WriteAllTextAsync(filePath, "foobar");
     try
     {
       await automationContext.StoreFileResult(filePath);
-
     }
     catch (Exception e)
     {
@@ -178,44 +116,9 @@ public class AutomationContextTest
     File.Delete(filePath);
     Assert.That(automationContext.AutomationResult.Blobs, Has.Count.EqualTo(1));
   }
-}
 
-public struct FunctionInputs
-{
-  [Required]
-  public string ForbiddenSpeckleType { get; set; }
-}
-
-public static class AutomateFunction
-{
-  public static async Task Run(AutomationContext automateContext, FunctionInputs functionInputs)
+  public void Dispose()
   {
-    var versionRootObject = await automateContext.ReceiveVersion();
-
-    int count = 0;
-    if (versionRootObject.speckle_type == functionInputs.ForbiddenSpeckleType)
-    {
-      if (versionRootObject.id is null)
-        throw new InvalidOperationException("Cannot operate on objects without their ids");
-
-      automateContext.AttachErrorToObjects(
-        "",
-        new[] { versionRootObject.id },
-        $"This project should not contain the type: {functionInputs.ForbiddenSpeckleType} "
-      );
-      count += 1;
-    }
-
-    if (count > 0)
-    {
-      automateContext.MarkRunFailed(
-        "Automation failed: "
-          + $"Found {count} object that have a forbidden speckle type: {functionInputs.ForbiddenSpeckleType}"
-      );
-    }
-    else
-    {
-      automateContext.MarkRunSuccess("No forbidden types found.");
-    }
+    client.Dispose();
   }
 }
