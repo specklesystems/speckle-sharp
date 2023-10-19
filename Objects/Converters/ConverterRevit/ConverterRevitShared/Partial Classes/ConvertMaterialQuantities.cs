@@ -1,5 +1,6 @@
 #nullable enable
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using Objects.Other;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +13,20 @@ namespace Objects.Converter.Revit
     public IEnumerable<Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
       double factor = ScaleToSpeckle(1);
-
-      IEnumerable<MaterialQuantity> quantitiesFromAPI = GetMaterialQuantitiesFromAPICall(element, units, factor); 
-      if (quantitiesFromAPI.Any())
+ 
+      if (MaterialAreaAPICallWillReportSingleFace(element))
       {
-        return quantitiesFromAPI;
+        return GetMaterialQuantitiesFromAPICall(element, units, factor);
       }
-      else if (GetMaterialQuantityForMEPElement(element, units, factor) is MaterialQuantity quantity)
+      else if (element.IsMEPElement())
       {
-        return new List<MaterialQuantity>() { quantity };
+        List<MaterialQuantity> quantities = new();
+        MaterialQuantity quantity = GetMaterialQuantityForMEPElement(element, units, factor);
+        if (quantity != null)
+        {
+          quantities.Add(quantity);
+        }
+        return quantities;
       }
       else
       {
@@ -49,7 +55,9 @@ namespace Objects.Converter.Revit
         return null;
       }
 
-      GetGeometry(element, out _, out List<Solid> solids);
+      DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
+      var (solids, _) = GetSolidsAndMeshesFromElement(element, options);
+
       Other.Material speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
       var (area, volume) = GetAreaAndVolumeFromSolids(solids, factor);
       return new MaterialQuantity(speckleMaterial, volume, area, units);
@@ -57,7 +65,9 @@ namespace Objects.Converter.Revit
     
     private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromSolids(DB.Element element, string units, double factor)
     {
-      GetGeometry(element, out _, out List<Solid> solids);
+      DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
+      var (solids, _) = GetSolidsAndMeshesFromElement(element, options);
+
       foreach (ElementId matId in GetMaterialsFromSolids(solids))
       {
         Other.Material speckleMaterial = ConvertAndCacheMaterial(matId, element.Document);
@@ -79,9 +89,10 @@ namespace Objects.Converter.Revit
       }
 
       double volume = solids.Sum(solid => solid.Volume);
-      double area = solids
+      IEnumerable<double> areaOfLargestFaceInEachSolid = solids
           .Select(solid => solid.Faces.Cast<Face>().Select(face => face.Area)
-          .Max()).Sum();
+          .Max());
+      double area = areaOfLargestFaceInEachSolid.Sum();
       volume *= factor * factor * factor;
       area *= factor * factor;
       return (area, volume);
@@ -94,26 +105,16 @@ namespace Objects.Converter.Revit
         .Select(m => m.Faces.get_Item(0).MaterialElementId)
         .Distinct();
     }
-
-    private void GetGeometry(DB.Element element, out List<DB.Mesh> meshes, out List<DB.Solid> solids)
+    
+    private bool MaterialAreaAPICallWillReportSingleFace(Element element)
     {
-      DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
-      GeometryElement geom;
-      solids = new();
-      meshes = new();
-      try
+      return element switch
       {
-        geom = element.get_Geometry(options);
-      }
-      catch (Autodesk.Revit.Exceptions.ArgumentException)
-      {
-        options.ComputeReferences = false;
-        geom = element.get_Geometry(options);
-      }
-      if (geom != null)
-      {
-        SortGeometry(element, solids, meshes, geom);
-      }
+        DB.CeilingAndFloor => true,
+        DB.Wall => true,
+        DB.RoofBase => true,
+        _ => false
+      };
     }
   }
 }
