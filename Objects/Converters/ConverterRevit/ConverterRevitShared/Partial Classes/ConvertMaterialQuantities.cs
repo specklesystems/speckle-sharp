@@ -10,44 +10,44 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    /// <summary>
+    /// Material Quantities in Revit are stored in different ways and therefore need to be retrieved 
+    /// using different methods. According to this forum post https://forums.autodesk.com/t5/revit-api-forum/method-getmaterialarea-appears-to-use-different-formulas-for/td-p/11988215
+    /// "Hosts" (whatever that means) will return the area of a single side of the object while other
+    /// objects will return the combined area of every side of the element. MEP element materials are attached
+    /// to the MEP system that the element belongs to.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="units"></param>
+    /// <returns></returns>
     public IEnumerable<Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
-      double factor = ScaleToSpeckle(1);
- 
       if (MaterialAreaAPICallWillReportSingleFace(element))
       {
-        return GetMaterialQuantitiesFromAPICall(element, units, factor);
+        return GetMaterialQuantitiesFromAPICall(element, units);
       }
       else if (element.IsMEPElement())
       {
-        List<MaterialQuantity> quantities = new();
-        MaterialQuantity quantity = GetMaterialQuantityForMEPElement(element, units, factor);
-        if (quantity != null)
-        {
-          quantities.Add(quantity);
-        }
-        return quantities;
+        MaterialQuantity quantity = GetMaterialQuantityForMEPElement(element, units);
+        return quantity == null ? new List<MaterialQuantity>() : new List<MaterialQuantity>() { quantity };
       }
       else
       {
-        return GetMaterialQuantitiesFromSolids(element, units, factor);
+        return GetMaterialQuantitiesFromSolids(element, units);
       }
     }
 
-    private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromAPICall(DB.Element element, string units, double factor)
+    private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromAPICall(DB.Element element, string units)
     {
       foreach (ElementId matId in element.GetMaterialIds(false))
       {
-        Other.Material speckleMaterial = ConvertAndCacheMaterial(matId, element.Document);
         double volume = element.GetMaterialVolume(matId);
         double area = element.GetMaterialArea(matId, false);
-        volume *= factor * factor * factor;
-        area *= factor * factor;
-        yield return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area, units);
+        yield return Create(element, matId, area, volume, units);
       }
     }
 
-    private MaterialQuantity? GetMaterialQuantityForMEPElement(DB.Element element, string units, double factor)
+    private MaterialQuantity? GetMaterialQuantityForMEPElement(DB.Element element, string units)
     {
       DB.Material material = GetMEPSystemRevitMaterial(element);
       if (material == null)
@@ -58,32 +58,59 @@ namespace Objects.Converter.Revit
       DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
       var (solids, _) = GetSolidsAndMeshesFromElement(element, options);
 
-      Other.Material speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
-      var (area, volume) = GetAreaAndVolumeFromSolids(solids, factor);
-      return new MaterialQuantity(speckleMaterial, volume, area, units);
+      var (area, volume) = GetAreaAndVolumeFromSolids(solids);
+      return Create(element, material.Id, area, volume, units);
     }
     
-    private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromSolids(DB.Element element, string units, double factor)
+    private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromSolids(DB.Element element, string units)
     {
       DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
       var (solids, _) = GetSolidsAndMeshesFromElement(element, options);
 
       foreach (ElementId matId in GetMaterialsFromSolids(solids))
       {
-        Other.Material speckleMaterial = ConvertAndCacheMaterial(matId, element.Document);
-        var (area, volume) = GetAreaAndVolumeFromSolids(solids, factor, matId);
-        yield return new MaterialQuantity(speckleMaterial, volume, area, units);
+        var (area, volume) = GetAreaAndVolumeFromSolids(solids, matId);
+        yield return Create(element, matId, area, volume, units);
       }
     }
 
-    private (double, double) GetAreaAndVolumeFromSolids(List<Solid> solids, double factor, ElementId? materialId = null)
+    private MaterialQuantity Create(
+      Element element,
+      ElementId materialId,
+      double areaRevitInternalUnits,
+      double volumeRevitInternalUnits,
+      string units)
+    {
+      Other.Material speckleMaterial = ConvertAndCacheMaterial(materialId, element.Document);
+      double factor = ScaleToSpeckle(1);
+      double area = factor * factor * areaRevitInternalUnits;
+      double volume = factor * factor * factor * volumeRevitInternalUnits;
+      MaterialQuantity materialQuantity = new(speckleMaterial, volume, area, units);
+
+      if (LocationToSpeckle(element) is ICurve curve)
+      {
+        materialQuantity["length"] = curve.length;
+      }
+      else if (element is DB.Architecture.Railing)
+      {
+        materialQuantity["length"] = (element as DB.Architecture.Railing).GetPath().Sum(e => e.Length) * factor;
+      }
+      else if (element is DB.Architecture.ContinuousRail)
+      {
+        materialQuantity["length"] = (element as DB.Architecture.ContinuousRail).GetPath().Sum(e => e.Length) * factor;
+      }
+
+      return materialQuantity;
+    }
+
+    private (double, double) GetAreaAndVolumeFromSolids(List<Solid> solids, ElementId? materialId = null)
     {
       if (materialId != null)
       {
         solids = solids
           .Where(
-            solid => solid.Volume > 0 
-            && !solid.Faces.IsEmpty 
+            solid => solid.Volume > 0
+            && !solid.Faces.IsEmpty
             && solid.Faces.get_Item(0).MaterialElementId == materialId)
           .ToList();
       }
@@ -93,8 +120,6 @@ namespace Objects.Converter.Revit
           .Select(solid => solid.Faces.Cast<Face>().Select(face => face.Area)
           .Max());
       double area = areaOfLargestFaceInEachSolid.Sum();
-      volume *= factor * factor * factor;
-      area *= factor * factor;
       return (area, volume);
     }
 
