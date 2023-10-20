@@ -12,6 +12,8 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Other;
+using Objects.Structural.Materials;
 using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
@@ -122,6 +124,7 @@ namespace Objects.Converter.CSI
         case BuiltElements.Beam _:
         case BuiltElements.Brace _:
         case BuiltElements.Column _:
+        case StructuralMaterial _:
           return true;
       }
       ;
@@ -201,6 +204,9 @@ namespace Objects.Converter.CSI
           break;
         case Property1D o:
           Property1DToNative(o, appObj);
+          break;
+        case StructuralMaterial o:
+          convertedName = MaterialToNative(o);
           break;
         case BuiltElements.Beam o:
           CurveBasedElementToNative(o, o.baseLine, appObj);

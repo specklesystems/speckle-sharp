@@ -66,29 +66,18 @@ namespace Objects.Converter.CSI
     private string FloorSlabPropertyToNative(CSIProperty2D property2D)
     {
       int success;
+      var materialName = MaterialToNative(property2D.material);
       switch (property2D.slabType)
       {
         case Structural.CSI.Analysis.SlabType.Slab:
           var solidSlab = property2D;
           var shell = shellType(solidSlab);
-          success = Model.PropArea.SetSlab(
-            solidSlab.name,
-            eSlabType.Slab,
-            shell,
-            solidSlab.material.name,
-            solidSlab.thickness
-          );
+          success = Model.PropArea.SetSlab(solidSlab.name, eSlabType.Slab, shell, materialName, solidSlab.thickness);
           break;
         case Structural.CSI.Analysis.SlabType.Ribbed:
           var slabRibbed = (CSIProperty2D.RibbedSlab)property2D;
           shell = shellType(slabRibbed);
-          Model.PropArea.SetSlab(
-            slabRibbed.name,
-            eSlabType.Ribbed,
-            shell,
-            slabRibbed.material.name,
-            slabRibbed.thickness
-          );
+          Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shell, materialName, slabRibbed.thickness);
           success = Model.PropArea.SetSlabRibbed(
             slabRibbed.name,
             slabRibbed.OverAllDepth,
@@ -102,13 +91,7 @@ namespace Objects.Converter.CSI
         case Structural.CSI.Analysis.SlabType.Waffle:
           var slabWaffled = (CSIProperty2D.WaffleSlab)property2D;
           shell = shellType(slabWaffled);
-          Model.PropArea.SetSlab(
-            slabWaffled.name,
-            eSlabType.Waffle,
-            shell,
-            slabWaffled.material.name,
-            slabWaffled.thickness
-          );
+          Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shell, materialName, slabWaffled.thickness);
           success = Model.PropArea.SetSlabWaffle(
             slabWaffled.name,
             slabWaffled.OverAllDepth,
