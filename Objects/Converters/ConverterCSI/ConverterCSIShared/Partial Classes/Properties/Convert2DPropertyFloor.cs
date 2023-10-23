@@ -14,6 +14,8 @@ namespace Objects.Converter.CSI
     public string FloorPropertyToNative(CSIProperty2D property2D)
     {
       int? success = null;
+      var materialName = MaterialToNative(property2D.material);
+
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
       {
         SetDeck(property2D);
@@ -66,24 +68,12 @@ namespace Objects.Converter.CSI
           case Structural.CSI.Analysis.SlabType.Slab:
             var SolidSlab = property2D;
             var shell = shellType(SolidSlab);
-            success = Model.PropArea.SetSlab(
-              SolidSlab.name,
-              eSlabType.Slab,
-              shell,
-              SolidSlab.material.name,
-              SolidSlab.thickness
-            );
+            success = Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shell, materialName, SolidSlab.thickness);
             break;
           case Structural.CSI.Analysis.SlabType.Ribbed:
             var slabRibbed = (CSIProperty2D.RibbedSlab)property2D;
             shell = shellType(slabRibbed);
-            Model.PropArea.SetSlab(
-              slabRibbed.name,
-              eSlabType.Ribbed,
-              shell,
-              slabRibbed.material.name,
-              slabRibbed.thickness
-            );
+            Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shell, materialName, slabRibbed.thickness);
             success = Model.PropArea.SetSlabRibbed(
               slabRibbed.name,
               slabRibbed.OverAllDepth,
@@ -97,13 +87,7 @@ namespace Objects.Converter.CSI
           case Structural.CSI.Analysis.SlabType.Waffle:
             var slabWaffled = (CSIProperty2D.WaffleSlab)property2D;
             shell = shellType(slabWaffled);
-            Model.PropArea.SetSlab(
-              slabWaffled.name,
-              eSlabType.Waffle,
-              shell,
-              slabWaffled.material.name,
-              slabWaffled.thickness
-            );
+            Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shell, materialName, slabWaffled.thickness);
             success = Model.PropArea.SetSlabWaffle(
               slabWaffled.name,
               slabWaffled.OverAllDepth,
