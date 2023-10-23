@@ -27,7 +27,7 @@
       Padding="10"
       Background="{DynamicResource PrimaryHueMidBrush}"
       CornerRadius="0">
-      <Grid ColumnDefinitions="auto,auto,*,auto,auto,auto,auto">
+      <Grid ColumnDefinitions="auto,auto,*,auto,auto,auto,auto,auto">
 
         <Canvas
           Grid.Column="0"
@@ -70,7 +70,7 @@
           TextTrimming="CharacterEllipsis" />
 
 
-        <icons:MaterialIcon
+        <!--<icons:MaterialIcon
           Grid.Column="4"
           Width="18"
           Height="18"
@@ -79,12 +79,43 @@
           Foreground="White"
           IsVisible="{Binding UseFe2}"
           Kind="NewBox"
-          ToolTip.Tip="Links are pointing to the NEW frontend" />
+          ToolTip.Tip="Links are pointing to the NEW frontend" />-->
+
+        <!--  FE2  -->
+        <m:FloatingButton
+          Grid.Column="5"
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Classes="Mini"
+          Command="{Binding ToggleFe2Command}"
+          ToolTip.Tip="Toggle NEW Frontend terminology">
+          <Button.Content>
+            <Grid>
+              <icons:MaterialIcon
+                Width="18"
+                Height="18"
+                assists:ShadowAssist.ShadowDepth="0"
+                Foreground="White"
+                IsVisible="{Binding UseFe2}"
+                Kind="NewBox" />
+              <icons:MaterialIcon
+                Width="18"
+                Height="18"
+                assists:ShadowAssist.ShadowDepth="0"
+                Foreground="White"
+                IsVisible="{Binding !UseFe2}"
+                Kind="NewBox"
+                Opacity="0.5" />
+            </Grid>
+          </Button.Content>
+        </m:FloatingButton>
+
 
         <!--  ACCOUNT MENU  -->
 
         <Menu
-          Grid.Column="5"
+          Grid.Column="6"
           VerticalAlignment="Center"
           IsEnabled="{Binding !InProgress}"
           Items="{Binding MenuItems}">
@@ -103,7 +134,7 @@
 
 
         <!--  NOTIFICATIONS  -->
-        <Grid Grid.Column="6" IsVisible="{Binding Notifications.Count}">
+        <Grid Grid.Column="7" IsVisible="{Binding Notifications.Count}">
           <m:FloatingButton
             VerticalAlignment="Center"
             assists:ShadowAssist.ShadowDepth="Depth0"
@@ -189,7 +220,7 @@
                   Grid.Column="1"
                   Margin="2,0,0,0"
                   VerticalAlignment="Center"
-                  ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Filter streams by ownership of favorite'}">
+                  ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Filter streams by ownership or favorite'}">
 
                   <MenuItem
                     Width="30"

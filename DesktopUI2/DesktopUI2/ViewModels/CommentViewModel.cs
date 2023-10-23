@@ -122,8 +122,7 @@ public class CommentViewModel : ReactiveObject
 
     var url =
       $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
-    var config = ConfigManager.Load();
-    if (config.UseFe2)
+    if (_client.Account.serverInfo.frontend2)
       url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
 
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
