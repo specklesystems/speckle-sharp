@@ -34,7 +34,7 @@ namespace Objects.Converter.CSI
         // I don't think we want to update properties
         //throw new ConversionSkippedException($"?????"); //TODO: Asses what to do here!
         // So here, we don't convert because the object already exists.
-        // It seems like skip is more appropriate than created tbh... but this seems to 
+        // It seems like skip is more appropriate than created tbh... but this seems to
         appObj.Update(status: ApplicationObject.State.Skipped, createdId: property1D.name);
         return property1D.name;
       }
