@@ -267,25 +267,25 @@ namespace Speckle.ConnectorCSI.UI
 
     // delete previously sent objects that are no longer in this stream
     private void DeleteObjects(
-      List<ApplicationObject> previouslyReceiveObjects,
-      List<ApplicationObject> newPlaceholderObjects,
+      IReadOnlyCollection<ApplicationObject> previouslyReceiveObjects,
+      IReadOnlyCollection<ApplicationObject> newPlaceholderObjects,
       ProgressViewModel progress
     )
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (obj.Converted.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.Converted.Count == 0)
+          continue;
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
-        for (int i = 0; i < obj.Converted.Count; i++)
+        foreach (var o in obj.Converted)
         {
-          if (
-            !(
-              obj.Converted[i] is string s
-              && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName
-              && typeAndName.Length == 2
-            )
-          )
+          if (o is not string s)
+            continue;
+
+          string[] typeAndName = s.Split(new[] { ConnectorCSIUtils.Delimiter }, StringSplitOptions.None);
+          if (typeAndName.Length != 2)
             continue;
 
           switch (typeAndName[0])

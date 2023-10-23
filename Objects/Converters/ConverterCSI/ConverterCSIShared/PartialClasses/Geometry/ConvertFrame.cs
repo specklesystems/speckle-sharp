@@ -62,7 +62,7 @@ namespace Objects.Converter.CSI
 
       string guid = null;
       Model.FrameObj.GetGUID(name, ref guid);
-      appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{delimiter}{name}");
+      appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{Delimiter}{name}");
     }
 
     public void FrameToNative(Element1D element1D, ApplicationObject appObj)
@@ -142,7 +142,7 @@ namespace Objects.Converter.CSI
         appObj.Update(
           status: ApplicationObject.State.Created,
           createdId: guid,
-          convertedItem: $"Frame{delimiter}{newFrame}"
+          convertedItem: $"Frame{Delimiter}{newFrame}"
         );
       else
         appObj.Update(status: ApplicationObject.State.Failed);

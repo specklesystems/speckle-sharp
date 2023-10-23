@@ -158,7 +158,7 @@ namespace Objects.Converter.CSI
         appObj.Update(
           status: ApplicationObject.State.Updated,
           createdId: guid,
-          convertedItem: $"Area{delimiter}{name}"
+          convertedItem: $"Area{Delimiter}{name}"
         );
         if (numErrorMsgs != 0)
           appObj.Update(
@@ -231,7 +231,7 @@ namespace Objects.Converter.CSI
         appObj.Update(
           status: ApplicationObject.State.Created,
           createdId: guid,
-          convertedItem: $"Area{delimiter}{name}"
+          convertedItem: $"Area{Delimiter}{name}"
         );
       else
         appObj.Update(status: ApplicationObject.State.Failed);
