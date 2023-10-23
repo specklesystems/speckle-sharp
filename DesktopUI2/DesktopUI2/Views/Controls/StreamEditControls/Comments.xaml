@@ -18,6 +18,7 @@
     <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
     <conv:RoleValueConverter x:Key="RoleValueConverter" />
     <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
   </UserControl.Resources>
   <ScrollViewer Name="activityScroller">
     <Grid RowDefinitions="*,auto">
@@ -26,7 +27,7 @@
         IsVisible="{Binding !Comments.Count}"
         Orientation="Vertical"
         Spacing="20">
-        <TextBlock Text="💬 There are no comments yet on this Stream!" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='💬 There are no comments yet on this Stream!'}" TextWrapping="Wrap" />
         <Button
           Classes="Flat"
           Command="{Binding ViewOnlineSavedStreamCommand}"

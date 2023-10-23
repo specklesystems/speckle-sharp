@@ -13,10 +13,7 @@ namespace Objects.Converter.Revit
     public ApplicationObject RoomToNative(Room speckleRoom)
     {
       var revitRoom = GetExistingElementByApplicationId(speckleRoom.applicationId) as DB.Room;
-      var appObj = new ApplicationObject(speckleRoom.id, speckleRoom.speckle_type)
-      {
-        applicationId = speckleRoom.applicationId
-      };
+      var appObj = new ApplicationObject(speckleRoom.id, speckleRoom.speckle_type) { applicationId = speckleRoom.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitRoom, appObj))
@@ -31,8 +28,7 @@ namespace Objects.Converter.Revit
 
         // set computation level of Level based on the bottom elevation of the Room (Rooms can have offset elevation from Levels)
         // it is not guaranteed that the final computation level will fit for all the Rooms, however not generating extra levels is preferred
-        if (level.get_Parameter(BuiltInParameter.LEVEL_ROOM_COMPUTATION_HEIGHT).AsDouble() < basePoint.Z)
-        {
+        if (level.get_Parameter(BuiltInParameter.LEVEL_ROOM_COMPUTATION_HEIGHT).AsDouble() < basePoint.Z) {
           TrySetParam(level, BuiltInParameter.LEVEL_ROOM_COMPUTATION_HEIGHT, basePoint.Z);
         }
 
@@ -44,11 +40,7 @@ namespace Objects.Converter.Revit
       revitRoom.Number = speckleRoom.number;
 
       if (speckleRoom.height > 0.0)
-        TrySetParam(
-          revitRoom,
-          BuiltInParameter.ROOM_UPPER_OFFSET,
-          ScaleToNative(speckleRoom.height, speckleRoom.units)
-        );
+        TrySetParam(revitRoom, BuiltInParameter.ROOM_UPPER_OFFSET, ScaleToNative(speckleRoom.height, speckleRoom.units));
 
       SetInstanceParameters(revitRoom, speckleRoom);
 

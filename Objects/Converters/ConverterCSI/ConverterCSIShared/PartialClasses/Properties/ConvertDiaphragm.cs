@@ -1,6 +1,17 @@
 ﻿using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
 
+using System;
+using System.Collections.Generic;
+using System.Text;
+using CSiAPIv1;
+using Objects.Structural.Properties;
+using Objects.Structural.Materials;
+using Objects.Structural.CSI.Analysis;
+using Objects.Structural.CSI.Properties;
+using Speckle.Core.Models;
+using Objects.Structural.Geometry;
+
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI

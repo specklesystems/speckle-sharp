@@ -1,5 +1,11 @@
-﻿using Objects.Geometry;
+﻿using System;
+using System.Collections.Generic;
+using Objects.Geometry;
 using Speckle.Core.Kits;
+using Objects.Structural.Geometry;
+using Objects.Structural.Analysis;
+using CSiAPIv1;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {

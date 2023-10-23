@@ -14,6 +14,7 @@ public class NewStreamDialog : DialogUserControl
   public NewStreamDialog(List<AccountViewModel> accounts)
   {
     InitializeComponent();
+    this.DataContext = new DialogViewModel();
     var combo = this.FindControl<ComboBox>("accounts");
     combo.Items = accounts;
     try
