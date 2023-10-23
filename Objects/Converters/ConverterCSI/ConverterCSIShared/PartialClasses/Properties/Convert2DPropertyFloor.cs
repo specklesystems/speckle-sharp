@@ -65,7 +65,7 @@ namespace Objects.Converter.CSI
 
     private string FloorSlabPropertyToNative(CSIProperty2D property2D)
     {
-      int success;
+      int success = -1;
       var materialName = MaterialToNative(property2D.material);
       switch (property2D.slabType)
       {
@@ -103,7 +103,7 @@ namespace Objects.Converter.CSI
           );
           break;
         default:
-          throw new ArgumentOutOfRangeException($"Unrecognised slab type {property2D.deckType}");
+          throw new ArgumentOutOfRangeException($"Unrecognised slab type {property2D.slabType}");
       }
 
       if (success != 0)

@@ -186,7 +186,7 @@ namespace Objects.Converter.CSI
 
       if (GetAllAreaNames(Model).Contains(area.name))
       {
-        throw new ConversionException("There is already a frame object named {area.name} in the model");
+        throw new ConversionException($"There is already a frame object named {area.name} in the model");
       }
 
       var propName = CreateOrGetProp(area.property, out bool isExactMatch);
