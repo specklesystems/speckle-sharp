@@ -380,7 +380,7 @@ public partial class Client
                         }
                       }
                     }",
-      Variables = new { streamId }
+      Variables = new { id = streamId }
     };
     var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false); //WARN: Why do we do this?
     return (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
