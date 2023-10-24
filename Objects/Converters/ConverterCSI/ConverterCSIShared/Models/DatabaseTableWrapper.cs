@@ -21,6 +21,7 @@ namespace ConverterCSIShared.Models
       this.toNativeScalingService = toNativeScalingService;
       this.tableData = new List<string>(GetTableData());
     }
+
     private string[] GetTableData()
     {
       var tableData = Array.Empty<string>();
@@ -39,7 +40,9 @@ namespace ConverterCSIShared.Models
     {
       if (arguments.Length != fieldKeysIncluded.Length)
       {
-        throw new ArgumentException($"Method {nameof(AddRow)} was passed an array of length {arguments.Length}, but was expecting an array of length {fieldKeysIncluded.Length}");
+        throw new ArgumentException(
+          $"Method {nameof(AddRow)} was passed an array of length {arguments.Length}, but was expecting an array of length {fieldKeysIncluded.Length}"
+        );
       }
       tableData.AddRange(arguments);
       numRecords++;
@@ -48,14 +51,27 @@ namespace ConverterCSIShared.Models
     public void ApplyEditedTables()
     {
       var tableDataArray = tableData.ToArray();
-      cSapModel.DatabaseTables.SetTableForEditingArray(TableKey, ref tableVersion, ref fieldKeysIncluded, numRecords, ref tableDataArray);
+      cSapModel.DatabaseTables.SetTableForEditingArray(
+        TableKey,
+        ref tableVersion,
+        ref fieldKeysIncluded,
+        numRecords,
+        ref tableDataArray
+      );
 
       int numFatalErrors = 0;
       int numWarnMsgs = 0;
       int numInfoMsgs = 0;
       int numErrorMsgs = 0;
       string importLog = "";
-      cSapModel.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+      cSapModel.DatabaseTables.ApplyEditedTables(
+        false,
+        ref numFatalErrors,
+        ref numErrorMsgs,
+        ref numWarnMsgs,
+        ref numInfoMsgs,
+        ref importLog
+      );
     }
   }
 }
