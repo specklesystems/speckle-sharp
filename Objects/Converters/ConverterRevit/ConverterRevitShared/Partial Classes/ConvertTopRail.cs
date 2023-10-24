@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
       var speckleTopRail = new RevitTopRail
       {
         type = topRailType.Name,
-        displayValue = GetElementDisplayValue(revitTopRail, new Options() { DetailLevel = ViewDetailLevel.Fine })
+        displayValue = GetElementDisplayValue(revitTopRail)
       };
 
       GetAllRevitParamsAndIds(speckleTopRail, revitTopRail, new List<string> { });

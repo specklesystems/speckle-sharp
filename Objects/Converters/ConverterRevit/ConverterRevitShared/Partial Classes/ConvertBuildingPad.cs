@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
-      specklePad.displayValue = GetElementDisplayValue(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine });
+      specklePad.displayValue = GetElementDisplayValue(revitPad);
 
       return specklePad;
     }

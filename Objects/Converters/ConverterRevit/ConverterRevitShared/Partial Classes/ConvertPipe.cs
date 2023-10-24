@@ -142,7 +142,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
+        displayValue = GetElementDisplayValue(revitPipe)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
@@ -192,7 +192,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
         endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
+        displayValue = GetElementDisplayValue(revitPipe)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);

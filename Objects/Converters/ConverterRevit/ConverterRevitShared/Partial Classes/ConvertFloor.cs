@@ -180,9 +180,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      speckleFloor.displayValue = GetElementDisplayValue(
-        revitFloor,
-        new Options() { DetailLevel = ViewDetailLevel.Fine });
+      speckleFloor.displayValue = GetElementDisplayValue(revitFloor);
 
       GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
       if (hostedNotes.Any())
