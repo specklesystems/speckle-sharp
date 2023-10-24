@@ -131,7 +131,7 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "Link",
           Values = new List<string>() { DetailLevelCoarse, DetailLevelMedium, DetailLevelFine },
           Selection = DetailLevelFine,
-          Description = "Determines the level of detail in which meshes are sent to Speckle. This feature is in alpha because primitive objects such as curves, which are commonly found in coarse or medium detail level element representations, are not supported yet."
+          Description = "Determines the level of detail in which meshes are sent to Speckle. \n\nThis feature is in alpha because primitive objects such as curves, \nwhich are commonly found in coarse or medium detail level element representations, are not supported yet."
         },
       };
     }
