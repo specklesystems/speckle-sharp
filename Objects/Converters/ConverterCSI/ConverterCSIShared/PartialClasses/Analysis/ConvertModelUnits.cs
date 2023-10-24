@@ -1,4 +1,4 @@
-﻿using Objects.Structural.Analysis;
+using Objects.Structural.Analysis;
 using System;
 using System.Collections.Generic;
 using System.Text;
