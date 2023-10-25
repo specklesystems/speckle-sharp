@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.displayValue = GetElementDisplayValue(revitTopo, SolidDisplayValueOptions);
+      speckleTopo.displayValue = GetElementDisplayValue(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
       return speckleTopo;
     }
