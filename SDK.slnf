@@ -2,6 +2,8 @@
   "solution": {
     "path": "All.sln",
     "projects": [
+      "ConnectorCore\\BatchUploader.OperationDriver\\BatchUploader.OperationDriver.csproj",
+      "ConnectorCore\\BatchUploader.Sdk\\BatchUploader.Sdk.csproj",
       "Automate\\Speckle.Automate.Sdk\\Speckle.Automate.Sdk.csproj",
       "Automate\\Tests\\Speckle.Automate.Sdk.Tests.Integration\\Speckle.Automate.Sdk.Tests.Integration.csproj",
       "Core\\Core\\Core.csproj",

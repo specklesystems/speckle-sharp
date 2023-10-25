@@ -608,10 +608,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   //UI Binding
   public bool UseFe2
   {
-    get
-    {
-      return Client.Account.serverInfo.frontend2;
-    }
+    get { return Client.Account.serverInfo.frontend2; }
   }
 
   public DateTime? LastUsedTime
@@ -623,7 +620,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       this.RaisePropertyChanged(nameof(LastUsed));
     }
   }
-
 
   private bool _isRemovingStream;
 

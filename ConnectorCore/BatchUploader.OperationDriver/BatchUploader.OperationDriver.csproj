@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <RootNamespace>Speckle.BatchUploader.OperationDriver</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\BatchUploader.Sdk\BatchUploader.Sdk.csproj" />
+  </ItemGroup>
+  
+</Project>
