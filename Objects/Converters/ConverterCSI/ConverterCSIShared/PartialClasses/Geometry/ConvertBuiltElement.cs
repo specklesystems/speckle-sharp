@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using CSiAPIv1;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
@@ -12,13 +8,9 @@ namespace Objects.Converter.CSI
   {
     public void CurveBasedElementToNative(Base @base, ICurve curve, ApplicationObject appObj)
     {
-      if (!(curve is Line baseLine))
+      if (curve is not Line baseLine)
       {
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: "Only line based frames are currently supported"
-        );
-        return;
+        throw new ArgumentException("Only line based frames are currently supported", nameof(curve));
       }
 
       if (ElementExistsWithApplicationId(@base.applicationId, out string name))
