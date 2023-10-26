@@ -41,6 +41,7 @@ public sealed class AutomationContextTest : IDisposable
 
     var automationRunId = Utils.RandomString(10);
     var functionId = Utils.RandomString(10);
+    var functionName = "Automation name " + Utils.RandomString(10);
     var functionRelease = Utils.RandomString(10);
 
     return new AutomationRunData
@@ -54,6 +55,7 @@ public sealed class AutomationContextTest : IDisposable
       AutomationRevisionId = automationRevisionId,
       AutomationRunId = automationRunId,
       FunctionId = functionId,
+      FunctionName = functionName,
       FunctionRelease = functionRelease,
     };
   }
