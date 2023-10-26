@@ -55,7 +55,7 @@ namespace Objects.Converter.CSI
       double[] storyElevations = null;
       double[] storyHeights = null;
       bool[] isMasterStory = null;
-      string[] SimilarToStory = null;
+      string[] similarToStory = null;
       bool[] spliceAbove = null;
       double[] spliceHeight = null;
       int numberOfStories = 0;
@@ -67,16 +67,13 @@ namespace Objects.Converter.CSI
         ref storyElevations,
         ref storyHeights,
         ref isMasterStory,
-        ref SimilarToStory,
+        ref similarToStory,
         ref spliceAbove,
         ref spliceHeight,
         ref colors
       );
 
-      var speckleStories = new CSIStories();
-      speckleStories.BaseElevation = baseElevation;
-      speckleStories.NumberStories = numberOfStories;
-      speckleStories.CSIStory = new List<CSIStorey> { };
+      List<CSIStorey> stories = new(numberOfStories);
       for (int index = 0; index < numberOfStories; index++)
       {
         var speckleStory = new CSIStorey(
@@ -84,15 +81,22 @@ namespace Objects.Converter.CSI
           storyElevations[index],
           storyHeights[index],
           isMasterStory[index],
-          SimilarToStory[index],
+          similarToStory[index],
           spliceAbove[index],
           spliceHeight[index]
         );
-        speckleStories.CSIStory.Add(speckleStory);
+        stories.Add(speckleStory);
       }
 
       //SpeckleModel.elements.Add(speckleStories);
 
+      CSIStories speckleStories =
+        new()
+        {
+          BaseElevation = baseElevation,
+          NumberStories = numberOfStories,
+          CSIStory = stories
+        };
       return speckleStories;
     }
   }

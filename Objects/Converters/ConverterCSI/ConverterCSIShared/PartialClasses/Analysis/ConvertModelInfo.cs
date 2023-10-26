@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using CSiAPIv1;
+﻿using Objects.Structural.Analysis;
 
 namespace Objects.Converter.CSI
 {
@@ -17,10 +12,8 @@ namespace Objects.Converter.CSI
       Model.SetProjectInfo("Project Name", modelInfo.projectName);
       if (modelInfo.settings != null)
       {
-        modelSettingsToNative(modelInfo.settings);
+        ModelSettingsToNative(modelInfo.settings);
       }
-
-      return;
     }
 
     public ModelInfo ModelInfoToSpeckle()
@@ -30,10 +23,11 @@ namespace Objects.Converter.CSI
       string programName,
         programVersion,
         programLevel;
+
       programVersion = programName = programLevel = null;
       Model.GetProgramInfo(ref programName, ref programVersion, ref programLevel);
       modelInfo.application = programName;
-      modelInfo.settings = modelSettingsToSpeckle();
+      modelInfo.settings = ModelSettingsToSpeckle();
       int numberItems = 0;
       string[] items,
         data;
@@ -45,8 +39,6 @@ namespace Objects.Converter.CSI
         {
           switch (items[index])
           {
-            default:
-              break;
             case "Engineer":
               modelInfo.initials = data[index];
               break;

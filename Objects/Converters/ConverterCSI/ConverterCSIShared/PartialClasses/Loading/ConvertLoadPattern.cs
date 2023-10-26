@@ -7,43 +7,37 @@ namespace Objects.Converter.CSI
   {
     public void LoadPatternToNative(LoadGravity gravityLoad)
     {
-      var selfweight = -1 * gravityLoad.gravityFactors.z;
+      var selfWeight = -1 * gravityLoad.gravityFactors.z;
       var loadType = GetAndConvertToCSIPatternType(gravityLoad.loadCase.loadType);
-      Model.LoadPatterns.Add(gravityLoad.name, loadType, selfweight);
+      Model.LoadPatterns.Add(gravityLoad.name, loadType, selfWeight);
     }
 
     public LoadCase LoadPatternToSpeckle(string loadPatternName)
     {
-      var speckleLoadCase = new LoadCase();
-      speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
-      speckleLoadCase.name = loadPatternName;
+      LoadCase speckleLoadCase =
+        new()
+        {
+          loadType = GetAndConvertCSILoadType(loadPatternName),
+          name = loadPatternName,
+          // load pattern name cannot be duplicated in etabs, so safe for applicationId use
+          applicationId = loadPatternName
+        };
 
-      // load pattern name cannot be duplicated in etabs, so safe for applicationId use
-      speckleLoadCase.applicationId = loadPatternName;
-
-      var selfweight = GetSelfWeightMultiplier(loadPatternName);
+      var selfWeight = GetSelfWeightMultiplier(loadPatternName);
 
       //Encoding loadPatterns selfweight multiplier within
-      if (selfweight != 0)
-      {
-        var gravityVector = new Geometry.Vector(0, 0, -selfweight);
-        var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
-        gravityLoad.name = loadPatternName;
+      Geometry.Vector gravityVector = selfWeight != 0 ? new(0, 0, -selfWeight) : new(0, 0, 0);
 
-        gravityLoad.applicationId = $"{loadPatternName}:self-weight";
+      LoadGravity gravityLoad =
+        new(speckleLoadCase, gravityVector)
+        {
+          name = loadPatternName,
+          applicationId = $"{loadPatternName}:self-weight"
+        };
 
-        SpeckleModel.loads.Add(gravityLoad);
-      }
-      else
-      {
-        var gravityVector = new Geometry.Vector(0, 0, 0);
-        var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
-        gravityLoad.name = loadPatternName;
-        gravityLoad.applicationId = $"{loadPatternName}:self-weight";
-        SpeckleModel.loads.Add(gravityLoad);
-      }
-      if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
-      else
+      SpeckleModel.loads.Add(gravityLoad);
+
+      if (!SpeckleModel.loads.Contains(speckleLoadCase))
       {
         SpeckleModel.loads.Add(speckleLoadCase);
       }
@@ -53,88 +47,64 @@ namespace Objects.Converter.CSI
 
     public LoadCase LoadCaseToSpeckle(string name)
     {
-      var speckleLoadCase = new LoadCase();
+      LoadCase speckleLoadCase = new();
       return speckleLoadCase;
     }
 
     public LoadCase LoadPatternCaseToSpeckle(string loadPatternName)
     {
       //Converts just the load case name
-      var speckleLoadCase = new LoadCase();
-      speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
-      speckleLoadCase.name = loadPatternName;
+      LoadCase speckleLoadCase =
+        new()
+        {
+          loadType = GetAndConvertCSILoadType(loadPatternName),
+          name = loadPatternName,
+          // load pattern name cannot be duplicated in etabs, so safe for applicationId use
+          applicationId = loadPatternName
+        };
 
-      // load pattern name cannot be duplicated in etabs, so safe for applicationId use
-      speckleLoadCase.applicationId = loadPatternName;
-
-      if (!SpeckleModel.loads.Contains(speckleLoadCase)) { }
-      else
+      if (SpeckleModel.loads.Contains(speckleLoadCase))
       {
         SpeckleModel.loads.Add(speckleLoadCase);
       }
+
       return speckleLoadCase;
     }
 
     public eLoadPatternType GetAndConvertToCSIPatternType(LoadType loadType)
     {
-      switch (loadType)
+      return loadType switch
       {
-        case LoadType.Dead:
-          return eLoadPatternType.Dead;
-        case LoadType.SuperDead:
-          return eLoadPatternType.SuperDead;
-        case LoadType.Live:
-          return eLoadPatternType.Live;
-        case LoadType.ReducibleLive:
-          return eLoadPatternType.ReduceLive;
-        case LoadType.SeismicStatic:
-          return eLoadPatternType.Quake;
-        case LoadType.Snow:
-          return eLoadPatternType.Snow;
-        case LoadType.Wind:
-          return eLoadPatternType.Wind;
-        case LoadType.Other:
-          return eLoadPatternType.Other;
-        default:
-          return eLoadPatternType.Other;
-      }
+        LoadType.Dead => eLoadPatternType.Dead,
+        LoadType.SuperDead => eLoadPatternType.SuperDead,
+        LoadType.Live => eLoadPatternType.Live,
+        LoadType.ReducibleLive => eLoadPatternType.ReduceLive,
+        LoadType.SeismicStatic => eLoadPatternType.Quake,
+        LoadType.Snow => eLoadPatternType.Snow,
+        LoadType.Wind => eLoadPatternType.Wind,
+        LoadType.Other => eLoadPatternType.Other,
+        _ => eLoadPatternType.Other
+      };
     }
 
     public LoadType GetAndConvertCSILoadType(string name)
     {
-      eLoadPatternType patternType = new eLoadPatternType();
+      eLoadPatternType patternType = new();
 
       Model.LoadPatterns.GetLoadType(name, ref patternType);
 
-      switch (patternType)
+      return patternType switch
       {
-        case eLoadPatternType.Dead:
-          return LoadType.Dead;
-
-        case eLoadPatternType.SuperDead:
-          return LoadType.SuperDead;
-
-        case eLoadPatternType.Live:
-          return LoadType.Live;
-
-        case eLoadPatternType.ReduceLive:
-          return LoadType.ReducibleLive;
-
-        case eLoadPatternType.Quake:
-          return LoadType.SeismicStatic;
-
-        case eLoadPatternType.Wind:
-          return LoadType.Wind;
-
-        case eLoadPatternType.Snow:
-          return LoadType.Snow;
-
-        case eLoadPatternType.Other:
-          return LoadType.Other;
-
-        default:
-          return LoadType.Other; // Other (less frequent) load types to be converted later.
-      }
+        eLoadPatternType.Dead => LoadType.Dead,
+        eLoadPatternType.SuperDead => LoadType.SuperDead,
+        eLoadPatternType.Live => LoadType.Live,
+        eLoadPatternType.ReduceLive => LoadType.ReducibleLive,
+        eLoadPatternType.Quake => LoadType.SeismicStatic,
+        eLoadPatternType.Wind => LoadType.Wind,
+        eLoadPatternType.Snow => LoadType.Snow,
+        eLoadPatternType.Other => LoadType.Other,
+        _ => LoadType.Other
+      };
     }
 
     public double GetSelfWeightMultiplier(string name)

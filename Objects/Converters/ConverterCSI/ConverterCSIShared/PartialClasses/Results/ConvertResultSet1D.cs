@@ -1,11 +1,8 @@
 ﻿using CSiAPIv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Results;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
@@ -17,15 +14,11 @@ namespace Objects.Converter.CSI
       List<string> spandrelNames
     )
     {
-      ResultSet1D frameResults = new ResultSet1D();
-      ResultSet1D pierResults = new ResultSet1D();
-      ResultSet1D spandrelResults = new ResultSet1D();
-
-      List<Result1D> combinedResults = new List<Result1D>();
+      List<Result1D> combinedResults = new();
 
       foreach (var frameName in frameNames)
       {
-        frameResults = FrameResultSet1dToSpeckle(frameName);
+        ResultSet1D frameResults = FrameResultSet1dToSpeckle(frameName);
         if (frameResults != null)
         {
           combinedResults.AddRange(frameResults.results1D);
@@ -34,7 +27,7 @@ namespace Objects.Converter.CSI
 
       foreach (var pierName in pierNames)
       {
-        pierResults = PierResultSet1dToSpeckle(pierName);
+        ResultSet1D pierResults = PierResultSet1dToSpeckle(pierName);
         if (pierResults != null)
         {
           combinedResults.AddRange(pierResults.results1D);
@@ -43,23 +36,19 @@ namespace Objects.Converter.CSI
 
       foreach (var spandrelName in spandrelNames)
       {
-        spandrelResults = SpandrelResultSet1dToSpeckle(spandrelName);
+        ResultSet1D spandrelResults = SpandrelResultSet1dToSpeckle(spandrelName);
         if (spandrelResults != null)
         {
           combinedResults.AddRange(spandrelResults.results1D);
         }
       }
 
-      return new ResultSet1D() { results1D = combinedResults };
+      return new ResultSet1D { results1D = combinedResults };
     }
 
-    public ResultSet1D FrameResultSet1dToSpeckle(string elementName)
+    public ResultSet1D? FrameResultSet1dToSpeckle(string elementName)
     {
-      List<Result1D> results = new List<Result1D>();
-
-      var element =
-        SpeckleModel.elements.Where(o => (string)o["name"] == elementName && o is Element1D).FirstOrDefault()
-        as Element1D;
+      var element = SpeckleModel.elements.OfType<Element1D>().FirstOrDefault(o => o.name == elementName);
 
       // if the element is null, then it was not part of the user's selection, so don't send its results
       if (element == null)
@@ -106,36 +95,38 @@ namespace Objects.Converter.CSI
 
       // Value used to normalized output station of forces between 0 and 1
       var lengthOf1dElement = objSta.Max();
+      List<Result1D> results = new(numberOfResults);
 
       for (int i = 0; i < numberOfResults; i++)
       {
-        Result1D result = new Result1D()
-        {
-          element = element,
-          position = (float)(objSta[i] / lengthOf1dElement),
-          permutation = loadCase[i],
-          dispX = 0, // values eventually populated by element.Node.{displacements}
-          dispY = 0, // values eventually populated by element.Node.{displacements}
-          dispZ = 0, // values eventually populated by element.Node.{displacements}
-          rotXX = 0, // values eventually populated by element.Node.{displacements}
-          rotYY = 0, // values eventually populated by element.Node.{displacements}
-          rotZZ = 0, // values eventually populated by element.Node.{displacements}
-          forceX = (float)v3[i],
-          forceY = (float)v2[i],
-          forceZ = (float)p[i],
-          momentXX = (float)m3[i],
-          momentYY = (float)m2[i],
-          momentZZ = (float)t[i],
-          axialStress = 0, // values eventually populated when element1d.section values are available
-          shearStressY = 0, // values eventually populated when element1d.section values are available
-          shearStressZ = 0, // values eventually populated when element1d.section values are available
-          bendingStressYPos = 0, // values eventually populated when element1d.section values are available
-          bendingStressYNeg = 0, // values eventually populated when element1d.section values are available
-          bendingStressZPos = 0, // values eventually populated when element1d.section values are available
-          bendingStressZNeg = 0, // values eventually populated when element1d.section values are available
-          combinedStressMax = 0, // values eventually populated when element1d.section values are available
-          combinedStressMin = 0 // values eventually populated when element1d.section values are available
-        };
+        Result1D result =
+          new()
+          {
+            element = element,
+            position = (float)(objSta[i] / lengthOf1dElement),
+            permutation = loadCase[i],
+            dispX = 0, // values eventually populated by element.Node.{displacements}
+            dispY = 0, // values eventually populated by element.Node.{displacements}
+            dispZ = 0, // values eventually populated by element.Node.{displacements}
+            rotXX = 0, // values eventually populated by element.Node.{displacements}
+            rotYY = 0, // values eventually populated by element.Node.{displacements}
+            rotZZ = 0, // values eventually populated by element.Node.{displacements}
+            forceX = (float)v3[i],
+            forceY = (float)v2[i],
+            forceZ = (float)p[i],
+            momentXX = (float)m3[i],
+            momentYY = (float)m2[i],
+            momentZZ = (float)t[i],
+            axialStress = 0, // values eventually populated when element1d.section values are available
+            shearStressY = 0, // values eventually populated when element1d.section values are available
+            shearStressZ = 0, // values eventually populated when element1d.section values are available
+            bendingStressYPos = 0, // values eventually populated when element1d.section values are available
+            bendingStressYNeg = 0, // values eventually populated when element1d.section values are available
+            bendingStressZPos = 0, // values eventually populated when element1d.section values are available
+            bendingStressZNeg = 0, // values eventually populated when element1d.section values are available
+            combinedStressMax = 0, // values eventually populated when element1d.section values are available
+            combinedStressMin = 0 // values eventually populated when element1d.section values are available
+          };
 
         results.Add(result);
       }
@@ -145,8 +136,6 @@ namespace Objects.Converter.CSI
 
     public ResultSet1D PierResultSet1dToSpeckle(string elementName)
     {
-      List<Result1D> results = new List<Result1D>();
-
       SetLoadCombinationsForResults();
 
       // Reference variables for CSI API
@@ -178,11 +167,15 @@ namespace Objects.Converter.CSI
         ref m3
       );
 
+      List<Result1D> results = new(numberOfResults);
+
       for (int i = 0; i < numberOfResults; i++)
       {
-        if (pierName[i] == elementName)
-        {
-          Result1D result = new Result1D()
+        if (pierName[i] != elementName)
+          continue;
+
+        Result1D result =
+          new()
           {
             element = new Element1D() { name = elementName }, // simple new Element1D until conversion class for piers is created
             position = 0,
@@ -211,8 +204,7 @@ namespace Objects.Converter.CSI
             combinedStressMin = 0 // values eventually populated when element1d.section values are available
           };
 
-          results.Add(result);
-        }
+        results.Add(result);
       }
 
       return new ResultSet1D() { results1D = results };
@@ -220,8 +212,6 @@ namespace Objects.Converter.CSI
 
     public ResultSet1D SpandrelResultSet1dToSpeckle(string elementName)
     {
-      List<Result1D> results = new List<Result1D>();
-
       SetLoadCombinationsForResults();
 
       // Reference variables for CSI API
@@ -253,11 +243,14 @@ namespace Objects.Converter.CSI
         ref m3
       );
 
+      List<Result1D> results = new(numberOfResults);
+
       for (int i = 0; i < numberOfResults; i++)
       {
-        if (spandrelName[i] == elementName)
-        {
-          Result1D result = new Result1D()
+        if (spandrelName[i] != elementName)
+          continue;
+        Result1D result =
+          new()
           {
             element = new Element1D() { name = elementName }, // simple new Element1D until conversion class for spandrels is created
             position = 0,
@@ -286,11 +279,10 @@ namespace Objects.Converter.CSI
             combinedStressMin = 0 // values eventually populated when element1d.section values are available
           };
 
-          results.Add(result);
-        }
+        results.Add(result);
       }
 
-      return new ResultSet1D() { results1D = results };
+      return new ResultSet1D { results1D = results };
     }
 
     public void SetLoadCombinationsForResults()

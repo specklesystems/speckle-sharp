@@ -52,48 +52,53 @@ namespace Objects.Converter.CSI
       {
         foreach (int index in Enumerable.Range(0, numberItems))
         {
+          LoadDirection direction;
+          string loadId;
+          double value;
           if (F1[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.X;
-            var loadID = string.Concat(loadPat[index], F1[index], "F1");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], F1[index], speckleLoadNode);
+            direction = LoadDirection.X;
+            loadId = string.Concat(loadPat[index], F1[index], "F1");
+            value = F1[index];
           }
           else if (F2[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.Y;
-            var loadID = string.Concat(loadPat[index], F2[index], "F2");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], F2[index], speckleLoadNode);
+            direction = LoadDirection.Y;
+            loadId = string.Concat(loadPat[index], F2[index], "F2");
+            value = F2[index];
           }
           else if (F3[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.Z;
-            var loadID = string.Concat(loadPat[index], F3[index], "F3");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], F3[index], speckleLoadNode);
+            direction = LoadDirection.Z;
+            loadId = string.Concat(loadPat[index], F3[index], "F3");
+            value = F3[index];
           }
           else if (M1[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.XX;
-            var loadID = string.Concat(loadPat[index], M1[index], "M1");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], M1[index], speckleLoadNode);
+            direction = LoadDirection.XX;
+            loadId = string.Concat(loadPat[index], M1[index], "M1");
+            value = M1[index];
           }
           else if (M2[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.YY;
-            var loadID = string.Concat(loadPat[index], M2[index], "M2");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], M2[index], speckleLoadNode);
+            direction = LoadDirection.YY;
+            loadId = string.Concat(loadPat[index], M2[index], "M2");
+            value = M2[index];
           }
           else if (M3[index] != 0)
           {
-            var speckleLoadNode = new LoadNode();
-            speckleLoadNode.direction = LoadDirection.ZZ;
-            var loadID = string.Concat(loadPat[index], M3[index], "M3");
-            generateIDAndElements(loadID, loadPat[index], pointName[index], M3[index], speckleLoadNode);
+            direction = LoadDirection.ZZ;
+            loadId = string.Concat(loadPat[index], M3[index], "M3");
+            value = M3[index];
           }
+          else
+          {
+            continue;
+          }
+
+          var speckleLoadNode = new LoadNode();
+          speckleLoadNode.direction = direction;
+          GenerateIdAndElements(loadId, loadPat[index], pointName[index], value, speckleLoadNode);
           //speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
         }
         counterPoint += 1;
@@ -114,19 +119,16 @@ namespace Objects.Converter.CSI
       return speckleBase;
     }
 
-    void generateIDAndElements(string loadID, string loadPat, string nodeName, double value, LoadNode speckleLoadNode)
+    void GenerateIdAndElements(string loadId, string loadPat, string nodeName, double value, LoadNode speckleLoadNode)
     {
       speckleLoadNode.value = value;
       Node speckleNode = PointToSpeckle(nodeName);
       speckleLoadNode.loadCase = LoadPatternCaseToSpeckle(loadPat);
-      _nodeStoring.TryGetValue(loadID, out var nodeList);
-      if (nodeList == null)
-      {
-        nodeList = new List<Node> { };
-      }
+      _nodeStoring.TryGetValue(loadId, out var nodeList);
+      nodeList ??= new List<Node>();
       nodeList.Add(speckleNode);
-      _nodeStoring[loadID] = nodeList;
-      _loadStoringNode[loadID] = speckleLoadNode;
+      _nodeStoring[loadId] = nodeList;
+      _loadStoringNode[loadId] = speckleLoadNode;
     }
   }
 }

@@ -14,8 +14,8 @@ namespace Objects.Converter.CSI
     {
       var speckleResultNodeSet = new ResultSetNode();
       speckleResultNodeSet.resultsNode = new List<ResultNode> { };
-      List<string> ListPoints = GetAllPointNames(Model);
-      foreach (string pointName in ListPoints)
+      var listPoints = GetAllPointNames(Model);
+      foreach (string pointName in listPoints)
       {
         ResultNodeToSpeckle(pointName, speckleResultNodeSet);
       }

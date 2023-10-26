@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Properties;
 using Objects.Structural.CSI.Geometry;
 using Objects.Geometry;
-using System.Linq;
 
 namespace Objects.Converter.CSI
 {
@@ -22,17 +15,17 @@ namespace Objects.Converter.CSI
     {
       var speckleCSITendon = new CSITendon();
       int numberPoints = 0;
-      double[] X = null;
-      double[] Y = null;
-      double[] Z = null;
-      Model.TendonObj.GetTendonGeometry(name, ref numberPoints, ref X, ref Y, ref Z);
+      double[] x = null;
+      double[] y = null;
+      double[] z = null;
+      Model.TendonObj.GetTendonGeometry(name, ref numberPoints, ref x, ref y, ref z);
       if (numberPoints != 0)
       {
         var polyLine = new Polycurve();
         for (int i = 0; i < numberPoints - 1; i++)
         {
-          var pt1 = new Point(X[i], Y[i], Z[i]);
-          var pt2 = new Point(X[i + 1], Y[i + 1], Z[i + 1]);
+          var pt1 = new Point(x[i], y[i], z[i]);
+          var pt2 = new Point(x[i + 1], y[i + 1], z[i + 1]);
           var line = new Line(pt1, pt2);
           polyLine.segments.Add(line);
         }

@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System;
+using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
@@ -8,17 +10,17 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    // warning: this delimter string needs to be the same as the delimter string in "connectorCSIUtils"
+    // warning: this delimiter string needs to be the same as the delimiter string in "connectorCSIUtils"
     public const string Delimiter = "::";
 
     // WARNING: These strings need to have the same value as the strings in ConnectorBindingsCSI.Settings
-    readonly string SendNodeResults = "sendNodeResults";
-    readonly string Send1DResults = "send1DResults";
-    readonly string Send2DResults = "send2DResults";
+    private const string SendNodeResults = "sendNodeResults";
+    private const string Send1DResults = "send1DResults";
+    private const string Send2DResults = "send2DResults";
 
-    private string _modelUnits;
+    private string? _modelUnits;
 
-    public string ModelUnits()
+    private string? ModelUnits()
     {
       if (_modelUnits != null)
         return _modelUnits;
@@ -33,153 +35,130 @@ namespace Objects.Converter.CSI
       return null;
     }
 
-    public double ScaleToNative(double value, string units)
+    private double ScaleToNative(double value, string units)
     {
       var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits());
       return value * f;
     }
 
-    public static List<string> GetAllFrameNames(cSapModel model)
+    private static IList<string> GetAllFrameNames(cSapModel model)
     {
       int num = 0;
-      var names = new string[] { };
-      try
-      {
-        model.FrameObj.GetNameList(ref num, ref names);
-        return names.ToList();
-      }
-      catch
-      {
-        return null;
-      }
+      var names = Array.Empty<string>();
+
+      int success = model.FrameObj.GetNameList(ref num, ref names);
+
+      if (success != 0)
+        throw new InvalidOperationException("Failed to retrieve names of all defined frame objects");
+
+      return names;
     }
 
-    public static List<string> GetColumnNames(cSapModel model)
+    private static List<string> GetAllFrameNameWithPrefix(cSapModel model, string prefix)
     {
-      var frameNames = GetAllFrameNames(model);
+      var areaNames = GetAllFrameNames(model);
 
-      List<string> columnNames = new List<string>();
+      List<string> targetNames = new();
 
-      string frameLabel = "";
-      string frameStory = "";
+      string label = "";
+      string story = "";
 
-      foreach (var frameName in frameNames)
+      foreach (string areas in areaNames)
       {
-        model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
+        model.FrameObj.GetLabelFromName(areas, ref label, ref story);
 
-        if (frameLabel.ToLower().StartsWith("c"))
+        if (label.ToLower().StartsWith(prefix))
         {
-          columnNames.Add(frameName);
+          targetNames.Add(areas);
         }
       }
 
-      return columnNames;
+      return targetNames;
     }
 
-    public static List<string> GetBeamNames(cSapModel model)
+    private static List<string> GetColumnNames(cSapModel model)
     {
-      var frameNames = GetAllFrameNames(model);
-
-      List<string> beamNames = new List<string>();
-
-      string frameLabel = "";
-      string frameStory = "";
-
-      foreach (var frameName in frameNames)
-      {
-        model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
-
-        if (frameLabel.ToLower().StartsWith("b"))
-        {
-          beamNames.Add(frameName);
-        }
-      }
-
-      return beamNames;
+      const string columnPrefix = "c";
+      return GetAllFrameNameWithPrefix(model, columnPrefix);
     }
 
-    public static List<string> GetBraceNames(cSapModel model)
+    private static List<string> GetBeamNames(cSapModel model)
     {
-      var frameNames = GetAllFrameNames(model);
-
-      List<string> braceNames = new List<string>();
-
-      string frameLabel = "";
-      string frameStory = "";
-
-      foreach (var frameName in frameNames)
-      {
-        model.FrameObj.GetLabelFromName(frameName, ref frameLabel, ref frameStory);
-
-        if (frameLabel.ToLower().StartsWith("d"))
-        {
-          braceNames.Add(frameName);
-        }
-      }
-
-      return braceNames;
+      const string beamPrefix = "b";
+      return GetAllFrameNameWithPrefix(model, beamPrefix);
     }
 
-    public static List<string> GetAllAreaNames(cSapModel model)
+    private static List<string> GetBraceNames(cSapModel model)
+    {
+      const string bracePrefix = "d";
+      return GetAllFrameNameWithPrefix(model, bracePrefix);
+    }
+
+    private static IList<string> GetAllAreaNames(cSapModel model)
     {
       int num = 0;
-      var names = new string[] { };
-      try
-      {
-        model.AreaObj.GetNameList(ref num, ref names);
-        return names.ToList();
-      }
-      catch
-      {
-        return null;
-      }
+      var names = Array.Empty<string>();
+
+      int success = model.AreaObj.GetNameList(ref num, ref names);
+      if (success != 0)
+        throw new InvalidOperationException("Failed to retrieve names of all defined area objects");
+
+      return names;
     }
 
-    public static List<string> GetAllWallNames(cSapModel model)
+    /// <summary>
+    /// Gets all <see cref="cAreaObj"/> names who's label starts with <paramref name="prefix"/>
+    /// </summary>
+    /// <param name="model"></param>
+    /// <param name="prefix">the prefix to match</param>
+    /// <returns>list of names</returns>
+    private static List<string> GetAllAreaNamesWithPrefix(cSapModel model, string prefix)
     {
-      var WallNames = GetAllAreaNames(model);
+      var areaNames = GetAllAreaNames(model);
 
-      List<string> WallName = new List<string>();
+      List<string> targetNames = new();
 
-      string wallLabel = "";
-      string wallStory = "";
+      string label = "";
+      string story = "";
 
-      foreach (var wallName in WallNames)
+      foreach (string areas in areaNames)
       {
-        model.AreaObj.GetLabelFromName(wallName, ref wallLabel, ref wallStory);
+        model.AreaObj.GetLabelFromName(areas, ref label, ref story);
 
-        if (wallLabel.ToLower().StartsWith("w"))
+        if (label.ToLower().StartsWith(prefix))
         {
-          WallName.Add(wallName);
+          targetNames.Add(areas);
         }
       }
 
-      return WallName;
+      return targetNames;
     }
 
-    public static List<string> GetAllFloorNames(cSapModel model)
+    private static List<string> GetAllWallNames(cSapModel model)
     {
-      var FloorNames = GetAllAreaNames(model);
-
-      List<string> FloorName = new List<string>();
-
-      string FloorLabel = "";
-      string FloorStory = "";
-
-      foreach (var floorName in FloorNames)
-      {
-        model.AreaObj.GetLabelFromName(floorName, ref FloorLabel, ref FloorStory);
-
-        if (FloorLabel.ToLower().StartsWith("f"))
-        {
-          FloorName.Add(floorName);
-        }
-      }
-
-      return FloorName;
+      const string wallPrefix = "w";
+      return GetAllAreaNamesWithPrefix(model, wallPrefix);
     }
 
-    public Dictionary<string, string> GetAllGuids(cSapModel model)
+    private static List<string> GetAllFloorNames(cSapModel model)
+    {
+      const string floorPrefix = "f";
+      return GetAllAreaNamesWithPrefix(model, floorPrefix);
+    }
+
+    public static IList<string> GetAllPointNames(cSapModel model)
+    {
+      int num = 0;
+      var names = Array.Empty<string>();
+
+      int success = model.PointObj.GetNameList(ref num, ref names);
+      if (success != 0)
+        throw new InvalidOperationException("Failed to retrieve names of all defined point objects");
+
+      return names;
+    }
+
+    private Dictionary<string, string> GetAllGuids(cSapModel model)
     {
       var guids = new Dictionary<string, string>();
 
@@ -221,65 +200,51 @@ namespace Objects.Converter.CSI
       return guids;
     }
 
-    public bool ElementExistsWithApplicationId(string applicationId, out string name)
+    private bool ElementExistsWithApplicationId(string? applicationId, out string name)
     {
       name = "";
       if (string.IsNullOrEmpty(applicationId) || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return false;
 
-      var projectIds = PreviousContextObjects.Where(o => o.applicationId == applicationId).FirstOrDefault()?.CreatedIds;
-      projectIds = projectIds ?? new List<string> { applicationId };
+      var projectIds = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId)?.CreatedIds;
+      projectIds ??= new List<string> { applicationId! };
 
       foreach (var guid in projectIds)
-        if (ExistingObjectGuids.Keys.Contains(guid))
+      {
+        if (ExistingObjectGuids.TryGetValue(guid, out name))
         {
-          name = ExistingObjectGuids[guid];
           return true;
         }
+      }
 
       return false;
     }
 
-    public string GetOriginalApplicationId(string csiAppId)
+    private string? GetOriginalApplicationId(string? csiAppId)
     {
       if (string.IsNullOrEmpty(csiAppId))
         return csiAppId;
 
-      var originalAppId = PreviousContextObjects
-        .Where(o => o.CreatedIds.Contains(csiAppId))
-        .FirstOrDefault()
-        ?.applicationId;
+      var originalAppId = PreviousContextObjects.FirstOrDefault(o => o.CreatedIds.Contains(csiAppId))?.applicationId;
 
       return originalAppId ?? csiAppId;
     }
 
-    public ShellType ConvertShellType(eShellType eShellType)
+    private static ShellType ConvertShellType(eShellType eShellType)
     {
-      ShellType shellType = new ShellType();
-
-      switch (eShellType)
+      ShellType shellType = eShellType switch
       {
-        case eShellType.Membrane:
-          shellType = ShellType.Membrane;
-          break;
-        case eShellType.ShellThick:
-          shellType = ShellType.ShellThick;
-          break;
-        case eShellType.ShellThin:
-          shellType = ShellType.ShellThin;
-          break;
-        case eShellType.Layered:
-          shellType = ShellType.Layered;
-          break;
-        default:
-          shellType = ShellType.Null;
-          break;
-      }
+        eShellType.Membrane => ShellType.Membrane,
+        eShellType.ShellThick => ShellType.ShellThick,
+        eShellType.ShellThin => ShellType.ShellThin,
+        eShellType.Layered => ShellType.Layered,
+        _ => ShellType.Null
+      };
 
       return shellType;
     }
 
-    public bool[] RestraintToNative(Restraint restraint)
+    private static bool[] RestraintToNative(Restraint restraint)
     {
       bool[] restraints = new bool[6];
 
@@ -288,14 +253,14 @@ namespace Objects.Converter.CSI
       int i = 0;
       foreach (char c in code)
       {
-        restraints[i] = c.Equals('F') ? true : false; // other assume default of released
+        restraints[i] = c.Equals('F'); // other assume default of released
         i++;
       }
 
       return restraints;
     }
 
-    public double[] PartialRestraintToNative(Restraint restraint)
+    private static double[] PartialRestraintToNative(Restraint restraint)
     {
       double[] partialFix = new double[6];
       partialFix[0] = restraint.stiffnessX;
@@ -307,7 +272,7 @@ namespace Objects.Converter.CSI
       return partialFix;
     }
 
-    public Restraint RestraintToSpeckle(bool[] releases)
+    public Restraint RestraintToSpeckle(bool[]? releases)
     {
       var code = new List<string>() { "R", "R", "R", "R", "R", "R" }; // default to free
       if (releases != null)
@@ -321,21 +286,6 @@ namespace Objects.Converter.CSI
 
       var restraint = new Restraint(string.Join("", code));
       return restraint;
-    }
-
-    public static List<string> GetAllPointNames(cSapModel model)
-    {
-      int num = 0;
-      var names = new string[] { };
-      try
-      {
-        model.PointObj.GetNameList(ref num, ref names);
-        return names.ToList();
-      }
-      catch
-      {
-        return null;
-      }
     }
 
     public enum CSIConverterSupported

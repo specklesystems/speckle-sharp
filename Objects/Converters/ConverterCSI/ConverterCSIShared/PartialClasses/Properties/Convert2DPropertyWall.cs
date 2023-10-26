@@ -1,14 +1,12 @@
-using System;
 using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public string WallPropertyToNative(CSIProperty2D Wall)
+    public string WallPropertyToNative(CSIProperty2D wall)
     {
       throw new ConversionSkippedException("Wall properties are not currently supported on receive");
     }
@@ -21,9 +19,8 @@ namespace Objects.Converter.CSI
       double thickness = 0;
       int color = 0;
       string notes = "";
-      string GUID = "";
-      var specklePropery2DWall = new CSIProperty2D();
-      specklePropery2DWall.type = Structural.PropertyType2D.Wall;
+      string guid = "";
+
       Model.PropArea.GetWall(
         property,
         ref wallPropType,
@@ -32,14 +29,20 @@ namespace Objects.Converter.CSI
         ref thickness,
         ref color,
         ref notes,
-        ref GUID
+        ref guid
       );
       var speckleShellType = ConvertShellType(shellType);
-      specklePropery2DWall.shellType = speckleShellType;
-      setProperties(specklePropery2DWall, matProp, thickness, property);
-      specklePropery2DWall.type2D = Structural.CSI.Analysis.CSIPropertyType2D.Wall;
-      specklePropery2DWall.applicationId = GUID;
-      return specklePropery2DWall;
+
+      var speckleProperty2DWall = new CSIProperty2D
+      {
+        type = Structural.PropertyType2D.Wall,
+        shellType = speckleShellType,
+        type2D = Structural.CSI.Analysis.CSIPropertyType2D.Wall,
+        applicationId = guid
+      };
+
+      SetProperties(speckleProperty2DWall, matProp, thickness, property);
+      return speckleProperty2DWall;
     }
   }
 }

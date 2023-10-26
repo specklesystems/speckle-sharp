@@ -43,27 +43,23 @@ namespace Objects.Converter.CSI
     {
       string units = ModelUnits();
 
-      var speckleStructLink = new CSIElement1D();
+      CSIElement1D speckleStructLink = new();
 
       speckleStructLink.type = ElementType1D.Link;
       speckleStructLink.name = name;
-      string pointI,
-        pointJ;
-      pointI = pointJ = null;
+
+      string pointI = null;
+      string pointJ = null;
       _ = Model.LinkObj.GetPoints(name, ref pointI, ref pointJ);
       var pointINode = PointToSpeckle(pointI);
       var pointJNode = PointToSpeckle(pointJ);
       speckleStructLink.end1Node = pointINode;
       speckleStructLink.end2Node = pointJNode;
-      var speckleLine = new Line();
-      if (units != null)
-      {
-        speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint, units);
-      }
-      else
-      {
-        speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint);
-      }
+
+      Line speckleLine =
+        units != null
+          ? new Line(pointINode.basePoint, pointJNode.basePoint, units)
+          : new Line(pointINode.basePoint, pointJNode.basePoint);
       speckleStructLink.baseLine = speckleLine;
 
       double localAxis = 0;
@@ -76,12 +72,13 @@ namespace Objects.Converter.CSI
       Model.LinkObj.GetProperty(name, ref linkProp);
       speckleStructLink.property = LinkPropertyToSpeckle(linkProp);
 
-      var GUID = "";
-      Model.LinkObj.GetGUID(name, ref GUID);
-      speckleStructLink.applicationId = GUID;
+      string guid = "";
+      Model.LinkObj.GetGUID(name, ref guid);
+      speckleStructLink.applicationId = guid;
+
       List<Base> elements = SpeckleModel.elements;
-      List<string> application_Id = elements.Select(o => o.applicationId).ToList();
-      if (!application_Id.Contains(speckleStructLink.applicationId))
+      List<string> applicationId = elements.Select(o => o.applicationId).ToList();
+      if (!applicationId.Contains(speckleStructLink.applicationId))
       {
         SpeckleModel.elements.Add(speckleStructLink);
       }

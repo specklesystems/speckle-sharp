@@ -11,13 +11,12 @@ namespace Objects.Converter.CSI
   {
     public ResultSet2D AreaResultSet2dToSpeckle(List<string> areaNames)
     {
-      List<Result2D> results = new List<Result2D>();
+      List<Result2D> results = new();
 
       foreach (var areaName in areaNames)
       {
-        var element =
-          SpeckleModel.elements.Where(o => (string)o["name"] == areaName && o is Element2D).FirstOrDefault()
-          as Element2D;
+        var element = SpeckleModel.elements.OfType<Element2D>().FirstOrDefault(o => o.name == areaName);
+
         // if the element is null, then it was not part of the user's selection, so don't send its results
         if (element == null)
           continue;
@@ -47,7 +46,7 @@ namespace Objects.Converter.CSI
           v23,
           vMax,
           vAngle;
-        obj = elm = pointElm = loadCase = stepType = new string[] { };
+        obj = elm = pointElm = loadCase = stepType = Array.Empty<string>();
         stepNum =
           f11 =
           f22 =
@@ -66,7 +65,7 @@ namespace Objects.Converter.CSI
           v23 =
           vMax =
           vAngle =
-            new double[] { };
+            Array.Empty<double>();
 
         Model.Results.AreaForceShell(
           areaName,

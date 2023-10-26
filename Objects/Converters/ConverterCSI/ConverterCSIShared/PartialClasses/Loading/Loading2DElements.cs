@@ -40,7 +40,11 @@ namespace Objects.Converter.CSI
           LoadDirection2D.X => 4,
           LoadDirection2D.Y => 5,
           LoadDirection2D.Z => 6,
-          _ => throw new ArgumentOutOfRangeException($"Unrecognised {nameof(LoadDirection2D)} {loadFace.direction}")
+          _
+            => throw new ArgumentOutOfRangeException(
+              nameof(loadFace),
+              $"Unrecognised {nameof(LoadDirection2D)} {loadFace.direction}"
+            )
         };
 
         int success = Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], dir);
@@ -99,15 +103,15 @@ namespace Objects.Converter.CSI
         {
           var speckleLoadFace = new LoadFace();
           var element = AreaToSpeckle(areaName[index]);
-          var loadID = string.Concat(loadPat[index], csys[index], dir[index], value[index]);
-          speckleLoadFace.applicationId = loadID;
-          _areaStoring.TryGetValue(loadID, out var element2Dlist);
+          var loadId = string.Concat(loadPat[index], csys[index], dir[index], value[index]);
+          speckleLoadFace.applicationId = loadId;
+          _areaStoring.TryGetValue(loadId, out var element2Dlist);
           if (element2Dlist == null)
           {
             element2Dlist = new List<Base> { };
           }
           element2Dlist.Add(element);
-          _areaStoring[loadID] = element2Dlist;
+          _areaStoring[loadId] = element2Dlist;
 
           switch (dir[index])
           {
@@ -165,7 +169,7 @@ namespace Objects.Converter.CSI
           }
           speckleLoadFace.values.Add(value[index]);
           speckleLoadFace.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
-          _loadStoringArea[loadID] = speckleLoadFace;
+          _loadStoringArea[loadId] = speckleLoadFace;
           speckleLoadFace.loadType = FaceLoadType.Constant;
         }
         _counterAreaLoadUniform += 1;

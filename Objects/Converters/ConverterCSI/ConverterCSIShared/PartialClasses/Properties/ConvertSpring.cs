@@ -1,4 +1,5 @@
-﻿using Objects.Structural.CSI.Properties;
+﻿using System;
+using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
@@ -41,30 +42,22 @@ namespace Objects.Converter.CSI
     {
       var linearOption1 = 0;
       var linearOption2 = 0;
-      switch (linearSpringProperty.LinearOption1)
+      linearOption1 = linearSpringProperty.LinearOption1 switch
       {
-        case NonLinearOptions.CompressionOnly:
-          linearOption1 = 0;
-          break;
-        case NonLinearOptions.Linear:
-          linearOption1 = 1;
-          break;
-        case NonLinearOptions.TensionOnly:
-          linearOption1 = 2;
-          break;
-      }
-      switch (linearSpringProperty.LinearOption2)
+        NonLinearOptions.CompressionOnly => 0,
+        NonLinearOptions.Linear => 1,
+        NonLinearOptions.TensionOnly => 2,
+        _ => linearOption1
+      };
+
+      linearOption2 = linearSpringProperty.LinearOption2 switch
       {
-        case NonLinearOptions.CompressionOnly:
-          linearOption2 = 0;
-          break;
-        case NonLinearOptions.Linear:
-          linearOption2 = 1;
-          break;
-        case NonLinearOptions.TensionOnly:
-          linearOption2 = 2;
-          break;
-      }
+        NonLinearOptions.CompressionOnly => 0,
+        NonLinearOptions.Linear => 1,
+        NonLinearOptions.TensionOnly => 2,
+        _ => linearOption2
+      };
+
       var success = Model.PropLineSpring.SetLineSpringProp(
         linearSpringProperty.name,
         linearSpringProperty.stiffnessX,
@@ -86,19 +79,18 @@ namespace Objects.Converter.CSI
 
     public string AreaSpringPropertyToNative(CSIAreaSpring areaSpring)
     {
-      var linearOption1 = 0;
-      switch (areaSpring.LinearOption3)
+      var linearOption1 = areaSpring.LinearOption3 switch
       {
-        case NonLinearOptions.CompressionOnly:
-          linearOption1 = 0;
-          break;
-        case NonLinearOptions.Linear:
-          linearOption1 = 1;
-          break;
-        case NonLinearOptions.TensionOnly:
-          linearOption1 = 2;
-          break;
-      }
+        NonLinearOptions.CompressionOnly => 0,
+        NonLinearOptions.Linear => 1,
+        NonLinearOptions.TensionOnly => 2,
+        _
+          => throw new ArgumentOutOfRangeException(
+            nameof(areaSpring),
+            $"Unrecognised NonLinearOption {areaSpring.LinearOption3}"
+          )
+      };
+
       var success = Model.PropAreaSpring.SetAreaSpringProp(
         areaSpring.name,
         areaSpring.stiffnessX,
@@ -137,10 +129,11 @@ namespace Objects.Converter.CSI
         ref notes,
         ref GUID
       );
+      CSISpringProperty speckleSpringProperty;
       switch (springOption)
       {
         case 1:
-          CSISpringProperty speckleSpringProperty = new CSISpringProperty(
+          speckleSpringProperty = new(
             name,
             Cys,
             stiffness[0],
@@ -149,20 +142,22 @@ namespace Objects.Converter.CSI
             stiffness[3],
             stiffness[4],
             stiffness[5]
-          );
-          speckleSpringProperty.applicationId = GUID;
-          return speckleSpringProperty;
+          )
+          {
+            applicationId = GUID
+          };
+          break;
         case 2:
-          speckleSpringProperty = new CSISpringProperty(name, soilProfile, footing, period);
-          speckleSpringProperty.applicationId = GUID;
-          return speckleSpringProperty;
+          speckleSpringProperty = new CSISpringProperty(name, soilProfile, footing, period) { applicationId = GUID };
+          break;
         default:
           speckleSpringProperty = new CSISpringProperty();
-          return speckleSpringProperty;
+          break;
       }
+      return speckleSpringProperty;
     }
 
-    public CSILinearSpring LinearSpringToSpeckle(string name)
+    public CSILinearSpring? LinearSpringToSpeckle(string name)
     {
       double stiffnessX = 0;
       double stiffnessY = 0;
@@ -176,7 +171,7 @@ namespace Objects.Converter.CSI
       NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
       NonLinearOptions nonLinearOptions2 = NonLinearOptions.Linear;
 
-      var s = Model.PropLineSpring.GetLineSpringProp(
+      var success = Model.PropLineSpring.GetLineSpringProp(
         name,
         ref stiffnessX,
         ref stiffnessY,
@@ -188,49 +183,31 @@ namespace Objects.Converter.CSI
         ref notes,
         ref GUID
       );
-      switch (nonLinearOpt1)
-      {
-        case 0:
-          nonLinearOptions1 = NonLinearOptions.Linear;
-          break;
-        case 1:
-          nonLinearOptions1 = NonLinearOptions.CompressionOnly;
-          break;
-        case 2:
-          nonLinearOptions1 = NonLinearOptions.TensionOnly;
-          break;
-      }
-      switch (nonLinearOpt2)
-      {
-        case 0:
-          nonLinearOptions2 = NonLinearOptions.Linear;
-          break;
-        case 1:
-          nonLinearOptions2 = NonLinearOptions.CompressionOnly;
-          break;
-        case 2:
-          nonLinearOptions2 = NonLinearOptions.TensionOnly;
-          break;
-      }
 
-      if (s == 0)
+      if (success != 0)
+        return null;
+
+      nonLinearOptions1 = nonLinearOpt1 switch
       {
-        CSILinearSpring speckleLinearSpring = new CSILinearSpring(
-          name,
-          stiffnessX,
-          stiffnessY,
-          stiffnessZ,
-          stiffnessXX,
-          nonLinearOptions1,
-          nonLinearOptions2,
-          GUID
-        );
-        return speckleLinearSpring;
-      }
-      return null;
+        0 => NonLinearOptions.Linear,
+        1 => NonLinearOptions.CompressionOnly,
+        2 => NonLinearOptions.TensionOnly,
+        _ => nonLinearOptions1
+      };
+      nonLinearOptions2 = nonLinearOpt2 switch
+      {
+        0 => NonLinearOptions.Linear,
+        1 => NonLinearOptions.CompressionOnly,
+        2 => NonLinearOptions.TensionOnly,
+        _ => nonLinearOptions2
+      };
+
+      CSILinearSpring speckleLinearSpring =
+        new(name, stiffnessX, stiffnessY, stiffnessZ, stiffnessXX, nonLinearOptions1, nonLinearOptions2, GUID);
+      return speckleLinearSpring;
     }
 
-    public CSIAreaSpring AreaSpringToSpeckle(string name)
+    public CSIAreaSpring? AreaSpringToSpeckle(string name)
     {
       double stiffnessX = 0;
       double stiffnessY = 0;
@@ -244,10 +221,9 @@ namespace Objects.Converter.CSI
 
       int color = 0;
       string notes = null;
-      string GUID = null;
-      NonLinearOptions nonLinearOptions1 = NonLinearOptions.Linear;
+      string guid = null;
 
-      var s = Model.PropAreaSpring.GetAreaSpringProp(
+      var success = Model.PropAreaSpring.GetAreaSpringProp(
         name,
         ref stiffnessX,
         ref stiffnessY,
@@ -259,34 +235,21 @@ namespace Objects.Converter.CSI
         ref period,
         ref color,
         ref notes,
-        ref GUID
+        ref guid
       );
-      switch (nonLinearOpt1)
-      {
-        case 0:
-          nonLinearOptions1 = NonLinearOptions.Linear;
-          break;
-        case 1:
-          nonLinearOptions1 = NonLinearOptions.CompressionOnly;
-          break;
-        case 2:
-          nonLinearOptions1 = NonLinearOptions.TensionOnly;
-          break;
-      }
+      if (success != 0)
+        return null;
 
-      if (s == 0)
+      NonLinearOptions nonLinearOptions1 = nonLinearOpt1 switch
       {
-        CSIAreaSpring speckleAreaSpring = new CSIAreaSpring(
-          name,
-          stiffnessX,
-          stiffnessY,
-          stiffnessZ,
-          nonLinearOptions1,
-          GUID
-        );
-        return speckleAreaSpring;
-      }
-      return null;
+        0 => NonLinearOptions.Linear,
+        1 => NonLinearOptions.CompressionOnly,
+        2 => NonLinearOptions.TensionOnly,
+        _ => throw new ArgumentOutOfRangeException(null, $"Unrecognised Non linear option {nonLinearOpt1}")
+      };
+
+      CSIAreaSpring speckleAreaSpring = new(name, stiffnessX, stiffnessY, stiffnessZ, nonLinearOptions1, guid);
+      return speckleAreaSpring;
     }
   }
 }

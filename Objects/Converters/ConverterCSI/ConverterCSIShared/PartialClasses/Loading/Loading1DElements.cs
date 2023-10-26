@@ -10,11 +10,11 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    readonly Dictionary<string, LoadBeam> _loadStoringBeam = new();
-    readonly Dictionary<string, List<Base>> _frameStoring = new();
-    int _counterFrame;
+    private readonly Dictionary<string, LoadBeam> _loadStoringBeam = new();
+    private readonly Dictionary<string, List<Base>> _frameStoring = new();
+    private int _counterFrame;
 
-    List<string> LoadFrameToNative(LoadBeam loadBeam, IList<string>? notes)
+    private List<string> LoadFrameToNative(LoadBeam loadBeam, IList<string>? notes)
     {
       int direction = 11;
       int myType = 1;
@@ -48,7 +48,10 @@ namespace Objects.Converter.CSI
             myType = 2;
             break;
           default:
-            throw new ArgumentOutOfRangeException($"Unrecognised load direction {loadBeam.direction}");
+            throw new ArgumentOutOfRangeException(
+              nameof(loadBeam),
+              $"Unrecognised load direction {loadBeam.direction}"
+            );
         }
       }
       else if (loadBeam.loadAxisType == Structural.LoadAxisType.Local)
@@ -204,7 +207,7 @@ namespace Objects.Converter.CSI
         {
           var speckleLoadFrame = new LoadBeam();
           var element = FrameToSpeckle(frameName[index]);
-          var loadID = String.Concat(
+          var loadId = string.Concat(
             loadPat[index],
             val1[index],
             val2[index],
@@ -213,15 +216,15 @@ namespace Objects.Converter.CSI
             dir[index],
             MyType[index]
           );
-          speckleLoadFrame.applicationId = loadID;
-          _frameStoring.TryGetValue(loadID, out var element1DList);
+          speckleLoadFrame.applicationId = loadId;
+          _frameStoring.TryGetValue(loadId, out var element1DList);
           if (element1DList == null)
           {
-            element1DList = new List<Base> { };
+            element1DList = new List<Base>();
           }
           if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId))
             element1DList.Add(element);
-          _frameStoring[loadID] = element1DList;
+          _frameStoring[loadId] = element1DList;
 
           switch (dir[index])
           {
@@ -288,7 +291,7 @@ namespace Objects.Converter.CSI
           speckleLoadFrame.positions.Add(dist2[index]);
           speckleLoadFrame.loadType = BeamLoadType.Uniform;
           speckleLoadFrame.loadCase = LoadPatternCaseToSpeckle(loadPat[index]);
-          _loadStoringBeam[loadID] = speckleLoadFrame;
+          _loadStoringBeam[loadId] = speckleLoadFrame;
         }
         _counterFrame += 1;
 

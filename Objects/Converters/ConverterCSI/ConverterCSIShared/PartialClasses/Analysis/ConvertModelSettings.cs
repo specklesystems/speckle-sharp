@@ -7,7 +7,7 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void modelSettingsToNative(ModelSettings modelSettings)
+    public void ModelSettingsToNative(ModelSettings modelSettings)
     {
       Model.DesignConcrete.SetCode(modelSettings.concreteCode);
       Model.DesignSteel.SetCode(modelSettings.steelCode);
@@ -17,7 +17,7 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public ModelSettings modelSettingsToSpeckle()
+    public ModelSettings ModelSettingsToSpeckle()
     {
       var speckleModelSettings = new ModelSettings();
       speckleModelSettings.modelUnits = UnitsToSpeckle();

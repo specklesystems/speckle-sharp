@@ -15,15 +15,15 @@ namespace Objects.Converter.CSI
   {
     public void UpdateFrame(Element1D element1D, string name, ApplicationObject appObj)
     {
-      var end1node = element1D.end1Node?.basePoint ?? element1D.baseLine?.start;
-      var end2node = element1D.end2Node?.basePoint ?? element1D.baseLine?.end;
+      var end1Node = element1D.end1Node?.basePoint ?? element1D.baseLine?.start;
+      var end2Node = element1D.end2Node?.basePoint ?? element1D.baseLine?.end;
 
-      if (end1node == null || end2node == null)
+      if (end1Node == null || end2Node == null)
       {
-        throw new ArgumentException($"Frame {element1D.name} does not have valid endpoints");
+        throw new ArgumentException($"Frame {element1D.name} does not have valid endpoints {end1Node},{end2Node}");
       }
 
-      UpdateFrameLocation(name, end1node, end2node, appObj);
+      UpdateFrameLocation(name, end1Node, end2Node, appObj);
       SetFrameElementProperties(element1D, name);
     }
 
@@ -37,8 +37,8 @@ namespace Objects.Converter.CSI
       // as those points may be shared by other frames. Need to check if there are other frames using
       // those points and then check the new location of the endpoints to see if there are existing points
       // that could be used.
-      var pt1Updated = UpdatePoint(pt1, null, p1);
-      var pt2Updated = UpdatePoint(pt2, null, p2);
+      var pt1Updated = UpdatePoint(pt1, p1);
+      var pt2Updated = UpdatePoint(pt2, p2);
 
       int success = 0;
       if (pt1Updated != pt1 || pt2Updated != pt2)
@@ -165,7 +165,7 @@ namespace Objects.Converter.CSI
       var pointJNode = PointToSpeckle(pointJ);
       speckleStructFrame.end1Node = pointINode;
       speckleStructFrame.end2Node = pointJNode;
-      var speckleLine = new Line();
+      Line speckleLine;
       if (units != null)
       {
         speckleLine = new Line(pointINode.basePoint, pointJNode.basePoint, units);
@@ -177,35 +177,19 @@ namespace Objects.Converter.CSI
       speckleStructFrame.baseLine = speckleLine;
       eFrameDesignOrientation frameDesignOrientation = eFrameDesignOrientation.Null;
       Model.FrameObj.GetDesignOrientation(name, ref frameDesignOrientation);
-      switch (frameDesignOrientation)
+      speckleStructFrame.type = frameDesignOrientation switch
       {
-        case eFrameDesignOrientation.Column:
-        {
-          speckleStructFrame.type = ElementType1D.Column;
-          break;
-        }
-        case eFrameDesignOrientation.Beam:
-        {
-          speckleStructFrame.type = ElementType1D.Beam;
-          break;
-        }
-        case eFrameDesignOrientation.Brace:
-        {
-          speckleStructFrame.type = ElementType1D.Brace;
-          break;
-        }
-        case eFrameDesignOrientation.Null:
-        {
-          //speckleStructFrame.memberType = MemberType.Generic1D;
-          speckleStructFrame.type = ElementType1D.Null;
-          break;
-        }
-        case eFrameDesignOrientation.Other:
-        {
-          speckleStructFrame.type = ElementType1D.Other;
-          break;
-        }
-      }
+        eFrameDesignOrientation.Column => ElementType1D.Column,
+        eFrameDesignOrientation.Beam => ElementType1D.Beam,
+        eFrameDesignOrientation.Brace => ElementType1D.Brace,
+        eFrameDesignOrientation.Null => ElementType1D.Null,
+        eFrameDesignOrientation.Other => ElementType1D.Other,
+        _
+          => throw new ArgumentOutOfRangeException(
+            null,
+            $"Unsupported frame design orientation: {frameDesignOrientation}"
+          )
+      };
 
       bool[] iRelease,
         jRelease;
@@ -237,8 +221,8 @@ namespace Objects.Converter.CSI
       bool autoOffSet = true;
       Model.FrameObj.GetEndLengthOffset(name, ref autoOffSet, ref offSetEnd1, ref offSetEnd2, ref RZ);
       //Offset needs to be oriented wrt to 1-axis
-      Vector end1Offset = new Vector(0, 0, offSetEnd1, ModelUnits());
-      Vector end2Offset = new Vector(0, 0, offSetEnd2, ModelUnits());
+      Vector end1Offset = new(0, 0, offSetEnd1, ModelUnits());
+      Vector end2Offset = new(0, 0, offSetEnd2, ModelUnits());
       speckleStructFrame.end1Offset = end1Offset;
       speckleStructFrame.end2Offset = end2Offset;
 
@@ -267,44 +251,31 @@ namespace Objects.Converter.CSI
       Model.FrameObj.GetDesignProcedure(name, ref designProcedure);
       if (designProcedure != 9)
       {
-        switch (designProcedure)
+        speckleStructFrame.DesignProcedure = designProcedure switch
         {
-          case 0:
-            speckleStructFrame.DesignProcedure = DesignProcedure.ProgramDetermined;
-            break;
-          case 1:
-            speckleStructFrame.DesignProcedure = DesignProcedure.SteelFrameDesign;
-            break;
-          case 2:
-            speckleStructFrame.DesignProcedure = DesignProcedure.ConcreteFrameDesign;
-            break;
-          case 3:
-            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeBeamDesign;
-            break;
-          case 4:
-            speckleStructFrame.DesignProcedure = DesignProcedure.SteelJoistDesign;
-            break;
-          case 7:
-            speckleStructFrame.DesignProcedure = DesignProcedure.NoDesign;
-            break;
-          case 13:
-            speckleStructFrame.DesignProcedure = DesignProcedure.CompositeColumnDesign;
-            break;
-        }
+          0 => DesignProcedure.ProgramDetermined,
+          1 => DesignProcedure.SteelFrameDesign,
+          2 => DesignProcedure.ConcreteFrameDesign,
+          3 => DesignProcedure.CompositeBeamDesign,
+          4 => DesignProcedure.SteelJoistDesign,
+          7 => DesignProcedure.NoDesign,
+          13 => DesignProcedure.CompositeColumnDesign,
+          _ => throw new ArgumentOutOfRangeException(null, $"Unsupported design procedure value {designProcedure}")
+        };
       }
-      double[] modifiers = new double[] { };
+      double[] modifiers = Array.Empty<double>();
       int s = Model.FrameObj.GetModifiers(name, ref modifiers);
       if (s == 0)
       {
         speckleStructFrame.Modifiers = modifiers;
       }
 
-      var GUID = "";
-      Model.FrameObj.GetGUID(name, ref GUID);
-      speckleStructFrame.applicationId = GUID;
+      var guid = "";
+      Model.FrameObj.GetGUID(name, ref guid);
+      speckleStructFrame.applicationId = guid;
       List<Base> elements = SpeckleModel.elements;
-      List<string> application_Id = elements.Select(o => o.applicationId).ToList();
-      if (!application_Id.Contains(speckleStructFrame.applicationId))
+      List<string> applicationId = elements.Select(o => o.applicationId).ToList();
+      if (!applicationId.Contains(speckleStructFrame.applicationId))
       {
         SpeckleModel.elements.Add(speckleStructFrame);
       }
@@ -363,30 +334,21 @@ namespace Objects.Converter.CSI
         }
         if (CSIelement1D.property.material.name != null)
         {
-          switch (CSIelement1D.DesignProcedure)
+          int myType = CSIelement1D.DesignProcedure switch
           {
-            case DesignProcedure.ProgramDetermined:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 0);
-              break;
-            case DesignProcedure.CompositeBeamDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 3);
-              break;
-            case DesignProcedure.CompositeColumnDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 13);
-              break;
-            case DesignProcedure.SteelFrameDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 1);
-              break;
-            case DesignProcedure.ConcreteFrameDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 2);
-              break;
-            case DesignProcedure.SteelJoistDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 4);
-              break;
-            case DesignProcedure.NoDesign:
-              Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 7);
-              break;
-          }
+            DesignProcedure.ProgramDetermined => 0,
+            DesignProcedure.CompositeBeamDesign => 3,
+            DesignProcedure.CompositeColumnDesign => 13,
+            DesignProcedure.SteelFrameDesign => 1,
+            DesignProcedure.ConcreteFrameDesign => 2,
+            DesignProcedure.SteelJoistDesign => 4,
+            DesignProcedure.NoDesign => 7,
+            _
+              => throw new ArgumentOutOfRangeException(
+                $"Unexpected design procedure value {CSIelement1D.DesignProcedure}"
+              )
+          };
+          Model.FrameObj.SetDesignProcedure(CSIelement1D.name, myType);
         }
         else
         {

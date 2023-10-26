@@ -12,7 +12,6 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Objects.Other;
 using Objects.Structural.Materials;
 using OSG = Objects.Structural.Geometry;
 
@@ -44,7 +43,7 @@ namespace Objects.Converter.CSI
     public cSapModel Model { get; private set; }
     public string ProgramVersion { get; private set; }
 
-    public Model SpeckleModel { get; set; }
+    public Model? SpeckleModel { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
 
@@ -80,19 +79,22 @@ namespace Objects.Converter.CSI
       ProgramVersion = versionString;
 
       if (!Settings.ContainsKey("operation"))
-        throw new Exception("operation setting was not set before calling converter.SetContextDocument");
+        throw new InvalidOperationException(
+          "operation setting was not set before calling converter.SetContextDocument"
+        );
 
-      if (Settings["operation"] == "receive")
+      switch (Settings["operation"])
       {
-        ExistingObjectGuids = GetAllGuids(Model);
-        // TODO: make sure we are setting the load patterns before we import load combinations
+        case "receive":
+          ExistingObjectGuids = GetAllGuids(Model);
+          // TODO: make sure we are setting the load patterns before we import load combinations
+          break;
+        case "send":
+          SpeckleModel = ModelToSpeckle();
+          break;
+        default:
+          throw new InvalidOperationException("operation setting was not set to \"send\" or \"receive\"");
       }
-      else if (Settings["operation"] == "send")
-      {
-        SpeckleModel = ModelToSpeckle();
-      }
-      else
-        throw new Exception("operation setting was not set to \"send\" or \"receive\"");
     }
 
     public void SetConverterSettings(object settings)
@@ -322,35 +324,35 @@ namespace Objects.Converter.CSI
         //    returnObject = LoadCaseToSpeckle(name);
         //    break;
         case "BeamLoading":
-          returnObject = LoadFrameToSpeckle(name, GetBeamNames(Model).Count());
+          returnObject = LoadFrameToSpeckle(name, GetBeamNames(Model).Count);
           Report.Log($"Created Loading Beam");
           break;
         case "ColumnLoading":
-          returnObject = LoadFrameToSpeckle(name, GetColumnNames(Model).Count());
+          returnObject = LoadFrameToSpeckle(name, GetColumnNames(Model).Count);
           Report.Log($"Created Loading Column");
           break;
         case "BraceLoading":
-          returnObject = LoadFrameToSpeckle(name, GetBraceNames(Model).Count());
+          returnObject = LoadFrameToSpeckle(name, GetBraceNames(Model).Count);
           Report.Log($"Created Loading Brace");
           break;
         case "FrameLoading":
-          returnObject = LoadFrameToSpeckle(name, GetAllFrameNames(Model).Count());
+          returnObject = LoadFrameToSpeckle(name, GetAllFrameNames(Model).Count);
           Report.Log($"Created Loading Frame");
           break;
         case "FloorLoading":
-          returnObject = LoadFaceToSpeckle(name, GetAllFloorNames(Model).Count());
+          returnObject = LoadFaceToSpeckle(name, GetAllFloorNames(Model).Count);
           Report.Log($"Created Loading Floor");
           break;
         case "WallLoading":
-          returnObject = LoadFaceToSpeckle(name, GetAllWallNames(Model).Count());
+          returnObject = LoadFaceToSpeckle(name, GetAllWallNames(Model).Count);
           Report.Log($"Created Loading Wall");
           break;
         case "AreaLoading":
-          returnObject = LoadFaceToSpeckle(name, GetAllAreaNames(Model).Count());
+          returnObject = LoadFaceToSpeckle(name, GetAllAreaNames(Model).Count);
           Report.Log($"Created Loading Area");
           break;
         case "NodeLoading":
-          returnObject = LoadNodeToSpeckle(name, GetAllPointNames(Model).Count());
+          returnObject = LoadNodeToSpeckle(name, GetAllPointNames(Model).Count);
           Report.Log($"Created Loading Node");
           break;
         case "LoadPattern":

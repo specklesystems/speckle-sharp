@@ -1,6 +1,9 @@
-﻿using Objects.Structural.Materials;
+﻿#nullable enable
+using System;
+using Objects.Structural.Materials;
 using CSiAPIv1;
 using System.Linq;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -8,43 +11,27 @@ namespace Objects.Converter.CSI
   {
     public string MaterialToNative(StructuralMaterial? material)
     {
-      material = material ?? new StructuralMaterial("undefined", Structural.MaterialType.Other, null, null, null);
+      material ??= new StructuralMaterial("undefined", Structural.MaterialType.Other, null, null, null);
       int numbMaterial = 0;
-      string[] materials = new string[] { };
+      string[] materials = Array.Empty<string>();
       Model.PropMaterial.GetNameList(ref numbMaterial, ref materials);
 
       if (materials.Contains(material.name))
         return material.name;
 
       var matType = material.materialType;
-      var eMaterialType = eMatType.NoDesign;
-      switch (matType)
+      var eMaterialType = matType switch
       {
-        case Structural.MaterialType.Steel:
-          eMaterialType = eMatType.Steel;
-          break;
-        case Structural.MaterialType.Concrete:
-          eMaterialType = eMatType.Concrete;
-          break;
-        case Structural.MaterialType.Other:
-          eMaterialType = eMatType.NoDesign;
-          break;
-        case Structural.MaterialType.Aluminium:
-          eMaterialType = eMatType.Aluminum;
-          break;
-        case Structural.MaterialType.Rebar:
-          eMaterialType = eMatType.Rebar;
-          break;
-        case Structural.MaterialType.ColdFormed:
-          eMaterialType = eMatType.ColdFormed;
-          break;
-        case Structural.MaterialType.Tendon:
-          eMaterialType = eMatType.Tendon;
-          break;
-        case Structural.MaterialType.Masonry:
-          eMaterialType = eMatType.Masonry;
-          break;
-      }
+        Structural.MaterialType.Steel => eMatType.Steel,
+        Structural.MaterialType.Concrete => eMatType.Concrete,
+        Structural.MaterialType.Other => eMatType.NoDesign,
+        Structural.MaterialType.Aluminium => eMatType.Aluminum,
+        Structural.MaterialType.Rebar => eMatType.Rebar,
+        Structural.MaterialType.ColdFormed => eMatType.ColdFormed,
+        Structural.MaterialType.Tendon => eMatType.Tendon,
+        Structural.MaterialType.Masonry => eMatType.Masonry,
+        _ => eMatType.NoDesign
+      };
       string materialName = material.name;
 
       if (material.designCode != null)
@@ -73,28 +60,29 @@ namespace Objects.Converter.CSI
       return material.name;
     }
 
-    public Structural.Materials.StructuralMaterial MaterialToSpeckle(string name)
+    public StructuralMaterial? MaterialToSpeckle(string name)
     {
-      var speckleStructMaterial = new Structural.Materials.StructuralMaterial();
+      StructuralMaterial speckleStructMaterial = new();
       speckleStructMaterial.name = name;
-      eMatType matType = new eMatType();
+      eMatType matType = new();
       int color = 0;
       string notes,
         GUID;
       notes = GUID = null;
-      Model.PropMaterial.GetMaterial(name, ref matType, ref color, ref notes, ref GUID);
-
+      int success = Model.PropMaterial.GetMaterial(name, ref matType, ref color, ref notes, ref GUID);
+      if (success != 0)
+      {
+        return null;
+      }
       speckleStructMaterial.applicationId = GUID;
 
       switch (matType)
       {
         case eMatType.Steel:
           return GetSteelMaterial(name);
-          break;
         case eMatType.Concrete:
           speckleStructMaterial.materialType = Structural.MaterialType.Concrete;
           return GetConcreteMaterial(name);
-          break;
         case eMatType.NoDesign:
           speckleStructMaterial.materialType = Structural.MaterialType.Other;
           break;
@@ -102,9 +90,7 @@ namespace Objects.Converter.CSI
           speckleStructMaterial.materialType = Structural.MaterialType.Aluminium;
           break;
         case eMatType.Rebar:
-
           return GetRebarMaterial(name);
-          break;
         case eMatType.ColdFormed:
           speckleStructMaterial.materialType = Structural.MaterialType.ColdFormed;
           break;
@@ -114,6 +100,8 @@ namespace Objects.Converter.CSI
         case eMatType.Masonry:
           speckleStructMaterial.materialType = Structural.MaterialType.Masonry;
           break;
+        default:
+          throw new ArgumentOutOfRangeException(null, $"Unrecognised material type {matType}");
       }
 
       return speckleStructMaterial;

@@ -39,6 +39,9 @@ namespace Objects.Converter.CSI
         return property1D.name;
       }
 
+      if (property1D.profile == null)
+        throw new ArgumentException("Expected profile to be non-null", nameof(property1D));
+
       var materialName = MaterialToNative(property1D.material);
 
       int success;
@@ -131,7 +134,11 @@ namespace Objects.Converter.CSI
             ScaleToNative(o.webThickness, o.units),
             false
           ),
-        _ => throw new ConversionSkippedException($"Unsupported profile type {property1D.profile.GetType()}")
+        _
+          => throw new ArgumentOutOfRangeException(
+            nameof(property1D),
+            $"Unsupported profile type {property1D.profile.GetType()}"
+          )
       };
 
       if (success != 0)

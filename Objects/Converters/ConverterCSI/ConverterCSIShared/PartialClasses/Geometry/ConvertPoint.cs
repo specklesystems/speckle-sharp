@@ -1,11 +1,11 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
 using System.Collections.Generic;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Models;
-
 using CSiAPIv1;
 using System.Linq;
 using Speckle.Core.Kits;
@@ -14,24 +14,25 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public string UpdatePoint(string name, Node speckleNode, Point basePoint = null)
+    public string UpdatePoint(string name, Node speckleNode)
     {
-      basePoint = basePoint ?? speckleNode.basePoint;
+      var newName = UpdatePoint(name, speckleNode.basePoint);
+      UpdatePointProperties(speckleNode, ref newName);
+      return newName;
+    }
+
+    //This function is poorly named, it creates not updates... right?
+    public string UpdatePoint(string name, Point? basePoint)
+    {
       if (basePoint == null)
         return name;
 
       CreatePoint(basePoint, out string newName);
-      name = newName;
-
-      UpdatePointProperties(speckleNode, ref name);
-      return name;
+      return newName;
     }
 
     public void UpdatePointProperties(Node speckleStructNode, ref string name)
     {
-      if (speckleStructNode == null)
-        return;
-
       if (speckleStructNode.restraint != null)
       {
         var restraint = RestraintToNative(speckleStructNode.restraint);
@@ -44,7 +45,7 @@ namespace Objects.Converter.CSI
         name = speckleStructNode.name;
       }
 
-      if (!(speckleStructNode is CSINode csiNode))
+      if (speckleStructNode is not CSINode csiNode)
         return;
 
       if (csiNode.CSISpringProperty != null)
@@ -104,9 +105,9 @@ namespace Objects.Converter.CSI
 
     public int CreatePoint(Point point, out string name)
     {
-      var scaleFactor = Speckle.Core.Kits.Units.GetConversionFactor(point.units, ModelUnits());
+      var scaleFactor = Units.GetConversionFactor(point.units, ModelUnits());
 
-      name = null;
+      name = null!;
       var success = Model.PointObj.AddCartesian(
         point.x * scaleFactor,
         point.x * scaleFactor,
@@ -139,11 +140,11 @@ namespace Objects.Converter.CSI
 
       SpeckleModel?.restraints.Add(speckleStructNode.restraint);
 
-      string SpringProp = null;
-      Model.PointObj.GetSpringAssignment(name, ref SpringProp);
-      if (SpringProp != null)
+      string springProp = null;
+      Model.PointObj.GetSpringAssignment(name, ref springProp);
+      if (springProp != null)
       {
-        speckleStructNode.CSISpringProperty = SpringPropertyToSpeckle(SpringProp);
+        speckleStructNode.CSISpringProperty = SpringPropertyToSpeckle(springProp);
       }
 
       string diaphragmAssignment = null;
@@ -152,26 +153,21 @@ namespace Objects.Converter.CSI
       if (diaphragmAssignment != null)
       {
         speckleStructNode.DiaphragmAssignment = diaphragmAssignment;
-        switch (eDiaphragmOption)
+        speckleStructNode.DiaphragmOption = eDiaphragmOption switch
         {
-          case eDiaphragmOption.Disconnect:
-            speckleStructNode.DiaphragmOption = DiaphragmOption.Disconnect;
-            break;
-          case eDiaphragmOption.FromShellObject:
-            speckleStructNode.DiaphragmOption = DiaphragmOption.FromShellObject;
-            break;
-          case eDiaphragmOption.DefinedDiaphragm:
-            speckleStructNode.DiaphragmOption = DiaphragmOption.DefinedDiaphragm;
-            break;
-        }
+          eDiaphragmOption.Disconnect => DiaphragmOption.Disconnect,
+          eDiaphragmOption.FromShellObject => DiaphragmOption.FromShellObject,
+          eDiaphragmOption.DefinedDiaphragm => DiaphragmOption.DefinedDiaphragm,
+          _ => speckleStructNode.DiaphragmOption
+        };
       }
 
-      var GUID = "";
-      Model.PointObj.GetGUID(name, ref GUID);
-      speckleStructNode.applicationId = GUID;
-      List<Base> nodes = SpeckleModel == null ? new List<Base>() : SpeckleModel.nodes;
-      List<string> application_Id = nodes.Select(o => o.applicationId).ToList();
-      if (!application_Id.Contains(speckleStructNode.applicationId))
+      var guid = "";
+      Model.PointObj.GetGUID(name, ref guid);
+      speckleStructNode.applicationId = guid;
+      IList<Base> nodes = SpeckleModel == null ? Array.Empty<Base>() : SpeckleModel.nodes;
+      var applicationId = nodes.Select(o => o.applicationId);
+      if (!applicationId.Contains(speckleStructNode.applicationId))
       {
         SpeckleModel?.nodes.Add(speckleStructNode);
       }

@@ -54,7 +54,7 @@ namespace Objects.Converter.CSI
           );
           break;
         default:
-          throw new ArgumentOutOfRangeException($"Unrecognised deck type {property2D.deckType}");
+          throw new ArgumentOutOfRangeException(nameof(property2D), $"Unrecognised deck type {property2D.deckType}");
       }
 
       if (success != 0)
@@ -103,7 +103,7 @@ namespace Objects.Converter.CSI
           );
           break;
         default:
-          throw new ArgumentOutOfRangeException($"Unrecognised slab type {property2D.slabType}");
+          throw new ArgumentOutOfRangeException(nameof(property2D), $"Unrecognised slab type {property2D.slabType}");
       }
 
       if (success != 0)
@@ -158,7 +158,7 @@ namespace Objects.Converter.CSI
       return Model.PropArea.SetDeck(deck.name, deckType, shell, deck.material.name, deck.thickness);
     }
 
-    public CSIProperty2D FloorPropertyToSpeckle(string property)
+    public CSIProperty2D? FloorPropertyToSpeckle(string property)
     {
       eDeckType deckType = eDeckType.Filled;
       eSlabType slabType = eSlabType.Drop;
@@ -220,7 +220,7 @@ namespace Objects.Converter.CSI
           speckleProperty2D.UnitWeight = unitWeight;
           speckleProperty2D.ShearStudHt = shearStudHt;
           speckleProperty2D.deckType = Structural.CSI.Analysis.DeckType.Filled;
-          setProperties(speckleProperty2D, matProp, thickness, property);
+          SetProperties(speckleProperty2D, matProp, thickness, property);
           speckleProperty2D.type2D = Structural.CSI.Analysis.CSIPropertyType2D.Deck;
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
@@ -245,7 +245,7 @@ namespace Objects.Converter.CSI
           speckleProperty2D.ShearThickness = shearThickness;
           speckleProperty2D.UnitWeight = unitWeight;
           speckleProperty2D.deckType = Structural.CSI.Analysis.DeckType.Filled;
-          setProperties(speckleProperty2D, matProp, thickness, property);
+          SetProperties(speckleProperty2D, matProp, thickness, property);
           speckleProperty2D.type2D = Structural.CSI.Analysis.CSIPropertyType2D.Deck;
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
@@ -260,7 +260,7 @@ namespace Objects.Converter.CSI
           speckleProperty2D.ShearStudFu = shearStudFu;
           speckleProperty2D.ShearStudHt = shearStudHt;
           speckleProperty2D.deckType = Structural.CSI.Analysis.DeckType.SolidSlab;
-          setProperties(speckleProperty2D, matProp, thickness, property);
+          SetProperties(speckleProperty2D, matProp, thickness, property);
           speckleProperty2D.type2D = Structural.CSI.Analysis.CSIPropertyType2D.Deck;
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
@@ -280,7 +280,7 @@ namespace Objects.Converter.CSI
       if (s == 0)
       {
         var specklePropery2DSlab = new CSIProperty2D();
-        setProperties(specklePropery2DSlab, matProp, thickness, property);
+        SetProperties(specklePropery2DSlab, matProp, thickness, property);
         specklePropery2DSlab.type2D = Structural.CSI.Analysis.CSIPropertyType2D.Slab;
         double overallDepth = 0;
         double slabThickness = 0;
@@ -310,7 +310,7 @@ namespace Objects.Converter.CSI
           speckleProperty2D.RibSpacingDir2 = ribSpacingDir2;
           speckleProperty2D.slabType = Structural.CSI.Analysis.SlabType.Waffle;
           speckleProperty2D.deckType = Structural.CSI.Analysis.DeckType.Null;
-          setProperties(speckleProperty2D, matProp, thickness, property);
+          SetProperties(speckleProperty2D, matProp, thickness, property);
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
           return speckleProperty2D;
@@ -334,31 +334,21 @@ namespace Objects.Converter.CSI
           speckleProperty2D.RibsParallelTo = ribParrallelTo;
           speckleProperty2D.slabType = Structural.CSI.Analysis.SlabType.Ribbed;
           speckleProperty2D.deckType = Structural.CSI.Analysis.DeckType.Null;
-          setProperties(speckleProperty2D, matProp, thickness, property);
+          SetProperties(speckleProperty2D, matProp, thickness, property);
           speckleProperty2D.shellType = speckleShellType;
           speckleProperty2D.applicationId = GUID;
           return speckleProperty2D;
         }
         else
         {
-          switch (slabType)
+          specklePropery2DSlab.slabType = slabType switch
           {
-            case eSlabType.Slab:
-              specklePropery2DSlab.slabType = Structural.CSI.Analysis.SlabType.Slab;
-              break;
-            case eSlabType.Drop:
-              specklePropery2DSlab.slabType = Structural.CSI.Analysis.SlabType.Drop;
-              break;
-            case eSlabType.Mat:
-              specklePropery2DSlab.slabType = Structural.CSI.Analysis.SlabType.Mat;
-              break;
-            case eSlabType.Footing:
-              specklePropery2DSlab.slabType = Structural.CSI.Analysis.SlabType.Footing;
-              break;
-            default:
-              specklePropery2DSlab.slabType = Structural.CSI.Analysis.SlabType.Null;
-              break;
-          }
+            eSlabType.Slab => Structural.CSI.Analysis.SlabType.Slab,
+            eSlabType.Drop => Structural.CSI.Analysis.SlabType.Drop,
+            eSlabType.Mat => Structural.CSI.Analysis.SlabType.Mat,
+            eSlabType.Footing => Structural.CSI.Analysis.SlabType.Footing,
+            _ => Structural.CSI.Analysis.SlabType.Null
+          };
           specklePropery2DSlab.deckType = Structural.CSI.Analysis.DeckType.Null;
           specklePropery2DSlab.shellType = speckleShellType;
           specklePropery2DSlab.applicationId = GUID;
