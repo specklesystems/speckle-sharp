@@ -203,7 +203,7 @@ namespace Objects.Converter.CSI
           convertedName = PointToNative(o, appObj.Log);
           break;
         case Property1D o:
-          Property1DToNative(o, appObj);
+          convertedName = Property1DToNative(o);
           break;
         case StructuralMaterial o:
           convertedName = MaterialToNative(o);
