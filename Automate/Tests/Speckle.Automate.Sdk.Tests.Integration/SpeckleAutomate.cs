@@ -117,6 +117,41 @@ public sealed class AutomationContextTest : IDisposable
     Assert.That(automationContext.AutomationResult.Blobs, Has.Count.EqualTo(1));
   }
 
+  [Test]
+  public async Task TestCreateVersionInProject()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    const string branchName = "test-branch";
+    const string commitMsg = "automation test";
+
+    await automationContext.CreateNewVersionInProject(Utils.TestObject(), branchName, commitMsg);
+
+    var branch = await automationContext.SpeckleClient
+      .BranchGet(automationRunData.ProjectId, branchName, 1)
+      .ConfigureAwait(false);
+
+    Assert.NotNull(branch);
+    Assert.That(branch.name, Is.EqualTo(branchName));
+    Assert.That(branch.commits.items[0].message, Is.EqualTo(commitMsg));
+  }
+
+  [Test]
+  public async Task TestCreateVersionInProject_ThrowsErrorForSameModel()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    var branchName = automationRunData.BranchName;
+    const string commitMsg = "automation test";
+
+    Assert.ThrowsAsync<ArgumentException>(async () =>
+    {
+      await automationContext.CreateNewVersionInProject(Utils.TestObject(), branchName, commitMsg);
+    });
+  }
+
   public void Dispose()
   {
     client.Dispose();
