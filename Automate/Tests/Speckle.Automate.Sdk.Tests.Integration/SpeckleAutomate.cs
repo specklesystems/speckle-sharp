@@ -152,6 +152,41 @@ public sealed class AutomationContextTest : IDisposable
     });
   }
 
+  [Test]
+  public async Task TestSetContextView()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    automationContext.SetContextView();
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    string originModelView = $"{automationRunData.ModelId}@{automationRunData.VersionId}";
+    Assert.That(automationContext.AutomationResult.ResultView.EndsWith($"models/{originModelView}"), Is.True);
+
+    await automationContext.ReportRunStatus();
+    var dummyContext = "foo@bar";
+
+    automationContext.AutomationResult.ResultView = null;
+    automationContext.SetContextView(new List<string> { dummyContext }, true);
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    Assert.That(
+      automationContext.AutomationResult.ResultView.EndsWith($"models/{originModelView},{dummyContext}"),
+      Is.True
+    );
+
+    await automationContext.ReportRunStatus();
+
+    automationContext.AutomationResult.ResultView = null;
+    automationContext.SetContextView(new List<string> { dummyContext }, false);
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    Assert.That(automationContext.AutomationResult.ResultView.EndsWith($"models/{dummyContext}"), Is.True);
+
+    await automationContext.ReportRunStatus();
+  }
+
   public void Dispose()
   {
     client.Dispose();

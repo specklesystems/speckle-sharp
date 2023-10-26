@@ -1,6 +1,7 @@
 # nullable enable
 using System.Diagnostics;
 using GraphQL;
+using Serilog.Debugging;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -113,6 +114,19 @@ public class AutomationContext
       )
       .ConfigureAwait(false);
     return versionId;
+  }
+
+  public void SetContextView(List<string>? resourceIds = null, bool includeSourceModelVersion = true)
+  {
+    var linkResources = new List<string>();
+    if (includeSourceModelVersion)
+      linkResources.Add($@"{AutomationRunData.ModelId}@{AutomationRunData.VersionId}");
+    if (resourceIds is not null)
+      linkResources.AddRange(resourceIds);
+    if (linkResources.Count == 0)
+      throw new Exception("We do not have enough resource ids to compose a context view");
+
+    AutomationResult.ResultView = $"/projects/{AutomationRunData.ProjectId}/models/{string.Join(",", linkResources)}";
   }
 
   public async Task ReportRunStatus()
