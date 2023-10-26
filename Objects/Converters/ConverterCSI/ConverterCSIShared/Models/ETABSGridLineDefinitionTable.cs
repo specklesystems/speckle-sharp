@@ -16,20 +16,23 @@ namespace ConverterCSIShared.Models
   {
     private const double gridTolerance = .001; // .05 degrees as radians
     public override string TableKey => "Grid Definitions - Grid Lines";
-    public static string?[] DefaultRow => new string?[] { 
-      null, // Name : Grid System name
-      null, // LineType
-      null, // Id : Grid name
-      null, // Ordinate : Offset in the positive direction
-      null, // Angle : clockwise offset in degrees for polar (cylindrical) coordinates
-      null, // X1
-      null, // Y1
-      null, // X2
-      null, // Y2
-      "Start", // BubbleLoc
-      "Yes", // Visible
-    };
-    public ETABSGridLineDefinitionTable(cSapModel cSapModel, ToNativeScalingService toNativeScalingService) 
+    public static string?[] DefaultRow =>
+      new string?[]
+      {
+        null, // Name : Grid System name
+        null, // LineType
+        null, // Id : Grid name
+        null, // Ordinate : Offset in the positive direction
+        null, // Angle : clockwise offset in degrees for polar (cylindrical) coordinates
+        null, // X1
+        null, // Y1
+        null, // X2
+        null, // Y2
+        "Start", // BubbleLoc
+        "Yes", // Visible
+      };
+
+    public ETABSGridLineDefinitionTable(cSapModel cSapModel, ToNativeScalingService toNativeScalingService)
       : base(cSapModel, toNativeScalingService) { }
 
     public const string XGridLineType = "X (Cartesian)";
@@ -47,9 +50,9 @@ namespace ConverterCSIShared.Models
     /// <param name="visible"></param>
     /// <exception cref="ArgumentException"></exception>
     public void AddCartesian(
-      string gridSystemName, 
-      string gridLineType, 
-      string gridName, 
+      string gridSystemName,
+      string gridLineType,
+      string gridName,
       double location,
       string visible = "Yes"
     )
@@ -102,18 +105,24 @@ namespace ConverterCSIShared.Models
       if (newUx < gridTolerance)
       {
         lineType = XGridLineType;
-        gridLineOffset = toNativeScalingService
-          .ScaleLength(transformedLine.start.x, transformedLine.units ?? transformedLine.start.units);
+        gridLineOffset = toNativeScalingService.ScaleLength(
+          transformedLine.start.x,
+          transformedLine.units ?? transformedLine.start.units
+        );
       }
       else if (newUy < gridTolerance)
       {
         lineType = YGridLineType;
-        gridLineOffset = toNativeScalingService
-          .ScaleLength(transformedLine.start.y, transformedLine.units ?? transformedLine.start.units);
+        gridLineOffset = toNativeScalingService.ScaleLength(
+          transformedLine.start.y,
+          transformedLine.units ?? transformedLine.start.units
+        );
       }
       else
       {
-        throw new SpeckleException($"Error in transforming line from global coordinates to grid system with rotation {gridSystem.Rotation} and x,y offsets {gridSystem.XOrigin}, {gridSystem.YOrigin}");
+        throw new SpeckleException(
+          $"Error in transforming line from global coordinates to grid system with rotation {gridSystem.Rotation} and x,y offsets {gridSystem.XOrigin}, {gridSystem.YOrigin}"
+        );
       }
 
       AddCartesian(gridSystem.Name, lineType, gridLine.label, gridLineOffset);
@@ -137,7 +146,7 @@ namespace ConverterCSIShared.Models
     }
 
     /// <summary>
-    /// Find a GridSystem in the CSi model whose local x axis is either parallel or perpendicular to the provided 
+    /// Find a GridSystem in the CSi model whose local x axis is either parallel or perpendicular to the provided
     /// grid angle.
     /// </summary>
     /// <param name="gridRotation">Rotation counter-clockwise from the global x axis in radians</param>
@@ -198,7 +207,7 @@ namespace ConverterCSIShared.Models
       var gridSystemNamePrefix = "SpeckleGridSystem";
       foreach (var gridSysName in gridSysNames)
       {
-        // test if this grid system is one that we already created. If it is, then we need to adjust our 
+        // test if this grid system is one that we already created. If it is, then we need to adjust our
         // numberOfGridSystems so that if we do end up creating a new one, it doesn't override an existing one.
         if (!gridSysName.StartsWith(gridSystemNamePrefix))
         {
@@ -210,7 +219,8 @@ namespace ConverterCSIShared.Models
           numberOfGridSystems = Math.Max(numberOfGridSystems, gridSysNum + 1);
         }
       }
-      return $"{gridSystemNamePrefix}{numberOfGridSystems}"; ;
+      return $"{gridSystemNamePrefix}{numberOfGridSystems}";
+      ;
     }
 
     private static Transform GetTransformFromGridSystem(GridSystemRepresentation sys)
@@ -218,10 +228,22 @@ namespace ConverterCSIShared.Models
       return new Transform(
         new double[]
         {
-          Math.Cos(sys.Rotation), -Math.Sin(sys.Rotation), 0, sys.XOrigin,
-          Math.Sin(sys.Rotation), Math.Cos(sys.Rotation), 0, sys.YOrigin,
-          0, 0, 1, 0,
-          0, 0, 0, 1
+          Math.Cos(sys.Rotation),
+          -Math.Sin(sys.Rotation),
+          0,
+          sys.XOrigin,
+          Math.Sin(sys.Rotation),
+          Math.Cos(sys.Rotation),
+          0,
+          sys.YOrigin,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
         }
       );
     }

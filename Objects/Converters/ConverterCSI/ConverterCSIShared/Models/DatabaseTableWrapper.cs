@@ -61,7 +61,13 @@ namespace ConverterCSIShared.Models
     private void ApplyTablesEditedTables()
     {
       var tableDataArray = tableData.ToArray();
-      cSapModel.DatabaseTables.SetTableForEditingArray(TableKey, ref tableVersion, ref fieldKeysIncluded, numRecords, ref tableDataArray);
+      cSapModel.DatabaseTables.SetTableForEditingArray(
+        TableKey,
+        ref tableVersion,
+        ref fieldKeysIncluded,
+        numRecords,
+        ref tableDataArray
+      );
 
       int numFatalErrors = 0;
       int numWarnMsgs = 0;

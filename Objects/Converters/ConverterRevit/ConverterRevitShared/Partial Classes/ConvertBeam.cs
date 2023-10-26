@@ -145,7 +145,7 @@ namespace Objects.Converter.Revit
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, SolidDisplayValueOptions);
+      speckleBeam.displayValue = GetElementDisplayValue(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 

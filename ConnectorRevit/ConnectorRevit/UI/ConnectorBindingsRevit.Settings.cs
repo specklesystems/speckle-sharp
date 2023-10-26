@@ -29,6 +29,10 @@ namespace Speckle.ConnectorRevit.UI
     public const string DsFallbackAways = "Always";
     public const string DsFallbackNever = "Never";
 
+    const string DetailLevelCoarse = "Coarse";
+    const string DetailLevelMedium = "Medium";
+    const string DetailLevelFine = "Fine";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
@@ -119,6 +123,15 @@ namespace Speckle.ConnectorRevit.UI
           Values = mappingOptions,
           Selection = forNewTypes,
           Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types\n\nNOTE: no dialog is shown if Fallback to DirectShape is set to Always"
+        },
+        new ListBoxSetting
+        {
+          Slug = "detail-level",
+          Name = "Mesh Export Detail Level (alpha)",
+          Icon = "Link",
+          Values = new List<string>() { DetailLevelCoarse, DetailLevelMedium, DetailLevelFine },
+          Selection = DetailLevelFine,
+          Description = "Determines the level of detail in which meshes are sent to Speckle. \n\nThis feature is in alpha because primitive objects such as curves, \nwhich are commonly found in coarse or medium detail level element representations, are not supported yet."
         },
       };
     }

@@ -250,7 +250,7 @@ namespace Objects.Converter.Revit
       if (revitColumn.Location is LocationPoint)
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
 
-      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, SolidDisplayValueOptions);
+      speckleColumn.displayValue = GetElementDisplayValue(revitColumn);
 
       return speckleColumn;
     }
