@@ -12,7 +12,7 @@ public class CSIDiaphragm : Base
     SemiRigid = semiRigid;
   }
 
-  public CSIDiaphragm() { }
+  internal CSIDiaphragm() { }
 
   public string name { get; set; }
   public bool SemiRigid { get; set; }

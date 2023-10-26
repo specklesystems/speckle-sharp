@@ -31,7 +31,7 @@ public class CSILinkProperty : Property1D
     MP3deltaEnd2 = mP3deltaEnd2;
   }
 
-  public CSILinkProperty() { }
+  internal CSILinkProperty() { }
 
   public double mass { get; set; }
   public double weight { get; set; }
