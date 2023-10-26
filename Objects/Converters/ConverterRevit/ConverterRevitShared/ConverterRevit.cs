@@ -601,6 +601,9 @@ namespace Objects.Converter.Revit
         case BERC.SpaceSeparationLine o:
           return SpaceSeparationLineToNative(o);
 
+        case BER.RevitRebarGroup o:
+          return RebarToNative(o);
+
         case BE.Roof o:
           return RoofToNative(o);
 
@@ -824,6 +827,7 @@ namespace Objects.Converter.Revit
         BE.Opening _ => true,
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
+        BER.RevitRebarGroup _ => true,
         BE.Roof _ => true,
 
 #if (REVIT2024)

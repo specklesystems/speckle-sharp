@@ -1,10 +1,149 @@
+using System;
 using System.Collections.Generic;
+using Objects.BuiltElements.TeklaStructures;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Speckle.Core.Models;
 
 namespace Objects.BuiltElements
 {
+  /// <summary>
+  /// A reinforcement bar group comprised of reinforcing bars of the same type and shape.
+  /// </summary>
+  /// <remarks>
+  /// This class is not suitable for freeform rebar, which can have multiple shapes.
+  /// </remarks>
+  public class RebarGroup : Base, IHasVolume, IDisplayValue<List<Mesh>>
+  {
+    public RebarGroup() { }
+
+    [DetachProperty]
+    public RebarShape shape { get; set; }
+
+    /// <summary>
+    /// The centerline curves of the rebar group
+    /// </summary>
+    /// <remarks>
+    /// Typically expresses hooks and bend radius. 
+    /// Does not include excluded end bars.
+    /// </remarks>
+    public List<ICurve> centerlines { get; set; } = new ();
+
+    /// <summary>
+    /// The number of rebars in the rebar group
+    /// </summary>
+    /// <remarks>
+    /// Excluded end bars are not included in the count
+    /// </remarks>
+    public int number { get; set; }
+
+    /// <summary>
+    /// Indicates if rebar set includes the first bar
+    /// </summary>
+    public bool hasFirstBar { get; set; }
+
+    /// <summary>
+    /// Indicates if rebar set includes the last bar
+    /// </summary>
+    public bool hasLastBar { get; set; }
+
+    /// <summary>
+    /// The start hook of bars in the rebar group
+    /// </summary>
+    /// <remarks>
+    /// Null indicates no start hook
+    /// </remarks>
+    [DetachProperty]
+    public RebarHook startHook { get; set; }
+
+    /// <summary>
+    /// The end hook of bars in the rebar group
+    /// </summary>
+    /// <remarks>
+    /// Null indicates no end hook
+    /// </remarks>
+    [DetachProperty]
+    public RebarHook endHook { get; set; }
+
+    public string units { get; set; }
+
+    /// <summary>
+    /// The mesh representation of the rebar solids
+    /// </summary>
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
+
+    /// <summary>
+    /// The total volume of the rebar group.
+    /// </summary>
+    public double volume { get; set; }
+  }
+
+  /// <summary>
+  /// The shape describing the geometry and geometry parameters of a reinforcing bar
+  /// </summary>
+  public class RebarShape : Base
+  {
+    public RebarShape() { }
+
+    /// <summary>
+    /// The name of the rebar shape
+    /// </summary>
+    public string name { get; set; }
+
+    /// <summary>
+    /// The type of the rebar shape
+    /// </summary>
+    public RebarType rebarType { get; set; }
+
+    /// <summary>
+    /// The curves of the rebar shape
+    /// </summary>
+    /// <remarks>
+    /// Typically suppresses hooks and bend radius
+    /// </remarks>
+    public List<ICurve> curves { get; set; } = new();
+
+    /// <summary>
+    /// The diameter of the rebar shape
+    /// </summary>
+    public double barDiameter { get; set; }
+
+    public string units { get; set; }
+  }
+
+  public class RebarHook : Base
+  {
+    public RebarHook() { }
+
+    /// <summary>
+    /// The angle of the hook in radians.
+    /// </summary>
+    public double angle { get; set; }
+
+    /// <summary>
+    /// The length of the hook.
+    /// </summary>
+    public double length { get; set; }
+
+    /// <summary>
+    /// The radius of the bend of the hook.
+    /// </summary>
+    public double radius { get; set; }
+
+    public double units { get; set; }
+  }
+
+  public enum RebarType
+  {
+    Unknown = 0,
+    Standard = 10,
+    StirrupPolygonal = 20,
+    StirrupSpiral = 30,
+    StirrupTapered = 40
+  }
+
+  [Obsolete("Deprecated in 2.17: Use the RebarGroup class instead")]
   public class Rebar : Base, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public List<ICurve> curves { get; set; } = new();
@@ -20,6 +159,17 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.TeklaStructures
 {
+  public class TeklaRebarGroup : RebarGroup
+  {
+    public string name { get; set; }
+    public double classNumber { get; set; }
+    public string size { get; set; }
+
+    [DetachProperty]
+    public StructuralMaterial material { get; set; }
+  }
+
+  [Obsolete("Deprecated in 2.17: Use TeklaRebarGroup class instead")]
   public class TeklaRebar : Rebar
   {
     public string name { get; set; }
@@ -37,6 +187,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public StructuralMaterial material { get; set; }
   }
 
+  [Obsolete("Deprecated in 2.17: Use RebarHook class instead")]
   public class Hook : Base
   {
     public double angle { get; set; }
@@ -45,6 +196,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public shape shape { get; set; }
   }
 
+  [Obsolete("Deprecated in 2.17: set starthook and endhook to null or refer to hook angle instead", true)]
   public enum shape
   {
     NO_HOOK = 0,
@@ -57,6 +209,36 @@ namespace Objects.BuiltElements.TeklaStructures
 
 namespace Objects.BuiltElements.Revit
 {
+  public class RevitRebarGroup : RebarGroup
+  {
+    public RevitRebarGroup() { }
+
+    public string family { get; set; }
+    public string type { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+  }
+
+  public class RevitRebarShape : RebarShape
+  {
+    public RevitRebarShape() { }
+
+    public string family { get; set; }
+    public string type { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+  }
+
+  public class RevitRebarHook : RebarHook
+  {
+    public RevitRebarHook() { }
+
+    public string orientation { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+  }
+
+  [Obsolete("Deprecated in 2.17: Use RevitRebarGroup class instead")]
   public class RevitRebar : Rebar
   {
     public string family { get; set; }
