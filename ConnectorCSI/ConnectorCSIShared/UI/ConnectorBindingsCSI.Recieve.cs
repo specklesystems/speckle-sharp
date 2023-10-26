@@ -1,5 +1,4 @@
 using ConnectorCSI.Storage;
-using CSiSharedResources.Interfaces;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -17,6 +16,7 @@ using System.Resources;
 using System.Threading.Tasks;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Logging;
+using Speckle.Core.Kits.ConverterInterfaces;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -37,12 +37,7 @@ namespace Speckle.ConnectorCSI.UI
 
       var kit = KitManager.GetDefaultKit();
       var appName = GetHostAppVersion(Model);
-      var genericConverter = kit.LoadConverter(appName);
-
-      if (genericConverter is not ICSiSpeckleConverter converter)
-      {
-        throw new SpeckleException($"CSi receive operation expects a converter of type {typeof(ICSiSpeckleConverter)}, but instead found a converter of type {genericConverter.GetType()}");
-      }
+      ISpeckleConverter converter = kit.LoadConverter(appName);
 
       // set converter settings as tuples (setting slug, setting selection)
       // for csi, these must go before the SetContextDocument method.
@@ -109,7 +104,7 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
-    private List<ApplicationObject> ConvertReceivedObjects(ICSiSpeckleConverter converter, ProgressViewModel progress)
+    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
       var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -148,7 +143,10 @@ namespace Speckle.ConnectorCSI.UI
         progress.Update(conversionProgressDict);
       }
 
-      converter.CommitAllDatabaseTableChanges();
+      if (converter is IFinalizable finalizable)
+      {
+        finalizable.FinalizeConversion();
+      }
 
       return placeholders;
     }
@@ -159,7 +157,7 @@ namespace Speckle.ConnectorCSI.UI
     /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
     /// <param name="converter">The converter instance, used to define what objects are convertable</param>
     /// <returns>A flattened list of objects to be converted ToNative</returns>
-    private List<ApplicationObject> FlattenCommitObject(Base obj, ICSiSpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
       void StoreObject(Base b)
       {

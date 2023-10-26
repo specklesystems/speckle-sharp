@@ -1,5 +1,4 @@
 using CSiAPIv1;
-using CSiSharedResources.Interfaces;
 using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
@@ -17,10 +16,11 @@ using System.Linq;
 using Objects.Other;
 using Objects.Structural.Materials;
 using OSG = Objects.Structural.Geometry;
+using Speckle.Core.Kits.ConverterInterfaces;
 
 namespace Objects.Converter.CSI
 {
-  public partial class ConverterCSI : ICSiSpeckleConverter
+  public partial class ConverterCSI : ISpeckleConverter, IFinalizable
   {
 #if ETABS
     public static string CSIAppName = HostApplications.ETABS.Name;
@@ -439,5 +439,10 @@ namespace Objects.Converter.CSI
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
+
+    public void FinalizeConversion()
+    {
+      CommitAllDatabaseTableChanges();
+    }
   }
 }

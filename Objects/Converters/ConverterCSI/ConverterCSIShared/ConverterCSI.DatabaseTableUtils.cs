@@ -1,9 +1,8 @@
 using ConverterCSIShared.Models;
-using CSiSharedResources.Interfaces;
 
 namespace Objects.Converter.CSI
 {
-  public partial class ConverterCSI : ICSiSpeckleConverter
+  public partial class ConverterCSI
   {
     private ETABSGridLineDefinitionTable gridLineDefinitionTable;
     private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
