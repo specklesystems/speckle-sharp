@@ -82,23 +82,31 @@ public class AutomationContext
     return commitRootObject;
   }
 
-  public async Task<string> CreateNewVersionInProject(Base rootObject, string modelId, string versionMessage = "")
+  public async Task<string> CreateNewVersionInProject(Base rootObject, string branchName, string versionMessage = "")
   {
-    if (modelId == AutomationRunData.ModelId)
+    if (branchName == AutomationRunData.BranchName)
       throw new ArgumentException(
-        $"The target model id: {modelId} cannot match the model id that triggered this automation: {AutomationRunData.ModelId}",
-        nameof(modelId)
+        $"The target model: {branchName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
+        nameof(branchName)
       );
     var rootObjectId = await Operations
       .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport }, useDefaultCache: false)
       .ConfigureAwait(false);
-    var model = await SpeckleClient.ModelGet(AutomationRunData.ProjectId, modelId).ConfigureAwait(false);
+
+    var branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, branchName).ConfigureAwait(false);
+    if (branch is null)
+    {
+      // Create the branch with the specified name
+      await SpeckleClient
+        .BranchCreate(new BranchCreateInput() { streamId = AutomationRunData.ProjectId, name = branchName })
+        .ConfigureAwait(false);
+    }
     var versionId = await SpeckleClient
       .CommitCreate(
         new CommitCreateInput
         {
           streamId = AutomationRunData.ProjectId,
-          branchName = model.name,
+          branchName = branchName,
           objectId = rootObjectId,
           message = versionMessage,
         }
@@ -131,6 +139,8 @@ public class AutomationContext
                 $automationRunId: String!,
                 $versionId: String!,
                 $functionId: String!,
+                $functionName: String!,
+                $functionLogo: String,
                 $runStatus: AutomationRunStatus!
                 $elapsed: Float!
                 $resultVersionIds: [String!]!
@@ -144,7 +154,9 @@ public class AutomationContext
                   automationRunId: $automationRunId
                   versionId: $versionId
                   functionRuns: [{
-                    functionId: $functionId
+                    functionId: $functionId,
+                    functionName: $functionName,
+                    functionLogo: $functionLogo,
                     status: $runStatus,
                     elapsed: $elapsed,
                     resultVersionIds: $resultVersionIds,
@@ -162,6 +174,8 @@ public class AutomationContext
         automationRunId = AutomationRunData.AutomationRunId,
         versionId = AutomationRunData.VersionId,
         functionId = AutomationRunData.FunctionId,
+        functionName = AutomationRunData.FunctionName,
+        functionLogo = AutomationRunData.FunctionLogo,
         runStatus = RunStatus,
         statusMessage = AutomationResult.StatusMessage,
         elapsed = Elapsed.TotalSeconds,
