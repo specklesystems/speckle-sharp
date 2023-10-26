@@ -24,10 +24,10 @@ namespace Objects.BuiltElements
     /// The centerline curves of the rebar group
     /// </summary>
     /// <remarks>
-    /// Typically expresses hooks and bend radius. 
+    /// Typically expresses hooks and bend radius.
     /// Does not include excluded end bars.
     /// </remarks>
-    public List<ICurve> centerlines { get; set; } = new ();
+    public List<ICurve> centerlines { get; set; } = new();
 
     /// <summary>
     /// The number of rebars in the rebar group

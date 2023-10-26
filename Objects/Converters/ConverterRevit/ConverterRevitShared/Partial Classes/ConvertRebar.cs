@@ -8,7 +8,6 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
@@ -17,7 +16,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject RebarToNative(RevitRebarGroup speckleRebar)
     {
       var docObj = GetExistingElementByApplicationId(speckleRebar.applicationId);
-      var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type) { applicationId = speckleRebar.applicationId };
+      var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type)
+      {
+        applicationId = speckleRebar.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -38,9 +40,10 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
-      var barStyle = speckleRebar.shape.rebarType != RebarType.Unknown && speckleRebar.shape.rebarType == RebarType.Standard ? 
-        RebarStyle.Standard : 
-        RebarStyle.StirrupTie;
+      var barStyle =
+        speckleRebar.shape.rebarType != RebarType.Unknown && speckleRebar.shape.rebarType == RebarType.Standard
+          ? RebarStyle.Standard
+          : RebarStyle.StirrupTie;
 
       // get start and end hooks and orientations
       var speckleStartHook = speckleRebar.startHook as RevitRebarHook;
@@ -75,9 +78,9 @@ namespace Objects.Converter.Revit
         using (CurveLoop loop = CurveLoop.Create(curves))
         {
           normal = loop.GetPlane().Normal;
-        }       
+        }
       }
-      catch(ArgumentException e)
+      catch (ArgumentException e)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
         return appObj;
@@ -86,7 +89,22 @@ namespace Objects.Converter.Revit
       // create the rebar
       try
       {
-        using (DB.Structure.Rebar rebar = DB.Structure.Rebar.CreateFromCurves(Doc, barStyle, barType, startHook, endHook, CurrentHostElement, normal, curves, startHookOrientation, endHookOrientation, true, true))
+        using (
+          DB.Structure.Rebar rebar = DB.Structure.Rebar.CreateFromCurves(
+            Doc,
+            barStyle,
+            barType,
+            startHook,
+            endHook,
+            CurrentHostElement,
+            normal,
+            curves,
+            startHookOrientation,
+            endHookOrientation,
+            true,
+            true
+          )
+        )
         {
           // deleting instead of updating for now!
           if (docObj != null)
@@ -102,7 +120,7 @@ namespace Objects.Converter.Revit
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
         return appObj;
-      }      
+      }
     }
 
     private RevitRebarGroup RebarToSpeckle(DB.Structure.Rebar revitRebar)
@@ -128,7 +146,6 @@ namespace Objects.Converter.Revit
       {
         var revitStartHook = revitRebar.Document.GetElement(revitStartHookId) as RebarHookType;
         speckleStartHook = RebarHookToSpeckle(revitStartHook, revitRebar.GetHookOrientation(0).ToString());
-        
       }
       DB.ElementId revitEndHookId = revitRebar.GetHookTypeId(1);
       RevitRebarHook speckleEndHook = null;
@@ -143,14 +160,22 @@ namespace Objects.Converter.Revit
       if (revitRebar.IsRebarShapeDriven())
         accessor = revitRebar.GetShapeDrivenAccessor();
       // .GetCenterlineCurves() always returns the bar in the first position (even if it is excluded) for shape driven rebar groups
-      IList<DB.Curve> firstPositionCurves = revitRebar.GetCenterlineCurves(true, false, false, MultiplanarOption.IncludeAllMultiplanarCurves, 0);
-      
+      IList<DB.Curve> firstPositionCurves = revitRebar.GetCenterlineCurves(
+        true,
+        false,
+        false,
+        MultiplanarOption.IncludeAllMultiplanarCurves,
+        0
+      );
+
       var curves = new List<ICurve>();
       for (int i = 0; i < revitRebar.NumberOfBarPositions; i++)
       {
         // skip end bars that are excluded
-        if (!revitRebar.IncludeFirstBar && i == 0 ||
-          !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1)
+        if (
+          !revitRebar.IncludeFirstBar && i == 0
+          || !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1
+        )
         {
           continue;
         }
@@ -158,14 +183,24 @@ namespace Objects.Converter.Revit
         // for non-shape-driven rebar, compute the centerline at each position
         if (accessor is null)
         {
-          IList<DB.Curve> revitCurves = revitRebar.GetCenterlineCurves(true, false, false, MultiplanarOption.IncludeAllMultiplanarCurves, i);
+          IList<DB.Curve> revitCurves = revitRebar.GetCenterlineCurves(
+            true,
+            false,
+            false,
+            MultiplanarOption.IncludeAllMultiplanarCurves,
+            i
+          );
           curves.AddRange(revitCurves.Select(o => CurveToSpeckle(o, revitRebar.Document)).ToList());
         }
         // for shape-driven rebar, get the transformed first position curves at this position
         else
         {
           var transform = accessor.GetBarPositionTransform(i);
-          curves.AddRange(firstPositionCurves.Select(o => CurveToSpeckle(o.CreateTransformed(transform), revitRebar.Document)).ToList());
+          curves.AddRange(
+            firstPositionCurves
+              .Select(o => CurveToSpeckle(o.CreateTransformed(transform), revitRebar.Document))
+              .ToList()
+          );
         }
       }
 
@@ -204,8 +239,11 @@ namespace Objects.Converter.Revit
       }
 
       // get the curves representing the default values of the shape
-      List<ICurve> curves = revitRebarShape.GetCurvesForBrowser().Select(o => CurveToSpeckle(o, revitRebarShape.Document)).ToList();
-      
+      List<ICurve> curves = revitRebarShape
+        .GetCurvesForBrowser()
+        .Select(o => CurveToSpeckle(o, revitRebarShape.Document))
+        .ToList();
+
       var speckleRebarShape = new RevitRebarShape();
       speckleRebarShape.name = revitRebarShape.Name;
       speckleRebarShape.curves = curves;
