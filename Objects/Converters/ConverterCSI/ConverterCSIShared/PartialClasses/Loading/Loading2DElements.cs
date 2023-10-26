@@ -21,9 +21,9 @@ namespace Objects.Converter.CSI
       List<string> convertedNames = new(loadFace.elements.Count);
       foreach (Base e in loadFace.elements)
       {
-        if (e is not Element1D element)
+        if (e is not Element2D element)
         {
-          notes?.Add($"Expected all elements to be of type {nameof(Element1D)}, other types ignored");
+          notes?.Add($"Expected all elements to be of type {nameof(Element2D)}, other types ignored");
           continue;
         }
 

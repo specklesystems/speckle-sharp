@@ -225,7 +225,9 @@ namespace Objects.Converter.CSI
       }
 
       if (convertedName is not null)
+      {
         convertedNames.Add(convertedName);
+      }
 
       appObj.Update(createdIds: convertedNames);
 
