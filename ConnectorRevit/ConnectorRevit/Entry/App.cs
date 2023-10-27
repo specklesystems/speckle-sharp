@@ -6,7 +6,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
+using ConnectorRevit;
 using RevitSharedResources.Models;
+using Speckle.BatchUploader.Sdk;
+using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -137,6 +140,12 @@ namespace Speckle.ConnectorRevit.Entry
         bindings.RegisterAppEvents();
         SpeckleRevitCommand.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
+
+        BatchUploaderClient client = new(new Uri("http://localhost:5001"));
+        RevitApplicationController revitAppController = new(AppInstance);
+        BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
+
+        batchUploadOperationDriver.ProcessAllJobs();
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
