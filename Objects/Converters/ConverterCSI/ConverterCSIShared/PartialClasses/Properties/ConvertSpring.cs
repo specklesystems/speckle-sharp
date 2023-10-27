@@ -31,7 +31,7 @@ namespace Objects.Converter.CSI
           return springProperty.name;
         default:
           //springOption = 2;
-          throw new ConversionSkippedException(
+          throw new ConversionNotSupportedException(
             $"Converting {nameof(SpringOption)} {springProperty.springOption} to native is not currently supported "
           );
       }

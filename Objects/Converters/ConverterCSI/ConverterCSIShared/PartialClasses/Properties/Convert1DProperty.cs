@@ -1,8 +1,10 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
+using Serilog;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -24,19 +26,37 @@ namespace Objects.Converter.CSI
       return false;
     }
 
-    public string Property1DToNative(Property1D property1D, ApplicationObject appObj)
+    public string? TryConvertProperty1DToNative(Property1D? property1D, IList<string>? parentLog)
+    {
+      if (property1D is null)
+        return null;
+
+      try
+      {
+        return Property1DToNative(property1D);
+      }
+      catch (ConversionNotSupportedException ex)
+      {
+        parentLog?.Add(ex.Message);
+        return property1D.name;
+      }
+      catch (Exception ex)
+      {
+        parentLog?.Add($"Failed to convert property {property1D.name}: {ex.Message}");
+        return null;
+      }
+    }
+
+    public string Property1DToNative(Property1D property1D)
     {
       if (property1D is null)
         throw new ArgumentNullException(nameof(property1D));
 
       if (Property1DExists(property1D.name))
       {
-        // I don't think we want to update properties
-        //throw new ConversionSkippedException($"?????"); //TODO: Asses what to do here!
-        // So here, we don't convert because the object already exists.
-        // It seems like skip is more appropriate than created tbh... but this seems to
-        appObj.Update(status: ApplicationObject.State.Skipped, createdId: property1D.name);
-        return property1D.name;
+        throw new ConversionNotSupportedException(
+          $"Property {property1D.name} name was not updated because it already exists"
+        );
       }
 
       var materialName = MaterialToNative(property1D.material);
@@ -131,7 +151,7 @@ namespace Objects.Converter.CSI
             ScaleToNative(o.webThickness, o.units),
             false
           ),
-        _ => throw new ConversionSkippedException($"Unsupported profile type {property1D.profile.GetType()}")
+        _ => throw new ConversionNotSupportedException($"Unsupported profile type {property1D.profile.GetType()}")
       };
 
       if (success != 0)
