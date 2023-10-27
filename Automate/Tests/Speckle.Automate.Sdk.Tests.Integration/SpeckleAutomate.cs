@@ -41,6 +41,7 @@ public sealed class AutomationContextTest : IDisposable
 
     var automationRunId = Utils.RandomString(10);
     var functionId = Utils.RandomString(10);
+    var functionName = "Automation name " + Utils.RandomString(10);
     var functionRelease = Utils.RandomString(10);
 
     return new AutomationRunData
@@ -54,6 +55,7 @@ public sealed class AutomationContextTest : IDisposable
       AutomationRevisionId = automationRevisionId,
       AutomationRunId = automationRunId,
       FunctionId = functionId,
+      FunctionName = functionName,
       FunctionRelease = functionRelease,
     };
   }
@@ -113,6 +115,76 @@ public sealed class AutomationContextTest : IDisposable
 
     File.Delete(filePath);
     Assert.That(automationContext.AutomationResult.Blobs, Has.Count.EqualTo(1));
+  }
+
+  [Test]
+  public async Task TestCreateVersionInProject()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    const string branchName = "test-branch";
+    const string commitMsg = "automation test";
+
+    await automationContext.CreateNewVersionInProject(Utils.TestObject(), branchName, commitMsg);
+
+    var branch = await automationContext.SpeckleClient
+      .BranchGet(automationRunData.ProjectId, branchName, 1)
+      .ConfigureAwait(false);
+
+    Assert.NotNull(branch);
+    Assert.That(branch.name, Is.EqualTo(branchName));
+    Assert.That(branch.commits.items[0].message, Is.EqualTo(commitMsg));
+  }
+
+  [Test]
+  public async Task TestCreateVersionInProject_ThrowsErrorForSameModel()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    var branchName = automationRunData.BranchName;
+    const string commitMsg = "automation test";
+
+    Assert.ThrowsAsync<ArgumentException>(async () =>
+    {
+      await automationContext.CreateNewVersionInProject(Utils.TestObject(), branchName, commitMsg);
+    });
+  }
+
+  [Test]
+  public async Task TestSetContextView()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    automationContext.SetContextView();
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    string originModelView = $"{automationRunData.ModelId}@{automationRunData.VersionId}";
+    Assert.That(automationContext.AutomationResult.ResultView.EndsWith($"models/{originModelView}"), Is.True);
+
+    await automationContext.ReportRunStatus();
+    var dummyContext = "foo@bar";
+
+    automationContext.AutomationResult.ResultView = null;
+    automationContext.SetContextView(new List<string> { dummyContext }, true);
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    Assert.That(
+      automationContext.AutomationResult.ResultView.EndsWith($"models/{originModelView},{dummyContext}"),
+      Is.True
+    );
+
+    await automationContext.ReportRunStatus();
+
+    automationContext.AutomationResult.ResultView = null;
+    automationContext.SetContextView(new List<string> { dummyContext }, false);
+
+    Assert.That(automationContext.AutomationResult.ResultView, Is.Not.Null);
+    Assert.That(automationContext.AutomationResult.ResultView.EndsWith($"models/{dummyContext}"), Is.True);
+
+    await automationContext.ReportRunStatus();
   }
 
   public void Dispose()

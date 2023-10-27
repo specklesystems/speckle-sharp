@@ -111,10 +111,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
-      speckleRailing.displayValue = GetElementDisplayValue(
-        revitRailing,
-        new Options() { DetailLevel = ViewDetailLevel.Fine }
-      );
+      speckleRailing.displayValue = GetElementDisplayValue(revitRailing);
 
       if (revitRailing.TopRail != ElementId.InvalidElementId)
       {

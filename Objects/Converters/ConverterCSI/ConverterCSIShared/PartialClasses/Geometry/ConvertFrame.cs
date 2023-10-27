@@ -24,7 +24,7 @@ namespace Objects.Converter.CSI
       }
 
       UpdateFrameLocation(name, end1Node, end2Node, appObj);
-      SetFrameElementProperties(element1D, name);
+      SetFrameElementProperties(element1D, name, appObj.Log);
     }
 
     public void UpdateFrameLocation(string name, Point p1, Point p2, ApplicationObject appObj) //TODO: how is this called?
@@ -83,12 +83,16 @@ namespace Objects.Converter.CSI
       Line baseline = element1D.baseLine;
       string[] properties = Array.Empty<string>();
       int number = 0;
-      Model.PropFrame.GetNameList(ref number, ref properties);
+      int success = Model.PropFrame.GetNameList(ref number, ref properties);
+      if (success != 0)
+        appObj.Update(logItem: "Failed to retrieve frame section properties");
+
       if (!properties.Contains(element1D.property.name))
       {
-        Property1DToNative(element1D.property, appObj);
+        TryConvertProperty1DToNative(element1D.property, appObj.Log);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
+
       Point end1node;
       Point end2node;
       if (baseline != null)
@@ -103,10 +107,10 @@ namespace Objects.Converter.CSI
       }
 
       CreateFrame(end1node, end2node, out var newFrame, out _, appObj);
-      SetFrameElementProperties(element1D, newFrame);
+      SetFrameElementProperties(element1D, newFrame, appObj.Log);
     }
 
-    public int CreateFrame(
+    public void CreateFrame(
       Point p0,
       Point p1,
       out string newFrame,
@@ -138,16 +142,14 @@ namespace Objects.Converter.CSI
         newFrame = nameOverride;
       }
 
-      if (success == 0)
-        appObj.Update(
-          status: ApplicationObject.State.Created,
-          createdId: guid,
-          convertedItem: $"Frame{Delimiter}{newFrame}"
-        );
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new ConversionException("Failed to add new frame object at the specified coordinates");
 
-      return success;
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        createdId: guid,
+        convertedItem: $"Frame{Delimiter}{newFrame}"
+      );
     }
 
     public CSIElement1D FrameToSpeckle(string name)
@@ -283,7 +285,7 @@ namespace Objects.Converter.CSI
       return speckleStructFrame;
     }
 
-    public void SetFrameElementProperties(Element1D element1D, string newFrame)
+    public void SetFrameElementProperties(Element1D element1D, string newFrame, IList<string>? log)
     {
       bool[] end1Release = null;
       bool[] end2Release = null;
@@ -299,8 +301,7 @@ namespace Objects.Converter.CSI
         endV = PartialRestraintToNative(element1D.end2Releases);
       }
 
-      var propAppObj = new ApplicationObject(element1D.applicationId, element1D.speckle_type);
-      var propertyName = Property1DToNative(element1D.property, propAppObj);
+      var propertyName = TryConvertProperty1DToNative(element1D.property, log);
       if (propertyName != null)
         Model.FrameObj.SetSection(newFrame, propertyName);
 

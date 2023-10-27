@@ -205,7 +205,7 @@ namespace Objects.Converter.CSI
           convertedName = PointToNative(o, appObj.Log);
           break;
         case Property1D o:
-          Property1DToNative(o, appObj);
+          convertedName = Property1DToNative(o);
           break;
         case StructuralMaterial o:
           convertedName = MaterialToNative(o);
@@ -223,11 +223,13 @@ namespace Objects.Converter.CSI
           GridLineToNative(o);
           break;
         default:
-          throw new ConversionSkippedException($"{@object.GetType()} is an unsupported type");
+          throw new ConversionNotSupportedException($"{@object.GetType()} is an unsupported type");
       }
 
       if (convertedName is not null)
+      {
         convertedNames.Add(convertedName);
+      }
 
       appObj.Update(createdIds: convertedNames);
 

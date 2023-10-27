@@ -9,12 +9,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Options SolidDisplayValueOptions = new Options()
-    {
-      DetailLevel = ViewDetailLevel.Fine,
-      ComputeReferences = true
-    };
-
     public Options ViewSpecificOptions { get; set; }
 
     /// <summary>
@@ -55,7 +49,7 @@ namespace Objects.Converter.Revit
         return displayMeshes;
       }
 
-      options = ViewSpecificOptions ?? options ?? new Options();
+      options = ViewSpecificOptions ?? options ?? new Options() { DetailLevel = DetailLevelSetting };
 
       GeometryElement geom = null;
       try

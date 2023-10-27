@@ -8,7 +8,7 @@ namespace Objects.Converter.CSI
   {
     public string WallPropertyToNative(CSIProperty2D wall)
     {
-      throw new ConversionSkippedException("Wall properties are not currently supported on receive");
+      throw new ConversionNotSupportedException("Wall properties are not currently supported on receive");
     }
 
     public CSIProperty2D WallPropertyToSpeckle(string property)
