@@ -221,7 +221,7 @@ namespace Objects.Converter.CSI
           GridLineToNative(o);
           break;
         default:
-          throw new ConversionSkippedException($"{@object.GetType()} is an unsupported type");
+          throw new ConversionNotSupportedException($"{@object.GetType()} is an unsupported type");
       }
 
       if (convertedName is not null)

@@ -127,7 +127,7 @@ namespace Speckle.ConnectorCSI.UI
             log: conversionResult.Log
           );
         }
-        catch (ConversionSkippedException ex)
+        catch (ConversionNotSupportedException ex)
         {
           obj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
         }

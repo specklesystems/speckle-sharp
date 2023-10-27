@@ -35,7 +35,7 @@ namespace Objects.Converter.CSI
       {
         return Property1DToNative(property1D);
       }
-      catch (ConversionSkippedException ex)
+      catch (ConversionNotSupportedException ex)
       {
         parentLog?.Add(ex.Message);
         return property1D.name;
@@ -54,7 +54,7 @@ namespace Objects.Converter.CSI
 
       if (Property1DExists(property1D.name))
       {
-        throw new ConversionSkippedException(
+        throw new ConversionNotSupportedException(
           $"Property {property1D.name} name was not updated because it already exists"
         );
       }
@@ -151,7 +151,7 @@ namespace Objects.Converter.CSI
             ScaleToNative(o.webThickness, o.units),
             false
           ),
-        _ => throw new ConversionSkippedException($"Unsupported profile type {property1D.profile.GetType()}")
+        _ => throw new ConversionNotSupportedException($"Unsupported profile type {property1D.profile.GetType()}")
       };
 
       if (success != 0)
