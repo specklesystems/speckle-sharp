@@ -17,4 +17,5 @@ public struct AutomationRunData
   public string FunctionId { get; set; }
   public string FunctionRelease { get; set; }
   public string FunctionName { get; set; }
+  public string? FunctionLogo { get; set; }
 }
