@@ -53,7 +53,10 @@ namespace Objects.Converter.Revit
 
       var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
-      Level level = (speckleWall.level != null) ? ConvertLevelToRevit(speckleWall.level, out levelState) : ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
+      Level level =
+        (speckleWall.level != null)
+          ? ConvertLevelToRevit(speckleWall.level, out levelState)
+          : ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
 
       var structural = false;
       if (speckleWall is RevitWall speckleRevitWall)
@@ -233,7 +236,7 @@ namespace Objects.Converter.Revit
         notes.AddRange(hostedNotes);
       return speckleWall;
     }
-    
+
     private IEnumerable<ElementId> GetSubsetOfElementsInView(BuiltInCategory category, IEnumerable<ElementId> children)
     {
       if (ViewSpecificOptions == null)
@@ -243,19 +246,19 @@ namespace Objects.Converter.Revit
 
       var allSubelementsInView = revitDocumentAggregateCache
         .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
-        .GetOrAdd(category.ToString(), () =>
-        {
-          using var filter = new ElementCategoryFilter(category);
-          using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+        .GetOrAdd(
+          category.ToString(),
+          () =>
+          {
+            using var filter = new ElementCategoryFilter(category);
+            using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
 
-          return new HashSet<ElementId>(collector
-            .WhereElementIsNotElementType()
-            .WherePasses(filter)
-            .ToElementIds());
-        }, out _);
+            return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+          },
+          out _
+        );
 
-      return children
-        .Where(allSubelementsInView.Contains);
+      return children.Where(allSubelementsInView.Contains);
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
