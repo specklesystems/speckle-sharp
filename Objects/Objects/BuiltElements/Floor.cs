@@ -88,25 +88,34 @@ namespace Objects.BuiltElements.Archicad
   public sealed class ArchicadFloor : Floor
   {
     // Element base
-    public string? /*APINullabe*/ elementType { get; set; }
-    public List<Classification>? /*APINullabe*/ classifications { get; set; }
+    public string? /*APINullabe*/
+    elementType { get; set; }
+    public List<Classification>? /*APINullabe*/
+    classifications { get; set; }
 
-    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+    public ArchicadLevel? /*APINullabe*/
+    level { get; set; }
+
+    public string? /*APINullabe*/
+    layer { get; set; }
 
     // Geometry and positioning
     public double? thickness { get; set; }
     public ElementShape shape { get; set; }
-    public string? /*APINullabe*/ structure { get; set; }
+    public string? /*APINullabe*/
+    structure { get; set; }
     public string? compositeName { get; set; }
     public string? buildingMaterialName { get; set; }
-    public string? /*APINullabe*/ referencePlaneLocation { get; set; }
+    public string? /*APINullabe*/
+    referencePlaneLocation { get; set; }
 
     // EdgeTrims
     public string? edgeAngleType { get; set; }
     public double? edgeAngle { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string? /*APINullabe*/ showOnStories { get; set; }
+    public string? /*APINullabe*/
+    showOnStories { get; set; }
     public Visibility? visibilityCont { get; set; }
     public Visibility? visibilityFill { get; set; }
 

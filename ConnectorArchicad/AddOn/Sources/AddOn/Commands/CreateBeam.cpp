@@ -40,6 +40,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, beamMask);
+	if (err != NoError)
+		return err;
+
 	// Positioning
 	Objects::Point3D startPoint;
 	if (os.Contains (Beam::begC)) {

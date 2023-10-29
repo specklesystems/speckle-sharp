@@ -32,6 +32,7 @@ static const char* ElementTypes = "elementTypes";
 static const char* Elements = "elements";
 static const char* SubElements = "subElements";
 static const char* Level = "level";
+static const char* Layer = "layer";
 static const char* Shape = "shape";
 static const char* Shape1 = "shape1";
 static const char* Shape2 = "shape2";
