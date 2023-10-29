@@ -42,31 +42,28 @@ namespace Objects.Converter.Revit
       if (baseLine.GetEndPoint(0).Z > baseLine.GetEndPoint(1).Z)
         baseLine = DB.Line.CreateBound(baseLine.GetEndPoint(1), baseLine.GetEndPoint(0));
 
-      DB.Level level = null;
-      DB.Level topLevel = null;
       DB.FamilyInstance revitColumn = null;
       //var structuralType = StructuralType.Column;
       var isLineBased = true;
 
+      var levelState = ApplicationObject.State.Unknown;
+      double baseOffset = 0.0;
+      DB.Level level = (speckleColumn.level != null) ? ConvertLevelToRevit(speckleColumn.level, out levelState) : ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
+
       var speckleRevitColumn = speckleColumn as RevitColumn;
 
-      double baseOffset = 0.0;
       double topOffset = 0.0;
-      var levelState = ApplicationObject.State.Unknown;
+      DB.Level topLevel = null;
       if (speckleRevitColumn != null)
       {
-        level = ConvertLevelToRevit(speckleRevitColumn.level, out levelState);
         topLevel = ConvertLevelToRevit(speckleRevitColumn.topLevel, out levelState);
         //structuralType = speckleRevitColumn.structural ? StructuralType.Column : StructuralType.NonStructural;
         //non slanted columns are point based
         isLineBased = speckleRevitColumn.isSlanted;
       }
 
-      if (level == null)
-      {
-        level = ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
+      if (topLevel == null)
         topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out topOffset);
-      }
 
       //try update existing 
 

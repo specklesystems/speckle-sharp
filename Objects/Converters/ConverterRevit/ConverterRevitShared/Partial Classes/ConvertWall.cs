@@ -44,9 +44,6 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      Level level = null;
-      var levelState = ApplicationObject.State.Unknown;
-      var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       List<string> joinSettings = new List<string>();
@@ -54,14 +51,15 @@ namespace Objects.Converter.Revit
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
+      var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
+      Level level = (speckleWall.level != null) ? ConvertLevelToRevit(speckleWall.level, out levelState) : ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
+
+      var structural = false;
       if (speckleWall is RevitWall speckleRevitWall)
       {
-        level = ConvertLevelToRevit(speckleRevitWall.level, out levelState);
         structural = speckleRevitWall.structural;
       }
-      else
-        level = ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
 
       //if it's a new element, we don't need to update certain properties
       bool isUpdate = true;

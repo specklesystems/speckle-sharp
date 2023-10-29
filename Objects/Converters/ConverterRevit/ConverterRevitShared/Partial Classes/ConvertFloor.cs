@@ -36,21 +36,18 @@ namespace Objects.Converter.Revit
       if (speckleFloor["structural"] is bool isStructural)
         structural = isStructural;
 
-      DB.Level level;
-      double slope = 0;
+      var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
+      DB.Level level = (speckleFloor.level != null) ? ConvertLevelToRevit(speckleFloor.level, out levelState) : ConvertLevelToRevit(CurveToNative(speckleFloor.outline).get_Item(0), out ApplicationObject.State state, out baseOffset);
+
+      double slope = 0;
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
-        level = ConvertLevelToRevit(speckleRevitFloor.level, out ApplicationObject.State state);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
         slopeDirection =
           (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
-      }
-      else
-      {
-        level = ConvertLevelToRevit(CurveToNative(speckleFloor.outline).get_Item(0), out ApplicationObject.State state, out baseOffset);
       }
 
       var flattenedOutline = GetFlattenedCurve(speckleFloor.outline, level.Elevation);

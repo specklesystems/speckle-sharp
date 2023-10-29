@@ -31,18 +31,13 @@ namespace Objects.Converter.Revit
       }
 
       DB.RoofBase revitRoof = null;
-      DB.Level level = null;
       var outline = CurveToNative(speckleRoof.outline);
 
-      double baseOffset = 0.0;
-      var speckleRevitRoof = speckleRoof as RevitRoof;
       var levelState = ApplicationObject.State.Unknown;
-      if (speckleRevitRoof != null)
-        level = ConvertLevelToRevit(speckleRevitRoof.level, out levelState);
-      else
-      {
-        level = ConvertLevelToRevit(outline.get_Item(0), out ApplicationObject.State state, out baseOffset);
-      }
+      double baseOffset = 0.0;
+      DB.Level level = (speckleRoof.level != null) ? ConvertLevelToRevit(speckleRoof.level, out levelState) : ConvertLevelToRevit(outline.get_Item(0), out ApplicationObject.State state, out baseOffset);
+
+      var speckleRevitRoof = speckleRoof as RevitRoof;
 
       var roofType = GetElementType<RoofType>(speckleRoof, appObj, out bool _);
       if (roofType == null)

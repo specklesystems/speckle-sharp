@@ -38,8 +38,10 @@ namespace Objects.Converter.Revit
       }
 
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
-      DB.Level level = null;
-      DB.FamilyInstance revitBeam = null;
+
+      var levelState = ApplicationObject.State.Unknown;
+      double baseOffset = 0.0;
+      DB.Level level = (speckleBeam.level != null) ? ConvertLevelToRevit(speckleBeam.level, out levelState) : ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
@@ -47,15 +49,8 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      double baseOffset = 0.0;
-      if (speckleRevitBeam != null && speckleRevitBeam.level != null)
-      {
-        level = ConvertLevelToRevit(speckleRevitBeam.level, out ApplicationObject.State levelState);
-      }
-      else
-      {
-        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out baseOffset);
-      }
+      DB.FamilyInstance revitBeam = null;
+
       var isUpdate = false;
 
       if (docObj != null)
