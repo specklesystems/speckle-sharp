@@ -53,7 +53,7 @@ namespace Archicad
 
     public async Task<Base?> ConvertToSpeckle(ISelectionFilter filter, ProgressViewModel progress)
     {
-      var objectToCommit = new Base();
+      var objectToCommit = new Collection("Archicad model", "model");
 
       IEnumerable<string> elementIds = filter.Selection;
       if (filter.Slug == "all")
@@ -87,9 +87,13 @@ namespace Archicad
           ElementTypeProvider.GetTypeByName(element),
           progress.CancellationToken
         ); // Deserialize all objects with hiven type
+
         if (objects.Count() > 0)
         {
-          objectToCommit["@" + element] = objects; // Save 'em. Assigned objects are parents with subelements
+          var elementCollection = new Collection(element, "Element Type");
+          elementCollection.applicationId = element;
+          elementCollection.elements = objects;
+          objectToCommit.elements.Add(elementCollection);
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
