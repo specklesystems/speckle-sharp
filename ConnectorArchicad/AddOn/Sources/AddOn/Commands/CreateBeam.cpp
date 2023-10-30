@@ -667,6 +667,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	return NoError;
 }
 
+
 GS::String CreateBeam::GetName () const
 {
 	return CreateBeamCommandName;

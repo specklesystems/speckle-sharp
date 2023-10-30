@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Objects.Geometry;
 
 namespace Objects.BuiltElements;
 
-public class GridLine : Base
+public class GridLine : Base, IDisplayValue<List<Base>>
 {
   public GridLine() { }
 
@@ -29,4 +31,7 @@ public class GridLine : Base
   public string label { get; set; }
 
   public string units { get; set; }
+
+  [DetachProperty]
+  public List<Base> displayValue { get; set; }
 }

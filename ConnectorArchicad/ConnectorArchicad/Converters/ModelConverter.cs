@@ -24,13 +24,43 @@ namespace Archicad.Operations
       foreach (var poly in meshModel.polygons)
       {
         var meshIndex = poly.material;
-        meshes[meshIndex].vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id]))
-          .ToList());
-        meshes[meshIndex].faces
-          .AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
+        meshes[meshIndex].vertices.AddRange(
+          poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
+        );
+        meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
         vertCount[meshIndex] += poly.pointIds.Count;
       }
 
+      return meshes;
+    }
+
+    public static List<Speckle.Core.Models.Base> MeshesAndLinesToSpeckle(MeshModel meshModel)
+    {
+      List<Speckle.Core.Models.Base> meshes = MeshesToSpeckle(meshModel).Cast<Speckle.Core.Models.Base>().ToList();
+
+      List<Line> lines = new List<Line>();
+      foreach (var edge in meshModel.edges)
+      {
+        if (edge.Value.polygonId1 == EdgeData.InvalidPolygonId && edge.Value.polygonId2 == EdgeData.InvalidPolygonId)
+        {
+          var line = new Line(
+            new Point(
+              meshModel.vertices[edge.Key.vertexId1].x,
+              meshModel.vertices[edge.Key.vertexId1].y,
+              meshModel.vertices[edge.Key.vertexId1].z
+            ),
+            new Point(
+              meshModel.vertices[edge.Key.vertexId2].x,
+              meshModel.vertices[edge.Key.vertexId2].y,
+              meshModel.vertices[edge.Key.vertexId2].z
+            )
+          );
+
+          lines.Add(line);
+        }
+      }
+
+      meshes.AddRange(lines.Cast<Speckle.Core.Models.Base>().ToList());
       return meshes;
     }
 
@@ -41,7 +71,7 @@ namespace Archicad.Operations
       {
         var mergedVertexIndices = new Dictionary<Vertex, int>();
         var originalToMergedVertexIndices = new List<int>();
-        var neigbourPolygonsByEdge = new Dictionary<Tuple<int, int>, List<int>>();
+        var neigbourPolygonsByEdge = new Dictionary<EdgeId, List<int>>();
         var polygonNormals = new Dictionary<Polygon, System.Numerics.Vector3>();
 
         var vertexOffset = 0;
@@ -82,9 +112,10 @@ namespace Archicad.Operations
             var polygon = new Polygon();
 
             var n = mesh.faces[i];
-            if (n < 3) n += 3;
+            if (n < 3)
+              n += 3;
 
-            for (var vertexIdx = i+1; vertexIdx <= i+n; vertexIdx++)
+            for (var vertexIdx = i + 1; vertexIdx <= i + n; vertexIdx++)
             {
               var pointId = ToMergedVertexIndex(mesh.faces[vertexIdx]);
               if (polygon.pointIds.Count == 0 || pointId != polygon.pointIds[^1])
@@ -183,7 +214,8 @@ namespace Archicad.Operations
       for (var i = 0; i < polygon.Count; i++)
       {
         var n = polygon[i];
-        if (n < 3) n += 3;
+        if (n < 3)
+          n += 3;
         result.Add(new MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, n) });
         i += n;
       }
@@ -213,7 +245,12 @@ namespace Archicad.Operations
       Model.MeshModel.Material.Color ConvertColor(System.Drawing.Color color)
       {
         // In AC the Colors are encoded in ushort
-        return new Model.MeshModel.Material.Color { red = color.R * 256, green = color.G * 256, blue = color.B * 256 };
+        return new Model.MeshModel.Material.Color
+        {
+          red = color.R * 256,
+          green = color.G * 256,
+          blue = color.B * 256
+        };
       }
 
       return new Model.MeshModel.Material
@@ -225,11 +262,16 @@ namespace Archicad.Operations
       };
     }
 
-    private static void ProcessPolygonEdges(MeshModel meshModel, Dictionary<Tuple<int, int>, List<int>> neigbourPolygonsByEdge, Dictionary<Polygon, System.Numerics.Vector3> polygonNormals, Polygon polygon)
+    private static void ProcessPolygonEdges(
+      MeshModel meshModel,
+      Dictionary<EdgeId, List<int>> neigbourPolygonsByEdge,
+      Dictionary<Polygon, System.Numerics.Vector3> polygonNormals,
+      Polygon polygon
+    )
     {
       for (var pointIdx = 0; pointIdx < polygon.pointIds.Count; pointIdx++)
       {
-        var edge = new Tuple<int, int>(polygon.pointIds[pointIdx], polygon.pointIds[(pointIdx + 1) % polygon.pointIds.Count]);
+        var edge = new EdgeId(polygon.pointIds[pointIdx], polygon.pointIds[(pointIdx + 1) % polygon.pointIds.Count]);
         if (TryGetNeigbourPolygonListByEdge(neigbourPolygonsByEdge, ref edge, out List<int> neigbourPolygonIdxs))
         {
           if (!neigbourPolygonIdxs.Contains(meshModel.polygons.Count))
@@ -237,71 +279,89 @@ namespace Archicad.Operations
             neigbourPolygonIdxs.Add(meshModel.polygons.Count);
 
             if (neigbourPolygonIdxs.Count > 2)
-              meshModel.edges[edge] = EdgeStatus.HiddenEdge;
+              meshModel.edges[edge] = new EdgeData(EdgeStatus.HiddenEdge);
             else if (IsHiddenEdge(edge, meshModel.polygons[neigbourPolygonIdxs[0]], polygon, polygonNormals, meshModel))
             {
-              meshModel.edges[edge] = EdgeStatus.HiddenEdge;
+              meshModel.edges[edge] = new EdgeData(EdgeStatus.HiddenEdge);
             }
           }
         }
         else
         {
           neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
-          meshModel.edges.Add(edge, EdgeStatus.VisibleEdge);
+          meshModel.edges.Add(edge, new EdgeData(EdgeStatus.VisibleEdge));
         }
       }
     }
 
     // try to find the list of neighbouring polygons of an edge
     // returns true if the edge or its inversion is present in neigbourPolygonsByEdge dictionary as key
-    private static bool TryGetNeigbourPolygonListByEdge(Dictionary<Tuple<int, int>, List<int>> neigbourPolygonsByEdge, ref Tuple<int, int> edge, out List<int> neigbourPolygonIndices)
+    private static bool TryGetNeigbourPolygonListByEdge(
+      Dictionary<EdgeId, List<int>> neigbourPolygonsByEdge,
+      ref EdgeId edge,
+      out List<int> neigbourPolygonIndices
+    )
     {
       if (neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIndices))
         return true;
-      edge = new Tuple<int, int>(edge.Item2, edge.Item1);
+      edge = new EdgeId(edge.vertexId2, edge.vertexId1);
       return neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIndices);
     }
 
-    private static System.Numerics.Vector3 GetOrientedNormal (Polygon polygon, Dictionary<Polygon, System.Numerics.Vector3> polygonNormals, MeshModel meshModel)
+    private static System.Numerics.Vector3 GetOrientedNormal(
+      Polygon polygon,
+      Dictionary<Polygon, System.Numerics.Vector3> polygonNormals,
+      MeshModel meshModel
+    )
     {
       if (polygonNormals.TryGetValue(polygon, out System.Numerics.Vector3 normal))
         return normal;
 
-      normal = new System.Numerics.Vector3 ();
-      System.Numerics.Vector3 vertex0, vertex1, vertex2;
+      normal = new System.Numerics.Vector3();
+      System.Numerics.Vector3 vertex0,
+        vertex1,
+        vertex2;
 
       vertex0 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[0]]);
 
       int count = polygon.pointIds.Count;
       for (int first = count - 1, second = 0; second < count; first = second++)
-      { 
+      {
         vertex1 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[first]]);
         vertex2 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[second]]);
 
-        normal += System.Numerics.Vector3.Cross (vertex1 - vertex0, vertex2 - vertex0);
+        normal += System.Numerics.Vector3.Cross(vertex1 - vertex0, vertex2 - vertex0);
       }
 
       polygonNormals.Add(polygon, normal);
       return normal;
     }
 
-    private static int GetOrientation (Tuple<int, int> edge, Polygon polygon)
+    private static int GetOrientation(EdgeId edge, Polygon polygon)
     {
       int count = polygon.pointIds.Count;
       for (int first = count - 1, second = 0; second < count; first = second++)
       {
-        if (polygon.pointIds[first] == edge.Item1 && polygon.pointIds[second] == edge.Item2)
+        if (polygon.pointIds[first] == edge.vertexId1 && polygon.pointIds[second] == edge.vertexId2)
           return 1;
-        if (polygon.pointIds[first] == edge.Item2 && polygon.pointIds[second] == edge.Item1)
+        if (polygon.pointIds[first] == edge.vertexId2 && polygon.pointIds[second] == edge.vertexId1)
           return -1;
       }
       return 0;
     }
 
-    private static bool IsHiddenEdge(Tuple<int, int> edge, Polygon polygon1, Polygon polygon2, Dictionary<Polygon, System.Numerics.Vector3> polygonNormals, MeshModel meshModel)
+    private static bool IsHiddenEdge(
+      EdgeId edge,
+      Polygon polygon1,
+      Polygon polygon2,
+      Dictionary<Polygon, System.Numerics.Vector3> polygonNormals,
+      MeshModel meshModel
+    )
     {
-      System.Numerics.Vector3 normal1 = GetOrientation(edge, polygon1) * GetOrientedNormal(polygon1, polygonNormals, meshModel);
-      System.Numerics.Vector3 normal2 = -1 * GetOrientation(edge, polygon2) * GetOrientedNormal(polygon2, polygonNormals, meshModel);
+      System.Numerics.Vector3 normal1 =
+        GetOrientation(edge, polygon1) * GetOrientedNormal(polygon1, polygonNormals, meshModel);
+      System.Numerics.Vector3 normal2 =
+        -1 * GetOrientation(edge, polygon2) * GetOrientedNormal(polygon2, polygonNormals, meshModel);
 
       normal1 = System.Numerics.Vector3.Normalize(normal1);
       normal2 = System.Numerics.Vector3.Normalize(normal2);
