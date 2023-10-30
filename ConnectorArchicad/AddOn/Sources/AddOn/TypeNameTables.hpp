@@ -4,7 +4,9 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 
-extern const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames;
+#include "Utility.hpp"
+
+extern const GS::HashTable<API_ElemType, GS::UniString> elementNames;
 extern const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames;
 
 extern const GS::HashTable<API_WallTypeID, GS::UniString> wallTypeNames;
