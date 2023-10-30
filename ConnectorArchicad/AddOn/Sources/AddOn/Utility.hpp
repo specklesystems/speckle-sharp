@@ -9,14 +9,67 @@
 #define UNUSED(x) (void)(x)
 
 
+#ifndef ServerMainVers_2600
+struct API_ElemType {
+	API_ElemTypeID			typeID;			// type of the element
+	API_ElemVariationID		variationID;	// type subcategory
+
+	API_ElemType () = default;
+
+	API_ElemType (API_ElemTypeID typeID)
+		: typeID (typeID), variationID (APIVarId_Generic)
+	{}
+
+	API_ElemType (API_ElemTypeID typeID, API_ElemVariationID variationID)
+		: typeID (typeID), variationID (variationID)
+	{}
+
+	API_ElemType&	operator= (const API_ElemType&) = default;
+
+	API_ElemType&	operator= (API_ElemTypeID newTypeID)
+	{
+		typeID = newTypeID;
+		variationID = APIVarId_Generic;
+		return *this;
+	}
+
+	bool	operator== (const API_ElemType& other) const
+	{
+		return typeID == other.typeID && variationID == other.variationID;
+	}
+
+	bool	operator!= (const API_ElemType& other) const
+	{
+		return !operator== (other);
+	}
+
+	bool	operator== (API_ElemTypeID otherTypeID) const
+	{
+		return typeID == otherTypeID;
+	}
+
+	bool	operator!= (API_ElemTypeID otherTypeID) const
+	{
+		return !operator== (otherTypeID);
+	}
+
+	ULong	GenerateHashValue (void) const
+	{
+		return GS::CalculateHashValue (typeID, variationID);
+	}
+};
+#endif
+
+
 namespace Utility {
 
 // Element Type
-API_ElemTypeID GetElementType (const API_Elem_Head& header);
-API_ElemTypeID GetElementType (const API_Guid& guid);
+API_ElemType GetElementType (const API_Elem_Head& header);
+API_ElemType GetElementType (const API_Guid& guid);
 GS::ErrCode GetNonLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName);
 GS::ErrCode GetLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName);
 void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType);
+void SetElementType (API_Elem_Head& header, const API_ElemType& elementType);
 
 bool ElementExists (const API_Guid& guid);
 
