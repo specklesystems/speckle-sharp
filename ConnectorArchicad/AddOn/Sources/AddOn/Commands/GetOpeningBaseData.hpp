@@ -50,7 +50,7 @@ GSErrCode GetOpeningBaseData (const T& element, GS::ObjectState& os)
 	os.Add (OpeningBase::oSide, element.openingBase.oSide);
 	os.Add (OpeningBase::refSide, element.openingBase.refSide);
 
-	API_ElemTypeID elementType = Utility::GetElementType (element.head);
+	API_ElemTypeID elementType = Utility::GetElementType (element.head).typeID;
 	
 	// Vertical Link type and story index
 	if (elementType == API_WindowID || elementType == API_DoorID) {
