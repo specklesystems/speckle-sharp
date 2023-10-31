@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
-using Serilog;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
@@ -55,7 +53,7 @@ namespace Objects.Converter.CSI
       if (Property1DExists(property1D.name))
       {
         throw new ConversionNotSupportedException(
-          $"Property {property1D.name} name was not updated because it already exists"
+          $"Property {property1D.name} was not updated because it already exists"
         );
       }
 
