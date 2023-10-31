@@ -26,7 +26,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="z">The z coordinate</param>
   /// <param name="units">The units the point's coordinates are in.</param>
   /// <param name="applicationId">The object's unique application ID</param>
-  public Point(double x, double y, double z = 0d, string units = Units.Meters, string applicationId = null)
+  public Point(double x, double y, double z = 0d, string units = Units.Meters, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -48,7 +48,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   [JsonProperty(NullValueHandling = NullValueHandling.Ignore), Obsolete("Use x,y,z properties instead", true)]
   public List<double> value
   {
-    get => null;
+    get => null!;
     set
     {
       x = value[0];
@@ -79,7 +79,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Box bbox { get; set; }
+  public Box? bbox { get; set; }
 
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out Point point)
@@ -175,7 +175,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     return new Point(point.x / val, point.y / val, point.z / val, point.units);
   }
 
-  public static bool operator ==(Point point1, Point point2)
+  public static bool operator ==(Point? point1, Point? point2)
   {
     if (point1 is null && point2 is null)
       return true;
@@ -185,7 +185,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     return point1.units == point2.units && point1.x == point2.x && point1.y == point2.y && point1.z == point2.z;
   }
 
-  public static bool operator !=(Point point1, Point point2)
+  public static bool operator !=(Point? point1, Point? point2)
   {
     return !(point1 == point2);
   }
