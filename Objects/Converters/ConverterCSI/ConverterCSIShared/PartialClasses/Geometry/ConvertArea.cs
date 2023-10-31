@@ -173,10 +173,10 @@ namespace Objects.Converter.CSI
 
       SetAreaProperties(name, area);
 
-      string GUID = null;
-      Model.AreaObj.GetGUID(name, ref GUID);
+      string guid = null;
+      Model.AreaObj.GetGUID(name, ref guid);
 
-      appObj.Update(status: ApplicationObject.State.Updated, createdId: GUID, convertedItem: $"Area{Delimiter}{name}");
+      appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Area{Delimiter}{name}");
 
       if (numErrorMsgs != 0)
         appObj.Update(

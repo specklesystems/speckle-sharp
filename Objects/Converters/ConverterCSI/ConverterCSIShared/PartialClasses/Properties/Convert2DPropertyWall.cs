@@ -1,6 +1,8 @@
 using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {

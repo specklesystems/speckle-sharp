@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using Objects.Structural.Materials;
 using CSiAPIv1;

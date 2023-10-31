@@ -110,8 +110,8 @@ namespace Objects.Converter.CSI
       name = null!;
       var success = Model.PointObj.AddCartesian(
         point.x * scaleFactor,
-        point.x * scaleFactor,
-        point.x * scaleFactor,
+        point.y * scaleFactor,
+        point.z * scaleFactor,
         ref name
       );
       return success;

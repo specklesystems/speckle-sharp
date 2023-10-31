@@ -55,7 +55,7 @@ namespace Objects.Converter.CSI
       if (Property1DExists(property1D.name))
       {
         throw new ConversionNotSupportedException(
-          $"Property {property1D.name} name was not updated because it already exists"
+          $"Property {property1D.name} was not updated because it already exists"
         );
       }
 
@@ -154,11 +154,7 @@ namespace Objects.Converter.CSI
             ScaleToNative(o.webThickness, o.units),
             false
           ),
-        _
-          => throw new ArgumentOutOfRangeException(
-            nameof(property1D),
-            $"Unsupported profile type {property1D.profile.GetType()}"
-          )
+        _ => throw new ConversionNotSupportedException($"Unsupported profile type {property1D.profile.GetType()}")
       };
 
       if (success != 0)

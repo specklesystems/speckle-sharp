@@ -1,27 +1,28 @@
 #include "TypeNameTables.hpp"
 
 
-const GS::HashTable<API_ElemTypeID, GS::UniString> elementNames
+const GS::HashTable<API_ElemType, GS::UniString> elementNames
 {
-	{ API_ZombieElemID,					"InvalidType"},
-	{ API_WallID,						"Wall"},
-	{ API_ColumnID,						"Column"},
-	{ API_BeamID,						"Beam"},
-	{ API_WindowID,						"Window"},
-	{ API_DoorID,						"Door"},
-	{ API_ObjectID,						"Object"},
-	{ API_LampID,						"Lamp"},
-	{ API_SlabID,						"Slab"},
-	{ API_RoofID,						"Roof"},
-	{ API_MeshID,						"Mesh"},
-	{ API_ZoneID,						"Zone"},
-	{ API_CurtainWallID,				"CurtainWall"},
-	{ API_ShellID,						"Shell"},
-	{ API_SkylightID,					"Skylight"},
-	{ API_MorphID,						"Morph"},
-	{ API_StairID,						"Stair"},
-	{ API_RailingID,					"Railing"},
-	{ API_OpeningID,					"Opening"}
+	{ { API_ZombieElemID, APIVarId_Generic},	"InvalidType"},
+	{ { API_WallID, APIVarId_Generic},			"Wall"},
+	{ { API_ColumnID, APIVarId_Generic},		"Column"},
+	{ { API_BeamID, APIVarId_Generic},			"Beam"},
+	{ { API_WindowID, APIVarId_Generic},		"Window"},
+	{ { API_DoorID, APIVarId_Generic},			"Door"},
+	{ { API_ObjectID, APIVarId_Generic},		"Object"},
+	{ { API_LampID, APIVarId_Generic},			"Lamp"},
+	{ { API_SlabID, APIVarId_Generic},			"Slab"},
+	{ { API_RoofID, APIVarId_Generic},			"Roof"},
+	{ { API_MeshID, APIVarId_Generic},			"Mesh"},
+	{ { API_ZoneID, APIVarId_Generic},			"Zone"},
+	{ { API_CurtainWallID, APIVarId_Generic},	"CurtainWall"},
+	{ { API_ShellID, APIVarId_Generic},			"Shell"},
+	{ { API_SkylightID, APIVarId_Generic},		"Skylight"},
+	{ { API_MorphID, APIVarId_Generic},			"Morph"},
+	{ { API_StairID, APIVarId_Generic},			"Stair"},
+	{ { API_RailingID, APIVarId_Generic},		"Railing"},
+	{ { API_OpeningID, APIVarId_Generic},		"Opening"},
+	{ { API_ObjectID, APIVarId_GridElement},	"GridElement"}
 };
 
 
