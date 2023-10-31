@@ -104,13 +104,13 @@ namespace Objects.Converter.CSI
 
     public int CreatePoint(Point point, out string name)
     {
-      var scaleFactor = Speckle.Core.Kits.Units.GetConversionFactor(point.units, ModelUnits());
+      var scaleFactor = Units.GetConversionFactor(point.units, ModelUnits());
 
       name = null;
       var success = Model.PointObj.AddCartesian(
         point.x * scaleFactor,
-        point.x * scaleFactor,
-        point.x * scaleFactor,
+        point.y * scaleFactor,
+        point.z * scaleFactor,
         ref name
       );
       return success;
