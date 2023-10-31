@@ -185,6 +185,46 @@ public sealed class AutomationContextTest : IDisposable
     Assert.That(automationContext.AutomationResult.ResultView.EndsWith($"models/{dummyContext}"), Is.True);
 
     await automationContext.ReportRunStatus();
+
+    automationContext.AutomationResult.ResultView = null;
+
+    Assert.Throws<Exception>(() =>
+    {
+      automationContext.SetContextView(null, false);
+    });
+
+    await automationContext.ReportRunStatus();
+  }
+
+  [Test]
+  public async Task TestReportRunStatus_Succeeded()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    Assert.That(automationContext.RunStatus, Is.EqualTo(AutomationStatusMapping.Get(Schema.AutomationStatus.Running)));
+
+    automationContext.MarkRunSuccess("This is a success message");
+
+    Assert.That(
+      automationContext.RunStatus,
+      Is.EqualTo(AutomationStatusMapping.Get(Schema.AutomationStatus.Succeeded))
+    );
+  }
+
+  [Test]
+  public async Task TestReportRunStatus_Failed()
+  {
+    var automationRunData = await AutomationRunData(Utils.TestObject());
+    var automationContext = await AutomationContext.Initialize(automationRunData, account.token);
+
+    Assert.That(automationContext.RunStatus, Is.EqualTo(AutomationStatusMapping.Get(Schema.AutomationStatus.Running)));
+
+    var message = "This is a failure message";
+    automationContext.MarkRunFailed(message);
+
+    Assert.That(automationContext.RunStatus, Is.EqualTo(AutomationStatusMapping.Get(Schema.AutomationStatus.Failed)));
+    Assert.That(automationContext.StatusMessage, Is.EqualTo(message));
   }
 
   public void Dispose()
