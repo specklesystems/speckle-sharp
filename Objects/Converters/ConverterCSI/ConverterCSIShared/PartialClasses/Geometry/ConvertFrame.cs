@@ -27,7 +27,7 @@ namespace Objects.Converter.CSI
       SetFrameElementProperties(element1D, name, appObj.Log);
     }
 
-    public void UpdateFrameLocation(string name, Point p1, Point p2, ApplicationObject appObj) //TODO: how is this called?
+    public void UpdateFrameLocation(string name, Point p1, Point p2, ApplicationObject appObj)
     {
       string pt1 = "";
       string pt2 = "";

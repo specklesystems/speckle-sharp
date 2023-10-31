@@ -5,7 +5,6 @@ using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
