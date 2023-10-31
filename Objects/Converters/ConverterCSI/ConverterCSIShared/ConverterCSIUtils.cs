@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using System.Reflection;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
     // warning: this delimter string needs to be the same as the delimter string in "connectorCSIUtils"
-    public static string delimiter = "::";
+    public const string Delimiter = "::";
 
     // WARNING: These strings need to have the same value as the strings in ConnectorBindingsCSI.Settings
     readonly string SendNodeResults = "sendNodeResults";

@@ -1,24 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using CSiAPIv1;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void CurveBasedElementToNative(Base @base, ICurve curve, ref ApplicationObject appObj)
+    public void CurveBasedElementToNative(Base @base, ICurve curve, ApplicationObject appObj)
     {
-      if (!(curve is Line baseLine))
+      if (curve is not Line baseLine)
       {
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: "Only line based frames are currently supported"
-        );
-        return;
+        throw new ArgumentException("Only line based frames are currently supported", nameof(curve));
       }
 
       if (ElementExistsWithApplicationId(@base.applicationId, out string name))
@@ -28,7 +20,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        CreateFrame(baseLine.start, baseLine.end, out var frameName, out var _, ref appObj);
+        CreateFrame(baseLine.start, baseLine.end, out var frameName, out _, appObj);
         SetProfileSection(frameName, @base, appObj);
       }
     }

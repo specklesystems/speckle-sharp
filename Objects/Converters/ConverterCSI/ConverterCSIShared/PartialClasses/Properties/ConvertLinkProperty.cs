@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
-using Objects.Structural.Properties;
-using Objects.Structural.Materials;
-using Objects.Structural.Properties.Profiles;
-using Objects.Structural.CSI.Properties;
-using System.Linq;
-using Speckle.Core.Models;
+﻿using Objects.Structural.CSI.Properties;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkPropertyToNative(CSILinkProperty linkProperty, ref ApplicationObject appObj)
+    public string LinkPropertyToNative(CSILinkProperty linkProperty)
     {
       double[] value = new double[4];
       value[0] = linkProperty.M2PdeltaEnd1;
@@ -32,10 +24,12 @@ namespace Objects.Converter.CSI
         linkProperty.rotationalInertia3
       );
 
-      if (success1 == 0 && success2 == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{linkProperty.name}");
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success1 != 0)
+        throw new ConversionException($"Failed to assign P-delta value to link property {linkProperty.name}");
+      if (success2 != 0)
+        throw new ConversionException($"Failed to assign Weight and Mass value to link property {linkProperty.name}");
+
+      return linkProperty.name;
     }
 
     public CSILinkProperty LinkPropertyToSpeckle(string name)
