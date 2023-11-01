@@ -214,7 +214,6 @@ public class SpeckleHttpClientHandler : HttpClientHandler
   public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
   {
     _delay = delay ?? Http.DefaultDelay();
-    CheckCertificateRevocationList = true;
   }
 
   protected override async Task<HttpResponseMessage> SendAsync(
