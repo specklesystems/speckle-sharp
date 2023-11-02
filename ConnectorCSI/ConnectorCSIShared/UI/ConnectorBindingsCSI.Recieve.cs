@@ -15,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Serilog.Context;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -77,6 +78,12 @@ namespace Speckle.ConnectorCSI.UI
 
       StreamStateManager.SaveBackupFile(Model);
 
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+      using var d3 = LogContext.PushProperty("converterSettings", settings);
+      using var d4 = LogContext.PushProperty("converterReceiveMode", converter.ReceiveMode);
+
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
       DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects, progress);
@@ -110,6 +117,7 @@ namespace Speckle.ConnectorCSI.UI
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         var @base = StoredObjects[obj.OriginalId];
+        using var _0 = LogContext.PushProperty("fromType", @base.GetType());
 
         try
         {
@@ -127,19 +135,12 @@ namespace Speckle.ConnectorCSI.UI
             log: conversionResult.Log
           );
         }
-        catch (ConversionNotSupportedException ex)
-        {
-          obj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
-        }
-        catch (ConversionException ex)
-        {
-          SpeckleLog.Logger.Warning("Object failed conversion");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-        }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error("Object failed conversion");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+          ConnectorHelpers.LogConversionException(ex);
+
+          var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+          obj.Update(status: failureStatus, logItem: ex.Message);
         }
 
         conversionResults.Add(obj);
