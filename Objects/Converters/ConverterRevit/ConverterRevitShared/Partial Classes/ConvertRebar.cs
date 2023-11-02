@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.Exceptions;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -25,11 +27,18 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj))
         return appObj;
 
-      // skip if rebar shape is null or has no curves
+      // return failed if rebar shape is null or has no curves
       var barShape = speckleRebar.shape as RevitRebarShape;
       if (barShape == null || !barShape.curves.Any())
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Rebar shape is null or has no curves.");
+        return appObj;
+      }
+
+      // return failed if no valid host
+      if (CurrentHostElement is null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Host element was null.");
         return appObj;
       }
 
@@ -72,25 +81,17 @@ namespace Objects.Converter.Revit
       }
 
       // get the rebar plane norm from the curves
-      XYZ normal = null;
-      try
+      XYZ normal = XYZ.BasisZ;
+      if (speckleRebar.normal is not null)
       {
-        using (CurveLoop loop = CurveLoop.Create(curves))
-        {
-          normal = loop.GetPlane().Normal;
-        }
-      }
-      catch (ArgumentException e)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
-        return appObj;
+        normal = VectorToNative(speckleRebar.normal);
       }
 
       // create the rebar
+      DB.Structure.Rebar rebar = null;
       try
       {
-        using (
-          DB.Structure.Rebar rebar = DB.Structure.Rebar.CreateFromCurves(
+        rebar = DB.Structure.Rebar.CreateFromCurves(
             Doc,
             barStyle,
             barType,
@@ -103,24 +104,52 @@ namespace Objects.Converter.Revit
             endHookOrientation,
             true,
             true
-          )
-        )
+          );
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentNullException nullEx)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: nullEx.Message);
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentOutOfRangeException rangeEx)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: rangeEx.Message);
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentsInconsistentException inconsistentEx)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: inconsistentEx.Message);
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentException argException)
+      {
+        var info = "The element host is not a valid rebar host. -or- The input curves " +
+          "contains at least one curve which is not a bound Line or bound Arc and is not " +
+          "supported for this operation. -or- curves do not form a valid CurveLoop. -or- The " +
+          "input curves contains at least one helical curve and is not supported for this operation.";
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{argException.Message}: {info}");
+      }
+      catch (Autodesk.Revit.Exceptions.DisabledDisciplineException disciplineException)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: disciplineException.Message);
+      }
+      finally
+      {
+        if (rebar != null)
         {
+          SetInstanceParameters(rebar, speckleRebar);
+
+          // set additional params
+          if (speckleRebar.barPositions > 0)
+          {
+            rebar.NumberOfBarPositions = speckleRebar.barPositions;
+          }
+
           // deleting instead of updating for now!
           if (docObj != null)
             Doc.Delete(docObj.Id);
 
-          SetInstanceParameters(rebar, speckleRebar);
-
           appObj.Update(status: ApplicationObject.State.Created, createdId: rebar.UniqueId, convertedItem: rebar);
-          return appObj;
         }
       }
-      catch (Exception e)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
-        return appObj;
-      }
+      return appObj;
     }
 
     private RevitRebarGroup RebarToSpeckle(DB.Structure.Rebar revitRebar)
@@ -155,6 +184,9 @@ namespace Objects.Converter.Revit
         speckleEndHook = RebarHookToSpeckle(revitEndHook, revitRebar.GetHookOrientation(1).ToString());
       }
 
+      // get the layout rule - this determines exceptions that may be thrown by accessing invalid props
+      bool isSingleLayout = revitRebar.LayoutRule == RebarLayoutRule.Single;
+
       // get centerline curves
       RebarShapeDrivenAccessor accessor = null;
       if (revitRebar.IsRebarShapeDriven())
@@ -167,17 +199,26 @@ namespace Objects.Converter.Revit
         MultiplanarOption.IncludeAllMultiplanarCurves,
         0
       );
+      var firstPositionCurveForTransform = revitRebar.GetCenterlineCurves(
+        true,
+        true,
+        true,
+        MultiplanarOption.IncludeOnlyPlanarCurves,
+        0
+      ).ToList();
+      speckleShape.curves = firstPositionCurveForTransform.Select(o => CurveToSpeckle(o, revitRebar.Document)).ToList();
 
       var curves = new List<ICurve>();
+      Transform firstPositionTransform = null;
       for (int i = 0; i < revitRebar.NumberOfBarPositions; i++)
       {
         // skip end bars that are excluded
-        if (
-          !revitRebar.IncludeFirstBar && i == 0
-          || !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1
-        )
+        if (!isSingleLayout)
         {
-          continue;
+          if (!revitRebar.IncludeFirstBar && i == 0 || !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1)
+          {
+            continue;
+          }
         }
 
         // for non-shape-driven rebar, compute the centerline at each position
@@ -196,12 +237,28 @@ namespace Objects.Converter.Revit
         else
         {
           var transform = accessor.GetBarPositionTransform(i);
+          if (firstPositionTransform is null && i != 0)
+          {
+            firstPositionTransform = transform;
+          }
           curves.AddRange(
             firstPositionCurves
               .Select(o => CurveToSpeckle(o.CreateTransformed(transform), revitRebar.Document))
               .ToList()
           );
         }
+      }
+
+      // todo: get plane normal of rebar group
+      // the plane prop was deprecated in revit 2018, no clear way to retrieve plane in newer apis
+      // if there are multiple bars in this set, we can try to compute the plane normal
+      Vector normal = null;
+      if (firstPositionTransform != null && firstPositionCurveForTransform is not null)
+      {
+        XYZ point1 = firstPositionCurveForTransform.First().GetEndPoint(0);
+        XYZ point3 = firstPositionTransform.OfPoint(point1);
+        var groupDirection = new XYZ(point3.X - point1.X, point3.Y - point1.Y, point3.Z - point1.Z);
+        normal = VectorToSpeckle(groupDirection, revitRebar.Document);
       }
 
       // create speckle rebar
@@ -211,11 +268,13 @@ namespace Objects.Converter.Revit
       speckleRebar.startHook = speckleStartHook;
       speckleRebar.endHook = speckleEndHook;
       speckleRebar.number = revitRebar.Quantity;
-      speckleRebar.hasFirstBar = revitRebar.IncludeFirstBar;
-      speckleRebar.hasLastBar = revitRebar.IncludeLastBar;
+      speckleRebar.hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar;
+      speckleRebar.hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar;
       speckleRebar.volume = revitRebar.Volume;
       speckleRebar.family = type?.FamilyName;
       speckleRebar.type = type?.Name;
+      speckleRebar.normal = normal;
+      speckleRebar.barPositions = revitRebar.NumberOfBarPositions;
 
       // skip display value meshes for now
       // GetElementDisplayValue(revitRebar, SolidDisplayValueOptions);

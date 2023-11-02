@@ -40,11 +40,17 @@ namespace Objects.BuiltElements
     /// <summary>
     /// Indicates if rebar set includes the first bar
     /// </summary>
+    /// <remarks>
+    /// Only applicable to stirrup (transverse) rebar
+    /// </remarks>
     public bool hasFirstBar { get; set; }
 
     /// <summary>
     /// Indicates if rebar set includes the last bar
     /// </summary>
+    /// <remarks>
+    /// Only applicable to stirrup (transverse) rebar
+    /// </remarks>
     public bool hasLastBar { get; set; }
 
     /// <summary>
@@ -215,6 +221,8 @@ namespace Objects.BuiltElements.Revit
 
     public string family { get; set; }
     public string type { get; set; }
+    public int barPositions { get; set; }
+    public Vector normal { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
   }
