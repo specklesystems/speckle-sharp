@@ -30,7 +30,7 @@
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;
       CS1711;CS1734;
       <!--Others we don't want-->
-      CA1815;CA1054;
+      CA1815;CA1054;CA5399;
       <!--Nullability-->
       CS8618;CS8602;CS8600;
       CS1998; IDE0007; CS0618;
@@ -59,7 +59,7 @@
       CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
       CA5392; CA5393; CA5395; CA5396; CA5397; CA5398;
       CA5400; CA5401; CA5402; CA5403; CA5404; CA5405
-      <!-- The following security anaysers are ommited for the listed reasons -->
+      <!-- The following security analysers are ommited as errors for the listed reasons -->
       <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
       <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
       <!--"CA3075: Insecure DTD Processing" - we assume loaded XML is trusted-->

@@ -177,7 +177,6 @@ public static class Http
     }
   }
 
-  [SuppressMessage("Security", "CA5399: Enable HttpClient certificate revocation list check")]
   public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
