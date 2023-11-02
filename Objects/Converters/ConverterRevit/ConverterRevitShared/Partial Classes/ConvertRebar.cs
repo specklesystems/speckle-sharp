@@ -257,7 +257,7 @@ namespace Objects.Converter.Revit
       {
         XYZ point1 = firstPositionCurveForTransform.First().GetEndPoint(0);
         XYZ point3 = firstPositionTransform.OfPoint(point1);
-        var groupDirection = new XYZ(point3.X - point1.X, point3.Y - point1.Y, point3.Z - point1.Z);
+        var groupDirection = new XYZ(point3.X - point1.X, point3.Y - point1.Y, point3.Z - point1.Z).Normalize();
         normal = VectorToSpeckle(groupDirection, revitRebar.Document);
       }
 
