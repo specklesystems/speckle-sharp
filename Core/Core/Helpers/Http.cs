@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -176,13 +177,13 @@ public static class Http
     }
   }
 
+  [SuppressMessage("Security", "CA5399: Enable HttpClient certificate revocation list check")]
   public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
     handler ??= new SpeckleHttpClientHandler();
-    handler.CheckCertificateRevocationList = true;
     var client = new HttpClient(handler);
     client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
     return client;
