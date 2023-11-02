@@ -417,7 +417,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranches(Stream.id, 500, 0).ConfigureAwait(true);
 
       var index = Branches.FindIndex(x => x.name == prevBranchName);
       if (index != -1)
