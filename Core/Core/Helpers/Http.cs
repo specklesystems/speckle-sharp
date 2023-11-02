@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -182,7 +183,6 @@ public static class Http
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
     handler ??= new SpeckleHttpClientHandler();
-    handler.CheckCertificateRevocationList = true;
     var client = new HttpClient(handler);
     client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
     return client;
