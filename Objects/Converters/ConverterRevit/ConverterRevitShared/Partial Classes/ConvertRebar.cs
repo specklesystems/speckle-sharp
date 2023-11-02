@@ -253,7 +253,11 @@ namespace Objects.Converter.Revit
       // the plane prop was deprecated in revit 2018, no clear way to retrieve plane in newer apis
       // if there are multiple bars in this set, we can try to compute the plane normal
       Vector normal = null;
-      if (firstPositionTransform != null && firstPositionCurveForTransform is not null)
+      if (accessor != null)
+      {
+        normal = VectorToSpeckle(accessor.Normal, revitRebar.Document);
+      }
+      else if (firstPositionTransform != null && firstPositionCurveForTransform is not null)
       {
         XYZ point1 = firstPositionCurveForTransform.First().GetEndPoint(0);
         XYZ point3 = firstPositionTransform.OfPoint(point1);
@@ -326,6 +330,7 @@ namespace Objects.Converter.Revit
       var speckleRebarHook = new RevitRebarHook();
       speckleRebarHook.angle = revitRebarHook.HookAngle;
       speckleRebarHook.orientation = orientation;
+      GetAllRevitParamsAndIds(speckleRebarHook, revitRebarHook);
       return speckleRebarHook;
     }
   }

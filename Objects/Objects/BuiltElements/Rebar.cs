@@ -202,7 +202,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public shape shape { get; set; }
   }
 
-  [Obsolete("Deprecated in 2.17: set starthook and endhook to null or refer to hook angle instead", true)]
+  [Obsolete("Deprecated in 2.17: set starthook and endhook to null or refer to hook angle instead")]
   public enum shape
   {
     NO_HOOK = 0,
