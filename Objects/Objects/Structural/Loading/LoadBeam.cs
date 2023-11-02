@@ -31,13 +31,13 @@ public class LoadBeam : Load
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false,
-    string name = null
+    string? name = null
   )
   {
     this.loadCase = loadCase;
@@ -78,19 +78,20 @@ public class LoadBeam : Load
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false,
-    string name = null
+    string? name = null
   )
   {
     this.loadCase = loadCase;
     this.elements = elements;
     this.loadType = loadType;
     this.direction = direction;
+    this.loadAxis = loadAxis;
     this.values = values;
     this.positions = positions;
     this.isProjected = isProjected;
@@ -108,6 +109,6 @@ public class LoadBeam : Load
 
   public LoadAxisType loadAxisType { get; set; }
   public bool isProjected { get; set; }
-  public List<double> values { get; set; }
-  public List<double> positions { get; set; }
+  public List<double>? values { get; set; }
+  public List<double>? positions { get; set; }
 }

@@ -14,11 +14,11 @@ public class ResultSetAll : Base
     "Results"
   )]
   public ResultSetAll(
-    ResultSet1D results1D,
-    ResultSet2D results2D,
-    ResultSet3D results3D,
-    ResultGlobal resultsGlobal,
-    ResultSetNode resultsNode
+    ResultSet1D? results1D,
+    ResultSet2D? results2D,
+    ResultSet3D? results3D,
+    ResultGlobal? resultsGlobal,
+    ResultSetNode? resultsNode
   )
   {
     this.results1D = results1D;
@@ -29,17 +29,17 @@ public class ResultSetAll : Base
   }
 
   [DetachProperty]
-  public ResultSet1D results1D { get; set; } //1d element results
+  public ResultSet1D? results1D { get; set; } //1d element results
 
   [DetachProperty]
-  public ResultSet2D results2D { get; set; } //2d elements results
+  public ResultSet2D? results2D { get; set; } //2d elements results
 
   [DetachProperty]
-  public ResultSet3D results3D { get; set; } //3d elements results
+  public ResultSet3D? results3D { get; set; } //3d elements results
 
   [DetachProperty]
-  public ResultGlobal resultsGlobal { get; set; } //global results
+  public ResultGlobal? resultsGlobal { get; set; } //global results
 
   [DetachProperty]
-  public ResultSetNode resultsNode { get; set; } //nodal results
+  public ResultSetNode? resultsNode { get; set; } //nodal results
 }

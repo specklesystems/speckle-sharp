@@ -70,11 +70,19 @@ static void GetModelInfoForElement (const Modeler::Elem& elem,
 	for (const auto& body : elem.TessellatedBodies ()) {
 		UInt32 vetrexOffset = modelInfo.GetVertices ().GetSize ();
 
+		// vertices
 		for (UInt32 vertexIdx = 0; vertexIdx < body.GetVertexCount (); ++vertexIdx) {
 			const auto coord = body.GetVertexPoint (vertexIdx, transformation);
 			modelInfo.AddVertex (ModelInfo::Vertex (coord.x, coord.y, coord.z));
 		}
 
+		// edges
+		for (ULong edgeIdx = 0; edgeIdx < body.GetEdgeCount (); ++edgeIdx) {
+			const EDGE& edge = body.GetConstEdge (edgeIdx);
+			modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
+		}
+
+		// polygons
 		CollectPolygonsFromBody (body, attributes, vetrexOffset, modelInfo);
 	}
 }
@@ -178,7 +186,7 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& applicationId)
 		return GS::Array<API_Guid> ();
 	}
 
-	switch (Utility::GetElementType (header)) {
+	switch (Utility::GetElementType (header).typeID) {
 		case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
 		case API_StairID:						return GetStairSubElements (applicationId);
 		case API_RailingID:						return GetRailingSubElements (applicationId);

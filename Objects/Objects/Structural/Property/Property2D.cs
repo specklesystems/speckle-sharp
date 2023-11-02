@@ -16,7 +16,7 @@ public class Property2D : Property
   }
 
   [SchemaInfo("Property2D", "Creates a Speckle structural 2D element property", "Structural", "Properties")]
-  public Property2D(string name, StructuralMaterial material, PropertyType2D type, double thickness)
+  public Property2D(string name, StructuralMaterial? material, PropertyType2D type, double thickness)
   {
     this.name = name;
     this.material = material;
@@ -28,7 +28,7 @@ public class Property2D : Property
   public double thickness { get; set; } //also thickness type? ex. waffle vs constant
 
   [DetachProperty]
-  public StructuralMaterial material { get; set; }
+  public StructuralMaterial? material { get; set; }
 
   [DetachProperty]
   public Axis orientationAxis { get; set; }

@@ -15,6 +15,10 @@
 
   <PropertyGroup Label="General Config">
     <LangVersion>11</LangVersion>
+    <DebugSymbols>true</DebugSymbols>
+    
+    <DebugSymbols>true</DebugSymbols>
+    
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
@@ -25,10 +29,11 @@
       <!--XML comment-->
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;
       CS1711;CS1734;
+      <!--Others we don't want-->
+      CA1815;CA1054;
       <!--Nullability-->
       CS8618;CS8602;CS8600;
       CS1998; IDE0007; CS0618;
-      CA1054;
       <!-- Globalization rules disabled -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
@@ -78,6 +83,9 @@
     <PackageTags>speckle</PackageTags>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
     <PackageIcon>logo.png</PackageIcon>
+    
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <PropertyGroup Label="Repo Info">

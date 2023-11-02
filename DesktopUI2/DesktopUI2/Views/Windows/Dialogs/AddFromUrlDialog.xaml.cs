@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using DesktopUI2.ViewModels;
 
 namespace DesktopUI2.Views.Windows.Dialogs;
 
@@ -24,6 +25,7 @@ public class AddFromUrlDialog : DialogUserControl
   private void InitializeComponent()
   {
     AvaloniaXamlLoader.Load(this);
+    this.DataContext = new DialogViewModel();
     UrlField = this.FindControl<TextBox>("url");
 
     UrlField.Text = Url;

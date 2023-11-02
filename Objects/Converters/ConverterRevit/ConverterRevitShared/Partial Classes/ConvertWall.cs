@@ -198,10 +198,7 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
-        speckleWall.displayValue = GetElementDisplayValue(
-          revitWall,
-          new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false }
-        );
+        speckleWall.displayValue = GetElementDisplayValue(revitWall);
       }
       else
       {

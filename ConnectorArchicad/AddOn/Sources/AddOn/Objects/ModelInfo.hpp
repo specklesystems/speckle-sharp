@@ -33,6 +33,44 @@ public:
 		double z = {};
 	};
 
+	class EdgeId {
+	public:
+		Int32	vertexId1, vertexId2;
+
+		EdgeId (Int32 vertexId1, Int32 vertexId2);
+
+		bool operator== (EdgeId otherEdgeId) const;
+		
+		ULong GenerateHashValue (void) const;
+	};
+
+	class EdgeData {
+	public:
+		static const Int32 InvalidPolygonId = -1;
+
+		EdgeStatus	edgeStatus;
+		Int32		polygonId1, polygonId2;
+
+		EdgeData ();
+		EdgeData (EdgeStatus edgeStatus, Int32 polygonId1 = InvalidPolygonId, Int32 polygonId2 = InvalidPolygonId);
+	};
+
+	class Polygon {
+	public:
+		Polygon () = default;
+		Polygon (const GS::Array<Int32>& pointIds, UInt32 material);
+
+		inline const GS::Array<Int32>& GetPointIds () const { return pointIds; }
+		inline const Int32 GetMaterial () const { return material; }
+
+		GSErrCode Store (GS::ObjectState& os) const;
+		GSErrCode Restore (const GS::ObjectState& os);
+
+	private:
+		GS::Array<Int32> pointIds;
+		UInt32 material = {};
+	};
+	
 	class Material {
 	public:
 		Material () = default;
@@ -55,25 +93,12 @@ public:
 
 	};
 
-	class Polygon {
-	public:
-		Polygon () = default;
-		Polygon (const GS::Array<Int32>& pointIds, UInt32 material);
-
-		inline const GS::Array<Int32>& GetPointIds () const { return pointIds; }
-		inline const Int32 GetMaterial () const { return material; }
-
-		GSErrCode Store (GS::ObjectState& os) const;
-		GSErrCode Restore (const GS::ObjectState& os);
-
-	private:
-		GS::Array<Int32> pointIds;
-		UInt32 material = {};
-	};
-
 public:
 	void AddVertex (const Vertex& vertex);
 	void AddVertex (Vertex&& vertex);
+
+	void AddEdge (const EdgeId& edgeId, const EdgeData& edgeData);
+	void AddEdge (EdgeId&& edgeId, EdgeData&& edgeData);
 
 	void AddPolygon (const Polygon& polygon);
 	void AddPolygon (Polygon&& polygon);
@@ -85,9 +110,9 @@ public:
 	GSErrCode GetMaterial (const UInt32 materialIndex, ModelInfo::Material& material) const;
 
 	inline const GS::Array<Vertex>& GetVertices () const { return vertices; }
+	inline const GS::HashTable<EdgeId, EdgeData>& GetEdges () const { return edges; }
 	inline const GS::Array<Polygon>& GetPolygons () const { return polygons; }
 	inline const GS::Array<Material>& GetMaterials () const { return materials; }
-	inline const GS::HashTable<GS::Pair<GS::Int32, GS::Int32>, GS::UShort>& GetEdges () const { return edges; }
 	inline const GS::Array<GS::UniString>& GetIds () const { return ids; }
 
 	GSErrCode Store (GS::ObjectState& os) const;
@@ -96,9 +121,9 @@ public:
 private:
 	GS::Array<GS::UniString> ids;
 	GS::Array<Vertex> vertices;
+	GS::HashTable<EdgeId, EdgeData> edges;
 	GS::Array<Polygon> polygons;
 	GS::Array<Material> materials;
-	GS::HashTable<GS::Pair<GS::Int32, GS::Int32>, GS::UShort> edges;
 };
 
 
