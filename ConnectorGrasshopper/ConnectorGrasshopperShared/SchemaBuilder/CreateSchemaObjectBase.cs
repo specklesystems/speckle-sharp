@@ -361,6 +361,8 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
 
     valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
 
+    valueList.ListItems.Sort((item, listItem) => string.Compare(item.Name, listItem.Name));
+
     return valueList;
   }
 
