@@ -3,6 +3,8 @@ using Objects.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Results;
+using Objects.Structural.Results.ApplicationSpecific.CSi;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -117,4 +119,6 @@ public class CSIElement1D : Element1D
   public string SpandrelAssignment { get; set; }
   public double[]? Modifiers { get; set; }
   public DesignProcedure DesignProcedure { get; set; }
+  [DetachProperty]
+  public AnalyticalResults1D? AnalysisResults { get; set; }
 }

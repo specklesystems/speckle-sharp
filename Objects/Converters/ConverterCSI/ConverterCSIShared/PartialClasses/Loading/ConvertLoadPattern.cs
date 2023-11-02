@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using Objects.Structural.Loading;
 
 namespace Objects.Converter.CSI
@@ -14,32 +14,31 @@ namespace Objects.Converter.CSI
 
     public LoadCase LoadPatternToSpeckle(string loadPatternName)
     {
-      var speckleLoadCase = new LoadCase();
+      return aggregateCache
+        .GetOrInitializeEmptyCacheOfType<LoadCase>()
+        .GetOrAdd(loadPatternName, CreateLoadCase);
+    }
+
+    private LoadCase CreateLoadCase(string loadPatternName)
+    {
+      LoadCase speckleLoadCase = new();
       speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
       speckleLoadCase.name = loadPatternName;
 
       // load pattern name cannot be duplicated in etabs, so safe for applicationId use
       speckleLoadCase.applicationId = loadPatternName;
 
-      var selfweight = GetSelfWeightMultiplier(loadPatternName);
+      var selfWeight = GetSelfWeightMultiplier(loadPatternName);
 
-      //Encoding loadPatterns selfweight multiplier within
-      if (selfweight != 0)
+      //Encoding loadPatterns selfWeight multiplier within
+      if (selfWeight != 0)
       {
-        var gravityVector = new Geometry.Vector(0, 0, -selfweight);
+        var gravityVector = new Geometry.Vector(0, 0, -selfWeight);
         var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
         gravityLoad.name = loadPatternName;
 
         gravityLoad.applicationId = $"{loadPatternName}:self-weight";
 
-        SpeckleModel.loads.Add(gravityLoad);
-      }
-      else
-      {
-        var gravityVector = new Geometry.Vector(0, 0, 0);
-        var gravityLoad = new LoadGravity(speckleLoadCase, gravityVector);
-        gravityLoad.name = loadPatternName;
-        gravityLoad.applicationId = $"{loadPatternName}:self-weight";
         SpeckleModel.loads.Add(gravityLoad);
       }
       if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
@@ -48,12 +47,6 @@ namespace Objects.Converter.CSI
         SpeckleModel.loads.Add(speckleLoadCase);
       }
 
-      return speckleLoadCase;
-    }
-
-    public LoadCase LoadCaseToSpeckle(string name)
-    {
-      var speckleLoadCase = new LoadCase();
       return speckleLoadCase;
     }
 

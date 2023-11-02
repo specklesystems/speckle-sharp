@@ -15,6 +15,7 @@ using System.Linq;
 using Objects.Other;
 using Objects.Structural.Materials;
 using OSG = Objects.Structural.Geometry;
+using ConverterCSIShared.Models;
 
 namespace Objects.Converter.CSI
 {
@@ -71,6 +72,7 @@ namespace Objects.Converter.CSI
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
+    private readonly AggregateCache aggregateCache = new();
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
@@ -262,7 +264,7 @@ namespace Objects.Converter.CSI
           returnObject = SpeckleModel;
           break;
         case "AnalysisResults":
-          returnObject = ResultsToSpeckle();
+          ResultsToSpeckle();
           break;
         case "Stories":
           returnObject = StoriesToSpeckle();

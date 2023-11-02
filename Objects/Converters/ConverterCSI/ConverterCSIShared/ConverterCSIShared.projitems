@@ -14,8 +14,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ArcExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IntExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AggregateCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AnalysisResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ETABSGridLineDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Analysis\ConvertModelSettings.cs" />
@@ -38,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertStories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertTendon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)partialclasses\loading\ConvertLoadCombination.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\ConvertLoadPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading1DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading2DElements.cs" />
@@ -53,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertSpring.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertTendonProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGlobal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGroup1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet1D.cs" />

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
 using System.Collections.Generic;

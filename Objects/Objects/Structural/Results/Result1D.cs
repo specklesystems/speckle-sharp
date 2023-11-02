@@ -6,6 +6,39 @@ using Speckle.Core.Models;
 
 namespace Objects.Structural.Results;
 
+public class AnalyticalResults1D : Base
+{
+  public string? lengthUnits { get; set; }
+  public string? forceUnits { get; set; }
+  [DetachProperty]
+  public List<LoadCombinationResult> resultsByLoadCombination { get; set; }
+}
+public class LoadCombinationResult : Result
+{
+  public LoadCombinationResult() { }
+
+  [SchemaInfo("ResultGroup1D", "Creates a Speckle 1D element result group object", "Structural", "Results")]
+  public LoadCombinationResult(Base loadCase, List<AnalyticalResult1D> results1D)
+  {
+    this.resultCase = loadCase;
+    this.results1D = results1D;
+  }
+
+  [Chunkable]
+  public List<AnalyticalResult1D> results1D { get; set; }
+}
+
+public class AnalyticalResult1D : Base
+{
+  public float? positionAlongBeam { get; set; }
+  public float? axialForce { get; set; }
+  public float? shearForceStrongAxis { get; set; }
+  public float? shearForceWeakAxis { get; set; }
+  public float? torsionForce { get; set; }
+  public float? momentAboutStrongAxis { get; set; }
+  public float? momentAboutWeakAxis { get; set; }
+}
+
 public class ResultSet1D : Result
 {
   public ResultSet1D() { }
