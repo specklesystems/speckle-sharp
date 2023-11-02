@@ -92,19 +92,19 @@ namespace Objects.Converter.Revit
       try
       {
         rebar = DB.Structure.Rebar.CreateFromCurves(
-            Doc,
-            barStyle,
-            barType,
-            startHook,
-            endHook,
-            CurrentHostElement,
-            normal,
-            curves,
-            startHookOrientation,
-            endHookOrientation,
-            true,
-            true
-          );
+          Doc,
+          barStyle,
+          barType,
+          startHook,
+          endHook,
+          CurrentHostElement,
+          normal,
+          curves,
+          startHookOrientation,
+          endHookOrientation,
+          true,
+          true
+        );
       }
       catch (Autodesk.Revit.Exceptions.ArgumentNullException nullEx)
       {
@@ -120,10 +120,11 @@ namespace Objects.Converter.Revit
       }
       catch (Autodesk.Revit.Exceptions.ArgumentException argException)
       {
-        var info = "The element host is not a valid rebar host. -or- The input curves " +
-          "contains at least one curve which is not a bound Line or bound Arc and is not " +
-          "supported for this operation. -or- curves do not form a valid CurveLoop. -or- The " +
-          "input curves contains at least one helical curve and is not supported for this operation.";
+        var info =
+          "The element host is not a valid rebar host. -or- The input curves "
+          + "contains at least one curve which is not a bound Line or bound Arc and is not "
+          + "supported for this operation. -or- curves do not form a valid CurveLoop. -or- The "
+          + "input curves contains at least one helical curve and is not supported for this operation.";
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{argException.Message}: {info}");
       }
       catch (Autodesk.Revit.Exceptions.DisabledDisciplineException disciplineException)
@@ -199,13 +200,9 @@ namespace Objects.Converter.Revit
         MultiplanarOption.IncludeAllMultiplanarCurves,
         0
       );
-      var firstPositionCurveForTransform = revitRebar.GetCenterlineCurves(
-        true,
-        true,
-        true,
-        MultiplanarOption.IncludeOnlyPlanarCurves,
-        0
-      ).ToList();
+      var firstPositionCurveForTransform = revitRebar
+        .GetCenterlineCurves(true, true, true, MultiplanarOption.IncludeOnlyPlanarCurves, 0)
+        .ToList();
       speckleShape.curves = firstPositionCurveForTransform.Select(o => CurveToSpeckle(o, revitRebar.Document)).ToList();
 
       var curves = new List<ICurve>();
@@ -215,7 +212,10 @@ namespace Objects.Converter.Revit
         // skip end bars that are excluded
         if (!isSingleLayout)
         {
-          if (!revitRebar.IncludeFirstBar && i == 0 || !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1)
+          if (
+            !revitRebar.IncludeFirstBar && i == 0
+            || !revitRebar.IncludeLastBar && i == revitRebar.NumberOfBarPositions - 1
+          )
           {
             continue;
           }
