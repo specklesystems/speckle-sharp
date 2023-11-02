@@ -6,7 +6,6 @@ using System.Linq;
 using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
@@ -17,8 +16,11 @@ namespace Objects.Converter.Revit
       //try to get element using ApplicationId
       //this will only work if the element has been successfully been received in Revit before
       //var element = GetExistingElementByApplicationId(paramUpdater.revitId);
-      
-      var appObj = new ApplicationObject(paramUpdater.id, paramUpdater.speckle_type) { applicationId = paramUpdater.applicationId };
+
+      var appObj = new ApplicationObject(paramUpdater.id, paramUpdater.speckle_type)
+      {
+        applicationId = paramUpdater.applicationId
+      };
       Element element = null;
 
       //try to get element using ElementId
@@ -34,19 +36,23 @@ namespace Objects.Converter.Revit
       if (element != null)
       {
         SetInstanceParameters(element, paramUpdater);
-        appObj.Update(status: ApplicationObject.State.Updated, logItem: $"Successfully updated instance parameters for element {paramUpdater.elementId}");
+        appObj.Update(
+          status: ApplicationObject.State.Updated,
+          logItem: $"Successfully updated instance parameters for element {paramUpdater.elementId}"
+        );
       }
       else
       {
         Report.LogConversionError(
-          new System.Exception($"Could not find element to update: Element Id = {paramUpdater.elementId}"));
+          new System.Exception($"Could not find element to update: Element Id = {paramUpdater.elementId}")
+        );
         appObj.Update(
           status: ApplicationObject.State.Failed,
-          logItem: $"Could not find element to update: Element Id = {paramUpdater.elementId}");
+          logItem: $"Could not find element to update: Element Id = {paramUpdater.elementId}"
+        );
       }
-      
+
       return appObj;
     }
-
   }
 }
