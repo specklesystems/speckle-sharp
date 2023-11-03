@@ -91,7 +91,10 @@ namespace Speckle.ConnectorRevit.UI
           CurrentDoc.Document
         );
         await elementTypeMapper
-          .Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"), state.Settings.FirstOrDefault(x => x.Slug == DsFallbackSlug))
+          .Map(
+            state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
+            state.Settings.FirstOrDefault(x => x.Slug == DsFallbackSlug)
+          )
           .ConfigureAwait(false);
       }
       catch (Exception ex)
@@ -247,10 +250,6 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      using var _d0 = LogContext.PushProperty("converterName", converter.Name);
-      using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
-      using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
-
       var convertedObjectsCache = new ConvertedObjectsCache();
       converter.SetContextDocument(convertedObjectsCache);
 
@@ -279,6 +278,11 @@ namespace Speckle.ConnectorRevit.UI
           // Do nothing, default values will do.
           break;
       }
+
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+      using var d4 = LogContext.PushProperty("converterReceiveMode", converter.ReceiveMode);
 
       // convert
       var index = -1;
