@@ -18,7 +18,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\AggregateCache.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\AnalysisResultConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\NodeAnalyticalResultsConverter.cs" />
+    <Compile Include="..\ConverterCSIShared\Models\Element1DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ETABSGridLineDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Analysis\ConvertModelSettings.cs" />
@@ -57,7 +58,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertSpring.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertTendonProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGlobal.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGroup1D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet1D.cs" />

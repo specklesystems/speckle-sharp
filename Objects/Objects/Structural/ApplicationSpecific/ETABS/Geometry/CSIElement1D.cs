@@ -120,5 +120,5 @@ public class CSIElement1D : Element1D
   public double[]? Modifiers { get; set; }
   public DesignProcedure DesignProcedure { get; set; }
   [DetachProperty]
-  public AnalyticalResults1D? AnalysisResults { get; set; }
+  public AnalyticalResults? AnalysisResults { get; set; }
 }

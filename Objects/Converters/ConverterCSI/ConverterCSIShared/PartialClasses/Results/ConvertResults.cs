@@ -2,6 +2,7 @@ using ConverterCSIShared.Models;
 using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Objects.Converter.CSI
 {
@@ -9,6 +10,14 @@ namespace Objects.Converter.CSI
   {
     public void ResultsToSpeckle()
     {
+      SetLoadCombinationsForResults();
+      List<LoadCase> loadCases = GetLoadCases().ToList();
+      List<LoadCombination> loadCombos = GetLoadCombos().ToList();
+      if (Settings.TryGetValue(Send1DResults, out string sendNodeResults) && bool.Parse(sendNodeResults))
+      {
+        NodeAnalyticalResultsConverter resultsConverter = new(SpeckleModel, Model, loadCombos, loadCases);
+        resultsConverter.AnalyticalResultsToSpeckle();
+      }
       if (Settings.TryGetValue(Send1DResults, out string send1DResults) && bool.Parse(send1DResults))
       {
         Element1DAnalyticalResultConverter resultsConverter = new(
@@ -17,8 +26,8 @@ namespace Objects.Converter.CSI
           new HashSet<string>(GetFrameNames()),
           new HashSet<string>(GetPierNames()),
           new HashSet<string>(GetSpandrelNames()),
-          GetLoadCombos(),
-          GetLoadCases()
+          loadCombos,
+          loadCases
           );
         resultsConverter.AnalyticalResultsToSpeckle();
       }
@@ -134,11 +143,11 @@ namespace Objects.Converter.CSI
 
     //  #endregion
 
-    //  var resultsNode = sendNodeResults ? AllResultSetNodesToSpeckle() : null;
+    //var resultsNode = sendNodeResults ? AllResultSetNodesToSpeckle() : null;
     //  var results1D = send1DResults
     //    ? AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames)
     //    : null;
-    //  var results2D = send2DResults ? AreaResultSet2dToSpeckle(convertedAreaNames) : null;
+    //var results2D = send2DResults ? AreaResultSet2dToSpeckle(convertedAreaNames) : null;
 
     //  var results = new ResultSetAll(results1D, results2D, new ResultSet3D(), new ResultGlobal(), resultsNode);
 

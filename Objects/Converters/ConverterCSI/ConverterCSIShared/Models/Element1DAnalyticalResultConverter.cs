@@ -13,7 +13,7 @@ using Speckle.Core.Models;
 
 namespace ConverterCSIShared.Models
 {
-  internal class AnalysisResultConverter
+  internal class Element1DAnalyticalResultConverter
   {
     private readonly Model speckleModel;
     private readonly cSapModel sapModel;
@@ -21,7 +21,7 @@ namespace ConverterCSIShared.Models
     private readonly HashSet<string> pierNames;
     private readonly HashSet<string> spandrelNames;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
-    public AnalysisResultConverter(
+    public Element1DAnalyticalResultConverter(
       Model speckleModel,
       cSapModel sapModel,
       HashSet<string> frameNames,
@@ -51,7 +51,6 @@ namespace ConverterCSIShared.Models
 
     public void AnalyticalResultsToSpeckle()
     {
-      SetLoadCombinationsForResults();
       foreach (Base element in speckleModel.elements)
       {
         if (element is not CSIElement1D element1D)
@@ -59,35 +58,17 @@ namespace ConverterCSIShared.Models
           continue;
         }
 
-        AnalyticalResults1D results = new()
+        AnalyticalResults results = new()
         {
-          resultsByLoadCombination = GetAnalysisResultsForElement1D(element1D).ToList()
+          resultsByLoadCombination = GetAnalysisResultsForElement1D(element1D).Cast<Result>().ToList()
         };
         element1D.AnalysisResults = results;
       }
     }
 
-    private void SetLoadCombinationsForResults()
+    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForElement1D(Element1D element1D)
     {
-      var numberOfLoadCombinations = 0;
-      var loadCombinationNames = Array.Empty<string>();
-
-      sapModel.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
-      foreach (var loadCombination in loadCombinationNames)
-      {
-        sapModel.Results.Setup.SetComboSelectedForOutput(loadCombination);
-      }
-
-      sapModel.LoadCases.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
-      foreach (var loadCase in loadCombinationNames)
-      {
-        sapModel.Results.Setup.SetCaseSelectedForOutput(loadCase);
-      }
-    }
-
-    private ICollection<LoadCombinationResult> GetAnalysisResultsForElement1D(Element1D element1D)
-    {
-      Dictionary<string, LoadCombinationResult> loadCombinationResults = new();
+      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
       if (frameNames.Contains(element1D.name))
       {
         return GetAnalysisResultsForFrame(element1D);
@@ -103,7 +84,7 @@ namespace ConverterCSIShared.Models
       throw new SpeckleException($"Unable to find category for Element1D with name {element1D.name} and CSi ID {element1D.applicationId}");
     }
 
-    private ICollection<LoadCombinationResult> GetAnalysisResultsForFrame(Element1D element1D)
+    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForFrame(Element1D element1D)
     {
       // Reference variables for CSI API
       int numberOfResults = 0;
@@ -145,7 +126,7 @@ namespace ConverterCSIShared.Models
       // Value used to normalized output station of forces between 0 and 1
       var lengthOf1dElement = objSta.Max();
 
-      Dictionary<string, LoadCombinationResult> loadCombinationResults = new();
+      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
       {
         CSiResult1D result = new()
@@ -162,17 +143,17 @@ namespace ConverterCSIShared.Models
       }
       return loadCombinationResults.Values;
     }
-    private LoadCombinationResult GetOrCreateResult(Dictionary<string, LoadCombinationResult> dict, string loadCaseName)
+    private LoadCombinationResult1D GetOrCreateResult(Dictionary<string, LoadCombinationResult1D> dict, string loadCaseName)
     {
-      if (!dict.TryGetValue(loadCaseName, out LoadCombinationResult comboResults))
+      if (!dict.TryGetValue(loadCaseName, out LoadCombinationResult1D comboResults))
       {
         Base loadCaseOrCombination = loadCombinationsAndCases[loadCaseName];
-        comboResults = new LoadCombinationResult(loadCaseOrCombination, new());
+        comboResults = new LoadCombinationResult1D(loadCaseOrCombination, new());
         dict[loadCaseName] = comboResults;
       }
       return comboResults;
     }
-    private ICollection<LoadCombinationResult> GetAnalysisResultsForPier(Element1D element1D)
+    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForPier(Element1D element1D)
     {
       // Reference variables for CSI API
       int numberOfResults = 0;
@@ -203,7 +184,7 @@ namespace ConverterCSIShared.Models
         ref m3
       );
 
-      Dictionary<string, LoadCombinationResult> loadCombinationResults = new();
+      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
       {
         if (pierName[i] != element1D.name)
@@ -224,7 +205,7 @@ namespace ConverterCSIShared.Models
       }
       return loadCombinationResults.Values;
     }
-    private ICollection<LoadCombinationResult> GetAnalysisResultsForSpandrel(Element1D element1D)
+    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForSpandrel(Element1D element1D)
     {
       // Reference variables for CSI API
       int numberOfResults = 0;
@@ -255,7 +236,7 @@ namespace ConverterCSIShared.Models
         ref m3
       );
 
-      Dictionary<string, LoadCombinationResult> loadCombinationResults = new();
+      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
       {
         if (spandrelName[i] != element1D.name)
