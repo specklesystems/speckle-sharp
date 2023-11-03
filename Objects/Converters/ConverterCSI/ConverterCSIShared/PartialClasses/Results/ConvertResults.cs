@@ -13,9 +13,15 @@ namespace Objects.Converter.CSI
       SetLoadCombinationsForResults();
       List<LoadCase> loadCases = GetLoadCases().ToList();
       List<LoadCombination> loadCombos = GetLoadCombos().ToList();
-      if (Settings.TryGetValue(Send1DResults, out string sendNodeResults) && bool.Parse(sendNodeResults))
+      if (Settings.TryGetValue(SendNodeResults, out string sendNodeResults) && bool.Parse(sendNodeResults))
       {
-        NodeAnalyticalResultsConverter resultsConverter = new(SpeckleModel, Model, loadCombos, loadCases);
+        bool sendVelocitySetting = false;
+        NodeAnalyticalResultsConverter resultsConverter = new(
+          SpeckleModel,
+          Model,
+          loadCombos,
+          loadCases,
+          sendVelocitySetting);
         resultsConverter.AnalyticalResultsToSpeckle();
       }
       if (Settings.TryGetValue(Send1DResults, out string send1DResults) && bool.Parse(send1DResults))
@@ -29,6 +35,11 @@ namespace Objects.Converter.CSI
           loadCombos,
           loadCases
           );
+        resultsConverter.AnalyticalResultsToSpeckle();
+      }
+      if (Settings.TryGetValue(Send2DResults, out string send2DResults) && bool.Parse(send2DResults))
+      {
+        Element2DAnalyticalResultConverter resultsConverter = new(SpeckleModel, Model, loadCombos, loadCases);
         resultsConverter.AnalyticalResultsToSpeckle();
       }
     }

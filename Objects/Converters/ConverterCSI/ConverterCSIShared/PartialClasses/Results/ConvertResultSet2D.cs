@@ -1,4 +1,4 @@
-﻿using Objects.Structural.Geometry;
+using Objects.Structural.Geometry;
 using Objects.Structural.Results;
 using System;
 using System.Collections.Generic;

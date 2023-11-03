@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Results;
 using System;
@@ -295,6 +295,8 @@ namespace Objects.Converter.CSI
 
     public void SetLoadCombinationsForResults()
     {
+      Model.Results.Setup.DeselectAllCasesAndCombosForOutput();
+
       var numberOfLoadCombinations = 0;
       var loadCombinationNames = new string[1];
 

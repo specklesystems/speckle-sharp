@@ -15,12 +15,13 @@ namespace ConverterCSIShared.Models
     private readonly Model speckleModel;
     private readonly cSapModel sapModel;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
+    private readonly bool sendVelocityAccelerationData;
     public NodeAnalyticalResultsConverter(
       Model speckleModel,
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
-      IEnumerable<LoadCase> loadCases
-    )
+      IEnumerable<LoadCase> loadCases,
+      bool sendVelocityAccelerationData)
     {
       this.speckleModel = speckleModel;
       this.sapModel = sapModel;
@@ -35,6 +36,8 @@ namespace ConverterCSIShared.Models
       {
         this.loadCombinationsAndCases.Add(loadCase.name, loadCase);
       }
+
+      this.sendVelocityAccelerationData = sendVelocityAccelerationData;
     }
 
     public void AnalyticalResultsToSpeckle()
@@ -127,27 +130,78 @@ namespace ConverterCSIShared.Models
       );
 
       Dictionary<string, ResultSetNode> resultSets = new();
-      for (int index = 0; index < numberGroundResults; index++)
+      for (int index = 0; index < numberResults; index++)
       {
-        var speckleResultNode = new ResultNode();
-        speckleResultNode.node = node;
-        speckleResultNode.reactionX = (float)F1[index];
-        speckleResultNode.reactionY = (float)F2[index];
-        speckleResultNode.reactionZ = (float)F3[index];
-        speckleResultNode.reactionXX = (float)M1[index];
-        speckleResultNode.reactionYY = (float)M2[index];
-        speckleResultNode.reactionZZ = (float)M3[index];
+        var speckleResultNode = new ResultNode
+        {
+          reactionX = (float)F1[index],
+          reactionY = (float)F2[index],
+          reactionZ = (float)F3[index],
+          reactionXX = (float)M1[index],
+          reactionYY = (float)M2[index],
+          reactionZZ = (float)M3[index],
 
-        speckleResultNode.rotXX = (float)R1[index];
-        speckleResultNode.rotYY = (float)R2[index];
-        speckleResultNode.rotZZ = (float)R3[index];
-        speckleResultNode.dispX = (float)U1[index];
-        speckleResultNode.dispY = (float)U2[index];
-        speckleResultNode.dispZ = (float)U3[index];
+          rotXX = (float)R1[index],
+          rotYY = (float)R2[index],
+          rotZZ = (float)R3[index],
+          dispX = (float)U1[index],
+          dispY = (float)U2[index],
+          dispZ = (float)U3[index]
+        };
+        if (sendVelocityAccelerationData)
+        {
+          AddVelocityAccelerationData(
+            node,
+            obj,
+            elm,
+            stepType,
+            stepNum,
+            U1Vel,
+            U2Vel,
+            U3Vel,
+            R1Vel,
+            R2Vel,
+            R3Vel,
+            U1Acc,
+            U2Acc,
+            U3Acc,
+            R1Acc,
+            R2Acc,
+            R3Acc,
+            numberGroundResults,
+            loadCasesGround,
+            speckleResultNode);
+        }
 
         GetOrCreateResult(resultSets, loadCases[index]).resultsNode.Add(speckleResultNode);
       }
 
+
+      return resultSets.Values;
+    }
+
+    private void AddVelocityAccelerationData(
+      Node node,
+      string[] obj,
+      string[] elm,
+      string[] stepType,
+      double[] stepNum,
+      double[] U1Vel,
+      double[] U2Vel,
+      double[] U3Vel,
+      double[] R1Vel,
+      double[] R2Vel,
+      double[] R3Vel,
+      double[] U1Acc,
+      double[] U2Acc,
+      double[] U3Acc,
+      double[] R1Acc,
+      double[] R2Acc,
+      double[] R3Acc,
+      int numberGroundResults,
+      string[] loadCasesGround,
+      ResultNode speckleResultNode)
+    {
       var s = sapModel.Results.JointVelAbs(
         node.name,
         eItemTypeElm.Element,
@@ -184,8 +238,6 @@ namespace ConverterCSIShared.Models
       {
         foreach (int index in Enumerable.Range(0, numberGroundResults))
         {
-          var speckleResultNode = new ResultNode();
-          speckleResultNode.node = node;
           speckleResultNode.velX = (float)U1Vel[index];
           speckleResultNode.velY = (float)U2Vel[index];
           speckleResultNode.velZ = (float)U3Vel[index];
@@ -199,12 +251,8 @@ namespace ConverterCSIShared.Models
           speckleResultNode.accXX = (float)R1Acc[index];
           speckleResultNode.accYY = (float)R2Acc[index];
           speckleResultNode.accZZ = (float)R3Acc[index];
-
-          GetOrCreateResult(resultSets, loadCases[index]).resultsNode.Add(speckleResultNode);
         }
       }
-
-      return resultSets.Values;
     }
 
     private ResultSetNode GetOrCreateResult(Dictionary<string, ResultSetNode> dict, string loadCaseName)
