@@ -256,7 +256,6 @@ namespace Objects.Converter.Revit
 
       speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
-
       // assign the category if it is null
       // WARN: DirectShapes have a `category` prop of type `RevitCategory` (enum), NOT `string`. This is the only exception as of 2.16.
       // In all other cases this should be the display value string (localized name) of the catogory
@@ -270,8 +269,6 @@ namespace Objects.Converter.Revit
       //TODO: move this to a typed property, define full list of categories in Objects
       BuiltInCategory builtInCategory = Categories.GetBuiltInCategory(category);
       speckleElement["builtInCategory"] = builtInCategory.ToString();
-
-
 
       //NOTE: adds the quantities of all materials to an element
       var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);
