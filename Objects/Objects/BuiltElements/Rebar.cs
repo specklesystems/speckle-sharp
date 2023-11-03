@@ -17,6 +17,9 @@ namespace Objects.BuiltElements
   {
     public RebarGroup() { }
 
+    /// <summary>
+    /// The shape of the rebar group
+    /// </summary>
     [DetachProperty]
     public RebarShape shape { get; set; }
 

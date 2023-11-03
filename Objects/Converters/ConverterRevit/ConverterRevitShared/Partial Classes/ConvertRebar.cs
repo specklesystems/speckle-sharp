@@ -168,21 +168,27 @@ namespace Objects.Converter.Revit
       // get the rebar shape
       var revitShape = revitRebar.Document.GetElement(revitRebar.GetShapeId()) as DB.Structure.RebarShape;
       RevitRebarShape speckleShape = RebarShapeToSpeckle(revitShape);
+#if REVIT2020 || REVIT2021
+      speckleShape.barDiameter = revitRebar.GetBendData().BarDiameter;
+#else
+      speckleShape.barDiameter = revitRebar.GetBendData().BarModelDiameter;
+#endif
 
       // get the rebar hooks
       DB.ElementId revitStartHookId = revitRebar.GetHookTypeId(0);
       RevitRebarHook speckleStartHook = null;
+      double hookBendRadius = revitRebar.GetBendData().HookBendRadius;
       if (revitStartHookId != ElementId.InvalidElementId)
       {
         var revitStartHook = revitRebar.Document.GetElement(revitStartHookId) as RebarHookType;
-        speckleStartHook = RebarHookToSpeckle(revitStartHook, revitRebar.GetHookOrientation(0).ToString());
+        speckleStartHook = RebarHookToSpeckle(revitStartHook, revitRebar.GetHookOrientation(0).ToString(), hookBendRadius);
       }
       DB.ElementId revitEndHookId = revitRebar.GetHookTypeId(1);
       RevitRebarHook speckleEndHook = null;
       if (revitEndHookId != ElementId.InvalidElementId)
       {
         var revitEndHook = revitRebar.Document.GetElement(revitEndHookId) as RebarHookType;
-        speckleEndHook = RebarHookToSpeckle(revitEndHook, revitRebar.GetHookOrientation(1).ToString());
+        speckleEndHook = RebarHookToSpeckle(revitEndHook, revitRebar.GetHookOrientation(1).ToString(), hookBendRadius);
       }
 
       // get the layout rule - this determines exceptions that may be thrown by accessing invalid props
@@ -200,13 +206,8 @@ namespace Objects.Converter.Revit
         MultiplanarOption.IncludeAllMultiplanarCurves,
         0
       );
-      var firstPositionCurveForTransform = revitRebar
-        .GetCenterlineCurves(true, true, true, MultiplanarOption.IncludeOnlyPlanarCurves, 0)
-        .ToList();
-      speckleShape.curves = firstPositionCurveForTransform.Select(o => CurveToSpeckle(o, revitRebar.Document)).ToList();
 
       var curves = new List<ICurve>();
-      Transform firstPositionTransform = null;
       for (int i = 0; i < revitRebar.NumberOfBarPositions; i++)
       {
         // skip end bars that are excluded
@@ -237,10 +238,6 @@ namespace Objects.Converter.Revit
         else
         {
           var transform = accessor.GetBarPositionTransform(i);
-          if (firstPositionTransform is null && i != 0)
-          {
-            firstPositionTransform = transform;
-          }
           curves.AddRange(
             firstPositionCurves
               .Select(o => CurveToSpeckle(o.CreateTransformed(transform), revitRebar.Document))
@@ -249,20 +246,13 @@ namespace Objects.Converter.Revit
         }
       }
 
-      // todo: get plane normal of rebar group
-      // the plane prop was deprecated in revit 2018, no clear way to retrieve plane in newer apis
-      // if there are multiple bars in this set, we can try to compute the plane normal
+      // get plane normal of rebar group
+      // the normal prop was deprecated in revit 2018, and the accessor normal is suggested as a replacement
+      // unclear how non-shape-driven rebar set normals are retrieved or computed.
       Vector normal = null;
       if (accessor != null)
       {
         normal = VectorToSpeckle(accessor.Normal, revitRebar.Document);
-      }
-      else if (firstPositionTransform != null && firstPositionCurveForTransform is not null)
-      {
-        XYZ point1 = firstPositionCurveForTransform.First().GetEndPoint(0);
-        XYZ point3 = firstPositionTransform.OfPoint(point1);
-        var groupDirection = new XYZ(point3.X - point1.X, point3.Y - point1.Y, point3.Z - point1.Z).Normalize();
-        normal = VectorToSpeckle(groupDirection, revitRebar.Document);
       }
 
       // create speckle rebar
@@ -325,11 +315,12 @@ namespace Objects.Converter.Revit
       return revitRebarHook;
     }
 
-    private RevitRebarHook RebarHookToSpeckle(RebarHookType revitRebarHook, string orientation)
+    private RevitRebarHook RebarHookToSpeckle(RebarHookType revitRebarHook, string orientation, double radius)
     {
       var speckleRebarHook = new RevitRebarHook();
       speckleRebarHook.angle = revitRebarHook.HookAngle;
       speckleRebarHook.orientation = orientation;
+      speckleRebarHook.radius = radius;
       GetAllRevitParamsAndIds(speckleRebarHook, revitRebarHook);
       return speckleRebarHook;
     }
