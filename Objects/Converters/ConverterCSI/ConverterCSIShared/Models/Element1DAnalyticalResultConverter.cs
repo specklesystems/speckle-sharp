@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ConverterCSIShared.Extensions;
 using CSiAPIv1;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;
-using Objects.Structural.Results.ApplicationSpecific.CSi;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -21,15 +21,22 @@ namespace ConverterCSIShared.Models
     private readonly HashSet<string> pierNames;
     private readonly HashSet<string> spandrelNames;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
+    private readonly bool sendBeamForces;
+    private readonly bool sendBraceForces;
+    private readonly bool sendColumnForces;
+    private readonly bool sendOtherForces;
     public Element1DAnalyticalResultConverter(
       Model speckleModel,
       cSapModel sapModel,
       HashSet<string> frameNames,
       HashSet<string> pierNames,
-      HashSet<string> spandrelNames, 
+      HashSet<string> spandrelNames,
       IEnumerable<LoadCombination> loadCombinations,
-      IEnumerable<LoadCase> loadCases
-    )
+      IEnumerable<LoadCase> loadCases,
+      bool sendBeamForces,
+      bool sendBraceForces,
+      bool sendColumnForces,
+      bool sendOtherForces)
     {
       this.speckleModel = speckleModel;
       this.sapModel = sapModel;
@@ -47,6 +54,11 @@ namespace ConverterCSIShared.Models
       {
         this.loadCombinationsAndCases.Add(loadCase.name, loadCase);
       }
+
+      this.sendBeamForces = sendBeamForces;
+      this.sendBraceForces = sendBraceForces;
+      this.sendColumnForces = sendColumnForces;
+      this.sendOtherForces = sendOtherForces;
     }
 
     public void AnalyticalResultsToSpeckle()
@@ -66,9 +78,8 @@ namespace ConverterCSIShared.Models
       }
     }
 
-    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForElement1D(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForElement1D(Element1D element1D)
     {
-      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
       if (frameNames.Contains(element1D.name))
       {
         return GetAnalysisResultsForFrame(element1D);
@@ -84,8 +95,10 @@ namespace ConverterCSIShared.Models
       throw new SpeckleException($"Unable to find category for Element1D with name {element1D.name} and CSi ID {element1D.applicationId}");
     }
 
-    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForFrame(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForFrame(Element1D element1D)
     {
+      int forcesSuccess = -1;
+
       // Reference variables for CSI API
       int numberOfResults = 0;
       string[] obj,
@@ -104,57 +117,66 @@ namespace ConverterCSIShared.Models
         m3;
       objSta = elmSta = stepNum = p = v2 = v3 = t = m2 = m3 = Array.Empty<double>();
 
-      sapModel.Results.FrameForce(
-        element1D.name,
-        eItemTypeElm.ObjectElm,
-        ref numberOfResults,
-        ref obj,
-        ref objSta,
-        ref elm,
-        ref elmSta,
-        ref loadCase,
-        ref stepType,
-        ref stepNum,
-        ref p,
-        ref v2,
-        ref v3,
-        ref t,
-        ref m2,
-        ref m3
-      );
+      if (SendForces(element1D.type))
+      {
+        forcesSuccess = sapModel.Results.FrameForce(
+          element1D.name,
+          eItemTypeElm.ObjectElm,
+          ref numberOfResults,
+          ref obj,
+          ref objSta,
+          ref elm,
+          ref elmSta,
+          ref loadCase,
+          ref stepType,
+          ref stepNum,
+          ref p,
+          ref v2,
+          ref v3,
+          ref t,
+          ref m2,
+          ref m3
+        );
+      }
+      else
+      {
+        return new List<ResultSet1D>();
+      }
 
       // Value used to normalized output station of forces between 0 and 1
       var lengthOf1dElement = objSta.Max();
 
-      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
-      for (int i = 0; i < numberOfResults; i++)
-      {
-        CSiResult1D result = new()
-        {
-          positionAlongBeam = (float)(objSta[i] / lengthOf1dElement),
-          axialForce = (float)p[i],
-          shearForceStrongAxis = (float)v2[i],
-          shearForceWeakAxis = (float)v3[i],
-          torsionForce = (float)t[i],
-          momentAboutStrongAxis = (float)m3[i],
-          momentAboutWeakAxis = (float)m2[i]
-        };
-        GetOrCreateResult(loadCombinationResults, loadCase[i]).results1D.Add(result);
-      }
-      return loadCombinationResults.Values;
+      return CreateLoadCombinationResults(
+        element1D,
+        forcesSuccess,
+        numberOfResults,
+        null,
+        loadCase,
+        (int i) => (float)(objSta[i] / lengthOf1dElement),
+        p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3);
     }
-    private LoadCombinationResult1D GetOrCreateResult(Dictionary<string, LoadCombinationResult1D> dict, string loadCaseName)
+    private ResultSet1D GetOrCreateResult(Dictionary<string, ResultSet1D> dict, string loadCaseName)
     {
-      if (!dict.TryGetValue(loadCaseName, out LoadCombinationResult1D comboResults))
+      if (!dict.TryGetValue(loadCaseName, out ResultSet1D comboResults))
       {
         Base loadCaseOrCombination = loadCombinationsAndCases[loadCaseName];
-        comboResults = new LoadCombinationResult1D(loadCaseOrCombination, new());
+        comboResults = new ResultSet1D(new())
+        {
+          resultCase = loadCaseOrCombination
+        };
         dict[loadCaseName] = comboResults;
       }
       return comboResults;
     }
-    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForPier(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForPier(Element1D element1D)
     {
+      int forcesSuccess = -1;
+
       // Reference variables for CSI API
       int numberOfResults = 0;
       string[] storyName,
@@ -170,43 +192,41 @@ namespace ConverterCSIShared.Models
         m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      sapModel.Results.PierForce(
-        ref numberOfResults,
-        ref storyName,
-        ref pierName,
-        ref loadCase,
-        ref location,
-        ref p,
-        ref v2,
-        ref v3,
-        ref t,
-        ref m2,
-        ref m3
-      );
-
-      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
-      for (int i = 0; i < numberOfResults; i++)
+      if (SendForces(element1D.type))
       {
-        if (pierName[i] != element1D.name)
-        {
-          continue;
-        }
-        CSiResult1D result = new()
-        {
-          positionAlongBeam = 0,
-          axialForce = (float)p[i],
-          shearForceStrongAxis = (float)v2[i],
-          shearForceWeakAxis = (float)v3[i],
-          torsionForce = (float)t[i],
-          momentAboutStrongAxis = (float)m3[i],
-          momentAboutWeakAxis = (float)m2[i]
-        };
-        GetOrCreateResult(loadCombinationResults, loadCase[i]).results1D.Add(result);
+        forcesSuccess = sapModel.Results.PierForce(
+          ref numberOfResults,
+          ref storyName,
+          ref pierName,
+          ref loadCase,
+          ref location,
+          ref p,
+          ref v2,
+          ref v3,
+          ref t,
+          ref m2,
+          ref m3
+        );
       }
-      return loadCombinationResults.Values;
+
+      return CreateLoadCombinationResults(
+        element1D,
+        forcesSuccess,
+        numberOfResults,
+        pierName,
+        loadCase,
+        Return0Position,
+        p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3);
     }
-    private ICollection<LoadCombinationResult1D> GetAnalysisResultsForSpandrel(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForSpandrel(Element1D element1D)
     {
+      int forcesSuccess = -1;
+
       // Reference variables for CSI API
       int numberOfResults = 0;
       string[] storyName,
@@ -222,40 +242,90 @@ namespace ConverterCSIShared.Models
         m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      sapModel.Results.SpandrelForce(
-        ref numberOfResults,
-        ref storyName,
-        ref spandrelName,
-        ref loadCase,
-        ref location,
-        ref p,
-        ref v2,
-        ref v3,
-        ref t,
-        ref m2,
-        ref m3
-      );
+      if (SendForces(element1D.type))
+      {
+        forcesSuccess = sapModel.Results.SpandrelForce(
+          ref numberOfResults,
+          ref storyName,
+          ref spandrelName,
+          ref loadCase,
+          ref location,
+          ref p,
+          ref v2,
+          ref v3,
+          ref t,
+          ref m2,
+          ref m3
+        );
+      }
 
-      Dictionary<string, LoadCombinationResult1D> loadCombinationResults = new();
+      return CreateLoadCombinationResults(
+        element1D, 
+        forcesSuccess, 
+        numberOfResults, 
+        spandrelName, 
+        loadCase,
+        Return0Position,
+        p, 
+        v2, 
+        v3, 
+        t, 
+        m2, 
+        m3);
+    }
+
+    private ICollection<ResultSet1D> CreateLoadCombinationResults(
+      Element1D element1D,
+      int forcesSuccess,
+      int numberOfResults,
+      string[] names,
+      string[] loadCase,
+      Func<int, float> positionCalculator, 
+      double[] p,
+      double[] v2,
+      double[] v3,
+      double[] t,
+      double[] m2,
+      double[] m3)
+    {
+      Dictionary<string, ResultSet1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
       {
-        if (spandrelName[i] != element1D.name)
+        if (names != null && names[i] != element1D.name)
         {
           continue;
         }
-        CSiResult1D result = new()
+        Result1D result = new();
+
+        if (forcesSuccess.IsSuccessful())
         {
-          positionAlongBeam = 0,
-          axialForce = (float)p[i],
-          shearForceStrongAxis = (float)v2[i],
-          shearForceWeakAxis = (float)v3[i],
-          torsionForce = (float)t[i],
-          momentAboutStrongAxis = (float)m3[i],
-          momentAboutWeakAxis = (float)m2[i]
+          result.position = positionCalculator(i);
+          result.forceX = (float)p[i];
+          result.forceY = (float)v2[i];
+          result.forceZ = (float)v3[i];
+          result.momentXX = (float)t[i];
+          result.momentYY = (float)m2[i];
+          result.momentZZ = (float)m3[i];
         };
         GetOrCreateResult(loadCombinationResults, loadCase[i]).results1D.Add(result);
       }
       return loadCombinationResults.Values;
+    }
+
+    private bool SendForces(ElementType1D type)
+    {
+      return type switch
+      {
+        ElementType1D.Beam => sendBeamForces,
+        ElementType1D.Brace => sendBraceForces,
+        ElementType1D.Column => sendColumnForces,
+        _ => sendOtherForces
+      };
+    }
+
+    private float Return0Position(int i)
+    {
+      return 0;
     }
   }
 }

@@ -1,5 +1,6 @@
 using CSiAPIv1;
 using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
 using Objects.Structural.Results;
 using System;
 using System.Collections.Generic;
@@ -296,20 +297,37 @@ namespace Objects.Converter.CSI
     public void SetLoadCombinationsForResults()
     {
       Model.Results.Setup.DeselectAllCasesAndCombosForOutput();
+      if (!Settings.TryGetValue("load-cases", out string loadCasesCommaSeparated) 
+        || string.IsNullOrEmpty(loadCasesCommaSeparated))
+      {
+        return;
+      }
+
+      string[] loadCases = loadCasesCommaSeparated.Split(',');
+      if (loadCases.Length == 0)
+      {
+        return;
+      }
 
       var numberOfLoadCombinations = 0;
-      var loadCombinationNames = new string[1];
+      var loadCombinationNames = Array.Empty<string>();
 
       Model.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
       foreach (var loadCombination in loadCombinationNames)
       {
-        Model.Results.Setup.SetComboSelectedForOutput(loadCombination);
+        if (loadCases.Contains(loadCombination))
+        {
+          Model.Results.Setup.SetComboSelectedForOutput(loadCombination);
+        }
       }
 
       Model.LoadCases.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
       foreach (var loadCase in loadCombinationNames)
       {
-        Model.Results.Setup.SetCaseSelectedForOutput(loadCase);
+        if (loadCases.Contains(loadCase))
+        {
+          Model.Results.Setup.SetCaseSelectedForOutput(loadCase);
+        }
       }
     }
   }

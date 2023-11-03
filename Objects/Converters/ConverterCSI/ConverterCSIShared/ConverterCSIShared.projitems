@@ -9,6 +9,8 @@
     <Import_RootNamespace>ConverterCSIShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnalysisResultUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSIUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ArcExtensions.cs" />

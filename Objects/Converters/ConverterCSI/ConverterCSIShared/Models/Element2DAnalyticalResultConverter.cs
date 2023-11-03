@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ConverterCSIShared.Extensions;
 using CSiAPIv1;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Geometry;
@@ -16,12 +17,15 @@ namespace ConverterCSIShared.Models
     private readonly Model speckleModel;
     private readonly cSapModel sapModel;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
+    private readonly bool sendForces;
+    private readonly bool sendStresses;
     public Element2DAnalyticalResultConverter(
       Model speckleModel,
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
-      IEnumerable<LoadCase> loadCases
-    )
+      IEnumerable<LoadCase> loadCases,
+      bool sendForces,
+      bool sendStresses)
     {
       this.speckleModel = speckleModel;
       this.sapModel = sapModel;
@@ -36,6 +40,9 @@ namespace ConverterCSIShared.Models
       {
         this.loadCombinationsAndCases.Add(loadCase.name, loadCase);
       }
+
+      this.sendForces = sendForces;
+      this.sendStresses = sendStresses;
     }
 
     public void AnalyticalResultsToSpeckle()
@@ -57,194 +64,157 @@ namespace ConverterCSIShared.Models
 
     private ICollection<ResultSet2D> GetAnalysisResultsForElement2D(Element2D element2D)
     {
-      int numberOfForceResults = 0;
-      string[] obj,
-        elm,
-        pointElm,
-        loadCase,
-        stepType;
-      double[] stepNum,
-        f11,
-        f22,
-        f12,
-        fMax,
-        fMin,
-        fAngle,
-        fVonMises,
-        m11,
-        m22,
-        m12,
-        mMax,
-        mMin,
-        mAngle,
-        v13,
-        v23,
-        vMax,
-        vAngle;
-      obj = elm = pointElm = loadCase = stepType = Array.Empty<string>();
-      stepNum =
-        f11 =
-        f22 =
-        f12 =
-        fMax =
-        fMin =
-        fAngle =
-        fVonMises =
-        m11 =
-        m22 =
-        m12 =
-        mMax =
-        mMin =
-        mAngle =
-        v13 =
-        v23 =
-        vMax =
-        vAngle =
-          Array.Empty<double>();
+      int forceSuccess = -1;
+      int stressSuccess = -1;
 
-      sapModel.Results.AreaForceShell(
-        element2D.name,
-        CSiAPIv1.eItemTypeElm.ObjectElm,
-        ref numberOfForceResults,
-        ref obj,
-        ref elm,
-        ref pointElm,
-        ref loadCase,
-        ref stepType,
-        ref stepNum,
-        ref f11,
-        ref f22,
-        ref f12,
-        ref fMax,
-        ref fMin,
-        ref fAngle,
-        ref fVonMises,
-        ref m11,
-        ref m22,
-        ref m12,
-        ref mMax,
-        ref mMin,
-        ref mAngle,
-        ref v13,
-        ref v23,
-        ref vMax,
-        ref vAngle
-      );
+      int numberOfForceResults = 0;
+      string[] obj = Array.Empty<string>();
+      string[] elm = Array.Empty<string>();
+      string[] pointElm = Array.Empty<string>();
+      string[] loadCase = Array.Empty<string>();
+      string[] stepType = Array.Empty<string>();
+      double[] stepNum = Array.Empty<double>();
+      double[] f11 = Array.Empty<double>();
+      double[] f22 = Array.Empty<double>();
+      double[] f12 = Array.Empty<double>();
+      double[] fMax = Array.Empty<double>();
+      double[] fMin = Array.Empty<double>();
+      double[] fAngle = Array.Empty<double>();
+      double[] fVonMises = Array.Empty<double>();
+      double[] m11 = Array.Empty<double>();
+      double[] m22 = Array.Empty<double>();
+      double[] m12 = Array.Empty<double>();
+      double[] mMax = Array.Empty<double>();
+      double[] mMin = Array.Empty<double>();
+      double[] mAngle = Array.Empty<double>();
+      double[] v13 = Array.Empty<double>();
+      double[] v23 = Array.Empty<double>();
+      double[] vMax = Array.Empty<double>();
+      double[] vAngle = Array.Empty<double>();
+
+      if (sendForces)
+      {
+        forceSuccess = sapModel.Results.AreaForceShell(
+          element2D.name,
+          CSiAPIv1.eItemTypeElm.ObjectElm,
+          ref numberOfForceResults,
+          ref obj,
+          ref elm,
+          ref pointElm,
+          ref loadCase,
+          ref stepType,
+          ref stepNum,
+          ref f11,
+          ref f22,
+          ref f12,
+          ref fMax,
+          ref fMin,
+          ref fAngle,
+          ref fVonMises,
+          ref m11,
+          ref m22,
+          ref m12,
+          ref mMax,
+          ref mMin,
+          ref mAngle,
+          ref v13,
+          ref v23,
+          ref vMax,
+          ref vAngle
+        );
+      }
 
       int numberOfStressResults = 0;
-      string[] stressObj,
-        stressElm,
-        stressPointElm,
-        stressLoadCase,
-        stressStepType;
-      double[] stressStepNum,
-        S11Top,
-        S22Top,
-        S12Top,
-        SMaxTop,
-        SMinTop,
-        SAngleTop,
-        sVonMisesTop,
-        S11Bot,
-        S22Bot,
-        S12Bot,
-        SMaxBot,
-        SMinBot,
-        SAngleBot,
-        sVonMisesBot,
-        S13Avg,
-        S23Avg,
-        SMaxAvg,
-        SAngleAvg;
-      stressObj = stressElm = stressPointElm = stressLoadCase = stressStepType = Array.Empty<string>();
-      stressStepNum =
-        S11Top =
-        S22Top =
-        S12Top =
-        SMaxTop =
-        SMinTop =
-        SAngleTop =
-        sVonMisesTop =
-        S11Bot =
-        S22Bot =
-        S12Bot =
-        SMaxBot =
-        SMinBot =
-        SAngleBot =
-        sVonMisesBot =
-        S13Avg =
-        S23Avg =
-        SMaxAvg =
-        SAngleAvg =
-          Array.Empty<double>();
+      string[] stressObj = Array.Empty<string>();
+      string[] stressElm = Array.Empty<string>();
+      string[] stressPointElm = Array.Empty<string>();
+      string[] stressLoadCase = Array.Empty<string>();
+      string[] stressStepType = Array.Empty<string>();
+      double[] stressStepNum = Array.Empty<double>();
+      double[] S11Top = Array.Empty<double>();
+      double[] S22Top = Array.Empty<double>();
+      double[] S12Top = Array.Empty<double>();
+      double[] SMaxTop = Array.Empty<double>();
+      double[] SMinTop = Array.Empty<double>();
+      double[] SAngleTop = Array.Empty<double>();
+      double[] sVonMisesTop = Array.Empty<double>();
+      double[] S11Bot = Array.Empty<double>();
+      double[] S22Bot = Array.Empty<double>();
+      double[] S12Bot = Array.Empty<double>();
+      double[] SMaxBot = Array.Empty<double>();
+      double[] SMinBot = Array.Empty<double>();
+      double[] SAngleBot = Array.Empty<double>();
+      double[] sVonMisesBot = Array.Empty<double>();
+      double[] S13Avg = Array.Empty<double>();
+      double[] S23Avg = Array.Empty<double>();
+      double[] SMaxAvg = Array.Empty<double>();
+      double[] SAngleAvg = Array.Empty<double>();
 
-      sapModel.Results.AreaStressShell(
-        element2D.name,
-        CSiAPIv1.eItemTypeElm.ObjectElm,
-        ref numberOfStressResults,
-        ref stressObj,
-        ref stressElm,
-        ref stressPointElm,
-        ref stressLoadCase,
-        ref stressStepType,
-        ref stressStepNum,
-        ref S11Top,
-        ref S22Top,
-        ref S12Top,
-        ref SMaxTop,
-        ref SMinTop,
-        ref SAngleTop,
-        ref sVonMisesTop,
-        ref S11Bot,
-        ref S22Bot,
-        ref S12Bot,
-        ref SMaxBot,
-        ref SMinBot,
-        ref SAngleBot,
-        ref sVonMisesBot,
-        ref S13Avg,
-        ref S23Avg,
-        ref SMaxAvg,
-        ref SAngleAvg
-      );
+      if (sendStresses)
+      {
+        stressSuccess = sapModel.Results.AreaStressShell(
+          element2D.name,
+          CSiAPIv1.eItemTypeElm.ObjectElm,
+          ref numberOfStressResults,
+          ref stressObj,
+          ref stressElm,
+          ref stressPointElm,
+          ref stressLoadCase,
+          ref stressStepType,
+          ref stressStepNum,
+          ref S11Top,
+          ref S22Top,
+          ref S12Top,
+          ref SMaxTop,
+          ref SMinTop,
+          ref SAngleTop,
+          ref sVonMisesTop,
+          ref S11Bot,
+          ref S22Bot,
+          ref S12Bot,
+          ref SMaxBot,
+          ref SMinBot,
+          ref SAngleBot,
+          ref sVonMisesBot,
+          ref S13Avg,
+          ref S23Avg,
+          ref SMaxAvg,
+          ref SAngleAvg
+        );
+      }
 
       Dictionary<string, ResultSet2D> resultSets = new();
       for (int i = 0; i < numberOfForceResults; i++)
       {
-
-        Result2D speckleResult2D = new()
+        Result2D speckleResult2D = new();
+        
+        if (forceSuccess.IsSuccessful())
         {
-          position = new List<double>(),
-          dispX = 0, // pulling this data would require large amount of data parsing, implementation TBD
-          dispY = 0, // pulling this data would require large amount of data parsing, implementation TBD
-          dispZ = 0, // pulling this data would require large amount of data parsing, implementation TBD
-          forceXX = (float)f11[i],
-          forceYY = (float)f22[i],
-          forceXY = (float)f12[i],
-          momentXX = (float)m11[i],
-          momentYY = (float)m22[i],
-          momentXY = (float)m12[i],
-          shearX = (float)v13[i],
-          shearY = (float)v23[i],
-          stressTopXX = (float)S11Top[i],
-          stressTopYY = (float)S22Top[i],
-          stressTopZZ = 0, // shell elements are 2D elements
-          stressTopXY = (float)S12Top[i],
-          stressTopYZ = (float)S23Avg[i], // CSI reports avg out-of-plane shear
-          stressTopZX = (float)S12Top[i],
-          stressMidXX = 0, // CSI does not report
-          stressMidYY = 0, // CSI does not report
-          stressMidZZ = 0, // CSI does not report
-          stressMidXY = 0, // CSI does not report
-          stressMidYZ = 0, // CSI does not report
-          stressMidZX = 0, // CSI does not report
-          stressBotXX = (float)S11Bot[i],
-          stressBotYY = (float)S22Bot[i],
-          stressBotZZ = 0, // shell elements are 2D elements
-          stressBotXY = (float)S12Bot[i],
-          stressBotYZ = (float)S23Avg[i], // CSI reports avg out-of-plane shear
-          stressBotZX = (float)S12Bot[i],
-        };
+          speckleResult2D.forceXX = (float)f11[i];
+          speckleResult2D.forceYY = (float)f22[i];
+          speckleResult2D.forceXY = (float)f12[i];
+          speckleResult2D.momentXX = (float)m11[i];
+          speckleResult2D.momentYY = (float)m22[i];
+          speckleResult2D.momentXY = (float)m12[i];
+          speckleResult2D.shearX = (float)v13[i];
+          speckleResult2D.shearY = (float)v23[i];
+        }
+
+        if (stressSuccess.IsSuccessful())
+        {
+          speckleResult2D.stressTopXX = (float)S11Top[i];
+          speckleResult2D.stressTopYY = (float)S22Top[i];
+          speckleResult2D.stressTopZZ = 0; // shell elements are 2D elements
+          speckleResult2D.stressTopXY = (float)S12Top[i];
+          speckleResult2D.stressTopYZ = (float)S23Avg[i]; // CSI reports avg out-of-plane shear
+          speckleResult2D.stressTopZX = (float)S12Top[i];
+          speckleResult2D.stressBotXX = (float)S11Bot[i];
+          speckleResult2D.stressBotYY = (float)S22Bot[i];
+          speckleResult2D.stressBotZZ = 0; // shell elements are 2D elements
+          speckleResult2D.stressBotXY = (float)S12Bot[i];
+          speckleResult2D.stressBotYZ = (float)S23Avg[i]; // CSI reports avg out-of-plane shear
+          speckleResult2D.stressBotZX = (float)S12Bot[i];
+        }
         GetOrCreateResult(resultSets, loadCase[i]).results2D.Add(speckleResult2D);
       }
 
