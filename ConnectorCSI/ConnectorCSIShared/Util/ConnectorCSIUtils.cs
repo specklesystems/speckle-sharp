@@ -25,7 +25,7 @@ namespace Speckle.ConnectorCSI.Util
     //    public static string CSISlug = HostApplications.CSI.Slug;
     //#endif
 
-    public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
+    public static Dictionary<string, (string typeName, string name)> ObjectIDsTypesAndNames { get; set; }
 
     public static List<SpeckleException> ConversionErrors { get; set; }
 
