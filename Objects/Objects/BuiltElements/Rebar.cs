@@ -13,7 +13,7 @@ namespace Objects.BuiltElements
   /// <remarks>
   /// This class is not suitable for freeform rebar, which can have multiple shapes.
   /// </remarks>
-  public class RebarGroup : Base, IHasVolume, IDisplayValue<List<Mesh>>
+  public class RebarGroup : Base, IHasVolume, IDisplayValue<List<ICurve>>
   {
     public RebarGroup() { }
 
@@ -22,15 +22,6 @@ namespace Objects.BuiltElements
     /// </summary>
     [DetachProperty]
     public RebarShape shape { get; set; }
-
-    /// <summary>
-    /// The centerline curves of the rebar group
-    /// </summary>
-    /// <remarks>
-    /// Typically expresses hooks and bend radius.
-    /// Does not include excluded end bars.
-    /// </remarks>
-    public List<ICurve> centerlines { get; set; } = new();
 
     /// <summary>
     /// The number of rebars in the rebar group
@@ -77,10 +68,10 @@ namespace Objects.BuiltElements
     public string units { get; set; }
 
     /// <summary>
-    /// The mesh representation of the rebar solids
+    /// The display representation of the rebar group as centerline curves
     /// </summary>
     [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
+    public List<ICurve> displayValue { get; set; }
 
     /// <summary>
     /// The total volume of the rebar group.

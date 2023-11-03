@@ -845,7 +845,7 @@ namespace Objects.Converter.Revit
         BE.Opening _ => true,
         BERC.RoomBoundaryLine _ => true,
         BERC.SpaceSeparationLine _ => true,
-        BER.RevitRebarGroup _ => true,
+        //BER.RevitRebarGroup _ => true,
         BE.Roof _ => true,
 
 #if (REVIT2024)
