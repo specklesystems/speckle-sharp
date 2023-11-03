@@ -72,7 +72,6 @@ namespace Objects.Converter.CSI
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
-    private readonly AggregateCache aggregateCache = new();
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;

@@ -13,13 +13,6 @@ namespace Objects.Converter.CSI
   {
     public LoadCombination LoadCombinationToSpeckle(string loadComboName)
     {
-      return aggregateCache
-        .GetOrInitializeEmptyCacheOfType<LoadCombination>()
-        .GetOrAdd(loadComboName, CreateLoadCombination);
-    }
-
-    private LoadCombination CreateLoadCombination(string loadComboName)
-    {
       int numItems = 0;
       eCNameType[] cNameTypes = null;
       string[] loadCaseNames = null;

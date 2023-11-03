@@ -19,7 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IntExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Models\AggregateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\NodeAnalyticalResultsConverter.cs" />
     <Compile Include="..\ConverterCSIShared\Models\Element1DAnalyticalResultConverter.cs" />

@@ -14,13 +14,6 @@ namespace Objects.Converter.CSI
 
     public LoadCase LoadPatternToSpeckle(string loadPatternName)
     {
-      return aggregateCache
-        .GetOrInitializeEmptyCacheOfType<LoadCase>()
-        .GetOrAdd(loadPatternName, CreateLoadCase);
-    }
-
-    private LoadCase CreateLoadCase(string loadPatternName)
-    {
       LoadCase speckleLoadCase = new();
       speckleLoadCase.loadType = GetAndConvertCSILoadType(loadPatternName);
       speckleLoadCase.name = loadPatternName;

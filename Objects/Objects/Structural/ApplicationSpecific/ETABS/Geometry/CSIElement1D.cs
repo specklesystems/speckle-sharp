@@ -4,7 +4,6 @@ using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 using Objects.Structural.Results;
-using Objects.Structural.Results.ApplicationSpecific.CSi;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
