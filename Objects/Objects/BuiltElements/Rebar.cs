@@ -137,7 +137,7 @@ namespace Objects.BuiltElements
     /// </summary>
     public double radius { get; set; }
 
-    public double units { get; set; }
+    public string units { get; set; }
   }
 
   public enum RebarType
