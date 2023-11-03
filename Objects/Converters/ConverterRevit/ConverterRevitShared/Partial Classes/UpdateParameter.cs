@@ -43,9 +43,6 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        Report.LogConversionError(
-          new System.Exception($"Could not find element to update: Element Id = {paramUpdater.elementId}")
-        );
         appObj.Update(
           status: ApplicationObject.State.Failed,
           logItem: $"Could not find element to update: Element Id = {paramUpdater.elementId}"

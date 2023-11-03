@@ -1330,5 +1330,21 @@ namespace Objects.Converter.Revit
 
       return headOffset;
     }
+    
+  }
+  
+  public class ElementNotFoundException : Exception
+  {
+    public ElementNotFoundException(string message) : base(message)
+    {
+    }
+      
+    public ElementNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+
+    public ElementNotFoundException()
+    {
+    }
   }
 }
