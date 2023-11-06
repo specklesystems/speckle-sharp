@@ -1,4 +1,5 @@
-﻿using System;
+using Objects.Structural.Analysis;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.Structural.Analysis;
@@ -10,66 +11,33 @@ namespace Objects.Converter.CSI
   {
     public void UnitsToNative(ModelUnits units)
     {
-      var force = eForce.NotApplicable;
-      var length = eLength.NotApplicable;
-      var temp = eTemperature.NotApplicable;
+      eForce force = units.force switch
+      {
+        "N" => eForce.N,
+        "kip" => eForce.kip,
+        "kN" => eForce.kN,
+        "lb" => eForce.lb,
+        "tf" => eForce.tonf,
+        _ => eForce.NotApplicable
+      };
 
-      switch (units.force)
+      eLength length = units.length switch
       {
-        case "N":
-          force = eForce.N;
-          break;
-        case "kip":
-          force = eForce.kip;
-          break;
-        case "kN":
-          force = eForce.kN;
-          break;
-        case "lb":
-          force = eForce.lb;
-          break;
-        case "tf":
-          force = eForce.tonf;
-          break;
-        default:
-          force = eForce.NotApplicable;
-          break;
-      }
-      switch (units.length)
+        "m" => eLength.m,
+        "in" => eLength.inch,
+        "cm" => eLength.cm,
+        "mm" => eLength.mm,
+        "ft" => eLength.ft,
+        _ => eLength.NotApplicable
+      };
+
+      eTemperature temp = units.temperature switch
       {
-        case "m":
-          length = eLength.m;
-          break;
-        case "in":
-          length = eLength.inch;
-          break;
-        case "cm":
-          length = eLength.cm;
-          break;
-        case "mm":
-          length = eLength.mm;
-          break;
-        case "ft":
-          length = eLength.ft;
-          break;
-        default:
-          length = eLength.NotApplicable;
-          break;
-      }
-      switch (units.temperature)
-      {
-        case "C":
-          temp = eTemperature.C;
-          break;
-        case "F":
-          temp = eTemperature.F;
-          break;
-        default:
-          temp = eTemperature.NotApplicable;
-          break;
-      }
+        "C" => eTemperature.C,
+        "F" => eTemperature.F,
+        _ => eTemperature.NotApplicable
+      };
       Model.SetPresentUnits_2(force, length, temp);
-      return;
     }
 
     public ModelUnits UnitsToSpeckle()

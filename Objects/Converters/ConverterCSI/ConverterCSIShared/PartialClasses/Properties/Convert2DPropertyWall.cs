@@ -1,6 +1,7 @@
 using System;
 using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
@@ -9,7 +10,7 @@ namespace Objects.Converter.CSI
   {
     public string WallPropertyToNative(CSIProperty2D Wall)
     {
-      throw new Exception("Wall properties are not currently supported on receive");
+      throw new ConversionNotSupportedException("Wall properties are not currently supported on receive");
     }
 
     public CSIProperty2D WallPropertyToSpeckle(string property)

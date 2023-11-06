@@ -1,22 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
-using CSiAPIv1;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkToNative(CSIElement1D link, ref ApplicationObject appObj)
+    public string LinkToNative(CSIElement1D link, IList<string>? notes)
     {
-      PointToNative((CSINode)link.end1Node, ref appObj);
-      PointToNative((CSINode)link.end2Node, ref appObj);
+      PointToNative((CSINode)link.end1Node, notes);
+      PointToNative((CSINode)link.end2Node, notes);
       string linkName = null;
       int numberProps = 0;
       string[] listProp = null;
@@ -29,15 +27,15 @@ namespace Objects.Converter.CSI
           ref linkName,
           PropName: link.property.name
         );
-        if (success == 0)
-          appObj.Update(status: ApplicationObject.State.Created, createdId: linkName);
-        else
-          appObj.Update(status: ApplicationObject.State.Failed);
+        if (success != 0)
+          throw new ConversionException("Failed to add new link by point");
+        return linkName;
       }
       else
       {
-        LinkPropertyToNative((CSILinkProperty)link.property, ref appObj);
-        Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
+        string propertyName = LinkPropertyToNative((CSILinkProperty)link.property);
+        Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: propertyName);
+        return propertyName;
       }
     }
 

@@ -59,8 +59,12 @@ namespace ConverterCSIShared.Models
     {
       if (gridLineType != XGridLineType && gridLineType != YGridLineType)
       {
-        throw new ArgumentException($"Argument gridLineType must be either {XGridLineType} or {YGridLineType}");
+        throw new ArgumentException(
+          $"Argument gridLineType must be either {XGridLineType} or {YGridLineType}",
+          nameof(gridLineType)
+        );
       }
+
       var newRow = new string?[fieldKeysIncluded.Length];
       for (var index = 0; index < fieldKeysIncluded.Length; index++)
       {
@@ -88,7 +92,7 @@ namespace ConverterCSIShared.Models
     {
       if (gridLine.baseLine is not Line line)
       {
-        throw new ArgumentException("Non line based gridlines are not supported");
+        throw new ArgumentException("Non line based gridlines are not supported", nameof(gridLine));
       }
 
       var gridRotation = GetAngleOffsetFromGlobalCoordinateSystem(line);

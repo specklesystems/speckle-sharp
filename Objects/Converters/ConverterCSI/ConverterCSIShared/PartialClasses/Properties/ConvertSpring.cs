@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Objects.Structural.Properties.Profiles;
-using CSiAPIv1;
-using System.Linq;
-using Objects.Structural.CSI.Properties;
-using Speckle.Core.Models;
+﻿using Objects.Structural.CSI.Properties;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void SpringPropertyToNative(CSISpringProperty springProperty, ref ApplicationObject appObj)
+    public string SpringPropertyToNative(CSISpringProperty springProperty)
     {
       double[] k = new double[6];
       k[0] = springProperty.stiffnessX;
@@ -19,31 +14,30 @@ namespace Objects.Converter.CSI
       k[3] = springProperty.stiffnessXX;
       k[4] = springProperty.stiffnessYY;
       k[5] = springProperty.stiffnessZZ;
-      int? success = null;
+
       switch (springProperty.springOption)
       {
         case SpringOption.Link:
-          var springOption = 1;
-          success = Model.PropPointSpring.SetPointSpringProp(
+          const int springOption = 1;
+          int success = Model.PropPointSpring.SetPointSpringProp(
             springProperty.name,
             springOption,
             ref k,
             springProperty.CYs,
             iGUID: springProperty.applicationId
           );
-          break;
-        case SpringOption.SoilProfileFooting:
-          springOption = 2;
-          appObj.Update(status: ApplicationObject.State.Skipped);
-          break;
+          if (success != 0)
+            throw new ConversionException("Failed to create or modify named point spring property");
+          return springProperty.name;
+        default:
+          //springOption = 2;
+          throw new ConversionNotSupportedException(
+            $"Converting {nameof(SpringOption)} {springProperty.springOption} to native is not currently supported "
+          );
       }
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{springProperty.name}");
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
     }
 
-    public void LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty, ref ApplicationObject appObj)
+    public string LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty)
     {
       var linearOption1 = 0;
       var linearOption2 = 0;
@@ -82,13 +76,15 @@ namespace Objects.Converter.CSI
         iGUID: linearSpringProperty.applicationId
       );
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: linearSpringProperty.name);
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new ConversionException(
+          $"Failed to create/modify named line spring property {linearSpringProperty.name}"
+        );
+
+      return linearSpringProperty.name;
     }
 
-    public void AreaSpringPropertyToNative(CSIAreaSpring areaSpring, ref ApplicationObject appObj)
+    public string AreaSpringPropertyToNative(CSIAreaSpring areaSpring)
     {
       var linearOption1 = 0;
       switch (areaSpring.LinearOption3)
@@ -112,10 +108,10 @@ namespace Objects.Converter.CSI
         iGUID: areaSpring.applicationId
       );
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: areaSpring.name);
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new ConversionException($"Failed to create/modify named area spring property {areaSpring.name}");
+
+      return areaSpring.name;
     }
 
     public CSISpringProperty SpringPropertyToSpeckle(string name)
