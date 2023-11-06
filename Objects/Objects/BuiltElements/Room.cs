@@ -78,6 +78,9 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel archicadLevel { get; set; }
 
+    public string? /*APINullabe*/
+    layer { get; set; }
+
     public override Level level
     {
       get => archicadLevel;

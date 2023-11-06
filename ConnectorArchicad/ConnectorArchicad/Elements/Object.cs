@@ -10,7 +10,6 @@ using System.Text;
 using Speckle.Newtonsoft.Json;
 using Archicad.Model;
 
-
 namespace Archicad
 {
   public class ArchicadObject
@@ -24,6 +23,8 @@ namespace Archicad
 
     public ArchicadLevel level { get; set; }
 
+    public string? layer { get; set; }
+
     public Point pos { get; set; }
     public Objects.Other.Transform transform { get; set; }
 
@@ -34,7 +35,6 @@ namespace Archicad
     public ArchicadObject() { }
 
     [SchemaInfo("ArchicadObject", "Creates an Archicad object.", "Archicad", "Structure")]
-
     public ArchicadObject(string id, string applicationId, Point basePoint, List<string> modelIds)
     {
       this.id = id;

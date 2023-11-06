@@ -43,6 +43,10 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, mask);
+	if (err != NoError)
+		return err;
+
 	memoMask = APIMemoMask_Polygon;
 
 	// The shape of the zone

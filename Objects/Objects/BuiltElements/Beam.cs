@@ -124,35 +124,56 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadBeam() { }
 
     // Element base
-    public string? /*APINullabe*/ elementType { get; set; }
-    public List<Classification>? /*APINullabe*/ classifications { get; set; }
+    public string? /*APINullabe*/
+    elementType { get; set; }
+    public List<Classification>? /*APINullabe*/
+    classifications { get; set; }
 
-    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+    public ArchicadLevel? /*APINullabe*/
+    level { get; set; }
+
+    public string? /*APINullabe*/
+    layer { get; set; }
 
     // Positioning
     public Point begC { get; set; }
     public Point endC { get; set; }
-    public bool? /*APINullabe*/ isSlanted { get; set; }
-    public double? /*APINullabe*/ slantAngle { get; set; }
-    public string? /*APINullabe*/ beamShape { get; set; }
-    public int? /*APINullabe*/ sequence { get; set; }
-    public double? /*APINullabe*/ curveAngle { get; set; }
-    public double? /*APINullabe*/ verticalCurveHeight { get; set; }
-    public bool? /*APINullabe*/ isFlipped { get; set; }
+    public bool? /*APINullabe*/
+    isSlanted { get; set; }
+    public double? /*APINullabe*/
+    slantAngle { get; set; }
+    public string? /*APINullabe*/
+    beamShape { get; set; }
+    public int? /*APINullabe*/
+    sequence { get; set; }
+    public double? /*APINullabe*/
+    curveAngle { get; set; }
+    public double? /*APINullabe*/
+    verticalCurveHeight { get; set; }
+    public bool? /*APINullabe*/
+    isFlipped { get; set; }
 
     // End Cuts
-    public uint? /*APINullabe*/ nCuts { get; set; }
+    public uint? /*APINullabe*/
+    nCuts { get; set; }
     public Dictionary<string, AssemblySegmentCut>? Cuts { get; set; }
 
     // Reference Axis
-    public short? /*APINullabe*/ anchorPoint { get; set; }
+    public short? /*APINullabe*/
+    anchorPoint { get; set; }
     public double? offset { get; set; }
     public double? profileAngle { get; set; }
 
     // Segment
-    public uint? /*APINullabe*/ nSegments { get; set; }
-    public uint? /*APINullabe*/ nProfiles { get; set; }
-    public Dictionary<string, BeamSegment>? /*APINullabe*/ segments { get; set; }
+    public uint? /*APINullabe*/
+    nSegments { get; set; }
+    public uint? /*APINullabe*/
+    nProfiles { get; set; }
+    public Dictionary<
+      string,
+      BeamSegment
+    >? /*APINullabe*/
+    segments { get; set; }
 
     // Scheme
     public uint? nSchemes { get; set; }
@@ -162,11 +183,16 @@ namespace Objects.BuiltElements.Archicad
     public Dictionary<string, Hole>? Holes { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string? /*APINullabe*/ showOnStories { get; set; }
-    public string? /*APINullabe*/ displayOptionName { get; set; }
-    public string? /*APINullabe*/ uncutProjectionMode { get; set; }
-    public string? /*APINullabe*/ overheadProjectionMode { get; set; }
-    public string? /*APINullabe*/ showProjectionName { get; set; }
+    public string? /*APINullabe*/
+    showOnStories { get; set; }
+    public string? /*APINullabe*/
+    displayOptionName { get; set; }
+    public string? /*APINullabe*/
+    uncutProjectionMode { get; set; }
+    public string? /*APINullabe*/
+    overheadProjectionMode { get; set; }
+    public string? /*APINullabe*/
+    showProjectionName { get; set; }
 
     // Floor Plan and Section - Cut Surfaces
     public short? cutContourLinePen { get; set; }
@@ -175,21 +201,32 @@ namespace Objects.BuiltElements.Archicad
     public short? overrideCutFillBackgroundPen { get; set; }
 
     // Floor Plan and Section - Outlines
-    public string? /*APINullabe*/ showOutline { get; set; }
-    public short? /*APINullabe*/ uncutLinePen { get; set; }
-    public string? /*APINullabe*/ uncutLinetype { get; set; }
-    public short? /*APINullabe*/ overheadLinePen { get; set; }
-    public string? /*APINullabe*/ overheadLinetype { get; set; }
-    public short? /*APINullabe*/ hiddenLinePen { get; set; }
-    public string? /*APINullabe*/ hiddenLinetype { get; set; }
+    public string? /*APINullabe*/
+    showOutline { get; set; }
+    public short? /*APINullabe*/
+    uncutLinePen { get; set; }
+    public string? /*APINullabe*/
+    uncutLinetype { get; set; }
+    public short? /*APINullabe*/
+    overheadLinePen { get; set; }
+    public string? /*APINullabe*/
+    overheadLinetype { get; set; }
+    public short? /*APINullabe*/
+    hiddenLinePen { get; set; }
+    public string? /*APINullabe*/
+    hiddenLinetype { get; set; }
 
     // Floor Plan and Section - Symbol
-    public string? /*APINullabe*/ showReferenceAxis { get; set; }
-    public short? /*APINullabe*/ referencePen { get; set; }
-    public string? /*APINullabe*/ referenceLinetype { get; set; }
+    public string? /*APINullabe*/
+    showReferenceAxis { get; set; }
+    public short? /*APINullabe*/
+    referencePen { get; set; }
+    public string? /*APINullabe*/
+    referenceLinetype { get; set; }
 
     // Floor Plan and Section - Cover Fills
-    public bool? /*APINullabe*/ useCoverFill { get; set; }
+    public bool? /*APINullabe*/
+    useCoverFill { get; set; }
     public bool? useCoverFillFromSurface { get; set; }
     public short? coverFillForegroundPen { get; set; }
     public short? coverFillBackgroundPen { get; set; }
