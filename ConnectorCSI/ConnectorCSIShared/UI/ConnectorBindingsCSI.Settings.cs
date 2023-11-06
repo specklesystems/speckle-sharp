@@ -10,10 +10,6 @@ namespace Speckle.ConnectorCSI.UI
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
     // WARNING: These strings need to have the same value as the strings in ConverterCSIUtils
-    const string SendNodeResults = "sendNodeResults";
-    const string Send1DResults = "send1DResults";
-    const string Send2DResults = "send2DResults";
-
     public const string ResultsNodeSlug = "node-results";
     public const string Results1dSlug = "1d-results";
     public const string Results2dSlug = "2d-results";
@@ -66,34 +62,6 @@ namespace Speckle.ConnectorCSI.UI
           Description = "Determines which 2D element results are computed and sent to Speckle",
           Values = new List<string>() { Forces, Stresses }
         },
-
-        //new CheckBoxSetting
-        //{
-        //  Slug = SendNodeResults,
-        //  Name = "Send Node Analysis Results",
-        //  Icon = "Link",
-        //  IsChecked = false,
-        //  Description =
-        //    "Include node analysis results with object data when sending to Speckle. This will make the sending process take more time."
-        //},
-        //new CheckBoxSetting
-        //{
-        //  Slug = Send1DResults,
-        //  Name = "Send 1D Analysis Results",
-        //  Icon = "Link",
-        //  IsChecked = false,
-        //  Description =
-        //    "Include 1D analysis results with object data when sending to Speckle. This will make the sending process take more time."
-        //},
-        //new CheckBoxSetting
-        //{
-        //  Slug = Send2DResults,
-        //  Name = "Send 2D Analysis Results",
-        //  Icon = "Link",
-        //  IsChecked = false,
-        //  Description =
-        //    "Include 2D analysis results with object data when sending to Speckle. This will make the sending process take MUCH more time."
-        //},
       };
     }
   }
