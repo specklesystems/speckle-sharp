@@ -163,6 +163,8 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
 
+    public string? layer { get; set; } /*APINullabe*/
+
     // Geometry and positioning
     public double? thickness { get; set; }
     public string? structure { get; set; } /*APINullabe*/

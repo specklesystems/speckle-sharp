@@ -151,6 +151,8 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
 
+    public string? layer { get; set; } /*APINullabe*/
+
     // Positioning
     public Point begC { get; set; }
     public Point endC { get; set; }

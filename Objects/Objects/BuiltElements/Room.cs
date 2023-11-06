@@ -85,6 +85,8 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel archicadLevel { get; set; }
 
+    public string? layer { get; set; } /*APINullabe*/
+
     public ElementShape shape { get; set; }
   }
 }

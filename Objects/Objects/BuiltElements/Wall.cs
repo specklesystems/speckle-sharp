@@ -318,6 +318,8 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
 
+    public string? layer { get; set; } /*APINullabe*/
+
     // Wall geometry
     public double? baseOffset { get; set; } /*APINullabe*/
     public Point startPoint { get; set; }

@@ -177,6 +177,8 @@ namespace Objects.BuiltElements.Archicad
     [JsonIgnore]
     public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
 
+    public ArchicadLevel? level { get; set; } /*APINullabe*/
+
     // Wall geometry
     public Point origoPos { get; set; }
     public double height { get; set; }

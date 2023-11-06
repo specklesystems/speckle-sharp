@@ -25,7 +25,6 @@ namespace ConnectorGrasshopper;
 
 public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterComponent
 {
-  private GH_Document _document;
   private DebounceDispatcher nicknameChangeDebounce = new();
   private bool readFailed;
 
@@ -179,8 +178,6 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       return;
     }
 
-    _document = document;
-
     var dialog = new CreateSchemaObjectDialog();
     dialog.Owner = Instances.EtoDocumentEditor;
     var mouse = Control.MousePosition;
@@ -230,6 +227,8 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
 
     foreach (var p in props)
       RegisterPropertyAsInputParameter(p, k++);
+
+    UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
 
     Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
     Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
@@ -288,23 +287,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       newInputParam.Access = GH_ParamAccess.item;
 
     Params.RegisterInputParam(newInputParam, index);
-
-    //add dropdown
-    if (propType.IsEnum)
-    {
-      //expire solution so that node gets proper size
-      ExpireSolution(true);
-
-      var instance = Activator.CreateInstance(propType);
-
-      var vals = Enum.GetValues(propType).Cast<Enum>().Select(x => x.ToString()).ToList();
-      var options = CreateDropDown(propName, vals, Attributes.Bounds.X, Params.Input[index].Attributes.Bounds.Y);
-      _document.AddObject(options, false);
-      Params.Input[index].AddSource(options);
-    }
   }
 
-  public static GH_ValueList CreateDropDown(string name, List<string> values, float x, float y)
+  public static GH_ValueList CreateDropDown(string name, List<(string name, int value)> values, float x, float y)
   {
     var valueList = new GH_ValueList();
     valueList.CreateAttributes();
@@ -314,13 +299,12 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     valueList.ListMode = GH_ValueListMode.DropDown;
     valueList.ListItems.Clear();
 
-    values = values.OrderBy(x=>x).ToList();
-
     for (int i = 0; i < values.Count; i++)
-      valueList.ListItems.Add(new GH_ValueListItem(values[i], i.ToString()));
-    
+      valueList.ListItems.Add(new GH_ValueListItem(values[i].name, values[i].value.ToString()));
+
     valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
 
+    valueList.ListItems.Sort((item, listItem) => string.Compare(item.Name, listItem.Name));
     return valueList;
   }
 
