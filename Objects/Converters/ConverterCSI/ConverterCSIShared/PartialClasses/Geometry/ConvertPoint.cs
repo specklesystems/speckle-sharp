@@ -1,7 +1,6 @@
 ﻿using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
-using Objects.Structural.Analysis;
 using System.Collections.Generic;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
@@ -9,6 +8,7 @@ using Speckle.Core.Models;
 
 using CSiAPIv1;
 using System.Linq;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -79,39 +79,38 @@ namespace Objects.Converter.CSI
       }
     }
 
-    public void PointToNative(Node speckleStructNode, ref ApplicationObject appObj)
+    public string PointToNative(Node speckleStructNode, IList<string>? notes)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))
       {
-        appObj.Update(
-          status: ApplicationObject.State.Skipped,
-          logItem: $"node with name {speckleStructNode.name} already exists"
-        );
-        return;
+        notes?.Add($"node with name {speckleStructNode.name} already exists");
+        return speckleStructNode.name;
       }
+
       var point = speckleStructNode.basePoint;
       if (point == null)
       {
-        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
-        return;
+        throw new ArgumentException($"Node does not have a valid location, {nameof(Node.basePoint)} was null");
       }
 
       var success = CreatePoint(point, out string name);
       UpdatePointProperties(speckleStructNode, ref name);
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: speckleStructNode.name);
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new ConversionException("Failed create point");
+
+      return speckleStructNode.name;
     }
 
     public int CreatePoint(Point point, out string name)
     {
+      var scaleFactor = Units.GetConversionFactor(point.units, ModelUnits());
+
       name = null;
       var success = Model.PointObj.AddCartesian(
-        ScaleToNative(point.x, point.units),
-        ScaleToNative(point.y, point.units),
-        ScaleToNative(point.z, point.units),
+        point.x * scaleFactor,
+        point.y * scaleFactor,
+        point.z * scaleFactor,
         ref name
       );
       return success;

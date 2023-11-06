@@ -24,13 +24,13 @@ public class ModelInfo : Base //titles
     "Analysis"
   )]
   public ModelInfo(
-    string name = null,
-    string description = null,
-    string projectNumber = null,
-    string projectName = null,
-    ModelSettings settings = null,
-    string engInitials = null,
-    string application = null
+    string? name = null,
+    string? description = null,
+    string? projectNumber = null,
+    string? projectName = null,
+    ModelSettings? settings = null,
+    string? engInitials = null,
+    string? application = null
   )
   {
     this.name = name;
@@ -42,11 +42,11 @@ public class ModelInfo : Base //titles
     this.application = application;
   }
 
-  public string name { get; set; } //title
-  public string description { get; set; } //subtitle
-  public string projectNumber { get; set; } //could a project info object be a potential upstream change, as addition to default Speckle Kit?
-  public string projectName { get; set; }
-  public ModelSettings settings { get; set; }
-  public string initials { get; set; } //engineer initials
-  public string application { get; set; } //ex. GSA, Tekla (reference Applications class?)
+  public string? name { get; set; } //title
+  public string? description { get; set; } //subtitle
+  public string? projectNumber { get; set; } //could a project info object be a potential upstream change, as addition to default Speckle Kit?
+  public string? projectName { get; set; }
+  public ModelSettings? settings { get; set; }
+  public string? initials { get; set; } //engineer initials
+  public string? application { get; set; } //ex. GSA, Tekla (reference Applications class?)
 }

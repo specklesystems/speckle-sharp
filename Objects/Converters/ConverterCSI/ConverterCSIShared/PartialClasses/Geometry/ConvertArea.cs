@@ -12,6 +12,7 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.Properties;
 using Objects.Geometry;
 using ConverterCSIShared.Extensions;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
@@ -28,7 +29,7 @@ namespace Objects.Converter.CSI
       return area.name;
     }
 
-    public void UpdateArea(Element2D area, string name, ref ApplicationObject appObj)
+    public void UpdateArea(Element2D area, string name, ApplicationObject appObj)
     {
       var points = new string[0];
       var numPoints = 0;
@@ -91,7 +92,7 @@ namespace Objects.Converter.CSI
           Model.AreaObj.Delete(name);
           ExistingObjectGuids.Remove(GUID);
           var dummyAppObj = new ApplicationObject(null, null);
-          AreaToNative(updatedArea, ref dummyAppObj);
+          AreaToNative(updatedArea, dummyAppObj);
           if (dummyAppObj.Status != ApplicationObject.State.Created)
             success = 1;
         }
@@ -157,7 +158,7 @@ namespace Objects.Converter.CSI
         appObj.Update(
           status: ApplicationObject.State.Updated,
           createdId: guid,
-          convertedItem: $"Area{delimiter}{name}"
+          convertedItem: $"Area{Delimiter}{name}"
         );
         if (numErrorMsgs != 0)
           appObj.Update(
@@ -175,21 +176,17 @@ namespace Objects.Converter.CSI
         );
     }
 
-    public void AreaToNative(Element2D area, ref ApplicationObject appObj)
+    public void AreaToNative(Element2D area, ApplicationObject appObj)
     {
       if (ElementExistsWithApplicationId(area.applicationId, out string areaName))
       {
-        UpdateArea(area, areaName, ref appObj);
+        UpdateArea(area, areaName, appObj);
         return;
       }
 
       if (GetAllAreaNames(Model).Contains(area.name))
       {
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: $"There is already a frame object named {area.name} in the model"
-        );
-        return;
+        throw new ConversionException($"There is already a frame object named {area.name} in the model");
       }
 
       var propName = CreateOrGetProp(area.property, out bool isExactMatch);
@@ -234,7 +231,7 @@ namespace Objects.Converter.CSI
         appObj.Update(
           status: ApplicationObject.State.Created,
           createdId: guid,
-          convertedItem: $"Area{delimiter}{name}"
+          convertedItem: $"Area{Delimiter}{name}"
         );
       else
         appObj.Update(status: ApplicationObject.State.Failed);

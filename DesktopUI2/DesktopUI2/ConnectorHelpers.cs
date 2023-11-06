@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Controls.StreamEditControls;
 using Serilog.Events;
 using Speckle.Core.Api;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -196,6 +197,34 @@ public static class ConnectorHelpers
 
     //Treat all operation errors as fatal
     throw new SpeckleException($"Failed to send objects to server - {error}", ex);
+  }
+
+  public const string ConversionFailedLogTemplate = "Converter failed to convert object";
+
+  public static void LogConversionException(Exception ex)
+  {
+    LogEventLevel logLevel = ex switch
+    {
+      ConversionNotSupportedException => LogEventLevel.Verbose,
+      ConversionSkippedException => LogEventLevel.Verbose, //Deprecated
+      ConversionException => LogEventLevel.Warning,
+      _ => LogEventLevel.Error
+    };
+
+    SpeckleLog.Logger.Write(logLevel, ex, ConversionFailedLogTemplate);
+  }
+
+  public static ApplicationObject.State GetAppObjectFailureState(Exception ex)
+  {
+    if (ex is null)
+      throw new ArgumentNullException(nameof(ex));
+
+    return ex switch
+    {
+      ConversionNotSupportedException => ApplicationObject.State.Skipped,
+      ConversionSkippedException => ApplicationObject.State.Skipped, //Deprecated
+      _ => ApplicationObject.State.Failed,
+    };
   }
 
   #region deprecated members

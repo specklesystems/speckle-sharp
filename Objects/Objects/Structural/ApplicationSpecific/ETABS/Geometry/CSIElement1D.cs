@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
@@ -26,17 +27,17 @@ public class CSIElement1D : Element1D
     Line baseLine,
     Property1D property,
     ElementType1D type,
-    string name = null,
+    string? name = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Plane localAxis = null,
-    CSILinearSpring CSILinearSpring = null,
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Plane? localAxis = null,
+    CSILinearSpring? CSILinearSpring = null,
     [SchemaParamInfo("an Array of 8 values referring to the modifiers as seen in CSI in order")]
-      double[] Modifier = null,
+      double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
   {
@@ -44,10 +45,10 @@ public class CSIElement1D : Element1D
     this.property = property;
     this.type = type;
     this.name = name;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.localAxis = localAxis;
     this.CSILinearSpring = CSILinearSpring;
     this.DesignProcedure = DesignProcedure;
@@ -77,18 +78,18 @@ public class CSIElement1D : Element1D
     Line baseLine,
     Property1D property,
     ElementType1D type,
-    string name = null,
+    string? name = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Node orientationNode = null,
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Node? orientationNode = null,
     double orientationAngle = 0,
-    CSILinearSpring CSILinearSpring = null,
+    CSILinearSpring? CSILinearSpring = null,
     [SchemaParamInfo("an Array of 8 values referring to the modifiers as seen in CSI in order")]
-      double[] Modifier = null,
+      double[]? Modifier = null,
     DesignProcedure DesignProcedure = DesignProcedure.NoDesign
   )
   {
@@ -96,10 +97,10 @@ public class CSIElement1D : Element1D
     this.property = property;
     this.type = type;
     this.name = name;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.orientationNode = orientationNode;
     this.orientationAngle = orientationAngle;
     this.CSILinearSpring = CSILinearSpring;
@@ -110,10 +111,10 @@ public class CSIElement1D : Element1D
   public CSIElement1D() { }
 
   [DetachProperty]
-  public CSILinearSpring CSILinearSpring { get; set; }
+  public CSILinearSpring? CSILinearSpring { get; set; }
 
   public string PierAssignment { get; set; }
   public string SpandrelAssignment { get; set; }
-  public double[] Modifiers { get; set; }
+  public double[]? Modifiers { get; set; }
   public DesignProcedure DesignProcedure { get; set; }
 }

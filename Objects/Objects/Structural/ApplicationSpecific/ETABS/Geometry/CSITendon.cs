@@ -10,7 +10,7 @@ public class CSITendon : CSIElement1D
   {
     this.name = name;
     this.polycurve = polycurve;
-    CSITendonProperty = CSITendonProperty;
+    this.CSITendonProperty = CSITendonProperty;
   }
 
   public CSITendon() { }

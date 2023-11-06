@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Objects.Structural.CSI.Properties;
+using Speckle.Core.Kits;
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CSiAPIv1;
@@ -13,18 +16,15 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    private void DiaphragmToNative(CSIDiaphragm CSIDiaphragm, ref ApplicationObject appObj)
+    private string DiaphragmToNative(CSIDiaphragm csiDiaphragm)
     {
       //TODO: test this bad boy, I'm not sure how it would create anything meaningful with just a name and a bool
-      var success = Model.Diaphragm.SetDiaphragm(CSIDiaphragm.name, CSIDiaphragm.SemiRigid);
+      var success = Model.Diaphragm.SetDiaphragm(csiDiaphragm.name, csiDiaphragm.SemiRigid);
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: CSIDiaphragm.name);
-      else
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          logItem: $"Unable to create diaphragm with id {CSIDiaphragm.id}"
-        );
+      if (success != 0)
+        throw new ConversionException($"Failed to create/modify diaphragm {csiDiaphragm.name}");
+
+      return csiDiaphragm.name;
     }
 
     CSIDiaphragm diaphragmToSpeckle(string name)
