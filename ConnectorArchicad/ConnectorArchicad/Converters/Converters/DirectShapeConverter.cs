@@ -11,6 +11,7 @@ using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters
 {
@@ -32,7 +33,9 @@ namespace Archicad.Converters
       var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
+      )
       {
         foreach (var tc in elements)
         {
@@ -66,32 +69,31 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.CreateDirectShape(directShapes),
-        token
-      );
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShape(directShapes), token);
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data =
-        await AsyncCommandProcessor.Execute(
-          new Communication.Commands.GetElementBaseData(elementModels.Select(e => e.applicationId)),
-          token);
-      if (data is null)
-      {
-        return new List<Base>();
-      }
+      IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetElementBaseData(elementModels.Select(e => e.applicationId)),
+        token
+      );
 
       var directShapes = new List<Base>();
+      if (data is null)
+        return directShapes;
+
       foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
       {
         {
-          directShape.displayValue =
-            Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == directShape.applicationId)
-              .model);
+          directShape.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == directShape.applicationId).model
+          );
           directShapes.Add(directShape);
         }
       }

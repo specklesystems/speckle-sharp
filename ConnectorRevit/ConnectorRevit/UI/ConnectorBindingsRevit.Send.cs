@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,6 +33,7 @@ namespace Speckle.ConnectorRevit.UI
     /// the Server and the local DB, and creates a commit with the objects.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       using var ctx = RevitConverterState.Push();
@@ -94,9 +96,10 @@ namespace Speckle.ConnectorRevit.UI
       await APIContext
         .Run(() =>
         {
-          using var _d0 = LogContext.PushProperty("converterName", converter.Name);
-          using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
-          using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var d0 = LogContext.PushProperty("converterName", converter.Name);
+          using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+          using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var d3 = LogContext.PushProperty("converterSettings", settings);
 
           foreach (var revitElement in selectedObjects)
           {
@@ -114,7 +117,7 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(reportObj);
 
             //Add context to logger
-            using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
+            using var _d3 = LogContext.PushProperty("fromType", revitElement.GetType());
             using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
 
             try
@@ -140,14 +143,12 @@ namespace Speckle.ConnectorRevit.UI
               commitObjectBuilder.IncludeObject(result, revitElement);
               convertedCount++;
             }
-            catch (ConversionSkippedException ex)
-            {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
-            }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, "Object failed during conversion");
-              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
+              ConnectorHelpers.LogConversionException(ex);
+
+              var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+              reportObj.Update(status: failureStatus, logItem: ex.Message);
             }
 
             conversionProgressDict["Conversion"]++;

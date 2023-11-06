@@ -42,6 +42,10 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	// The structure of the shell
 	if (os.Contains (Shell::ShellClassName)) {
 		GS::UniString shellClassName;

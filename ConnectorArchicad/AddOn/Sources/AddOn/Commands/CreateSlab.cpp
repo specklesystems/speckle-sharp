@@ -43,6 +43,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, mask);
+	if (err != NoError)
+		return err;
+
 	// Geometry and positioning
 	memoMask = APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims;
 

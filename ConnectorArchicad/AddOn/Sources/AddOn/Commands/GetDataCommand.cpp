@@ -70,6 +70,14 @@ GS::ErrCode GetDataCommand::SerializeElementType(const API_Element& elem, const 
 
 	os.Add(FieldNames::ElementBase::ApplicationId, APIGuidToString (elem.header.guid));
 
+	API_Attribute attribute;
+	BNZeroMemory (&attribute, sizeof (API_Attribute));
+	attribute.header.typeID = API_LayerID;
+	attribute.header.index = elem.header.layer;
+	if (NoError == ACAPI_Attribute_Get (&attribute)) {
+		os.Add(FieldNames::ElementBase::Layer, GS::UniString{attribute.header.name});
+	}
+
 	err = ExportClassificationsAndProperties (elem, os);
 
 	return err;

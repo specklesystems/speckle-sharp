@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using System.Timers;
@@ -13,9 +9,9 @@ using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using CSiAPIv1;
 using Speckle.ConnectorCSI.UI;
-
 using System.Reflection;
 using System.IO;
+using Speckle.Core.Logging;
 
 namespace SpeckleConnectorCSI
 {
@@ -68,6 +64,7 @@ namespace SpeckleConnectorCSI
     public static void OpenOrFocusSpeckle(cSapModel model)
     {
       Bindings = new ConnectorBindingsCSI(model);
+      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
       CreateOrFocusSpeckle();
     }
 
