@@ -45,7 +45,7 @@ namespace Archicad.Communication
         AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
         string requestMsg = SerializeRequest(request);
-        //Console.WriteLine(requestMsg);
+        Console.WriteLine(requestMsg);
         string responseMsg;
 
         using (
@@ -55,7 +55,7 @@ namespace Archicad.Communication
           )
         )
           responseMsg = await ConnectionManager.Instance.Send(requestMsg);
-        //Console.WriteLine(responseMsg);
+        Console.WriteLine(responseMsg);
         AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);
 
         // TODO

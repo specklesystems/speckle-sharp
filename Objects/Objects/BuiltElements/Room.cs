@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -75,17 +76,16 @@ namespace Objects.BuiltElements.Archicad
     public string elementType { get; set; }
     public List<Classification> classifications { get; set; }
 
-    [JsonIgnore]
-    public ArchicadLevel archicadLevel { get; set; }
-
-    public string? /*APINullabe*/
-    layer { get; set; }
-
     public override Level level
     {
       get => archicadLevel;
       set => archicadLevel = value as ArchicadLevel ?? null;
     }
+
+    [JsonIgnore]
+    public ArchicadLevel archicadLevel { get; set; }
+
+    public string? layer { get; set; } /*APINullabe*/
 
     public ElementShape shape { get; set; }
   }

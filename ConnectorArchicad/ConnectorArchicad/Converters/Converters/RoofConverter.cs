@@ -7,6 +7,7 @@ using Archicad.Communication;
 using Objects;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
@@ -15,13 +16,18 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Roof);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var roofs = new List<Objects.BuiltElements.Archicad.ArchicadRoof>();
       var shells = new List<Objects.BuiltElements.Archicad.ArchicadShell>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
+      )
       {
         foreach (var tc in elements)
         {
@@ -36,21 +42,30 @@ namespace Archicad.Converters
               shells.Add(archiShell);
               break;
             case Objects.BuiltElements.Roof roof:
-              roofs.Add(new Objects.BuiltElements.Archicad.ArchicadRoof
-              {
-                id = roof.id,
-                applicationId = roof.applicationId,
-                shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids),
-              });
+              roofs.Add(
+                new Objects.BuiltElements.Archicad.ArchicadRoof
+                {
+                  id = roof.id,
+                  applicationId = roof.applicationId,
+                  archicadLevel = Archicad.Converters.Utils.ConvertLevel(roof.level),
+                  shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids)
+                }
+              );
               break;
           }
         }
       }
 
-      var resultRoofs = roofs.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token) : null;
-      var resultShells = shells.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token) : null;
+      var resultRoofs =
+        roofs.Count > 0
+          ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token)
+          : null;
+      var resultShells =
+        shells.Count > 0
+          ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token)
+          : null;
 
-      var result = new List<ApplicationObject> ();
+      var result = new List<ApplicationObject>();
       if (resultRoofs is not null)
         result.AddRange(resultRoofs.ToList());
 
@@ -60,51 +75,73 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
-      var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token);
+      Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)),
+        token
+      );
 
-      var Roofs = new List<Base>();
-      foreach (var roof in data)
+      var roofs = new List<Base>();
+      if (jArray is not null)
       {
-        roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
-          .First(e => e.applicationId == roof.applicationId)
-          .model);
-
-        if (roof.shape != null)
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
         {
-          roof.outline = Utils.PolycurveToSpeckle(roof.shape.contourPolyline);
-          if (roof.shape.holePolylines?.Count > 0)
-            roof.voids = new List<ICurve>(roof.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
-        }
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadRoof roof =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
 
-        Roofs.Add(roof);
+          roof.units = Units.Meters;
+          roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elements.First(e => e.applicationId == roof.applicationId).model
+          );
+
+          if (roof.shape != null)
+          {
+            roof.outline = Utils.PolycurveToSpeckle(roof.shape.contourPolyline);
+            if (roof.shape.holePolylines?.Count > 0)
+              roof.voids = new List<ICurve>(roof.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+          }
+
+          roofs.Add(roof);
+        }
       }
 
-     var shelldData = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)), token);
+      jArray = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)),
+        token
+      );
 
-      var Shells = new List<Base>();
-      foreach (var shell in shelldData)
+      var shells = new List<Base>();
+      if (jArray is not null)
       {
-        shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
-          .First(e => e.applicationId == shell.applicationId)
-          .model);
-
-        if (shell.shape != null)
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
         {
-          shell.outline = Utils.PolycurveToSpeckle(shell.shape.contourPolyline);
-          if (shell.shape.holePolylines?.Count > 0)
-            shell.voids = new List<ICurve>(shell.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
-        }
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadShell shell =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
 
-        Shells.Add(shell);
+          shell.units = Units.Meters;
+          shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elements.First(e => e.applicationId == shell.applicationId).model
+          );
+
+          if (shell.shape != null)
+          {
+            shell.outline = Utils.PolycurveToSpeckle(shell.shape.contourPolyline);
+            if (shell.shape.holePolylines?.Count > 0)
+              shell.voids = new List<ICurve>(shell.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+          }
+
+          shells.Add(shell);
+        }
       }
 
-      var result = Roofs;
-      result.AddRange(Shells);
+      var result = roofs;
+      result.AddRange(shells);
       return result;
     }
   }
