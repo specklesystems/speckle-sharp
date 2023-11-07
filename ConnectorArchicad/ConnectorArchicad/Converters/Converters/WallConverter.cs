@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -17,12 +19,17 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Wall);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
+      )
       {
         foreach (var tc in elements)
         {
@@ -35,10 +42,12 @@ namespace Archicad.Converters
               break;
             case Objects.BuiltElements.Wall wall:
               var baseLine = (Line)wall.baseLine;
-              Objects.BuiltElements.Archicad.ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
+
+              ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
               {
                 id = wall.id,
                 applicationId = wall.applicationId,
+                archicadLevel = Archicad.Converters.Utils.ConvertLevel(wall.level),
                 startPoint = Utils.ScaleToNative(baseLine.start),
                 endPoint = Utils.ScaleToNative(baseLine.end),
                 height = Utils.ScaleToNative(wall.height, wall.units),
@@ -56,25 +65,32 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
-      List<Base> walls = new List<Base>();
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
 
-      IEnumerable<Objects.BuiltElements.Archicad.ArchicadWall> data =
-        await AsyncCommandProcessor.Execute(
-          new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
-          token);
+      Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
+        token
+      );
 
-      if (data is null)
+      var walls = new List<Base>();
+      if (jArray is null)
         return walls;
 
-      foreach (Objects.BuiltElements.Archicad.ArchicadWall wall in data)
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
-        wall.displayValue =
-          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == wall.applicationId)
-            .model);
+        // convert between DTOs
+        Objects.BuiltElements.Archicad.ArchicadWall wall =
+          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
+
+        wall.units = Units.Meters;
+        wall.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == wall.applicationId).model
+        );
         wall.baseLine = new Line(wall.startPoint, wall.endPoint);
         walls.Add(wall);
       }

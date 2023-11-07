@@ -43,6 +43,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	// Positioning - geometry
 	Objects::Point3D origoPos;
 	if (os.Contains (Column::origoPos)) {
