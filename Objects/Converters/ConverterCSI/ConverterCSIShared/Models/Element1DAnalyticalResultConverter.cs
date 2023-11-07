@@ -1,10 +1,9 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using ConverterCSIShared.Extensions;
 using CSiAPIv1;
-using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;
@@ -15,7 +14,6 @@ namespace ConverterCSIShared.Models
 {
   internal class Element1DAnalyticalResultConverter
   {
-    private readonly Model speckleModel;
     private readonly cSapModel sapModel;
     private readonly HashSet<string> frameNames;
     private readonly HashSet<string> pierNames;
@@ -26,7 +24,6 @@ namespace ConverterCSIShared.Models
     private readonly bool sendColumnForces;
     private readonly bool sendOtherForces;
     public Element1DAnalyticalResultConverter(
-      Model speckleModel,
       cSapModel sapModel,
       HashSet<string> frameNames,
       HashSet<string> pierNames,
@@ -38,7 +35,6 @@ namespace ConverterCSIShared.Models
       bool sendColumnForces,
       bool sendOtherForces)
     {
-      this.speckleModel = speckleModel;
       this.sapModel = sapModel;
       this.frameNames = frameNames;
       this.pierNames = pierNames;
@@ -61,93 +57,79 @@ namespace ConverterCSIShared.Models
       this.sendOtherForces = sendOtherForces;
     }
 
-    public void AnalyticalResultsToSpeckle()
+    public AnalyticalResults? AnalyticalResultsToSpeckle(string elementName, ElementType1D elementType)
     {
-      foreach (Base element in speckleModel.elements)
+      if (SendForces(elementType))
       {
-        if (element is not CSIElement1D element1D)
+        return new()
         {
-          continue;
-        }
-
-        AnalyticalResults results = new()
-        {
-          resultsByLoadCombination = GetAnalysisResultsForElement1D(element1D).Cast<Result>().ToList()
+          resultsByLoadCombination = GetAnalysisResultsForElement1D(elementName).Cast<Result>().ToList()
         };
-        element1D.AnalysisResults = results;
       }
+      return null;
     }
 
-    private ICollection<ResultSet1D> GetAnalysisResultsForElement1D(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForElement1D(string elementName)
     {
-      if (frameNames.Contains(element1D.name))
+      if (frameNames.Contains(elementName))
       {
-        return GetAnalysisResultsForFrame(element1D);
+        return GetAnalysisResultsForFrame(elementName);
       }
-      else if (pierNames.Contains(element1D.name))
+      else if (pierNames.Contains(elementName))
       {
-        return GetAnalysisResultsForPier(element1D);
+        return GetAnalysisResultsForPier(elementName);
       }
-      else if (spandrelNames.Contains(element1D.name))
+      else if (spandrelNames.Contains(elementName))
       {
-        return GetAnalysisResultsForSpandrel(element1D);
+        return GetAnalysisResultsForSpandrel(elementName);
       }
-      throw new SpeckleException($"Unable to find category for Element1D with name {element1D.name} and CSi ID {element1D.applicationId}");
+      throw new SpeckleException($"Unable to find category for Element1D with name {elementName}");
     }
 
-    private ICollection<ResultSet1D> GetAnalysisResultsForFrame(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForFrame(string elementName)
     {
       int forcesSuccess = -1;
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] obj,
-        elm,
-        loadCase,
-        stepType;
-      obj = elm = loadCase = stepType = Array.Empty<string>();
-      double[] objSta,
-        elmSta,
-        stepNum,
-        p,
-        v2,
-        v3,
-        t,
-        m2,
-        m3;
-      objSta = elmSta = stepNum = p = v2 = v3 = t = m2 = m3 = Array.Empty<double>();
+      var obj = Array.Empty<string>();
+      var elm = Array.Empty<string>();
+      var loadCase = Array.Empty<string>();
+      var stepType = Array.Empty<string>();
+      var objSta = Array.Empty<double>();
+      var elmSta = Array.Empty<double>();
+      var stepNum = Array.Empty<double>();
+      var p = Array.Empty<double>();
+      var v2 = Array.Empty<double>();
+      var v3 = Array.Empty<double>();
+      var t = Array.Empty<double>();
+      var m2 = Array.Empty<double>();
+      var m3 = Array.Empty<double>();
 
-      if (SendForces(element1D.type))
-      {
-        forcesSuccess = sapModel.Results.FrameForce(
-          element1D.name,
-          eItemTypeElm.ObjectElm,
-          ref numberOfResults,
-          ref obj,
-          ref objSta,
-          ref elm,
-          ref elmSta,
-          ref loadCase,
-          ref stepType,
-          ref stepNum,
-          ref p,
-          ref v2,
-          ref v3,
-          ref t,
-          ref m2,
-          ref m3
-        );
-      }
-      else
-      {
-        return new List<ResultSet1D>();
-      }
+      forcesSuccess = sapModel.Results.FrameForce(
+        elementName,
+        eItemTypeElm.ObjectElm,
+        ref numberOfResults,
+        ref obj,
+        ref objSta,
+        ref elm,
+        ref elmSta,
+        ref loadCase,
+        ref stepType,
+        ref stepNum,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       // Value used to normalized output station of forces between 0 and 1
       var lengthOf1dElement = objSta.Max();
 
       return CreateLoadCombinationResults(
-        element1D,
+        elementName,
         forcesSuccess,
         numberOfResults,
         null,
@@ -173,7 +155,7 @@ namespace ConverterCSIShared.Models
       }
       return comboResults;
     }
-    private ICollection<ResultSet1D> GetAnalysisResultsForPier(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForPier(string elementName)
     {
       int forcesSuccess = -1;
 
@@ -192,25 +174,22 @@ namespace ConverterCSIShared.Models
         m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      if (SendForces(element1D.type))
-      {
-        forcesSuccess = sapModel.Results.PierForce(
-          ref numberOfResults,
-          ref storyName,
-          ref pierName,
-          ref loadCase,
-          ref location,
-          ref p,
-          ref v2,
-          ref v3,
-          ref t,
-          ref m2,
-          ref m3
-        );
-      }
+      forcesSuccess = sapModel.Results.PierForce(
+        ref numberOfResults,
+        ref storyName,
+        ref pierName,
+        ref loadCase,
+        ref location,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       return CreateLoadCombinationResults(
-        element1D,
+        elementName,
         forcesSuccess,
         numberOfResults,
         pierName,
@@ -222,8 +201,15 @@ namespace ConverterCSIShared.Models
         t,
         m2,
         m3);
+
+      // local function that just returns 0 in order to avoid unnecessary heap allocations
+      // that would occur if we were using a lambda
+      static float Return0Position(int i)
+      {
+        return 0;
+      }
     }
-    private ICollection<ResultSet1D> GetAnalysisResultsForSpandrel(Element1D element1D)
+    private ICollection<ResultSet1D> GetAnalysisResultsForSpandrel(string elementName)
     {
       int forcesSuccess = -1;
 
@@ -242,25 +228,22 @@ namespace ConverterCSIShared.Models
         m3;
       p = v2 = v3 = t = m2 = m3 = new double[1];
 
-      if (SendForces(element1D.type))
-      {
-        forcesSuccess = sapModel.Results.SpandrelForce(
-          ref numberOfResults,
-          ref storyName,
-          ref spandrelName,
-          ref loadCase,
-          ref location,
-          ref p,
-          ref v2,
-          ref v3,
-          ref t,
-          ref m2,
-          ref m3
-        );
-      }
+      forcesSuccess = sapModel.Results.SpandrelForce(
+        ref numberOfResults,
+        ref storyName,
+        ref spandrelName,
+        ref loadCase,
+        ref location,
+        ref p,
+        ref v2,
+        ref v3,
+        ref t,
+        ref m2,
+        ref m3
+      );
 
       return CreateLoadCombinationResults(
-        element1D, 
+        elementName, 
         forcesSuccess, 
         numberOfResults, 
         spandrelName, 
@@ -272,13 +255,20 @@ namespace ConverterCSIShared.Models
         t, 
         m2, 
         m3);
+
+      // local function that just returns 0 in order to avoid unnecessary heap allocations
+      // that would occur if we were using a lambda
+      static float Return0Position(int i)
+      {
+        return 0;
+      }
     }
 
     private ICollection<ResultSet1D> CreateLoadCombinationResults(
-      Element1D element1D,
+      string elementName,
       int forcesSuccess,
       int numberOfResults,
-      string[] names,
+      string[]? names,
       string[] loadCase,
       Func<int, float> positionCalculator, 
       double[] p,
@@ -291,7 +281,7 @@ namespace ConverterCSIShared.Models
       Dictionary<string, ResultSet1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
       {
-        if (names != null && names[i] != element1D.name)
+        if (names != null && names[i] != elementName)
         {
           continue;
         }
@@ -321,11 +311,6 @@ namespace ConverterCSIShared.Models
         ElementType1D.Column => sendColumnForces,
         _ => sendOtherForces
       };
-    }
-
-    private float Return0Position(int i)
-    {
-      return 0;
     }
   }
 }

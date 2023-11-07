@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\NodeAnalyticalResultsConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ResultsConverter.cs" />
     <Compile Include="..\ConverterCSIShared\Models\Element1DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ETABSGridLineDefinitionTable.cs" />
@@ -60,10 +61,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertSpring.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertTendonProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGlobal.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet1D.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ToNativeScalingService.cs" />
   </ItemGroup>
 </Project>

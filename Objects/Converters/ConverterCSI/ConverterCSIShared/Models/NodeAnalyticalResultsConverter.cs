@@ -1,10 +1,7 @@
-using System;
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using CSiAPIv1;
-using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Geometry;
-using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;
 using Speckle.Core.Models;
@@ -13,7 +10,6 @@ namespace ConverterCSIShared.Models
 {
   internal class NodeAnalyticalResultsConverter
   {
-    private readonly Model speckleModel;
     private readonly cSapModel sapModel;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
     private readonly bool sendDisplacements;
@@ -21,7 +17,6 @@ namespace ConverterCSIShared.Models
     private readonly bool sendVelocity;
     private readonly bool sendAcceleration;
     public NodeAnalyticalResultsConverter(
-      Model speckleModel,
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
       IEnumerable<LoadCase> loadCases,
@@ -30,7 +25,6 @@ namespace ConverterCSIShared.Models
       bool sendVelocity,
       bool sendAcceleration)
     {
-      this.speckleModel = speckleModel;
       this.sapModel = sapModel;
       this.sapModel = sapModel;
 
@@ -50,31 +44,22 @@ namespace ConverterCSIShared.Models
       this.sendAcceleration = sendAcceleration;
     }
 
-    public void AnalyticalResultsToSpeckle()
+    public AnalyticalResults AnalyticalResultsToSpeckle(string nodeName)
     {
-      foreach (Base element in speckleModel.nodes)
+      return new()
       {
-        if (element is not CSINode node)
-        {
-          continue;
-        }
-
-        AnalyticalResults results = new()
-        {
-          resultsByLoadCombination = GetAnalysisResultsForNode(node).Cast<Result>().ToList()
-        };
-        node.AnalysisResults = results;
-      }
+        resultsByLoadCombination = GetAnalysisResultsForNode(nodeName).Cast<Result>().ToList()
+      };
     }
 
-    public IEnumerable<ResultSetNode> GetAnalysisResultsForNode(Node node)
+    private IEnumerable<ResultSetNode> GetAnalysisResultsForNode(string nodeName)
     {
       int numberResults = 0;
       string[] loadCases = null;
 
       bool displacementSuccess = AnalysisResultUtils.TryGetAPIResult(
         sapModel.Results.JointDispl,
-        node.name,
+        nodeName,
         out int numberNodeResults,
         out _,
         out _,
@@ -97,7 +82,7 @@ namespace ConverterCSIShared.Models
 
       bool forceSuccess = AnalysisResultUtils.TryGetAPIResult(
         sapModel.Results.JointReact,
-        node.name,
+        nodeName,
         out int numberForceResults,
         out _,
         out _,
@@ -120,7 +105,7 @@ namespace ConverterCSIShared.Models
 
       bool velocitySuccess = AnalysisResultUtils.TryGetAPIResult(
         sapModel.Results.JointVelAbs,
-        node.name,
+        nodeName,
         out int numberVelocityResults,
         out _,
         out _,
@@ -143,7 +128,7 @@ namespace ConverterCSIShared.Models
 
       bool accelerationSuccess = AnalysisResultUtils.TryGetAPIResult(
         sapModel.Results.JointAccAbs,
-        node.name,
+        nodeName,
         out int numberAccelerationResults,
         out _,
         out _,

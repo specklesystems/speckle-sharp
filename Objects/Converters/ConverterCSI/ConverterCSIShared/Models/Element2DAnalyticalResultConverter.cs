@@ -1,11 +1,10 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using ConverterCSIShared.Extensions;
 using CSiAPIv1;
 using Objects.Structural.Analysis;
-using Objects.Structural.CSI.Geometry;
-using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;
 using Speckle.Core.Models;
@@ -14,20 +13,17 @@ namespace ConverterCSIShared.Models
 {
   internal class Element2DAnalyticalResultConverter
   {
-    private readonly Model speckleModel;
     private readonly cSapModel sapModel;
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
     private readonly bool sendForces;
     private readonly bool sendStresses;
     public Element2DAnalyticalResultConverter(
-      Model speckleModel,
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
       IEnumerable<LoadCase> loadCases,
       bool sendForces,
       bool sendStresses)
     {
-      this.speckleModel = speckleModel;
       this.sapModel = sapModel;
       this.sapModel = sapModel;
 
@@ -45,24 +41,15 @@ namespace ConverterCSIShared.Models
       this.sendStresses = sendStresses;
     }
 
-    public void AnalyticalResultsToSpeckle()
+    public AnalyticalResults AnalyticalResultsToSpeckle(string areaName)
     {
-      foreach (Base element in speckleModel.elements)
+      return new()
       {
-        if (element is not CSIElement2D element2D)
-        {
-          continue;
-        }
-
-        AnalyticalResults results = new()
-        {
-          resultsByLoadCombination = GetAnalysisResultsForElement2D(element2D).Cast<Result>().ToList()
-        };
-        element2D.AnalysisResults = results;
-      }
+        resultsByLoadCombination = GetAnalysisResultsForElement2D(areaName).Cast<Result>().ToList()
+      };
     }
 
-    private ICollection<ResultSet2D> GetAnalysisResultsForElement2D(Element2D element2D)
+    private ICollection<ResultSet2D> GetAnalysisResultsForElement2D(string areaName)
     {
       int forceSuccess = -1;
       int stressSuccess = -1;
@@ -95,7 +82,7 @@ namespace ConverterCSIShared.Models
       if (sendForces)
       {
         forceSuccess = sapModel.Results.AreaForceShell(
-          element2D.name,
+          areaName,
           CSiAPIv1.eItemTypeElm.ObjectElm,
           ref numberOfForceResults,
           ref obj,
@@ -153,7 +140,7 @@ namespace ConverterCSIShared.Models
       if (sendStresses)
       {
         stressSuccess = sapModel.Results.AreaStressShell(
-          element2D.name,
+          areaName,
           CSiAPIv1.eItemTypeElm.ObjectElm,
           ref numberOfStressResults,
           ref stressObj,

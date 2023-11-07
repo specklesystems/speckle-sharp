@@ -72,6 +72,7 @@ namespace Objects.Converter.CSI
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
+    private ResultsConverter? resultsConverter;
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
@@ -91,6 +92,7 @@ namespace Objects.Converter.CSI
       else if (Settings["operation"] == "send")
       {
         SpeckleModel = ModelToSpeckle();
+        resultsConverter = new ResultsConverter(Model, Settings, GetLoadCases(), GetLoadCombos());
       }
       else
         throw new Exception("operation setting was not set to \"send\" or \"receive\"");

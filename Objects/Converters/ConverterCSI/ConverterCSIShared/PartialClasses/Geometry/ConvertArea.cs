@@ -434,6 +434,10 @@ namespace Objects.Converter.CSI
         speckleStructArea.DiaphragmAssignment = diaphragmAssignment;
       }
 
+      speckleStructArea.AnalysisResults = resultsConverter?
+        .Element2DAnalyticalResultConverter?
+        .AnalyticalResultsToSpeckle(speckleStructArea.name);
+
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);
       speckleStructArea.applicationId = GUID;
