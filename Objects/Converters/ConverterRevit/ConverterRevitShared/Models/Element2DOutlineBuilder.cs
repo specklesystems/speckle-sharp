@@ -15,7 +15,7 @@ namespace ConverterRevitShared.Models
   /// </summary>
   internal class Element2DOutlineBuilder
   {
-    private const double pointTolerance = .1;
+    private const double POINT_TOLERANCE = .1;
 
     private readonly List<Polyline> openingPolylines;
     private readonly List<Point> outlinePoints;
@@ -26,27 +26,19 @@ namespace ConverterRevitShared.Models
       this.outlinePoints = outlinePoints;
     }
 
-    void AddPointsToOutline(List<Point> pointsToAdd, int? indexToBeInserted = null)
+    private void AddPointsToOutline(List<Point> pointsToAdd, int indexToBeInserted)
     {
       if (outlinePoints.Count == 0)
       {
-        AddPointsToEmptyOutline(pointsToAdd, indexToBeInserted);
-      }
-      else
-      {
-        AddPointsToPopulatedOutline(pointsToAdd, indexToBeInserted);
-      }
-    }
-
-    private void AddPointsToEmptyOutline(List<Point> pointsToAdd, int? indexToBeInserted)
-    {
-      if (indexToBeInserted == null || indexToBeInserted.Value == 0)
-      {
+        if (indexToBeInserted > 0)
+        {
+          throw new ArgumentException($"Outline currently has 0 points, cannot add point at index {indexToBeInserted}");
+        }
         outlinePoints.AddRange(pointsToAdd);
       }
       else
       {
-        throw new ArgumentException($"Outline current has 0 points, cannot add point at index {indexToBeInserted}");
+        AddPointsToPopulatedOutline(pointsToAdd, indexToBeInserted);
       }
     }
 
@@ -55,25 +47,29 @@ namespace ConverterRevitShared.Models
       int insertIndex = indexToBeInserted == null ? outlinePoints.Count : indexToBeInserted.Value;
       Point previousPoint = outlinePoints[insertIndex];
 
-      if (previousPoint.DistanceTo(pointsToAdd.First()) < pointTolerance)
+      if (previousPoint.DistanceTo(pointsToAdd.First()) < POINT_TOLERANCE)
       {
         int prevNumOrLast = insertIndex == 0 ? outlinePoints.Count - 1 : insertIndex - 1;
         RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, prevNumOrLast);
         outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
       }
-      else if (previousPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
+      else if (previousPoint.DistanceTo(pointsToAdd.Last()) < POINT_TOLERANCE)
       {
         pointsToAdd.Reverse();
         int nextNumOrZero = insertIndex == outlinePoints.Count - 1 ? 0 : insertIndex + 1;
         RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, nextNumOrZero);
         outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
       }
+      else
+      {
+        throw new InvalidOperationException("The provided list of points that doesn't start at the beginning or end of the existing outline");
+      }
     }
 
     private void RemoveLastPointToAddIfItAlreadyExists(List<Point> pointsToAdd, int nextPointIndex)
     {
       Point nextPoint = outlinePoints[nextPointIndex];
-      if (nextPoint.DistanceTo(pointsToAdd.Last()) < pointTolerance)
+      if (nextPoint.DistanceTo(pointsToAdd.Last()) < POINT_TOLERANCE)
       {
         pointsToAdd.RemoveAt(pointsToAdd.Count - 1);
       }
@@ -98,8 +94,7 @@ namespace ConverterRevitShared.Models
           continue;
         }
 
-        int? indexToAddTo = RemoveIndiciesFromOutline(lineOverlapData);
-        if (!indexToAddTo.HasValue)
+        if (RemoveIndicesFromOutline(lineOverlapData) is not int indexToAddTo)
         {
           continue;
         }
@@ -140,18 +135,18 @@ namespace ConverterRevitShared.Models
       }
     }
     
-    int? RemoveIndiciesFromOutline(List<LineOverlappingOutlineData> allLineOverlapData)
+    int? RemoveIndicesFromOutline(List<LineOverlappingOutlineData> allLineOverlapData)
     {
-      SortedSet<int> allIndiciesInvolved = new();
-      SortedSet<int> indiciesToRemove = new();
+      SortedSet<int> allIndicesInvolved = new();
+      SortedSet<int> indicesToRemove = new();
       foreach (LineOverlappingOutlineData data in allLineOverlapData)
       {
         if (!data.OutlineIndexForStartPoint.HasValue)
         {
           continue;
         }
-        SortIndiciesIntoCorrectSet(data.OutlineIndexForStartPoint.Value, allIndiciesInvolved, indiciesToRemove);
-        SortIndiciesIntoCorrectSet(data.OutlineIndexForEndPoint.Value, allIndiciesInvolved, indiciesToRemove);
+        SortIndicesIntoCorrectSet(data.OutlineIndexForStartPoint.Value, allIndicesInvolved, indicesToRemove);
+        SortIndicesIntoCorrectSet(data.OutlineIndexForEndPoint.Value, allIndicesInvolved, indicesToRemove);
       }
 
       // This code handles an edge case where there is an opening near the top of a wall.
@@ -167,39 +162,39 @@ namespace ConverterRevitShared.Models
       // |                                               |
       // |                                               |
       // |_______________________________________________|
-      // in the above scenario, only the bottom two indicies of the opening will be included in the
-      // allIndiciesInvolved set and none will be in the indiciesToRemove set. What we need to do is remove
-      // the two points in the allIndiciesInvolved from the outline and NOT add the missing ones like we will
+      // in the above scenario, only the bottom two indices of the opening will be included in the
+      // allIndicesInvolved set and none will be in the indicesToRemove set. What we need to do is remove
+      // the two points in the allIndicesInvolved from the outline and NOT add the missing ones like we will
       // typically do
 
-      if (allIndiciesInvolved.Count == 2 && indiciesToRemove.Count == 0)
+      if (allIndicesInvolved.Count == 2 && indicesToRemove.Count == 0)
       {
-        outlinePoints.RemoveAt(allIndiciesInvolved.ElementAt(1));
-        outlinePoints.RemoveAt(allIndiciesInvolved.ElementAt(0));
+        outlinePoints.RemoveAt(allIndicesInvolved.ElementAt(1));
+        outlinePoints.RemoveAt(allIndicesInvolved.ElementAt(0));
         return null;
       }
 
-      // loop backward to remove items from the list at certain indicies without shifting the rest of the indicies
-      foreach (int indexToRemove in indiciesToRemove.Reverse())
+      // loop backward to remove items from the list at certain indices without shifting the rest of the indices
+      foreach (int indexToRemove in indicesToRemove.Reverse())
       {
         outlinePoints.RemoveAt(indexToRemove);
       }
 
-      return indiciesToRemove.Min();
+      return indicesToRemove.Min();
     }
 
-    static void SortIndiciesIntoCorrectSet(int currentIndex, SortedSet<int> allIndiciesInvolved, SortedSet<int> indiciesToRemove)
+    static void SortIndicesIntoCorrectSet(int currentIndex, SortedSet<int> allIndicesInvolved, SortedSet<int> indicesToRemove)
     {
-      if (allIndiciesInvolved.Contains(currentIndex))
+      if (allIndicesInvolved.Contains(currentIndex))
       {
-        if (!indiciesToRemove.Contains(currentIndex))
+        if (!indicesToRemove.Contains(currentIndex))
         {
-          indiciesToRemove.Add(currentIndex);
+          indicesToRemove.Add(currentIndex);
         }
       }
       else
       {
-        allIndiciesInvolved.Add(currentIndex);
+        allIndicesInvolved.Add(currentIndex);
       }
     }
 
@@ -220,17 +215,13 @@ namespace ConverterRevitShared.Models
       for (int i = 1; i < outlinePoints.Count; i++)
       {
         Point currentPoint = outlinePoints[i];
-        if (
-          openingLine.start.DistanceTo(currentPoint) < pointTolerance
-          && openingLine.end.DistanceTo(previousPoint) < pointTolerance
-        )
+        if (openingLine.start.DistanceTo(currentPoint) < POINT_TOLERANCE
+          && openingLine.end.DistanceTo(previousPoint) < POINT_TOLERANCE)
         {
           return new(openingLine, true, i, i - 1);
         }
-        else if (
-          openingLine.end.DistanceTo(currentPoint) < pointTolerance
-          && openingLine.start.DistanceTo(previousPoint) < pointTolerance
-        )
+        else if (openingLine.end.DistanceTo(currentPoint) < POINT_TOLERANCE
+          && openingLine.start.DistanceTo(previousPoint) < POINT_TOLERANCE)
         {
           return new(openingLine, true, i - 1, i);
         }
@@ -240,7 +231,7 @@ namespace ConverterRevitShared.Models
     }
   }
 
-  public readonly struct LineOverlappingOutlineData
+  public class LineOverlappingOutlineData
   {
     public LineOverlappingOutlineData(
       Line line, 

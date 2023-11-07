@@ -295,11 +295,6 @@ namespace Objects.Converter.Revit
     IEnumerable<XYZ> EnumerateCurveLoopWithMostPoints(IEnumerable<CurveLoop> curveLoops)
     {
       List<CurveLoop> curveLoopList = curveLoops.ToList();
-      if (curveLoopList.Count == 1)
-      {
-        return EnumerateCurveLoopAsPoints(curveLoopList[0]);
-      }
-
       Dictionary<CurveLoop, int> loopCounts = new();
       foreach (var loop in curveLoopList)
       {
