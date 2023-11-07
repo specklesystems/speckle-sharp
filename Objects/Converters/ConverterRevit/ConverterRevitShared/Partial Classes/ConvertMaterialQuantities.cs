@@ -14,8 +14,8 @@ namespace Objects.Converter.Revit
     /// Material Quantities in Revit are stored in different ways and therefore need to be retrieved 
     /// using different methods. According to this forum post https://forums.autodesk.com/t5/revit-api-forum/method-getmaterialarea-appears-to-use-different-formulas-for/td-p/11988215
     /// "Hosts" (whatever that means) will return the area of a single side of the object while other
-    /// objects will return the combined area of every side of the element. MEP element materials are attached
-    /// to the MEP system that the element belongs to.
+    /// objects will return the combined area of every side of the element. Certain MEP element materials 
+    /// are attached to the MEP system that the element belongs to.
     /// </summary>
     /// <param name="element"></param>
     /// <param name="units"></param>
@@ -26,7 +26,7 @@ namespace Objects.Converter.Revit
       {
         return GetMaterialQuantitiesFromAPICall(element, units);
       }
-      else if (element.IsMEPElement())
+      else if (MaterialIsAttachedToMEPSystem(element))
       {
         MaterialQuantity quantity = GetMaterialQuantityForMEPElement(element, units);
         return quantity == null ? new List<MaterialQuantity>() : new List<MaterialQuantity>() { quantity };
@@ -135,9 +135,21 @@ namespace Objects.Converter.Revit
     {
       return element switch
       {
-        DB.CeilingAndFloor => true,
-        DB.Wall => true,
-        DB.RoofBase => true,
+        DB.CeilingAndFloor 
+        or DB.Wall
+        or DB.RoofBase => true,
+        _ => false
+      };
+    }
+    
+    private bool MaterialIsAttachedToMEPSystem(Element element)
+    {
+      return element switch
+      {
+        DB.Mechanical.Duct 
+        or DB.Mechanical.FlexDuct
+        or DB.Plumbing.Pipe
+        or DB.Plumbing.FlexPipe => true,
         _ => false
       };
     }
