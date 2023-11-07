@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class GetBeamData : ICommand<IEnumerable<ArchicadBeam>>
+  sealed internal class GetBeamData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
   {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
@@ -20,13 +18,6 @@ namespace Archicad.Communication.Commands
       }
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    private sealed class Result
-    {
-      [JsonProperty("beams")]
-      public IEnumerable<ArchicadBeam> Datas { get; private set; }
-    }
-
     private IEnumerable<string> ApplicationIds { get; }
 
     public GetBeamData(IEnumerable<string> applicationIds)
@@ -34,16 +25,14 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadBeam>> Execute()
+    public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+      dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
         "GetBeamData",
         new Parameters(ApplicationIds)
       );
-      foreach (var beam in result.Datas)
-        beam.units = Units.Meters;
 
-      return result.Datas;
+      return (Speckle.Newtonsoft.Json.Linq.JArray)result["beams"];
     }
   }
 }

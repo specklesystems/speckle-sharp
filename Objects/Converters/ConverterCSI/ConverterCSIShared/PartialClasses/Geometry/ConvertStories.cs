@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
-using Objects.Structural.Properties;
-using Objects.Structural.Materials;
+﻿using System.Collections.Generic;
 using Objects.Structural.CSI.Analysis;
-using Speckle.Core.Models;
 using System.Linq;
+using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void StoriesToNative(CSIStories stories, ref ApplicationObject appObj)
+    public List<string> StoriesToNative(CSIStories stories)
     {
       string[] storyNames = new string[stories.NumberStories];
       double[] storyElevations = new double[stories.NumberStories];
@@ -46,10 +41,10 @@ namespace Objects.Converter.CSI
         ref colors
       );
 
-      if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdIds: storyNames.ToList());
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      if (success != 0)
+        throw new ConversionException("Failed to set the stories");
+
+      return storyNames.ToList();
     }
 
     public CSIStories StoriesToSpeckle()

@@ -45,6 +45,10 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	memoMask = APIMemoMask_Polygon;
 
 	// Wall geometry

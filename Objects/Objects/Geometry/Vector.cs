@@ -22,7 +22,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="y">The y coordinate of the vector</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique application ID of the object.</param>
-  public Vector(double x, double y, string units = Units.Meters, string applicationId = null)
+  public Vector(double x, double y, string units = Units.Meters, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -39,7 +39,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="z">The y coordinate of the vector</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique application ID of the object.</param>
-  public Vector(double x, double y, double z, string units = Units.Meters, string applicationId = null)
+  public Vector(double x, double y, double z, string units = Units.Meters, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -53,7 +53,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// </summary>
   /// <param name="point">The point whose coordinates will be used</param>
   /// <param name="applicationId">The unique application ID of the object.</param>
-  public Vector(Point point, string applicationId = null)
+  public Vector(Point point, string? applicationId = null)
     : this(point.x, point.y, point.z, point.units, applicationId) { }
 
   /// <summary>
@@ -112,7 +112,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
     var tX = x * m.M11 + y * m.M12 + z * m.M13;
     var tY = x * m.M21 + y * m.M22 + z * m.M23;
     var tZ = x * m.M31 + y * m.M32 + z * m.M33;
-    vector = new Vector(tX, tY, tZ, units = units, applicationId = applicationId);
+    vector = new Vector(tX, tY, tZ, units, applicationId);
     return true;
   }
 

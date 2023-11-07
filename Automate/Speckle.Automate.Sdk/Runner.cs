@@ -66,9 +66,12 @@ public static class AutomationRunner
   /// <param name="args">The command line arguments passed into the function by automate</param>
   /// <param name="automateFunction">The automate function to execute</param>
   /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
-  public static async Task Main(string[] args, Func<AutomationContext, Task> automateFunction)
+  public static async Task<int> Main(string[] args, Func<AutomationContext, Task> automateFunction)
   {
-    await Main(args, async (AutomationContext context, Fake _) => await automateFunction(context).ConfigureAwait(false))
+    return await Main(
+        args,
+        async (AutomationContext context, Fake _) => await automateFunction(context).ConfigureAwait(false)
+      )
       .ConfigureAwait(false);
   }
 
@@ -79,9 +82,11 @@ public static class AutomationRunner
   /// <param name="automateFunction">The automate function to execute</param>
   /// <typeparam name="TInput">The provided input data</typeparam>
   /// <remarks>This should always be called in your own functions, as it contains the logic to trigger the function automatically.</remarks>
-  public static async Task Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
+  public static async Task<int> Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
     where TInput : struct
   {
+    var returnCode = 0; // This is the CLI return code, defaults to 0 (Success), change to 1 to flag a failed run.
+
     var speckleProjectDataArg = new Argument<string>(
       name: "Speckle project data",
       description: "The values of the project / model / version that triggered this function"
@@ -104,8 +109,11 @@ public static class AutomationRunner
         var automationRunData = JsonConvert.DeserializeObject<AutomationRunData>(speckleProjectData);
         var functionInputsParsed = JsonConvert.DeserializeObject<TInput>(functionInputs);
 
-        await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed)
+        var context = await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed)
           .ConfigureAwait(false);
+
+        if (context.RunStatus != AutomationStatusMapping.Get(AutomationStatus.Succeeded))
+          returnCode = 1; // Flag run as failed.
       },
       speckleProjectDataArg,
       functionInputsArg,
@@ -132,5 +140,7 @@ public static class AutomationRunner
     rootCommand.Add(generateSchemaCommand);
 
     await rootCommand.InvokeAsync(args).ConfigureAwait(false);
+
+    return returnCode;
   }
 }

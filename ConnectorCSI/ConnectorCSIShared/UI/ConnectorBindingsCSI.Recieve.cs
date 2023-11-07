@@ -11,9 +11,12 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Serilog.Context;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Logging;
 using Speckle.Core.Kits.ConverterInterfaces;
@@ -63,15 +66,7 @@ namespace Speckle.ConnectorCSI.UI
       Preview.Clear();
       StoredObjects.Clear();
 
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
-
-      Action updateProgressAction = () =>
-      {
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-      };
 
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
@@ -84,6 +79,12 @@ namespace Speckle.ConnectorCSI.UI
       progress.CancellationToken.ThrowIfCancellationRequested();
 
       StreamStateManager.SaveBackupFile(Model);
+
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+      using var d3 = LogContext.PushProperty("converterSettings", settings);
+      using var d4 = LogContext.PushProperty("converterReceiveMode", converter.ReceiveMode);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
@@ -104,40 +105,49 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationObject>();
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
+      List<ApplicationObject> conversionResults = new();
+      ConcurrentDictionary<string, int> conversionProgressDict = new() { ["Conversion"] = 1 };
 
       foreach (var obj in Preview)
       {
         if (!StoredObjects.ContainsKey(obj.OriginalId))
           continue;
 
-        var @base = StoredObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
+
+        var @base = StoredObjects[obj.OriginalId];
+        using var _0 = LogContext.PushProperty("fromType", @base.GetType());
 
         try
         {
-          var convRes = converter.ConvertToNative(@base);
+          var conversionResult = (ApplicationObject)converter.ConvertToNative(@base);
 
-          switch (convRes)
-          {
-            case ApplicationObject o:
-              placeholders.Add(o);
-              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
-              progress.Report.UpdateReportObject(obj);
-              break;
-            default:
-              break;
-          }
+          var finalStatus =
+            conversionResult.Status != ApplicationObject.State.Unknown
+              ? conversionResult.Status
+              : ApplicationObject.State.Created;
+
+          obj.Update(
+            status: finalStatus,
+            createdIds: conversionResult.CreatedIds,
+            converted: conversionResult.Converted,
+            log: conversionResult.Log
+          );
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
-          progress.Report.UpdateReportObject(obj);
+          ConnectorHelpers.LogConversionException(ex);
+
+          var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+          obj.Update(status: failureStatus, logItem: ex.Message);
         }
+
+        conversionResults.Add(obj);
+
+        progress.Report.UpdateReportObject(obj);
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
@@ -148,7 +158,7 @@ namespace Speckle.ConnectorCSI.UI
         finalizable.FinalizeConversion();
       }
 
-      return placeholders;
+      return conversionResults;
     }
 
     /// <summary>
@@ -265,25 +275,25 @@ namespace Speckle.ConnectorCSI.UI
 
     // delete previously sent objects that are no longer in this stream
     private void DeleteObjects(
-      List<ApplicationObject> previouslyReceiveObjects,
-      List<ApplicationObject> newPlaceholderObjects,
+      IReadOnlyCollection<ApplicationObject> previouslyReceiveObjects,
+      IReadOnlyCollection<ApplicationObject> newPlaceholderObjects,
       ProgressViewModel progress
     )
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (obj.Converted.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.Converted.Count == 0)
+          continue;
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
-        for (int i = 0; i < obj.Converted.Count; i++)
+        foreach (var o in obj.Converted)
         {
-          if (
-            !(
-              obj.Converted[i] is string s
-              && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName
-              && typeAndName.Length == 2
-            )
-          )
+          if (o is not string s)
+            continue;
+
+          string[] typeAndName = s.Split(new[] { ConnectorCSIUtils.Delimiter }, StringSplitOptions.None);
+          if (typeAndName.Length != 2)
             continue;
 
           switch (typeAndName[0])

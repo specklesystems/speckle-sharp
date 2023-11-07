@@ -37,24 +37,24 @@ public class Element1D : Base, IDisplayValue<List<Mesh>>
     Line baseLine,
     Property1D property,
     ElementType1D type,
-    string name = null,
+    string? name = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Plane localAxis = null
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Plane? localAxis = null
   )
   {
     this.baseLine = baseLine;
     this.property = property;
     this.type = type;
     this.name = name;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.localAxis = localAxis;
   }
 
@@ -81,14 +81,14 @@ public class Element1D : Base, IDisplayValue<List<Mesh>>
     Line baseLine,
     Property1D property,
     ElementType1D type,
-    string name = null,
+    string? name = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Node orientationNode = null,
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Node? orientationNode = null,
     double orientationAngle = 0
   )
   {
@@ -96,15 +96,15 @@ public class Element1D : Base, IDisplayValue<List<Mesh>>
     this.property = property;
     this.type = type;
     this.name = name;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.orientationNode = orientationNode;
     this.orientationAngle = orientationAngle;
   }
 
-  public string name { get; set; } //add unique id as base identifier, name can change too easily
+  public string? name { get; set; } //add unique id as base identifier, name can change too easily
   public Line baseLine { get; set; }
 
   [DetachProperty]
@@ -115,9 +115,9 @@ public class Element1D : Base, IDisplayValue<List<Mesh>>
   public Restraint end2Releases { get; set; }
   public Vector end1Offset { get; set; }
   public Vector end2Offset { get; set; }
-  public Node orientationNode { get; set; }
+  public Node? orientationNode { get; set; }
   public double orientationAngle { get; set; }
-  public Plane localAxis { get; set; }
+  public Plane? localAxis { get; set; }
 
   [DetachProperty]
   public Base parent { get; set; } //parent element

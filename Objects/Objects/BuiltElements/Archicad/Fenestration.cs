@@ -10,36 +10,36 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
   public string parentApplicationId { get; set; }
 
   // Element base
-  public string? /*APINullabe*/ elementType { get; set; }
-  public List<Classification>? /*APINullabe*/ classifications { get; set; }
+  public string? elementType { get; set; } /*APINullabe*/
+  public List<Classification>? classifications { get; set; } /*APINullabe*/
 
-  public double? /*APINullabe*/ width { get; set; }
-  public double? /*APINullabe*/ height { get; set; }
-  public double? /*APINullabe*/ subFloorThickness { get; set; }
-  public bool? /*APINullabe*/ reflected { get; set; }
-  public bool? /*APINullabe*/ oSide { get; set; }
-  public bool? /*APINullabe*/ refSide { get; set; }
+  public double? width { get; set; } /*APINullabe*/
+  public double? height { get; set; } /*APINullabe*/
+  public double? subFloorThickness { get; set; } /*APINullabe*/
+  public bool? reflected { get; set; } /*APINullabe*/
+  public bool? oSide { get; set; } /*APINullabe*/
+  public bool? refSide { get; set; } /*APINullabe*/
   public string? verticalLinkTypeName { get; set; }
   public short? verticalLinkStoryIndex { get; set; }
   public bool? wallCutUsing { get; set; }
-  public short? /*APINullabe*/ pen { get; set; }
-  public string? /*APINullabe*/ lineTypeName { get; set; }
-  public string? /*APINullabe*/ buildingMaterial { get; set; }
-  public string? /*APINullabe*/ sectFill { get; set; }
-  public short? /*APINullabe*/ sectFillPen { get; set; }
-  public short? /*APINullabe*/ sectBackgroundPen { get; set; }
-  public short? /*APINullabe*/ sectContPen { get; set; }
-  public string? /*APINullabe*/ cutLineType { get; set; }
-  public string? /*APINullabe*/ aboveViewLineType { get; set; }
-  public short? /*APINullabe*/ aboveViewLinePen { get; set; }
-  public short? /*APINullabe*/ belowViewLinePen { get; set; }
-  public string? /*APINullabe*/ belowViewLineType { get; set; }
-  public bool? /*APINullabe*/ useObjectPens { get; set; }
-  public bool? /*APINullabe*/ useObjLinetypes { get; set; }
-  public bool? /*APINullabe*/ useObjMaterials { get; set; }
-  public bool? /*APINullabe*/ useObjSectAttrs { get; set; }
-  public string? /*APINullabe*/ libraryPart { get; set; }
-  public string? /*APINullabe*/ displayOptionName { get; set; }
+  public short? pen { get; set; } /*APINullabe*/
+  public string? lineTypeName { get; set; } /*APINullabe*/
+  public string? buildingMaterial { get; set; } /*APINullabe*/
+  public string? sectFill { get; set; } /*APINullabe*/
+  public short? sectFillPen { get; set; } /*APINullabe*/
+  public short? sectBackgroundPen { get; set; } /*APINullabe*/
+  public short? sectContPen { get; set; } /*APINullabe*/
+  public string? cutLineType { get; set; } /*APINullabe*/
+  public string? aboveViewLineType { get; set; } /*APINullabe*/
+  public short? aboveViewLinePen { get; set; } /*APINullabe*/
+  public short? belowViewLinePen { get; set; } /*APINullabe*/
+  public string? belowViewLineType { get; set; } /*APINullabe*/
+  public bool? useObjectPens { get; set; } /*APINullabe*/
+  public bool? useObjLinetypes { get; set; } /*APINullabe*/
+  public bool? useObjMaterials { get; set; } /*APINullabe*/
+  public bool? useObjSectAttrs { get; set; } /*APINullabe*/
+  public string? libraryPart { get; set; } /*APINullabe*/
+  public string? displayOptionName { get; set; } /*APINullabe*/
 
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }
@@ -47,33 +47,29 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
 
 public class ArchicadDoorWindowBase : ArchicadFenestration
 {
-  public double? /*APINullabe*/ revealDepthFromSide { get; set; }
-  public double? /*APINullabe*/ jambDepthHead { get; set; }
-  public double? /*APINullabe*/ jambDepth { get; set; }
-  public double? /*APINullabe*/ jambDepth2 { get; set; }
-  public double? /*APINullabe*/ objLoc { get; set; }
-  public double? /*APINullabe*/ lower { get; set; }
-  public string? /*APINullabe*/ directionType { get; set; }
+  public double? revealDepthFromSide { get; set; } /*APINullabe*/
+  public double? jambDepthHead { get; set; } /*APINullabe*/
+  public double? jambDepth { get; set; } /*APINullabe*/
+  public double? jambDepth2 { get; set; } /*APINullabe*/
+  public double? objLoc { get; set; } /*APINullabe*/
+  public double? lower { get; set; } /*APINullabe*/
+  public string? directionType { get; set; } /*APINullabe*/
 
-  public Point? /*APINullabe*/ startPoint { get; set; }
-  public Point? /*APINullabe*/ dirVector { get; set; }
+  public Point? startPoint { get; set; } /*APINullabe*/
+  public Point? dirVector { get; set; } /*APINullabe*/
 }
 
-public sealed class ArchicadDoor : ArchicadDoorWindowBase
-{
-}
+public sealed class ArchicadDoor : ArchicadDoorWindowBase { }
 
-public sealed class ArchicadWindow : ArchicadDoorWindowBase
-{
-}
+public sealed class ArchicadWindow : ArchicadDoorWindowBase { }
 
 public sealed class ArchicadSkylight : ArchicadFenestration
 {
-  public UInt32? /*APINullabe*/ vertexID { get; set; }
-  public string? /*APINullabe*/ skylightFixMode { get; set; }
-  public string? /*APINullabe*/ skylightAnchor { get; set; }
-  public Point? /*APINullabe*/ anchorPosition { get; set; }
-  public double? /*APINullabe*/ anchorLevel { get; set; }
-  public double? /*APINullabe*/ azimuthAngle { get; set; }
-  public double? /*APINullabe*/ elevationAngle { get; set; }
+  public UInt32? vertexID { get; set; } /*APINullabe*/
+  public string? skylightFixMode { get; set; } /*APINullabe*/
+  public string? skylightAnchor { get; set; } /*APINullabe*/
+  public Point? anchorPosition { get; set; } /*APINullabe*/
+  public double? anchorLevel { get; set; } /*APINullabe*/
+  public double? azimuthAngle { get; set; } /*APINullabe*/
+  public double? elevationAngle { get; set; } /*APINullabe*/
 }

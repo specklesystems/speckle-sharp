@@ -7,6 +7,7 @@ using Archicad.Communication;
 using Objects;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
@@ -15,12 +16,17 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Floor);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
+      )
       {
         foreach (var tc in elements)
         {
@@ -37,7 +43,8 @@ namespace Archicad.Converters
               {
                 id = floor.id,
                 applicationId = floor.applicationId,
-                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
+                archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
+                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
               };
 
               floors.Add(newFloor);
@@ -49,21 +56,34 @@ namespace Archicad.Converters
       IEnumerable<ApplicationObject> result;
       result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateFloor(floors), token);
 
-      return result is null ? new List<ApplicationObject>() : result.ToList(); ;
+      return result is null ? new List<ApplicationObject>() : result.ToList();
+      ;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
-      var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token);
+      Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)),
+        token
+      );
 
       var floors = new List<Base>();
-      foreach (var slab in data)
+      if (jArray is null)
+        return floors;
+
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
-        slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
-          .First(e => e.applicationId == slab.applicationId)
-          .model);
+        // convert between DTOs
+        Objects.BuiltElements.Archicad.ArchicadFloor slab =
+          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(jToken);
+
+        slab.units = Units.Meters;
+        slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elements.First(e => e.applicationId == slab.applicationId).model
+        );
         slab.outline = Utils.PolycurveToSpeckle(slab.shape.contourPolyline);
         if (slab.shape.holePolylines?.Count > 0)
           slab.voids = new List<ICurve>(slab.shape.holePolylines.Select(Utils.PolycurveToSpeckle));

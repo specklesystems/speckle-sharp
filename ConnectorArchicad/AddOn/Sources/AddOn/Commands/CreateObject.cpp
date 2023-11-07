@@ -44,6 +44,10 @@ GSErrCode CreateObject::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	// get the mesh
 	GS::Array<GS::UniString> modelIds;
 	os.Get (Model::ModelIds, modelIds);

@@ -9,8 +9,10 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog.Context;
 using SCT = Speckle.Core.Transports;
 
 namespace Speckle.ConnectorCSI.UI
@@ -48,7 +50,7 @@ namespace Speckle.ConnectorCSI.UI
       if (state.Filter != null)
         state.SelectedObjectIds = GetSelectionFilterObjects(state.Filter);
 
-      var totalObjectCount = state.SelectedObjectIds.Count();
+      var totalObjectCount = state.SelectedObjectIds.Count;
 
       if (totalObjectCount == 0)
       {
@@ -62,6 +64,11 @@ namespace Speckle.ConnectorCSI.UI
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+      using var d3 = LogContext.PushProperty("converterSettings", settings);
+
       BuildSendCommitObj(converter, state.SelectedObjectIds, ref progress, ref conversionProgressDict);
 
       var commitObj = GetCommitObj(converter, progress, conversionProgressDict);
@@ -69,6 +76,7 @@ namespace Speckle.ConnectorCSI.UI
       return await SendCommitObj(state, progress, commitObj, conversionProgressDict);
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     public void BuildSendCommitObj(
       ISpeckleConverter converter,
       List<string> selectedObjIds,
@@ -101,28 +109,27 @@ namespace Speckle.ConnectorCSI.UI
           .Select(pair => pair.Value)
           .FirstOrDefault();
 
+        using var _0 = LogContext.PushProperty("fromType", typeAndName.typeName);
+
         try
         {
           converted = converter.ConvertToSpeckle(typeAndName);
+          if (converted == null)
+            throw new ConversionException("Conversion Returned Null");
+
+          reportObj.Update(
+            status: ApplicationObject.State.Created,
+            logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}"
+          );
         }
         catch (Exception ex)
         {
-          reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-          progress.Report.Log(reportObj);
-          continue;
+          ConnectorHelpers.LogConversionException(ex);
+
+          var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+          reportObj.Update(status: failureStatus, logItem: ex.Message);
         }
 
-        if (converted == null)
-        {
-          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-          progress.Report.Log(reportObj);
-          continue;
-        }
-
-        reportObj.Update(
-          status: ApplicationObject.State.Created,
-          logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}"
-        );
         progress.Report.Log(reportObj);
 
         conversionProgressDict["Conversion"]++;

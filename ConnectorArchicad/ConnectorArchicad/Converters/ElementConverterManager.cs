@@ -20,6 +20,7 @@ using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
+using GridLine = Objects.BuiltElements.GridLine;
 
 namespace Archicad
 {
@@ -53,7 +54,7 @@ namespace Archicad
 
     public async Task<Base?> ConvertToSpeckle(ISelectionFilter filter, ProgressViewModel progress)
     {
-      var objectToCommit = new Base();
+      var objectToCommit = new Collection("Archicad model", "model");
 
       IEnumerable<string> elementIds = filter.Selection;
       if (filter.Slug == "all")
@@ -87,9 +88,13 @@ namespace Archicad
           ElementTypeProvider.GetTypeByName(element),
           progress.CancellationToken
         ); // Deserialize all objects with hiven type
+
         if (objects.Count() > 0)
         {
-          objectToCommit["@" + element] = objects; // Save 'em. Assigned objects are parents with subelements
+          var elementCollection = new Collection(element, "Element Type");
+          elementCollection.applicationId = element;
+          elementCollection.elements = objects;
+          objectToCommit.elements.Add(elementCollection);
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
@@ -145,8 +150,15 @@ namespace Archicad
       bool forReceive
     )
     {
-      if (forReceive && conversionOptions != null && !conversionOptions.ReceiveParametric)
-        return DefaultConverterForReceive;
+      if (forReceive)
+      {
+        // always convert to Archicad GridElement
+        if (elementType.IsAssignableFrom(typeof(GridLine)))
+          return Converters[typeof(Archicad.GridElement)];
+
+        if (conversionOptions != null && !conversionOptions.ReceiveParametric)
+          return DefaultConverterForReceive;
+      }
 
       if (Converters.ContainsKey(elementType))
         return Converters[elementType];
@@ -168,6 +180,8 @@ namespace Archicad
         return Converters[typeof(Roof)];
       if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))
         return Converters[typeof(Archicad.Room)];
+      if (elementType.IsAssignableFrom(typeof(Archicad.GridElement)))
+        return Converters[typeof(Archicad.GridElement)];
 
       return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
     }
