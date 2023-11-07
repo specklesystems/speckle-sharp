@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -181,7 +182,8 @@ public static class Http
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    var client = new HttpClient(handler ?? new SpeckleHttpClientHandler());
+    handler ??= new SpeckleHttpClientHandler();
+    var client = new HttpClient(handler);
     client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
     return client;
   }
@@ -214,7 +216,6 @@ public class SpeckleHttpClientHandler : HttpClientHandler
   public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
   {
     _delay = delay ?? Http.DefaultDelay();
-    CheckCertificateRevocationList = true;
   }
 
   protected override async Task<HttpResponseMessage> SendAsync(

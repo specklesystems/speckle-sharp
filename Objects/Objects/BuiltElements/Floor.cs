@@ -4,6 +4,7 @@ using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
@@ -28,7 +29,7 @@ namespace Objects.BuiltElements
 
     [DetachProperty]
     public List<Base> elements { get; set; }
-
+    public virtual Level? level { get; internal set; }
     public string units { get; set; }
 
     [DetachProperty]
@@ -70,7 +71,13 @@ namespace Objects.BuiltElements.Revit
 
     public string family { get; set; }
     public string type { get; set; }
-    public Level level { get; set; }
+
+    public new Level? level
+    {
+      get => base.level;
+      set => base.level = value;
+    }
+
     public bool structural { get; set; }
     public double slope { get; set; }
     public Line slopeDirection { get; set; }
@@ -88,25 +95,40 @@ namespace Objects.BuiltElements.Archicad
   public sealed class ArchicadFloor : Floor
   {
     // Element base
-    public string? /*APINullabe*/ elementType { get; set; }
-    public List<Classification>? /*APINullabe*/ classifications { get; set; }
+    public string? elementType { get; set; } /*APINullabe*/
+    public List<Classification>? classifications { get; set; } /*APINullabe*/
 
-    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+    public override Level? level
+    {
+      get => archicadLevel;
+      internal set
+      {
+        if (value is not ArchicadLevel l)
+          throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
+
+        archicadLevel = l;
+      }
+    }
+
+    [JsonIgnore]
+    public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
+
+    public string? layer { get; set; } /*APINullabe*/
 
     // Geometry and positioning
     public double? thickness { get; set; }
     public ElementShape shape { get; set; }
-    public string? /*APINullabe*/ structure { get; set; }
+    public string? structure { get; set; } /*APINullabe*/
     public string? compositeName { get; set; }
     public string? buildingMaterialName { get; set; }
-    public string? /*APINullabe*/ referencePlaneLocation { get; set; }
+    public string? referencePlaneLocation { get; set; } /*APINullabe*/
 
     // EdgeTrims
     public string? edgeAngleType { get; set; }
     public double? edgeAngle { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string? /*APINullabe*/ showOnStories { get; set; }
+    public string? showOnStories { get; set; } /*APINullabe*/
     public Visibility? visibilityCont { get; set; }
     public Visibility? visibilityFill { get; set; }
 

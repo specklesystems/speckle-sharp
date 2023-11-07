@@ -116,7 +116,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   test-core:
     machine:
       image: ubuntu-2204:2023.02.1
-      docker_layer_caching: true
     resource_class: large
     steps:
       - cached-checkout
@@ -131,6 +130,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
+      - run-tests:
+          title: Automate Integration Tests
+          project: Automate/Tests/Speckle.Automate.Sdk.Tests.Integration/Speckle.Automate.Sdk.Tests.Integration.csproj
       - store_test_results:
           path: TestResults
 

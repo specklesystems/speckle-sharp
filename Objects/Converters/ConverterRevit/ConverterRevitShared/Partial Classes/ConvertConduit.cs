@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitConduit, BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM),
         length = GetParamValue<double>(revitConduit, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitConduit, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementDisplayValue(revitConduit, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true })
+        displayValue = GetElementDisplayValue(revitConduit)
       };
 
       GetAllRevitParamsAndIds(speckleConduit, revitConduit,

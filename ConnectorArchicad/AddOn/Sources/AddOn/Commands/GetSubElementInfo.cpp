@@ -38,8 +38,8 @@ GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, G
 			API_Guid currentGuid = elementGuids.Get (i);
 
 			GS::UniString guid = APIGuidToString (currentGuid);
-			API_ElemTypeID elementTypeId = Utility::GetElementType (currentGuid);
-			GS::UniString elemType = elementNames.Get (elementTypeId);
+			API_ElemType elementType = Utility::GetElementType (currentGuid);
+			GS::UniString elemType = elementNames.Get (elementType);
 
 			GS::ObjectState subelementModel;
 			subelementModel.Add (ElementBase::ApplicationId, guid);

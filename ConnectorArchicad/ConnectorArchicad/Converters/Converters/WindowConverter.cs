@@ -17,12 +17,17 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadWindow);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var windows = new List<Objects.BuiltElements.Archicad.ArchicadWindow>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
+      )
       {
         foreach (var tc in elements)
         {
@@ -34,42 +39,43 @@ namespace Archicad.Converters
               archicadWindow.parentApplicationId = tc.parent.current.id;
               windows.Add(archicadWindow);
               break;
-              //case Objects.BuiltElements.Opening window:
-              //  var baseLine = (Line)wall.baseLine;
-              //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
-              //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-              //  if (el is RevitWall revitWall)
-              //    newWall.flipped = revitWall.flipped;
-              //  walls.Add(newWall);
-              //  break;
+            //case Objects.BuiltElements.Opening window:
+            //  var baseLine = (Line)wall.baseLine;
+            //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
+            //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+            //  if (el is RevitWall revitWall)
+            //    newWall.flipped = revitWall.flipped;
+            //  walls.Add(newWall);
+            //  break;
           }
         }
       }
-      
+
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWindow(windows), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
       // Get subelements
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.ArchicadWindow> datas =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId)));
-
-      if (datas is null)
-      {
-        return new List<Base>();
-      }
+      IEnumerable<Objects.BuiltElements.Archicad.ArchicadWindow> data = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId))
+      );
 
       List<Base> openings = new List<Base>();
-      foreach (Objects.BuiltElements.Archicad.ArchicadWindow subelement in datas)
+      if (data is null)
+        return openings;
+
+      foreach (Objects.BuiltElements.Archicad.ArchicadWindow subelement in data)
       {
-        subelement.displayValue =
-          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == subelement.applicationId)
-            .model);
+        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == subelement.applicationId).model
+        );
         openings.Add(subelement);
       }
 

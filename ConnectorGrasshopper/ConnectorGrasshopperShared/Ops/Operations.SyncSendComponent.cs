@@ -290,7 +290,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               if (prevCommit != null)
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
 
-              var commitId = await client.CommitCreate(CancelToken, commitCreateInput);
+              var commitId = await client.CommitCreate(commitCreateInput, CancelToken);
 
               var wrapper = new StreamWrapper(
                 $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"

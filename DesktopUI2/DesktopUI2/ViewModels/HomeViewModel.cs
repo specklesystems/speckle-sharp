@@ -181,10 +181,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           {
             if (SelectedFilter == Filter.favorite)
               result = await account.Client
-                .FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25)
+                .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
                 .ConfigureAwait(true);
             else
-              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
+              result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
           }
           //SEARCH
           else
@@ -193,7 +193,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             if (SelectedFilter == Filter.favorite)
               SelectedFilter = Filter.all;
             result = await account.Client
-              .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+              .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
               .ConfigureAwait(true);
           }
 
@@ -492,8 +492,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars)
       );
 
-      menu.Items.Add(new MenuItemViewModel(ToggleFe2Command, "Toggle NEW Frontend support", MaterialIconKind.NewBox));
-
 #if DEBUG
       menu.Items.Add(new MenuItemViewModel(TestCommand, "Test stuff", MaterialIconKind.Bomb));
 #endif
@@ -579,7 +577,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     var streamAcc = parameter as StreamAccountWrapper;
     var url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}";
 
-    if (UseFe2)
+    if (streamAcc.Account.serverInfo.frontend2)
       url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/projects/{streamAcc.Stream.id}";
 
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -940,6 +938,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
   public bool HasStreams => FilteredStreams != null && FilteredStreams.Any();
 
+  //UI Binding
   public bool UseFe2
   {
     get

@@ -38,11 +38,7 @@ namespace Objects.Converter.Revit
 
       GetHostedElements(speckleElement, revitElement, out notes);
 
-      // get the displayValue of this revit element
-      using var options = new Options();
-      options.DetailLevel = ViewDetailLevel.Fine;
-
-      var displayValue = GetElementDisplayValue(revitElement, options);
+      var displayValue = GetElementDisplayValue(revitElement);
 
       if (!displayValue.Any())
         notes.Add(

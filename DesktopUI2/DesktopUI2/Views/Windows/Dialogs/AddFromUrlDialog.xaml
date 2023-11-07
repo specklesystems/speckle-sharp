@@ -2,28 +2,32 @@
   x:Class="DesktopUI2.Views.Windows.Dialogs.AddFromUrlDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
+  </UserControl.Resources>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
-      Text="Add a Stream by ID or URL"
+      Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Add a Stream by ID or URL'}"
       TextTrimming="CharacterEllipsis" />
 
     <TextBlock
       Grid.Row="1"
       Margin="15"
       Foreground="Gray"
-      Text="Stream IDs and Stream/Branch/Commit URLs are supported."
+      Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Stream IDs and Stream/Branch/Commit URLs are supported.'}"
       TextWrapping="Wrap" />
 
     <TextBox
       Name="url"
       Grid.Row="2"
       Margin="15,0"
-      Watermark="Stream URL" />
+      Watermark="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Stream URL'}" />
 
     <StackPanel
       Grid.Row="5"

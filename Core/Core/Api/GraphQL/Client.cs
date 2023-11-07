@@ -75,7 +75,7 @@ public partial class Client : IDisposable
 
   public string ApiToken => Account.token;
 
-  public System.Version ServerVersion { get; set; }
+  public System.Version? ServerVersion { get; set; }
 
   [JsonIgnore]
   public Account Account { get; set; }
@@ -143,7 +143,7 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
+  public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(_createEnrichers<T>(request));
 

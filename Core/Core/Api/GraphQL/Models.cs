@@ -122,17 +122,17 @@ public class Stream
   public Branches branches { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(System.Threading.CancellationToken, string, string, int)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.BranchGet(string, string, int, System.Threading.CancellationToken)"/>.
   /// </summary>
   public Branch branch { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(System.Threading.CancellationToken, string, string)"/>.
+  /// Set only in the case that you've requested this through <see cref="Client.CommitGet(string, string, System.Threading.CancellationToken)"/>.
   /// </summary>
   public Commit commit { get; set; }
 
   /// <summary>
-  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(System.Threading.CancellationToken, string, int)"/>
+  /// Set only in the case that you've requested this through <see cref="Client.StreamGetCommits(string, int, System.Threading.CancellationToken)"/>
   /// </summary>
   public Commits commits { get; set; }
 
@@ -383,6 +383,11 @@ public class ServerInfo
   public string version { get; set; }
   public string adminContact { get; set; }
   public string description { get; set; }
+
+  //NOTE: this field is not returned from the GQL API
+  //it is manually populated by checking against the response headers
+  //TODO: deprecate after the transition from fe1 to fe2
+  public bool frontend2 { get; set; }
 }
 
 public class StreamData

@@ -24,13 +24,13 @@ public class ModelSettings : Base
     "Analysis"
   )]
   public ModelSettings(
-    ModelUnits modelUnits = null,
-    string steelCode = null,
-    string concreteCode = null,
+    ModelUnits? modelUnits = null,
+    string? steelCode = null,
+    string? concreteCode = null,
     double coincidenceTolerance = 10
   )
   {
-    this.modelUnits = modelUnits == null ? new ModelUnits(UnitsType.Metric) : modelUnits;
+    this.modelUnits = modelUnits ?? new ModelUnits(UnitsType.Metric);
     this.steelCode = steelCode;
     this.concreteCode = concreteCode;
     this.coincidenceTolerance = coincidenceTolerance;
@@ -42,7 +42,7 @@ public class ModelSettings : Base
   [DetachProperty]
   public ModelUnits modelUnits { get; set; }
 
-  public string steelCode { get; set; } //could be enum
-  public string concreteCode { get; set; } //could be enum
+  public string? steelCode { get; set; } //could be enum
+  public string? concreteCode { get; set; } //could be enum
   public double coincidenceTolerance { get; set; }
 }

@@ -11,9 +11,13 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Resources;
 using System.Threading.Tasks;
+using Serilog.Context;
+using Speckle.Core.Logging;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -22,6 +26,7 @@ namespace Speckle.ConnectorCSI.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public override bool CanPreviewReceive => false;
+
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
@@ -46,44 +51,41 @@ namespace Speckle.ConnectorCSI.UI
       converter.SetContextDocument(Model);
       Exceptions.Clear();
       var previouslyReceivedObjects = state.ReceivedObjects;
-      
-      progress.CancellationToken.ThrowIfCancellationRequested();
-      
-      Exceptions.Clear();
 
+      progress.CancellationToken.ThrowIfCancellationRequested();
+
+      Exceptions.Clear();
 
       Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = commit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
       await ConnectorHelpers.TryCommitReceived(state, commit, GetHostAppVersion(Model), progress.CancellationToken);
-      
+
       Preview.Clear();
       StoredObjects.Clear();
 
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
-
-      Action updateProgressAction = () =>
-      {
-        conversionProgressDict["Conversion"]++;
-        progress.Update(conversionProgressDict);
-      };
 
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
 
       converter.ReceiveMode = state.ReceiveMode;
-      // needs to be set for editing to work 
+      // needs to be set for editing to work
       converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
       StreamStateManager.SaveBackupFile(Model);
 
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+      using var d3 = LogContext.PushProperty("converterSettings", settings);
+      using var d4 = LogContext.PushProperty("converterReceiveMode", converter.ReceiveMode);
+
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-      
+
       DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects, progress);
 
       // The following block of code is a hack to properly refresh the view
@@ -101,105 +103,120 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationObject>();
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 1;
+      List<ApplicationObject> conversionResults = new();
+      ConcurrentDictionary<string, int> conversionProgressDict = new() { ["Conversion"] = 1 };
 
       foreach (var obj in Preview)
       {
         if (!StoredObjects.ContainsKey(obj.OriginalId))
           continue;
 
-        var @base = StoredObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
+
+        var @base = StoredObjects[obj.OriginalId];
+        using var _0 = LogContext.PushProperty("fromType", @base.GetType());
 
         try
         {
-          var convRes = converter.ConvertToNative(@base);
+          var conversionResult = (ApplicationObject)converter.ConvertToNative(@base);
 
-          switch (convRes)
-          {
-            case ApplicationObject o:
-              placeholders.Add(o);
-              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
-              progress.Report.UpdateReportObject(obj);
-              break;
-            default:
-              break;
-          }
+          var finalStatus =
+            conversionResult.Status != ApplicationObject.State.Unknown
+              ? conversionResult.Status
+              : ApplicationObject.State.Created;
+
+          obj.Update(
+            status: finalStatus,
+            createdIds: conversionResult.CreatedIds,
+            converted: conversionResult.Converted,
+            log: conversionResult.Log
+          );
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
-          progress.Report.UpdateReportObject(obj);
+          ConnectorHelpers.LogConversionException(ex);
+
+          var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+          obj.Update(status: failureStatus, logItem: ex.Message);
         }
+
+        conversionResults.Add(obj);
+
+        progress.Report.UpdateReportObject(obj);
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
 
-      return placeholders;
+      return conversionResults;
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Traverses the object graph, returning objects to be converted.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      var objects = new List<ApplicationObject>();
-
-      if (obj is Base @base)
+      void StoreObject(Base b)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+        if (!StoredObjects.ContainsKey(b.id))
+          StoredObjects.Add(b.id, b);
+      }
 
-        if (converter.CanConvertToNative(@base))
+      ApplicationObject CreateApplicationObject(Base current)
+      {
+        ApplicationObject NewAppObj()
         {
-          if (StoredObjects.ContainsKey(@base.id))
-            return objects;
+          var speckleType = current.speckle_type
+            .Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
 
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, };
+        }
+
+        //Handle convertable objects
+        if (converter.CanConvertToNative(current))
+        {
+          var appObj = NewAppObj();
           appObj.Convertible = true;
-          objects.Add(appObj);
-          StoredObjects.Add(@base.id, @base);
-          return objects;
+          StoreObject(current);
+          return appObj;
         }
-        else
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = DefaultTraversal.displayValuePropAliases
+          .Where(o => current[o] != null)
+          .Select(o => current[o])
+          .FirstOrDefault();
+
+        if (fallbackMember != null)
         {
-          foreach (var prop in @base.GetMembers().Keys)
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          return objects;
+          var appObj = NewAppObj();
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember).Select(CreateApplicationObject);
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current);
+          return appObj;
         }
+
+        return null;
       }
 
-      if (obj is IList list && list != null)
-      {
-        foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        return objects;
-      }
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
-      if (obj is IDictionary dict)
-      {
-        foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        return objects;
-      }
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
 
-      else
-      {
-        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
-        {
-          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in CSI");
-          objects.Add(appObj);
-        }
-      }
-
-      return objects;
+      return objectsToConvert;
     }
 
     private void RefreshDatabaseTable(string floorTableKey)
@@ -213,7 +230,14 @@ namespace Speckle.ConnectorCSI.UI
       int numInfoMsgs = 0;
       int numErrorMsgs = 0;
       string importLog = "";
-      Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+      Model.DatabaseTables.GetTableForEditingArray(
+        floorTableKey,
+        "ThisParamIsNotActiveYet",
+        ref tableVersion,
+        ref fieldsKeysIncluded,
+        ref numberRecords,
+        ref tableData
+      );
 
       double version = 0;
       string versionString = null;
@@ -225,21 +249,44 @@ namespace Speckle.ConnectorCSI.UI
       if (programVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
         fieldsKeysIncluded[0] = "Unique Name";
 
-      Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
-      Model.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+      Model.DatabaseTables.SetTableForEditingArray(
+        floorTableKey,
+        ref tableVersion,
+        ref fieldsKeysIncluded,
+        numberRecords,
+        ref tableData
+      );
+      Model.DatabaseTables.ApplyEditedTables(
+        false,
+        ref numFatalErrors,
+        ref numErrorMsgs,
+        ref numWarnMsgs,
+        ref numInfoMsgs,
+        ref importLog
+      );
     }
 
     // delete previously sent objects that are no longer in this stream
-    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects, ProgressViewModel progress)
+    private void DeleteObjects(
+      IReadOnlyCollection<ApplicationObject> previouslyReceiveObjects,
+      IReadOnlyCollection<ApplicationObject> newPlaceholderObjects,
+      ProgressViewModel progress
+    )
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (obj.Converted.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.Converted.Count == 0)
+          continue;
+        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
-        for (int i = 0; i < obj.Converted.Count; i++)
+        foreach (var o in obj.Converted)
         {
-          if (!(obj.Converted[i] is string s && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName && typeAndName.Length == 2))
+          if (o is not string s)
+            continue;
+
+          string[] typeAndName = s.Split(new[] { ConnectorCSIUtils.Delimiter }, StringSplitOptions.None);
+          if (typeAndName.Length != 2)
             continue;
 
           switch (typeAndName[0])
