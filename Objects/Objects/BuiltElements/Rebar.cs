@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.TeklaStructures;
 using Objects.Geometry;
 using Objects.Structural.Materials;
@@ -21,7 +22,7 @@ namespace Objects.BuiltElements
     /// The shape of the rebar group
     /// </summary>
     [DetachProperty]
-    public RebarShape shape { get; set; }
+    public virtual RebarShape shape { get; set; }
 
     /// <summary>
     /// The number of rebars in the rebar group
@@ -54,7 +55,7 @@ namespace Objects.BuiltElements
     /// Null indicates no start hook
     /// </remarks>
     [DetachProperty]
-    public RebarHook startHook { get; set; }
+    public virtual RebarHook startHook { get; set; }
 
     /// <summary>
     /// The end hook of bars in the rebar group
@@ -63,7 +64,7 @@ namespace Objects.BuiltElements
     /// Null indicates no end hook
     /// </remarks>
     [DetachProperty]
-    public RebarHook endHook { get; set; }
+    public virtual RebarHook endHook { get; set; }
 
     public string units { get; set; }
 
@@ -213,6 +214,57 @@ namespace Objects.BuiltElements.Revit
   {
     public RevitRebarGroup() { }
 
+    public override RebarShape shape
+    {
+      get => revitShape;
+      set
+      {
+        if (value is not RevitRebarShape s)
+        {
+          throw new ArgumentException($"Expected object of type {nameof(RevitRebarShape)}");
+        }
+
+        revitShape = s;
+      }
+    }
+
+    [JsonIgnore]
+    public RevitRebarShape revitShape { get; set; }
+
+    public override RebarHook startHook 
+    { 
+      get => revitStartHook;
+      set
+      {
+        if (value is not RevitRebarHook h)
+        {
+          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)}");
+        }
+
+        revitStartHook = h;
+      }
+    }
+
+    [JsonIgnore]
+    public RevitRebarHook revitStartHook { get; set; }
+
+    public override RebarHook endHook
+    {
+      get => revitEndHook;
+      set
+      {
+        if (value is not RevitRebarHook h)
+        {
+          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)}");
+        }
+
+        revitEndHook = h;
+      }
+    }
+
+    [JsonIgnore]
+    public RevitRebarHook revitEndHook { get; set; }
+
     public string family { get; set; }
     public string type { get; set; }
     public int barPositions { get; set; }
@@ -235,6 +287,7 @@ namespace Objects.BuiltElements.Revit
   {
     public RevitRebarHook() { }
 
+    public double multiplier { get; set; }
     public string orientation { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
