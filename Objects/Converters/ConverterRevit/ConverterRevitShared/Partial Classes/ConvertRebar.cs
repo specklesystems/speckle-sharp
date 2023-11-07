@@ -58,9 +58,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      RebarStyle barStyle = speckleRebar.shape.rebarType == RebarType.Standard
-          ? RebarStyle.Standard
-          : RebarStyle.StirrupTie;
+      RebarStyle barStyle =
+        speckleRebar.shape.rebarType == RebarType.Standard ? RebarStyle.Standard : RebarStyle.StirrupTie;
 
       // get start and end hooks and orientations
       var speckleStartHook = speckleRebar.startHook as RevitRebarHook;
@@ -259,21 +258,22 @@ namespace Objects.Converter.Revit
       }
 
       // create speckle rebar
-      RevitRebarGroup speckleRebar = new()
-      {
-        shape = speckleShape,
-        startHook = speckleStartHook,
-        endHook = speckleEndHook,
-        number = revitRebar.Quantity,
-        hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar,
-        hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar,
-        volume = revitRebar.Volume,
-        family = type?.FamilyName,
-        type = type?.Name,
-        normal = normal,
-        barPositions = revitRebar.NumberOfBarPositions,
-        displayValue = centerlines
-      };
+      RevitRebarGroup speckleRebar =
+        new()
+        {
+          shape = speckleShape,
+          startHook = speckleStartHook,
+          endHook = speckleEndHook,
+          number = revitRebar.Quantity,
+          hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar,
+          hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar,
+          volume = revitRebar.Volume,
+          family = type?.FamilyName,
+          type = type?.Name,
+          normal = normal,
+          barPositions = revitRebar.NumberOfBarPositions,
+          displayValue = centerlines
+        };
 
       // skip display value as meshes for now
       // GetElementDisplayValue(revitRebar, SolidDisplayValueOptions);
@@ -303,12 +303,13 @@ namespace Objects.Converter.Revit
         .Select(o => CurveToSpeckle(o, revitRebarShape.Document))
         .ToList();
 
-      RevitRebarShape speckleRebarShape = new()
-      {
-        name = revitRebarShape.Name,
-        curves = curves,
-        rebarType = rebarType
-      };
+      RevitRebarShape speckleRebarShape =
+        new()
+        {
+          name = revitRebarShape.Name,
+          curves = curves,
+          rebarType = rebarType
+        };
 
       GetAllRevitParamsAndIds(speckleRebarShape, revitRebarShape);
 
@@ -318,9 +319,10 @@ namespace Objects.Converter.Revit
     // rebar hook
     private RebarHookType RebarHookToNative(RevitRebarHook speckleRebarHook)
     {
-      double multiplier = speckleRebarHook.multiplier != null && speckleRebarHook.multiplier > 0 ? speckleRebarHook.multiplier : 10; // default to 10 if invalid multiplier
+      double multiplier =
+        speckleRebarHook.multiplier != null && speckleRebarHook.multiplier > 0 ? speckleRebarHook.multiplier : 10; // default to 10 if invalid multiplier
       var revitRebarHook = RebarHookType.Create(Doc, speckleRebarHook.angle, multiplier);
-      
+
       SetInstanceParameters(revitRebarHook, speckleRebarHook);
 
       return revitRebarHook;
@@ -328,13 +330,14 @@ namespace Objects.Converter.Revit
 
     private RevitRebarHook RebarHookToSpeckle(RebarHookType revitRebarHook, string orientation, double radius)
     {
-      RevitRebarHook speckleRebarHook = new()
-      {
-        multiplier = revitRebarHook.StraightLineMultiplier,
-        angle = revitRebarHook.HookAngle,
-        orientation = orientation,
-        radius = radius
-      };
+      RevitRebarHook speckleRebarHook =
+        new()
+        {
+          multiplier = revitRebarHook.StraightLineMultiplier,
+          angle = revitRebarHook.HookAngle,
+          orientation = orientation,
+          radius = radius
+        };
 
       GetAllRevitParamsAndIds(speckleRebarHook, revitRebarHook);
 

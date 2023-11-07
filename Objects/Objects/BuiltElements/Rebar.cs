@@ -231,8 +231,8 @@ namespace Objects.BuiltElements.Revit
     [JsonIgnore]
     public RevitRebarShape revitShape { get; set; }
 
-    public override RebarHook startHook 
-    { 
+    public override RebarHook startHook
+    {
       get => revitStartHook;
       set
       {
