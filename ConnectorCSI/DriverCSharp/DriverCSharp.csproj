@@ -8,7 +8,6 @@
     <Copyright />
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
-  <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -23,4 +22,5 @@
   <ItemGroup>
     <PackageReference Include="CSiAPIv1" Version="1.0.0" />
   </ItemGroup>
+  <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
 </Project>
