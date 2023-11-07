@@ -141,12 +141,11 @@ namespace ConverterRevitShared.Models
       SortedSet<int> indicesToRemove = new();
       foreach (LineOverlappingOutlineData data in allLineOverlapData)
       {
-        if (!data.OutlineIndexForStartPoint.HasValue)
+        if (data.OutlineIndexForStartPoint.HasValue)
         {
-          continue;
+          SortIndicesIntoCorrectSet(data.OutlineIndexForStartPoint.Value, allIndicesInvolved, indicesToRemove);
+          SortIndicesIntoCorrectSet(data.OutlineIndexForEndPoint.Value, allIndicesInvolved, indicesToRemove);
         }
-        SortIndicesIntoCorrectSet(data.OutlineIndexForStartPoint.Value, allIndicesInvolved, indicesToRemove);
-        SortIndicesIntoCorrectSet(data.OutlineIndexForEndPoint.Value, allIndicesInvolved, indicesToRemove);
       }
 
       // This code handles an edge case where there is an opening near the top of a wall.
