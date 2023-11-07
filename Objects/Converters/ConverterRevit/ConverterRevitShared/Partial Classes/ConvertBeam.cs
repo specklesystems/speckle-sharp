@@ -18,7 +18,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject BeamToNative(Beam speckleBeam, StructuralType structuralType = StructuralType.Beam)
     {
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
-      var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
+      var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type)
+      {
+        applicationId = speckleBeam.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -26,7 +29,10 @@ namespace Objects.Converter.Revit
 
       if (speckleBeam.baseLine == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Beams are currently supported.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "Only line based Beams are currently supported."
+        );
         return appObj;
       }
 
@@ -38,8 +44,13 @@ namespace Objects.Converter.Revit
       }
 
       var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
-      DB.Level level = null;
-      DB.FamilyInstance revitBeam = null;
+
+      var levelState = ApplicationObject.State.Unknown;
+      double baseOffset = 0.0;
+      DB.Level level =
+        (speckleBeam.level != null)
+          ? ConvertLevelToRevit(speckleBeam.level, out levelState)
+          : ConvertLevelToRevit(baseLine, out levelState, out baseOffset);
 
       //comes from revit or schema builder, has these props
       var speckleRevitBeam = speckleBeam as RevitBeam;
@@ -47,15 +58,8 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      double baseOffset = 0.0;
-      if (speckleRevitBeam != null && speckleRevitBeam.level != null)
-      {
-        level = ConvertLevelToRevit(speckleRevitBeam.level, out ApplicationObject.State levelState);
-      }
-      else
-      {
-        level = ConvertLevelToRevit(baseLine, out ApplicationObject.State levelState, out baseOffset);
-      }
+      DB.FamilyInstance revitBeam = null;
+
       var isUpdate = false;
 
       if (docObj != null)
@@ -75,7 +79,7 @@ namespace Objects.Converter.Revit
 
             // if we combine the following two statements, it results in an error that the beam is unable to be
             // bent into position. For some reason separating the curve variable declaration and the curve setting
-            // fixes this issue. I'm not sure if this is a permanent fix. If not, then I think the solution is to 
+            // fixes this issue. I'm not sure if this is a permanent fix. If not, then I think the solution is to
             // disassociate the beam from the current workplane and then setting the new curve
             var existingCurve = (revitBeam.Location as LocationCurve).Curve;
             existingCurve = baseLine;
@@ -120,7 +124,7 @@ namespace Objects.Converter.Revit
       else
         TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -baseOffset);
 
-      // TODO: get sub families, it's a family! 
+      // TODO: get sub families, it's a family!
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitBeam.UniqueId, convertedItem: revitBeam);
       //appObj = SetHostedElements(speckleBeam, revitBeam, appObj);
@@ -145,7 +149,7 @@ namespace Objects.Converter.Revit
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, SolidDisplayValueOptions);
+      speckleBeam.displayValue = GetElementDisplayValue(revitBeam);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 

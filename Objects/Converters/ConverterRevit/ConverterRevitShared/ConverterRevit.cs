@@ -155,6 +155,26 @@ namespace Objects.Converter.Revit
       }
     }
 
+    const string DetailLevelCoarse = "Coarse";
+    const string DetailLevelMedium = "Medium";
+    const string DetailLevelFine = "Fine";
+    public ViewDetailLevel DetailLevelSetting => GetDetailLevelSetting() ?? ViewDetailLevel.Fine;
+
+    private ViewDetailLevel? GetDetailLevelSetting()
+    {
+      if (!Settings.TryGetValue("detail-level", out string detailLevel))
+      {
+        return null;
+      }
+      return detailLevel switch
+      {
+        DetailLevelCoarse => ViewDetailLevel.Coarse,
+        DetailLevelMedium => ViewDetailLevel.Medium,
+        DetailLevelFine => ViewDetailLevel.Fine,
+        _ => null
+      };
+    }
+
     //NOTE: not all objects come from Revit, so their applicationId might be null, in this case we fall back on the Id
     //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof
     public void SetContextObjects(List<ApplicationObject> objects)
@@ -638,8 +658,7 @@ namespace Objects.Converter.Revit
           return RailingToNative(o);
 
         case BER.ParameterUpdater o:
-          UpdateParameter(o);
-          return null;
+          return UpdateParameter(o);
 
         case BE.View3D o:
           return ViewToNative(o);

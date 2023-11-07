@@ -45,6 +45,30 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 }
 
 
+GSErrCode CreateCommand::GetElementBaseFromObjectState (const GS::ObjectState& os, API_Element& element, API_Element& elementMask) const
+{
+	GSErrCode err = NoError;
+	// layer
+	GS::UniString layer;
+	if (os.Contains (ElementBase::Layer)) {
+		os.Get (ElementBase::Layer, layer);
+
+		API_Attribute attribute;
+		BNZeroMemory (&attribute, sizeof (API_Attribute));
+		attribute.header.typeID = API_LayerID;
+		attribute.header.uniStringNamePtr = &layer;
+		err = ACAPI_Attribute_Get (&attribute);
+
+		if (err == NoError) {
+			element.header.layer = attribute.header.index;
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, layer);
+		}
+	}
+
+	return err;
+}
+
+
 GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
@@ -155,7 +179,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 }
 
 
-GS::ErrCode CreateCommand::ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const
+GSErrCode CreateCommand::ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const
 {
 	GSErrCode err = NoError;
 	GS::Array<GS::ObjectState> classifications;

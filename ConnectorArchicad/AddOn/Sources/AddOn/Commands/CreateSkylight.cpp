@@ -49,6 +49,10 @@ GSErrCode CreateSkylight::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	if (!CheckEnvironment (os, element))
 		return Error;
 

@@ -211,7 +211,7 @@ namespace Objects.Converter.Revit
         .Select(p => new Node(p))
         .ToList();
 
-      speckleElement2D.displayValue = GetElementDisplayValue(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine });
+      speckleElement2D.displayValue = GetElementDisplayValue(revitSurface);
 
       var prop = new Property2D();
 
@@ -247,9 +247,6 @@ namespace Objects.Converter.Revit
       speckleElement2D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
-
-      //speckleElement2D.displayMesh = GetElementDisplayMesh(Doc.GetElement(revitSurface.GetElementId()),
-      // new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return speckleElement2D;
     }
@@ -354,7 +351,7 @@ namespace Objects.Converter.Revit
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
         var physicalElement = Doc.GetElement(physicalElementId);
-        speckleElement2D.displayValue = GetElementDisplayValue(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine });
+        speckleElement2D.displayValue = GetElementDisplayValue(physicalElement);
       }
 
       speckleElement2D.openings = GetOpenings(revitSurface);
@@ -391,9 +388,6 @@ namespace Objects.Converter.Revit
       speckleElement2D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement2D, revitSurface);
-
-      //speckleElement2D.displayMesh = GetElementDisplayMesh(Doc.GetElement(revitSurface.GetElementId()),
-      // new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return speckleElement2D;
     }

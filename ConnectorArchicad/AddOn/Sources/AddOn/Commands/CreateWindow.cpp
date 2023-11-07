@@ -43,6 +43,10 @@ GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& os,
 
 	Utility::SetElementType (element.header, API_WindowID);
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
 	err = Utility::GetBaseElementData (element, &memo, marker, log);
