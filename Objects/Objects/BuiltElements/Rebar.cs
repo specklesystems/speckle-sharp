@@ -277,8 +277,6 @@ namespace Objects.BuiltElements.Revit
   {
     public RevitRebarShape() { }
 
-    public string family { get; set; }
-    public string type { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
   }
