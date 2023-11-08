@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSIUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.DatabaseTableUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ArcExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
