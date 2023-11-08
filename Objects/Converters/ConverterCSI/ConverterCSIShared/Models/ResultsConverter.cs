@@ -29,7 +29,7 @@ namespace ConverterCSIShared.Models
 
     private void DefineElement2DResultsConverter(cSapModel sapModel, Dictionary<string, string> settings, IEnumerable<LoadCase> loadCases, IEnumerable<LoadCombination> loadCombinations)
     {
-      if (settings.TryGetValue(Constants.Results2dSlug, out var selection2D)
+      if (settings.TryGetValue(Constants.RESULTS_2D_SLUG, out var selection2D)
             && !string.IsNullOrEmpty(selection2D)
             && selection2D.Split(',') is string[] results2DToSend)
       {
@@ -37,10 +37,10 @@ namespace ConverterCSIShared.Models
           sapModel,
           loadCombinations,
           loadCases,
-          results2DToSend.Contains(Constants.Forces),
-          results2DToSend.Contains(Constants.Stresses));
+          results2DToSend.Contains(Constants.FORCES),
+          results2DToSend.Contains(Constants.STRESSES));
       }
-      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LegacySend2DResults))
+      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_2D_RESULTS))
       {
         Element2DAnalyticalResultConverter = new(
           sapModel,
@@ -53,7 +53,7 @@ namespace ConverterCSIShared.Models
 
     private void DefineElement1DResultsConverter(cSapModel sapModel, Dictionary<string, string> settings, IEnumerable<LoadCase> loadCases, IEnumerable<LoadCombination> loadCombinations)
     {
-      if (settings.TryGetValue(Constants.Results1dSlug, out var selection1D)
+      if (settings.TryGetValue(Constants.RESULTS_1D_SLUG, out var selection1D)
             && !string.IsNullOrEmpty(selection1D)
             && selection1D.Split(new string[] { ", " }, StringSplitOptions.None) is string[] results1DToSend)
       {
@@ -64,12 +64,12 @@ namespace ConverterCSIShared.Models
           new HashSet<string>(GetSpandrelNames(sapModel)),
           loadCombinations,
           loadCases,
-          results1DToSend.Contains(Constants.BeamForces),
-          results1DToSend.Contains(Constants.BraceForces),
-          results1DToSend.Contains(Constants.ColumnForces),
-          results1DToSend.Contains(Constants.OtherForces));
+          results1DToSend.Contains(Constants.BEAM_FORCES),
+          results1DToSend.Contains(Constants.BRACE_FORCES),
+          results1DToSend.Contains(Constants.COLUMN_FORCES),
+          results1DToSend.Contains(Constants.OTHER_FORCES));
       }
-      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LegacySend1DResults))
+      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_1D_RESULTS))
       {
         Element1DAnalyticalResultConverter = new(
           sapModel,
@@ -87,7 +87,7 @@ namespace ConverterCSIShared.Models
 
     private void DefineNodeResultsConverter(cSapModel sapModel, Dictionary<string, string> settings, IEnumerable<LoadCase> loadCases, IEnumerable<LoadCombination> loadCombinations)
     {
-      if (settings.TryGetValue(Constants.ResultsNodeSlug, out var selection)
+      if (settings.TryGetValue(Constants.RESULTS_NODE_SLUG, out var selection)
             && !string.IsNullOrEmpty(selection)
             && selection.Split(',') is string[] resultsToSend)
       {
@@ -95,12 +95,12 @@ namespace ConverterCSIShared.Models
           sapModel,
           loadCombinations,
           loadCases,
-          resultsToSend.Contains(Constants.Displacements),
-          resultsToSend.Contains(Constants.Forces),
-          resultsToSend.Contains(Constants.Velocities),
-          resultsToSend.Contains(Constants.Accelerations));
+          resultsToSend.Contains(Constants.DISPLACEMENTS),
+          resultsToSend.Contains(Constants.FORCES),
+          resultsToSend.Contains(Constants.VELOCITIES),
+          resultsToSend.Contains(Constants.ACCELERATIONS));
       }
-      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LegacySendNodeResults))
+      else if (GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_NODE_RESULTS))
       {
         NodeAnalyticalResultsConverter = new(
           sapModel,
@@ -120,7 +120,7 @@ namespace ConverterCSIShared.Models
       bool shouldSendAllLoadCases = ShouldSendResultsBasedOnLegacySettings(settings);
       
       sapModel.Results.Setup.DeselectAllCasesAndCombosForOutput();
-      if (!settings.TryGetValue("load-cases", out string loadCasesCommaSeparated)
+      if (!settings.TryGetValue(Constants.RESULTS_LOAD_CASES_SLUG, out string loadCasesCommaSeparated)
         || string.IsNullOrEmpty(loadCasesCommaSeparated))
       {
         // if not checking for legacy settings then we could just exit here
@@ -154,9 +154,9 @@ namespace ConverterCSIShared.Models
 
     private static bool ShouldSendResultsBasedOnLegacySettings(Dictionary<string, string> settings)
     {
-      bool legacySendNodes = GetLegacyBoolSettingOrFalse(settings, Constants.LegacySendNodeResults);
-      bool legacySendElement1D = GetLegacyBoolSettingOrFalse(settings, Constants.LegacySend1DResults);
-      bool legacySendElement2D = GetLegacyBoolSettingOrFalse(settings, Constants.LegacySend2DResults);
+      bool legacySendNodes = GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_NODE_RESULTS);
+      bool legacySendElement1D = GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_1D_RESULTS);
+      bool legacySendElement2D = GetLegacyBoolSettingOrFalse(settings, Constants.LEGACY_SEND_2D_RESULTS);
 
       return legacySendNodes || legacySendElement1D || legacySendElement2D;
     }

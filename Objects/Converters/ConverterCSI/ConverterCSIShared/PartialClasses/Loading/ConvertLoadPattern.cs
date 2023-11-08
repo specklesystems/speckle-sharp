@@ -34,8 +34,7 @@ namespace Objects.Converter.CSI
 
         SpeckleModel.loads.Add(gravityLoad);
       }
-      if (SpeckleModel.loads.Contains(speckleLoadCase)) { }
-      else
+      if (!SpeckleModel.loads.Contains(speckleLoadCase))
       {
         SpeckleModel.loads.Add(speckleLoadCase);
       }

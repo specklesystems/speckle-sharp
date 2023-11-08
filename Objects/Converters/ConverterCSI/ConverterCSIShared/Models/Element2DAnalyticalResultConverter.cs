@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ConverterCSIShared.Extensions;
 using CSiAPIv1;
-using Objects.Structural.Analysis;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;
 using Speckle.Core.Models;
@@ -17,6 +16,7 @@ namespace ConverterCSIShared.Models
     private readonly Dictionary<string, Base> loadCombinationsAndCases;
     private readonly bool sendForces;
     private readonly bool sendStresses;
+
     public Element2DAnalyticalResultConverter(
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
@@ -32,6 +32,7 @@ namespace ConverterCSIShared.Models
       {
         this.loadCombinationsAndCases.Add(combo.name, combo);
       }
+
       foreach (var loadCase in loadCases)
       {
         this.loadCombinationsAndCases.Add(loadCase.name, loadCase);

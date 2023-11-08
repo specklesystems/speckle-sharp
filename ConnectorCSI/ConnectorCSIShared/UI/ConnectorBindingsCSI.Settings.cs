@@ -10,26 +10,27 @@ namespace Speckle.ConnectorCSI.UI
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
     // WARNING: These strings need to have the same value as the strings in ConverterCSIUtils
-    public const string ResultsNodeSlug = "node-results";
-    public const string Results1dSlug = "1d-results";
-    public const string Results2dSlug = "2d-results";
+    public const string RESULTS_NODE_SLUG = "node-results";
+    public const string RESULTS_1D_SLUG = "1d-results";
+    public const string RESULTS_2D_SLUG = "2d-results";
+    public const string RESULTS_LOAD_CASES_SLUG = "load-cases";
 
-    public const string BeamForces = "Beam Forces";
-    public const string BraceForces = "Brace Forces";
-    public const string ColumnForces = "Column Forces";
-    public const string OtherForces = "Other Forces";
-    public const string Forces = "Forces";
-    public const string Stresses = "Stresses";
-    public const string Displacements = "Displacements";
-    public const string Velocities = "Velocities";
-    public const string Accelerations = "Accelerations";
+    public const string BEAM_FORCES = "Beam Forces";
+    public const string BRACE_FORCES = "Brace Forces";
+    public const string COLUMN_FORCES = "Column Forces";
+    public const string OTHER_FORCES = "Other Forces";
+    public const string FORCES = "Forces";
+    public const string STRESSES = "Stresses";
+    public const string DISPLACEMENTS = "Displacements";
+    public const string VELOCITIES = "Velocities";
+    public const string ACCELERATIONS = "Accelerations";
     public override List<ISetting> GetSettings()
     {
       return new List<ISetting>
       {
         new MultiSelectBoxSetting
         {
-          Slug = "load-cases",
+          Slug = RESULTS_LOAD_CASES_SLUG,
           Name = "Load Case Results To Send",
           Icon = "Link",
           Description = "Only the analytical results that belong to the load combinations selected here \nwill be sent to Speckle",
@@ -38,29 +39,29 @@ namespace Speckle.ConnectorCSI.UI
         
         new MultiSelectBoxSetting
         {
-          Slug = ResultsNodeSlug,
+          Slug = RESULTS_NODE_SLUG,
           Name = "Node Results To Send",
           Icon = "Link",
           Description = "Determines which node results are sent to Speckle",
-          Values = new List<string>() { Displacements, Forces, Velocities, Accelerations }
+          Values = new List<string>() { DISPLACEMENTS, FORCES, VELOCITIES, ACCELERATIONS }
         },
         
         new MultiSelectBoxSetting
         {
-          Slug = Results1dSlug,
+          Slug = RESULTS_1D_SLUG,
           Name = "1D Element Results To Send",
           Icon = "Link",
           Description = "Determines which 1D element results and sent to Speckle",
-          Values = new List<string>() { BeamForces, BraceForces, ColumnForces, OtherForces }
+          Values = new List<string>() { BEAM_FORCES, BRACE_FORCES, COLUMN_FORCES, OTHER_FORCES }
         },
         
         new MultiSelectBoxSetting
         {
-          Slug = Results2dSlug,
+          Slug = RESULTS_2D_SLUG,
           Name = "2D Element Results To Send",
           Icon = "Link",
           Description = "Determines which 2D element results are computed and sent to Speckle",
-          Values = new List<string>() { Forces, Stresses }
+          Values = new List<string>() { FORCES, STRESSES }
         },
       };
     }

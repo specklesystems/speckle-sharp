@@ -29,15 +29,5 @@ namespace ConverterCSIShared.Extensions
 
       throw (T)Activator.CreateInstance(typeof(T), message);
     }
-    public static void LogFailureAndProvideDefault<T>(this int success, string message)
-      where T : Exception
-    { 
-      if (success == 0)
-      {
-        return;
-      }
-
-      throw (T)Activator.CreateInstance(typeof(T), message);
-    }
   }
 }

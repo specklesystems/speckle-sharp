@@ -23,6 +23,7 @@ namespace ConverterCSIShared.Models
     private readonly bool sendBraceForces;
     private readonly bool sendColumnForces;
     private readonly bool sendOtherForces;
+
     public Element1DAnalyticalResultConverter(
       cSapModel sapModel,
       HashSet<string> frameNames,
@@ -126,7 +127,7 @@ namespace ConverterCSIShared.Models
       );
 
       // Value used to normalized output station of forces between 0 and 1
-      var lengthOf1dElement = objSta.Max();
+      double lengthOf1dElement = objSta.Max();
 
       return CreateLoadCombinationResults(
         elementName,
@@ -142,6 +143,7 @@ namespace ConverterCSIShared.Models
         m2,
         m3);
     }
+
     private ResultSet1D GetOrCreateResult(Dictionary<string, ResultSet1D> dict, string loadCaseName)
     {
       if (!dict.TryGetValue(loadCaseName, out ResultSet1D comboResults))
@@ -155,24 +157,23 @@ namespace ConverterCSIShared.Models
       }
       return comboResults;
     }
+
     private ICollection<ResultSet1D> GetAnalysisResultsForPier(string elementName)
     {
       int forcesSuccess = -1;
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] storyName,
-        pierName,
-        loadCase,
-        location;
-      storyName = pierName = loadCase = location = new string[1];
-      double[] p,
-        v2,
-        v3,
-        t,
-        m2,
-        m3;
-      p = v2 = v3 = t = m2 = m3 = new double[1];
+      var storyName = Array.Empty<string>();
+      var pierName = Array.Empty<string>();
+      var loadCase = Array.Empty<string>();
+      var location = Array.Empty<string>();
+      var p = Array.Empty<double>();
+      var v2 = Array.Empty<double>();
+      var v3 = Array.Empty<double>();
+      var t = Array.Empty<double>();
+      var m2 = Array.Empty<double>();
+      var m3 = Array.Empty<double>();
 
       forcesSuccess = sapModel.Results.PierForce(
         ref numberOfResults,
@@ -209,24 +210,23 @@ namespace ConverterCSIShared.Models
         return 0;
       }
     }
+
     private ICollection<ResultSet1D> GetAnalysisResultsForSpandrel(string elementName)
     {
       int forcesSuccess = -1;
 
       // Reference variables for CSI API
       int numberOfResults = 0;
-      string[] storyName,
-        spandrelName,
-        loadCase,
-        location;
-      storyName = spandrelName = loadCase = location = new string[1];
-      double[] p,
-        v2,
-        v3,
-        t,
-        m2,
-        m3;
-      p = v2 = v3 = t = m2 = m3 = new double[1];
+      var storyName = Array.Empty<string>();
+      var spandrelName = Array.Empty<string>();
+      var loadCase = Array.Empty<string>();
+      var location = Array.Empty<string>();
+      var p = Array.Empty<double>();
+      var v2 = Array.Empty<double>();
+      var v3 = Array.Empty<double>();
+      var t = Array.Empty<double>();
+      var m2 = Array.Empty<double>();
+      var m3 = Array.Empty<double>();
 
       forcesSuccess = sapModel.Results.SpandrelForce(
         ref numberOfResults,

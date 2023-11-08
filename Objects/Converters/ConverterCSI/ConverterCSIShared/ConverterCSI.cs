@@ -266,7 +266,7 @@ namespace Objects.Converter.CSI
           returnObject = SpeckleModel;
           break;
         case "AnalysisResults":
-          ResultsToSpeckle();
+          returnObject = ResultsToSpeckle();
           break;
         case "Stories":
           returnObject = StoriesToSpeckle();

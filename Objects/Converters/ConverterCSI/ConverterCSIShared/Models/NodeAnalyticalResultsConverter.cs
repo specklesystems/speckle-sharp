@@ -33,6 +33,7 @@ namespace ConverterCSIShared.Models
       {
         this.loadCombinationsAndCases.Add(combo.name, combo);
       }
+
       foreach (var loadCase in loadCases)
       {
         this.loadCombinationsAndCases.Add(loadCase.name, loadCase);

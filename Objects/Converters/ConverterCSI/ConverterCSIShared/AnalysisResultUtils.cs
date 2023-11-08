@@ -72,6 +72,7 @@ namespace ConverterCSIShared
         ref M3
       ).IsSuccessful();
     }
+
     public delegate int ApiResultMethodForces(
       string name,
       eItemTypeElm eItemType,
@@ -89,6 +90,7 @@ namespace ConverterCSIShared
       ref double[] xx,
       ref double[] yy,
       ref double[] zz);
+
     public static bool TryGetAPIResult(
       ApiResultMethodForces apiResultMethod,
       string nodeName,
