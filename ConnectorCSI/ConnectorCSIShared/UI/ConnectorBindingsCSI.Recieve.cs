@@ -1,4 +1,4 @@
-﻿using ConnectorCSI.Storage;
+using ConnectorCSI.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 using Serilog.Context;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Logging;
+using Speckle.Core.Kits.ConverterInterfaces;
 
 namespace Speckle.ConnectorCSI.UI
 {
@@ -38,7 +40,7 @@ namespace Speckle.ConnectorCSI.UI
 
       var kit = KitManager.GetDefaultKit();
       var appName = GetHostAppVersion(Model);
-      var converter = kit.LoadConverter(appName);
+      ISpeckleConverter converter = kit.LoadConverter(appName);
 
       // set converter settings as tuples (setting slug, setting selection)
       // for csi, these must go before the SetContextDocument method.
@@ -149,6 +151,11 @@ namespace Speckle.ConnectorCSI.UI
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
+      }
+
+      if (converter is IFinalizable finalizable)
+      {
+        finalizable.FinalizeConversion();
       }
 
       return conversionResults;
