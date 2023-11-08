@@ -24,7 +24,16 @@ public class ConfigBinding : IBinding
   [PublicAPI]
   public UiConfig GetConfig()
   {
-    return GetOrInitConfig();
+    try
+    {
+      return GetOrInitConfig();
+    }
+    catch (Exception e)
+    {
+      UiConfig uiConfig = InitDefaultConfig();
+      ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(uiConfig, _serializerOptions));
+      return uiConfig;
+    }
   }
   
   public void UpdateGlobalConfig(GlobalConfig newGlobalConfig)
