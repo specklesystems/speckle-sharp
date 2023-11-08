@@ -42,23 +42,22 @@ namespace ConverterRevitShared.Models
       }
     }
 
-    private void AddPointsToPopulatedOutline(List<Point> pointsToAdd, int? indexToBeInserted)
+    private void AddPointsToPopulatedOutline(List<Point> pointsToAdd, int insertIndex)
     {
-      int insertIndex = indexToBeInserted == null ? outlinePoints.Count : indexToBeInserted.Value;
       Point previousPoint = outlinePoints[insertIndex];
 
       if (previousPoint.DistanceTo(pointsToAdd.First()) < POINT_TOLERANCE)
       {
         int prevNumOrLast = insertIndex == 0 ? outlinePoints.Count - 1 : insertIndex - 1;
         RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, prevNumOrLast);
-        outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
+        outlinePoints.InsertRange(insertIndex, pointsToAdd.Skip(1));
       }
       else if (previousPoint.DistanceTo(pointsToAdd.Last()) < POINT_TOLERANCE)
       {
         pointsToAdd.Reverse();
         int nextNumOrZero = insertIndex == outlinePoints.Count - 1 ? 0 : insertIndex + 1;
         RemoveLastPointToAddIfItAlreadyExists(pointsToAdd, nextNumOrZero);
-        outlinePoints.InsertRange(indexToBeInserted.Value, pointsToAdd.Skip(1));
+        outlinePoints.InsertRange(insertIndex, pointsToAdd.Skip(1));
       }
       else
       {
@@ -89,12 +88,8 @@ namespace ConverterRevitShared.Models
           .Select(GetLineOverlappingOutlineData)
           .ToList();
 
-        if (!lineOverlapData.Any(data => data.OverlapsOutline))
-        {
-          continue;
-        }
-
-        if (RemoveIndicesFromOutline(lineOverlapData) is not int indexToAddTo)
+        if (!lineOverlapData.Any(data => data.OverlapsOutline)
+          || RemoveIndicesFromOutline(lineOverlapData) is not int indexToAddTo)
         {
           continue;
         }
@@ -230,7 +225,7 @@ namespace ConverterRevitShared.Models
     }
   }
 
-  public class LineOverlappingOutlineData
+  public readonly struct LineOverlappingOutlineData
   {
     public LineOverlappingOutlineData(
       Line line, 
