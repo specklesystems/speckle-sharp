@@ -264,6 +264,8 @@ namespace Objects.Converter.Revit
         {
           shape = speckleShape,
           number = revitRebar.Quantity,
+          startHook = speckleStartHook,
+          endHook = speckleEndHook,
           hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar,
           hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar,
           volume = revitRebar.Volume,
@@ -273,15 +275,6 @@ namespace Objects.Converter.Revit
           barPositions = revitRebar.NumberOfBarPositions,
           displayValue = centerlines
         };
-
-      if (speckleStartHook != null)
-      {
-        speckleRebar.startHook = speckleStartHook;
-      }
-      if (speckleEndHook != null)
-      {
-        speckleRebar.endHook = speckleEndHook;
-      }
 
       // skip display value as meshes for now
       // GetElementDisplayValue(revitRebar, SolidDisplayValueOptions);

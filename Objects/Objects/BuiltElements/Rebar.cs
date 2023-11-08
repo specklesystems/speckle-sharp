@@ -236,12 +236,12 @@ namespace Objects.BuiltElements.Revit
       get => revitStartHook;
       set
       {
-        if (value is not RevitRebarHook h || value is not null)
+        if (value is not RevitRebarHook && value is not null)
         {
           throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
         }
 
-        revitStartHook = h;
+        revitStartHook = (RevitRebarHook)value;
       }
     }
 
@@ -253,12 +253,12 @@ namespace Objects.BuiltElements.Revit
       get => revitEndHook;
       set
       {
-        if (value is not RevitRebarHook h || value is not null)
+        if (value is not RevitRebarHook && value is not null)
         {
           throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
         }
 
-        revitEndHook = h;
+        revitEndHook = (RevitRebarHook)value;
       }
     }
 
