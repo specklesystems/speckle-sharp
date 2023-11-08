@@ -1,21 +1,15 @@
-using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.CSI.Geometry;
 using Objects.BuiltElements;
-using ConverterCSIShared.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    private ETABSGridLineDefinitionTable gridLineDefinitionTable;
-    private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
-
     public void GridLineToNative(GridLine gridline)
     {
       GridLineDefinitionTable.AddCartesian(gridline);
-      GridLineDefinitionTable.ApplyEditedTables();
     }
 
     public CSIGridLines gridLinesToSpeckle(string name)
