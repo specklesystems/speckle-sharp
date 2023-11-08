@@ -55,7 +55,7 @@ namespace Objects.BuiltElements
     /// Null indicates no start hook
     /// </remarks>
     [DetachProperty]
-    public virtual RebarHook startHook { get; set; }
+    public virtual RebarHook? startHook { get; set; }
 
     /// <summary>
     /// The end hook of bars in the rebar group
@@ -64,7 +64,7 @@ namespace Objects.BuiltElements
     /// Null indicates no end hook
     /// </remarks>
     [DetachProperty]
-    public virtual RebarHook endHook { get; set; }
+    public virtual RebarHook? endHook { get; set; }
 
     public string units { get; set; }
 
@@ -231,14 +231,14 @@ namespace Objects.BuiltElements.Revit
     [JsonIgnore]
     public RevitRebarShape revitShape { get; set; }
 
-    public override RebarHook startHook
+    public override RebarHook? startHook
     {
       get => revitStartHook;
       set
       {
-        if (value is not RevitRebarHook h)
+        if (value is not RevitRebarHook h || value is not null)
         {
-          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)}");
+          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
         }
 
         revitStartHook = h;
@@ -246,16 +246,16 @@ namespace Objects.BuiltElements.Revit
     }
 
     [JsonIgnore]
-    public RevitRebarHook revitStartHook { get; set; }
+    public RevitRebarHook? revitStartHook { get; set; }
 
-    public override RebarHook endHook
+    public override RebarHook? endHook
     {
       get => revitEndHook;
       set
       {
-        if (value is not RevitRebarHook h)
+        if (value is not RevitRebarHook h || value is not null)
         {
-          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)}");
+          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
         }
 
         revitEndHook = h;
@@ -263,7 +263,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     [JsonIgnore]
-    public RevitRebarHook revitEndHook { get; set; }
+    public RevitRebarHook? revitEndHook { get; set; }
 
     public string family { get; set; }
     public string type { get; set; }

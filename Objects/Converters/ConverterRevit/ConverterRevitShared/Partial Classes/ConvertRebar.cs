@@ -7,6 +7,7 @@ using Autodesk.Revit.Exceptions;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json.Linq;
 using DB = Autodesk.Revit.DB;
 using Vector = Objects.Geometry.Vector;
 
@@ -262,8 +263,6 @@ namespace Objects.Converter.Revit
         new()
         {
           shape = speckleShape,
-          startHook = speckleStartHook,
-          endHook = speckleEndHook,
           number = revitRebar.Quantity,
           hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar,
           hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar,
@@ -274,6 +273,15 @@ namespace Objects.Converter.Revit
           barPositions = revitRebar.NumberOfBarPositions,
           displayValue = centerlines
         };
+
+      if (speckleStartHook != null)
+      {
+        speckleRebar.startHook = speckleStartHook;
+      }
+      if (speckleEndHook != null)
+      {
+        speckleRebar.endHook = speckleEndHook;
+      }
 
       // skip display value as meshes for now
       // GetElementDisplayValue(revitRebar, SolidDisplayValueOptions);
