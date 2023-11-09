@@ -141,10 +141,10 @@ namespace Objects.BuiltElements.Archicad
       get => archicadLevel;
       internal set
       {
-        if (value is not ArchicadLevel l)
+        if (value is ArchicadLevel or null)
+          archicadLevel = value as ArchicadLevel;
+        else
           throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
-
-        archicadLevel = l;
       }
     }
 
