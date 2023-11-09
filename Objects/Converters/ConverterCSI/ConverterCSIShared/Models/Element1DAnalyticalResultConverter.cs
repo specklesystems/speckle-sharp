@@ -287,7 +287,7 @@ namespace ConverterCSIShared.Models
         }
         Result1D result = new();
 
-        if (forcesSuccess.IsSuccessful())
+        if (ApiResultValidator.IsSuccessful(forcesSuccess))
         {
           result.position = positionCalculator(i);
           result.forceX = (float)p[i];

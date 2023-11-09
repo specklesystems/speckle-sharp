@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ConverterCSIShared.Extensions;
+using ConverterCSIShared.Models;
 using CSiAPIv1;
 using Objects.Structural.Loading;
 using Speckle.Core.Models;
@@ -16,13 +16,13 @@ namespace Objects.Converter.CSI
       eCNameType[] cNameTypes = null;
       string[] loadCaseNames = null;
       double[] scaleFactors = null;
-      Model.RespCombo.GetCaseList(
+      int success = Model.RespCombo.GetCaseList(
         loadComboName,
         ref numItems,
         ref cNameTypes,
         ref loadCaseNames,
-        ref scaleFactors)
-        .ThrowIfUnsuccessful($"Unable to get load cases for load combination named {loadComboName}");
+        ref scaleFactors);
+      ApiResultValidator.ThrowIfUnsuccessful(success, $"Unable to get load cases for load combination named {loadComboName}");
 
       List<double> factors = new();
       List<LoadCase> loadCases = new();
@@ -42,7 +42,8 @@ namespace Objects.Converter.CSI
     private CombinationType GetCombinationType(string loadComboName)
     {
       int comboType = 0;
-      if (!Model.RespCombo.GetTypeCombo(loadComboName, ref comboType).IsSuccessful())
+      int success = Model.RespCombo.GetTypeCombo(loadComboName, ref comboType);
+      if (!ApiResultValidator.IsSuccessful(success))
       {
         // todo : add default (unset) value for this enum?
         return CombinationType.LinearAdd;

@@ -17,9 +17,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ArcExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IntExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ApiResultValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\NodeAnalyticalResultsConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ResultsConverter.cs" />

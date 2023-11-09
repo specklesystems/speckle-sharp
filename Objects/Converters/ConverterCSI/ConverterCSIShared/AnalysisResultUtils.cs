@@ -1,4 +1,5 @@
 using ConverterCSIShared.Extensions;
+using ConverterCSIShared.Models;
 using CSiAPIv1;
 
 namespace ConverterCSIShared
@@ -56,7 +57,7 @@ namespace ConverterCSIShared
         return false;
       }
 
-      return apiResultMethod(
+      int success = apiResultMethod(
         nodeName,
         eItemTypeElm.Element,
         ref numberResults,
@@ -70,8 +71,8 @@ namespace ConverterCSIShared
         ref F3,
         ref M1,
         ref M2,
-        ref M3
-      ).IsSuccessful();
+        ref M3);
+      return ApiResultValidator.IsSuccessful(success);
     }
   }
 }

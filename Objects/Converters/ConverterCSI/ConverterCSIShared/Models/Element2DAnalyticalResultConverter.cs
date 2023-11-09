@@ -176,7 +176,7 @@ namespace ConverterCSIShared.Models
       {
         Result2D speckleResult2D = new();
         
-        if (forceSuccess.IsSuccessful())
+        if (ApiResultValidator.IsSuccessful(forceSuccess))
         {
           speckleResult2D.forceXX = (float)f11[i];
           speckleResult2D.forceYY = (float)f22[i];
@@ -188,7 +188,7 @@ namespace ConverterCSIShared.Models
           speckleResult2D.shearY = (float)v23[i];
         }
 
-        if (stressSuccess.IsSuccessful())
+        if (ApiResultValidator.IsSuccessful(stressSuccess))
         {
           speckleResult2D.stressTopXX = (float)S11Top[i];
           speckleResult2D.stressTopYY = (float)S22Top[i];
