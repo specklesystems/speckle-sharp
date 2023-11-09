@@ -76,14 +76,17 @@ namespace ConverterCSIShared.Models
       {
         return GetAnalysisResultsForFrame(elementName);
       }
-      else if (pierNames.Contains(elementName))
+      
+      if (pierNames.Contains(elementName))
       {
         return GetAnalysisResultsForPier(elementName);
       }
-      else if (spandrelNames.Contains(elementName))
+      
+      if (spandrelNames.Contains(elementName))
       {
         return GetAnalysisResultsForSpandrel(elementName);
       }
+
       throw new SpeckleException($"Unable to find category for Element1D with name {elementName}");
     }
 
