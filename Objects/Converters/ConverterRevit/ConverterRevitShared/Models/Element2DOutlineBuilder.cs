@@ -84,7 +84,8 @@ namespace ConverterRevitShared.Models
     {
       foreach (Polyline polyline in openingPolylines)
       {
-        List<LineOverlappingOutlineData> lineOverlapData = EnumeratePolyline(polyline)
+        List<LineOverlappingOutlineData> lineOverlapData = polyline
+          .EnumerateAsLines()
           .Select(GetLineOverlappingOutlineData)
           .ToList();
 
@@ -189,17 +190,6 @@ namespace ConverterRevitShared.Models
       else
       {
         allIndicesInvolved.Add(currentIndex);
-      }
-    }
-
-    static IEnumerable<Line> EnumeratePolyline(Polyline polyline)
-    {
-      List<Point> points = polyline.GetPoints();
-      Point previousPoint = points[0];
-      for (int i = 1; i < points.Count; i++)
-      {
-        yield return new Line(previousPoint, points[i], polyline.units);
-        previousPoint = points[i];
       }
     }
 
