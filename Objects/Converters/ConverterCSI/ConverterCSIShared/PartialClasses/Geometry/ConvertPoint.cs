@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Objects.Structural.Geometry;
 using Objects.Geometry;
 using System.Collections.Generic;
@@ -165,6 +165,10 @@ namespace Objects.Converter.CSI
             break;
         }
       }
+
+      speckleStructNode.AnalysisResults = resultsConverter?
+        .NodeAnalyticalResultsConverter?
+        .AnalyticalResultsToSpeckle(speckleStructNode.name);
 
       var GUID = "";
       Model.PointObj.GetGUID(name, ref GUID);

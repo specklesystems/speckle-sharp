@@ -2,6 +2,7 @@ using Objects.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Results;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -55,4 +56,6 @@ public class CSINode : Node
   public string? DiaphragmAssignment { get; set; }
 
   public DiaphragmOption DiaphragmOption { get; set; }
+  [DetachProperty]
+  public AnalyticalResults? AnalysisResults { get; set; }
 }

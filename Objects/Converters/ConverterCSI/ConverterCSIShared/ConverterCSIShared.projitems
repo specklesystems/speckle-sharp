@@ -9,6 +9,8 @@
     <Import_RootNamespace>ConverterCSIShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnalysisResultUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSIUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.DatabaseTableUtils.cs" />
@@ -17,6 +19,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ICurveExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\LineExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\PolycurveExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ApiResultValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DAnalyticalResultConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\NodeAnalyticalResultsConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ResultsConverter.cs" />
+    <Compile Include="..\ConverterCSIShared\Models\Element1DAnalyticalResultConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DatabaseTableWrapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ETABSGridLineDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Analysis\ConvertModelSettings.cs" />
@@ -39,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertStories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertTendon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)partialclasses\loading\ConvertLoadCombination.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\ConvertLoadPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading1DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading2DElements.cs" />
@@ -54,10 +62,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertSpring.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Properties\ConvertTendonProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultGlobal.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultNodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResults.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet1D.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Results\ConvertResultSet2D.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ToNativeScalingService.cs" />
   </ItemGroup>
 </Project>
