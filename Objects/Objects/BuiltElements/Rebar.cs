@@ -14,7 +14,8 @@ namespace Objects.BuiltElements
   /// <remarks>
   /// This class is not suitable for freeform rebar, which can have multiple shapes.
   /// </remarks>
-  public class RebarGroup<T> : Base, IHasVolume, IDisplayValue<List<ICurve>> where T : RebarShape
+  public class RebarGroup<T> : Base, IHasVolume, IDisplayValue<List<ICurve>>
+    where T : RebarShape
   {
     public RebarGroup() { }
 
