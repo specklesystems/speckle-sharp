@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
 using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Models;
 using StructuralUtilities.PolygonMesher;
@@ -13,6 +10,7 @@ using Objects.Structural.Properties;
 using Objects.Geometry;
 using ConverterCSIShared.Extensions;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI
 {
@@ -31,15 +29,15 @@ namespace Objects.Converter.CSI
 
     public void UpdateArea(Element2D area, string name, ApplicationObject appObj)
     {
-      var points = new string[0];
       var numPoints = 0;
-      Model.AreaObj.GetPoints(name, ref numPoints, ref points);
+      var points = Array.Empty<string>();
+      int success = Model.AreaObj.GetPoints(name, ref numPoints, ref points);
+      if (success != 0)
+        throw new ConversionException($"Failed to retrieve the names of the point object that define area: {name}");
+
+      bool connectivityChanged = points.Length != area.topology.Count;
 
       var pointsUpdated = new List<string>();
-      bool connectivityChanged = false;
-      if (points.Length != area.topology.Count)
-        connectivityChanged = true;
-
       for (int i = 0; i < area.topology.Count; i++)
       {
         if (i >= points.Length)
@@ -54,7 +52,6 @@ namespace Objects.Converter.CSI
           connectivityChanged = true;
       }
 
-      int success = 0;
       int numErrorMsgs = 0;
       string importLog = "";
       if (connectivityChanged)
@@ -62,13 +59,17 @@ namespace Objects.Converter.CSI
 #if SAP2000
         var refArray = pointsUpdated.ToArray();
         success = Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
+        if (success != 0)
+          throw new ConversionException(
+            $"Failed to modify the connectivity of the area: {name}"
+          );
 #else
         int tableVersion = 0;
         int numberRecords = 0;
         string[] fieldsKeysIncluded = null;
         string[] tableData = null;
-        string floorTableKey = "Floor Object Connectivity";
-        Model.DatabaseTables.GetTableForEditingArray(
+        const string floorTableKey = "Floor Object Connectivity";
+        success = Model.DatabaseTables.GetTableForEditingArray(
           floorTableKey,
           "ThisParamIsNotActiveYet",
           ref tableVersion,
@@ -76,6 +77,8 @@ namespace Objects.Converter.CSI
           ref numberRecords,
           ref tableData
         );
+        if (success != 0)
+          throw new ConversionException($"Failed to retrieve database table for editing table key: {floorTableKey}");
 
         // if the floor object now has more points than it previously had
         // and it has more points that any other floor object, then updating would involve adding a new column to this array
@@ -83,7 +86,10 @@ namespace Objects.Converter.CSI
         if (pointsUpdated.Count > points.Length && pointsUpdated.Count > fieldsKeysIncluded.Length - 2)
         {
           string GUID = "";
-          Model.AreaObj.GetGUID(name, ref GUID);
+          success = Model.AreaObj.GetGUID(name, ref GUID);
+          if (success != 0)
+            throw new ConversionException($"Failed to retrieve the GUID for area: {name}");
+
           var updatedArea = AreaToSpeckle(name);
 
           updatedArea.applicationId = GUID;
@@ -94,7 +100,7 @@ namespace Objects.Converter.CSI
           var dummyAppObj = new ApplicationObject(null, null);
           AreaToNative(updatedArea, dummyAppObj);
           if (dummyAppObj.Status != ApplicationObject.State.Created)
-            success = 1;
+            throw new SpeckleException("Area failed!"); //This should never happen, AreaToNative should throw
         }
         else
         {
@@ -133,17 +139,22 @@ namespace Objects.Converter.CSI
             ref importLog
           );
 
-          if (success == 0)
+          if (success != 0)
           {
-            int numItems = 0;
-            int[] objTypes = null;
-            string[] objNames = null;
-            int[] pointNums = null;
-            foreach (var node in points)
+            appObj.Log.Add(importLog);
+            throw new ConversionException("Failed to apply edited database tables");
+          }
+
+          int numItems = 0;
+          int[] objTypes = null;
+          string[] objNames = null;
+          int[] pointNums = null;
+          foreach (var node in points)
+          {
+            Model.PointObj.GetConnectivity(node, ref numItems, ref objTypes, ref objNames, ref pointNums);
+            if (numItems == 0)
             {
-              Model.PointObj.GetConnectivity(node, ref numItems, ref objTypes, ref objNames, ref pointNums);
-              if (numItems == 0)
-                Model.PointObj.DeleteSpecialPoint(node);
+              Model.PointObj.DeleteSpecialPoint(node);
             }
           }
         }
@@ -151,28 +162,19 @@ namespace Objects.Converter.CSI
       }
 
       SetAreaProperties(name, area);
-      if (success == 0)
-      {
-        string guid = null;
-        Model.AreaObj.GetGUID(name, ref guid);
+
+      string guid = null;
+      Model.AreaObj.GetGUID(name, ref guid);
+
+      appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Area{Delimiter}{name}");
+
+      if (numErrorMsgs != 0)
         appObj.Update(
-          status: ApplicationObject.State.Updated,
-          createdId: guid,
-          convertedItem: $"Area{Delimiter}{name}"
-        );
-        if (numErrorMsgs != 0)
-          appObj.Update(
-            log: new List<string>()
-            {
-              $"Area may not have updated successfully. Number of error messages for operation is {numErrorMsgs}",
-              importLog
-            }
-          );
-      }
-      else
-        appObj.Update(
-          status: ApplicationObject.State.Failed,
-          log: new List<string>() { "Failed to apply edited database tables", importLog }
+          log: new List<string>()
+          {
+            $"Area may not have updated successfully. Number of error messages for operation is {numErrorMsgs}",
+            importLog
+          }
         );
     }
 
@@ -197,7 +199,7 @@ namespace Objects.Converter.CSI
         );
       }
 
-      var name = CreateAreaFromPoints(area.topology.Select(t => t.basePoint), propName, out var success);
+      var name = CreateAreaFromPoints(area.topology.Select(t => t.basePoint), propName);
       SetAreaProperties(name, area);
 
       if (area.openings?.Count > 0)
@@ -207,16 +209,17 @@ namespace Objects.Converter.CSI
           string openingName;
           try
           {
-            openingName = CreateAreaFromPoints(opening.ToPoints(), propName, out _);
+            openingName = CreateAreaFromPoints(opening.ToPoints(), propName);
           }
-          catch
+          catch (Exception)
           {
             openingName = string.Empty;
           }
+
           var openingSuccess = Model.AreaObj.SetOpening(openingName, true);
           if (openingSuccess != 0)
           {
-            appObj.Update(logItem: $"unable to create opening with id {opening.id}");
+            appObj.Update(logItem: $"Unable to create opening with id {opening.id}");
           }
         }
       }
@@ -227,23 +230,16 @@ namespace Objects.Converter.CSI
       var guid = "";
       Model.AreaObj.GetGUID(name, ref guid);
 
-      if (success == 0)
-        appObj.Update(
-          status: ApplicationObject.State.Created,
-          createdId: guid,
-          convertedItem: $"Area{Delimiter}{name}"
-        );
-      else
-        appObj.Update(status: ApplicationObject.State.Failed);
+      appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Area{Delimiter}{name}");
     }
 
-    private string CreateAreaFromPoints(IEnumerable<Point> points, string propName, out int success)
+    private string CreateAreaFromPoints(IEnumerable<Point> points, string propName)
     {
       var name = "";
       int numPoints = 0;
-      var X = new List<double> { };
-      var Y = new List<double> { };
-      var Z = new List<double> { };
+      List<double> X = new();
+      List<double> Y = new();
+      List<double> Z = new();
 
       foreach (var point in points)
       {
@@ -268,23 +264,31 @@ namespace Objects.Converter.CSI
       var y = Y.ToArray();
       var z = Z.ToArray();
 
-      success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propName);
+      int success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propName);
+
+      if (success != 0)
+        throw new ConversionException($"Failed to add new area object for area {name} at coords {x} {y} {z}");
 
       return name;
     }
 
-    private string CreateOrGetProp(Property2D property, out bool isExactMatch)
+    private string? CreateOrGetProp(Property2D property, out bool isExactMatch)
     {
       int numberNames = 0;
-      string[] propNames = null;
-      Model.PropArea.GetNameList(ref numberNames, ref propNames);
+      string[] propNames = Array.Empty<string>();
+
+      int success = Model.PropArea.GetNameList(ref numberNames, ref propNames);
+      if (success != 0)
+        throw new ConversionException("Failed to retrieve the names of all defined area properties");
+
       isExactMatch = true;
 
       if (propNames.Contains(property?.name))
       {
         return property.name;
       }
-      else if (property is CSIProperty2D prop2D)
+
+      if (property is CSIProperty2D prop2D)
       {
         try
         {
@@ -303,7 +307,9 @@ namespace Objects.Converter.CSI
         return propNames.First();
       }
 
-      throw new Exception("Cannot create area because there aren't any area sections defined in the project file");
+      throw new ConversionException(
+        "Cannot create area because there aren't any area sections defined in the project file"
+      );
     }
 
     public void SetAreaProperties(string name, Element2D area)
@@ -441,9 +447,9 @@ namespace Objects.Converter.CSI
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);
       speckleStructArea.applicationId = GUID;
-      List<Base> elements = SpeckleModel == null ? new List<Base>() : SpeckleModel.elements;
-      List<string> application_Id = elements.Select(o => o.applicationId).ToList();
-      if (!application_Id.Contains(speckleStructArea.applicationId))
+      IList<Base> elements = SpeckleModel == null ? Array.Empty<Base>() : SpeckleModel.elements;
+      var applicationId = elements.Select(o => o.applicationId);
+      if (!applicationId.Contains(speckleStructArea.applicationId))
       {
         SpeckleModel?.elements.Add(speckleStructArea);
       }

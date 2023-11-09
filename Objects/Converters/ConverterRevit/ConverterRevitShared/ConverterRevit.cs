@@ -352,15 +352,14 @@ namespace Objects.Converter.Revit
           break;
         case DB.CombinableElement o:
           returnObject = CombinableElementToSpeckle(o);
-          break; 
-        
-// toposolid from Revit 2024
+          break;
+
+        // toposolid from Revit 2024
 #if (REVIT2024)
         case DB.Toposolid o:
           returnObject = ToposolidToSpeckle(o, out notes);
           break;
 #endif
-        
 #if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
@@ -621,6 +620,9 @@ namespace Objects.Converter.Revit
         case BERC.SpaceSeparationLine o:
           return SpaceSeparationLineToNative(o);
 
+        case BER.RevitRebarGroup o:
+          return RebarToNative(o);
+
         case BE.Roof o:
           return RoofToNative(o);
 
@@ -702,7 +704,7 @@ namespace Objects.Converter.Revit
         // gis
         case PolygonElement o:
           return PolygonElementToNative(o);
-        
+
 #if (REVIT2024)
         case RevitToposolid o:
           return ToposolidToNative(o);
@@ -848,7 +850,6 @@ namespace Objects.Converter.Revit
 #if (REVIT2024)
         RevitToposolid _ => true,
 #endif
-        
         BE.Topography _ => true,
         BER.RevitCurtainWallPanel _ => true,
         BER.RevitFaceWall _ => true,

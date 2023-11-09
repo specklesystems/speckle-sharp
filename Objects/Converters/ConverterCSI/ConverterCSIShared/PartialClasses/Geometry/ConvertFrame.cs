@@ -20,7 +20,7 @@ namespace Objects.Converter.CSI
 
       if (end1node == null || end2node == null)
       {
-        throw new ArgumentException($"Frame {element1D.name} does not have valid endpoints");
+        throw new ArgumentException($"Frame {element1D.name} does not have valid endpoints {end1node},{end2node}");
       }
 
       UpdateFrameLocation(name, end1node, end2node, appObj);
