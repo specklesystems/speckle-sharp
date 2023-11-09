@@ -156,7 +156,7 @@ namespace Objects.Converter.Revit
 
       if (!string.IsNullOrEmpty(family)) // try and match the family only.
       {
-        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family.ToLower());
       }
       
       if (match == null)
