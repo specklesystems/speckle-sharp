@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
       else if (MaterialIsAttachedToMEPSystem(element))
       {
         MaterialQuantity quantity = GetMaterialQuantityForMEPElement(element, units);
-        return quantity == null ? new List<MaterialQuantity>() : new List<MaterialQuantity>() { quantity };
+        return quantity == null ? Enumerable.Empty<MaterialQuantity>() : new List<MaterialQuantity>() { quantity };
       }
       else
       {

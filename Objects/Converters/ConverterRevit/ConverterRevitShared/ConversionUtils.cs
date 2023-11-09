@@ -278,9 +278,9 @@ namespace Objects.Converter.Revit
           speckleElement["units"] as string)?
           .ToList();
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
-        SpeckleLog.Logger.Error(e, "Error retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
+        SpeckleLog.Logger.Error(ex, "An exception occurred in the Revit API while retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
       }
     }
 
