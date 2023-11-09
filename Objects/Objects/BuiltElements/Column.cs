@@ -171,8 +171,10 @@ namespace Objects.BuiltElements.Archicad
         {
           archicadLevel = value as ArchicadLevel;
         }
-
-        throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
+        else
+        {
+          throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
+        }
       }
     }
 
