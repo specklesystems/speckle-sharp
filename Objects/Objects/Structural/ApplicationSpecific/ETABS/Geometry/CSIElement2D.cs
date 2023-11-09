@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Results;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -44,4 +45,6 @@ public class CSIElement2D : Element2D
   public string? SpandrelAssignment { get; set; }
   public double[]? modifiers { get; set; }
   public bool Opening { get; set; }
+  [DetachProperty]
+  public AnalyticalResults? AnalysisResults { get; set; }
 }

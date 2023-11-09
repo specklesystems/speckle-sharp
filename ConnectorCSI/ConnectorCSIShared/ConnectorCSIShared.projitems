@@ -19,5 +19,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnusedClass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorCSIUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Util\ResultUtils.cs" />
   </ItemGroup>
 </Project>
