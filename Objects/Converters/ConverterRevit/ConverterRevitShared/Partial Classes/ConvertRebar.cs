@@ -118,26 +118,23 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+        return appObj;
       }
-      finally
+
+      SetInstanceParameters(rebar, speckleRebar);
+
+      // set additional params
+      if (speckleRebar.barPositions > 0)
       {
-        if (rebar != null)
-        {
-          SetInstanceParameters(rebar, speckleRebar);
-
-          // set additional params
-          if (speckleRebar.barPositions > 0)
-          {
-            rebar.NumberOfBarPositions = speckleRebar.barPositions;
-          }
-
-          // deleting instead of updating for now!
-          if (docObj != null)
-            Doc.Delete(docObj.Id);
-
-          appObj.Update(status: ApplicationObject.State.Created, createdId: rebar.UniqueId, convertedItem: rebar);
-        }
+        rebar.NumberOfBarPositions = speckleRebar.barPositions;
       }
+
+      // deleting instead of updating for now!
+      if (docObj != null)
+        Doc.Delete(docObj.Id);
+
+      appObj.Update(status: ApplicationObject.State.Created, createdId: rebar.UniqueId, convertedItem: rebar);
+
       return appObj;
     }
 

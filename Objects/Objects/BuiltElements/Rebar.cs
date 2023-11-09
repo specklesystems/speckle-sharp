@@ -14,7 +14,7 @@ namespace Objects.BuiltElements
   /// <remarks>
   /// This class is not suitable for freeform rebar, which can have multiple shapes.
   /// </remarks>
-  public class RebarGroup : Base, IHasVolume, IDisplayValue<List<ICurve>>
+  public class RebarGroup<T> : Base, IHasVolume, IDisplayValue<List<ICurve>> where T : RebarShape
   {
     public RebarGroup() { }
 
@@ -22,7 +22,7 @@ namespace Objects.BuiltElements
     /// The shape of the rebar group
     /// </summary>
     [DetachProperty]
-    public virtual RebarShape shape { get; set; }
+    public RebarShape shape { get; set; }
 
     /// <summary>
     /// The number of rebars in the rebar group
@@ -66,8 +66,6 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public virtual RebarHook? endHook { get; set; }
 
-    public string units { get; set; }
-
     /// <summary>
     /// The display representation of the rebar group as centerline curves
     /// </summary>
@@ -78,6 +76,8 @@ namespace Objects.BuiltElements
     /// The total volume of the rebar group.
     /// </summary>
     public double volume { get; set; }
+
+    public string units { get; set; }
   }
 
   /// <summary>
@@ -106,7 +106,7 @@ namespace Objects.BuiltElements
     public List<ICurve> curves { get; set; } = new();
 
     /// <summary>
-    /// The diameter of the rebar shape
+    /// The diameter of the rebar bar
     /// </summary>
     public double barDiameter { get; set; }
 
@@ -144,6 +144,7 @@ namespace Objects.BuiltElements
     StirrupTapered = 40
   }
 
+  #region Obsolete
   [Obsolete("Deprecated in 2.17: Use the RebarGroup class instead")]
   public class Rebar : Base, IHasVolume, IDisplayValue<List<Mesh>>
   {
@@ -156,21 +157,13 @@ namespace Objects.BuiltElements
 
     public double volume { get; set; }
   }
+  #endregion
 }
 
 namespace Objects.BuiltElements.TeklaStructures
 {
-  public class TeklaRebarGroup : RebarGroup
-  {
-    public string name { get; set; }
-    public double classNumber { get; set; }
-    public string size { get; set; }
-
-    [DetachProperty]
-    public StructuralMaterial material { get; set; }
-  }
-
-  [Obsolete("Deprecated in 2.17: Use TeklaRebarGroup class instead")]
+  #region Obsolete
+  [Obsolete("Deprecated in 2.17: Create a TeklaRebarGroup class instead")]
   public class TeklaRebar : Rebar
   {
     public string name { get; set; }
@@ -188,7 +181,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public StructuralMaterial material { get; set; }
   }
 
-  [Obsolete("Deprecated in 2.17: Use RebarHook class instead")]
+  [Obsolete("Deprecated in 2.17: Use a RebarHook class instead")]
   public class Hook : Base
   {
     public double angle { get; set; }
@@ -206,27 +199,14 @@ namespace Objects.BuiltElements.TeklaStructures
     HOOK_180_DEGREES = 3,
     CUSTOM_HOOK = 4
   }
+  #endregion
 }
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitRebarGroup : RebarGroup
+  public class RevitRebarGroup : RebarGroup<RevitRebarShape>
   {
     public RevitRebarGroup() { }
-
-    public override RebarShape shape
-    {
-      get => revitShape;
-      set
-      {
-        if (value is not RevitRebarShape s)
-        {
-          throw new ArgumentException($"Expected object of type {nameof(RevitRebarShape)}");
-        }
-
-        revitShape = s;
-      }
-    }
 
     [JsonIgnore]
     public RevitRebarShape revitShape { get; set; }
@@ -291,7 +271,8 @@ namespace Objects.BuiltElements.Revit
     public string elementId { get; set; }
   }
 
-  [Obsolete("Deprecated in 2.17: Use RevitRebarGroup class instead")]
+  #region Obsolete
+  [Obsolete("Deprecated in 2.17: Use RevitRebarGroup class instead", true)]
   public class RevitRebar : Rebar
   {
     public string family { get; set; }
@@ -303,4 +284,5 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
   }
+  #endregion
 }
