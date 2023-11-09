@@ -154,9 +154,11 @@ namespace Objects.BuiltElements.Archicad
       internal set
       {
         if (value is ArchicadLevel or null)
+        {
           archicadLevel = value as ArchicadLevel;
-        else
-          throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
+        }
+
+        throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
       }
     }
 
