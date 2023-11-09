@@ -170,7 +170,7 @@ namespace Archicad.Converters
       {
         id = level.id,
         applicationId = level.applicationId,
-        elevation = level.elevation,
+        elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
         name = level.name
       };
     }
