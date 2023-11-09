@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       {
         double volume = element.GetMaterialVolume(matId);
         double area = element.GetMaterialArea(matId, false);
-        yield return Create(element, matId, area, volume, units);
+        yield return CreateMaterialQuantity(element, matId, area, volume, units);
       }
     }
 
@@ -58,8 +58,8 @@ namespace Objects.Converter.Revit
       DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
       var (solids, _) = GetSolidsAndMeshesFromElement(element, options);
 
-      var (area, volume) = GetAreaAndVolumeFromSolids(solids);
-      return Create(element, material.Id, area, volume, units);
+      (double area, double volume) = GetAreaAndVolumeFromSolids(solids);
+      return CreateMaterialQuantity(element, material.Id, area, volume, units);
     }
     
     private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromSolids(DB.Element element, string units)
@@ -69,12 +69,12 @@ namespace Objects.Converter.Revit
 
       foreach (ElementId matId in GetMaterialsFromSolids(solids))
       {
-        var (area, volume) = GetAreaAndVolumeFromSolids(solids, matId);
-        yield return Create(element, matId, area, volume, units);
+        (double area, double volume) = GetAreaAndVolumeFromSolids(solids, matId);
+        yield return CreateMaterialQuantity(element, matId, area, volume, units);
       }
     }
 
-    private MaterialQuantity Create(
+    private MaterialQuantity CreateMaterialQuantity(
       Element element,
       ElementId materialId,
       double areaRevitInternalUnits,
@@ -87,18 +87,23 @@ namespace Objects.Converter.Revit
       double volume = factor * factor * factor * volumeRevitInternalUnits;
       MaterialQuantity materialQuantity = new(speckleMaterial, volume, area, units);
 
-      if (LocationToSpeckle(element) is ICurve curve)
+      switch (element)
       {
-        materialQuantity["length"] = curve.length;
-      }
-      else if (element is DB.Architecture.Railing)
-      {
-        materialQuantity["length"] = (element as DB.Architecture.Railing).GetPath().Sum(e => e.Length) * factor;
-      }
-      else if (element is DB.Architecture.ContinuousRail)
-      {
-        materialQuantity["length"] = (element as DB.Architecture.ContinuousRail).GetPath().Sum(e => e.Length) * factor;
-      }
+        case DB.Architecture.Railing railing:
+          materialQuantity["length"] = railing.GetPath().Sum(e => e.Length) * factor;
+          break;
+
+        case DB.Architecture.ContinuousRail continuousRail:
+          materialQuantity["length"] = continuousRail.GetPath().Sum(e => e.Length) * factor;
+          break;
+
+        default:
+          if (LocationToSpeckle(element) is ICurve curve)
+          {
+            materialQuantity["length"] = curve.length;
+          }
+          break;
+      };
 
       return materialQuantity;
     }

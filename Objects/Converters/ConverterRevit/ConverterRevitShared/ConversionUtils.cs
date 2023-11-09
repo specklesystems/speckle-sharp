@@ -271,18 +271,17 @@ namespace Objects.Converter.Revit
       speckleElement["builtInCategory"] = builtInCategory.ToString();
 
       //NOTE: adds the quantities of all materials to an element
-      List<MaterialQuantity>? materialQuantities = null;
       try
       {
-        materialQuantities = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string)?
+        speckleElement["materialQuantities"] = MaterialQuantitiesToSpeckle(
+          revitElement,
+          speckleElement["units"] as string)?
           .ToList();
       }
       catch (Exception e)
       {
         SpeckleLog.Logger.Error(e, "Error retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
       }
-      if (materialQuantities != null)
-        speckleElement["materialQuantities"] = materialQuantities;
     }
 
     private void AddElementParamsToDict(
