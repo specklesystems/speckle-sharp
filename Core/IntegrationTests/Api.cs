@@ -306,7 +306,7 @@ public class Api
   )
   {
     // now let's send HTTP requests to each of these URLs in parallel
-    var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
+    var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
 
     // now let's send HTTP requests to each of these URLs in parallel
     await Parallel.ForEachAsync(
