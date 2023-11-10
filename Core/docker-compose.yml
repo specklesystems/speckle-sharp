@@ -98,6 +98,7 @@ services:
       S3_CREATE_BUCKET: "true"
 
       FILE_SIZE_LIMIT_MB: 100
+      MAX_PROJECT_MODELS_PER_PAGE: 500
 
       # TODO: Change this to a unique secret for this server
       SESSION_SECRET: "TODO:ReplaceWithLongString"
