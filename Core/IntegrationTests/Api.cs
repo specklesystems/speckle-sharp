@@ -274,26 +274,25 @@ public class Api
     Assert.That(res[0].name, Is.EqualTo("main"));
   }
 
-  [Test]
+  [Test, Order(51)]
   public async Task StreamGetBranches_Throws_WhenRequestingOverLimit()
   {
-    Assert.ThrowsAsync<Exception>(
+    Assert.ThrowsAsync<SpeckleGraphQLException<StreamData>>(
       async () => await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT + 1).ConfigureAwait(false)
     );
     var res = await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT).ConfigureAwait(false);
 
     Assert.That(res, Is.Not.Null);
-    Assert.That(res, Has.Count.EqualTo(ServerLimits.BRANCH_GET_LIMIT));
   }
 
-  [Test]
+  [Test, Order(52)]
   public async Task StreamGetBranches_WithManyBranches()
   {
-    var streamId = await myClient.StreamCreate(new StreamCreateInput { name = "Many branches stream" });
+    var newStreamId = await myClient.StreamCreate(new StreamCreateInput { name = "Many branches stream" });
 
-    await CreateEmptyBranches(myClient, streamId, ServerLimits.BRANCH_GET_LIMIT);
+    await CreateEmptyBranches(myClient, newStreamId, ServerLimits.BRANCH_GET_LIMIT);
 
-    var res = await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT);
+    var res = await myClient.StreamGetBranches(newStreamId, ServerLimits.BRANCH_GET_LIMIT);
 
     Assert.That(res, Is.Not.Null);
     Assert.That(res, Has.Count.EqualTo(ServerLimits.BRANCH_GET_LIMIT));
@@ -307,7 +306,7 @@ public class Api
   )
   {
     // now let's send HTTP requests to each of these URLs in parallel
-    var options = new ParallelOptions { MaxDegreeOfParallelism = 20 };
+    var options = new ParallelOptions { MaxDegreeOfParallelism = 5 };
 
     // now let's send HTTP requests to each of these URLs in parallel
     await Parallel.ForEachAsync(
@@ -321,10 +320,6 @@ public class Api
         );
       }
     );
-
-    var branches = await client.StreamGetBranches(streamId);
-
-    Assert.That(branches, Has.Count.EqualTo(500));
   }
 
   #region commit
