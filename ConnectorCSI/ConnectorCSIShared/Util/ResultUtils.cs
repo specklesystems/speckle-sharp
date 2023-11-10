@@ -12,7 +12,7 @@ namespace ConnectorCSIShared.Util
       List<string> names = new();
 
       int numberOfLoadCombinations = 0;
-      string[] loadCombinationNames = null;
+      string[] loadCombinationNames = Array.Empty<string>();
       sapModel.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
       names.AddRange(loadCombinationNames);
 
