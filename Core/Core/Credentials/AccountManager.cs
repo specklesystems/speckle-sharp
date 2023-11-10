@@ -28,6 +28,8 @@ namespace Speckle.Core.Credentials;
 /// </summary>
 public static class AccountManager
 {
+  public const string DEFAULT_SERVER_URL = "https://app.speckle.systems";
+
   private static readonly SQLiteTransport AccountStorage = new(scope: "Accounts");
   private static bool _isAddingAccount;
   private static readonly SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
@@ -129,7 +131,7 @@ public static class AccountManager
   /// </summary>
   public static string GetDefaultServerUrl()
   {
-    var defaultServerUrl = "https://speckle.xyz";
+    var serverUrl = DEFAULT_SERVER_URL;
     var customServerUrl = "";
 
     // first mechanism, check for local file
@@ -147,10 +149,10 @@ public static class AccountManager
       Uri url = null;
       Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
       if (url != null)
-        defaultServerUrl = customServerUrl.TrimEnd('/');
+        serverUrl = customServerUrl.TrimEnd('/');
     }
 
-    return defaultServerUrl;
+    return serverUrl;
   }
 
   /// <summary>
