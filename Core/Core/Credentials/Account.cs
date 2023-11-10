@@ -65,7 +65,7 @@ public class Account : IEquatable<Account>
 
   public string GetHashedServer()
   {
-    string url = serverInfo?.url ?? "https://speckle.xyz/";
+    string url = serverInfo?.url ?? AccountManager.DEFAULT_SERVER_URL;
     return Crypt.Hash(CleanURL(url));
   }
 
