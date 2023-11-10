@@ -248,7 +248,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = AvailableFilters[0];
 
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranches(Stream.id, 500, 0).ConfigureAwait(true);
 
       //TODO: Core's API calls and the StreamWrapper class need to be updated to properly support FE2 links
       //this is a temporary workaround
