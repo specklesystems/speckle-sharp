@@ -98,7 +98,9 @@ public class StreamSelectorViewModel : ReactiveObject
   {
     using var client = new Client(SelectedStream.Account);
 
-    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1).ConfigureAwait(true))
+    Branches = (
+      await client.StreamGetBranches(SelectedStream.Stream.id, ServerLimits.BRANCH_GET_LIMIT, 1).ConfigureAwait(true)
+    )
       .Where(x => x.commits.totalCount > 0)
       .ToList();
 
