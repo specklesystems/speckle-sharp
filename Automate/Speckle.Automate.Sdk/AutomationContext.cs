@@ -15,6 +15,7 @@ namespace Speckle.Automate.Sdk;
 public class AutomationContext
 {
   public AutomationRunData AutomationRunData { get; set; }
+  public string? ContextView => AutomationResult.ResultView;
   public Client SpeckleClient { get; set; }
 
   private ServerTransport serverTransport;
