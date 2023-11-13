@@ -157,6 +157,7 @@ namespace Objects.Converter.Revit
     const string DetailLevelMedium = "Medium";
     const string DetailLevelFine = "Fine";
     public ViewDetailLevel DetailLevelSetting => GetDetailLevelSetting() ?? ViewDetailLevel.Fine;
+
     private ViewDetailLevel? GetDetailLevelSetting()
     {
       if (!Settings.TryGetValue("detail-level", out string detailLevel))
@@ -648,8 +649,7 @@ namespace Objects.Converter.Revit
           return RailingToNative(o);
 
         case BER.ParameterUpdater o:
-          UpdateParameter(o);
-          return null;
+          return UpdateParameter(o);
 
         case BE.View3D o:
           return ViewToNative(o);

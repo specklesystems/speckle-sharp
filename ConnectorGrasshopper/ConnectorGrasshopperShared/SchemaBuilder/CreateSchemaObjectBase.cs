@@ -275,6 +275,8 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     foreach (var p in props)
       RegisterPropertyAsInputParameter(p, k++);
 
+    UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
+
     Name = constructor.GetCustomAttribute<SchemaInfo>().Name;
     Description = constructor.GetCustomAttribute<SchemaInfo>().Description;
 
@@ -330,38 +332,6 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       newInputParam.Access = GH_ParamAccess.item;
 
     Params.RegisterInputParam(newInputParam, index);
-
-    //add dropdown
-    if (propType.IsEnum)
-    {
-      //expire solution so that node gets proper size
-      ExpireSolution(true);
-
-      var instance = Activator.CreateInstance(propType);
-
-      var vals = Enum.GetValues(propType).Cast<Enum>().Select(x => x.ToString()).ToList();
-      var options = CreateDropDown(propName, vals, Attributes.Bounds.X, Params.Input[index].Attributes.Bounds.Y);
-      OnPingDocument().AddObject(options, false);
-      Params.Input[index].AddSource(options);
-    }
-  }
-
-  public static GH_ValueList CreateDropDown(string name, List<string> values, float x, float y)
-  {
-    var valueList = new GH_ValueList();
-    valueList.CreateAttributes();
-    valueList.Name = name;
-    valueList.NickName = name + ":";
-    valueList.Description = "Select an option...";
-    valueList.ListMode = GH_ValueListMode.DropDown;
-    valueList.ListItems.Clear();
-
-    for (int i = 0; i < values.Count; i++)
-      valueList.ListItems.Add(new GH_ValueListItem(values[i], i.ToString()));
-
-    valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
-
-    return valueList;
   }
 
   public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
