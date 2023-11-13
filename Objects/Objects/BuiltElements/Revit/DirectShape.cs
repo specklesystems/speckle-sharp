@@ -47,7 +47,7 @@ public class DirectShape : Base, IDisplayValue<List<Base>>
   public string elementId { get; set; }
 
   [DetachProperty]
-  public List<Base> baseGeometries { get; set; }
+  public List<Base> baseGeometries { get; set; } = new();
 
   public string units { get; set; }
 
