@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject RoofToNative(Roof speckleRoof)
     {
-      var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
+      Element docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
       var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type)
       {
         applicationId = speckleRoof.applicationId
@@ -25,23 +25,33 @@ namespace Objects.Converter.Revit
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
-        return appObj;
-
-      if (speckleRoof.outline == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
         return appObj;
       }
 
-      DB.RoofBase revitRoof = null;
-      var outline = CurveToNative(speckleRoof.outline);
+      // outline is required for roofs, except for Extrusion roofs
+      CurveArray outline = null;
+      if (speckleRoof.outline is null)
+      {
+        if (speckleRoof is not RevitExtrusionRoof)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
+          return appObj;
+        }
+      }
+      else
+      {
+        outline = CurveToNative(speckleRoof.outline);
+      }
 
+      // retrieve the level
       var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
-      DB.Level level =
-        (speckleRoof.level != null)
-          ? ConvertLevelToRevit(speckleRoof.level, out levelState)
-          : ConvertLevelToRevit(outline.get_Item(0), out ApplicationObject.State state, out baseOffset);
+      DB.Level level = speckleRoof.level is not null ? 
+        ConvertLevelToRevit(speckleRoof.level, out levelState) : 
+        outline is not null ? 
+        ConvertLevelToRevit(outline.get_Item(0), out levelState, out baseOffset) : 
+        null;
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
 
@@ -53,8 +63,11 @@ namespace Objects.Converter.Revit
       }
 
       if (docObj != null)
+      {
         Doc.Delete(docObj.Id);
+      }
 
+      DB.RoofBase revitRoof = null;
       switch (speckleRoof)
       {
         case RevitExtrusionRoof speckleExtrusionRoof:
@@ -67,6 +80,13 @@ namespace Objects.Converter.Revit
             norm,
             Doc.ActiveView
           );
+
+          // get level if null
+          if (level is null)
+          {
+            level = ConvertLevelToRevit(referenceLine, out levelState, out baseOffset);
+          }
+
           //create floor without a type
           var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
           var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
@@ -184,14 +204,18 @@ namespace Objects.Converter.Revit
       }
 
       if (speckleRevitRoof != null)
+      {
         SetInstanceParameters(revitRoof, speckleRevitRoof);
+      }
       else
+      {
         TrySetParam(revitRoof, BuiltInParameter.ROOF_LEVEL_OFFSET_PARAM, -baseOffset);
+      }
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
 
       Doc.Regenerate();
-      //appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
+
       return appObj;
     }
 
