@@ -473,10 +473,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = CurveToNative(o.baseCurve);
           break;
 
-        case DirectShape o:
-          rhinoObj = DirectShapeToNative(o, out notes);
-          break;
-
         case View3D o:
           rhinoObj = ViewToNative(o);
           break;
@@ -675,7 +671,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       // This types are not supported in GH!
       case Pointcloud _:
       case ModelCurve _:
-      case DirectShape _:
       case View3D _:
       case Instance _:
       case GridLine _:
