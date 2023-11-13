@@ -11,6 +11,28 @@ namespace Speckle.Core.Api;
 public partial class Client
 {
   /// <summary>
+  /// Get branches from a given stream, first with a max of 500 and then with a max of 100.
+  /// This ensures that if the server API is limiting to 100 branches, that any failure will try again at the lower value.
+  /// </summary>
+  /// <param name="streamId">Id of the stream to get the branches from</param>
+  /// <param name="commitsLimit">Max number of commits to retrieve</param>
+  /// <returns></returns>
+  public async Task<List<Branch>> StreamGetBranchesWithLimitRetry(string streamId, int commitsLimit = 10)
+  {
+    List<Branch>? branches = null;
+    try
+    {
+      branches = await StreamGetBranches(streamId, 500, commitsLimit).ConfigureAwait(true);
+    }
+    catch (SpeckleGraphQLException<StreamData>)
+    {
+      branches = await StreamGetBranches(streamId, 100, commitsLimit).ConfigureAwait(true);
+    }
+
+    return branches;
+  }
+
+  /// <summary>
   /// Get branches from a given stream
   /// </summary>
   /// <param name="streamId">Id of the stream to get the branches from</param>

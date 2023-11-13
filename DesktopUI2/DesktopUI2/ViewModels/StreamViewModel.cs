@@ -23,6 +23,7 @@ using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using DynamicData;
+using GraphQL;
 using Material.Dialog.Icons;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -249,7 +250,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = AvailableFilters[0];
 
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
       var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
       if (index != -1)
@@ -417,7 +418,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
-      Branches = await Client.StreamGetBranches(Stream.id, 500, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
       var index = Branches.FindIndex(x => x.name == prevBranchName);
       if (index != -1)
