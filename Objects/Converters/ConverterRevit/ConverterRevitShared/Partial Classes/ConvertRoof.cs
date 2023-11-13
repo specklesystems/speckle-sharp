@@ -47,11 +47,11 @@ namespace Objects.Converter.Revit
       // retrieve the level
       var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
-      DB.Level level = speckleRoof.level is not null ? 
-        ConvertLevelToRevit(speckleRoof.level, out levelState) : 
-        outline is not null ? 
-        ConvertLevelToRevit(outline.get_Item(0), out levelState, out baseOffset) : 
-        null;
+      DB.Level level = speckleRoof.level is not null
+        ? ConvertLevelToRevit(speckleRoof.level, out levelState)
+        : outline is not null
+          ? ConvertLevelToRevit(outline.get_Item(0), out levelState, out baseOffset)
+          : null;
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
 
