@@ -293,9 +293,7 @@ public class AutomationContext
   {
     var levelString = ObjectResultLevelMapping.Get(level);
     var objectIdList = objectIds.ToList();
-    Console.WriteLine(
-      $"Object(s) {string.Join(". ", objectIdList)}, was marked with {levelString.ToUpper()}/{category} cause: {message}"
-    );
+    Console.WriteLine($"Created new {levelString.ToUpper()} category: {category} caused by: {message}");
 
     var resultCase = new ResultCase
     {
