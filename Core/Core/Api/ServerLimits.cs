@@ -10,4 +10,5 @@ namespace Speckle.Core.Api;
 public static class ServerLimits
 {
   public const int BRANCH_GET_LIMIT = 500;
+  public const int OLD_BRANCH_GET_LIMIT = 100;
 }

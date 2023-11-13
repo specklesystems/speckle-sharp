@@ -21,11 +21,11 @@ public partial class Client
     List<Branch>? branches = null;
     try
     {
-      branches = await StreamGetBranches(streamId, 500, commitsLimit).ConfigureAwait(true);
+      branches = await StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT, commitsLimit).ConfigureAwait(true);
     }
     catch (SpeckleGraphQLException<StreamData>)
     {
-      branches = await StreamGetBranches(streamId, 100, commitsLimit).ConfigureAwait(true);
+      branches = await StreamGetBranches(streamId, ServerLimits.OLD_BRANCH_GET_LIMIT, commitsLimit).ConfigureAwait(true);
     }
 
     return branches;
