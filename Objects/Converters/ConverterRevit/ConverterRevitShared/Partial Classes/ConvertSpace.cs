@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
       // Determine Space Location
       if (speckleSpace.basePoint is null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Unplaced spaces are not supported");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Space Base Point was null");
         return appObj;
       }
 
