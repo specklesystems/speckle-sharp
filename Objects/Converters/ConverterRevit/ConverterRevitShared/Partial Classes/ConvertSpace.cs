@@ -27,6 +27,12 @@ namespace Objects.Converter.Revit
         return appObj;
 
       // Determine Space Location
+      if (speckleSpace.basePoint is null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Unplaced spaces are not supported");
+        return appObj;
+      }
+
       var level = ConvertLevelToRevit(speckleSpace.level, out _);
       var basePoint = PointToNative(speckleSpace.basePoint);
       var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel, out _);
