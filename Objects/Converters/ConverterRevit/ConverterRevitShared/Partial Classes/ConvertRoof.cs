@@ -29,19 +29,26 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      // outline is required for roofs, except for Extrusion roofs
-      CurveArray outline = null;
-      if (speckleRoof.outline is null)
+      // outline is required for footprint roofs
+      // referenceLine is required for for Extrusion roofs
+      CurveArray roofCurve = null;
+      if (speckleRoof is RevitExtrusionRoof extrusionRoof)
       {
-        if (speckleRoof is not RevitExtrusionRoof)
+        if (extrusionRoof.referenceLine is null)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Extrusion roof profile was null");
+          return appObj;
+        }
+        roofCurve = CurveToNative(extrusionRoof.referenceLine);
+      }
+      else
+      {
+        if (speckleRoof.outline is null)
         {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof outline was null");
           return appObj;
         }
-      }
-      else
-      {
-        outline = CurveToNative(speckleRoof.outline);
+        roofCurve = CurveToNative(speckleRoof.outline);
       }
 
       // retrieve the level
@@ -49,8 +56,8 @@ namespace Objects.Converter.Revit
       double baseOffset = 0.0;
       DB.Level level = speckleRoof.level is not null
         ? ConvertLevelToRevit(speckleRoof.level, out levelState)
-        : outline is not null
-          ? ConvertLevelToRevit(outline.get_Item(0), out levelState, out baseOffset)
+        : roofCurve is not null
+          ? ConvertLevelToRevit(roofCurve.get_Item(0), out levelState, out baseOffset)
           : null;
 
       var speckleRevitRoof = speckleRoof as RevitRoof;
@@ -72,6 +79,7 @@ namespace Objects.Converter.Revit
       {
         case RevitExtrusionRoof speckleExtrusionRoof:
         {
+          // get the norm
           var referenceLine = LineToNative(speckleExtrusionRoof.referenceLine);
           var norm = GetPerpendicular(referenceLine.GetEndPoint(0) - referenceLine.GetEndPoint(1)).Negate();
           ReferencePlane plane = Doc.Create.NewReferencePlane(
@@ -81,16 +89,10 @@ namespace Objects.Converter.Revit
             Doc.ActiveView
           );
 
-          // get level if null
-          if (level is null)
-          {
-            level = ConvertLevelToRevit(referenceLine, out levelState, out baseOffset);
-          }
-
-          //create floor without a type
+          //create floor without a type with the profile
           var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
           var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
-          revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+          revitRoof = Doc.Create.NewExtrusionRoof(roofCurve, plane, level, roofType, start, end);
 
           // sometimes Revit flips the roof so the start offset is the end and vice versa.
           // In that case, delete the created roof, flip the referencePlane and recreate it.
@@ -99,14 +101,14 @@ namespace Objects.Converter.Revit
           {
             Doc.Delete(revitRoof.Id);
             plane.Flip();
-            revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+            revitRoof = Doc.Create.NewExtrusionRoof(roofCurve, plane, level, roofType, start, end);
           }
           break;
         }
         case RevitFootprintRoof speckleFootprintRoof:
         {
           ModelCurveArray curveArray = new ModelCurveArray();
-          var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
+          var revitFootprintRoof = Doc.Create.NewFootPrintRoof(roofCurve, level, roofType, out curveArray);
 
           // if the roof is a curtain roof then set the mullions at the borders
           var nestedElements = speckleFootprintRoof.elements;

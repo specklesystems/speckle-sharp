@@ -743,9 +743,17 @@ namespace Objects.Converter.Revit
       var xn = new XYZ(1, 0, 0);
 
       if (ixn.IsAlmostEqualTo(xn))
+      {
         xn = new XYZ(0, 1, 0);
+      }
+      else if (ixn.Negate().IsAlmostEqualTo(xn))
+      {
+        xn = new XYZ(0, -1, 0);
+      }
 
-      return ixn.CrossProduct(xn).Normalize();
+      var cross = ixn.CrossProduct(xn);
+
+      return cross.Normalize();
     }
 
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, Document doc, string units = null)
