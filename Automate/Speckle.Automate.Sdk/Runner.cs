@@ -38,6 +38,9 @@ public static class AutomationRunner
     }
     finally
     {
+      if (automationContext.ContextView is null)
+        automationContext.SetContextView();
+      
       await automationContext.ReportRunStatus().ConfigureAwait(false);
     }
     return automationContext;
