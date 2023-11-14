@@ -52,6 +52,7 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
+
       Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
       symbol.Activate();
@@ -186,10 +187,12 @@ namespace Objects.Converter.Revit
         t.Start();
 
         //by default free form elements are always generic models
-        BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
-        Category cat = famDoc.Settings.Categories.get_Item(bic);
+        Category cat = null;
         if (freeformElement is not null && !string.IsNullOrEmpty(freeformElement.subcategory))
         {
+          BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
+          cat = famDoc.Settings.Categories.get_Item(bic);
+
           //subcategory
           if (cat.SubCategories.Contains(freeformElement.subcategory))
           {
@@ -204,7 +207,10 @@ namespace Objects.Converter.Revit
         foreach (var s in solids)
         {
           var f = DB.FreeFormElement.Create(famDoc, s);
-          f.Subcategory = cat;
+          if (cat is not null)
+          {
+            f.Subcategory = cat;
+          }
         }
 
         t.Commit();
