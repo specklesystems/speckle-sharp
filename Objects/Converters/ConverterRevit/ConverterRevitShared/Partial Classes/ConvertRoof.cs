@@ -72,6 +72,7 @@ namespace Objects.Converter.Revit
       {
         case RevitExtrusionRoof speckleExtrusionRoof:
         {
+          // get the norm
           var referenceLine = LineToNative(speckleExtrusionRoof.referenceLine);
           var norm = GetPerpendicular(referenceLine.GetEndPoint(0) - referenceLine.GetEndPoint(1)).Negate();
           ReferencePlane plane = Doc.Create.NewReferencePlane(
@@ -87,10 +88,11 @@ namespace Objects.Converter.Revit
             level = ConvertLevelToRevit(referenceLine, out levelState, out baseOffset);
           }
 
-          //create floor without a type
+          //create floor without a type with the profile
+          var profile = CurveToNative(speckleExtrusionRoof.referenceLine);
           var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
           var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
-          revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+          revitRoof = Doc.Create.NewExtrusionRoof(profile, plane, level, roofType, start, end);
 
           // sometimes Revit flips the roof so the start offset is the end and vice versa.
           // In that case, delete the created roof, flip the referencePlane and recreate it.
@@ -99,7 +101,7 @@ namespace Objects.Converter.Revit
           {
             Doc.Delete(revitRoof.Id);
             plane.Flip();
-            revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+            revitRoof = Doc.Create.NewExtrusionRoof(profile, plane, level, roofType, start, end);
           }
           break;
         }
