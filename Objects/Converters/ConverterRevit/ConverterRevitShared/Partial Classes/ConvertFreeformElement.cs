@@ -52,6 +52,7 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
+
       Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
       symbol.Activate();
@@ -185,32 +186,31 @@ namespace Objects.Converter.Revit
       {
         t.Start();
 
+        //by default free form elements are always generic models
         Category cat = null;
-        if (freeformElement != null)
+        if (freeformElement is not null && !string.IsNullOrEmpty(freeformElement.subcategory))
         {
-          //subcategory
+          BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
+          cat = famDoc.Settings.Categories.get_Item(bic);
 
-          if (!string.IsNullOrEmpty(freeformElement.subcategory))
+          //subcategory
+          if (cat.SubCategories.Contains(freeformElement.subcategory))
           {
-            //by default free form elements are always generic models
-            //otherwise we'd need to supply base files for each category..?
-            BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
-            cat = famDoc.Settings.Categories.get_Item(bic);
-            if (cat.SubCategories.Contains(freeformElement.subcategory))
-            {
-              cat = cat.SubCategories.get_Item(freeformElement.subcategory);
-            }
-            else
-            {
-              cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
-            }
+            cat = cat.SubCategories.get_Item(freeformElement.subcategory);
+          }
+          else
+          {
+            cat = famDoc.Settings.Categories.NewSubcategory(cat, freeformElement.subcategory);
           }
         }
 
         foreach (var s in solids)
         {
           var f = DB.FreeFormElement.Create(famDoc, s);
-          f.Subcategory = cat;
+          if (cat is not null)
+          {
+            f.Subcategory = cat;
+          }
         }
 
         t.Commit();

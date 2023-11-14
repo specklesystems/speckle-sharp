@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
+using Objects.Structural.Results;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -20,9 +21,9 @@ public class CSIElement2D : Element2D
     Property2D property,
     double offset = 0,
     double orientationAngle = 0,
-    double[] modifiers = null,
-    CSIAreaSpring CSIAreaSpring = null,
-    CSIDiaphragm CSIDiaphragm = null
+    double[]? modifiers = null,
+    CSIAreaSpring? CSIAreaSpring = null,
+    CSIDiaphragm? CSIDiaphragm = null
   )
   {
     topology = nodes;
@@ -37,11 +38,13 @@ public class CSIElement2D : Element2D
   public CSIElement2D() { }
 
   [DetachProperty]
-  public CSIAreaSpring CSIAreaSpring { get; set; }
+  public CSIAreaSpring? CSIAreaSpring { get; set; }
 
-  public string DiaphragmAssignment { get; set; }
-  public string PierAssignment { get; set; }
-  public string SpandrelAssignment { get; set; }
-  public double[] modifiers { get; set; }
+  public string? DiaphragmAssignment { get; set; }
+  public string? PierAssignment { get; set; }
+  public string? SpandrelAssignment { get; set; }
+  public double[]? modifiers { get; set; }
   public bool Opening { get; set; }
+  [DetachProperty]
+  public AnalyticalResults? AnalysisResults { get; set; }
 }

@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad;
-using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {
-  internal sealed class GetRoofData : ICommand<IEnumerable<ArchicadRoof>>
+  internal sealed class GetRoofData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
   {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
@@ -20,13 +18,6 @@ namespace Archicad.Communication.Commands
       }
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    private sealed class Result
-    {
-      [JsonProperty("Roofs")]
-      public IEnumerable<ArchicadRoof> Datas { get; private set; }
-    }
-
     private IEnumerable<string> ApplicationIds { get; }
 
     public GetRoofData(IEnumerable<string> applicationIds)
@@ -34,14 +25,14 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadRoof>> Execute()
+    public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoofData", new Parameters(ApplicationIds));
-      foreach (var roof in result.Datas)
-        roof.units = Units.Meters;
+      dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
+        "GetRoofData",
+        new Parameters(ApplicationIds)
+      );
 
-      return result.Datas;
+      return (Speckle.Newtonsoft.Json.Linq.JArray)result["roofs"];
     }
-
   }
 }

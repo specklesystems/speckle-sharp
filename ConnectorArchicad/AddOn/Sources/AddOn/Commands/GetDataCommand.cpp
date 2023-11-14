@@ -26,30 +26,32 @@ GS::ErrCode GetDataCommand::ExportClassificationsAndProperties (const API_Elemen
 	if (err != NoError)
 		return err;
 
-	const auto& classificationListAdder = os.AddList<GS::ObjectState> (FieldNames::ElementBase::Classifications);
-	for (const auto& systemItemPair : systemItemPairs) {
-		GS::ObjectState classificationOs;
-		API_ClassificationSystem system;
-		system.guid = systemItemPair.first;
-		err = ACAPI_Classification_GetClassificationSystem (system);
-		if (err != NoError)
-			break;
+	if (systemItemPairs.GetSize () != 0) {
+		const auto& classificationListAdder = os.AddList<GS::ObjectState> (FieldNames::ElementBase::Classifications);
+		for (const auto& systemItemPair : systemItemPairs) {
+			GS::ObjectState classificationOs;
+			API_ClassificationSystem system;
+			system.guid = systemItemPair.first;
+			err = ACAPI_Classification_GetClassificationSystem (system);
+			if (err != NoError)
+				break;
 
-		classificationOs.Add (FieldNames::ElementBase::Classification::System, system.name);
-		
-		API_ClassificationItem item;
-		item.guid = systemItemPair.second;
-		err = ACAPI_Classification_GetClassificationItem (item);
-		if (err != NoError)
-			break;
+			classificationOs.Add (FieldNames::ElementBase::Classification::System, system.name);
 
-		if (!item.id.IsEmpty())
-			classificationOs.Add (FieldNames::ElementBase::Classification::Code, item.id);
+			API_ClassificationItem item;
+			item.guid = systemItemPair.second;
+			err = ACAPI_Classification_GetClassificationItem (item);
+			if (err != NoError)
+				break;
 
-		if (!item.name.IsEmpty())
-			classificationOs.Add (FieldNames::ElementBase::Classification::Name, item.name);
+			if (!item.id.IsEmpty ())
+				classificationOs.Add (FieldNames::ElementBase::Classification::Code, item.id);
 
-		classificationListAdder (classificationOs);
+			if (!item.name.IsEmpty ())
+				classificationOs.Add (FieldNames::ElementBase::Classification::Name, item.name);
+
+			classificationListAdder (classificationOs);
+		}
 	}
 
 	return err;
@@ -67,6 +69,14 @@ GS::ErrCode GetDataCommand::SerializeElementType(const API_Element& elem, const 
 	GS::ErrCode err = NoError;
 
 	os.Add(FieldNames::ElementBase::ApplicationId, APIGuidToString (elem.header.guid));
+
+	API_Attribute attribute;
+	BNZeroMemory (&attribute, sizeof (API_Attribute));
+	attribute.header.typeID = API_LayerID;
+	attribute.header.index = elem.header.layer;
+	if (NoError == ACAPI_Attribute_Get (&attribute)) {
+		os.Add(FieldNames::ElementBase::Layer, GS::UniString{attribute.header.name});
+	}
 
 	err = ExportClassificationsAndProperties (elem, os);
 
@@ -98,7 +108,7 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 
 		// check for elem type
 		if (API_ZombieElemID != GetElemTypeID ()) {
-			API_ElemTypeID elementType = Utility::GetElementType (element.header);
+			API_ElemTypeID elementType = Utility::GetElementType (element.header).typeID;
 			if (elementType != GetElemTypeID ())
 			{
 				continue;

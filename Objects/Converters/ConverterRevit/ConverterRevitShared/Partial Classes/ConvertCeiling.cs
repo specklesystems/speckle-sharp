@@ -15,8 +15,12 @@ namespace Objects.Converter.Revit
     private RevitCeiling CeilingToSpeckle(DB.Ceiling revitCeiling, out List<string> notes)
     {
       notes = new List<string>();
+#if REVIT2020 || REVIT2021  
       var profiles = GetProfiles(revitCeiling);
-
+#else
+      var sketch = Doc.GetElement(revitCeiling.SketchId) as Sketch;
+      var profiles = GetSketchProfiles(sketch).Cast<ICurve>().ToList();
+#endif
       var speckleCeiling = new RevitCeiling();
       speckleCeiling.type = revitCeiling.Document.GetElement(revitCeiling.GetTypeId()).Name;
       speckleCeiling.outline = profiles[0];

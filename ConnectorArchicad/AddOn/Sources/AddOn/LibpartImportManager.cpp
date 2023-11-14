@@ -229,7 +229,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		line = GS::String::SPrintf ("%s", GS::EOL);
 		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		GS::HashTable<GS::Pair<Int32, Int32>, GS::UShort> edges = modelInfo.GetEdges ();
+		const GS::HashTable<ModelInfo::EdgeId, ModelInfo::EdgeData>& edges = modelInfo.GetEdges ();
 
 		UInt32 edgeIndex = 1;
 		UInt32 polygonIndex = 1;
@@ -254,21 +254,22 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 				Int32 end = i == pointIds.GetSize () - 1 ? 0 : i + 1;
 
 				Int32 startPointId = pointIds[start], endPointId = pointIds[end];
-				GS::Pair<Int32, Int32> edge (startPointId, endPointId);
-				GS::Pair<Int32, Int32> inverseEdge (endPointId, startPointId);
+				ModelInfo::EdgeId edge (startPointId, endPointId);
 
 				bool smooth = false;
-				bool hidden = false;
-				GS::UShort edgeStatus;
-				if (edges.Get (edge, &edgeStatus) || edges.Get(inverseEdge, &edgeStatus)) {
-					switch (edgeStatus) {
+				bool hidden = true;
+				if (edges.ContainsKey(edge)) {
+					ModelInfo::EdgeData edgeData = edges.Get (edge);
+		
+					switch (edgeData.edgeStatus) {
 					case ModelInfo::HiddenEdge:
-						hidden = true;
 						break;
 					case ModelInfo::SmoothEdge:
+						hidden = false;
 						smooth = true;
 						break;
 					case ModelInfo::VisibleEdge:
+						hidden = false;
 						break;
 					default:
 						break;

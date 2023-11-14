@@ -13,7 +13,8 @@ namespace Speckle.ConnectorCSI.UI
     {
       var names = new List<string>();
       var typeNameTupleList = ConnectorCSIUtils.SelectedObjects(Model);
-      if (typeNameTupleList == null) return new List<string>() { };
+      if (typeNameTupleList == null)
+        return new List<string>() { };
       foreach (var item in typeNameTupleList)
       {
         (string typeName, string name) = item;
@@ -29,43 +30,48 @@ namespace Speckle.ConnectorCSI.UI
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var filters = new List<ISelectionFilter>();
-      filters.Add(new AllSelectionFilter
-      {
-        Slug = "all",
-        Name = "Everything",
-        Icon = "CubeScan",
-        Description = "Selects all document objects."
-      });
+      filters.Add(
+        new AllSelectionFilter
+        {
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Selects all document objects."
+        }
+      );
       filters.Add(new ManualSelectionFilter());
 
       if (Model != null)
       {
         ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
-        var objectTypes = ConnectorCSIUtils.ObjectIDsTypesAndNames
-            .Select(pair => pair.Value.Item1).Distinct().ToList();
-        
+        var objectTypes = ConnectorCSIUtils.ObjectIDsTypesAndNames.Select(pair => pair.Value.Item1).Distinct().ToList();
+
         if (objectTypes.Any())
-          filters.Add(new ListSelectionFilter
-          {
-            Slug = "type",
-            Name = "Categories",
-            Icon = "Category",
-            Values = objectTypes,
-            Description = "Adds all objects belonging to the selected types."
-          });
+          filters.Add(
+            new ListSelectionFilter
+            {
+              Slug = "type",
+              Name = "Categories",
+              Icon = "Category",
+              Values = objectTypes,
+              Description = "Adds all objects belonging to the selected types."
+            }
+          );
 
         string[] groupNames = new string[0];
         int numNames = 0;
         Model.GroupDef.GetNameList(ref numNames, ref groupNames);
         if (groupNames.Any())
-          filters.Add(new ListSelectionFilter
-          {
-            Slug = "group",
-            Name = "Group",
-            Icon = "SelectGroup",
-            Values = groupNames.ToList(),
-            Description = "Add all objects belonging to CSI Group."
-          });
+          filters.Add(
+            new ListSelectionFilter
+            {
+              Slug = "group",
+              Name = "Group",
+              Icon = "SelectGroup",
+              Values = groupNames.ToList(),
+              Description = "Add all objects belonging to CSI Group."
+            }
+          );
       }
 
       return filters;
@@ -89,8 +95,7 @@ namespace Speckle.ConnectorCSI.UI
           return GetSelectedObjects();
         case "all":
 
-          selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
-                      .Select(pair => pair.Key).ToList());
+          selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames.Select(pair => pair.Key).ToList());
           return selection;
 
         case "type":
@@ -98,10 +103,12 @@ namespace Speckle.ConnectorCSI.UI
 
           foreach (var type in typeFilter.Selection)
           {
-            selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
+            selection.AddRange(
+              ConnectorCSIUtils.ObjectIDsTypesAndNames
                 .Where(pair => pair.Value.Item1 == type)
                 .Select(pair => pair.Key)
-                .ToList());
+                .ToList()
+            );
           }
           return selection;
 
@@ -110,14 +117,14 @@ namespace Speckle.ConnectorCSI.UI
           Model.SelectObj.ClearSelection();
           var groupFilter = filter as ListSelectionFilter;
           foreach (var group in groupFilter.Selection)
-          { Model.SelectObj.Group(group); }
+          {
+            Model.SelectObj.Group(group);
+          }
 
           return GetSelectedObjects();
-          
       }
 
       return selection;
-
     }
   }
 }

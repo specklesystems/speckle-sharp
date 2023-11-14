@@ -11,17 +11,17 @@ using namespace FieldNames;
 namespace Utility {
 
 
-API_ElemTypeID GetElementType (const API_Elem_Head& header)
+API_ElemType GetElementType (const API_Elem_Head& header)
 {
 #ifdef ServerMainVers_2600
-	return header.type.typeID;
+	return header.type;
 #else
-	return header.typeID;
+	return API_ElemType (header.typeID, header.variationID);
 #endif
 }
 
 
-API_ElemTypeID GetElementType (const API_Guid& guid)
+API_ElemType GetElementType (const API_Guid& guid)
 {
 	API_Elem_Head elemHead = {};
 	elemHead.guid = guid;
@@ -151,14 +151,21 @@ GS::ErrCode GetLocalizedElementTypeName (const API_Elem_Head& header, GS::UniStr
 
 void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType)
 {
-#ifdef ServerMainVers_2600
-	header.type.typeID = elementType;
-#else
-	header.typeID = elementType;
-#endif
+	SetElementType (header, API_ElemType (elementType, APIVarId_Generic));
 }
 
 
+void SetElementType (API_Elem_Head& header, const API_ElemType& elementType)
+{
+#ifdef ServerMainVers_2600
+	header.type = elementType;
+#else
+	header.typeID = elementType.typeID;
+	header.variationID = elementType.variationID;
+#endif
+}
+
+	
 bool ElementExists (const API_Guid& guid)
 {
 	return (GetElementType (guid) != API_ZombieElemID);
@@ -170,14 +177,14 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_S
 	GSErrCode err = NoError;
 	API_Guid guid = element.header.guid;
 
-	API_ElemTypeID type = GetElementType (element.header);
+	API_ElemTypeID type = GetElementType (element.header).typeID;
 	if (type == API_ZombieElemID)
 		return Error;
 
 	bool elemExists = ElementExists (guid);
 	if (elemExists) {
 		// type changed
-		if (type != GetElementType (guid))
+		if (type != GetElementType (guid).typeID)
 			return Error;
 
 		err = ACAPI_Element_Get (&element);
@@ -234,7 +241,7 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_S
 
 bool IsElement3D (const API_Guid& guid)
 {
-	switch (GetElementType (guid)) {
+	switch (GetElementType (guid).typeID) {
 	case API_WallID:
 	case API_ColumnID:
 	case API_BeamID:
@@ -367,7 +374,7 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 {
 	GS::Array<API_Guid> result;
 
-	API_ElemTypeID elementType = GetElementType (element.header);
+	API_ElemTypeID elementType = GetElementType (element.header).typeID;
 
 	if (elementType == API_WallID) {
 		if (element.wall.hasDoor) {
@@ -590,7 +597,7 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 	if (memo->assemblySegmentSchemes != nullptr) {
 		defaultSegmentScheme = memo->assemblySegmentSchemes[0];
 
-		switch (Utility::GetElementType (element.header)) {
+		switch (Utility::GetElementType (element.header).typeID) {
 		case API_BeamID:
 			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
 			break;
@@ -679,7 +686,7 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 	if (memo->assemblySegmentCuts != nullptr) {
 		defaultSegmentCut = memo->assemblySegmentCuts[0];
 
-		switch (GetElementType (element.header)) {
+		switch (GetElementType (element.header).typeID) {
 		case API_BeamID:
 			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
 			break;

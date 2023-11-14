@@ -108,7 +108,6 @@ public class Api
     Assert.True(res);
   }
 
-
   [Test, Order(13)]
   public async Task StreamSearch()
   {
@@ -273,6 +272,54 @@ public class Api
     Assert.NotNull(res);
     // Branches are now returned in order of creation so 'main' should always go first.
     Assert.That(res[0].name, Is.EqualTo("main"));
+  }
+
+  [Test, Order(51)]
+  public async Task StreamGetBranches_Throws_WhenRequestingOverLimit()
+  {
+    Assert.ThrowsAsync<SpeckleGraphQLException<StreamData>>(
+      async () => await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT + 1).ConfigureAwait(false)
+    );
+    var res = await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT).ConfigureAwait(false);
+
+    Assert.That(res, Is.Not.Null);
+  }
+
+  [Test, Order(52)]
+  public async Task StreamGetBranches_WithManyBranches()
+  {
+    var newStreamId = await myClient.StreamCreate(new StreamCreateInput { name = "Many branches stream" });
+
+    await CreateEmptyBranches(myClient, newStreamId, ServerLimits.BRANCH_GET_LIMIT);
+
+    var res = await myClient.StreamGetBranches(newStreamId, ServerLimits.BRANCH_GET_LIMIT);
+
+    Assert.That(res, Is.Not.Null);
+    Assert.That(res, Has.Count.EqualTo(ServerLimits.BRANCH_GET_LIMIT));
+  }
+
+  public async Task CreateEmptyBranches(
+    Client client,
+    string streamId,
+    int branchCount,
+    string branchPrefix = "Test branch"
+  )
+  {
+    // now let's send HTTP requests to each of these URLs in parallel
+    var options = new ParallelOptions { MaxDegreeOfParallelism = 2 };
+
+    // now let's send HTTP requests to each of these URLs in parallel
+    await Parallel.ForEachAsync(
+      Enumerable.Range(0, branchCount),
+      options,
+      async (i, cancellationToken) =>
+      {
+        await client.BranchCreate(
+          new BranchCreateInput { name = $"{branchPrefix} {i}", streamId = streamId },
+          cancellationToken
+        );
+      }
+    );
   }
 
   #region commit

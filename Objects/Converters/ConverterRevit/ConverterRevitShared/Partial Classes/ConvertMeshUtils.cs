@@ -49,9 +49,24 @@ namespace Objects.Converter.Revit
         return displayMeshes;
       }
 
+      var (solids, meshes) = GetSolidsAndMeshesFromElement(element, options, transform);
+
+      // convert meshes and solids
+      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
+      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
+
+      return displayMeshes;
+    }
+
+    public (List<Solid>, List<DB.Mesh>) GetSolidsAndMeshesFromElement(
+      Element element, 
+      Options options, 
+      Transform? transform = null
+    )
+    {
       options = ViewSpecificOptions ?? options ?? new Options() { DetailLevel = DetailLevelSetting };
 
-      GeometryElement geom = null;
+      GeometryElement geom;
       try
       {
         geom = element.get_Geometry(options);
@@ -62,20 +77,16 @@ namespace Objects.Converter.Revit
         geom = element.get_Geometry(options);
       }
 
-      if (geom == null)
-        return displayMeshes;
-
-      // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
 
-      SortGeometry(element, solids, meshes, geom, transform?.Inverse);
+      if (geom != null)
+      {
+        // retrieves all meshes and solids from a geometry element
+        SortGeometry(element, solids, meshes, geom, transform?.Inverse);
+      }
 
-      // convert meshes and solids
-      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
-      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
-
-      return displayMeshes;
+      return (solids, meshes);
     }
 
     private static void LogInstanceMeshRetrievalWarnings(

@@ -25,6 +25,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PointExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DOutlineBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ParameterToSpeckleData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
@@ -54,6 +56,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertToposolid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />

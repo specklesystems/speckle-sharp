@@ -6,7 +6,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     private string _modelUnits;
 
 #if REVIT2020
@@ -173,17 +172,18 @@ namespace Objects.Converter.Revit
     }
 
     private double? defaultConversionFactor;
+
     public double ScaleToSpeckle(double value)
     {
       defaultConversionFactor ??= ScaleToSpeckle(1, RevitLengthTypeId);
       return value * defaultConversionFactor.Value;
     }
-    
+
     public static double ScaleToSpeckle(double value, string units)
     {
       return ScaleToSpeckle(value, UnitsToNative(units));
     }
-    
+
     public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
     {
       // our current profiling shows that the method "ConvertFromInternalUnits" is a huge bottleneck
@@ -213,13 +213,16 @@ namespace Objects.Converter.Revit
     {
       return UnitsToNativeString(UnitsToNative(units));
     }
+
     public static string UnitsToNativeString(ForgeTypeId forgeTypeId)
     {
       return forgeTypeId.TypeId;
     }
+
     public static ForgeTypeId UnitsToNative(string units)
     {
-      switch (units)
+      var u = Speckle.Core.Kits.Units.GetUnitsFromString(units);
+      switch (u)
       {
         case Speckle.Core.Kits.Units.Millimeters:
           return UnitTypeId.Millimeters;

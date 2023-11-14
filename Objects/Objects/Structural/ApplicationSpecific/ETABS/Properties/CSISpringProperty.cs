@@ -60,7 +60,7 @@ public class CSILinearSpring : PropertySpring
     double StiffnessXX,
     NonLinearOptions linearOption1,
     NonLinearOptions linearOption2,
-    string applicationID = null
+    string? applicationID = null
   )
   {
     this.name = name;
@@ -88,7 +88,7 @@ public class CSIAreaSpring : PropertySpring
     double StiffnessY,
     double StiffnessZ,
     NonLinearOptions linearOption3,
-    string applicationID = null
+    string? applicationID = null
   )
   {
     this.name = name;

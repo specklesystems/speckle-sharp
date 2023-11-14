@@ -30,20 +30,46 @@ namespace Archicad.Communication
       return JsonConvert.DeserializeObject<TResponse>(obj, settings);
     }
 
-    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters) where TParameters : class where TResult : class
+    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters)
+      where TParameters : class
+      where TResult : class
     {
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
+      using (
+        context?.cumulativeTimer?.Begin(
+          ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute,
+          commandName
+        )
+      )
       {
+        bool log = false;
+
         AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
         string requestMsg = SerializeRequest(request);
-        //Console.WriteLine(requestMsg);
+
+        if (log)
+        {
+          Console.WriteLine(requestMsg);
+        }
+
         string responseMsg;
 
-        using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
+        using (
+          context?.cumulativeTimer?.Begin(
+            ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI,
+            commandName
+          )
+        )
+        {
           responseMsg = await ConnectionManager.Instance.Send(requestMsg);
-        //Console.WriteLine(responseMsg);
+        }
+
+        if (log)
+        {
+          Console.WriteLine(responseMsg);
+        }
+
         AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);
 
         // TODO

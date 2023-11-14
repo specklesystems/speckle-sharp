@@ -73,15 +73,9 @@ namespace Archicad.Converters
                   name = speckleRoom.name,
                   number = speckleRoom.number,
                   // Archicad properties
-                  shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids),
+                  level = Archicad.Converters.Utils.ConvertLevel(speckleRoom.level),
+                  shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
                 };
-
-                Objects.BuiltElements.Archicad.ArchicadLevel level = new Objects.BuiltElements.Archicad.ArchicadLevel();
-                level.applicationId = speckleRoom.level.applicationId;
-                level.elevation = speckleRoom.level.elevation;
-                level.name = speckleRoom.level.name;
-
-                archicadRoom.level = level;
 
                 rooms.Add(archicadRoom);
               }
@@ -105,12 +99,11 @@ namespace Archicad.Converters
         new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
         token
       );
-      if (data is null)
-      {
-        return new List<Base>();
-      }
 
-      List<Base> rooms = new List<Base>();
+      var rooms = new List<Base>();
+      if (data is null)
+        return rooms;
+
       foreach (Archicad.Room archicadRoom in data)
       {
         Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new Objects.BuiltElements.Archicad.ArchicadRoom();
@@ -127,7 +120,7 @@ namespace Archicad.Converters
         // Archicad properties
         speckleRoom.elementType = archicadRoom.elementType;
         speckleRoom.classifications = archicadRoom.classifications;
-        speckleRoom.level = archicadRoom.level;
+        speckleRoom.archicadLevel = archicadRoom.level;
         speckleRoom.height = archicadRoom.height ?? .0;
         speckleRoom.shape = archicadRoom.shape;
 

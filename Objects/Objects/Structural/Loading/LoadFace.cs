@@ -31,13 +31,13 @@ public class LoadFace : Load
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false,
-    string name = null
+    string? name = null
   )
   {
     this.loadCase = loadCase;
@@ -78,13 +78,13 @@ public class LoadFace : Load
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false,
-    string name = null
+    string? name = null
   )
   {
     this.loadCase = loadCase;
@@ -109,6 +109,6 @@ public class LoadFace : Load
 
   public LoadAxisType loadAxisType { get; set; }
   public bool isProjected { get; set; }
-  public List<double> values { get; set; }
-  public List<double> positions { get; set; }
+  public List<double>? values { get; set; }
+  public List<double>? positions { get; set; }
 }

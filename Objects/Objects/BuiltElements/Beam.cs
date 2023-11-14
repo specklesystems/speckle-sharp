@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Materials;
@@ -5,6 +6,7 @@ using Objects.Structural.Properties.Profiles;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
@@ -19,6 +21,8 @@ namespace Objects.BuiltElements
     }
 
     public ICurve baseLine { get; set; }
+
+    public virtual Level? level { get; internal set; }
 
     public string units { get; set; }
 
@@ -53,7 +57,12 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
-    public Level level { get; set; }
+
+    public new Level? level
+    {
+      get => base.level;
+      set => base.level = value;
+    }
   }
 }
 
@@ -124,35 +133,54 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadBeam() { }
 
     // Element base
-    public string? /*APINullabe*/ elementType { get; set; }
-    public List<Classification>? /*APINullabe*/ classifications { get; set; }
+    public string? elementType { get; set; } /*APINullabe*/
+    public List<Classification>? classifications { get; set; } /*APINullabe*/
 
-    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+    public override Level? level
+    {
+      get => archicadLevel;
+      internal set
+      {
+        if (value is ArchicadLevel or null)
+        {
+          archicadLevel = value as ArchicadLevel;
+        }
+        else
+        {
+          throw new ArgumentException($"Expected object of type {nameof(ArchicadLevel)}");
+        }
+      }
+    }
+
+    [JsonIgnore]
+    public ArchicadLevel? archicadLevel { get; set; } /*APINullabe*/
+
+    public string? layer { get; set; } /*APINullabe*/
 
     // Positioning
     public Point begC { get; set; }
     public Point endC { get; set; }
-    public bool? /*APINullabe*/ isSlanted { get; set; }
-    public double? /*APINullabe*/ slantAngle { get; set; }
-    public string? /*APINullabe*/ beamShape { get; set; }
-    public int? /*APINullabe*/ sequence { get; set; }
-    public double? /*APINullabe*/ curveAngle { get; set; }
-    public double? /*APINullabe*/ verticalCurveHeight { get; set; }
-    public bool? /*APINullabe*/ isFlipped { get; set; }
+    public bool? isSlanted { get; set; } /*APINullabe*/
+    public double? slantAngle { get; set; } /*APINullabe*/
+    public string? beamShape { get; set; } /*APINullabe*/
+    public int? sequence { get; set; } /*APINullabe*/
+    public double? curveAngle { get; set; } /*APINullabe*/
+    public double? verticalCurveHeight { get; set; } /*APINullabe*/
+    public bool? isFlipped { get; set; } /*APINullabe*/
 
     // End Cuts
-    public uint? /*APINullabe*/ nCuts { get; set; }
+    public uint? nCuts { get; set; } /*APINullabe*/
     public Dictionary<string, AssemblySegmentCut>? Cuts { get; set; }
 
     // Reference Axis
-    public short? /*APINullabe*/ anchorPoint { get; set; }
+    public short? anchorPoint { get; set; } /*APINullabe*/
     public double? offset { get; set; }
     public double? profileAngle { get; set; }
 
     // Segment
-    public uint? /*APINullabe*/ nSegments { get; set; }
-    public uint? /*APINullabe*/ nProfiles { get; set; }
-    public Dictionary<string, BeamSegment>? /*APINullabe*/ segments { get; set; }
+    public uint? nSegments { get; set; } /*APINullabe*/
+    public uint? nProfiles { get; set; } /*APINullabe*/
+    public Dictionary<string, BeamSegment>? segments { get; set; } /*APINullabe*/
 
     // Scheme
     public uint? nSchemes { get; set; }
@@ -162,11 +190,11 @@ namespace Objects.BuiltElements.Archicad
     public Dictionary<string, Hole>? Holes { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string? /*APINullabe*/ showOnStories { get; set; }
-    public string? /*APINullabe*/ displayOptionName { get; set; }
-    public string? /*APINullabe*/ uncutProjectionMode { get; set; }
-    public string? /*APINullabe*/ overheadProjectionMode { get; set; }
-    public string? /*APINullabe*/ showProjectionName { get; set; }
+    public string? showOnStories { get; set; } /*APINullabe*/
+    public string? displayOptionName { get; set; } /*APINullabe*/
+    public string? uncutProjectionMode { get; set; } /*APINullabe*/
+    public string? overheadProjectionMode { get; set; } /*APINullabe*/
+    public string? showProjectionName { get; set; } /*APINullabe*/
 
     // Floor Plan and Section - Cut Surfaces
     public short? cutContourLinePen { get; set; }
@@ -175,21 +203,21 @@ namespace Objects.BuiltElements.Archicad
     public short? overrideCutFillBackgroundPen { get; set; }
 
     // Floor Plan and Section - Outlines
-    public string? /*APINullabe*/ showOutline { get; set; }
-    public short? /*APINullabe*/ uncutLinePen { get; set; }
-    public string? /*APINullabe*/ uncutLinetype { get; set; }
-    public short? /*APINullabe*/ overheadLinePen { get; set; }
-    public string? /*APINullabe*/ overheadLinetype { get; set; }
-    public short? /*APINullabe*/ hiddenLinePen { get; set; }
-    public string? /*APINullabe*/ hiddenLinetype { get; set; }
+    public string? showOutline { get; set; } /*APINullabe*/
+    public short? uncutLinePen { get; set; } /*APINullabe*/
+    public string? uncutLinetype { get; set; } /*APINullabe*/
+    public short? overheadLinePen { get; set; } /*APINullabe*/
+    public string? overheadLinetype { get; set; } /*APINullabe*/
+    public short? hiddenLinePen { get; set; } /*APINullabe*/
+    public string? hiddenLinetype { get; set; } /*APINullabe*/
 
     // Floor Plan and Section - Symbol
-    public string? /*APINullabe*/ showReferenceAxis { get; set; }
-    public short? /*APINullabe*/ referencePen { get; set; }
-    public string? /*APINullabe*/ referenceLinetype { get; set; }
+    public string? showReferenceAxis { get; set; } /*APINullabe*/
+    public short? referencePen { get; set; } /*APINullabe*/
+    public string? referenceLinetype { get; set; } /*APINullabe*/
 
     // Floor Plan and Section - Cover Fills
-    public bool? /*APINullabe*/ useCoverFill { get; set; }
+    public bool? useCoverFill { get; set; } /*APINullabe*/
     public bool? useCoverFillFromSurface { get; set; }
     public short? coverFillForegroundPen { get; set; }
     public short? coverFillBackgroundPen { get; set; }

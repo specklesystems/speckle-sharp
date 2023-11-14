@@ -271,9 +271,17 @@ namespace Objects.Converter.Revit
       speckleElement["builtInCategory"] = builtInCategory.ToString();
 
       //NOTE: adds the quantities of all materials to an element
-      var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);
-      if (qs != null)
-        speckleElement["materialQuantities"] = qs;
+      try
+      {
+        speckleElement["materialQuantities"] = MaterialQuantitiesToSpeckle(
+          revitElement,
+          speckleElement["units"] as string)?
+          .ToList();
+      }
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
+      {
+        SpeckleLog.Logger.Error(ex, "An exception occurred in the Revit API while retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
+      }
     }
 
     private void AddElementParamsToDict(
@@ -1077,7 +1085,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="e">Revit element to parse</param>
     /// <returns>Revit material of the element, null if no material found</returns>
-    public static DB.Material GetMEPSystemRevitMaterial(Element e)
+    public static DB.Material? GetMEPSystemRevitMaterial(Element e)
     {
       ElementId idType = ElementId.InvalidElementId;
 
@@ -1089,21 +1097,16 @@ namespace Objects.Converter.Revit
           idType = system.GetTypeId();
         }
       }
-      else if (IsSupportedMEPCategory(e))
+      else if (e.GetConnectorManager() is ConnectorManager connectorManager)
       {
-        MEPModel m = ((DB.FamilyInstance)e).MEPModel;
-
-        if (m != null && m.ConnectorManager != null)
+        //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
+        foreach (Connector item in connectorManager.Connectors)
         {
-          //retrieve the first material from first connector. Could go wrong, but better than nothing ;-)
-          foreach (Connector item in m.ConnectorManager.Connectors)
+          var system = item.MEPSystem;
+          if (system != null)
           {
-            var system = item.MEPSystem;
-            if (system != null)
-            {
-              idType = system.GetTypeId();
-              break;
-            }
+            idType = system.GetTypeId();
+            break;
           }
         }
       }
@@ -1117,22 +1120,6 @@ namespace Objects.Converter.Revit
       }
 
       return null;
-    }
-
-    private static bool IsSupportedMEPCategory(Element e)
-    {
-      var categories = e.Document.Settings.Categories;
-
-      var supportedCategories = new[]
-      {
-        BuiltInCategory.OST_PipeFitting,
-        BuiltInCategory.OST_DuctFitting,
-        BuiltInCategory.OST_DuctAccessory,
-        BuiltInCategory.OST_PipeAccessory,
-        //BuiltInCategory.OST_MechanicalEquipment,
-      };
-
-      return supportedCategories.Any(cat => e.Category.Id == categories.get_Item(cat).Id);
     }
 
     #endregion

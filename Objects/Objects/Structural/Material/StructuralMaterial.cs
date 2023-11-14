@@ -13,9 +13,9 @@ public class StructuralMaterial : Base
   public StructuralMaterial(
     string name,
     MaterialType type,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null
   )
   {
     this.name = name;
@@ -34,9 +34,9 @@ public class StructuralMaterial : Base
   public StructuralMaterial(
     string name,
     MaterialType type,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double strength = 0,
     double elasticModulus = 0,
     double poissonsRatio = 0,
@@ -65,10 +65,10 @@ public class StructuralMaterial : Base
   }
 
   public string name { get; set; }
-  public string grade { get; set; } //ex. 350W(G40.21 Plate), could be set in name too
+  public string? grade { get; set; } //ex. 350W(G40.21 Plate), could be set in name too
   public MaterialType materialType { get; set; }
-  public string designCode { get; set; }
-  public string codeYear { get; set; }
+  public string? designCode { get; set; }
+  public string? codeYear { get; set; }
   public double strength { get; set; }
   public double elasticModulus { get; set; } // E
   public double poissonsRatio { get; set; } // nu

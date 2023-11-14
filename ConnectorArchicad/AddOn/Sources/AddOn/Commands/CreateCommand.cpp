@@ -40,8 +40,79 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 {
 	Objects::Level level;
 	os.Get (ElementBase::Level, level);
+
+	API_StoryInfo storyInfo;
+	BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
+	ACAPI_Environment(APIEnv_GetStorySettingsID, &storyInfo);
+
+	API_StoryCmdType command;
+	
+	for (short i = 0; i < (storyInfo.lastStory - storyInfo.firstStory + 1); ++i) {
+		const API_StoryType& actStory = (*storyInfo.data)[i];
+		const API_StoryType& nextStory = (*storyInfo.data)[i + 1];
+
+		if (fabs(level.elevation - actStory.level) < EPS) {
+			break;
+		} else if (actStory.level + EPS < level.elevation && level.elevation < nextStory.level - EPS) {
+			BNZeroMemory (&command, sizeof (API_StoryCmdType));
+			GS::ucscpy (command.uName, level.name.ToUStr ().Get ());
+			command.action = APIStory_InsAbove;
+			command.height = level.elevation - actStory.level;
+			command.index = actStory.index;
+			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+
+			BNZeroMemory (&command, sizeof (API_StoryCmdType));
+			command.action = APIStory_SetHeight;
+			command.height = (*storyInfo.data)[i + 1].level - level.elevation;
+			command.index = actStory.index + 1;
+			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+
+			break;
+		} else if (level.elevation < actStory.level - EPS) {
+			BNZeroMemory (&command, sizeof (API_StoryCmdType));
+			GS::ucscpy (command.uName, level.name.ToUStr ().Get ());
+			command.action = APIStory_InsBelow;
+			command.height = actStory.level - level.elevation;
+			command.index = actStory.index;
+			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+
+			break;
+		} else if (i == (storyInfo.lastStory - storyInfo.firstStory) && nextStory.level <= level.elevation) {
+			BNZeroMemory (&command, sizeof (API_StoryCmdType));
+			GS::ucscpy (command.uName, level.name.ToUStr ().Get ());
+			command.action = APIStory_InsAbove;
+			command.height = level.elevation - actStory.level;
+			command.index = storyInfo.lastStory;
+			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+		}
+	}
+
 	Utility::SetStoryLevelAndFloor (elementLevel, level.floorIndex, relativeLevel);
 	floorIndex = level.floorIndex;
+}
+
+
+GSErrCode CreateCommand::GetElementBaseFromObjectState (const GS::ObjectState& os, API_Element& element, API_Element& elementMask) const
+{
+	GSErrCode err = NoError;
+	// layer
+	GS::UniString layer;
+	if (os.Contains (ElementBase::Layer)) {
+		os.Get (ElementBase::Layer, layer);
+
+		API_Attribute attribute;
+		BNZeroMemory (&attribute, sizeof (API_Attribute));
+		attribute.header.typeID = API_LayerID;
+		attribute.header.uniStringNamePtr = &layer;
+		err = ACAPI_Attribute_Get (&attribute);
+
+		if (err == NoError) {
+			element.header.layer = attribute.header.index;
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, layer);
+		}
+	}
+
+	return err;
 }
 
 
@@ -155,7 +226,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 }
 
 
-GS::ErrCode CreateCommand::ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const
+GSErrCode CreateCommand::ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const
 {
 	GSErrCode err = NoError;
 	GS::Array<GS::ObjectState> classifications;

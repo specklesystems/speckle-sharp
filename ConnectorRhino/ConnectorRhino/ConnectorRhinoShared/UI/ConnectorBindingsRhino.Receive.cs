@@ -480,12 +480,16 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           var attributes = new ObjectAttributes();
 
           // handle display style
-          if (obj[@"displayStyle"] is Base display)
+          Base display = obj["displayStyle"] as Base ?? obj["@displayStyle"] as Base;
+          Base render = obj["renderMaterial"] as Base ?? obj["@renderMaterial"] as Base;
+          if (display != null)
           {
             if (converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
+            {
               attributes = displayAttribute;
+            }
           }
-          else if (obj[@"renderMaterial"] is Base renderMaterial)
+          else if (render != null)
           {
             attributes.ColorSource = ObjectColorSource.ColorFromMaterial;
           }
@@ -527,23 +531,28 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           }
 
           if (parent != null)
+          {
             parent.Update(id.ToString());
+          }
           else
+          {
             appObj.Update(id.ToString());
+          }
 
           bakedCount++;
 
           // handle render material
-          if (obj[@"renderMaterial"] is Base render)
+          if (render != null)
           {
-            var convertedMaterial = converter.ConvertToNative(render); //Maybe wrap in try catch in case no conversion exists?
-            if (convertedMaterial is RenderMaterial rm)
+            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial; //Maybe wrap in try catch in case no conversion exists?
+            if (convertedMaterial != null)
             {
-              var rhinoObject = Doc.Objects.FindId(id);
-              rhinoObject.RenderMaterial = rm;
+              RhinoObject rhinoObject = Doc.Objects.FindId(id);
+              rhinoObject.RenderMaterial = convertedMaterial;
               rhinoObject.CommitChanges();
             }
           }
+
           break;
 
         case RhinoObject o: // this was prbly a block instance, baked during conversion
@@ -596,7 +605,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     if (obj[UserDictionary] is Base userDictionary)
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
 
-    var name = obj["name"] as string;
+    var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
     if (name != null)
       attributes.Name = name;
   }

@@ -457,6 +457,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = SurfaceToNative(o);
           break;
 
+        case GridLine o:
+          rhinoObj = GridlineToNative(o);
+          break;
+
         case Alignment o:
           rhinoObj = AlignmentToNative(o);
           break;
@@ -467,10 +471,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
         case ModelCurve o:
           rhinoObj = CurveToNative(o.baseCurve);
-          break;
-
-        case DirectShape o:
-          rhinoObj = DirectShapeToNative(o, out notes);
           break;
 
         case View3D o:
@@ -671,16 +671,15 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       // This types are not supported in GH!
       case Pointcloud _:
       case ModelCurve _:
-      case DirectShape _:
       case View3D _:
       case Instance _:
+      case GridLine _:
       case Alignment _:
       case Level _:
       case Text _:
       case Dimension _:
       case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;
-
 #endif
 
       default:

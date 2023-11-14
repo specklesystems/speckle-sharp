@@ -36,21 +36,25 @@ namespace Objects.Converter.Revit
       if (speckleFloor["structural"] is bool isStructural)
         structural = isStructural;
 
-      DB.Level level;
-      double slope = 0;
+      var levelState = ApplicationObject.State.Unknown;
       double baseOffset = 0.0;
+      DB.Level level =
+        (speckleFloor.level != null)
+          ? ConvertLevelToRevit(speckleFloor.level, out levelState)
+          : ConvertLevelToRevit(
+            CurveToNative(speckleFloor.outline).get_Item(0),
+            out ApplicationObject.State state,
+            out baseOffset
+          );
+
+      double slope = 0;
       DB.Line slopeDirection = null;
       if (speckleFloor is RevitFloor speckleRevitFloor)
       {
-        level = ConvertLevelToRevit(speckleRevitFloor.level, out ApplicationObject.State state);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
         slopeDirection =
           (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
-      }
-      else
-      {
-        level = ConvertLevelToRevit(CurveToNative(speckleFloor.outline).get_Item(0), out ApplicationObject.State state, out baseOffset);
       }
 
       var flattenedOutline = GetFlattenedCurve(speckleFloor.outline, level.Elevation);
@@ -73,6 +77,7 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
 
       DB.Floor revitFloor = null;
+
 #if (REVIT2020 || REVIT2021)
       if (floorType == null)
       {
@@ -111,7 +116,6 @@ namespace Objects.Converter.Revit
           revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, null, 0);
       }
 #endif
-      
       if (speckleFloor is not RevitFloor)
         TrySetParam(revitFloor, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, -baseOffset);
 
@@ -138,9 +142,13 @@ namespace Objects.Converter.Revit
     private RevitFloor FloorToSpeckle(DB.Floor revitFloor, out List<string> notes)
     {
       notes = new List<string>();
-      var profiles = GetProfiles(revitFloor);
-
       var speckleFloor = new RevitFloor();
+#if REVIT2020 || REVIT2021
+      var profiles = GetProfiles(revitFloor);
+#else
+      var sketch = Doc.GetElement(revitFloor.SketchId) as Sketch;
+      var profiles = GetSketchProfiles(sketch).Cast<ICurve>().ToList();
+#endif
       var type = revitFloor.Document.GetElement(revitFloor.GetTypeId()) as ElementType;
       speckleFloor.family = type?.FamilyName;
       speckleFloor.type = type?.Name;
@@ -174,7 +182,11 @@ namespace Objects.Converter.Revit
         speckleFloor.slope = (double)slopeParam;
 
         speckleFloor.slopeDirection = new Geometry.Line(tail, head);
-        if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
+        if (
+          speckleFloor["parameters"] is Base parameters
+          && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam
+          && offsetParam.value is double offset
+        )
         {
           offsetParam.value = offset + tailOffset;
         }
@@ -329,9 +341,13 @@ namespace Objects.Converter.Revit
 
           // this is the formula for an angle between two vectors
           // cos T = a . b / (|a| * |b|)
-          var rad1ScaleCircle = Vector.DotProduct(circle.plane.xdir, newCirclePlane.xdir) / (circle.plane.xdir.Length * newCirclePlane.xdir.Length);
+          var rad1ScaleCircle =
+            Vector.DotProduct(circle.plane.xdir, newCirclePlane.xdir)
+            / (circle.plane.xdir.Length * newCirclePlane.xdir.Length);
 
-          var rad2ScaleCircle = Vector.DotProduct(circle.plane.ydir, newCirclePlane.ydir) / (circle.plane.ydir.Length * newCirclePlane.ydir.Length);
+          var rad2ScaleCircle =
+            Vector.DotProduct(circle.plane.ydir, newCirclePlane.ydir)
+            / (circle.plane.ydir.Length * newCirclePlane.ydir.Length);
 
           return new OG.Ellipse(
             newCirclePlane,
@@ -389,15 +405,21 @@ namespace Objects.Converter.Revit
 
           // this is the formula for an angle between two vectors
           // cos T = a . b / (|a| * |b|)
-          var rad1Scale = Vector.DotProduct(ellipse.plane.xdir, newEllipsePlane.xdir) / (ellipse.plane.xdir.Length * newEllipsePlane.xdir.Length);
+          var rad1Scale =
+            Vector.DotProduct(ellipse.plane.xdir, newEllipsePlane.xdir)
+            / (ellipse.plane.xdir.Length * newEllipsePlane.xdir.Length);
 
-          var rad2Scale = Vector.DotProduct(ellipse.plane.ydir, newEllipsePlane.ydir) / (ellipse.plane.ydir.Length * newEllipsePlane.ydir.Length);
+          var rad2Scale =
+            Vector.DotProduct(ellipse.plane.ydir, newEllipsePlane.ydir)
+            / (ellipse.plane.ydir.Length * newEllipsePlane.ydir.Length);
 
           return new OG.Ellipse(
             newEllipsePlane,
             firstRadius * rad1Scale,
             secondRadius * rad2Scale,
-            ellipse.domain, ellipse.trimDomain, units: ellipse.units
+            ellipse.domain,
+            ellipse.trimDomain,
+            units: ellipse.units
           );
 
         case OG.Line line:
@@ -406,12 +428,14 @@ namespace Objects.Converter.Revit
               line.start.x,
               line.start.y,
               z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units),
-              line.start.units),
+              line.start.units
+            ),
             new OG.Point(
               line.end.x,
               line.end.y,
               z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units),
-              line.end.units),
+              line.end.units
+            ),
             line.units
           );
 
@@ -435,9 +459,23 @@ namespace Objects.Converter.Revit
             newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
           return newPolycurve;
 
-          //case OG.Spiral spiral:
+        //case OG.Spiral spiral:
       }
       throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
+    }
+
+    public List<OG.Polycurve> GetSketchProfiles(Sketch sketch)
+    {
+      var profiles = new List<OG.Polycurve>();
+      foreach (CurveArray curves in sketch.Profile)
+      {
+        var curveLoop = CurveArrayToCurveLoop(curves);
+        profiles.Add(
+          new OG.Polycurve { segments = curveLoop.Select(x => CurveToSpeckle(x, sketch.Document)).ToList() }
+        );
+      }
+
+      return profiles;
     }
   }
 }

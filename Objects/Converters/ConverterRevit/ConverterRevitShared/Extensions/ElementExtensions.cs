@@ -1,9 +1,7 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Electrical;
-using Autodesk.Revit.DB.Mechanical;
-using Autodesk.Revit.DB.Plumbing;
 
 namespace ConverterRevitShared.Extensions
 {
@@ -12,18 +10,22 @@ namespace ConverterRevitShared.Extensions
     public static IEnumerable<Connector> GetConnectorSet(this Element element)
     {
       var empty = Enumerable.Empty<Connector>();
+      return element.GetConnectorManager()?.Connectors?.Cast<Connector>() ?? empty;
+    }
+
+    public static ConnectorManager? GetConnectorManager(this Element element)
+    {
       return element switch
       {
-        CableTray o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        Conduit o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        Duct o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        FamilyInstance o => o.MEPModel?.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        FlexDuct o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        FlexPipe o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        Pipe o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        Wire o => o.ConnectorManager?.Connectors?.Cast<Connector>() ?? empty,
-        _ => Enumerable.Empty<Connector>(),
+        MEPCurve o => o.ConnectorManager,
+        FamilyInstance o => o.MEPModel?.ConnectorManager,
+        _ => null,
       };
+    }
+
+    public static bool IsMEPElement(this Element element)
+    {
+      return element.GetConnectorManager() != null;
     }
   }
 }

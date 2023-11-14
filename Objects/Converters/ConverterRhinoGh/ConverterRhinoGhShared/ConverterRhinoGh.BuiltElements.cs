@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements;
 using Objects.Geometry;
+using Objects.Other;
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
@@ -150,37 +151,6 @@ public partial class ConverterRhinoGh
     return viewport;
   }
 
-  // direct shape
-  public List<object> DirectShapeToNative(RV.DirectShape directShape, out List<string> log)
-  {
-    log = new List<string>();
-    if (directShape.displayValue == null)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
-      return null;
-    }
-
-    if (directShape.displayValue.Count == 0)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
-      return null;
-    }
-
-    IEnumerable<object> subObjects = directShape.displayValue.Select(ConvertToNative).Where(e => e != null);
-
-    var nativeObjects = subObjects.ToList();
-
-    if (nativeObjects.Count == 0)
-    {
-      log.Add(
-        $"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements"
-      );
-      return null;
-    }
-
-    return nativeObjects;
-  }
-
   // level
   public ApplicationObject LevelToNative(Level level)
   {
@@ -201,6 +171,55 @@ public partial class ConverterRhinoGh
     {
       var namedCPlane = Doc.NamedConstructionPlanes[res];
       appObj.Update(bakedLevelName, convertedItem: namedCPlane);
+    }
+
+    return appObj;
+  }
+
+  // gridline
+  public ApplicationObject GridlineToNative(GridLine gridline)
+  {
+    var appObj = new ApplicationObject(gridline.id, gridline.speckle_type) { applicationId = gridline.applicationId };
+
+    // create the curve
+    var curve = CurveToNative(gridline.baseLine);
+    if (curve == null)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not convert curve");
+      return appObj;
+    }
+    // get linetype
+    ObjectAttributes atts = null;
+    if (gridline["@displayStyle"] as DisplayStyle == null)
+    {
+      var linetypeIndex = Doc.Linetypes.Find("Dashed");
+      if (linetypeIndex >= 0)
+        atts = new ObjectAttributes()
+        {
+          LinetypeIndex = linetypeIndex,
+          LinetypeSource = ObjectLinetypeSource.LinetypeFromObject
+        };
+    }
+
+    // bake the curve
+    Guid id = atts != null ? Doc.Objects.Add(curve, atts) : Doc.Objects.Add(curve);
+    if (id == Guid.Empty)
+    {
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add curve to doc");
+      return appObj;
+    }
+    var _gridLine = Doc.Objects.FindId(id);
+    appObj.Update(convertedItem: _gridLine, createdId: id.ToString());
+
+    // create and bake two textdots at the endpoints of the curve
+    if (!string.IsNullOrEmpty(gridline.label))
+    {
+      var labelStartId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtStart);
+      if (labelStartId != Guid.Empty)
+        appObj.Update(convertedItem: Doc.Objects.FindId(labelStartId), createdId: labelStartId.ToString());
+      var labelEndId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtEnd);
+      if (labelEndId != Guid.Empty)
+        appObj.Update(convertedItem: Doc.Objects.FindId(labelEndId), createdId: labelEndId.ToString());
     }
 
     return appObj;
