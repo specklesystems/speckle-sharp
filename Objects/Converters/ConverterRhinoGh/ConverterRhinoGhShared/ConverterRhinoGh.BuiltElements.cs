@@ -151,37 +151,6 @@ public partial class ConverterRhinoGh
     return viewport;
   }
 
-  // direct shape
-  public List<object> DirectShapeToNative(RV.DirectShape directShape, out List<string> log)
-  {
-    log = new List<string>();
-    if (directShape.displayValue == null)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
-      return null;
-    }
-
-    if (directShape.displayValue.Count == 0)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
-      return null;
-    }
-
-    IEnumerable<object> subObjects = directShape.displayValue.Select(ConvertToNative).Where(e => e != null);
-
-    var nativeObjects = subObjects.ToList();
-
-    if (nativeObjects.Count == 0)
-    {
-      log.Add(
-        $"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements"
-      );
-      return null;
-    }
-
-    return nativeObjects;
-  }
-
   // level
   public ApplicationObject LevelToNative(Level level)
   {
