@@ -46,7 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertStories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertTendon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Geometry\ConvertWall.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)partialclasses\loading\ConvertLoadCombination.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\ConvertLoadCombination.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\ConvertLoadPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading1DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\Loading\Loading2DElements.cs" />
