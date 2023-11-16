@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Onboarding;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -18,9 +19,20 @@ public static class Factory
     var receiveBindings = new ReceiveBinding(Store);
     var selectionBindings = new SelectionBinding();
 
+    Dictionary<string, OnboardingData> onboardings = new Dictionary<string, OnboardingData>()
+    {
+      {"mapper", new OnboardingData()
+      {
+        Title = "Mapper",
+        Blurb = "Map your objects for Revit!",
+        Completed = false,
+        Page = "/onboarding/rhino/mapper"
+      }}
+    };
+
     var bindingsList = new List<IBinding>
     {
-      new ConfigBinding(Utils.Utils.AppName),
+      new ConfigBinding(Utils.Utils.AppName, onboardings),
       new AccountBinding(),
       new TestBinding(),
       baseBindings,
