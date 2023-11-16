@@ -18,6 +18,7 @@ public static class SerializationSettingsFactory
       ContractResolver = new CamelCasePropertyNamesContractResolver(),
       NullValueHandling = NullValueHandling.Ignore,
       ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+      DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
       Converters =
       {
         new DiscriminatedObjectConverter(),

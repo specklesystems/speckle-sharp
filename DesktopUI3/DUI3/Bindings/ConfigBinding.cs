@@ -86,6 +86,18 @@ public class ConfigBinding : IBinding
     
     // 2- If connector config already exist in UiConfig, just return it.
     UiConfig config = JsonConvert.DeserializeObject<UiConfig>(configDui3String, _serializerOptions);
+    if (config.Connectors.ContainsKey(HostAppName.ToLower()))
+    {
+      ConnectorConfig existingConnectorConfig = config.Connectors[HostAppName.ToLower()];
+      bool updated = existingConnectorConfig.InitializeNewProperties();
+      bool removedProperties = existingConnectorConfig.CheckRemovedProperties();
+      if (updated || removedProperties)
+      {
+        ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(config, _serializerOptions));
+      }
+      
+      return config;
+    }
     
     // 3- If connector config didn't initialized yet, init and attach it, then return.
     ConnectorConfig connectorConfig = new (HostAppName, ConnectorOnboardings);
