@@ -27,6 +27,12 @@ namespace Objects.Converter.Revit
         return appObj;
 
       // Determine Space Location
+      if (speckleSpace.basePoint is null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Space Base Point was null");
+        return appObj;
+      }
+
       var level = ConvertLevelToRevit(speckleSpace.level, out _);
       var basePoint = PointToNative(speckleSpace.basePoint);
       var upperLimit = ConvertLevelToRevit(speckleSpace.topLevel, out _);
