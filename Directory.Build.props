@@ -16,13 +16,13 @@
   <PropertyGroup Label="General Config">
     <LangVersion>11</LangVersion>
     <DebugSymbols>true</DebugSymbols>
-    
-    <DebugSymbols>true</DebugSymbols>
+
     
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
     <!-- Ignore some warnings for now -->
     <NoWarn>
@@ -32,8 +32,7 @@
       <!--Others we don't want-->
       CA1815;CA1054;CA5399;
       <!--Nullability-->
-      CS8618;CS8602;CS8600;
-      CS1998; IDE0007; CS0618;
+      CS8618;
       <!-- Globalization rules disabled -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
@@ -46,6 +45,8 @@
       CA2018; CA2200; CA2252; CA2247; CA2255; CA2256; CA2257; CA2258;
       <!--Net7 default enabled analysers-->
       CA1420; CA1422; CA2259; CA2260;
+      <!--Net8 default enabled analysers-->
+      CA1856; CA1857; CA2021; CA2261;
       <!--Security analysers -->
       CA2100; CA2119; CA2153; CA2300; CA2301; CA2302; CA2305;
       CA2310; CA2311; CA2312; CA2315; CA2321; CA2322; CA2326; CA2327;
