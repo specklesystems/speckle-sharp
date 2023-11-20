@@ -19,7 +19,9 @@ public static class Factory
     var receiveBindings = new ReceiveBinding(Store);
     var selectionBindings = new SelectionBinding();
 
-    Dictionary<string, OnboardingData> onboardings = new Dictionary<string, OnboardingData>()
+    // Where we pass connector specific onboardings to config binding.
+    // Below code is just a sample for now!
+    Dictionary<string, OnboardingData> sampleOnboardingsData = new()
     {
       {"mapper", new OnboardingData()
       {
@@ -32,7 +34,7 @@ public static class Factory
 
     var bindingsList = new List<IBinding>
     {
-      new ConfigBinding(Utils.Utils.AppName, onboardings),
+      new ConfigBinding(Utils.Utils.AppName, sampleOnboardingsData),
       new AccountBinding(),
       new TestBinding(),
       baseBindings,
