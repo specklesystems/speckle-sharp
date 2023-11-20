@@ -39,5 +39,20 @@ namespace Objects.Converter.Revit
       var name = Enum.GetName(typeof(RevitCategory), c);
       return $"OST_{name}";
     }
+
+    public static string GetBuiltInFromSchemaBuilderCategory(RevitFamilyCategory c)
+    {
+      var name = Enum.GetName(typeof(RevitFamilyCategory), c);
+      return $"OST_{name}";
+    }
+
+    public static BuiltInCategory GetBuiltInCategory(Category category)
+    {
+#if REVIT2020 || REVIT2021 || REVIT2022
+      return (BuiltInCategory)category.Id.IntegerValue;
+#else
+      return category.BuiltInCategory;
+#endif
+    }
   }
 }

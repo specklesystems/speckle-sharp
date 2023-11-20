@@ -4,7 +4,7 @@ using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorAutocadCivil.Entry;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 

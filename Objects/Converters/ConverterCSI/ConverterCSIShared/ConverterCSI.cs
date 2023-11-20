@@ -1,7 +1,7 @@
 using CSiAPIv1;
+using Objects.BuiltElements;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Analysis;
-using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
 using Objects.Structural.Loading;
@@ -12,11 +12,15 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Objects.Other;
+using Objects.Structural.Materials;
 using OSG = Objects.Structural.Geometry;
+using Speckle.Core.Kits.ConverterInterfaces;
+using ConverterCSIShared.Models;
 
 namespace Objects.Converter.CSI
 {
-  public partial class ConverterCSI : ISpeckleConverter
+  public partial class ConverterCSI : ISpeckleConverter, IFinalizable
   {
 #if ETABS
     public static string CSIAppName = HostApplications.ETABS.Name;
@@ -45,6 +49,7 @@ namespace Objects.Converter.CSI
     public Model SpeckleModel { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
+
     /// <summary>
     /// <para>To know which objects are already in the model. These are *mostly* elements that are in the model before the receive operation starts, but certain names will be added for objects that may be referenced by other elements such as load patterns and load cases.</para>
     /// <para> The keys are typically GUIDS and the values are exclusively names. It is easier to retrieve names, and names are typically used by the api, however GUIDS are more stable and can't be changed in the user interface. Some items (again load patterns and load combinations) don't have GUIDs so those just store the name value twice. </para>
@@ -63,8 +68,12 @@ namespace Objects.Converter.CSI
     /// </summary>
     public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
+
+    private ResultsConverter? resultsConverter;
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
@@ -77,17 +86,19 @@ namespace Objects.Converter.CSI
         throw new Exception("operation setting was not set before calling converter.SetContextDocument");
 
       if (Settings["operation"] == "receive")
-      { 
+      {
         ExistingObjectGuids = GetAllGuids(Model);
         // TODO: make sure we are setting the load patterns before we import load combinations
       }
       else if (Settings["operation"] == "send")
       {
         SpeckleModel = ModelToSpeckle();
+        resultsConverter = new ResultsConverter(Model, Settings, GetLoadCases(), GetLoadCombos());
       }
       else
         throw new Exception("operation setting was not set to \"send\" or \"receive\"");
     }
+
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -107,6 +118,7 @@ namespace Objects.Converter.CSI
         case Load _:
         //case Geometry.Line line:
         case Node _:
+        case GridLine _:
         //case Model o:
         //case Property property:
 
@@ -116,8 +128,15 @@ namespace Objects.Converter.CSI
         case BuiltElements.Beam _:
         case BuiltElements.Brace _:
         case BuiltElements.Column _:
+        case StructuralMaterial _:
           return true;
-      };
+      }
+      ;
+      return false;
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
       return false;
     }
 
@@ -137,81 +156,91 @@ namespace Objects.Converter.CSI
 
     public object ConvertToNative(Base @object)
     {
-      var appObj = new ApplicationObject(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
-      List<string> notes = new List<string>();
+      ApplicationObject appObj = new(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
+
+      List<string> convertedNames = new();
+      string? convertedName = null;
 
       switch (@object)
       {
         case CSIAreaSpring o:
-          AreaSpringPropertyToNative(o, ref appObj);
+          convertedName = AreaSpringPropertyToNative(o);
           break;
         case CSIDiaphragm o:
-          DiaphragmToNative(o, ref appObj);
+          convertedName = DiaphragmToNative(o);
           break;
         case CSILinearSpring o:
-          LinearSpringPropertyToNative(o, ref appObj);
+          convertedName = LinearSpringPropertyToNative(o);
           break;
         case CSILinkProperty o:
-          LinkPropertyToNative(o, ref appObj);
+          convertedName = LinkPropertyToNative(o);
           break;
         case CSIProperty2D o:
-          Property2DToNative(o);
+          convertedName = Property2DToNative(o);
           break;
         case CSISpringProperty o:
-          SpringPropertyToNative(o, ref appObj);
+          convertedName = SpringPropertyToNative(o);
           break;
         case CSIStories o:
-          StoriesToNative(o, ref appObj);
+          convertedNames = StoriesToNative(o);
           break;
-        //case CSIWindLoadingFace o:
-        //  LoadFaceToNative(o, ref appObj);
-        //  break;
-        //case CSITendonProperty o:
+        // case CSIWindLoadingFace o:
+        //   convertedName = LoadFaceToNative(o, appObj.Log);
+        //   break;
+        // case CSITendonProperty o:
         case OSG.Element1D o:
-          FrameToNative(o, ref appObj);
+          FrameToNative(o, appObj);
           break;
         case OSG.Element2D o:
-          AreaToNative(o, ref appObj);
+          AreaToNative(o, appObj);
           break;
         case LoadBeam o:
-          LoadFrameToNative(o, ref appObj);
+          convertedNames = LoadFrameToNative(o, appObj.Log);
           break;
         case LoadFace o:
-          LoadFaceToNative(o, ref appObj);
+          convertedName = LoadFaceToNative(o, appObj.Log);
           break;
-        //case osg.node o:
-        //    return pointtonative(o);
         case Geometry.Line o:
-          LineToNative(o, ref appObj); // do we really want to assume any line is a frame object?
+          convertedName = LineToNative(o); // do we really want to assume any line is a frame object?
           break;
         case OSG.Node o:
-          PointToNative(o, ref appObj);
+          convertedName = PointToNative(o, appObj.Log);
           break;
         case Property1D o:
-          Property1DToNative(o, ref appObj);
+          convertedName = Property1DToNative(o);
           break;
-        #region BuiltElements
+        case StructuralMaterial o:
+          convertedName = MaterialToNative(o);
+          break;
         case BuiltElements.Beam o:
-          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          CurveBasedElementToNative(o, o.baseLine, appObj);
           break;
         case BuiltElements.Brace o:
-          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          CurveBasedElementToNative(o, o.baseLine, appObj);
           break;
         case BuiltElements.Column o:
-          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          CurveBasedElementToNative(o, o.baseLine, appObj);
           break;
-        #endregion
+        case GridLine o:
+          GridLineToNative(o);
+          break;
         default:
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Skipped not supported type: {@object.GetType()}");
-          break;
+          throw new ConversionNotSupportedException($"{@object.GetType()} is an unsupported type");
       }
 
-      // log 
-      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? Report.ReportObjects[@object.id] : null;
-      if (reportObj != null && notes.Count > 0)
-        reportObj.Update(log: notes);
+      if (convertedName is not null)
+      {
+        convertedNames.Add(convertedName);
+      }
+
+      appObj.Update(createdIds: convertedNames);
 
       return appObj;
+    }
+
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
     }
 
     public List<object> ConvertToNative(List<Base> objects)
@@ -334,64 +363,64 @@ namespace Objects.Converter.CSI
           returnObject = LoadPatternToSpeckle(name);
           Report.Log($"Created Loading Pattern");
           break;
-          //case "ColumnResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "BeamResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "BraceResults":
-          //    returnObject = FrameResultSet1dToSpeckle(name);
-          //    break;
-          //case "PierResults":
-          //    returnObject = PierResultSet1dToSpeckle(name);
-          //    break;
-          //case "SpandrelResults":
-          //    returnObject = SpandrelResultSet1dToSpeckle(name);
-          //    break;
-          //case "GridSys":
-          //    returnObject = GridSysToSpeckle(name);
-          //    break;
-          //case "Combo":
-          //    returnObject = ComboToSpeckle(name);
-          //    break;
-          //case "DesignSteel":
-          //    returnObject = DesignSteelToSpeckle(name);
-          //    break;
-          //case "DeisgnConcrete":
-          //    returnObject = DesignConcreteToSpeckle(name);
-          //    break;
-          //case "Story":
-          //    returnObject = StoryToSpeckle(name);
-          //    break;
-          //case "Diaphragm":
-          //    returnObject = DiaphragmToSpeckle(name);
-          //    break;
-          //case "PierLabel":
-          //    returnObject = PierLabelToSpeckle(name);
-          //    break;
-          //case "PropAreaSpring":
-          //    returnObject = PropAreaSpringToSpeckle(name);
-          //    break;
-          //case "PropLineSpring":
-          //    returnObject = PropLineSpringToSpeckle(name);
-          //    break;
-          //case "PropPointSpring":
-          //    returnObject = PropPointSpringToSpeckle(name);
-          //    break;
-          //case "SpandrelLabel":
-          //    returnObject = SpandrelLabelToSpeckle(name);
-          //    break;
-          //case "PropTendon":
-          //    returnObject = PropTendonToSpeckle(name);
-          //    break;
-          //case "PropLink":
-          //    returnObject = PropLinkToSpeckle(name);
-          //    break;
-          //default:
-          //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
-          //    returnObject = null;
-          //    break;
+        //case "ColumnResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "BeamResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "BraceResults":
+        //    returnObject = FrameResultSet1dToSpeckle(name);
+        //    break;
+        //case "PierResults":
+        //    returnObject = PierResultSet1dToSpeckle(name);
+        //    break;
+        //case "SpandrelResults":
+        //    returnObject = SpandrelResultSet1dToSpeckle(name);
+        //    break;
+        //case "GridSys":
+        //    returnObject = GridSysToSpeckle(name);
+        //    break;
+        //case "Combo":
+        //    returnObject = ComboToSpeckle(name);
+        //    break;
+        //case "DesignSteel":
+        //    returnObject = DesignSteelToSpeckle(name);
+        //    break;
+        //case "DeisgnConcrete":
+        //    returnObject = DesignConcreteToSpeckle(name);
+        //    break;
+        //case "Story":
+        //    returnObject = StoryToSpeckle(name);
+        //    break;
+        //case "Diaphragm":
+        //    returnObject = DiaphragmToSpeckle(name);
+        //    break;
+        //case "PierLabel":
+        //    returnObject = PierLabelToSpeckle(name);
+        //    break;
+        //case "PropAreaSpring":
+        //    returnObject = PropAreaSpringToSpeckle(name);
+        //    break;
+        //case "PropLineSpring":
+        //    returnObject = PropLineSpringToSpeckle(name);
+        //    break;
+        //case "PropPointSpring":
+        //    returnObject = PropPointSpringToSpeckle(name);
+        //    break;
+        //case "SpandrelLabel":
+        //    returnObject = SpandrelLabelToSpeckle(name);
+        //    break;
+        //case "PropTendon":
+        //    returnObject = PropTendonToSpeckle(name);
+        //    break;
+        //case "PropLink":
+        //    returnObject = PropLinkToSpeckle(name);
+        //    break;
+        //default:
+        //    ConversionErrors.Add(new SpeckleException($"Skipping not supported type: {type}"));
+        //    returnObject = null;
+        //    break;
       }
 
       // send the object out with the same appId that it came in with for updating purposes
@@ -407,5 +436,10 @@ namespace Objects.Converter.CSI
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
+
+    public void FinalizeConversion()
+    {
+      CommitAllDatabaseTableChanges();
+    }
   }
 }

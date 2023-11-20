@@ -266,6 +266,8 @@
                           <!--  Default = empty  -->
                           <DataTemplate DataType="{x:Type s:RevitDefaultWallViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultFloorViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultCeilingViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultRoofViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBeamViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBraceViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultColumnViewModel}" />
@@ -286,6 +288,14 @@
                           </DataTemplate>
                           <!--  FLOOR  -->
                           <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  CEILING  -->
+                          <DataTemplate DataType="{x:Type s:RevitCeilingViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  ROOF  -->
+                          <DataTemplate DataType="{x:Type s:RevitFootprintRoofViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
                           <!--  BEAM  -->
@@ -337,17 +347,25 @@
                               IsChecked="{Binding Freeform}" />-->
                             </StackPanel>
                           </DataTemplate>
-
+                          <DataTemplate DataType="{x:Type s:BlockDefinitionViewModel}">
+                            <StackPanel Orientation="Vertical" Spacing="5">
+                              <ComboBox
+                                assists:ComboBoxAssist.Label="Category"
+                                Classes="Outline"
+                                Items="{Binding Categories}"
+                                SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+                            </StackPanel>
+                          </DataTemplate>
 
                         </ContentControl.DataTemplates>
                       </ContentControl>
 
                       <!--  APPLY MAPPINGS  -->
                       <Button
-                        Command="{Binding SetMappingsCommand}"
-                        Content="Apply Mappings"
-                        IsEnabled="{Binding SelectedSchema.IsValid}"
-                        ToolTip.Tip="Apply mappings to all the selected elements" />
+                                                                                                            Command="{Binding SetMappingsCommand}"
+                                                                                                            Content="Apply Mappings"
+                                                                                                            IsEnabled="{Binding SelectedSchema.IsValid}"
+                                                                                                            ToolTip.Tip="Apply mappings to all the selected elements" />
 
 
 

@@ -1,4 +1,4 @@
-﻿#if REVIT
+#if REVIT
 using Autodesk.Revit.DB;
 using RD = Revit.Elements; //Dynamo for Revit nodes
 using Objects.Converter.Revit;
@@ -27,8 +27,9 @@ namespace Objects.Converter.Dynamo
 {
   public partial class ConverterDynamo : ISpeckleConverter
   {
-
-#if REVIT2023
+#if REVIT2024
+    public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2024);
+#elif REVIT2023
     public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
 #elif REVIT2022
     public static string AppName = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);
@@ -186,6 +187,11 @@ namespace Objects.Converter.Dynamo
       }
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
@@ -193,7 +199,8 @@ namespace Objects.Converter.Dynamo
 
     public List<object> ConvertToNative(List<Base> objects)
     {
-      return objects.Select(x => ConvertToNative(x)).ToList(); ;
+      return objects.Select(x => ConvertToNative(x)).ToList();
+      ;
     }
 
     public bool CanConvertToSpeckle(object @object)
@@ -257,12 +264,16 @@ namespace Objects.Converter.Dynamo
       }
     }
 
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
+    }
+
     public void SetContextDocument(object doc)
     {
 #if REVIT
       Doc = (Document)doc;
 #endif
     }
-
   }
 }

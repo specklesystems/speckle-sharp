@@ -9,24 +9,17 @@ namespace Speckle.Core.Api;
 public partial class Client
 {
   /// <summary>
-  /// Gets a given object from a stream.
+  /// Gets data about the requested Speckle object from a stream.
   /// </summary>
   /// <param name="streamId">Id of the stream to get the object from</param>
   /// <param name="objectId">Id of the object to get</param>
-  /// <returns></returns>
-  public Task<SpeckleObject> ObjectGet(string streamId, string objectId)
-  {
-    return ObjectGet(CancellationToken.None, streamId, objectId);
-  }
-
-  /// <summary>
-  /// Gets a given object from a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamId">Id of the stream to get the object from</param>
-  /// <param name="objectId">Id of the object to get</param>
   /// <returns></returns>
-  public async Task<SpeckleObject> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
+  public async Task<SpeckleObject> ObjectGet(
+    string streamId,
+    string objectId,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {
@@ -53,20 +46,13 @@ public partial class Client
   /// </summary>
   /// <param name="streamId"></param>
   /// <param name="objectId"></param>
-  /// <returns></returns>
-  public Task<SpeckleObject> ObjectCountGet(string streamId, string objectId)
-  {
-    return ObjectCountGet(CancellationToken.None, streamId, objectId);
-  }
-
-  /// <summary>
-  /// Gets a given object from a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamId"></param>
-  /// <param name="objectId"></param>
   /// <returns></returns>
-  public async Task<SpeckleObject> ObjectCountGet(CancellationToken cancellationToken, string streamId, string objectId)
+  public async Task<SpeckleObject> ObjectCountGet(
+    string streamId,
+    string objectId,
+    CancellationToken cancellationToken = default
+  )
   {
     var request = new GraphQLRequest
     {

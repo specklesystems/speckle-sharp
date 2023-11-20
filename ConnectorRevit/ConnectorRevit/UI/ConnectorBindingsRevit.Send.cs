@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,8 +12,8 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -32,8 +33,11 @@ namespace Speckle.ConnectorRevit.UI
     /// the Server and the local DB, and creates a commit with the objects.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
+      using var ctx = RevitConverterState.Push();
+
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
@@ -49,14 +53,21 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
-      state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
+      // The selectedObjects needs to be collected inside the Revit API context or else, in rare cases,
+      // the filteredElementCollectors will throw a "modification forbidden" exception. This can be reproduced
+      // by opening Snowdon towers in R24 and immediately sending the default 3D view from the landing page
+      var selectedObjects = await APIContext
+        .Run(_ => GetSelectionFilterObjects(converter, state.Filter))
+        .ConfigureAwait(false);
+
+      selectedObjects = HandleSelectedObjectDescendants(selectedObjects).ToList();
+      state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).Distinct().ToList();
 
       if (!selectedObjects.Any())
         throw new InvalidOperationException(
           "There are zero objects to send. Please use a filter, or set some via selection."
         );
-
+      converter.SetContextDocument(revitDocumentAggregateCache);
       converter.SetContextObjects(
         selectedObjects
           .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
@@ -67,7 +78,9 @@ namespace Speckle.ConnectorRevit.UI
 
       if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
       {
-        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
+        throw new Exception(
+          $"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object."
+        );
       }
       else
       {
@@ -80,12 +93,13 @@ namespace Speckle.ConnectorRevit.UI
       var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
-      await RevitTask
-        .RunAsync(_ =>
+      await APIContext
+        .Run(() =>
         {
-          using var _d0 = LogContext.PushProperty("converterName", converter.Name);
-          using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
-          using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var d0 = LogContext.PushProperty("converterName", converter.Name);
+          using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+          using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var d3 = LogContext.PushProperty("converterSettings", settings);
 
           foreach (var revitElement in selectedObjects)
           {
@@ -103,7 +117,7 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(reportObj);
 
             //Add context to logger
-            using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
+            using var _d3 = LogContext.PushProperty("fromType", revitElement.GetType());
             using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
 
             try
@@ -129,14 +143,12 @@ namespace Speckle.ConnectorRevit.UI
               commitObjectBuilder.IncludeObject(result, revitElement);
               convertedCount++;
             }
-            catch (ConversionSkippedException ex)
-            {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: ex.Message);
-            }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, "Object failed during conversion");
-              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
+              ConnectorHelpers.LogConversionException(ex);
+
+              var failureStatus = ConnectorHelpers.GetAppObjectFailureState(ex);
+              reportObj.Update(status: failureStatus, logItem: ex.Message);
             }
 
             conversionProgressDict["Conversion"]++;
@@ -146,6 +158,8 @@ namespace Speckle.ConnectorRevit.UI
           }
         })
         .ConfigureAwait(false);
+
+      revitDocumentAggregateCache.InvalidateAll();
 
       progress.Report.Merge(converter.Report);
 
@@ -211,10 +225,20 @@ namespace Speckle.ConnectorRevit.UI
       return false;
     }
 
-    private static void YieldToUIThread(TimeSpan delay)
+    private DateTime timerStarted = DateTime.MinValue;
+
+    private void YieldToUIThread(TimeSpan delay)
     {
+      var currentTime = DateTime.UtcNow;
+
+      if (currentTime.Subtract(timerStarted) < TimeSpan.FromSeconds(.15))
+      {
+        return;
+      }
+
       using CancellationTokenSource s = new(delay);
       Dispatcher.UIThread.MainLoop(s.Token);
+      timerStarted = currentTime;
     }
 
     private static Base ConvertToSpeckle(Element revitElement, ISpeckleConverter converter)
@@ -233,7 +257,9 @@ namespace Speckle.ConnectorRevit.UI
       Base conversionResult = converter.ConvertToSpeckle(revitElement);
 
       if (conversionResult == null)
-        throw new SpeckleException($"Conversion of {revitElement.UniqueId} (ToSpeckle) returned null");
+        throw new SpeckleException(
+          $"Conversion of {revitElement.GetType().Name} with id {revitElement.Id} (ToSpeckle) returned null"
+        );
 
       return conversionResult;
     }

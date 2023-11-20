@@ -25,12 +25,12 @@ namespace Speckle.ConnectorCSI.Util
     //    public static string CSISlug = HostApplications.CSI.Slug;
     //#endif
 
-    public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
+    public static Dictionary<string, (string typeName, string name)> ObjectIDsTypesAndNames { get; set; }
 
     public static List<SpeckleException> ConversionErrors { get; set; }
 
     // warning: this delimter string needs to be the same as the delimter string in "converterCSIUtils"
-    public static string delimiter = "::";
+    public const string Delimiter = "::";
 
     public static void GetObjectIDsTypesAndNames(cSapModel model)
     {
@@ -126,6 +126,7 @@ namespace Speckle.ConnectorCSI.Util
           return null;
       }
     }
+
     #region Get List Names
     public static List<string> GetAllPointNames(cSapModel model)
     {
@@ -136,9 +137,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PointObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
-
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllFrameNames(cSapModel model)
     {
       int num = 0;
@@ -148,7 +152,10 @@ namespace Speckle.ConnectorCSI.Util
         model.FrameObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
 
     public static List<string> GetColumnNames(cSapModel model)
@@ -239,8 +246,12 @@ namespace Speckle.ConnectorCSI.Util
         model.TendonObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllAreaNames(cSapModel model)
     {
       int num = 0;
@@ -250,7 +261,10 @@ namespace Speckle.ConnectorCSI.Util
         model.AreaObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
 
     public static List<string> GetAllWallNames(cSapModel model)
@@ -274,6 +288,7 @@ namespace Speckle.ConnectorCSI.Util
 
       return WallName;
     }
+
     public static List<string> GetAllFloorNames(cSapModel model)
     {
       var FloorNames = GetAllAreaNames(model);
@@ -295,6 +310,7 @@ namespace Speckle.ConnectorCSI.Util
 
       return FloorName;
     }
+
     public static List<string> GetAllLinkNames(cSapModel model)
     {
       int num = 0;
@@ -304,8 +320,12 @@ namespace Speckle.ConnectorCSI.Util
         model.LinkObj.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropMaterialNames(cSapModel model)
     {
       int num = 0;
@@ -315,8 +335,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropMaterial.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropRebarNames(cSapModel model)
     {
       int num = 0;
@@ -326,8 +350,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropRebar.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropFrameNames(cSapModel model)
     {
       int num = 0;
@@ -337,8 +365,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropFrame.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllLoadCaseNames(cSapModel model)
     {
       int num = 0;
@@ -348,8 +380,12 @@ namespace Speckle.ConnectorCSI.Util
         model.LoadCases.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllGroupNames(cSapModel model)
     {
       int num = 0;
@@ -359,8 +395,12 @@ namespace Speckle.ConnectorCSI.Util
         model.GroupDef.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllGridNames(cSapModel model)
     {
       int num = 0;
@@ -370,8 +410,12 @@ namespace Speckle.ConnectorCSI.Util
         model.GridSys.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllComboNames(cSapModel model)
     {
       int num = 0;
@@ -381,8 +425,12 @@ namespace Speckle.ConnectorCSI.Util
         model.RespCombo.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllConstraintNames(cSapModel model)
     {
       int num = 0;
@@ -392,8 +440,12 @@ namespace Speckle.ConnectorCSI.Util
         model.ConstraintDef.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllLoadPatternNames(cSapModel model)
     {
       int num = 0;
@@ -403,8 +455,12 @@ namespace Speckle.ConnectorCSI.Util
         model.LoadPatterns.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllSteelDesignNames(cSapModel model)
     {
       var name = "";
@@ -413,8 +469,12 @@ namespace Speckle.ConnectorCSI.Util
         model.DesignSteel.GetCode(ref name);
         return new List<string>() { name };
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllConcreteDesignNames(cSapModel model)
     {
       var name = "";
@@ -423,8 +483,12 @@ namespace Speckle.ConnectorCSI.Util
         model.DesignConcrete.GetCode(ref name);
         return new List<string>() { name };
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllStoryNames(cSapModel model)
     {
       int num = 0;
@@ -434,8 +498,12 @@ namespace Speckle.ConnectorCSI.Util
         model.Story.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllDiaphragmNames(cSapModel model)
     {
       int num = 0;
@@ -445,8 +513,12 @@ namespace Speckle.ConnectorCSI.Util
         model.Diaphragm.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllLineNames(cSapModel model)
     {
       int num = 0;
@@ -456,8 +528,12 @@ namespace Speckle.ConnectorCSI.Util
         model.LineElm.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPierLabelNames(cSapModel model)
     {
       int num = 0;
@@ -467,8 +543,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PierLabel.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropAreaSpringNames(cSapModel model)
     {
       int num = 0;
@@ -478,8 +558,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropAreaSpring.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropLineSpringNames(cSapModel model)
     {
       int num = 0;
@@ -489,8 +573,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropLineSpring.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropPointSpringNames(cSapModel model)
     {
       int num = 0;
@@ -500,8 +588,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropPointSpring.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllSpandrelLabelNames(cSapModel model)
     {
       int num = 0;
@@ -512,8 +604,12 @@ namespace Speckle.ConnectorCSI.Util
         model.SpandrelLabel.GetNameList(ref num, ref names, ref isMultiStory);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllTowerNames(cSapModel model)
     {
       int num = 0;
@@ -523,8 +619,12 @@ namespace Speckle.ConnectorCSI.Util
         model.Tower.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropTendonNames(cSapModel model)
     {
       int num = 0;
@@ -534,8 +634,12 @@ namespace Speckle.ConnectorCSI.Util
         model.PropTendon.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
+
     public static List<string> GetAllPropLinkNames(cSapModel model)
     {
       int num = 0;
@@ -545,7 +649,10 @@ namespace Speckle.ConnectorCSI.Util
         model.PropLink.GetNameList(ref num, ref names);
         return names.ToList();
       }
-      catch { return null; }
+      catch
+      {
+        return null;
+      }
     }
 
     #endregion
@@ -620,6 +727,7 @@ namespace Speckle.ConnectorCSI.Util
       Tendon,
       LoadPattern,
       Model,
+
       //Diaphragm,
       BeamLoading,
       ColumnLoading,
@@ -629,7 +737,6 @@ namespace Speckle.ConnectorCSI.Util
       AreaLoading,
       WallLoading,
       NodeLoading,
-
 
       //ColumnResults,
       //BeamResults,
@@ -649,5 +756,4 @@ namespace Speckle.ConnectorCSI.Util
       Area = 4
     }
   }
-
 }

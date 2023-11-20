@@ -1,24 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.DoubleNumerics;
 using System.Linq;
-using System.Numerics;
-
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using DB = Autodesk.Revit.DB;
-
-using Speckle.Core.Models;
-
-using Point = Objects.Geometry.Point;
-using RevitInstance = Objects.Other.Revit.RevitInstance;
-using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
-using Vector = Objects.Geometry.Vector;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
+using Objects.Organization;
 using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using DB = Autodesk.Revit.DB;
+using Point = Objects.Geometry.Point;
+using RevitInstance = Objects.Other.Revit.RevitInstance;
+using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using SHC = RevitSharedResources.Helpers.Categories;
-using Objects.Organization;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -42,7 +40,7 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && 
+      if (@base == null &&
         (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
         || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
       {
@@ -50,9 +48,12 @@ namespace Objects.Converter.Revit
           return null;
         else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)mullion.LocationCurve).Direction;
-          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
+          {
+            var direction = locationLine.Direction;
+            // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
+            isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
+          }
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -81,6 +82,12 @@ namespace Objects.Converter.Revit
         @base = MEPFamilyInstanceToSpeckle(revitFi);
       }
 
+      // curtain panels
+      if (revitFi is DB.Panel panel)
+      {
+        @base = PanelToSpeckle(panel);
+      }
+
       // elements
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
@@ -96,6 +103,13 @@ namespace Objects.Converter.Revit
       // add additional props to base object
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
+      if (revitFi.Room != null)
+        @base["roomId"] = revitFi.Room.Id.ToString();
+      if (revitFi.ToRoom != null)
+        @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
+      if (revitFi.FromRoom != null)
+        @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
+
 
       return @base;
     }
@@ -453,7 +467,7 @@ namespace Objects.Converter.Revit
       );
 
       // get the scale: TODO: do revit transforms ever have scaling?
-      var scale = (float)transform.Scale;
+      var scale = transform.Scale;
 
       return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }
@@ -506,6 +520,13 @@ namespace Objects.Converter.Revit
       if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
+      if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallMullions)
+        || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallPanels))
+      {
+        appObj.Update(logItem: "Revit cannot create standalone curtain panels or mullions", status: ApplicationObject.State.Skipped);
         return appObj;
       }
 
@@ -720,7 +741,7 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
-      appObj = SetHostedElements(instance, familyInstance, appObj);
+      //appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
     }
 
@@ -800,9 +821,8 @@ namespace Objects.Converter.Revit
       {
         var meshes = GetElementDisplayValue(
           instance,
-          new Options() { DetailLevel = ViewDetailLevel.Fine },
-          true,
-          parentTransform
+          isConvertedAsInstance: true,
+          transform: parentTransform
         );
         symbol.displayValue = meshes;
       }

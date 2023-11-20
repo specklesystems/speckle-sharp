@@ -18,8 +18,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AllRevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CategoryExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\DisplayUnitTypeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ConnectorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PointExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Element2DOutlineBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ParameterToSpeckleData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
@@ -29,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertConnector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDisplayableObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFabricationPart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />
@@ -36,6 +45,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMEPFamilyInstance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertNetwork.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPanel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolygonElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBrace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBlock.cs" />
@@ -45,6 +56,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertToposolid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />
@@ -54,6 +66,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTopRail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWire.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFreeformElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertZone.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\UpdateParameter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProjectInfo.cs" />

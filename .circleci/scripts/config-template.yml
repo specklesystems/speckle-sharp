@@ -116,7 +116,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   test-core:
     machine:
       image: ubuntu-2204:2023.02.1
-      docker_layer_caching: true
     resource_class: large
     steps:
       - cached-checkout
@@ -131,6 +130,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
+      - run-tests:
+          title: Automate Integration Tests
+          project: Automate/Tests/Speckle.Automate.Sdk.Tests.Integration/Speckle.Automate.Sdk.Tests.Integration.csproj
       - store_test_results:
           path: TestResults
 
@@ -504,15 +506,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-archicad-add-on: # build Archicad C++ add-on
     parameters:
-      e:
-        type: string
-        default: win/default
       archicadversion:
         type: string
         default: ""
     executor:
-      name: << parameters.e >>
+      name: win/server-2019
       shell: bash.exe
+      version: 2023.04.1 # Version 2023.08.01 broke this step due to missing MSVC v142 C++ build tools. Fixed to the prior working version till a fix is issued.
     steps:
       - cached-checkout
       - attach_workspace:

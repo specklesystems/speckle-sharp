@@ -20,6 +20,7 @@ using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
+using GridLine = Objects.BuiltElements.GridLine;
 
 namespace Archicad
 {
@@ -53,13 +54,25 @@ namespace Archicad
 
     public async Task<Base?> ConvertToSpeckle(ISelectionFilter filter, ProgressViewModel progress)
     {
-      var objectToCommit = new Base();
+      var objectToCommit = new Collection("Archicad model", "model");
 
       IEnumerable<string> elementIds = filter.Selection;
       if (filter.Slug == "all")
         elementIds = AsyncCommandProcessor
           .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
           ?.Result;
+      else if (filter.Slug == "elementType")
+      {
+        var elementTypes = filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
+        elementIds = AsyncCommandProcessor
+          .Execute(
+            new Communication.Commands.GetElementIds(
+              Communication.Commands.GetElementIds.ElementFilter.ElementType,
+              elementTypes
+            )
+          )
+          ?.Result;
+      }
 
       SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken); // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
@@ -75,9 +88,13 @@ namespace Archicad
           ElementTypeProvider.GetTypeByName(element),
           progress.CancellationToken
         ); // Deserialize all objects with hiven type
+
         if (objects.Count() > 0)
         {
-          objectToCommit["@" + element] = objects; // Save 'em. Assigned objects are parents with subelements
+          var elementCollection = new Collection(element, "Element Type");
+          elementCollection.applicationId = element;
+          elementCollection.elements = objects;
+          objectToCommit.elements.Add(elementCollection);
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
@@ -133,8 +150,15 @@ namespace Archicad
       bool forReceive
     )
     {
-      if (forReceive && conversionOptions != null && !conversionOptions.ReceiveParametric)
-        return DefaultConverterForReceive;
+      if (forReceive)
+      {
+        // always convert to Archicad GridElement
+        if (elementType.IsAssignableFrom(typeof(GridLine)))
+          return Converters[typeof(Archicad.GridElement)];
+
+        if (conversionOptions != null && !conversionOptions.ReceiveParametric)
+          return DefaultConverterForReceive;
+      }
 
       if (Converters.ContainsKey(elementType))
         return Converters[elementType];
@@ -154,8 +178,10 @@ namespace Archicad
         return Converters[typeof(Floor)];
       if (elementType.IsSubclassOf(typeof(Roof)))
         return Converters[typeof(Roof)];
-      if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
-        return Converters[typeof(Objects.BuiltElements.Room)];
+      if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))
+        return Converters[typeof(Archicad.Room)];
+      if (elementType.IsAssignableFrom(typeof(Archicad.GridElement)))
+        return Converters[typeof(Archicad.GridElement)];
 
       return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
     }
@@ -212,7 +238,14 @@ namespace Archicad
     {
       var subElementsAsBases = new List<Base>();
 
-      if (convertedObject is not (Objects.BuiltElements.Archicad.ArchicadWall or Objects.BuiltElements.Archicad.ArchicadRoof or Objects.BuiltElements.Archicad.ArchicadShell))
+      if (
+        convertedObject
+        is not (
+          Objects.BuiltElements.Archicad.ArchicadWall
+          or Objects.BuiltElements.Archicad.ArchicadRoof
+          or Objects.BuiltElements.Archicad.ArchicadShell
+        )
+      )
         return subElementsAsBases;
 
       var subElements = await GetAllSubElements(convertedObject.applicationId);

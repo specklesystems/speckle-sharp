@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Timer = System.Timers.Timer;
 
@@ -41,7 +42,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
     catch (Exception ex)
     {
-      throw new TransportException(this, $"Cound not create {dir}", ex);
+      throw new TransportException(this, $"Could not create {dir}", ex);
     }
 
     _rootPath = Path.Combine(_basePath, _applicationName, $"{_scope}.db");
@@ -415,7 +416,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     CancellationToken.ThrowIfCancellationRequested();
     lock (ConnectionLock)
     {
-      var stopwatch = Stopwatch.StartNew();
+      var startTime = Stopwatch.GetTimestamp();
       using (var command = new SqliteCommand("SELECT * FROM objects WHERE hash = @hash LIMIT 1 ", Connection))
       {
         command.Parameters.AddWithValue("@hash", id);
@@ -425,8 +426,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
             return reader.GetString(1);
           }
       }
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
+      Elapsed += LoggingHelpers.GetElapsedTime(startTime, Stopwatch.GetTimestamp());
     }
     return null; // pass on the duty of null checks to consumers
   }

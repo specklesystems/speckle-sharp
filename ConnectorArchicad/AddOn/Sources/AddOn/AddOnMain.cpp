@@ -15,19 +15,21 @@
 #include "Commands/GetBeamData.hpp"
 #include "Commands/GetColumnData.hpp"
 #include "Commands/GetElementBaseData.hpp"
+#include "Commands/GetGridElementData.hpp"
 #include "Commands/GetObjectData.hpp"
 #include "Commands/GetSlabData.hpp"
-#include "Commands/GetRoomData.hpp"
 #include "Commands/GetRoofData.hpp"
 #include "Commands/GetShellData.hpp"
 #include "Commands/GetSkylightData.hpp"
 #include "Commands/GetProjectInfo.hpp"
 #include "Commands/GetSubElementInfo.hpp"
+#include "Commands/GetZoneData.hpp"
 #include "Commands/CreateWall.hpp"
 #include "Commands/CreateDoor.hpp"
 #include "Commands/CreateWindow.hpp"
 #include "Commands/CreateBeam.hpp"
 #include "Commands/CreateColumn.hpp"
+#include "Commands/CreateGridElement.hpp"
 #include "Commands/CreateObject.hpp"
 #include "Commands/CreateRoof.hpp"
 #include "Commands/CreateSkylight.hpp"
@@ -197,17 +199,19 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetGridElementData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoomData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetShellData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSkylightData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetZoneData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDoor> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWindow> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateBeam> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateGridElement> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateObject> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateRoof> ()));

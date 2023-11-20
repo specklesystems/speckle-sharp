@@ -93,7 +93,7 @@ public static class Helpers
     catch (SpeckleException e)
     {
       if (string.IsNullOrEmpty(sw.StreamId))
-        throw e;
+        throw;
 
       //Fallback to a non authed account
       account = new Account

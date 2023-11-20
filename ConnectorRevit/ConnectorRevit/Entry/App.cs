@@ -6,7 +6,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
-using Revit.Async;
+using ConnectorRevit;
+using RevitSharedResources.Models;
+using Speckle.BatchUploader.Sdk;
+using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -15,7 +18,6 @@ namespace Speckle.ConnectorRevit.Entry
 {
   public class App : IExternalApplication
   {
-
     public static UIApplication AppInstance { get; set; }
 
     public static UIControlledApplication UICtrlApp { get; set; }
@@ -23,8 +25,8 @@ namespace Speckle.ConnectorRevit.Entry
     public Result OnStartup(UIControlledApplication application)
     {
       //Always initialize RevitTask ahead of time within Revit API context
-      RevitTask.Initialize(application);
-    
+      APIContext.Initialize(application);
+
       UICtrlApp = application;
       UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
       string tabName = "Speckle";
@@ -40,7 +42,15 @@ namespace Speckle.ConnectorRevit.Entry
       string path = typeof(App).Assembly.Location;
 
       //desktopui 2
-      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
+      var speckleButton2 =
+        specklePanel.AddItem(
+          new PushButtonData(
+            "Speckle 2",
+            "Revit Connector",
+            typeof(App).Assembly.Location,
+            typeof(SpeckleRevitCommand).FullName
+          )
+        ) as PushButton;
 
       if (speckleButton2 != null)
       {
@@ -52,7 +62,10 @@ namespace Speckle.ConnectorRevit.Entry
         speckleButton2.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
-      var schedulerButton = specklePanel.AddItem(new PushButtonData("Scheduler", "Scheduler", typeof(App).Assembly.Location, typeof(SchedulerCommand).FullName)) as PushButton;
+      var schedulerButton =
+        specklePanel.AddItem(
+          new PushButtonData("Scheduler", "Scheduler", typeof(App).Assembly.Location, typeof(SchedulerCommand).FullName)
+        ) as PushButton;
 
       if (schedulerButton != null)
       {
@@ -64,43 +77,59 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
-      PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
+      PulldownButton helpPulldown =
+        specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
       helpPulldown.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help32.png", path);
 
-      PushButton forum = helpPulldown.AddPushButton(new PushButtonData("forum", "Community Forum", typeof(App).Assembly.Location, typeof(ForumCommand).FullName)) as PushButton;
+      PushButton forum =
+        helpPulldown.AddPushButton(
+          new PushButtonData("forum", "Community Forum", typeof(App).Assembly.Location, typeof(ForumCommand).FullName)
+        ) as PushButton;
       forum.ToolTip = "Check out our Community Forum! Opens a page in your web browser.";
       forum.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.forum16.png", path);
       forum.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.forum32.png", path);
 
-      PushButton tutorials = helpPulldown.AddPushButton(new PushButtonData("tutorials", "Tutorials", typeof(App).Assembly.Location, typeof(TutorialsCommand).FullName)) as PushButton;
+      PushButton tutorials =
+        helpPulldown.AddPushButton(
+          new PushButtonData("tutorials", "Tutorials", typeof(App).Assembly.Location, typeof(TutorialsCommand).FullName)
+        ) as PushButton;
       tutorials.ToolTip = "Check out our tutorials! Opens a page in your web browser.";
       tutorials.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.tutorials16.png", path);
       tutorials.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.tutorials32.png", path);
 
-      PushButton docs = helpPulldown.AddPushButton(new PushButtonData("docs", "Docs", typeof(App).Assembly.Location, typeof(DocsCommand).FullName)) as PushButton;
+      PushButton docs =
+        helpPulldown.AddPushButton(
+          new PushButtonData("docs", "Docs", typeof(App).Assembly.Location, typeof(DocsCommand).FullName)
+        ) as PushButton;
       docs.ToolTip = "Check out our documentation! Opens a page in your web browser.";
       docs.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs16.png", path);
       docs.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.docs32.png", path);
 
-      PushButton manager = helpPulldown.AddPushButton(new PushButtonData("manager", "Manager", typeof(App).Assembly.Location, typeof(ManagerCommand).FullName)) as PushButton;
+      PushButton manager =
+        helpPulldown.AddPushButton(
+          new PushButtonData("manager", "Manager", typeof(App).Assembly.Location, typeof(ManagerCommand).FullName)
+        ) as PushButton;
       manager.ToolTip = "Manage accounts and connectors. Opens SpeckleManager.";
       manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
       manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
 
-
-
-
       return Result.Succeeded;
     }
 
-    private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
+    private void ControlledApplication_ApplicationInitialized(
+      object sender,
+      Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
+    )
     {
       try
       {
         // We need to hook into the AssemblyResolve event before doing anything else
         // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+
         AppInstance = new UIApplication(sender as Application);
 
         Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
@@ -111,6 +140,12 @@ namespace Speckle.ConnectorRevit.Entry
         bindings.RegisterAppEvents();
         SpeckleRevitCommand.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
+
+        BatchUploaderClient client = new(new Uri("http://localhost:5001"));
+        RevitApplicationController revitAppController = new(AppInstance);
+        BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
+
+        batchUploadOperationDriver.ProcessAllJobs();
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
@@ -129,7 +164,8 @@ namespace Speckle.ConnectorRevit.Entry
         }
         else
         {
-          td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n\n{ex.Message}";
+          td.MainContent =
+            $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n\n{ex.Message}";
         }
 
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Ask for help on our Community Forum");
@@ -140,6 +176,37 @@ namespace Speckle.ConnectorRevit.Entry
         {
           Process.Start("https://speckle.community/");
         }
+      }
+    }
+
+    private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+    {
+      SpeckleLog.Logger.Fatal(
+        e.Exception,
+        "Caught thread exception with message {exceptionMessage}",
+        e.Exception.Message
+      );
+    }
+
+    private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+      if (e.ExceptionObject is Exception ex)
+      {
+        SpeckleLog.Logger.Fatal(
+          ex,
+          "Caught unhandled exception. Is terminating : {isTerminating}. Message : {exceptionMessage}",
+          e.IsTerminating,
+          ex.Message
+        );
+      }
+      else
+      {
+        SpeckleLog.Logger.Fatal(
+          "Caught unhandled exception. Is terminating : {isTerminating}. Exception object is of type : {exceptionObjectType}. Exception object to string : {exceptionObjToString}",
+          e.IsTerminating,
+          e.ExceptionObject.GetType(),
+          e.ExceptionObject.ToString()
+        );
       }
     }
 
@@ -154,7 +221,11 @@ namespace Speckle.ConnectorRevit.Entry
       {
         var assembly = Assembly.LoadFrom(Path.Combine(path));
         var icon = assembly.GetManifestResourceStream(sourceName);
-        PngBitmapDecoder m_decoder = new PngBitmapDecoder(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+        PngBitmapDecoder m_decoder = new PngBitmapDecoder(
+          icon,
+          BitmapCreateOptions.PreservePixelFormat,
+          BitmapCacheOption.Default
+        );
         ImageSource m_source = m_decoder.Frames[0];
         return (m_source);
       }
@@ -177,5 +248,4 @@ namespace Speckle.ConnectorRevit.Entry
       return a;
     }
   }
-
 }

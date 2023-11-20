@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ConnectorCore\BatchUploader.OperationDriver\BatchUploader.OperationDriver.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
@@ -33,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Revit.Async" Version="2.0.1" />
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
 

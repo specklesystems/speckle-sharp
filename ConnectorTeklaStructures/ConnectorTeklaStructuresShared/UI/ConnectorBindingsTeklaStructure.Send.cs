@@ -10,27 +10,28 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Serilog.Context;
 using Tekla.Structures.Model;
 using SCT = Speckle.Core.Transports;
-
-
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
-
   {
     #region sending
 
     private List<ISetting> CurrentSettings { get; set; }
 
     public override bool CanPreviewSend => false;
+
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       return;
     }
 
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
@@ -43,6 +44,11 @@ namespace Speckle.ConnectorTeklaStructures.UI
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
+
+      using var d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+      using var d3 = LogContext.PushProperty("converterSettings", settings);
 
       var commitObj = new Base();
       int objCount = 0;
@@ -60,17 +66,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
       if (totalObjectCount == 0)
       {
         throw new InvalidOperationException(
-          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
+        );
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       progress.Max = totalObjectCount;
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
-
-
-
-
 
       foreach (ModelObject obj in selectedObjects)
       {
@@ -81,7 +84,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
         Base converted = null;
         string containerName = string.Empty;
-
 
         //var selectedObjectType = ConnectorTeklaStructuresUtils.ObjectIDsTypesAndNames
         //    .Where(pair => pair.Key == applicationId)
@@ -97,22 +99,24 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //    .Where(pair => pair.Key == applicationId)
         //    .Select(pair => pair.Value).FirstOrDefault();
 
+        using var d4 = LogContext.PushProperty("fromType", obj.GetType());
+
         try
         {
           converted = converter.ConvertToSpeckle(obj);
+          if (converted == null)
+            throw new ConversionException("Conversion returned null");
         }
         catch (Exception ex)
         {
-          //TODO: log
+          ConnectorHelpers.LogConversionException(ex);
+          progress.Report.LogConversionError(
+            new ConversionException(
+              $"Failed to convert object ${obj.Identifier.GUID} of type ${obj.GetType()} {ex.Message}",
+              ex
+            )
+          );
         }
-
-        if (converted == null)
-        {
-          var exception = new Exception($"Failed to convert object ${obj.Identifier.GUID} of type ${obj.GetType()}.");
-          progress.Report.LogConversionError(exception);
-          continue;
-        }
-
 
         if (converted != null)
         {
@@ -120,7 +124,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
           {
             commitObj["@Base"] = new List<Base>();
           }
-                     ((List<Base>)commitObj["@Base"]).Add(converted);
+          ((List<Base>)commitObj["@Base"]).Add(converted);
         }
 
         objCount++;
@@ -143,14 +147,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
       progress.Max = totalObjectCount;
       var objectId = await Operations.Send(
-          @object: commitObj,
-          cancellationToken: progress.CancellationToken,
-          transports: transports,
-          onProgressAction: dict => progress.Update(dict),
-          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-          disposeTransports: true
-          );
-      
+        @object: commitObj,
+        cancellationToken: progress.CancellationToken,
+        transports: transports,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
+        disposeTransports: true
+      );
+
       progress.CancellationToken.ThrowIfCancellationRequested();
 
       var actualCommit = new CommitCreateInput
@@ -158,11 +162,15 @@ namespace Speckle.ConnectorTeklaStructures.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from TeklaStructures.",
+        message =
+          state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from TeklaStructures.",
         sourceApplication = ConnectorTeklaStructuresUtils.TeklaStructuresAppName
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null)
+      {
+        actualCommit.parents = new List<string>() { state.PreviousCommitId };
+      }
 
       var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
       return commitId;

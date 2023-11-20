@@ -20,24 +20,27 @@ namespace Objects.Converter.Revit
       var speckleRevitPipe = specklePipe as RevitPipe;
 
       // check to see if pipe already exists in the doc
-      var docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
+      Element docObj = GetExistingElementByApplicationId(specklePipe.applicationId);
       var appObj = new ApplicationObject(specklePipe.id, specklePipe.speckle_type) { applicationId = specklePipe.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
+      {
         return appObj;
+      }
 
       // get system info
-      var pipeType = GetElementType<DB.MEPCurveType>(specklePipe, appObj, out bool _);
+      MEPCurveType pipeType = GetElementType<DB.MEPCurveType>(specklePipe, appObj, out bool _);
       if (pipeType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
-      var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
+
+      List<ElementType> systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType()
        .OfClass(typeof(DB.Plumbing.PipingSystemType)).ToElements().Cast<ElementType>().ToList();
       var systemFamily = speckleRevitPipe?.systemType ?? "";
-      var system = systemTypes.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
+      ElementType system = systemTypes.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
                    systemTypes.FirstOrDefault(x => x.Name == systemFamily);
       if (system == null)
       {
@@ -60,6 +63,7 @@ namespace Objects.Converter.Revit
             linePipe.SetSystemType(lineSystem);
             ((LocationCurve)linePipe.Location).Curve = baseLine;
           }
+
           pipe = linePipe;
           break;
         case Polyline _:
@@ -74,6 +78,7 @@ namespace Objects.Converter.Revit
           {
             flexPipeType = GetElementType<FlexPipeType>(specklePipe, appObj, out bool _);
           }
+
           if (flexPipeType == null)
           {
             appObj.Update(status: ApplicationObject.State.Failed);
@@ -85,11 +90,16 @@ namespace Objects.Converter.Revit
           if (specklePipe.baseCurve is Curve curve)
           {
             basePoly = curve.displayValue;
-            var baseCurve = CurveToNative(curve);
-            var start = baseCurve.GetEndPoint(0);
-            var end = baseCurve.GetEndPoint(1);
+            DB.Curve baseCurve = CurveToNative(curve);
+            XYZ start = baseCurve.GetEndPoint(0);
+            XYZ end = baseCurve.GetEndPoint(1);
           }
-          if (basePoly == null) break;
+
+          if (basePoly == null)
+          {
+            break;
+          }
+
           var polyPoints = basePoly.GetPoints().Select(o => PointToNative(o)).ToList();
 
           // get tangents if they exist
@@ -99,12 +109,15 @@ namespace Objects.Converter.Revit
           // get level
           DB.Level flexPolyLevel = ConvertLevelToRevit(speckleRevitFlexPipe != null ? speckleRevitFlexPipe.level : LevelFromPoint(polyPoints.First()), out levelState);
 
-          var flexPolyPipe = (startTangent != null && endTangent != null) ?
+          FlexPipe flexPolyPipe = (startTangent != null && endTangent != null) ?
             DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, startTangent, endTangent, polyPoints) :
             DB.Plumbing.FlexPipe.Create(Doc, system.Id, flexPipeType.Id, flexPolyLevel.Id, polyPoints);
 
+          // deleting instead of updating for now!
           if (docObj != null)
-            Doc.Delete(docObj.Id); // deleting instead of updating for now!
+          {
+            Doc.Delete(docObj.Id); 
+          }
 
           pipe = flexPolyPipe;
           break;
@@ -114,7 +127,10 @@ namespace Objects.Converter.Revit
       }
 
       if (speckleRevitPipe != null)
+      {
         SetInstanceParameters(pipe, speckleRevitPipe);
+        CreateSystemConnections(speckleRevitPipe.Connectors, pipe, receivedObjectsCache);
+      }
 
       TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, specklePipe.diameter, specklePipe.units);
 
@@ -142,7 +158,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
+        displayValue = GetElementDisplayValue(revitPipe)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
@@ -192,7 +208,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
         endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
+        displayValue = GetElementDisplayValue(revitPipe)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);

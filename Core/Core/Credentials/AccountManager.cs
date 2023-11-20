@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -27,6 +28,8 @@ namespace Speckle.Core.Credentials;
 /// </summary>
 public static class AccountManager
 {
+  public const string DEFAULT_SERVER_URL = "https://app.speckle.systems";
+
   private static readonly SQLiteTransport AccountStorage = new(scope: "Accounts");
   private static bool _isAddingAccount;
   private static readonly SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
@@ -128,7 +131,7 @@ public static class AccountManager
   /// </summary>
   public static string GetDefaultServerUrl()
   {
-    var defaultServerUrl = "https://speckle.xyz";
+    var serverUrl = DEFAULT_SERVER_URL;
     var customServerUrl = "";
 
     // first mechanism, check for local file
@@ -146,10 +149,10 @@ public static class AccountManager
       Uri url = null;
       Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
       if (url != null)
-        defaultServerUrl = customServerUrl.TrimEnd('/');
+        serverUrl = customServerUrl.TrimEnd('/');
     }
 
-    return defaultServerUrl;
+    return serverUrl;
   }
 
   /// <summary>
@@ -275,6 +278,7 @@ public static class AccountManager
         account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
+        account.serverInfo.frontend2 = await IsFrontend2Server(url).ConfigureAwait(false);
       }
       catch (Exception)
       {
@@ -536,9 +540,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {
@@ -566,9 +568,7 @@ public static class AccountManager
   {
     try
     {
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-      var client = Http.GetHttpProxyClient();
+      using var client = Http.GetHttpProxyClient();
 
       var body = new
       {
@@ -588,6 +588,29 @@ public static class AccountManager
     catch (Exception e)
     {
       throw new SpeckleException(e.Message, e);
+    }
+  }
+
+  private static async Task<bool> IsFrontend2Server(string server)
+  {
+    try
+    {
+      using var client = Http.GetHttpProxyClient();
+      var response = await client.GetAsync(server).ConfigureAwait(false);
+
+      if (response.Headers.TryGetValues("x-speckle-frontend-2", out IEnumerable<string> values))
+      {
+        if (values.Any() && bool.Parse(values.FirstOrDefault()))
+        {
+          return true;
+        }
+      }
+
+      return false;
+    }
+    catch (Exception e)
+    {
+      return false;
     }
   }
 

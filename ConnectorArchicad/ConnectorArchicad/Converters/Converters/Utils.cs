@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Archicad.Model;
 using Objects;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -13,17 +15,32 @@ namespace Archicad.Converters
   {
     public static Point VertexToPoint(MeshModel.Vertex vertex)
     {
-      return new Point { x = vertex.x, y = vertex.y , z = vertex.z };
+      return new Point
+      {
+        x = vertex.x,
+        y = vertex.y,
+        z = vertex.z
+      };
     }
 
     public static Vector VertexToVector(MeshModel.Vertex vertex)
     {
-      return new Vector { x = vertex.x, y = vertex.y, z = vertex.z };
+      return new Vector
+      {
+        x = vertex.x,
+        y = vertex.y,
+        z = vertex.z
+      };
     }
 
     public static System.Numerics.Vector3 VertexToVector3(MeshModel.Vertex vertex)
     {
-      return new System.Numerics.Vector3 { X = (float)vertex.x, Y = (float)vertex.y, Z = (float)vertex.z };
+      return new System.Numerics.Vector3
+      {
+        X = (float)vertex.x,
+        Y = (float)vertex.y,
+        Z = (float)vertex.z
+      };
     }
 
     public static Point ScaleToNative(Point point, string? units = null)
@@ -44,7 +61,12 @@ namespace Archicad.Converters
       units ??= point.units;
       var scale = Units.GetConversionFactor(units, Units.Meters);
 
-      return new MeshModel.Vertex { x = point.x * scale, y = point.y * scale, z = point.z * scale };
+      return new MeshModel.Vertex
+      {
+        x = point.x * scale,
+        y = point.y * scale,
+        z = point.z * scale
+      };
     }
 
     public static Polycurve PolycurveToSpeckle(ElementShape.Polyline archiPolyline)
@@ -56,9 +78,11 @@ namespace Archicad.Converters
       };
       foreach (var segment in archiPolyline.polylineSegments)
       {
-        poly.segments.Add(segment.arcAngle == 0
-          ? new Line(segment.startPoint, segment.endPoint)
-          : new Arc(segment.startPoint, segment.endPoint, segment.arcAngle));
+        poly.segments.Add(
+          segment.arcAngle == 0
+            ? new Line(segment.startPoint, segment.endPoint)
+            : new Arc(segment.startPoint, segment.endPoint, segment.arcAngle)
+        );
       }
 
       return poly;
@@ -90,8 +114,11 @@ namespace Archicad.Converters
 
     public static ElementShape.PolylineSegment ArcToNative(Arc arc)
     {
-      return new ElementShape.PolylineSegment(ScaleToNative(arc.startPoint), ScaleToNative(arc.endPoint),
-        arc.angleRadians);
+      return new ElementShape.PolylineSegment(
+        ScaleToNative(arc.startPoint),
+        ScaleToNative(arc.endPoint),
+        arc.angleRadians
+      );
     }
 
     public static ElementShape.Polyline? CurveToNative(ICurve curve)
@@ -121,6 +148,31 @@ namespace Archicad.Converters
         shape.holePolylines = new List<ElementShape.Polyline>(voids.Select(CurveToNative));
 
       return shape;
+    }
+
+    public static T ConvertDTOs<T>(dynamic jObject)
+    {
+      Objects.BuiltElements.Archicad.ArchicadLevel level =
+        jObject.level.ToObject<Objects.BuiltElements.Archicad.ArchicadLevel>();
+
+      jObject.Remove("level");
+      T speckleObject = jObject.ToObject<T>();
+
+      PropertyInfo prop = speckleObject.GetType().GetProperty("archicadLevel");
+      prop.SetValue(speckleObject, level);
+
+      return speckleObject;
+    }
+
+    public static Objects.BuiltElements.Archicad.ArchicadLevel ConvertLevel(Objects.BuiltElements.Level level)
+    {
+      return new Objects.BuiltElements.Archicad.ArchicadLevel
+      {
+        id = level.id,
+        applicationId = level.applicationId,
+        elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
+        name = level.name
+      };
     }
   }
 }

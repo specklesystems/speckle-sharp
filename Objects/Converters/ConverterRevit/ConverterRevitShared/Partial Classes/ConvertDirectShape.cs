@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -46,12 +46,13 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationObject TryDirectShapeToNative(Brep brep, ToNativeMeshSettingEnum fallbackSetting,  RevitCategory cat = RevitCategory.GenericModel)
+    public ApplicationObject TryDirectShapeToNative(Brep brep, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
     {
       DirectShape ds = new(
         $"Brep {brep.applicationId ?? brep.id}",
         cat,
-        new List<Base> { brep }) { applicationId = brep.applicationId, id = brep.id };
+        new List<Base> { brep })
+      { applicationId = brep.applicationId, id = brep.id };
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
 
@@ -60,10 +61,11 @@ namespace Objects.Converter.Revit
       DirectShape ds = new(
         $"Mesh {mesh.applicationId ?? mesh.id}",
         cat,
-        new List<Base> { mesh }) { applicationId = mesh.applicationId, id = mesh.id };
+        new List<Base> { mesh })
+      { applicationId = mesh.applicationId, id = mesh.id };
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
-    
+
     public ApplicationObject TryDirectShapeToNative(ApplicationObject appObj, List<Mesh> meshes, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
     {
       if (meshes.Count == 0)
@@ -75,11 +77,12 @@ namespace Objects.Converter.Revit
       var ds = new DirectShape(
         $"{appObj.Descriptor.Split(':').LastOrDefault() ?? "Meshes"} {appObj.applicationId}",
         cat,
-        meshes.Cast<Base>().ToList()) { applicationId = appObj.applicationId, id = appObj.OriginalId };
-      
+        meshes.Cast<Base>().ToList())
+      { applicationId = appObj.applicationId, id = appObj.OriginalId };
+
       return TryDirectShapeToNative(ds, fallbackSetting);
     }
-    
+
     /// <summary>
     /// The default DirectShape conversion method. Will return a Revit DirectShape with the containing geometry.
     /// </summary>
@@ -89,15 +92,13 @@ namespace Objects.Converter.Revit
     /// <exception cref="FallbackToDxfException"></exception>
     public ApplicationObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
+      // get any existing elements. This could be a DirectShape, OR another element if using fallback receive
+      var existingObj = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id);
       var appObj =
         new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
 
-      // TODO: DUI3 -> return appObj directly since we don't have exactly ApplicationObject 
-      return appObj;
-      var existingDS = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id) as DB.DirectShape;
-
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(existingDS, appObj))
+      if (IsIgnore(existingObj, appObj))
         return appObj;
 
       var converted = new List<GeometryObject>();
@@ -142,30 +143,56 @@ namespace Objects.Converter.Revit
         }
       });
 
-      if (existingDS != null)
+      if (existingObj != null && existingObj is DB.DirectShape existingDS) // if it's a directShape, just update
       {
-        // Try to update the existing Direct Shape
         existingDS.SetShape(converted);
         appObj.Update(status: ApplicationObject.State.Updated, createdId: existingDS.UniqueId,
-          convertedItem: existingDS);
+        convertedItem: existingDS);
         return appObj;
       }
 
-      BuiltInCategory bic;
-      if ((int)speckleDs.category == -1)
-        speckleDs.category = RevitCategory.GenericModel;
-      var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
+      //from 2.16 onwards use the builtInCategory field for direct shape fallback
+      BuiltInCategory bic = BuiltInCategory.OST_GenericModel;
+      if (!BuiltInCategory.TryParse(speckleDs["builtInCategory"] as string, out bic))
+      {
+        //pre 2.16 or coming from grasshopper, using the enum
+        //TODO: move away from enum logic
+        if ((int)speckleDs.category != -1)
+        {
+          var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
+          _ = BuiltInCategory.TryParse(bicName, out bic);
+        }
+      }
 
-      BuiltInCategory.TryParse(bicName, out bic);
       var cat = Doc.Settings.Categories.get_Item(bic);
 
-      var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
-      revitDs.ApplicationId = speckleDs.applicationId;
-      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
-      revitDs.SetShape(converted);
-      revitDs.Name = speckleDs.name;
-      SetInstanceParameters(revitDs, speckleDs);
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
+      try
+      {
+        var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
+        if (speckleDs.applicationId != null)
+          revitDs.ApplicationId = speckleDs.applicationId;
+        revitDs.ApplicationDataId = Guid.NewGuid().ToString();
+        revitDs.SetShape(converted);
+        revitDs.Name = speckleDs.name;
+        SetInstanceParameters(revitDs, speckleDs);
+        // delete any existing objs
+        if (existingObj != null)
+        {
+          try
+          {
+            Doc.Delete(existingObj.Id);
+          }
+          catch (Exception e)
+          {
+            appObj.Log.Add($"Could not delete existing object: {e.Message}");
+          }
+        }
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
+      }
+      catch (Exception ex)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
+      }
       return appObj;
     }
 

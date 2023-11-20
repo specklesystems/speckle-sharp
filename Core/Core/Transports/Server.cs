@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -80,7 +80,13 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
   public string TransportName { get; set; } = "RemoteTransport";
 
   public Dictionary<string, object> TransportContext =>
-    new() { { "name", TransportName }, { "type", GetType().Name }, { "streamId", StreamId }, { "serverUrl", BaseUri } };
+    new()
+    {
+      { "name", TransportName },
+      { "type", GetType().Name },
+      { "streamId", StreamId },
+      { "serverUrl", BaseUri }
+    };
 
   public CancellationToken CancellationToken { get; set; }
 

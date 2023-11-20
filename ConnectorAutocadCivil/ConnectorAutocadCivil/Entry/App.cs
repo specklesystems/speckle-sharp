@@ -11,13 +11,13 @@ using System.Windows.Media.Imaging;
 using Speckle.Core.Logging;
 using Forms = System.Windows.Forms;
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
 using Autodesk.AutoCAD.Runtime;
 #endif
 
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
 [assembly: ExtensionApplication(typeof(Speckle.ConnectorAutocadCivil.Entry.App))]
 #endif
 
@@ -34,7 +34,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       {
         //Advance Steel addon is initialized after ribbon creation
         bool advanceSteel = false;
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
         advanceSteel = true;
 #endif
 
@@ -150,7 +150,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         ribbon.Tabs.Add(tab);
       }
 
-#if !ADVANCESTEEL2023
+#if !ADVANCESTEEL
       tab.IsActive = true; // optional debug: set ribbon tab active
 #endif
       return tab;

@@ -26,11 +26,13 @@ static const char* ApplicationId = "applicationId";
 static const char* ApplicationIds = "applicationIds";
 static const char* ParentElementId = "parentApplicationId";
 static const char* ElementFilter = "elementFilter";
+static const char* FilterBy = "filterBy";
 static const char* ElementType = "elementType";
 static const char* ElementTypes = "elementTypes";
 static const char* Elements = "elements";
 static const char* SubElements = "subElements";
 static const char* Level = "level";
+static const char* Layer = "layer";
 static const char* Shape = "shape";
 static const char* Shape1 = "shape1";
 static const char* Shape2 = "shape2";
@@ -49,6 +51,7 @@ static const char* Beams = "beams";
 static const char* Columns = "columns";
 static const char* DirectShapes = "directShapes";
 static const char* Doors = "doors";
+static const char* GridElements = "gridElements";
 static const char* Objects = "objects";
 static const char* MeshModels = "meshModels";
 static const char* Roofs = "roofs";
@@ -449,6 +452,17 @@ static const char* pos = "pos";
 static const char* transform = "transform";
 }
 
+namespace GridElement
+{
+// Main
+static const char* begin = "begin";
+static const char* end = "end";
+static const char* angle = "angle";
+static const char* markerText = "markerText";
+static const char* isArc = "isArc";
+static const char* arcAngle = "arcAngle";
+}
+
 
 namespace Slab
 {
@@ -720,6 +734,14 @@ static const char* Vertices = "vertices";
 static const char* VertexX = "x";
 static const char* VertexY = "y";
 static const char* VertexZ = "z";
+static const char* PointId1 = "v1";
+static const char* PointId2 = "v2";
+static const char* PolygonId1 = "p1";
+static const char* PolygonId2 = "p2";
+static const char* EdgeStatus = "s";
+static const char* HiddenEdgeValueName = "HiddenEdge";
+static const char* SmoothEdgeValueName = "SmoothEdge";
+static const char* VisibleEdgeValueName = "VisibleEdge";
 static const char* Polygons = "polygons";
 static const char* Materials = "materials";
 static const char* PointIds = "pointIds";

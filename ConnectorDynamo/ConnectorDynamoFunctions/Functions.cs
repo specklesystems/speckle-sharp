@@ -23,17 +23,21 @@ namespace Speckle.ConnectorDynamo.Functions
   [IsVisibleInDynamoLibrary(false)]
   public static class Functions
   {
-
-
     /// <summary>
     /// Sends data to a Speckle Server by creating a commit on the master branch of a Stream
     /// </summary>
     /// <param name="data">Data to send</param>
     /// <param name="transports">Transports to send the data to</param>
     /// <returns name="log">Log</returns>
-    public static List<string> Send(Base data, List<ITransport> transports, CancellationToken cancellationToken,
-      Dictionary<ITransport, string> branchNames = null, string message = "",
-      Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null)
+    public static List<string> Send(
+      Base data,
+      List<ITransport> transports,
+      CancellationToken cancellationToken,
+      Dictionary<ITransport, string> branchNames = null,
+      string message = "",
+      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
+      Action<string, Exception> onErrorAction = null
+    )
     {
       var commitWrappers = new List<string>();
       var responses = new List<string>();
@@ -54,9 +58,9 @@ namespace Speckle.ConnectorDynamo.Functions
         message = $"Sent {totalCount} object{plural} from Dynamo";
       }
 
-
-      var objectId = Operations.Send(data, cancellationToken, new List<ITransport>(transports), true,
-        onProgressAction, onErrorAction).Result;
+      var objectId = Operations
+        .Send(data, cancellationToken, new List<ITransport>(transports), true, onProgressAction, onErrorAction)
+        .Result;
 
       if (cancellationToken.IsCancellationRequested)
         return null;
@@ -73,23 +77,30 @@ namespace Speckle.ConnectorDynamo.Functions
         var client = new Client(serverTransport.Account);
         try
         {
-          var res = client.CommitCreate(cancellationToken,
-            new CommitCreateInput
-            {
-              streamId = serverTransport.StreamId,
-              branchName = branchName,
-              objectId = objectId,
-              message = message,
-              sourceApplication = Utils.GetAppName(),
-              parents = new List<string> { serverTransport.StreamId }
-            }).Result;
+          var res = client
+            .CommitCreate(
+              new CommitCreateInput
+              {
+                streamId = serverTransport.StreamId,
+                branchName = branchName,
+                objectId = objectId,
+                message = message,
+                sourceApplication = Utils.GetAppName(),
+                parents = new List<string> { serverTransport.StreamId }
+              },
+              cancellationToken
+            )
+            .Result;
 
           responses.Add(res);
-          var wrapper =
-            new StreamWrapper(serverTransport.StreamId, serverTransport.Account.userInfo.id, serverTransport.BaseUri)
-            {
-              CommitId = res
-            };
+          var wrapper = new StreamWrapper(
+            serverTransport.StreamId,
+            serverTransport.Account.userInfo.id,
+            serverTransport.BaseUri
+          )
+          {
+            CommitId = res
+          };
           commitWrappers.Add(wrapper.ToString());
           Analytics.TrackEvent(client.Account, Analytics.Events.Send);
         }
@@ -98,7 +109,6 @@ namespace Speckle.ConnectorDynamo.Functions
           Utils.HandleApiExeption(ex);
           return null;
         }
-
       }
 
       return commitWrappers;
@@ -119,9 +129,13 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="stream">Stream to receive from</param>
     /// <returns></returns>
     [MultiReturn(new[] { "data", "commit" })]
-    public static Dictionary<string, object> Receive(StreamWrapper stream, CancellationToken cancellationToken,
-      Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null,
-      Action<int> onTotalChildrenCountKnown = null)
+    public static Dictionary<string, object> Receive(
+      StreamWrapper stream,
+      CancellationToken cancellationToken,
+      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
+      Action<string, Exception> onErrorAction = null,
+      Action<int> onTotalChildrenCountKnown = null
+    )
     {
       var account = stream.GetAccount().Result;
       //
@@ -135,7 +149,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
         try
         {
-          var branch = client.BranchGet(cancellationToken, stream.StreamId, stream.BranchName, 1).Result;
+          var branch = client.BranchGet(stream.StreamId, stream.BranchName, 1, cancellationToken).Result;
           if (!branch.commits.items.Any())
           {
             throw new SpeckleException("No commits found.");
@@ -152,7 +166,7 @@ namespace Speckle.ConnectorDynamo.Functions
       {
         try
         {
-          commit = client.CommitGet(cancellationToken, stream.StreamId, stream.CommitId).Result;
+          commit = client.CommitGet(stream.StreamId, stream.CommitId!, cancellationToken).Result;
         }
         catch (Exception ex)
         {
@@ -175,15 +189,17 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var transport = new ServerTransport(account, stream.StreamId);
 
-      var @base = Operations.Receive(
-        commit.referencedObject,
-        cancellationToken,
-        remoteTransport: transport,
-        onProgressAction: onProgressAction,
-        onErrorAction: ((s, exception) => throw exception),
-        onTotalChildrenCountKnown: onTotalChildrenCountKnown,
-        disposeTransports: true
-      ).Result;
+      var @base = Operations
+        .Receive(
+          commit.referencedObject,
+          cancellationToken,
+          remoteTransport: transport,
+          onProgressAction: onProgressAction,
+          onErrorAction: ((s, exception) => throw exception),
+          onTotalChildrenCountKnown: onTotalChildrenCountKnown,
+          disposeTransports: true
+        )
+        .Result;
 
       if (@base == null)
       {
@@ -191,13 +207,17 @@ namespace Speckle.ConnectorDynamo.Functions
       }
       try
       {
-        client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream.StreamId,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit)
-        }).Wait();
+        client
+          .CommitReceived(
+            new CommitReceivedInput
+            {
+              streamId = stream.StreamId,
+              commitId = commit?.id,
+              message = commit?.message,
+              sourceApplication = HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit)
+            }
+          )
+          .Wait();
       }
       catch
       {
@@ -212,12 +232,16 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var data = converter.ConvertRecursivelyToNative(@base);
 
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
-      {
-        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
-        { "sourceHostAppVersion", commit.sourceApplication },
-        { "isMultiplayer", commit.authorId != client.Account.userInfo.id }
-      });
+      Analytics.TrackEvent(
+        client.Account,
+        Analytics.Events.Receive,
+        new Dictionary<string, object>()
+        {
+          { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
+          { "sourceHostAppVersion", commit.sourceApplication },
+          { "isMultiplayer", commit.authorId != client.Account.userInfo.id }
+        }
+      );
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
     }

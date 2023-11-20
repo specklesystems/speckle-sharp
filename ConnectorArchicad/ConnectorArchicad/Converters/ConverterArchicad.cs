@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Archicad;
@@ -50,18 +50,23 @@ namespace Objects.Converter.Archicad
       return null;
     }
 
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
+    }
+
     public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
     public bool CanConvertToNativeImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Speckle BIM elements
         Objects.BuiltElements.Beam _ => true,
         Objects.BuiltElements.Column _ => true,
         Objects.BuiltElements.Floor _ => true,
         Objects.BuiltElements.Ceiling _ => true,
+        Objects.BuiltElements.GridLine => true,
         Objects.BuiltElements.Roof _ => true,
         Objects.BuiltElements.Room _ => true,
         Objects.BuiltElements.Wall _ => true,
@@ -82,15 +87,14 @@ namespace Objects.Converter.Archicad
         // Speckle geomtries
         Objects.Geometry.Mesh _ => true,
         Objects.Geometry.Brep _ => true,
- 
+
         _ => false
       };
     }
 
     public bool CanConvertToNativeNotImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Project info
         Objects.Organization.ModelInfo _ => true,
@@ -102,6 +106,11 @@ namespace Objects.Converter.Archicad
     public bool CanConvertToNative(Base @object)
     {
       return CanConvertToNativeImplemented(@object) || CanConvertToNativeNotImplemented(@object);
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
 
     /// <summary>
@@ -116,9 +125,7 @@ namespace Objects.Converter.Archicad
     /// </summary>
     public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
-    public void SetContextDocument(object doc)
-    {
-    }
+    public void SetContextDocument(object doc) { }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
@@ -150,9 +157,7 @@ namespace Objects.Converter.Archicad
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
-    public void SetConverterSettings(object settings)
-    {
-    }
+    public void SetConverterSettings(object settings) { }
 
     public ConverterArchicad(ConversionOptions conversionOptions)
     {

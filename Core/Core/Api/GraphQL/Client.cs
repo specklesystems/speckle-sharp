@@ -35,7 +35,7 @@ public partial class Client : IDisposable
 
     Account = account;
 
-    HttpClient = Http.GetHttpProxyClient();
+    HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
     Http.AddAuthHeader(HttpClient, account.token);
 
     HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
@@ -75,7 +75,7 @@ public partial class Client : IDisposable
 
   public string ApiToken => Account.token;
 
-  public System.Version ServerVersion { get; set; }
+  public System.Version? ServerVersion { get; set; }
 
   [JsonIgnore]
   public Account Account { get; set; }
@@ -143,7 +143,7 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
+  public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(_createEnrichers<T>(request));
 
@@ -155,7 +155,7 @@ public partial class Client : IDisposable
     {
       var result = await ExecuteWithResiliencePolicies(async () =>
         {
-          var result = await GQLClient.SendMutationAsync<T>(request, cancellationToken).ConfigureAwait(false);
+          GraphQLResponse<T> result = await GQLClient.SendMutationAsync<T>(request, cancellationToken).ConfigureAwait(false);
           MaybeThrowFromGraphQLErrors(request, result);
           return result.Data;
         })

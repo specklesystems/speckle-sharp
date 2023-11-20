@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
-using Revit.Async;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using Xunit;
 using DB = Autodesk.Revit.DB;
@@ -92,7 +92,7 @@ namespace ConverterRevitTests
     {
       ElementEqual(sourceElem, destElem);
 
-      var slopeArrow = await RevitTask.RunAsync(app => {
+      var slopeArrow = await APIContext.Run(app => {
         return ConverterRevit.GetSlopeArrow(sourceElem);
       }).ConfigureAwait(false);
 
@@ -105,7 +105,7 @@ namespace ConverterRevitTests
         var tailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
 
-        var newSlopeArrow = await RevitTask.RunAsync(app => {
+        var newSlopeArrow = await APIContext.Run(app => {
           return ConverterRevit.GetSlopeArrow(destElem);
         }).ConfigureAwait(false);
 
@@ -229,12 +229,12 @@ namespace ConverterRevitTests
     {
       ElementEqual(sourceElem, destElem);
 
-      var sourceValueList = await RevitTask.RunAsync(app =>
+      var sourceValueList = await APIContext.Run(app =>
       {
         return GetTextValuesFromSchedule(sourceElem);
       }).ConfigureAwait(false);
 
-      var destValueList = await RevitTask.RunAsync(app =>
+      var destValueList = await APIContext.Run(app =>
       {
         return GetTextValuesFromSchedule(destElem);
       }).ConfigureAwait(false);

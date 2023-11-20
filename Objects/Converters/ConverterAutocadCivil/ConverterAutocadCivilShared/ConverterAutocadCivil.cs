@@ -1,5 +1,6 @@
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Objects.BuiltElements;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
@@ -53,6 +54,8 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+#elif ADVANCESTEEL2024
+    public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2024);
 #endif
 
     public ConverterAutocadCivil()
@@ -215,7 +218,7 @@ namespace Objects.Converter.AutocadCivil
               @base = SurfaceToSpeckle(o);
               break;
 
-#elif ADVANCESTEEL2023
+#elif ADVANCESTEEL
 
             default:
               try
@@ -226,7 +229,7 @@ namespace Objects.Converter.AutocadCivil
               {
                 //Update report because AS object type
                 Report.UpdateReportObject(reportObj);
-                throw ex;
+                throw;
               }
 
               break;
@@ -393,6 +396,10 @@ namespace Objects.Converter.AutocadCivil
           acadObj = CurveToNativeDB(o.baseCurve);
           break;
 
+        case GridLine o:
+          acadObj = CurveToNativeDB(o.baseLine);
+          break;
+
         default:
           if (reportObj != null)
           {
@@ -429,6 +436,11 @@ namespace Objects.Converter.AutocadCivil
       if (reportObj != null)
         Report.UpdateReportObject(reportObj);
       return acadObj;
+    }
+
+    public object ConvertToNativeDisplayable(Base @object)
+    {
+      throw new NotImplementedException();
     }
 
     public List<object> ConvertToNative(List<Base> objects)
@@ -484,7 +496,7 @@ namespace Objects.Converter.AutocadCivil
 
             default:
             {
-#if ADVANCESTEEL2023
+#if ADVANCESTEEL
                 return CanConvertASToSpeckle(o);
 #else
               return false;
@@ -520,7 +532,6 @@ namespace Objects.Converter.AutocadCivil
         case Polyline _:
         case Polycurve _:
         case Curve _:
-        //case Brep _:
         case Mesh _:
 
         case Dimension _:
@@ -531,11 +542,17 @@ namespace Objects.Converter.AutocadCivil
 
         case Alignment _:
         case ModelCurve _:
+        case GridLine _:
           return true;
 
         default:
           return false;
       }
+    }
+
+    public bool CanConvertToNativeDisplayable(Base @object)
+    {
+      return false;
     }
   }
 }

@@ -181,10 +181,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           {
             if (SelectedFilter == Filter.favorite)
               result = await account.Client
-                .FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25)
+                .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
                 .ConfigureAwait(true);
             else
-              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
+              result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
           }
           //SEARCH
           else
@@ -193,7 +193,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             if (SelectedFilter == Filter.favorite)
               SelectedFilter = Filter.all;
             result = await account.Client
-              .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+              .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
               .ConfigureAwait(true);
           }
 
@@ -204,14 +204,14 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         }
         catch (OperationCanceledException)
         {
-          return;
+          continue;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          if (e.InnerException is TaskCanceledException)
+          if (ex.InnerException is TaskCanceledException)
             return;
 
-          SpeckleLog.Logger.Error(e, "Could not fetch streams");
+          SpeckleLog.Logger.Error(ex, "Could not fetch streams");
 
           Dispatcher.UIThread.Post(
             () =>
@@ -492,8 +492,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars)
       );
 
-      menu.Items.Add(new MenuItemViewModel(ToggleFe2Command, "Toggle NEW Frontend support", MaterialIconKind.NewBox));
-
 #if DEBUG
       menu.Items.Add(new MenuItemViewModel(TestCommand, "Test stuff", MaterialIconKind.Bomb));
 #endif
@@ -579,7 +577,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     var streamAcc = parameter as StreamAccountWrapper;
     var url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}";
 
-    if (UseFe2)
+    if (streamAcc.Account.serverInfo.frontend2)
       url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/projects/{streamAcc.Stream.id}";
 
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
@@ -731,15 +729,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
-
-
     if (streamAccountWrapper != null)
     {
       var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
 
       if (!await streamState.Client.IsStreamAccessible(streamState.StreamId).ConfigureAwait(true))
       {
-        Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+        Dialogs.ShowDialog(
+          "Stream not found",
+          "Please ensure the stream exists and that you have access to it.",
+          DialogIconKind.Error
+        );
         return;
       }
 
@@ -755,16 +755,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
-
-
     if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
     {
-
       try
       {
         if (!await svm.Client.IsStreamAccessible(svm.Stream.id).ConfigureAwait(true))
         {
-          Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+          Dialogs.ShowDialog(
+            "Stream not found",
+            "Please ensure the stream exists and that you have access to it.",
+            DialogIconKind.Error
+          );
           return;
         }
 
@@ -778,7 +779,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         SpeckleLog.Logger.Error(ex, "Failed to open saved stream {exceptionMessage}", ex.Message);
       }
     }
-
   }
 
   public void ToggleDarkThemeCommand()
@@ -938,6 +938,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
   public bool HasStreams => FilteredStreams != null && FilteredStreams.Any();
 
+  //UI Binding
   public bool UseFe2
   {
     get

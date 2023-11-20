@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using System.Reflection;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -40,15 +40,19 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #endif
 
+  [Obsolete]
   public enum MeshSettings
   {
     Default,
     CurrentDoc
   }
 
+  [Obsolete]
   public MeshSettings SelectedMeshSettings = MeshSettings.Default;
 
   public bool PreprocessGeometry;
+
+  public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
   public ConverterRhinoGh()
   {
@@ -88,19 +92,13 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
   public void SetConverterSettings(object settings)
   {
-    if (settings is Dictionary<string, object> dict)
-    {
-      if (dict.ContainsKey("meshSettings"))
-        SelectedMeshSettings = (MeshSettings)dict["meshSettings"];
-
-      if (dict.ContainsKey("preprocessGeometry"))
-        PreprocessGeometry = (bool)dict["preprocessGeometry"];
-      return;
-    }
-
-    // Keep this for backwards compatibility.
-    var s = (MeshSettings)settings;
-    SelectedMeshSettings = s;
+    if (settings is Dictionary<string, string> temp)
+      Settings = temp;
+    // TODO: Both settings bellow are here for backwards compatibility and should be removed after consolidating settings
+    else if (settings is MeshSettings meshSettings)
+      SelectedMeshSettings = meshSettings;
+    if (Settings.TryGetValue("preprocessGeometry", out string setting))
+      bool.TryParse(setting, out PreprocessGeometry);
   }
 
   public void SetContextDocument(object doc)
@@ -145,6 +143,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     Base @base = null;
     Base schema = null;
     var notes = new List<string>();
+
+    // get preprocessing setting
     var defaultPreprocess = PreprocessGeometry;
 
     try
@@ -457,16 +457,20 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = SurfaceToNative(o);
           break;
 
+        case GridLine o:
+          rhinoObj = GridlineToNative(o);
+          break;
+
         case Alignment o:
           rhinoObj = AlignmentToNative(o);
           break;
 
-        case ModelCurve o:
-          rhinoObj = CurveToNative(o.baseCurve);
+        case Level o:
+          rhinoObj = LevelToNative(o);
           break;
 
-        case DirectShape o:
-          rhinoObj = DirectShapeToNative(o, out notes);
+        case ModelCurve o:
+          rhinoObj = CurveToNative(o.baseCurve);
           break;
 
         case View3D o:
@@ -508,9 +512,15 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = RenderMaterialToNative(o);
 #endif
           break;
+
         case Transform o:
           rhinoObj = TransformToNative(o);
           break;
+
+        case Parameter o:
+          rhinoObj = ParameterToNative(o);
+          break;
+
         default:
           if (reportObj != null)
           {
@@ -547,6 +557,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             log: o.Log
           );
         break;
+
       default:
         if (reportObj != null)
           reportObj.Update(log: notes);
@@ -556,6 +567,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     if (reportObj != null)
       Report.UpdateReportObject(reportObj);
     return rhinoObj;
+  }
+
+  public object ConvertToNativeDisplayable(Base @object)
+  {
+    throw new NotImplementedException();
   }
 
   public List<object> ConvertToNative(List<Base> objects)
@@ -656,19 +672,25 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #else
       // This types are not supported in GH!
       case Pointcloud _:
-      case Collection _:
       case ModelCurve _:
-      case DirectShape _:
       case View3D _:
       case Instance _:
+      case GridLine _:
       case Alignment _:
+      case Level _:
       case Text _:
       case Dimension _:
+      case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;
 #endif
 
       default:
         return false;
     }
+  }
+
+  public bool CanConvertToNativeDisplayable(Base @object)
+  {
+    return false;
   }
 }

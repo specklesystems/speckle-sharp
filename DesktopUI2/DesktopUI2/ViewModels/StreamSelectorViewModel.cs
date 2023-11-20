@@ -58,11 +58,11 @@ public class StreamSelectorViewModel : ReactiveObject
 
         //NO SEARCH
         if (string.IsNullOrEmpty(SearchQuery))
-          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
+          result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
         //SEARCH
         else
           result = await account.Client
-            .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+            .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
             .ConfigureAwait(true);
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -98,7 +98,7 @@ public class StreamSelectorViewModel : ReactiveObject
   {
     using var client = new Client(SelectedStream.Account);
 
-    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1).ConfigureAwait(true))
+    Branches = (await client.StreamGetBranchesWithLimitRetry(SelectedStream.Stream.id, 1).ConfigureAwait(true))
       .Where(x => x.commits.totalCount > 0)
       .ToList();
 

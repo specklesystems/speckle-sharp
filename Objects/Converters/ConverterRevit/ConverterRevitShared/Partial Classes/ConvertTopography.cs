@@ -20,6 +20,7 @@ namespace Objects.Converter.Revit
         return appObj;
 
       var pts = new List<XYZ>();
+      var pointTuplesList = new List<(double, double)>();
       var facets = new List<PolymeshFacet>();
       foreach (Geometry.Mesh displayMesh in speckleSurface.displayValue)
       {
@@ -29,10 +30,15 @@ namespace Objects.Converter.Revit
         pts.Capacity += displayMesh.vertices.Count / 3;
         for (int i = 0; i < displayMesh.vertices.Count; i += 3)
         {
-          var point = new Geometry.Point(displayMesh.vertices[i], displayMesh.vertices[i + 1], displayMesh.vertices[i + 2], displayMesh.units);
-          pts.Add(PointToNative(point));
+          // add a check for duplicate points, if 'keepXYDuplicates' is false 
+          var ptTuple = (displayMesh.vertices[i], displayMesh.vertices[i + 1]);
+          if (!pointTuplesList.Contains(ptTuple))
+          {
+            pointTuplesList.Add(ptTuple);
+            var point = new Geometry.Point(displayMesh.vertices[i], displayMesh.vertices[i + 1], displayMesh.vertices[i + 2], displayMesh.units);
+            pts.Add(PointToNative(point));
+          }
         }
-
       }
 
       if (docObj != null)
@@ -49,7 +55,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.displayValue = GetElementDisplayValue(revitTopo, SolidDisplayValueOptions);
+      speckleTopo.displayValue = GetElementDisplayValue(revitTopo);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
       return speckleTopo;
     }

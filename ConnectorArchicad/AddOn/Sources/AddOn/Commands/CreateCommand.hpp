@@ -39,10 +39,14 @@ protected:
 								short& floorIndex,
 								double& relativeLevel) const;
 
+	GSErrCode				GetElementBaseFromObjectState (const GS::ObjectState& os, 
+								API_Element& element,
+								API_Element& elementMask) const;
+
 public:
 	virtual GS::ObjectState	Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
-	GS::ErrCode				ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const;
+	GSErrCode				ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const;
 };
 }
 

@@ -1,6 +1,5 @@
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,31 +10,40 @@ namespace Speckle.Core.Api;
 public partial class Client
 {
   /// <summary>
-  /// Get branches from a given stream
+  /// Get branches from a given stream, first with a max of 500 and then with a max of 100.
+  /// This ensures that if the server API is limiting to 100 branches, that any failure will try again at the lower value.
   /// </summary>
   /// <param name="streamId">Id of the stream to get the branches from</param>
-  /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
   /// <returns></returns>
-  public Task<List<Branch>> StreamGetBranches(string streamId, int branchesLimit = 10, int commitsLimit = 10)
+  public async Task<List<Branch>> StreamGetBranchesWithLimitRetry(string streamId, int commitsLimit = 10)
   {
-    return StreamGetBranches(CancellationToken.None, streamId, branchesLimit, commitsLimit);
+    List<Branch>? branches = null;
+    try
+    {
+      branches = await StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT, commitsLimit).ConfigureAwait(true);
+    }
+    catch (SpeckleGraphQLException<StreamData>)
+    {
+      branches = await StreamGetBranches(streamId, ServerLimits.OLD_BRANCH_GET_LIMIT, commitsLimit).ConfigureAwait(true);
+    }
+
+    return branches;
   }
 
   /// <summary>
   /// Get branches from a given stream
   /// </summary>
-  /// <param name="cancellationToken"></param>
   /// <param name="streamId">Id of the stream to get the branches from</param>
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  /// <exception cref="Exception"></exception>
   public async Task<List<Branch>> StreamGetBranches(
-    CancellationToken cancellationToken,
     string streamId,
     int branchesLimit = 10,
-    int commitsLimit = 10
+    int commitsLimit = 10,
+    CancellationToken cancellationToken = default
   )
   {
     var request = new GraphQLRequest
@@ -77,18 +85,9 @@ public partial class Client
   /// Creates a branch on a stream.
   /// </summary>
   /// <param name="branchInput"></param>
-  /// <returns>The stream's id.</returns>
-  public Task<string> BranchCreate(BranchCreateInput branchInput)
-  {
-    return BranchCreate(CancellationToken.None, branchInput);
-  }
-
-  /// <summary>
-  /// Creates a branch on a stream.
-  /// </summary>
-  /// <param name="branchInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns>The branch id.</returns>
-  public async Task<string> BranchCreate(CancellationToken cancellationToken, BranchCreateInput branchInput)
+  public async Task<string> BranchCreate(BranchCreateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -105,24 +104,13 @@ public partial class Client
   /// </summary>
   /// <param name="streamId">Id of the stream to get the branch from</param>
   /// <param name="branchName">Name of the branch to get</param>
-  /// <returns></returns>
-  public Task<Branch> BranchGet(string streamId, string branchName, int commitsLimit = 10)
-  {
-    return BranchGet(CancellationToken.None, streamId, branchName, commitsLimit);
-  }
-
-  /// <summary>
-  /// Gets a given branch from a stream.
-  /// </summary>
   /// <param name="cancellationToken"></param>
-  /// <param name="streamId">Id of the stream to get the branch from</param>
-  /// <param name="branchName">Name of the branch to get</param>
-  /// <returns></returns>
+  /// <returns>The requested branch</returns>
   public async Task<Branch> BranchGet(
-    CancellationToken cancellationToken,
     string streamId,
     string branchName,
-    int commitsLimit = 10
+    int commitsLimit = 10,
+    CancellationToken cancellationToken = default
   )
   {
     var request = new GraphQLRequest
@@ -161,13 +149,39 @@ public partial class Client
   }
 
   /// <summary>
-  /// Updates a branch.
+  /// Gets a given model from a project.
   /// </summary>
-  /// <param name="branchInput"></param>
-  /// <returns>The stream's id.</returns>
-  public Task<bool> BranchUpdate(BranchUpdateInput branchInput)
+  /// <param name="cancellationToken"></param>
+  /// <param name="projectId">Id of the project to get the model from</param>
+  /// <param name="modelId">Id of the model</param>
+  /// <returns></returns>
+  public async Task<Branch> ModelGet(string projectId, string modelId, CancellationToken cancellationToken = default)
   {
-    return BranchUpdate(CancellationToken.None, branchInput);
+    var request = new GraphQLRequest
+    {
+      Query =
+        $@"query ProjectModel($projectId: String!, $modelId: String!) {{
+                      project(id: $projectId) {{
+                        model(id: $modelId){{
+                          id,
+                          name,
+                          description
+                        }}                       
+                      }}
+                    }}",
+      Variables = new { projectId, modelId }
+    };
+
+    var res = await ExecuteGraphQLRequest<Dictionary<string, Dictionary<string, Dictionary<string, string>>>>(
+        request,
+        cancellationToken
+      )
+      .ConfigureAwait(false);
+    var branch = new Branch();
+    branch.description = res["project"]["model"]["description"];
+    branch.id = res["project"]["model"]["id"];
+    branch.name = res["project"]["model"]["name"];
+    return branch;
   }
 
   /// <summary>
@@ -175,7 +189,7 @@ public partial class Client
   /// </summary>
   /// <param name="branchInput"></param>
   /// <returns>The stream's id.</returns>
-  public async Task<bool> BranchUpdate(CancellationToken cancellationToken, BranchUpdateInput branchInput)
+  public async Task<bool> BranchUpdate(BranchUpdateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -191,18 +205,9 @@ public partial class Client
   /// Deletes a stream.
   /// </summary>
   /// <param name="branchInput"></param>
+  /// <param name="cancellationToken"></param>
   /// <returns></returns>
-  public Task<bool> BranchDelete(BranchDeleteInput branchInput)
-  {
-    return BranchDelete(CancellationToken.None, branchInput);
-  }
-
-  /// <summary>
-  /// Deletes a stream.
-  /// </summary>
-  /// <param name="branchInput"></param>
-  /// <returns></returns>
-  public async Task<bool> BranchDelete(CancellationToken cancellationToken, BranchDeleteInput branchInput)
+  public async Task<bool> BranchDelete(BranchDeleteInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {

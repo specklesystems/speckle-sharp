@@ -40,7 +40,11 @@ public static class Setup
   /// </summary>
   internal static string VersionedHostApplication { get; private set; } = HostApplications.Other.Slug;
 
-  public static void Init(string versionedHostApplication, string hostApplication)
+  public static void Init(
+    string versionedHostApplication,
+    string hostApplication,
+    SpeckleLogConfiguration logConfiguration = null
+  )
   {
     if (_initialized)
     {
@@ -63,13 +67,7 @@ public static class Setup
     //start mutex so that Manager can detect if this process is running
     mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
-#if !NETSTANDARD1_5_OR_GREATER
-    //needed by older .net frameworks, eg Revit 2019
-    ServicePointManager.SecurityProtocol =
-      SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
-#endif
-
-    SpeckleLog.Initialize(hostApplication, versionedHostApplication);
+    SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
 
     foreach (var account in AccountManager.GetAccounts())
       Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);

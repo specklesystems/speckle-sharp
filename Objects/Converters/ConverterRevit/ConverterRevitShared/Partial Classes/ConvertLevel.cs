@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -10,6 +10,44 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    public DB.Level GetExistingLevelByName(IEnumerable<DB.Level> docLevels, string name)
+    {
+      return docLevels.FirstOrDefault(x => x.Name == name);
+    }
+
+    public DB.Level GetExistingLevelByElevation(IEnumerable<DB.Level> docLevels, double elevation)
+    {
+      return docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)elevation) < TOLERANCE);
+    }
+
+    public DB.Level GetExistingLevelByClosestElevation(IEnumerable<DB.Level> docLevels, double elevation, out double elevationOffset)
+    {
+      elevationOffset = 0.0;
+      DB.Level level = docLevels.LastOrDefault(l => (l.Elevation < elevation + TOLERANCE)) ?? docLevels.FirstOrDefault();
+
+      if (level != null)
+        elevationOffset = level.Elevation - elevation;
+
+      return level;
+    }
+
+    public DB.Level ConvertLevelToRevit(XYZ point, out ApplicationObject.State state, out double elevationOffset)
+    {
+      var elevation = ElevationFromPoint(point);
+      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), false, out state, out elevationOffset);
+    }
+
+    public DB.Level ConvertLevelToRevit(Curve curve, out ApplicationObject.State state, out double elevationOffset)
+    {
+      var elevation = ElevationFromCurve(curve);
+      return ConvertLevelToRevit(ObjectsLevelFromElevation(elevation), false, out state, out elevationOffset);
+    }
+
+    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, out ApplicationObject.State state)
+    {
+      double elevationOffset = 0.0;
+      return ConvertLevelToRevit(speckleLevel, true, out state, out elevationOffset);
+    }
 
     /// <summary>
     /// Tries to find a level by ELEVATION only, otherwise it creates it.
@@ -21,63 +59,59 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="speckleLevel"></param>
     /// <returns></returns>
-    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, out ApplicationObject.State state)
+    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, bool exactElevation, out ApplicationObject.State state, out double elevationOffset)
     {
       state = ApplicationObject.State.Unknown;
+      elevationOffset = 0.0;
+      if (speckleLevel == null) return null;
 
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
+
       bool elevationMatch = true;
       //level by name component
       if (speckleLevel is RevitLevel speckleRevitLevel && speckleRevitLevel.referenceOnly)
       {
         //see: https://speckle.community/t/revit-connector-levels-and-spaces/2824/5
         elevationMatch = false;
-        var l = docLevels.FirstOrDefault(x => x.Name == speckleLevel.name);
-        if (l != null)
-          return l;
+        if (GetExistingLevelByName(docLevels, speckleLevel.name) is DB.Level existingLevelWithSameName)
+            return existingLevelWithSameName;
       }
 
-      if (speckleLevel == null) return null;
+      DB.Level revitLevel = null;
       var speckleLevelElevation = ScaleToNative((double)speckleLevel.elevation, speckleLevel.units);
-
-      var hasLevelWithSameName = docLevels.Any(x => x.Name == speckleLevel.name);
-      Level existingLevelWithSameElevation = null;
-      if (elevationMatch)
-        existingLevelWithSameElevation = docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)speckleLevelElevation) < TOLERANCE);
-
-      //a level that had been previously received
-      var revitLevel = GetExistingElementByApplicationId(speckleLevel.applicationId) as DB.Level;
 
       //the level has been received before (via schema builder probably)
       //match by appid => update level
-      if (revitLevel != null)
+      if (GetExistingElementByApplicationId(speckleLevel.applicationId) is DB.Level existingLevelAlreadyReceived)
       {
-        //update name
-        if (!hasLevelWithSameName)
-          revitLevel.Name = speckleLevel.name;
+        revitLevel = existingLevelAlreadyReceived;
 
+        revitLevel.Name = speckleLevel.name;
         if (Math.Abs(revitLevel.Elevation - (double)speckleLevelElevation) >= TOLERANCE)
           revitLevel.Elevation = speckleLevelElevation;
 
         state = ApplicationObject.State.Updated;
       }
       //match by elevation
-      else if (existingLevelWithSameElevation != null)
+      else if (!exactElevation && elevationMatch && (GetExistingLevelByClosestElevation(docLevels, speckleLevelElevation, out elevationOffset) is DB.Level existingLevelWithClosestElevation))
+      {
+        revitLevel = existingLevelWithClosestElevation;
+        state = ApplicationObject.State.Skipped; // state should be eliminated
+      }
+      //match by elevation
+      else if (elevationMatch && (GetExistingLevelByElevation(docLevels, speckleLevelElevation) is DB.Level existingLevelWithSameElevation))
       {
         revitLevel = existingLevelWithSameElevation;
-        if (!hasLevelWithSameName)
-        {
-          revitLevel.Name = speckleLevel.name;
-          state = ApplicationObject.State.Updated;
-        }
+        revitLevel.Name = speckleLevel.name;
+        state = ApplicationObject.State.Updated;
       }
 
       else
       {
         // If we don't have an existing level, create it.
         revitLevel = Level.Create(Doc, (double)speckleLevelElevation);
-        if (!hasLevelWithSameName)
-          revitLevel.Name = speckleLevel.name;
+        revitLevel.Name = speckleLevel.name;
+
         var rl = speckleLevel as RevitLevel;
         if (rl != null && rl.createView)
           CreateViewPlan(speckleLevel.name, revitLevel.Id);
@@ -165,18 +199,38 @@ namespace Objects.Converter.Revit
       return Levels[level.Name] as RevitLevel;
     }
 
-    private RevitLevel LevelFromPoint(XYZ point)
+    private double ElevationFromPoint(XYZ point)
     {
       var p = PointToSpeckle(point, Doc);
-      return new RevitLevel() { elevation = p.z, name = "Generated Level " + p.z, units = ModelUnits };
+      return p.z;
     }
 
-    private RevitLevel LevelFromCurve(Curve curve)
+    private RevitLevel LevelFromElevation(double z)
+    {
+      return new RevitLevel() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
+    }
+
+    private Objects.BuiltElements.Level ObjectsLevelFromElevation(double z)
+    {
+      return new Objects.BuiltElements.Level() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
+    }
+
+    private RevitLevel LevelFromPoint(XYZ point)
+    {
+      return LevelFromElevation(ElevationFromPoint(point));
+    }
+
+    private double ElevationFromCurve(Curve curve)
     {
       var start = curve.GetEndPoint(0);
       var end = curve.GetEndPoint(1);
       var point = start.Z < end.Z ? start : end; // pick the lowest
-      return LevelFromPoint(point);
+      return ElevationFromPoint(point);
+    }
+
+    private RevitLevel LevelFromCurve(Curve curve)
+    {
+      return LevelFromElevation(ElevationFromCurve(curve));
     }
 
     private Level GetFirstDocLevel()

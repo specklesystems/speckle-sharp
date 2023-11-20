@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
@@ -21,7 +22,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject WallToNative(BuiltElements.Wall speckleWall)
     {
       var revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as DB.Wall;
-      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type)
+      {
+        applicationId = speckleWall.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitWall, appObj))
@@ -40,9 +44,6 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      Level level = null;
-      var levelState = ApplicationObject.State.Unknown;
-      var structural = false;
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       List<string> joinSettings = new List<string>();
@@ -50,13 +51,18 @@ namespace Objects.Converter.Revit
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
+      var levelState = ApplicationObject.State.Unknown;
+      double baseOffset = 0.0;
+      Level level =
+        (speckleWall.level != null)
+          ? ConvertLevelToRevit(speckleWall.level, out levelState)
+          : ConvertLevelToRevit(baseCurve, out levelState, out baseOffset);
+
+      var structural = false;
       if (speckleWall is RevitWall speckleRevitWall)
       {
-        level = ConvertLevelToRevit(speckleRevitWall.level, out levelState);
         structural = speckleRevitWall.structural;
       }
-      else
-        level = ConvertLevelToRevit(LevelFromCurve(baseCurve), out levelState);
 
       //if it's a new element, we don't need to update certain properties
       bool isUpdate = true;
@@ -113,7 +119,6 @@ namespace Objects.Converter.Revit
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT, level);
 
-
         // now that we've moved the wall, rejoin the wall ends
         if (!joinSettings.Contains(StructuralWalls) && structural)
         {
@@ -144,10 +149,14 @@ namespace Objects.Converter.Revit
 
         TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, spklRevitWall.baseOffset, speckleWall.units);
         TrySetParam(revitWall, BuiltInParameter.WALL_TOP_OFFSET, spklRevitWall.topOffset, speckleWall.units);
-
       }
-      else // Set wall unconnected height.
+      else
+      {
+        // Set wall unconnected height.
         TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
+
+        TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, -baseOffset);
+      }
 
       SetInstanceParameters(revitWall, speckleWall);
 
@@ -155,7 +164,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
 
       SetWallVoids(revitWall, speckleWall);
-      appObj = SetHostedElements(speckleWall, revitWall, appObj);
+      //appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
 
@@ -180,7 +189,7 @@ namespace Objects.Converter.Revit
 
       //CreateVoids(revitWall, speckleWall);
 
-      if (revitWall.CurtainGrid == null)
+      if (revitWall.CurtainGrid is not CurtainGrid grid)
       {
         if (revitWall.IsStackedWall)
         {
@@ -190,81 +199,66 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
-        speckleWall.displayValue = GetElementDisplayValue(revitWall,
-          new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+        speckleWall.displayValue = GetElementDisplayValue(revitWall);
       }
       else
       {
-        // curtain walls have two meshes, one for panels and one for mullions
-        // adding mullions as sub-elements so they can be correctly displayed in viewers etc
-        var (panelsMesh, mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
-        speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-        speckleWall.displayValue = panelsMesh;
-
-        var elements = new List<Base>();
-        if (mullionsMesh.Count > 0) //Only add mullions object if they have meshes 
-        {
-          elements.Add(new Base
-          {
-            ["@displayValue"] = mullionsMesh
-          });
-        }
-        speckleWall.elements = elements;
+        speckleWall.displayValue = new List<Mesh>(); // avoids null value for curtain walls
+        AddHostedDependentElements(
+          revitWall,
+          speckleWall,
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallMullions, grid.GetMullionIds()).ToList()
+        );
+        AddHostedDependentElements(
+          revitWall,
+          speckleWall,
+          GetSubsetOfElementsInView(BuiltInCategory.OST_CurtainWallPanels, grid.GetPanelIds()).ToList()
+        );
       }
 
-      GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
-      {
-        "WALL_USER_HEIGHT_PARAM",
-        "WALL_BASE_OFFSET",
-        "WALL_TOP_OFFSET",
-        "WALL_BASE_CONSTRAINT",
-        "WALL_HEIGHT_TYPE",
-        "WALL_STRUCTURAL_SIGNIFICANT"
-      });
+      GetAllRevitParamsAndIds(
+        speckleWall,
+        revitWall,
+        new List<string>
+        {
+          "WALL_USER_HEIGHT_PARAM",
+          "WALL_BASE_OFFSET",
+          "WALL_TOP_OFFSET",
+          "WALL_BASE_CONSTRAINT",
+          "WALL_HEIGHT_TYPE",
+          "WALL_STRUCTURAL_SIGNIFICANT"
+        }
+      );
 
       GetWallVoids(speckleWall, revitWall);
       GetHostedElements(speckleWall, revitWall, out List<string> hostedNotes);
-      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
+      if (hostedNotes.Any())
+        notes.AddRange(hostedNotes);
       return speckleWall;
     }
 
-    private (List<Mesh>, List<Mesh>) GetCurtainWallDisplayMesh(DB.Wall wall)
+    private IEnumerable<ElementId> GetSubsetOfElementsInView(BuiltInCategory category, IEnumerable<ElementId> children)
     {
-      var grid = wall.CurtainGrid;
-
-      var meshPanels = GetWallSubElementMeshes(grid.GetPanelIds(), BuiltInCategory.OST_CurtainWallPanels);
-      var meshMullions = GetWallSubElementMeshes(grid.GetMullionIds(), BuiltInCategory.OST_CurtainWallMullions);
-
-      return (meshPanels, meshMullions);
-    }
-
-    private List<Mesh> GetWallSubElementMeshes(IEnumerable<ElementId> elementIds, BuiltInCategory category)
-    {
-      var meshes = new List<Mesh>();
-      HashSet<int> idsInView = null;
-      if (ViewSpecificOptions != null)
+      if (ViewSpecificOptions == null)
       {
-        using var filter = new ElementCategoryFilter(category);
-        using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id)
-          .WhereElementIsNotElementType()
-          .WherePasses(filter);
-
-        idsInView = new HashSet<int>(collector.ToElementIds().Select(id => id.IntegerValue));
+        return children;
       }
 
-      foreach (var id in elementIds)
-      {
-        if (idsInView != null && !idsInView.Contains(id.IntegerValue))
-        {
-          continue;
-        }
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(id))
-          continue;
-        SubelementIds.Add(id);
-        meshes.AddRange(GetElementDisplayValue(Doc.GetElement(id)));
-      }
-      return meshes;
+      var allSubelementsInView = revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<HashSet<ElementId>>(out _)
+        .GetOrAdd(
+          category.ToString(),
+          () =>
+          {
+            using var filter = new ElementCategoryFilter(category);
+            using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id);
+
+            return new HashSet<ElementId>(collector.WhereElementIsNotElementType().WherePasses(filter).ToElementIds());
+          },
+          out _
+        );
+
+      return children.Where(allSubelementsInView.Contains);
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
@@ -291,6 +285,7 @@ namespace Objects.Converter.Revit
         speckleElement["voids"] = voidsList;
 #endif
     }
+
     private void SetWallVoids(Wall wall, Base speckleElement)
     {
 #if !REVIT2020 && !REVIT2021
@@ -304,7 +299,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        // TODO: actually update the profile in order to keep the user's dimensions 
+        // TODO: actually update the profile in order to keep the user's dimensions
         wall.RemoveProfileSketch();
         wall.CreateProfileSketch();
       }
@@ -313,42 +308,38 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       var sketch = (Sketch)Doc.GetElement(wall.SketchId);
 
-      T.Commit();
+      transactionManager.Commit();
       var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
       sketchEditScope.Start(sketch.Id);
-      T.Start();
+      transactionManager.StartSubtransaction();
 
       foreach (var obj in voidCurves)
       {
-
         if (!(obj is ICurve @void))
           continue;
 
         var curveArray = CurveToNative(@void, true);
         Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
       }
-      if (T.Commit() != TransactionStatus.Committed)
+      if (transactionManager.Commit() != TransactionStatus.Committed)
         sketchEditScope.Cancel();
 
       try
       {
-        sketchEditScope.Commit(new FailuresPreprocessor());
+        sketchEditScope.Commit(new ErrorEater());
       }
       catch (Exception ex)
       {
-        sketchEditScope.Cancel();
+        if (sketchEditScope.IsActive)
+        {
+          sketchEditScope.Cancel();
+        }
       }
-      T.Start();
-#endif
-    }
-
-    public class FailuresPreprocessor : IFailuresPreprocessor
-    {
-      public FailureProcessingResult PreprocessFailures(
-        FailuresAccessor failuresAccessor)
+      finally
       {
-        return FailureProcessingResult.Continue;
+        transactionManager.StartSubtransaction();
       }
+#endif
     }
   }
 }

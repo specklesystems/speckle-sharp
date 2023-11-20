@@ -88,6 +88,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     return @object.speckle_type.Contains("Instance")
       || @object.speckle_type.Contains("View")
+      || @object.speckle_type.Contains("Level")
+      || @object.speckle_type.Contains("GridLine")
       || @object.speckle_type.Contains("Collection");
   }
 
@@ -102,6 +104,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       // check for converter
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       converter.SetContextDocument(Doc);
+
+      // set converter settings
+      CurrentSettings = state.Settings;
+      var settings = GetSettingsDict(CurrentSettings);
+      converter.SetConverterSettings(settings);
 
       var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 

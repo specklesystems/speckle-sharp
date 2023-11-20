@@ -31,13 +31,23 @@ public class DirectShape : Base, IDisplayValue<List<Base>>
     this.parameters = parameters.ToBase();
   }
 
+  // moving away from using the RevitCategory Enum
+  public DirectShape(string name, string builtInCategory, List<Base> baseGeometries, List<Parameter> parameters = null)
+  {
+    this.name = name;
+    this.baseGeometries = baseGeometries.FindAll(IsValidObject);
+    this.parameters = parameters.ToBase();
+    //TODO: move to typed property alongside all other revit elements
+    this["builtInCategory"] = builtInCategory;
+  }
+
   public string name { get; set; }
   public RevitCategory category { get; set; }
   public Base parameters { get; set; }
   public string elementId { get; set; }
 
   [DetachProperty]
-  public List<Base> baseGeometries { get; set; }
+  public List<Base> baseGeometries { get; set; } = new();
 
   public string units { get; set; }
 

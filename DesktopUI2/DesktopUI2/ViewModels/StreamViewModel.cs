@@ -23,6 +23,7 @@ using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using DynamicData;
+using GraphQL;
 using Material.Dialog.Icons;
 using Material.Icons;
 using Material.Icons.Avalonia;
@@ -94,8 +95,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     get
     {
-      var config = ConfigManager.Load();
-      if (config.UseFe2)
+      if (Client.Account.serverInfo.frontend2)
       {
         //sender
         if (!IsReceiver)
@@ -249,13 +249,27 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = AvailableFilters[0];
 
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
-      var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
-      if (index != -1)
-        SelectedBranch = BranchesViewModel[index];
+      //TODO: Core's API calls and the StreamWrapper class need to be updated to properly support FE2 links
+      //this is a temporary workaround
+      var index = -1;
+      if (UseFe2)
+      {
+        index = Branches.FindIndex(x => x.id == StreamState.BranchName);
+      }
       else
+      {
+        index = Branches.FindIndex(x => x.name == StreamState.BranchName);
+      }
+      if (index != -1)
+      {
+        SelectedBranch = BranchesViewModel[index];
+      }
+      else
+      {
         SelectedBranch = BranchesViewModel[0];
+      }
 
       //restore selected filter
       if (StreamState.Filter != null)
@@ -417,7 +431,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
       var index = Branches.FindIndex(x => x.name == prevBranchName);
       if (index != -1)
@@ -592,6 +606,12 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
+  //UI Binding
+  public bool UseFe2
+  {
+    get { return Client.Account.serverInfo.frontend2; }
+  }
+
   public DateTime? LastUsedTime
   {
     get => StreamState.LastUsed;
@@ -599,15 +619,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       StreamState.LastUsed = value;
       this.RaisePropertyChanged(nameof(LastUsed));
-    }
-  }
-
-  public bool UseFe2
-  {
-    get
-    {
-      var config = ConfigManager.Load();
-      return config.UseFe2;
     }
   }
 
@@ -1305,8 +1316,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           OnClick = () =>
           {
             var url = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
-            var config = ConfigManager.Load();
-            if (config.UseFe2)
+            if (Client.Account.serverInfo.frontend2)
               url = $"{StreamState.ServerUrl}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
             OpenUrl(url);
           },

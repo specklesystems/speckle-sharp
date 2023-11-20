@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
 using Objects.Converters.DxfConverter;
@@ -392,7 +393,7 @@ namespace Objects.Converter.Revit
       catch (Exception e)
       {
         if (e is Autodesk.Revit.Exceptions.ArgumentException)
-          throw e; // prob a closed, periodic curve
+          throw; // prob a closed, periodic curve
         return null;
       }
     }
@@ -710,22 +711,10 @@ namespace Objects.Converter.Revit
           return false;
 
         var matrix = new Matrix4x4(
-          (float)points[0].X,
-          (float)points[1].X,
-          (float)points[2].X,
-          (float)points[3].X,
-          (float)points[0].Y,
-          (float)points[1].Y,
-          (float)points[2].Y,
-          (float)points[3].Y,
-          (float)points[0].Z,
-          (float)points[1].Z,
-          (float)points[2].Z,
-          (float)points[3].Z,
-          1,
-          1,
-          1,
-          1
+          points[0].X, points[1].X, points[2].X, points[3].X,
+          points[0].Y, points[1].Y, points[2].Y, points[3].Y,
+          points[0].Z, points[1].Z, points[2].Z, points[3].Z,
+          1, 1, 1, 1
         );
         return matrix.GetDeterminant() != 0;
       }
@@ -754,9 +743,17 @@ namespace Objects.Converter.Revit
       var xn = new XYZ(1, 0, 0);
 
       if (ixn.IsAlmostEqualTo(xn))
+      {
         xn = new XYZ(0, 1, 0);
+      }
+      else if (ixn.Negate().IsAlmostEqualTo(xn))
+      {
+        xn = new XYZ(0, -1, 0);
+      }
 
-      return ixn.CrossProduct(xn).Normalize();
+      var cross = ixn.CrossProduct(xn);
+
+      return cross.Normalize();
     }
 
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, Document doc, string units = null)

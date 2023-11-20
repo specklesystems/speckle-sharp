@@ -18,7 +18,7 @@ public class LoadNode : Load
   /// <param name="value">The magnitude of the load, either a force or moment</param>
   /// <param name="name">A name or description to identify the load</param>///
   [SchemaInfo("Node Load", "Creates a Speckle node load", "Structural", "Loading")]
-  public LoadNode(LoadCase loadCase, List<Node> nodes, LoadDirection direction, double value, string name = null)
+  public LoadNode(LoadCase loadCase, List<Node> nodes, LoadDirection direction, double value, string? name = null)
   {
     this.name = name;
     this.loadCase = loadCase;
@@ -48,7 +48,7 @@ public class LoadNode : Load
     Axis loadAxis,
     LoadDirection direction,
     double value,
-    string name = null
+    string? name = null
   )
   {
     this.name = name;

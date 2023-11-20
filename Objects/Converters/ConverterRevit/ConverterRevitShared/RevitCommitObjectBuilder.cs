@@ -65,10 +65,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       // Special case for ElementTyped objects, add them to "Types"
       case ElementType:
         var category = GetCategoryId(conversionResult, nativeElement);
-        SetRelationship(
-          conversionResult,
-          new NestingInstructions(Types, (p, c) => NestUnderProperty(p, c, category))
-        );
+        SetRelationship(conversionResult, new NestingInstructions(Types, (p, c) => NestUnderProperty(p, c, category)));
         return;
 
       // Special cases for non-geometry, we want to nest under the root object, not in a collection
@@ -77,10 +74,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       case ProjectInfo:
       case Autodesk.Revit.DB.Material:
         var propName = GetCategoryId(conversionResult, nativeElement);
-        SetRelationship(
-          conversionResult,
-          new NestingInstructions(Root, (p, c) => NestUnderProperty(p, c, propName))
-        );
+        SetRelationship(conversionResult, new NestingInstructions(Root, (p, c) => NestUnderProperty(p, c, propName)));
         return;
     }
 
@@ -116,7 +110,12 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     SetRelationship(conversionResult, nestingInstructions);
   }
 
-  private void AddNestingInstructionsForCollection(string collectionId, string collectionName, string collectionType, List<NestingInstructions> nestingInstructions)
+  private void AddNestingInstructionsForCollection(
+    string collectionId,
+    string collectionName,
+    string collectionType,
+    List<NestingInstructions> nestingInstructions
+  )
   {
     // Create collection if not already
     if (!_collections.ContainsKey(collectionId) && collectionId != Root)
@@ -128,7 +127,11 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProperty));
   }
 
-  private static void AddNestingInstructionsForHosted(Base conversionResult, Element nativeElement, List<NestingInstructions> nestingInstructions)
+  private static void AddNestingInstructionsForHosted(
+    Base conversionResult,
+    Element nativeElement,
+    List<NestingInstructions> nestingInstructions
+  )
   {
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
     Element? host = GetHost(nativeElement);
@@ -146,7 +149,8 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
   {
     var mepSystemName = GetMEPSystemName(nativeElement);
 
-    if (string.IsNullOrEmpty(mepSystemName)) return;
+    if (string.IsNullOrEmpty(mepSystemName))
+      return;
 
     // Create overall network collection if it doesn't exist
     if (!_collections.ContainsKey(MEPNetworks))
@@ -169,12 +173,12 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
   {
     return element switch
     {
-      CableTray o => o.MEPSystem?.Name,
-      Conduit c => c.MEPSystem?.Name,
-      Duct d => d.MEPSystem?.Name,
-      Pipe p => p.MEPSystem?.Name,
-      Wire w => w.MEPSystem?.Name,
-      _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
+      MEPCurve o => o.MEPSystem?.Name,
+      FamilyInstance o
+        => o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
+          ? ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
+          : null,
+      _ => null
     };
   }
 
@@ -212,7 +216,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
 #endif
       Autodesk.Revit.DB.Structure.FabricSheet i => i.Document.GetElement(i.HostId),
       Autodesk.Revit.DB.Structure.FabricArea i => i.Document.GetElement(i.HostId),
-
+      Autodesk.Revit.DB.Structure.Rebar i => i.Document.GetElement(i.GetHostId()),
       _ => null
     };
   }

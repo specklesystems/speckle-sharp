@@ -2,6 +2,7 @@
   x:Class="DesktopUI2.Views.Windows.Dialogs.NewStreamDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,20 +10,23 @@
   <UserControl.Styles>
 
     <Style Selector="ToggleSwitch[IsChecked=true]">
-      <Setter Property="Content" Value="Public stream" />
+      <Setter Property="Content" Value=" Link Shareable" />
     </Style>
 
     <Style Selector="ToggleSwitch[IsChecked=false]">
-      <Setter Property="Content" Value="Private stream" />
+      <Setter Property="Content" Value=" Private" />
     </Style>
 
 
   </UserControl.Styles>
+  <UserControl.Resources>
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
+  </UserControl.Resources>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
-      Text="Create a new Stream"
+      Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Create a new Stream'}"
       TextTrimming="CharacterEllipsis" />
     <ComboBox
       Name="accounts"
@@ -62,7 +66,7 @@
       Name="name"
       Grid.Row="2"
       Margin="15,5"
-      Watermark="Stream Name (optional)" />
+      Watermark="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Stream Name (optional)'}" />
 
     <TextBox
       Name="description"
@@ -74,7 +78,6 @@
       Name="isPublic"
       Grid.Row="4"
       Margin="15" />
-
 
     <StackPanel
       Grid.Row="5"

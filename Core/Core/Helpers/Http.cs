@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -176,12 +177,15 @@ public static class Http
     }
   }
 
-  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null)
+  public static HttpClient GetHttpProxyClient(SpeckleHttpClientHandler? handler = null, TimeSpan? timeout = null)
   {
     IWebProxy proxy = WebRequest.GetSystemWebProxy();
     proxy.Credentials = CredentialCache.DefaultCredentials;
 
-    return new HttpClient(handler ?? new SpeckleHttpClientHandler());
+    handler ??= new SpeckleHttpClientHandler();
+    var client = new HttpClient(handler);
+    client.Timeout = timeout ?? TimeSpan.FromSeconds(100);
+    return client;
   }
 
   public static bool CanAddAuth(string? authToken, out string? bearerHeader)

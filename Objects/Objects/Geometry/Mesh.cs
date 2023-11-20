@@ -82,9 +82,13 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public bool Transform(Transform transform)
   {
     // transform vertices
-    vertices = GetPoints().SelectMany(vertex => { 
-      vertex.TransformTo(transform, out Point transformedVertex); return transformedVertex.ToList();
-    }).ToList();
+    vertices = GetPoints()
+      .SelectMany(vertex =>
+      {
+        vertex.TransformTo(transform, out Point transformedVertex);
+        return transformedVertex.ToList();
+      })
+      .ToList();
 
     return true;
   }
@@ -109,6 +113,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
       colors = colors,
       units = units
     };
+    mesh["renderMaterial"] = this["renderMaterial"];
 
     return true;
   }

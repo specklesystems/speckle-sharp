@@ -17,6 +17,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.3DView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Previews.cs" />

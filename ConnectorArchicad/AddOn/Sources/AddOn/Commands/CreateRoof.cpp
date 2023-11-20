@@ -41,6 +41,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 	if (err != NoError)
 		return err;
 
+	err = GetElementBaseFromObjectState (os, element, elementMask);
+	if (err != NoError)
+		return err;
+
 	// The structure of the roof
 	if (os.Contains (Roof::RoofClassName)) {
 		GS::UniString roofClassName;
