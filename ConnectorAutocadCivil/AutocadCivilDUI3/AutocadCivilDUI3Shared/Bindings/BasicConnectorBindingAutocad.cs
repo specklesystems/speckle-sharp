@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using AutocadCivilDUI3Shared.Extensions;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
@@ -9,6 +10,7 @@ using Autodesk.AutoCAD.EditorInput;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
+using Sentry.Reflection;
 using Speckle.Core.Credentials;
 using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
@@ -29,6 +31,11 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
+  }
+  
+  public string GetConnectorVersion()
+  {
+    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
   }
 
   public string GetSourceApplicationName()

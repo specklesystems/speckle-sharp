@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
@@ -7,6 +8,7 @@ using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using Revit.Async;
+using Sentry.Reflection;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -30,6 +32,11 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
+  }
+  
+  public string GetConnectorVersion()
+  {
+    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
   }
   
   public string GetSourceApplicationName()

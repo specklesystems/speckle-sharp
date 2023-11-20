@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ConnectorRhinoWebUI.Extensions;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
@@ -9,6 +10,7 @@ using DUI3.Models;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Sentry.Reflection;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -25,6 +27,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
+  }
+
+  public string GetConnectorVersion()
+  {
+    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
   }
 
   public string GetSourceApplicationName()

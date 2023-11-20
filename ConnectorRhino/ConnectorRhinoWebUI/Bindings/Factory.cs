@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Onboarding;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -16,13 +17,24 @@ public static class Factory
     var baseBindings = new BasicConnectorBinding(Store);
     var sendBindings = new SendBinding(Store);
     var receiveBindings = new ReceiveBinding(Store);
-    // TODO: expiryBindings (?) maybe part of sendBindings after all...
-    // TODO: receiveBindings
     var selectionBindings = new SelectionBinding();
+
+    // Where we pass connector specific onboardings to config binding.
+    // Below code is just a sample for now!
+    Dictionary<string, OnboardingData> sampleOnboardingsData = new()
+    {
+      {"mapper", new OnboardingData()
+      {
+        Title = "Mapper",
+        Blurb = "Map your objects for Revit!",
+        Completed = false,
+        Page = "/onboarding/rhino/mapper"
+      }}
+    };
 
     var bindingsList = new List<IBinding>
     {
-      new ConfigBinding(),
+      new ConfigBinding(Utils.Utils.AppName, sampleOnboardingsData),
       new AccountBinding(),
       new TestBinding(),
       baseBindings,

@@ -16,7 +16,7 @@ public static class Factory
     var receiveBinding = new ReceiveBinding(store);
     var bindingsList = new List<IBinding>
     {
-      new ConfigBinding(),
+      new ConfigBinding("Revit"),
       new AccountBinding(),
       new TestBinding(),
       baseBinding,
