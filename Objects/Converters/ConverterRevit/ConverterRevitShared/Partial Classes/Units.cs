@@ -138,20 +138,6 @@ namespace Objects.Converter.Revit
     {
       return unitType.ToString();
     }
-
-    public static bool TryGetNativeUnits(string units, out DisplayUnitType result)
-    {
-      try
-      {
-        result = UnitsToNative(units);
-        return true;
-      }
-      catch (SpeckleException)
-      {
-        result = default;
-        return false;
-      }
-    }
 #else
     public string ModelUnits
     {
@@ -253,13 +239,14 @@ namespace Objects.Converter.Revit
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }
     }
+#endif
 
-    public static bool TryGetNativeUnits(string units, out ForgeTypeId? result)
+    public static bool TryGetUnitsFromString(string units, out string? result)
     {
       try
       {
-        result = UnitsToNative(units);
-        return true;
+        result = Speckle.Core.Kits.Units.GetUnitsFromString(units);
+        return !string.IsNullOrEmpty(result);
       }
       catch (SpeckleException)
       {
@@ -267,6 +254,5 @@ namespace Objects.Converter.Revit
         return false;
       }
     }
-#endif
   }
 }

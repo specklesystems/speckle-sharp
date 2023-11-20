@@ -500,13 +500,9 @@ namespace Objects.Converter.Revit
               var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
               rp.Set(val);
             }
-#if REVIT2020
-            else if (TryGetNativeUnits(units, out DisplayUnitType unitTypeId))
-#else
-            else if (TryGetNativeUnits(units, out ForgeTypeId unitTypeId))
-#endif  
+            else if (TryGetUnitsFromString(units, out string formattedUnits))
             {
-              double val = UnitUtils.ConvertToInternalUnits(Convert.ToDouble(value), unitTypeId);
+              double val = ScaleToNative(Convert.ToDouble(value), formattedUnits);
               rp.Set(val);
             }
             else
@@ -619,7 +615,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
