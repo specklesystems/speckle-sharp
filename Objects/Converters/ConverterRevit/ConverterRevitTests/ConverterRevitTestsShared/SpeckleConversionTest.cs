@@ -86,7 +86,7 @@ namespace ConverterRevitTests
             catch (ArgumentException e)
             {
               // there are duplicate SpeckleObjectTestNumber values in the update document
-              throw e;
+              throw;
             }
           }
         }

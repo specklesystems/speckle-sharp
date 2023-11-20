@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Archicad.Communication
@@ -17,7 +18,7 @@ namespace Archicad.Communication
 
     public void Start(uint portNumber)
     {
-      HttpClient = new HttpClient { BaseAddress = new System.Uri("http://127.0.0.1:" + portNumber) };
+      HttpClient = new HttpClient { BaseAddress = new System.Uri("http://127.0.0.1:" + portNumber), Timeout = TimeSpan.FromSeconds(300) };
     }
 
     public void Stop()
