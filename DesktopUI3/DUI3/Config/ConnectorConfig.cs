@@ -7,8 +7,8 @@ namespace DUI3.Config;
 public class ConnectorConfig : PropertyValidator
 {
   public string HostApp { set; get; }
-  
-  public bool? DarkTheme { set; get; }
+
+  public bool? DarkTheme { set; get; } = false;
   
   public Dictionary<string, OnboardingData> Onboardings { get; set; }
 

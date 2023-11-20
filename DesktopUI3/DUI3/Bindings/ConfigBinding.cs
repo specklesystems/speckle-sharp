@@ -74,6 +74,16 @@ public class ConfigBinding : IBinding
       // TODO: Log error
     }
   }
+
+  private void ValidateConfigs(UiConfig uiConfig, PropertyValidator config)
+  {
+    bool globalConfigsAdded = config.InitializeNewProperties();
+    bool globalConfigRemoved = config.CheckRemovedProperties();
+    if (globalConfigsAdded || globalConfigRemoved)
+    {
+      ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(uiConfig, _serializerOptions));
+    }
+  }
   
   private UiConfig GetOrInitConfig()
   {
@@ -84,22 +94,21 @@ public class ConfigBinding : IBinding
       return InitDefaultConfig();
     }
     
-    // 2- If connector config already exist in UiConfig, just return it.
     UiConfig config = JsonConvert.DeserializeObject<UiConfig>(configDui3String, _serializerOptions);
+    
+    // 2- Check global configs updated or not.
+    ValidateConfigs(config, config.Global);
+    
+    // 3- If connector config already exist in UiConfig, just return it.
     if (config.Connectors.ContainsKey(HostAppName.ToLower()))
     {
       ConnectorConfig existingConnectorConfig = config.Connectors[HostAppName.ToLower()];
-      bool updated = existingConnectorConfig.InitializeNewProperties();
-      bool removedProperties = existingConnectorConfig.CheckRemovedProperties();
-      if (updated || removedProperties)
-      {
-        ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(config, _serializerOptions));
-      }
+      ValidateConfigs(config, existingConnectorConfig);
       
       return config;
     }
     
-    // 3- If connector config didn't initialized yet, init and attach it, then return.
+    // 4- If connector config didn't initialized yet, init and attach it, then return.
     ConnectorConfig connectorConfig = new (HostAppName, ConnectorOnboardings);
     config.Connectors.Add(HostAppName, connectorConfig);
     ConfigStorage.UpdateObject("configDUI3", JsonConvert.SerializeObject(config, _serializerOptions));
