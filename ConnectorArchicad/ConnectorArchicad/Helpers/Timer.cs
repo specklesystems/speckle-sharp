@@ -12,9 +12,14 @@ namespace Archicad.Helpers
 
     private SerilogTimings.Operation serilogOperation = null;
 
-    public static Timer CreateReceive (string streamId)
+    public static Timer CreateReceive(string streamId)
     {
       return new Timer("Receive stream {streamId}", streamId);
+    }
+
+    public static Timer CreateSend(string streamId)
+    {
+      return new Timer("Send stream {streamId}", streamId);
     }
 
     public Timer(string messageTemplate, params object[] args)

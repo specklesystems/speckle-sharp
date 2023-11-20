@@ -88,13 +88,17 @@ namespace Archicad.Converters
       if (data is null)
         return directShapes;
 
-      foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
+        foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
         {
-          directShape.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-            elementModels.First(e => e.applicationId == directShape.applicationId).model
-          );
-          directShapes.Add(directShape);
+          {
+            directShape.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+              elementModels.First(e => e.applicationId == directShape.applicationId).model
+            );
+            directShapes.Add(directShape);
+          }
         }
       }
 
