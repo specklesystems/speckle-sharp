@@ -14,7 +14,7 @@ public static class Factory
       Page = "/onboarding/send",
     };
   }
-  
+
   public static OnboardingData CreateReceive()
   {
     return new()
