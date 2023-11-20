@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using RevitSharedResources.Interfaces;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -137,6 +138,20 @@ namespace Objects.Converter.Revit
     {
       return unitType.ToString();
     }
+
+    public static bool TryGetNativeUnits(string units, out DisplayUnitType result)
+    {
+      try
+      {
+        result = UnitsToNative(units);
+        return true;
+      }
+      catch (SpeckleException)
+      {
+        result = default;
+        return false;
+      }
+    }
 #else
     public string ModelUnits
     {
@@ -236,6 +251,20 @@ namespace Objects.Converter.Revit
           return UnitTypeId.Feet;
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
+      }
+    }
+
+    public static bool TryGetNativeUnits(string units, out ForgeTypeId? result)
+    {
+      try
+      {
+        result = UnitsToNative(units);
+        return true;
+      }
+      catch (SpeckleException)
+      {
+        result = null;
+        return false;
       }
     }
 #endif
