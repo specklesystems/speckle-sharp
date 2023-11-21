@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Clash;
 using DesktopUI2.Models.Filters;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
@@ -30,7 +31,7 @@ public partial class ConnectorBindingsNavisworks
 
     var selectSetsRootItem = _doc.SelectionSets.RootItem;
 
-    var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).ToList();
+    var savedSelectionSets = selectSetsRootItem?.Children.Select(GetSets).ToList() ?? new List<TreeNode>();
 
     if (savedSelectionSets.Count > 0)
     {
@@ -47,11 +48,9 @@ public partial class ConnectorBindingsNavisworks
 
     var savedViewsRootItem = _doc.SavedViewpoints.RootItem;
 
-    var savedViews = savedViewsRootItem.Children
-      .Select(GetViews)
-      .Select(RemoveNullNodes)
-      .Where(x => x != null)
-      .ToList();
+    var savedViews =
+      savedViewsRootItem?.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null).ToList()
+      ?? new List<TreeNode>();
 
     if (savedViews.Count > 0)
     {
@@ -68,20 +67,31 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    var clashPlugin = _doc.GetClash();
-    var clashTests = clashPlugin.TestsData;
-
-    var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
-
-    if (groupedClashResults?.Count >= 0)
+    try
     {
-      //  var clashReportFilter = new TreeSelectionFilter
-      //  {
-      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-      //    Description = "Select group clash test results.",
-      //    Values = groupedClashResults
-      //  };
-      //  filters.Add(clashReportFilter);
+      var clashPlugin = _doc.GetClash();
+      var clashTests = clashPlugin?.TestsData;
+      
+      if (clashTests != null)
+      {
+        var groupedClashResults =
+          clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList() ?? new List<TreeNode>();
+
+        if (groupedClashResults?.Count >= 0)
+        {
+          //  var clashReportFilter = new TreeSelectionFilter
+          //  {
+          //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+          //    Description = "Select group clash test results.",
+          //    Values = groupedClashResults
+          //  };
+          //  filters.Add(clashReportFilter);
+        }
+      }
+    }
+    catch (NullReferenceException n)
+    {
+      // ignore
     }
 
     filters.Add(allFilter);
