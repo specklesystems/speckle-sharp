@@ -17,21 +17,25 @@ namespace Archicad.Operations
 
     public static List<Mesh> MeshesToSpeckle(MeshModel meshModel)
     {
-      var materials = meshModel.materials.Select(MaterialToSpeckle).ToList();
-      var meshes = materials.Select(m => new Mesh { units = Units.Meters, ["renderMaterial"] = m }).ToList();
-      var vertCount = new int[materials.Count];
-
-      foreach (var poly in meshModel.polygons)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToSpeckle))
       {
-        var meshIndex = poly.material;
-        meshes[meshIndex].vertices.AddRange(
-          poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
-        );
-        meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
-        vertCount[meshIndex] += poly.pointIds.Count;
-      }
+        var materials = meshModel.materials.Select(MaterialToSpeckle).ToList();
+        var meshes = materials.Select(m => new Mesh { units = Units.Meters, ["renderMaterial"] = m }).ToList();
+        var vertCount = new int[materials.Count];
 
-      return meshes;
+        foreach (var poly in meshModel.polygons)
+        {
+          var meshIndex = poly.material;
+          meshes[meshIndex].vertices.AddRange(
+            poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
+          );
+          meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
+          vertCount[meshIndex] += poly.pointIds.Count;
+        }
+
+        return meshes;
+      }
     }
 
     public static List<Speckle.Core.Models.Base> MeshesAndLinesToSpeckle(MeshModel meshModel)

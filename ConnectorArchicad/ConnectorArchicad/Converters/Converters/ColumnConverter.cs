@@ -78,18 +78,22 @@ namespace Archicad.Converters
       if (jArray is null)
         return columns;
 
-      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        // convert between DTOs
-        Objects.BuiltElements.Archicad.ArchicadColumn column =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+        {
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadColumn column =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
 
-        column.units = Units.Meters;
-        column.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == column.applicationId).model
-        );
-        column.baseLine = new Line(column.origoPos, column.origoPos + new Point(0, 0, column.height));
-        columns.Add(column);
+          column.units = Units.Meters;
+          column.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == column.applicationId).model
+          );
+          column.baseLine = new Line(column.origoPos, column.origoPos + new Point(0, 0, column.height));
+          columns.Add(column);
+        }
       }
 
       return columns;

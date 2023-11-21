@@ -81,22 +81,26 @@ namespace Archicad.Converters
       if (jArray is null)
         return beams;
 
-      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        // convert between DTOs
-        Objects.BuiltElements.Archicad.ArchicadBeam beam =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
-
-        // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
         {
-          beam.units = Units.Meters;
-          beam.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-            elementModels.First(e => e.applicationId == beam.applicationId).model
-          );
-          beam.baseLine = new Line(beam.begC, beam.endC);
-        }
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadBeam beam =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
 
-        beams.Add(beam);
+          // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
+          {
+            beam.units = Units.Meters;
+            beam.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+              elementModels.First(e => e.applicationId == beam.applicationId).model
+            );
+            beam.baseLine = new Line(beam.begC, beam.endC);
+          }
+
+          beams.Add(beam);
+        }
       }
 
       return beams;
