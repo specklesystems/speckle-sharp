@@ -152,7 +152,14 @@ namespace Archicad.Launcher
       {
         using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
         {
-          Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
+          Base commitObject;
+          
+          var context = Archicad.Helpers.Timer.Context.Peek;
+          using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
+          {
+            commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
+          }
+
           if (commitObject is not null)
             await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
@@ -193,20 +200,50 @@ namespace Archicad.Launcher
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      if (state.Filter == null)
-        throw new InvalidOperationException("Expected selection filter to be non-null");
+      try
+      {
+        using (var timer = Archicad.Helpers.Timer.CreateSend(state.StreamId))
+        {
+          if (state.Filter == null)
+          {
+            throw new InvalidOperationException("Expected selection filter to be non-null");
+          }
 
-      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
+          var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
 
-      if (commitObject == null)
-        throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
+          if (commitObject == null)
+          {
+            timer.Cancel();
+            throw new SpeckleException("Failed to convert objects to Speckle");
+          }
 
-      return await Speckle.Core.Api.Helpers.Send(
-        IdentifyStream(state),
-        commitObject,
-        state.CommitMessage,
-        HostApplications.Archicad.Name
-      );
+          var context = Archicad.Helpers.Timer.Context.Peek;
+          using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
+          {
+            return await Speckle.Core.Api.Helpers.Send(
+              IdentifyStream(state),
+              commitObject,
+              state.CommitMessage,
+              HostApplications.Archicad.Name
+            );
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        // log
+        if (ex is not OperationCanceledException)
+          SpeckleLog.Logger.Error("Conversion to Speckle failed.");
+
+        // throw
+        switch (ex)
+        {
+          case OperationCanceledException:
+            throw new OperationCanceledException(ex.Message);
+          default:
+            throw new SpeckleException(ex.Message, ex);
+        }
+      }
     }
 
     public override void WriteStreamsToFile(List<StreamState> streams) { }
