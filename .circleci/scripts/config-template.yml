@@ -91,7 +91,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
             $HOME/.dotnet/dotnet --version
       - run:
           name: Build SDK Projects
@@ -122,7 +122,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -280,7 +280,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
@@ -384,7 +384,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-dotnet-mac:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/sdk:8.0
     parameters:
       slnname:
         type: string
