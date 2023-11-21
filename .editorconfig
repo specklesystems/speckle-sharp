@@ -10,64 +10,6 @@ dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:n
 dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:none
 dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:none
 
-# ReSharper properties
-# resharper_align_linq_query = false
-# resharper_align_multiline_calls_chain = true
-# resharper_align_multiline_extends_list = true
-# resharper_align_multiline_for_stmt = true
-# resharper_align_multiline_parameter = true
-# resharper_align_multiple_declaration = true
-# resharper_align_multline_type_parameter_constrains = true
-# resharper_align_multline_type_parameter_list = true
-# resharper_braces_for_dowhile = not_required
-# resharper_braces_for_fixed = not_required
-# resharper_braces_for_lock = not_required
-# resharper_braces_for_using = not_required
-# resharper_csharp_align_multiline_calls_chain = false
-# resharper_csharp_align_multiline_extends_list = false
-# resharper_csharp_align_multiline_parameter = false
-# resharper_csharp_int_align_comments = false
-# resharper_csharp_outdent_commas = true
-# resharper_csharp_outdent_dots = false
-# resharper_csharp_wrap_after_declaration_lpar = true
-# resharper_csharp_wrap_after_invocation_lpar = true
-# resharper_csharp_wrap_arguments_style = chop_if_long
-# resharper_csharp_wrap_before_declaration_rpar = true
-# resharper_csharp_wrap_before_invocation_rpar = false
-# resharper_csharp_wrap_extends_list_style = chop_if_long
-# resharper_csharp_wrap_parameters_style = chop_if_long
-# resharper_force_attribute_style = join
-# resharper_indent_nested_fixed_stmt = false
-# resharper_indent_nested_foreach_stmt = true
-# resharper_indent_nested_for_stmt = true
-# resharper_indent_nested_lock_stmt = false
-# resharper_indent_nested_usings_stmt = false
-# resharper_indent_nested_while_stmt = true
-# resharper_int_align = false
-# resharper_int_align_nested_ternary = false
-# resharper_int_align_switch_expressions = false
-# resharper_keep_existing_declaration_block_arrangement = true
-# resharper_keep_existing_declaration_parens_arrangement = false
-# resharper_keep_existing_embedded_block_arrangement = true
-# resharper_keep_existing_enum_arrangement = true
-# resharper_keep_existing_expr_member_arrangement = true
-# resharper_keep_existing_initializer_arrangement = false
-# resharper_local_function_body = expression_body
-# resharper_max_attribute_length_for_same_line = 20
-# resharper_max_formal_parameters_on_line = 5
-# resharper_max_initializer_elements_on_line = 0
-# resharper_max_invocation_arguments_on_line = 5
-# resharper_outdent_binary_ops = true
-# resharper_outdent_dots = false
-# resharper_place_constructor_initializer_on_same_line = false
-# resharper_place_simple_initializer_on_single_line = true
-# resharper_prefer_explicit_discard_declaration = false
-# resharper_wrap_after_declaration_lpar = false
-# resharper_wrap_before_invocation_rpar = false
-# resharper_wrap_chained_binary_expressions = chop_if_long
-# resharper_wrap_chained_binary_patterns = chop_if_long
-# resharper_wrap_chained_method_calls = chop_if_long
-# resharper_xmldoc_indent_text = ZeroIndent
 
 # Standard properties
 insert_final_newline = true
@@ -181,8 +123,13 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 
-# Variable Naming - Copied from https://github.com/dotnet/roslyn/blob/main/.editorconfig consts adapted
 
+
+# SYMBOL NAMING RULES
+# Copied from https://github.com/dotnet/roslyn/blob/main/.editorconfig
+# Adapted rules:
+#  - Constants are ALL_UPPER
+#  - Non-private fields are PascalCase
 
 # Non-private fields are PascalCase
 dotnet_naming_rule.non_private_readonly_fields_should_be_pascal_case.severity = warning
@@ -256,25 +203,25 @@ dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 
 # Analyzer settings
-dotnet_analyzer_diagnostic.category-Style.severity = warning
-dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type
-dotnet_diagnostic.ide0055.severity = none # Formatting rule
-dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return
-dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification
-dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching
-dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching
+dotnet_analyzer_diagnostic.category-Style.severity = warning # All rules will use this severity unless overriden 
+dotnet_diagnostic.ide0055.severity = none # Formatting rule: Incompatible with CSharpier
+dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type: Preference
+dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Preference
+dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Preference
+dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
+dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 
 
 # Maintainability rules
-dotnet_diagnostic.ca1501.severity = warning
-dotnet_diagnostic.ca1502.severity = warning
-dotnet_diagnostic.ca1505.severity = warning
-dotnet_diagnostic.ca1506.severity = warning
-dotnet_diagnostic.ca1507.severity = warning
-dotnet_diagnostic.ca1508.severity = warning
-dotnet_diagnostic.ca1509.severity = warning
+dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance
+dotnet_diagnostic.ca1502.severity = warning # Avoid excessive complexity
+dotnet_diagnostic.ca1505.severity = warning # Avoid unmaintainable code
+dotnet_diagnostic.ca1506.severity = warning # Avoid excessive class coupling
+dotnet_diagnostic.ca1507.severity = warning # Use nameof in place of string
+dotnet_diagnostic.ca1508.severity = warning # Avoid dead conditional code
+dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics configuration file
 
-dotnet_diagnostic.ca1002.severity = suggestion
+dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists
 
 # Misc
 dotnet_diagnostic.ca1051.severity = warning # Do not declare visible instance fields

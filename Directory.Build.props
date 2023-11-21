@@ -17,26 +17,32 @@
     <LangVersion>11</LangVersion>
     <DebugSymbols>true</DebugSymbols>
 
+    <!-- False if running on CI, will prevent copying of files to local folders -->
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
     
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    
+    <EnforceCodeStyleInBuild>!$(IsDesktopBuild)</EnforceCodeStyleInBuild>
 
-    <!-- Ignore some warnings for now -->
+
+    
+    <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
+      <!--Dissabled by design-->
+      CA5399;
       <!--XML comment-->
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;
       CS1711;CS1734;
-      <!--Others we don't want-->
-      CA1815;CA1054;CA5399;
       <!--Nullability-->
       CS8618;
-      <!-- Globalization rules disabled -->
+      <!-- Globalization rules -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
-      $(NoWarn)
+      <!--Others we don't want-->
+      CA1815;CA1054;$(NoWarn)
     </NoWarn>
     
     <WarningsAsErrors>
@@ -67,9 +73,7 @@
       <!--"CA5369: Use XmlReader for Deserialize" - we assume loaded XML is trusted-->
       <!--"CA5399: Enable HttpClient certificate revocation list check" - causes issues with corporate networks that use SSL decryption. HTTPClientHandler does check for invalid SSL certs without this property set true-->
     </WarningsAsErrors>
-
-    <!-- False if running on CI, will prevent copying of files to local folders -->
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
