@@ -24,8 +24,7 @@
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    
-    <EnforceCodeStyleInBuild>!$(IsDesktopBuild)</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
 
     
@@ -46,6 +45,7 @@
     </NoWarn>
     
     <WarningsAsErrors>
+      $(WarningsAsErrors);
       <!--Net6 default enabled analysers-->
       CA1416; CA1417; CA1418; CA1831; CA2013; CA2014; CA2015; CA2017;
       CA2018; CA2200; CA2252; CA2247; CA2255; CA2256; CA2257; CA2258;
