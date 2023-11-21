@@ -472,7 +472,7 @@ namespace Objects.Converter.Revit
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
-        TrySetParam(rp, sp.value, applicationUnit: sp.applicationUnit);
+        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
       }
     }
 
@@ -500,9 +500,9 @@ namespace Objects.Converter.Revit
               var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
               rp.Set(val);
             }
-            else if (Speckle.Core.Kits.Units.IsUnitSupported(units))
+            else if (TryGetUnitsFromString(units, out string formattedUnits))
             {
-              var val = ScaleToNative(Convert.ToDouble(value), units);
+              double val = ScaleToNative(Convert.ToDouble(value), formattedUnits);
               rp.Set(val);
             }
             else
@@ -615,7 +615,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-    #endregion
+#endregion
 
     #region conversion "edit existing if possible" utilities
 
