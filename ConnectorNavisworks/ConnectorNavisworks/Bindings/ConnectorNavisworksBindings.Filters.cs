@@ -4,7 +4,6 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Clash;
 using DesktopUI2.Models.Filters;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
@@ -71,13 +70,12 @@ public partial class ConnectorBindingsNavisworks
     {
       var clashPlugin = _doc.GetClash();
       var clashTests = clashPlugin?.TestsData;
-      
+
       if (clashTests != null)
       {
-        var groupedClashResults =
-          clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList() ?? new List<TreeNode>();
+        var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
 
-        if (groupedClashResults?.Count >= 0)
+        if (groupedClashResults.Count >= 0)
         {
           //  var clashReportFilter = new TreeSelectionFilter
           //  {
@@ -87,9 +85,10 @@ public partial class ConnectorBindingsNavisworks
           //  };
           //  filters.Add(clashReportFilter);
         }
+        Console.WriteLine("Sending Clashes is not supported yet.");
       }
     }
-    catch (NullReferenceException n)
+    catch (NullReferenceException)
     {
       // ignore
     }
