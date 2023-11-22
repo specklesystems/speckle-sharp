@@ -79,7 +79,9 @@ static void GetModelInfoForElement (const Modeler::Elem& elem,
 		// edges
 		for (ULong edgeIdx = 0; edgeIdx < body.GetEdgeCount (); ++edgeIdx) {
 			const EDGE& edge = body.GetConstEdge (edgeIdx);
-			modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
+			// send only edges which have no polygons (only 3D lines)
+			if (edge.pgon1 == Brep::MeshBrep::Edge::InvalidPgonIdx && edge.pgon2 == Brep::MeshBrep::Edge::InvalidPgonIdx)
+				modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
 		}
 
 		// polygons

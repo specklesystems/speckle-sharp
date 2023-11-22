@@ -73,20 +73,24 @@ namespace Archicad.Converters
       if (jArray is null)
         return floors;
 
-      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        // convert between DTOs
-        Objects.BuiltElements.Archicad.ArchicadFloor slab =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(jToken);
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+        {
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadFloor slab =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(jToken);
 
-        slab.units = Units.Meters;
-        slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elements.First(e => e.applicationId == slab.applicationId).model
-        );
-        slab.outline = Utils.PolycurveToSpeckle(slab.shape.contourPolyline);
-        if (slab.shape.holePolylines?.Count > 0)
-          slab.voids = new List<ICurve>(slab.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
-        floors.Add(slab);
+          slab.units = Units.Meters;
+          slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elements.First(e => e.applicationId == slab.applicationId).model
+          );
+          slab.outline = Utils.PolycurveToSpeckle(slab.shape.contourPolyline);
+          if (slab.shape.holePolylines?.Count > 0)
+            slab.voids = new List<ICurve>(slab.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+          floors.Add(slab);
+        }
       }
 
       return floors;

@@ -71,12 +71,16 @@ namespace Archicad.Converters
       if (data is null)
         return openings;
 
-      foreach (Objects.BuiltElements.Archicad.ArchicadSkylight subelement in data)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == subelement.applicationId).model
-        );
-        openings.Add(subelement);
+        foreach (Objects.BuiltElements.Archicad.ArchicadSkylight subelement in data)
+        {
+          subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == subelement.applicationId).model
+          );
+          openings.Add(subelement);
+        }
       }
 
       return openings;

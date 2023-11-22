@@ -89,45 +89,49 @@ namespace Archicad.Converters
         return new List<Base>();
       }
 
-      List<Base> gridlines = new List<Base>();
-      foreach (Archicad.GridElement archicadGridElement in data)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        Objects.BuiltElements.GridLine speckleGridLine = new Objects.BuiltElements.GridLine();
-
-        // convert from Archicad to Speckle data structure
-        // Speckle base properties
-        speckleGridLine.id = archicadGridElement.id;
-        speckleGridLine.applicationId = archicadGridElement.applicationId;
-        speckleGridLine.label = archicadGridElement.markerText;
-        speckleGridLine.units = Units.Meters;
-
-        // Archicad properties
-        // elementType and classifications do not exist in Objects.BuiltElements.GridLine
-        //speckleGrid.elementType = archicadGridElement.elementType;
-        //speckleGrid.classifications = archicadGridElement.classifications;
-
-        if (!archicadGridElement.isArc)
+        List<Base> gridlines = new List<Base>();
+        foreach (Archicad.GridElement archicadGridElement in data)
         {
-          speckleGridLine.baseLine = new Line(archicadGridElement.begin, archicadGridElement.end);
-        }
-        else
-        {
-          speckleGridLine.baseLine = new Arc(
-            archicadGridElement.begin,
-            archicadGridElement.end,
-            archicadGridElement.arcAngle
-          );
+          Objects.BuiltElements.GridLine speckleGridLine = new Objects.BuiltElements.GridLine();
+
+          // convert from Archicad to Speckle data structure
+          // Speckle base properties
+          speckleGridLine.id = archicadGridElement.id;
+          speckleGridLine.applicationId = archicadGridElement.applicationId;
+          speckleGridLine.label = archicadGridElement.markerText;
+          speckleGridLine.units = Units.Meters;
+
+          // Archicad properties
+          // elementType and classifications do not exist in Objects.BuiltElements.GridLine
+          //speckleGrid.elementType = archicadGridElement.elementType;
+          //speckleGrid.classifications = archicadGridElement.classifications;
+
+          if (!archicadGridElement.isArc)
+          {
+            speckleGridLine.baseLine = new Line(archicadGridElement.begin, archicadGridElement.end);
+          }
+          else
+          {
+            speckleGridLine.baseLine = new Arc(
+              archicadGridElement.begin,
+              archicadGridElement.end,
+              archicadGridElement.arcAngle
+            );
+          }
+
+          speckleGridLine.displayValue = Operations.ModelConverter
+            .MeshesAndLinesToSpeckle(elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model)
+            .Cast<Base>()
+            .ToList();
+
+          gridlines.Add(speckleGridLine);
         }
 
-        speckleGridLine.displayValue = Operations.ModelConverter
-          .MeshesAndLinesToSpeckle(elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model)
-          .Cast<Base>()
-          .ToList();
-
-        gridlines.Add(speckleGridLine);
+        return gridlines;
       }
-
-      return gridlines;
     }
   }
 }

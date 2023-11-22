@@ -88,25 +88,29 @@ namespace Archicad.Converters
       var roofs = new List<Base>();
       if (jArray is not null)
       {
-        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+        var context = Archicad.Helpers.Timer.Context.Peek;
+        using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
         {
-          // convert between DTOs
-          Objects.BuiltElements.Archicad.ArchicadRoof roof =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
-
-          roof.units = Units.Meters;
-          roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-            elements.First(e => e.applicationId == roof.applicationId).model
-          );
-
-          if (roof.shape != null)
+          foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
           {
-            roof.outline = Utils.PolycurveToSpeckle(roof.shape.contourPolyline);
-            if (roof.shape.holePolylines?.Count > 0)
-              roof.voids = new List<ICurve>(roof.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
-          }
+            // convert between DTOs
+            Objects.BuiltElements.Archicad.ArchicadRoof roof =
+              Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
 
-          roofs.Add(roof);
+            roof.units = Units.Meters;
+            roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+              elements.First(e => e.applicationId == roof.applicationId).model
+            );
+
+            if (roof.shape != null)
+            {
+              roof.outline = Utils.PolycurveToSpeckle(roof.shape.contourPolyline);
+              if (roof.shape.holePolylines?.Count > 0)
+                roof.voids = new List<ICurve>(roof.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+            }
+
+            roofs.Add(roof);
+          }
         }
       }
 
@@ -118,25 +122,29 @@ namespace Archicad.Converters
       var shells = new List<Base>();
       if (jArray is not null)
       {
-        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+        var context = Archicad.Helpers.Timer.Context.Peek;
+        using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
         {
-          // convert between DTOs
-          Objects.BuiltElements.Archicad.ArchicadShell shell =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
-
-          shell.units = Units.Meters;
-          shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-            elements.First(e => e.applicationId == shell.applicationId).model
-          );
-
-          if (shell.shape != null)
+          foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
           {
-            shell.outline = Utils.PolycurveToSpeckle(shell.shape.contourPolyline);
-            if (shell.shape.holePolylines?.Count > 0)
-              shell.voids = new List<ICurve>(shell.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
-          }
+            // convert between DTOs
+            Objects.BuiltElements.Archicad.ArchicadShell shell =
+              Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
 
-          shells.Add(shell);
+            shell.units = Units.Meters;
+            shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+              elements.First(e => e.applicationId == shell.applicationId).model
+            );
+
+            if (shell.shape != null)
+            {
+              shell.outline = Utils.PolycurveToSpeckle(shell.shape.contourPolyline);
+              if (shell.shape.holePolylines?.Count > 0)
+                shell.voids = new List<ICurve>(shell.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+            }
+
+            shells.Add(shell);
+          }
         }
       }
 

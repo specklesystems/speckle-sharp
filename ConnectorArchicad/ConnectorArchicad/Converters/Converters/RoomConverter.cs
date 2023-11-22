@@ -104,42 +104,46 @@ namespace Archicad.Converters
       if (data is null)
         return rooms;
 
-      foreach (Archicad.Room archicadRoom in data)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new Objects.BuiltElements.Archicad.ArchicadRoom();
+        foreach (Archicad.Room archicadRoom in data)
+        {
+          Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new Objects.BuiltElements.Archicad.ArchicadRoom();
 
-        // convert from Archicad to Speckle data structure
-        // Speckle base properties
-        speckleRoom.id = archicadRoom.id;
-        speckleRoom.applicationId = archicadRoom.applicationId;
-        speckleRoom.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == archicadRoom.applicationId).model
-        );
-        speckleRoom.units = Units.Meters;
+          // convert from Archicad to Speckle data structure
+          // Speckle base properties
+          speckleRoom.id = archicadRoom.id;
+          speckleRoom.applicationId = archicadRoom.applicationId;
+          speckleRoom.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == archicadRoom.applicationId).model
+          );
+          speckleRoom.units = Units.Meters;
 
-        // Archicad properties
-        speckleRoom.elementType = archicadRoom.elementType;
-        speckleRoom.classifications = archicadRoom.classifications;
-        speckleRoom.archicadLevel = archicadRoom.level;
-        speckleRoom.height = archicadRoom.height ?? .0;
-        speckleRoom.shape = archicadRoom.shape;
+          // Archicad properties
+          speckleRoom.elementType = archicadRoom.elementType;
+          speckleRoom.classifications = archicadRoom.classifications;
+          speckleRoom.archicadLevel = archicadRoom.level;
+          speckleRoom.height = archicadRoom.height ?? .0;
+          speckleRoom.shape = archicadRoom.shape;
 
-        // downdgrade
-        speckleRoom.name = archicadRoom.name;
-        speckleRoom.number = archicadRoom.number;
-        speckleRoom.area = archicadRoom.area ?? .0;
-        speckleRoom.volume = archicadRoom.volume ?? .0;
+          // downdgrade
+          speckleRoom.name = archicadRoom.name;
+          speckleRoom.number = archicadRoom.number;
+          speckleRoom.area = archicadRoom.area ?? .0;
+          speckleRoom.volume = archicadRoom.volume ?? .0;
 
-        ElementShape.Polyline polyLine = archicadRoom.shape.contourPolyline;
-        Polycurve polycurve = Utils.PolycurveToSpeckle(polyLine);
-        speckleRoom.outline = polycurve;
-        if (archicadRoom.shape.holePolylines?.Count > 0)
-          speckleRoom.voids = new List<ICurve>(archicadRoom.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+          ElementShape.Polyline polyLine = archicadRoom.shape.contourPolyline;
+          Polycurve polycurve = Utils.PolycurveToSpeckle(polyLine);
+          speckleRoom.outline = polycurve;
+          if (archicadRoom.shape.holePolylines?.Count > 0)
+            speckleRoom.voids = new List<ICurve>(archicadRoom.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
 
-        // calculate base point
-        speckleRoom.basePoint = archicadRoom.basePoint;
+          // calculate base point
+          speckleRoom.basePoint = archicadRoom.basePoint;
 
-        rooms.Add(speckleRoom);
+          rooms.Add(speckleRoom);
+        }
       }
 
       return rooms;

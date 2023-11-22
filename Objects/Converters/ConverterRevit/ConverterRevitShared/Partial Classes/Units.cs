@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using RevitSharedResources.Interfaces;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -239,5 +240,19 @@ namespace Objects.Converter.Revit
       }
     }
 #endif
+
+    public static bool TryGetUnitsFromString(string units, out string? result)
+    {
+      try
+      {
+        result = Speckle.Core.Kits.Units.GetUnitsFromString(units);
+        return !string.IsNullOrEmpty(result);
+      }
+      catch (SpeckleException)
+      {
+        result = null;
+        return false;
+      }
+    }
   }
 }

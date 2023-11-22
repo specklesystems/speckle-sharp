@@ -81,18 +81,22 @@ namespace Archicad.Converters
       if (jArray is null)
         return walls;
 
-      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
       {
-        // convert between DTOs
-        Objects.BuiltElements.Archicad.ArchicadWall wall =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
+        foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
+        {
+          // convert between DTOs
+          Objects.BuiltElements.Archicad.ArchicadWall wall =
+            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
 
-        wall.units = Units.Meters;
-        wall.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == wall.applicationId).model
-        );
-        wall.baseLine = new Line(wall.startPoint, wall.endPoint);
-        walls.Add(wall);
+          wall.units = Units.Meters;
+          wall.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == wall.applicationId).model
+          );
+          wall.baseLine = new Line(wall.startPoint, wall.endPoint);
+          walls.Add(wall);
+        }
       }
 
       return walls;
