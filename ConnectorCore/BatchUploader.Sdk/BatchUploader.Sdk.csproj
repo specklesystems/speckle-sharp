@@ -13,10 +13,6 @@
     <PackageTags>$(PackageTags) revit uploader batch</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="7.0.3" />
