@@ -210,6 +210,7 @@ dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Prefer
 dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Preference
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
+dotnet_diagnostic.ide0058.severity = suggestion # Remove unnecessary expression value: Subjective
 
 
 # Maintainability rules
