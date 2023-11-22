@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Linq;
 using Objects.Geometry;
-using Objects.Organization;
 using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.Revit
