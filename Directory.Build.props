@@ -65,13 +65,14 @@
       CA5376; CA5377; CA5378; CA5379; CA5380; CA5381; CA5382; CA5383;
       CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
       CA5392; CA5393; CA5395; CA5396; CA5397; CA5398;
-      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405
+      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405;
       <!-- The following security analysers are ommited as errors for the listed reasons -->
       <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
       <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
       <!--"CA3075: Insecure DTD Processing" - we assume loaded XML is trusted-->
       <!--"CA5369: Use XmlReader for Deserialize" - we assume loaded XML is trusted-->
       <!--"CA5399: Enable HttpClient certificate revocation list check" - causes issues with corporate networks that use SSL decryption. HTTPClientHandler does check for invalid SSL certs without this property set true-->
+      IDE0005;
     </WarningsAsErrors>
     
     <IsPackable>false</IsPackable>
