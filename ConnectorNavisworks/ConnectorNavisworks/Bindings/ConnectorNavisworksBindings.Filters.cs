@@ -66,31 +66,26 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    try
-    {
-      var clashPlugin = _doc.GetClash();
-      var clashTests = clashPlugin?.TestsData;
+    DocumentClash clashPlugin = _doc.GetClash();
 
-      if (clashTests != null)
-      {
-        var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+    var clashTests = clashPlugin?.TestsData;
 
-        if (groupedClashResults.Count >= 0)
-        {
-          //  var clashReportFilter = new TreeSelectionFilter
-          //  {
-          //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-          //    Description = "Select group clash test results.",
-          //    Values = groupedClashResults
-          //  };
-          //  filters.Add(clashReportFilter);
-        }
-        Console.WriteLine("Sending Clashes is not supported yet.");
-      }
-    }
-    catch (NullReferenceException)
+    if (clashTests != null)
     {
-      // ignore
+      // var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+      //
+      // if (groupedClashResults.Count >= 0)
+      // {
+      //   
+      //
+      //   var clashReportFilter = new TreeSelectionFilter
+      //   {
+      //     Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+      //     Description = "Select group clash test results.",
+      //     Values = groupedClashResults
+      //   };
+      //   filters.Add(clashReportFilter);
+      // }
     }
 
     filters.Add(allFilter);
