@@ -60,7 +60,7 @@ commands:
             SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
+            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -101,7 +101,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            $HOME/.dotnet/dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+            $HOME/.dotnet/dotnet build SDK.slnf -c Release -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
@@ -418,7 +418,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -p:WarningLevel=0 -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
