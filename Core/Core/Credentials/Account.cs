@@ -1,9 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using GraphQL;
-using GraphQL.Client.Http;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
