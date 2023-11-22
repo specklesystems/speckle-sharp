@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using DUI3.Models;
+using DUI3.Settings;
 using DUI3.Utils;
 
 namespace DUI3.Bindings;
@@ -7,13 +8,13 @@ namespace DUI3.Bindings;
 public interface ISendBinding : IBinding
 {
   public List<ISendFilter> GetSendFilters();
-  
+
   /// <summary>
   /// Instructs the host app to start sending this model.
   /// </summary>
   /// <param name="modelCardId"></param>
   public void Send(string modelCardId);
-  
+
   /// <summary>
   /// Instructs the host app to  cancel the sending for a given model.
   /// </summary>
@@ -38,7 +39,7 @@ public interface ISendFilter
 {
   public string Name { get; set; }
   public string Summary { get; set; }
-  
+
   /// <summary>
   /// Gets the ids of the objects targeted by the filter from the host application.
   /// </summary>
