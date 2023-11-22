@@ -1,0 +1,10 @@
+
+[*.{cs,vb}]
+
+# Name properties with camelCase
+dotnet_naming_rule.properties_should_be_camel_case.severity = none
+dotnet_naming_rule.properties_should_be_camel_case.symbols = properties
+dotnet_naming_rule.properties_should_be_camel_case.style = property_style
+
+dotnet_naming_symbols.properties.applicable_kinds = property
+dotnet_naming_style.property_style.capitalization = pascal_case

@@ -610,6 +610,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case RH.Extrusion _:
       case RH.Brep _:
       case RH.NurbsSurface _:
+      case RH.TextEntity _:
         return true;
 
 #if GRASSHOPPER
@@ -623,7 +624,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case ViewInfo _:
       case InstanceDefinition _:
       case InstanceObject _:
-      case RH.TextEntity _:
       case RH.Dimension _:
       case Layer _:
         return true;
@@ -657,6 +657,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Brep _:
       case Surface _:
       case Element1D _:
+      case Text _:
         return true;
 #if GRASSHOPPER
       case Interval _:
@@ -676,7 +677,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case GridLine _:
       case Alignment _:
       case Level _:
-      case Text _:
       case Dimension _:
       case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;
