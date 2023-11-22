@@ -6,6 +6,7 @@ using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using DUI3.Operations;
+using DUI3.Settings;
 using DUI3.Utils;
 using Rhino;
 using Rhino.DocObjects;
@@ -36,7 +37,7 @@ namespace ConnectorRhinoWebUI.Bindings
     {
       CancellationManager.CancelOperation(modelCardId);
     }
-    
+
     public async void Receive(string modelCardId, string versionId)
     {
       try
@@ -46,18 +47,19 @@ namespace ConnectorRhinoWebUI.Bindings
 
         // 1 - Get receiver card
         ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
-      
+
         // 2 - Get commit object from server
         Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
-        
-        if (cts.IsCancellationRequested) return;
-      
+
+        if (cts.IsCancellationRequested)
+          return;
+
         // 3 - Get converter
         ISpeckleConverter converter = Converters.GetConverter(Doc, "Rhino7");
 
         // 4 - Traverse commit object
         List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
-      
+
         // 5 - Convert bases to Rhino preview objects
         List<object> objectsToBake = ConvertPreviewObjects(objectsToConvert, converter, modelCardId, cts);
 
@@ -77,7 +79,28 @@ namespace ConnectorRhinoWebUI.Bindings
         // TODO: Init here class to handle send errors to report UI, Seq etc..
         throw;
       }
-      
+    }
+
+    public List<CardSetting> GetReceiveSettings()
+    {
+      return new List<CardSetting>()
+      {
+        new()
+        {
+          Id = "mergeCoplanarFaces",
+          Title = "Merge Coplanar Faces",
+          Default = true,
+          Type = "boolean"
+        },
+        new()
+        {
+          Id = "receiveMode",
+          Title = "Receive Mode",
+          Default = "Update",
+          Type = "string",
+          Enum = new List<string>() { "Update", "Create", "Ignore" }
+        }
+      };
     }
 
     // conversion and bake
@@ -104,12 +127,7 @@ namespace ConnectorRhinoWebUI.Bindings
       return convertedList;
     }
 
-    private void BakeObjects(
-      List<object> previewObjects,
-      RhinoDoc doc,
-      string modelCardId,
-      CancellationTokenSource cts
-    )
+    private void BakeObjects(List<object> previewObjects, RhinoDoc doc, string modelCardId, CancellationTokenSource cts)
     {
       int bakedCount = 0;
       foreach (var convertedItem in previewObjects)
@@ -142,8 +160,13 @@ namespace ConnectorRhinoWebUI.Bindings
       }
       Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
     }
-    
-    private List<object> ConvertPreviewObjects(List<Base> objectsToConvert, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+
+    private List<object> ConvertPreviewObjects(
+      List<Base> objectsToConvert,
+      ISpeckleConverter converter,
+      string modelCardId,
+      CancellationTokenSource cts
+    )
     {
       var objectsToBake = new List<object>();
       var errors = new List<string>();
@@ -170,7 +193,7 @@ namespace ConnectorRhinoWebUI.Bindings
           objectsToBake.AddRange(objectsToAddBakeList);
         }
       }
-      
+
       Notification.ReportReceive(Parent, errors, modelCardId, objectsToConvert.Count);
       return objectsToBake;
     }
