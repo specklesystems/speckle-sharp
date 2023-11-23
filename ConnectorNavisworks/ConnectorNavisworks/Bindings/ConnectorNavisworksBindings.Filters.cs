@@ -30,7 +30,7 @@ public partial class ConnectorBindingsNavisworks
 
     var selectSetsRootItem = _doc.SelectionSets.RootItem;
 
-    var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).ToList();
+    var savedSelectionSets = selectSetsRootItem?.Children.Select(GetSets).ToList() ?? new List<TreeNode>();
 
     if (savedSelectionSets.Count > 0)
     {
@@ -47,11 +47,9 @@ public partial class ConnectorBindingsNavisworks
 
     var savedViewsRootItem = _doc.SavedViewpoints.RootItem;
 
-    var savedViews = savedViewsRootItem.Children
-      .Select(GetViews)
-      .Select(RemoveNullNodes)
-      .Where(x => x != null)
-      .ToList();
+    var savedViews =
+      savedViewsRootItem?.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null).ToList()
+      ?? new List<TreeNode>();
 
     if (savedViews.Count > 0)
     {
@@ -68,20 +66,26 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    var clashPlugin = _doc.GetClash();
-    var clashTests = clashPlugin.TestsData;
+    DocumentClash clashPlugin = _doc.GetClash();
 
-    var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+    var clashTests = clashPlugin?.TestsData;
 
-    if (groupedClashResults?.Count >= 0)
+    if (clashTests != null)
     {
-      //  var clashReportFilter = new TreeSelectionFilter
-      //  {
-      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-      //    Description = "Select group clash test results.",
-      //    Values = groupedClashResults
-      //  };
-      //  filters.Add(clashReportFilter);
+      // var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+      //
+      // if (groupedClashResults.Count >= 0)
+      // {
+      //   
+      //
+      //   var clashReportFilter = new TreeSelectionFilter
+      //   {
+      //     Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+      //     Description = "Select group clash test results.",
+      //     Values = groupedClashResults
+      //   };
+      //   filters.Add(clashReportFilter);
+      // }
     }
 
     filters.Add(allFilter);
