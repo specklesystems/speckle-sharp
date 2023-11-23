@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.DoubleNumerics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;

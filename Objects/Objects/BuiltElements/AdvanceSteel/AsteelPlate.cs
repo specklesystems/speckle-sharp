@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Materials;
-using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -24,8 +23,5 @@ public class AsteelPlate : Area, IDisplayValue<List<Mesh>>, IHasArea, IHasVolume
     this.units = units;
   }
 
-
-  public AsteelPlate()
-  {
-  }
+  public AsteelPlate() { }
 }

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
@@ -118,6 +117,7 @@ public class CSIElement1D : Element1D
   public string SpandrelAssignment { get; set; }
   public double[]? Modifiers { get; set; }
   public DesignProcedure DesignProcedure { get; set; }
+
   [DetachProperty]
   public AnalyticalResults? AnalysisResults { get; set; }
 }

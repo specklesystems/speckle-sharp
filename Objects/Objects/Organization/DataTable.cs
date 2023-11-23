@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
 
 namespace Objects.Organization
 {
   public class DataTable : Base
   {
     public DataTable() { }
+
     public int columnCount => columnMetadata.Count;
     public int rowCount => rowMetadata.Count;
     public int headerRowIndex { get; set; }
@@ -20,7 +20,9 @@ namespace Objects.Organization
     public void AddRow(Base metadata, int index = -1, params object[] objects)
     {
       if (objects.Length != columnCount)
-        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {columnCount} columns. Partial and extended table rows are not accepted by the DataTable object.");
+        throw new ArgumentException(
+          $"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {columnCount} columns. Partial and extended table rows are not accepted by the DataTable object."
+        );
 
       if (index < 0 || index >= data.Count)
       {

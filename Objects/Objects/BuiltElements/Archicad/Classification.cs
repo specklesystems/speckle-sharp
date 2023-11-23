@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -19,7 +16,7 @@ namespace Objects.BuiltElements.Archicad
     }
 
     public string system { get; set; }
-    public string ?code { get; set; }
-    public string ?name { get; set; }
+    public string? code { get; set; }
+    public string? name { get; set; }
   }
 }

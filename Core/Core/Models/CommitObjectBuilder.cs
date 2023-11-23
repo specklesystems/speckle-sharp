@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -166,6 +165,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     NestUnderProperty(parent, child, Elements);
   }
+
   protected static void NestUnderProperty(Base parent, Base child, string property)
   {
     if (parent.GetDetachedProp(property) is not IList elements)
