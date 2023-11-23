@@ -89,14 +89,14 @@ namespace ConnectorRhinoWebUI.Bindings
         {
           Id = "mergeCoplanarFaces",
           Title = "Merge Coplanar Faces",
-          Default = true,
+          Value = true,
           Type = "boolean"
         },
         new()
         {
           Id = "receiveMode",
           Title = "Receive Mode",
-          Default = "Update",
+          Value = "Update",
           Type = "string",
           Enum = new List<string>() { "Update", "Create", "Ignore" }
         }

@@ -78,7 +78,7 @@ public class SendBinding : ISendBinding, ICancelable
       {
         Id = "includeAttributes",
         Title = "Include Attributes",
-        Default = true,
+        Value = true,
         Type = "boolean"
       },
     };
