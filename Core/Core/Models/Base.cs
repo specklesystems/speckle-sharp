@@ -102,11 +102,12 @@ public class Base : DynamicBase
     }
     else
     {
-      var s = new BaseObjectSerializerV2();
-      if (decompose)
-        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
-      var obj = s.Serialize(this);
-      return JObject.Parse(obj).GetValue(nameof(id)).ToString();
+      var serializer = decompose
+        ? new BaseObjectSerializerV2(new[] { new MemoryTransport() })
+        : new BaseObjectSerializerV2();
+
+      string obj = serializer.Serialize(this);
+      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
     }
   }
 
