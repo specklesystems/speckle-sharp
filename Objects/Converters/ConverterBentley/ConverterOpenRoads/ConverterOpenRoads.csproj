@@ -9,9 +9,14 @@
         <Company>Arup</Company>
         <Description>Converter for OpenRoads Designer Connect</Description>
         <CopyToKitFolder>true</CopyToKitFolder>
-
     </PropertyGroup>
 
+    <PropertyGroup Label="Community Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+      <WarningLevel>0</WarningLevel>
+      <EnableNetAnalyzers>false</EnableNetAnalyzers>
+      <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+  
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <DefineConstants>TRACE;OPENROADS</DefineConstants>
     </PropertyGroup>
