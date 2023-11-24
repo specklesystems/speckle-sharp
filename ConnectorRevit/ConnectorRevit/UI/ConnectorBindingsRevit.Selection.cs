@@ -377,7 +377,7 @@ public partial class ConnectorBindingsRevit
     var rvtFilters = filter as ListSelectionFilter;
     foreach (Document doc in allDocs)
     {
-      List<Element> elements = new List<Element>();
+      List<Element> elements = new();
       var viewFilters = ConnectorRevitUtils.GetFilters(doc).Where(x => rvtFilters.Selection.Contains(x.Name));
       foreach (ParameterFilterElement filterElement in viewFilters)
       {

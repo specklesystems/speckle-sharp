@@ -104,7 +104,7 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
         {
           foreach (var phase in phaseFilter.Selection)
           {
-            Phase phaseTemp = new Phase();
+            Phase phaseTemp = new();
             myEnum.Current.GetPhase(out phaseTemp);
             if (phaseTemp.PhaseName == phase)
               selection.Add(myEnum.Current);

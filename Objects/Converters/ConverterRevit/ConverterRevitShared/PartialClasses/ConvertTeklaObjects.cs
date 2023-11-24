@@ -26,7 +26,7 @@ public partial class ConverterRevit
       applicationId = teklaBeam.applicationId
     };
 
-    RevitBeam revitBeam = new RevitBeam();
+    RevitBeam revitBeam = new();
     //This only works for CSIC sections now for sure. Need to test on other sections
     revitBeam.type = teklaBeam.profile.name.Replace('X', 'x');
     revitBeam.baseLine = teklaBeam.baseLine;

@@ -38,7 +38,7 @@ internal class Program
 
     _year = args[0];
 
-    AddonsData addonsData = new AddonsData();
+    AddonsData addonsData = new();
 
     try
     {
@@ -91,7 +91,7 @@ internal class Program
       //safety check
       if (addonsData.Addons == null || !addonsData.Addons.Any())
       {
-        addonsData.Addons = new AddonsDataAddon[] { new AddonsDataAddon() };
+        addonsData.Addons = new AddonsDataAddon[] { new() };
       }
 
       if (addonsData.Addons.Any(x => x.Name == addinName))

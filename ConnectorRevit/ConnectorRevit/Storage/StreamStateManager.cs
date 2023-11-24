@@ -14,7 +14,7 @@ namespace Speckle.ConnectorRevit.Storage;
 /// </summary>
 public static class StreamStateManager
 {
-  readonly static Guid ID = new Guid("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
+  readonly static Guid ID = new("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
 
   /// <summary>
   /// Returns all the speckle stream states present in the current document.
@@ -90,7 +90,7 @@ public static class StreamStateManager
 
   private static Entity GetSpeckleEntity(Document doc)
   {
-    FilteredElementCollector collector = new FilteredElementCollector(doc);
+    FilteredElementCollector collector = new(doc);
 
     var dataStorages = collector.OfClass(typeof(DataStorage));
     foreach (DataStorage dataStorage in dataStorages)
@@ -110,7 +110,7 @@ public static class StreamStateManager
 /// </summary>
 public static class StreamStateListSchema2
 {
-  static readonly Guid schemaGuid = new Guid("C48D05AE-8068-4B9A-A790-B4B2F605126B");
+  static readonly Guid schemaGuid = new("C48D05AE-8068-4B9A-A790-B4B2F605126B");
 
   public static Schema GetSchema()
   {
@@ -131,7 +131,7 @@ public static class StreamStateListSchema2
 /// </summary>
 static class DSUniqueSchemaStreamStateStorage2
 {
-  static readonly Guid schemaGuid = new Guid("C0DA9F31-83A7-4775-807B-4430446E694F");
+  static readonly Guid schemaGuid = new("C0DA9F31-83A7-4775-807B-4430446E694F");
 
   public static Schema GetSchema()
   {
@@ -140,7 +140,7 @@ static class DSUniqueSchemaStreamStateStorage2
     if (schema != null)
       return schema;
 
-    SchemaBuilder schemaBuilder = new SchemaBuilder(schemaGuid);
+    SchemaBuilder schemaBuilder = new(schemaGuid);
 
     schemaBuilder.SetSchemaName("DataStorageUniqueId");
 

@@ -36,12 +36,13 @@ public sealed class GridLineConverter : IConverter
         {
           case Objects.BuiltElements.GridLine grid:
 
-            Archicad.GridElement archicadGridElement = new Archicad.GridElement
-            {
-              id = grid.id,
-              applicationId = grid.applicationId,
-              markerText = grid.label
-            };
+            Archicad.GridElement archicadGridElement =
+              new()
+              {
+                id = grid.id,
+                applicationId = grid.applicationId,
+                markerText = grid.label
+              };
 
             if (grid.baseLine is Line)
             {
@@ -91,10 +92,10 @@ public sealed class GridLineConverter : IConverter
       context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      List<Base> gridlines = new List<Base>();
+      List<Base> gridlines = new();
       foreach (Archicad.GridElement archicadGridElement in data)
       {
-        Objects.BuiltElements.GridLine speckleGridLine = new Objects.BuiltElements.GridLine();
+        Objects.BuiltElements.GridLine speckleGridLine = new();
 
         // convert from Archicad to Speckle data structure
         // Speckle base properties

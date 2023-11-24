@@ -9,7 +9,7 @@ public partial class ConverterAutocadCivil
 {
   private IAsteelObject FilerObjectToSpeckle(ASSlab slab, List<string> notes)
   {
-    AsteelSlab asteelSlab = new AsteelSlab();
+    AsteelSlab asteelSlab = new();
 
     SetDisplayValue(asteelSlab, slab);
 

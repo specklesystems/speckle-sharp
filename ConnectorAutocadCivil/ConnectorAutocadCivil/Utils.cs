@@ -441,7 +441,7 @@ public static class Utils
       {
         try
         {
-          using (RegAppTableRecord regAppRecord = new RegAppTableRecord())
+          using (RegAppTableRecord regAppRecord = new())
           {
             regAppRecord.Name = ApplicationIdKey;
             regAppTable.UpgradeOpen();
@@ -541,7 +541,7 @@ public static class Utils
       acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
 
       // Create a selection filter for the applicationID xdata entry and find all objs with this field
-      SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+      SelectionFilter acSelFtr = new(acTypValAr);
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
       var res = editor.SelectAll(acSelFtr);
 
@@ -709,7 +709,7 @@ public static class Utils
 
   public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
   {
-    ASObjectId idCadEntity = new ASObjectId(@object.ObjectId.OldIdPtr);
+    ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
     if (idFilerObject.IsNull())
       return null;

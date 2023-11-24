@@ -23,7 +23,7 @@ namespace Speckle.ConnectorDynamo.AccountsNode;
 public class Accounts : NodeModel
 {
   public string SelectedUserId = "";
-  private ObservableCollection<Core.Credentials.Account> _accountList = new ObservableCollection<Account>();
+  private ObservableCollection<Core.Credentials.Account> _accountList = new();
 
   /// <summary>
   /// UI Binding

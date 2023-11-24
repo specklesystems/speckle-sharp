@@ -26,7 +26,7 @@ public class CreateStream : NodeModel
 {
   private bool _createEnabled = true;
 
-  private ObservableCollection<Core.Credentials.Account> _accountList = new ObservableCollection<Account>();
+  private ObservableCollection<Core.Credentials.Account> _accountList = new();
 
   /// <summary>
   /// Current Stream

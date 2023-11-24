@@ -42,7 +42,7 @@ public static class ModelConverter
   {
     List<Speckle.Core.Models.Base> meshes = MeshesToSpeckle(meshModel).Cast<Speckle.Core.Models.Base>().ToList();
 
-    List<Line> lines = new List<Line>();
+    List<Line> lines = new();
     foreach (var edge in meshModel.edges)
     {
       if (edge.Value.polygonId1 == EdgeData.InvalidPolygonId && edge.Value.polygonId2 == EdgeData.InvalidPolygonId)

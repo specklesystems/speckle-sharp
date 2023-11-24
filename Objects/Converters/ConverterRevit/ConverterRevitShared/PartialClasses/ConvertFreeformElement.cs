@@ -202,7 +202,7 @@ public partial class ConverterRevit
 
     var famDoc = Doc.Application.NewFamilyDocument(templatePath);
 
-    using (DB.Transaction t = new DB.Transaction(famDoc, "Create Freeform Elements"))
+    using (DB.Transaction t = new(famDoc, "Create Freeform Elements"))
     {
       t.Start();
 

@@ -38,7 +38,7 @@ public static class StreamStateManager
       if (schema == null)
         return states;
 
-      ECQuery readWidget = new ECQuery(schema.GetClass(className));
+      ECQuery readWidget = new(schema.GetClass(className));
       readWidget.SelectClause.SelectAllProperties = true;
 
       using (DgnECInstanceCollection ecInstances = DgnECManager.Manager.FindInstances(scope, readWidget))
@@ -71,7 +71,7 @@ public static class StreamStateManager
     IECSchema schema = RetrieveSchema(File, scope);
     IECClass ecClass = schema.GetClass(className);
 
-    ECQuery readWidget = new ECQuery(ecClass);
+    ECQuery readWidget = new(ecClass);
     readWidget.SelectClause.SelectAllProperties = true;
 
     using (DgnECInstanceCollection instances = Manager.FindInstances(scope, readWidget))
@@ -90,9 +90,9 @@ public static class StreamStateManager
 
   private static ECSchema CreateSchema(DgnFile File)
   {
-    ECSchema newSchema = new ECSchema(schemaName, 1, 0, schemaName);
-    ECClass streamStateClass = new ECClass(className);
-    ECProperty streamDataProp = new ECProperty(propertyName, ECObjects.StringType);
+    ECSchema newSchema = new(schemaName, 1, 0, schemaName);
+    ECClass streamStateClass = new(className);
+    ECProperty streamDataProp = new(propertyName, ECObjects.StringType);
     streamStateClass.Add(streamDataProp);
     newSchema.AddClass(streamStateClass);
 

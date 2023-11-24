@@ -43,7 +43,7 @@ public abstract class ASBaseProperties<T> : IASProperties where T : class
   /// <param name="unitType"></param>
   protected void InsertCustomProperty(Dictionary<string, ASProperty> dictionary, string description, string methodInfoGet, string methodInfoSet, eUnitType? unitType = null)
   {
-    ASPropertyMethods propertyMethods = new ASPropertyMethods(this.GetType(), methodInfoGet, methodInfoSet);
+    ASPropertyMethods propertyMethods = new(this.GetType(), methodInfoGet, methodInfoSet);
     dictionary.Add(description, new ASProperty(ObjectType, description, propertyMethods, unitType));
   }
 

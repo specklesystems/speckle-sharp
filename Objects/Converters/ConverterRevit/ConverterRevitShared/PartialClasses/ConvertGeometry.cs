@@ -317,7 +317,7 @@ public partial class ConverterRevit
       points.AddRange(new List<double> { point.x, point.y, point.z });
     }
 
-    Curve speckleCurve = new Curve();
+    Curve speckleCurve = new();
     speckleCurve.weights = revitCurve.Weights.Cast<double>().ToList();
     speckleCurve.points = points;
     speckleCurve.knots = revitCurve.Knots.Cast<double>().ToList();
@@ -389,7 +389,7 @@ public partial class ConverterRevit
 
   public CurveArray CurveToNative(List<ICurve> crvs)
   {
-    CurveArray crvsArray = new CurveArray();
+    CurveArray crvsArray = new();
     foreach (var crv in crvs)
     {
       var crvEnumerator = CurveToNative(crv).GetEnumerator();
@@ -407,7 +407,7 @@ public partial class ConverterRevit
   /// <returns></returns>
   public CurveArray CurveToNative(ICurve crv, bool splitIfClosed = false)
   {
-    CurveArray curveArray = new CurveArray();
+    CurveArray curveArray = new();
     switch (crv)
     {
       case Line line:

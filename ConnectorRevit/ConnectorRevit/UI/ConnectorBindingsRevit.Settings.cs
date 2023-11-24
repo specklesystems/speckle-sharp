@@ -35,9 +35,9 @@ public partial class ConnectorBindingsRevit
 
   public override List<ISetting> GetSettings()
   {
-    List<string> referencePoints = new List<string>() { InternalOrigin };
-    List<string> prettyMeshOptions = new List<string>() { defaultValue, dxf, familyDxf };
-    List<string> mappingOptions = new List<string>() { noMapping, everyReceive, forNewTypes };
+    List<string> referencePoints = new() { InternalOrigin };
+    List<string> prettyMeshOptions = new() { defaultValue, dxf, familyDxf };
+    List<string> mappingOptions = new() { noMapping, everyReceive, forNewTypes };
 
     // find project base point and survey point. these don't always have name props, so store them under custom strings
     var basePoint = new FilteredElementCollector(CurrentDoc.Document)

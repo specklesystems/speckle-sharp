@@ -29,7 +29,7 @@ public partial class ConnectorBindingsRevit
       await APIContext
         .Run(app =>
         {
-          using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
+          using (Transaction t = new(CurrentDoc.Document, "Speckle Write State"))
           {
             t.Start();
             StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);

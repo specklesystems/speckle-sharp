@@ -7,8 +7,8 @@ namespace StructuralUtilities.PolygonMesher;
 
 internal class ClosedLoop
 {
-  public List<Vertex> Vertices = new List<Vertex>();
-  public Dictionary<IndexPair, Line2D> IndexedLines = new Dictionary<IndexPair, Line2D>();
+  public List<Vertex> Vertices = new();
+  public Dictionary<IndexPair, Line2D> IndexedLines = new();
   public int WindingDirection;
   public CoordinateSystem CoordinateTranslation;
 

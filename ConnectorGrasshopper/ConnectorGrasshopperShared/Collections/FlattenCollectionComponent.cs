@@ -20,7 +20,7 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
       "Collections"
     ) { }
 
-  public override Guid ComponentGuid => new Guid("9E1F4A6B-201C-4E91-AFC2-5F28031E97C1");
+  public override Guid ComponentGuid => new("9E1F4A6B-201C-4E91-AFC2-5F28031E97C1");
   protected override Bitmap Icon => Properties.Resources.FlattenSpeckleCollection;
 
   protected override void RegisterInputParams(GH_InputParamManager pManager)

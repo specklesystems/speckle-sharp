@@ -46,7 +46,7 @@ public partial class ConverterRevit
 
     var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
-    List<string> joinSettings = new List<string>();
+    List<string> joinSettings = new();
 
     if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
       joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
@@ -175,7 +175,7 @@ public partial class ConverterRevit
     if (baseGeometry is Geometry.Point)
       return RevitElementToSpeckle(revitWall, out notes);
 
-    RevitWall speckleWall = new RevitWall();
+    RevitWall speckleWall = new();
     speckleWall.family = revitWall.WallType.FamilyName.ToString();
     speckleWall.type = revitWall.WallType.Name;
     speckleWall.baseLine = (ICurve)baseGeometry;
@@ -264,7 +264,7 @@ public partial class ConverterRevit
   //this is to prevent duplicated panels & mullions from being sent in curtain walls
   //might need improvement in the future
   //see https://github.com/specklesystems/speckle-sharp/issues/1197
-  private List<ElementId> SubelementIds = new List<ElementId>();
+  private List<ElementId> SubelementIds = new();
 
   private void GetWallVoids(Base speckleElement, Wall wall)
   {

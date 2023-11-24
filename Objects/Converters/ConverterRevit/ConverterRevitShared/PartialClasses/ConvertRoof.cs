@@ -107,7 +107,7 @@ public partial class ConverterRevit
       }
       case RevitFootprintRoof speckleFootprintRoof:
       {
-        ModelCurveArray curveArray = new ModelCurveArray();
+        ModelCurveArray curveArray = new();
         var revitFootprintRoof = Doc.Create.NewFootPrintRoof(roofCurve, level, roofType, out curveArray);
 
         // if the roof is a curtain roof then set the mullions at the borders

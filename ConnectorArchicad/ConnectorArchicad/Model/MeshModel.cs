@@ -22,7 +22,7 @@ public sealed class MeshModel
   {
     public override void WriteJson(JsonWriter writer, Dictionary<EdgeId, EdgeData> value, JsonSerializer serializer)
     {
-      StringBuilder jsonString = new StringBuilder();
+      StringBuilder jsonString = new();
       jsonString.Append("[");
 
       bool first = true;
@@ -73,7 +73,7 @@ public sealed class MeshModel
       JsonSerializer serializer
     )
     {
-      Dictionary<EdgeId, EdgeData> edges = new Dictionary<EdgeId, EdgeData>();
+      Dictionary<EdgeId, EdgeData> edges = new();
 
       JArray ja = JArray.Load(reader);
 
@@ -97,7 +97,7 @@ public sealed class MeshModel
         if (v1 == null || v2 == null || s == null)
           continue;
 
-        EdgeId edgeId = new EdgeId(((int)v1), ((int)v2));
+        EdgeId edgeId = new(((int)v1), ((int)v2));
 
         MeshModel.EdgeStatus edgeStatus = MeshModel.EdgeStatus.HiddenEdge;
         if (((string)s).Equals("SmoothEdge"))
@@ -105,11 +105,12 @@ public sealed class MeshModel
         else if (((string)s).Equals("VisibleEdge"))
           edgeStatus = MeshModel.EdgeStatus.VisibleEdge;
 
-        EdgeData edgeData = new EdgeData(
-          edgeStatus,
-          p1 != null ? ((int)p1) : MeshModel.EdgeData.InvalidPolygonId,
-          p2 != null ? ((int)p2) : MeshModel.EdgeData.InvalidPolygonId
-        );
+        EdgeData edgeData =
+          new(
+            edgeStatus,
+            p1 != null ? ((int)p1) : MeshModel.EdgeData.InvalidPolygonId,
+            p2 != null ? ((int)p2) : MeshModel.EdgeData.InvalidPolygonId
+          );
 
         edges.Add(edgeId, edgeData);
       }

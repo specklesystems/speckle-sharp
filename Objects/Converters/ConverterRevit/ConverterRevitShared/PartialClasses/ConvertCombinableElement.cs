@@ -12,7 +12,7 @@ public partial class ConverterRevit
   {
     var cat = ((BuiltInCategory)combinableElement.Document.OwnerFamily.FamilyCategoryId.IntegerValue).ToString();
 
-    Options options = new Options();
+    Options options = new();
     if (combinableElement is GenericForm gf && gf.Combinations.Size != 0)
     {
       //for receive and convert to native
@@ -49,7 +49,7 @@ public partial class ConverterRevit
       || (combinableElement is GenericForm genericForm && genericForm.Combinations.Size == 0)
     )
     {
-      List<Base> displayValue = new List<Base>();
+      List<Base> displayValue = new();
       foreach (Base geo in geometries)
       {
         switch (geo["displayValue"])

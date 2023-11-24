@@ -207,12 +207,13 @@ public partial class ConverterRevit
 
   public Network NetworkToSpeckle(Element mepElement, out List<string> notes)
   {
-    Network speckleNetwork = new Network()
-    {
-      name = mepElement.Name,
-      elements = new List<NetworkElement>(),
-      links = new List<NetworkLink>()
-    };
+    Network speckleNetwork =
+      new()
+      {
+        name = mepElement.Name,
+        elements = new List<NetworkElement>(),
+        links = new List<NetworkLink>()
+      };
 
     GetNetworkElements(speckleNetwork, mepElement, out notes);
 

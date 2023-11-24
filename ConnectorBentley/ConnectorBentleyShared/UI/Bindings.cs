@@ -42,7 +42,7 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
   public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 #if (OPENROADS || OPENRAIL)
   public GeometricModel GeomModel { get; private set; }
-  public List<string> civilElementKeys => new List<string> { "Alignment" };
+  public List<string> civilElementKeys => new() { "Alignment" };
 #endif
 
 #if (OPENBUILDINGS)
@@ -380,7 +380,7 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     bool foundConvertibleMember = false
   )
   {
-    List<Base> objects = new List<Base>();
+    List<Base> objects = new();
 
     if (obj is Base @base)
     {

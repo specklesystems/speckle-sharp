@@ -204,7 +204,7 @@ public partial class ConverterRevit
   {
     var famDoc = Doc.Application.NewFamilyDocument(famPath);
 
-    using (Transaction t = new Transaction(famDoc, "Create Mass"))
+    using (Transaction t = new(famDoc, "Create Mass"))
     {
       t.Start();
 
@@ -236,7 +236,7 @@ public partial class ConverterRevit
     }
     var famName = "SpeckleMass_" + name;
     string tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
-    SaveAsOptions so = new SaveAsOptions();
+    SaveAsOptions so = new();
     so.OverwriteExistingFile = true;
     famDoc.SaveAs(tempFamilyPath, so);
     famDoc.Close();

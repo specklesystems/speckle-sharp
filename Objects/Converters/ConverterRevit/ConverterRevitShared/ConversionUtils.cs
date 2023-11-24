@@ -713,7 +713,7 @@ public partial class ConverterRevit
     }
   }
 
-  private Dictionary<string, DB.Transform> _docTransforms = new Dictionary<string, DB.Transform>();
+  private Dictionary<string, DB.Transform> _docTransforms = new();
 
   private DB.Transform GetDocReferencePointTransform(Document doc)
   {
@@ -1029,16 +1029,17 @@ public partial class ConverterRevit
   {
     if (revitMaterial == null)
       return null;
-    RenderMaterial material = new RenderMaterial()
-    {
-      name = revitMaterial.Name,
-      opacity = 1 - (revitMaterial.Transparency / 100d),
-      //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
-      //roughness = 1 - (revitMaterial.Smoothness / 100d),
-      diffuse = System.Drawing.Color
-        .FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue)
-        .ToArgb()
-    };
+    RenderMaterial material =
+      new()
+      {
+        name = revitMaterial.Name,
+        opacity = 1 - (revitMaterial.Transparency / 100d),
+        //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
+        //roughness = 1 - (revitMaterial.Smoothness / 100d),
+        diffuse = System.Drawing.Color
+          .FromArgb(revitMaterial.Color.Red, revitMaterial.Color.Green, revitMaterial.Color.Blue)
+          .ToArgb()
+      };
 
     return material;
   }

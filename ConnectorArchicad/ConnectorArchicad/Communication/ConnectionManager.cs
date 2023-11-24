@@ -37,11 +37,7 @@ internal class ConnectionManager
       throw new System.Exception("Connection is not started!");
     }
 
-    HttpRequestMessage requestMessage = new HttpRequestMessage
-    {
-      Method = HttpMethod.Post,
-      Content = new StringContent(message)
-    };
+    HttpRequestMessage requestMessage = new() { Method = HttpMethod.Post, Content = new StringContent(message) };
     HttpResponseMessage responseMessage = await HttpClient.SendAsync(requestMessage);
     return await responseMessage.Content.ReadAsStringAsync();
   }

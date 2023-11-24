@@ -19,15 +19,14 @@ public partial class SpeckleDxfConverter
   public Dxf.Vector3 VectorToNative(Point pt) => VectorToNative(new Vector(pt) { units = pt.units });
 
   public Dxf.Vector3 VectorToNative(Vector pt) =>
-    new Dxf.Vector3(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+    new(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
 
-  public Dxf.Entities.Point PointToNative(Point pt) => new Dxf.Entities.Point(VectorToNative(pt));
+  public Dxf.Entities.Point PointToNative(Point pt) => new(VectorToNative(pt));
 
-  public Dxf.Entities.Line LineToNative(Line line) =>
-    new Dxf.Entities.Line(VectorToNative(line.start), VectorToNative(line.end));
+  public Dxf.Entities.Line LineToNative(Line line) => new(VectorToNative(line.start), VectorToNative(line.end));
 
   public Dxfe.Mesh MeshToNative(Mesh mesh) =>
-    new Dxfe.Mesh(mesh.GetPoints().Select(VectorToNative), mesh.GetFaceIndices())
+    new(mesh.GetPoints().Select(VectorToNative), mesh.GetFaceIndices())
     {
       Color = MaterialToNativeColor(mesh["renderMaterial"] as RenderMaterial)
     };

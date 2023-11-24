@@ -17,7 +17,7 @@ public partial class ConverterRevit
 {
   public Objects.Geometry.Line GetBottomLine(List<Node> nodes)
   {
-    Objects.Geometry.Line baseLine = new Objects.Geometry.Line();
+    Objects.Geometry.Line baseLine = new();
     double lowest_elv = nodes.Min(nodes => nodes.basePoint.z);
     List<Node> nodes1 = nodes.FindAll(node => node.basePoint.z.Equals(lowest_elv));
     if (nodes1.Count == 2)
@@ -32,21 +32,21 @@ public partial class ConverterRevit
 
   public Objects.Geometry.Polycurve PolycurveFromTopology(List<Node> nodes)
   {
-    Polycurve polycurve = new Polycurve();
+    Polycurve polycurve = new();
     foreach (int index in Enumerable.Range(0, nodes.Count))
     {
       if (index == nodes.Count - 1)
       {
         var point1 = nodes[index].basePoint;
         var point2 = nodes[0].basePoint;
-        Geometry.Line segment = new Geometry.Line(point1, point2, point1.units);
+        Geometry.Line segment = new(point1, point2, point1.units);
         polycurve.segments.Add(segment);
       }
       else
       {
         var point1 = nodes[index].basePoint;
         var point2 = nodes[index + 1].basePoint;
-        Geometry.Line segment = new Geometry.Line(point1, point2, point1.units);
+        Geometry.Line segment = new(point1, point2, point1.units);
         polycurve.segments.Add(segment);
       }
     }

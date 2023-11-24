@@ -14,7 +14,7 @@ public partial class ConverterRevit
   /// <summary>
   /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
   /// </summary>
-  private Dictionary<string, GraphicsStyle> _graphicStyleCache = new Dictionary<string, GraphicsStyle>();
+  private Dictionary<string, GraphicsStyle> _graphicStyleCache = new();
 
   /// <summary>
   /// Retreives the meshes on an element to use as the speckle displayvalue
@@ -262,7 +262,7 @@ public partial class ConverterRevit
     bool doNotTransformWithReferencePoint = false
   )
   {
-    MeshBuildHelper buildHelper = new MeshBuildHelper();
+    MeshBuildHelper buildHelper = new();
 
     foreach (var mesh in meshes)
     {
@@ -286,7 +286,7 @@ public partial class ConverterRevit
     bool doNotTransformWithReferencePoint = false
   )
   {
-    MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
+    MeshBuildHelper meshBuildHelper = new();
 
     var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
     foreach (Solid solid in solids)

@@ -21,7 +21,7 @@ public partial class ConverterBentley
 
   private static GridLine CreateGridLine(ICurve baseLine, string label, string units)
   {
-    GridLine gridLine = new GridLine();
+    GridLine gridLine = new();
     gridLine.baseLine = baseLine;
     gridLine.label = label;
     gridLine.units = units;
@@ -44,7 +44,7 @@ public partial class ConverterBentley
   {
     double sin = Math.Sin(angle);
     double cos = Math.Cos(angle);
-    Point p = new Point(cos * point.x - sin * point.y, sin * point.x + cos * point.y);
+    Point p = new(cos * point.x - sin * point.y, sin * point.x + cos * point.y);
     p.units = point.units;
     return p;
   }
@@ -53,27 +53,27 @@ public partial class ConverterBentley
   {
     double sin = Math.Sin(angle);
     double cos = Math.Cos(angle);
-    Vector v = new Vector(cos * vector.x - sin * vector.y, sin * vector.x + cos * vector.y, vector.units);
+    Vector v = new(cos * vector.x - sin * vector.y, sin * vector.x + cos * vector.y, vector.units);
     return v;
   }
 
   private static Point Translate(Point point, double deltaX, double deltaY)
   {
-    Point p = new Point(point.x + deltaX, point.y + deltaY);
+    Point p = new(point.x + deltaX, point.y + deltaY);
     p.units = point.units;
     return p;
   }
 
   private static Vector Translate(Vector vector, double deltaX, double deltaY)
   {
-    Vector v = new Vector(vector.x + deltaX, vector.y + deltaY, vector.units);
+    Vector v = new(vector.x + deltaX, vector.y + deltaY, vector.units);
     return v;
   }
 
   public Base GridSystemsToSpeckle(ITFDrawingGrid drawingGrid, string units = null)
   {
-    Base container = new Base();
-    List<Base> gridLines = new List<Base>();
+    Base container = new();
+    List<Base> gridLines = new();
     container["Grid Lines"] = gridLines;
 
     drawingGrid.GetGridSystems(0, out ITFGridSystemList gridSystems);
@@ -101,7 +101,7 @@ public partial class ConverterBentley
       double maximumRadius = 0;
       double maximumCircularAngle = 0;
 
-      List<ITFGridCurve> gridCurveList = new List<ITFGridCurve>();
+      List<ITFGridCurve> gridCurveList = new();
       for (ITFGridCurve gridCurve = curves.AsTFGridCurve; gridCurve != null; curves.GetNext("", out curves), gridCurve = curves != null ? curves.AsTFGridCurve : null)
       {
         gridCurveList.Add(gridCurve);
@@ -201,7 +201,7 @@ public partial class ConverterBentley
             break;
 
           case TFdGridCurveType.TFdGridCurveType_Circular:
-            Plane xy = new Plane(new Point(origin.X, origin.Y, 0, u), new Vector(0, 0, 1, u), new Vector(1, 0, 0, u), new Vector(0, 1, 0, u), u);
+            Plane xy = new(new Point(origin.X, origin.Y, 0, u), new Vector(0, 0, 1, u), new Vector(1, 0, 0, u), new Vector(0, 1, 0, u), u);
             baseLine = new Arc(xy, gridValue, angle, maximumCircularAngle + angle, maximumCircularAngle, u);
             break;
 
@@ -237,7 +237,7 @@ public partial class ConverterBentley
       Point midPoint = Translate(Rotate(arc.midPoint, angle), origin.X, origin.Y);
       Point endPoint = Translate(Rotate(arc.endPoint, angle), origin.X, origin.Y);
       Plane plane = TransformPlane(arc.plane, origin, angle);
-      Arc transformed = new Arc(plane, (double)arc.radius, (double)arc.startAngle + angle + Math.PI * 2, (double)arc.endAngle + angle + Math.PI * 2, (double)arc.angleRadians, arc.units);
+      Arc transformed = new(plane, (double)arc.radius, (double)arc.startAngle + angle + Math.PI * 2, (double)arc.endAngle + angle + Math.PI * 2, (double)arc.angleRadians, arc.units);
       transformed.startPoint = startPoint;
       transformed.midPoint = midPoint;
       transformed.endPoint = endPoint;

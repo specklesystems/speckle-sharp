@@ -11,21 +11,19 @@ internal static class HttpCommandExecutor
 
   private static string SerializeRequest<TRequest>(TRequest request)
   {
-    JsonSerializerSettings settings = new JsonSerializerSettings
-    {
-      NullValueHandling = NullValueHandling.Ignore,
-      Context = new StreamingContext(StreamingContextStates.Remoting)
-    };
+    JsonSerializerSettings settings =
+      new()
+      {
+        NullValueHandling = NullValueHandling.Ignore,
+        Context = new StreamingContext(StreamingContextStates.Remoting)
+      };
 
     return JsonConvert.SerializeObject(request, settings);
   }
 
   private static TResponse DeserializeResponse<TResponse>(string obj)
   {
-    JsonSerializerSettings settings = new JsonSerializerSettings
-    {
-      Context = new StreamingContext(StreamingContextStates.Remoting)
-    };
+    JsonSerializerSettings settings = new() { Context = new StreamingContext(StreamingContextStates.Remoting) };
 
     return JsonConvert.DeserializeObject<TResponse>(obj, settings);
   }
@@ -44,7 +42,7 @@ internal static class HttpCommandExecutor
     {
       bool log = false;
 
-      AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
+      AddOnCommandRequest<TParameters> request = new(commandName, parameters);
 
       string requestMsg = SerializeRequest(request);
 

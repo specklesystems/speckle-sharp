@@ -27,8 +27,8 @@ public partial class ConverterTeklaStructures
         case TeklaBeamType.Beam:
           if (!(beam.baseLine is Line)) { }
           Line line = (Line)beam.baseLine;
-          TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
-          TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+          TSG.Point startPoint = new(line.start.x, line.start.y, line.start.z);
+          TSG.Point endPoint = new(line.end.x, line.end.y, line.end.z);
           var myBeam = new Beam(startPoint, endPoint);
           SetPartProperties(myBeam, teklaBeam);
           if (!IsProfileValid(myBeam.Profile.ProfileString))
@@ -98,8 +98,8 @@ public partial class ConverterTeklaStructures
     {
       if (!(beam.baseLine is Line)) { }
       Line line = (Line)beam.baseLine;
-      TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
-      TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+      TSG.Point startPoint = new(line.start.x, line.start.y, line.start.z);
+      TSG.Point endPoint = new(line.end.x, line.end.y, line.end.z);
       var myBeam = new Beam(startPoint, endPoint);
       myBeam.Insert();
       //Model.CommitChanges();
@@ -170,8 +170,8 @@ public partial class ConverterTeklaStructures
     //{
     if (!(column.baseLine is Line)) { }
     Line line = (Line)column.baseLine;
-    TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
-    TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
+    TSG.Point startPoint = new(line.start.x, line.start.y, line.start.z);
+    TSG.Point endPoint = new(line.end.x, line.end.y, line.end.z);
     var myBeam = new Beam(startPoint, endPoint);
     myBeam.Insert();
     //Model.CommitChanges();
@@ -197,8 +197,8 @@ public partial class ConverterTeklaStructures
     var startPoint = beam.StartPoint;
     var units = GetUnitsFromModel();
 
-    Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
-    Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+    Point speckleStartPoint = new(startPoint.X, startPoint.Y, startPoint.Z, units);
+    Point speckleEndPoint = new(endPoint.X, endPoint.Y, endPoint.Z, units);
     speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
     speckleBeam.baseLine.length = Math.Sqrt(
       Math.Pow((startPoint.X - endPoint.X), 2)
@@ -255,8 +255,8 @@ public partial class ConverterTeklaStructures
     var startPoint = beam.StartPoint;
     var units = GetUnitsFromModel();
 
-    Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
-    Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
+    Point speckleStartPoint = new(startPoint.X, startPoint.Y, startPoint.Z, units);
+    Point speckleEndPoint = new(endPoint.X, endPoint.Y, endPoint.Z, units);
     speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
     speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);

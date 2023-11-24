@@ -48,7 +48,7 @@ public partial class ConverterCSI
     );
 
     var gridlines = new List<GridLine> { };
-    CSIGridLines speckleGridLines = new CSIGridLines();
+    CSIGridLines speckleGridLines = new();
     speckleGridLines.gridLines = gridlines;
 
     if (GridSysType == "Cartesian")

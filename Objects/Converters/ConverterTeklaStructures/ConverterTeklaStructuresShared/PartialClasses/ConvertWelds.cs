@@ -21,7 +21,7 @@ public partial class ConverterTeklaStructures
     if (welds is BE.TeklaStructures.PolygonWelds)
     {
       var polygonWeld = welds as BE.TeklaStructures.PolygonWelds;
-      PolygonWeld teklaPolyWeld = new PolygonWeld();
+      PolygonWeld teklaPolyWeld = new();
       SetWeldProperties(teklaPolyWeld, polygonWeld);
       teklaPolyWeld.MainObject = Model.SelectModelObject(new Tekla.Structures.Identifier(polygonWeld.mainObjectId));
       teklaPolyWeld.SecondaryObject = Model.SelectModelObject(
@@ -37,7 +37,7 @@ public partial class ConverterTeklaStructures
     }
     else
     {
-      Weld teklaWeld = new Weld();
+      Weld teklaWeld = new();
       SetWeldProperties(teklaWeld, welds);
       teklaWeld.MainObject = Model.SelectModelObject(new Tekla.Structures.Identifier(welds.mainObjectId));
       teklaWeld.SecondaryObject = Model.SelectModelObject(new Tekla.Structures.Identifier(welds.secondaryObjectId));

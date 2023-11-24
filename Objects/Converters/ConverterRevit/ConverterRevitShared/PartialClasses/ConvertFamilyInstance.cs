@@ -293,7 +293,7 @@ public partial class ConverterRevit
       {
         Doc.Regenerate();
 
-        Options op = new Options();
+        Options op = new();
         op.ComputeReferences = true;
         GeometryElement geomElement = el.get_Geometry(op);
         Reference faceRef = null;
@@ -301,7 +301,7 @@ public partial class ConverterRevit
 
         GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
 
-        XYZ norm = new XYZ(0, 0, 0);
+        XYZ norm = new(0, 0, 0);
         familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
 
         // parameters
@@ -469,9 +469,9 @@ public partial class ConverterRevit
     var t = new XYZ(tX, tY, tZ);
 
     // basis vectors
-    XYZ vX = new XYZ(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
-    XYZ vY = new XYZ(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
-    XYZ vZ = new XYZ(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
+    XYZ vX = new(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
+    XYZ vY = new(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
+    XYZ vZ = new(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
 
     // apply to new transform
     _transform.Origin = t;
@@ -586,7 +586,7 @@ public partial class ConverterRevit
           break;
 
         case FamilyPlacementType.WorkPlaneBased when CurrentHostElement != null:
-          Options op = new Options() { ComputeReferences = true };
+          Options op = new() { ComputeReferences = true };
           GeometryElement geomElement = CurrentHostElement.get_Geometry(op);
           if (geomElement == null)
           {
@@ -603,7 +603,7 @@ public partial class ConverterRevit
           Reference faceRef = null;
           var planeDist = double.MaxValue;
           GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
-          XYZ norm = new XYZ(0, 0, 0);
+          XYZ norm = new(0, 0, 0);
           try
           {
             familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);

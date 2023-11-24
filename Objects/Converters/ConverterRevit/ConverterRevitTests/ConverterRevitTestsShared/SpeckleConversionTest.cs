@@ -27,7 +27,7 @@ public class SpeckleConversionTest
 
   internal async Task NativeToSpeckle()
   {
-    ConverterRevit converter = new ConverterRevit();
+    ConverterRevit converter = new();
     converter.SetContextDocument(fixture.SourceDoc);
     converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
 
@@ -105,7 +105,7 @@ public class SpeckleConversionTest
       }
     }
 
-    ConverterRevit converter = new ConverterRevit();
+    ConverterRevit converter = new();
     converter.SetContextDocument(doc);
     converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
     //setting context objects for nested routine
@@ -265,7 +265,7 @@ public class SpeckleConversionTest
 
   internal async Task SelectionToNative<T>(Action<T, T> assert, Func<T, T, Task> assertAsync = null)
   {
-    ConverterRevit converter = new ConverterRevit();
+    ConverterRevit converter = new();
     converter.SetContextDocument(fixture.SourceDoc);
     converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
     var spkElems = fixture.Selection.Select(x => converter.ConvertToSpeckle(x) as Base).ToList();

@@ -15,7 +15,7 @@ public class MainAliasProperties : ASBaseProperties<MainAlias>, IASProperties
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "numbering - fabrication station", nameof(MainAlias.FabricationStationUsedForNumbering));
     InsertProperty(dictionary, "load number", nameof(MainAlias.LoadNumber));

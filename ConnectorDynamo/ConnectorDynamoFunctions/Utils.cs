@@ -136,7 +136,7 @@ public static class Utils
       var s = input as string;
       if (!string.IsNullOrEmpty(s))
       {
-        return new List<StreamWrapper> { new StreamWrapper(s) };
+        return new List<StreamWrapper> { new(s) };
       }
     }
     catch

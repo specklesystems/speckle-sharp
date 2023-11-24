@@ -13,8 +13,7 @@ namespace Speckle.ConnectorDynamo.Functions;
 [IsVisibleInDynamoLibrary(false)]
 public static class InMemoryCache
 {
-  private static Dictionary<string, Dictionary<string, object>> _cache =
-    new Dictionary<string, Dictionary<string, object>>();
+  private static Dictionary<string, Dictionary<string, object>> _cache = new();
 
   public static Dictionary<string, object> Get(string id)
   {

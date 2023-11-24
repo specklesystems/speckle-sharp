@@ -338,7 +338,7 @@ public partial class ConverterRevit
     // We draw lines from the Origin to each Point and use the Plane this one spans up.
     else
     {
-      CurveArray curves = new CurveArray();
+      CurveArray curves = new();
       curves.Append(curve);
       curves.Append(DB.Line.CreateBound(new XYZ(0, 0, 0), startPoint));
       curves.Append(DB.Line.CreateBound(endPoint, new XYZ(0, 0, 0)));

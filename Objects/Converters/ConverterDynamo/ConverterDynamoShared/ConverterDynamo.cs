@@ -58,7 +58,7 @@ public partial class ConverterDynamo : ISpeckleConverter
 
   public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
-  public ProgressReport Report => new ProgressReport();
+  public ProgressReport Report => new();
 
   public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 

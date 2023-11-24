@@ -38,13 +38,14 @@ public sealed class Floor : IConverter
             break;
           case Objects.BuiltElements.Floor floor:
 
-            Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
-            {
-              id = floor.id,
-              applicationId = floor.applicationId,
-              archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
-              shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
-            };
+            Objects.BuiltElements.Archicad.ArchicadFloor newFloor =
+              new()
+              {
+                id = floor.id,
+                applicationId = floor.applicationId,
+                archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
+                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
+              };
 
             floors.Add(newFloor);
             break;

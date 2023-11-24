@@ -246,7 +246,7 @@ public partial class ConverterRevit
     var speckleAc = new DirectShape(revitAc.Name, category, geometries);
 
     //Find display values in geometries
-    List<Base> displayValue = new List<Base>();
+    List<Base> displayValue = new();
     foreach (Base geo in geometries)
     {
       switch (geo["displayValue"])

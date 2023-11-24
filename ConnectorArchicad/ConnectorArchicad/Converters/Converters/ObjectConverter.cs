@@ -30,7 +30,7 @@ public sealed class Object : IConverter
 
   static List<Mesh> GetMesh(Base element)
   {
-    List<Mesh> meshes = new List<Mesh>();
+    List<Mesh> meshes = new();
     if (element is Mesh mesh)
       meshes.Add(mesh);
 
@@ -68,7 +68,7 @@ public sealed class Object : IConverter
   {
     IEnumerable<string> AllAliases(Base @base)
     {
-      List<string> membersToTraverse = new List<string>();
+      List<string> membersToTraverse = new();
 
       // hosted elements traversals
       {

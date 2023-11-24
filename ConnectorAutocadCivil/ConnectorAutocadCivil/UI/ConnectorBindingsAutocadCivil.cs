@@ -22,12 +22,12 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   /// <summary>
   /// Stored Base objects from commit flattening on receive: key is the Base id
   /// </summary>
-  public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+  public Dictionary<string, Base> StoredObjects = new();
 
   /// <summary>
   /// Stored document line types used for baking objects on receive
   /// </summary>
-  public Dictionary<string, ObjectId> LineTypeDictionary = new Dictionary<string, ObjectId>();
+  public Dictionary<string, ObjectId> LineTypeDictionary = new();
 
   public List<string> GetLayers()
   {
@@ -112,7 +112,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
   public override List<ISetting> GetSettings()
   {
-    List<string> referencePoints = new List<string>() { InternalOrigin };
+    List<string> referencePoints = new() { InternalOrigin };
 
     // add the current UCS if it exists
     if (Doc.Editor.CurrentUserCoordinateSystem != null)

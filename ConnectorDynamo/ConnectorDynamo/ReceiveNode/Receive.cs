@@ -45,7 +45,7 @@ public class Receive : NodeModel
   private CancellationTokenSource _cancellationToken;
   private Client _client;
 
-  private List<Exception> _errors = new List<Exception>();
+  private List<Exception> _errors = new();
 
   private Client Client
   {

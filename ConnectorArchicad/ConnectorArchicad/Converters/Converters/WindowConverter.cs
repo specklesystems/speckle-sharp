@@ -64,7 +64,7 @@ public sealed class Window : IConverter
       new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId))
     );
 
-    List<Base> openings = new List<Base>();
+    List<Base> openings = new();
     if (data is null)
       return openings;
 

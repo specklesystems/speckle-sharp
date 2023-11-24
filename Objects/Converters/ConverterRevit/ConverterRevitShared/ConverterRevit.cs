@@ -209,7 +209,7 @@ public partial class ConverterRevit : ISpeckleConverter
   public Base ConvertToSpeckle(object @object)
   {
     Base returnObject = null;
-    List<string> notes = new List<string>();
+    List<string> notes = new();
     string id = @object is Element element ? element.UniqueId : string.Empty;
 
     switch (@object)

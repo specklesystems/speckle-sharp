@@ -36,7 +36,7 @@ public class SpeckleRevitCommand : IExternalCommand
 
   private static Panel _panel { get; set; }
 
-  internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
+  internal static DockablePaneId PanelId = new(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
 
   public static void InitAvalonia()
   {
@@ -103,7 +103,7 @@ public class SpeckleRevitCommand : IExternalCommand
       //could maybe show the old window?
       if (!created && App.AppInstance.Application.Documents.Size > 0)
       {
-        TaskDialog mainDialog = new TaskDialog("Dockable Panel Issue");
+        TaskDialog mainDialog = new("Dockable Panel Issue");
         mainDialog.MainInstruction = "Dockable Panel Issue";
         mainDialog.MainContent =
           "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "

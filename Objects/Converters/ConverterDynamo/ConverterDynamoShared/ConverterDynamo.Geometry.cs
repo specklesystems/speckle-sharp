@@ -473,7 +473,7 @@ public partial class ConverterDynamo
     }
     else
     {
-      Polycurve spkPolycurve = new Polycurve(u);
+      Polycurve spkPolycurve = new(u);
       CopyProperties(spkPolycurve, polycurve);
 
       spkPolycurve.segments = polycurve.Curves().Select(c => (ICurve)CurveToSpeckle(c, u)).ToList();
@@ -627,10 +627,10 @@ public partial class ConverterDynamo
       polylineCoordinates.AddRange(PointToArray(curves.Last().EndPoint));
       curves.ForEach(c => c.Dispose());
 
-      Polyline displayValue = new Polyline(polylineCoordinates, u);
+      Polyline displayValue = new(polylineCoordinates, u);
       List<double> dsKnots = curve.Knots().ToList();
 
-      Curve spkCurve = new Curve(displayValue, u);
+      Curve spkCurve = new(displayValue, u);
       spkCurve.weights = curve.Weights().ToList();
       spkCurve.points = PointListToFlatList(curve.ControlPoints());
       spkCurve.knots = dsKnots;

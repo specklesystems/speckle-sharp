@@ -70,7 +70,7 @@ public partial class ConverterAutocadCivil
 {
   public static string invalidAutocadChars = @"<>/\:;""?*|=,‘";
 
-  private Dictionary<string, ObjectId> _lineTypeDictionary = new Dictionary<string, ObjectId>();
+  private Dictionary<string, ObjectId> _lineTypeDictionary = new();
   public Dictionary<string, ObjectId> LineTypeDictionary
   {
     get
@@ -145,7 +145,7 @@ public partial class ConverterAutocadCivil
     acTypValAr.SetValue(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), 0);
 
     // Create a selection filter for the applicationID xdata entry and find all objs with this field
-    SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
+    SelectionFilter acSelFtr = new(acTypValAr);
     var res = Doc.Editor.SelectAll(acSelFtr);
     if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
       return ids;

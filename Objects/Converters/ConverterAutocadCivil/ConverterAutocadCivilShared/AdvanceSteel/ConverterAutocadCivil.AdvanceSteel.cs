@@ -168,8 +168,8 @@ public partial class ConverterAutocadCivil
 
     IEnumerable<Point3D> vertices = verticesAS.Select(x => PointToMath(x));
 
-    List<double> vertexList = new List<double> { };
-    List<int> facesList = new List<int> { };
+    List<double> vertexList = new() { };
+    List<int> facesList = new() { };
 
     foreach (var faceInfo in facesInfo)
     {
@@ -207,7 +207,7 @@ public partial class ConverterAutocadCivil
       facesList.AddRange(GetFaceVertices(triangleMesh.Triangles, faceIndexOffset));
     }
 
-    Mesh mesh = new Mesh(vertexList, facesList, units: ModelUnits);
+    Mesh mesh = new(vertexList, facesList, units: ModelUnits);
     mesh.bbox = BoxToSpeckle(extents);
 
     return mesh;
@@ -253,14 +253,14 @@ public partial class ConverterAutocadCivil
     UnitVector3D vectorZ = plane.Normal;
     UnitVector3D vectorY = vectorZ.CrossProduct(vectorX);
 
-    CoordinateSystem fromCs = new CoordinateSystem(point1, vectorX, vectorY, vectorZ);
-    CoordinateSystem toCs = new CoordinateSystem(Point3D.Origin, UnitVector3D.XAxis, UnitVector3D.YAxis, UnitVector3D.ZAxis);
+    CoordinateSystem fromCs = new(point1, vectorX, vectorY, vectorZ);
+    CoordinateSystem toCs = new(Point3D.Origin, UnitVector3D.XAxis, UnitVector3D.YAxis, UnitVector3D.ZAxis);
     return CoordinateSystem.CreateMappingCoordinateSystem(fromCs, toCs);
   }
 
   public static T GetFilerObjectByEntity<T>(DBObject @object) where T : FilerObject
   {
-    ASObjectId idCadEntity = new ASObjectId(@object.ObjectId.OldIdPtr);
+    ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = DatabaseManager.GetFilerObjectId(idCadEntity, false);
     if (idFilerObject.IsNull())
       return null;

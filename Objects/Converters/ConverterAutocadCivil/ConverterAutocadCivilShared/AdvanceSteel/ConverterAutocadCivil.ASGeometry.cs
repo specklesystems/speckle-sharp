@@ -140,7 +140,7 @@ public partial class ConverterAutocadCivil
   private Polycurve PolycurveToSpeckle(ASPolyline3d polyline)
   {
     var units = ModelUnits;
-    Polycurve specklePolycurve = new Polycurve(units) { closed = polyline.IsClosed };
+    Polycurve specklePolycurve = new(units) { closed = polyline.IsClosed };
 
     polyline.GetCurves(out ASCurve3d[] foundPolyCurves);
     for (int i = 0; i < foundPolyCurves.Length; i++)
@@ -241,7 +241,7 @@ public partial class ConverterAutocadCivil
       IList list = @object as IList;
       if (list.Count == 0) return null;
 
-      List<object> listReturn = new List<object>();
+      List<object> listReturn = new();
       foreach (var item in list)
         listReturn.Add(ConvertValueToSpeckle(item, unitType, out _));
 
@@ -252,7 +252,7 @@ public partial class ConverterAutocadCivil
       IDictionary dictionary = @object as IDictionary;
       if (dictionary.Count == 0) return null;
 
-      Dictionary<object, object> dictionaryReturn = new Dictionary<object, object>();
+      Dictionary<object, object> dictionaryReturn = new();
       foreach (var key in dictionary.Keys)
         dictionaryReturn.Add(key, ConvertValueToSpeckle(dictionary[key], unitType, out _));
 

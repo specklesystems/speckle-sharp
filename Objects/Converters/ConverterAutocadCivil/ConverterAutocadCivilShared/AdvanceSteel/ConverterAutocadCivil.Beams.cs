@@ -22,7 +22,7 @@ public partial class ConverterAutocadCivil
 {
   private IAsteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
   {
-    AsteelPolyBeam asteelPolyBeam = new AsteelPolyBeam();
+    AsteelPolyBeam asteelPolyBeam = new();
 
     ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
     asteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
@@ -34,7 +34,7 @@ public partial class ConverterAutocadCivil
 
   private IAsteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
   {
-    AsteelBeam asteelBeam = new AsteelBeam();
+    AsteelBeam asteelBeam = new();
 
     var startPoint = beam.GetPointAtStart();
     var endPoint = beam.GetPointAtEnd();
@@ -130,7 +130,7 @@ public partial class ConverterAutocadCivil
   private SectionProfile GetProfileSectionProperties(ProfileType profileType)
   {
     //Undefined
-    SectionProfile sectionProfile = new SectionProfile()
+    SectionProfile sectionProfile = new()
     {
       name = profileType.GetType().Name
     };
@@ -150,7 +150,7 @@ public partial class ConverterAutocadCivil
   /// <returns></returns>
   private AsteelSectionProfileDB GetProfileSectionDBProperties(string typeNameText, string sectionName)
   {
-    AsteelSectionProfileDB sectionProfileDB = new AsteelSectionProfileDB();
+    AsteelSectionProfileDB sectionProfileDB = new();
 
     if (string.IsNullOrEmpty(typeNameText) || string.IsNullOrEmpty(sectionName))
       return sectionProfileDB;

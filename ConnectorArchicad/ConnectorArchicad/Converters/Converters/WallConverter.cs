@@ -43,16 +43,17 @@ public sealed class Wall : IConverter
           case Objects.BuiltElements.Wall wall:
             var baseLine = (Line)wall.baseLine;
 
-            ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
-            {
-              id = wall.id,
-              applicationId = wall.applicationId,
-              archicadLevel = Archicad.Converters.Utils.ConvertLevel(wall.level),
-              startPoint = Utils.ScaleToNative(baseLine.start),
-              endPoint = Utils.ScaleToNative(baseLine.end),
-              height = Utils.ScaleToNative(wall.height, wall.units),
-              flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
-            };
+            ArchicadWall newWall =
+              new()
+              {
+                id = wall.id,
+                applicationId = wall.applicationId,
+                archicadLevel = Archicad.Converters.Utils.ConvertLevel(wall.level),
+                startPoint = Utils.ScaleToNative(baseLine.start),
+                endPoint = Utils.ScaleToNative(baseLine.end),
+                height = Utils.ScaleToNative(wall.height, wall.units),
+                flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
+              };
 
             walls.Add(newWall);
             break;

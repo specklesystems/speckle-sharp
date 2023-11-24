@@ -77,7 +77,7 @@ public partial class ConverterCSI
   {
     var speckleStructMaterial = new Structural.Materials.StructuralMaterial();
     speckleStructMaterial.name = name;
-    eMatType matType = new eMatType();
+    eMatType matType = new();
     int color = 0;
     string notes,
       GUID;
@@ -290,7 +290,7 @@ public partial class ConverterCSI
     sStype = sSHysType = 0;
     bool useCaltransSSDefaults = false;
 
-    Structural.CSI.Materials.CSIRebar rebarMaterial = new Structural.CSI.Materials.CSIRebar();
+    Structural.CSI.Materials.CSIRebar rebarMaterial = new();
     // Rebar can only be set to uniaxial
     //GetUniaxialMaterial(materialName);
     //speckleMaterial = (Structural.CSI.Materials.CSIRebar)speckleMaterial;

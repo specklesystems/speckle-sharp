@@ -104,7 +104,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     ApplicationObject reportObj = null;
     DisplayStyle style = null;
     Base extensionDictionary = null;
-    List<string> notes = new List<string>();
+    List<string> notes = new();
 
     switch (@object)
     {
@@ -302,7 +302,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     var reportObj = Report.ReportObjects.ContainsKey(@object.id)
       ? new ApplicationObject(@object.id, @object.speckle_type)
       : null;
-    List<string> notes = new List<string>();
+    List<string> notes = new();
     switch (@object)
     {
       case Point o:

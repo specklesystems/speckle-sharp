@@ -39,7 +39,7 @@ public partial class ConverterRevit
         if (revitElement is DB.Wall)
         {
           var offset = revitElement.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET).AsDouble();
-          XYZ vector = new XYZ(0, 0, offset);
+          XYZ vector = new(0, 0, offset);
           Transform tf = Transform.CreateTranslation(vector);
           curve = curve.CreateTransformed(tf);
         }

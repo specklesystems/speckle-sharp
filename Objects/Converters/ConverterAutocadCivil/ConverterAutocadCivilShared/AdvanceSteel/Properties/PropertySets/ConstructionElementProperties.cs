@@ -15,7 +15,7 @@ public class ConstructionElementProperties : ASBaseProperties<ConstructionElemen
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "role description", nameof(ConstructionElement.RoleDescription));
     InsertProperty(dictionary, "pure role", nameof(ConstructionElement.PureRole));

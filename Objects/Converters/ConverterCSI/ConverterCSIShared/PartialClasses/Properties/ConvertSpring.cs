@@ -138,16 +138,8 @@ public partial class ConverterCSI
     switch (springOption)
     {
       case 1:
-        CSISpringProperty speckleSpringProperty = new CSISpringProperty(
-          name,
-          Cys,
-          stiffness[0],
-          stiffness[1],
-          stiffness[2],
-          stiffness[3],
-          stiffness[4],
-          stiffness[5]
-        );
+        CSISpringProperty speckleSpringProperty =
+          new(name, Cys, stiffness[0], stiffness[1], stiffness[2], stiffness[3], stiffness[4], stiffness[5]);
         speckleSpringProperty.applicationId = GUID;
         return speckleSpringProperty;
       case 2:
@@ -213,16 +205,8 @@ public partial class ConverterCSI
 
     if (s == 0)
     {
-      CSILinearSpring speckleLinearSpring = new CSILinearSpring(
-        name,
-        stiffnessX,
-        stiffnessY,
-        stiffnessZ,
-        stiffnessXX,
-        nonLinearOptions1,
-        nonLinearOptions2,
-        GUID
-      );
+      CSILinearSpring speckleLinearSpring =
+        new(name, stiffnessX, stiffnessY, stiffnessZ, stiffnessXX, nonLinearOptions1, nonLinearOptions2, GUID);
       return speckleLinearSpring;
     }
     return null;
@@ -274,14 +258,7 @@ public partial class ConverterCSI
 
     if (s == 0)
     {
-      CSIAreaSpring speckleAreaSpring = new CSIAreaSpring(
-        name,
-        stiffnessX,
-        stiffnessY,
-        stiffnessZ,
-        nonLinearOptions1,
-        GUID
-      );
+      CSIAreaSpring speckleAreaSpring = new(name, stiffnessX, stiffnessY, stiffnessZ, nonLinearOptions1, GUID);
       return speckleAreaSpring;
     }
     return null;

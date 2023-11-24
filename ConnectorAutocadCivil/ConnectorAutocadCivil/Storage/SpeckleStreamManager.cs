@@ -109,7 +109,7 @@ public static class SpeckleStreamManager
     var valueEncoded = Base64Encode(value);
     var valueEncodedList = SplitString(valueEncoded, size);
 
-    ResultBuffer rb = new ResultBuffer();
+    ResultBuffer rb = new();
 
     foreach (var valueEncodedSplited in valueEncodedList)
     {
@@ -121,7 +121,7 @@ public static class SpeckleStreamManager
 
   private static string GetXrecordData(Xrecord pXrecord)
   {
-    StringBuilder valueEncoded = new StringBuilder();
+    StringBuilder valueEncoded = new();
     foreach (TypedValue typedValue in pXrecord.Data)
     {
       if (typedValue.TypeCode == (int)DxfCode.Text)

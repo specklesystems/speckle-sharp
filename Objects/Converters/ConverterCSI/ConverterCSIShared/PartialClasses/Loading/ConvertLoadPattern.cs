@@ -87,7 +87,7 @@ public partial class ConverterCSI
 
   public LoadType GetAndConvertCSILoadType(string name)
   {
-    eLoadPatternType patternType = new eLoadPatternType();
+    eLoadPatternType patternType = new();
 
     Model.LoadPatterns.GetLoadType(name, ref patternType);
 

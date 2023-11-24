@@ -43,9 +43,9 @@ public partial class ConverterTeklaStructures
 
   public Mesh GetMeshFromSolid(Solid solid)
   {
-    List<double> vertexList = new List<double> { };
-    ArrayList MyFaceNormalList = new ArrayList();
-    List<int> facesList = new List<int> { };
+    List<double> vertexList = new() { };
+    ArrayList MyFaceNormalList = new();
+    List<int> facesList = new() { };
 
     FaceEnumerator MyFaceEnum = solid.GetFaceEnumerator();
 
@@ -59,8 +59,8 @@ public partial class ConverterTeklaStructures
       Face MyFace = MyFaceEnum.Current as Face;
       if (MyFace != null)
       {
-        List<double> outerLoopList = new List<double> { };
-        List<List<double>> innerLoopList = new List<List<double>>();
+        List<double> outerLoopList = new() { };
+        List<List<double>> innerLoopList = new();
         LoopEnumerator MyLoopEnum = MyFace.GetLoopEnumerator();
         var inner_loop = 0;
         while (MyLoopEnum.MoveNext())
@@ -143,7 +143,7 @@ public partial class ConverterTeklaStructures
   /// potential conflicts when setting them back on the element</param>
   public void GetAllUserProperties(Base speckleElement, ModelObject teklaObject, List<string> exclusions = null)
   {
-    Hashtable propertyHashtable = new Hashtable();
+    Hashtable propertyHashtable = new();
     teklaObject.GetAllUserProperties(ref propertyHashtable);
 
     // sort by key
@@ -152,7 +152,7 @@ public partial class ConverterTeklaStructures
       .OrderBy(x => x.Key)
       .ToDictionary(d => (string)d.Key, d => d.Value);
 
-    Base paramBase = new Base();
+    Base paramBase = new();
     foreach (var kv in sortedproperties)
     {
       try
@@ -177,8 +177,8 @@ public partial class ConverterTeklaStructures
     SectionProfile profile = null;
     ProfileItem profileItem = null;
 
-    LibraryProfileItem libItem = new LibraryProfileItem();
-    ParametricProfileItem paramItem = new ParametricProfileItem();
+    LibraryProfileItem libItem = new();
+    ParametricProfileItem paramItem = new();
     if (libItem.Select(teklaProfileString))
     {
       profileItem = libItem;
@@ -231,12 +231,8 @@ public partial class ConverterTeklaStructures
 
   public Structural.Properties.Profiles.SectionProfile GetContourPlateProfile(string teklaProfileString)
   {
-    ParametricProfileItem paramItem = new ParametricProfileItem();
-    SectionProfile profile = new SectionProfile()
-    {
-      name = teklaProfileString,
-      shapeType = Structural.ShapeType.Perimeter
-    };
+    ParametricProfileItem paramItem = new();
+    SectionProfile profile = new() { name = teklaProfileString, shapeType = Structural.ShapeType.Perimeter };
     return profile;
   }
 
@@ -429,7 +425,7 @@ public partial class ConverterTeklaStructures
   {
     Structural.Materials.StructuralMaterial speckleMaterial = null;
 
-    MaterialItem materialItem = new MaterialItem();
+    MaterialItem materialItem = new();
     if (materialItem.Select(teklaMaterialString))
     {
       switch (materialItem.Type)
@@ -492,7 +488,7 @@ public partial class ConverterTeklaStructures
 
   public Polyline ToSpecklePolyline(Tekla.Structures.Model.Polygon polygon)
   {
-    List<double> coordinateList = new List<double>();
+    List<double> coordinateList = new();
     var units = GetUnitsFromModel();
     var polygonPointList = polygon.Points.Cast<TSG.Point>();
     foreach (var pt in polygonPointList)
@@ -517,21 +513,21 @@ public partial class ConverterTeklaStructures
       {
         var lineSeg = (TSG.LineSegment)curveSegment;
 
-        Point start = new Point(lineSeg.StartPoint.X, lineSeg.StartPoint.Y, lineSeg.StartPoint.Z, units);
-        Point end = new Point(lineSeg.EndPoint.X, lineSeg.EndPoint.Y, lineSeg.EndPoint.Z, units);
+        Point start = new(lineSeg.StartPoint.X, lineSeg.StartPoint.Y, lineSeg.StartPoint.Z, units);
+        Point end = new(lineSeg.EndPoint.X, lineSeg.EndPoint.Y, lineSeg.EndPoint.Z, units);
 
-        Line speckleLine = new Line(start, end, units);
+        Line speckleLine = new(start, end, units);
         specklePolycurve.segments.Add(speckleLine);
       }
       else if (curveSegment is TSG.Arc)
       {
         var arcSeg = (TSG.Arc)curveSegment;
 
-        Point start = new Point(arcSeg.StartPoint.X, arcSeg.StartPoint.Y, arcSeg.StartPoint.Z, units);
-        Point end = new Point(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
-        Point mid = new Point(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
+        Point start = new(arcSeg.StartPoint.X, arcSeg.StartPoint.Y, arcSeg.StartPoint.Z, units);
+        Point end = new(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
+        Point mid = new(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
 
-        Arc speckleArc = new Arc();
+        Arc speckleArc = new();
         speckleArc.startPoint = start;
         speckleArc.endPoint = end;
         speckleArc.midPoint = mid;
@@ -607,12 +603,12 @@ public partial class ConverterTeklaStructures
     if (string.IsNullOrEmpty(profileName))
       return false;
 
-    LibraryProfileItem lpi = new LibraryProfileItem();
+    LibraryProfileItem lpi = new();
     if (lpi.Select(profileName))
       return true;
     else
     {
-      ParametricProfileItem ppi = new ParametricProfileItem();
+      ParametricProfileItem ppi = new();
       if (ppi.Select(profileName))
         return true;
       else

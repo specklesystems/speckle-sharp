@@ -111,7 +111,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       case "layer":
         foreach (var layerName in filter.Selection)
         {
-          TypedValue[] layerType = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, layerName) };
+          TypedValue[] layerType = new TypedValue[1] { new((int)DxfCode.LayerName, layerName) };
           PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
           if (prompt.Status == PromptStatus.OK)
             selection.AddRange(prompt.Value.GetHandles());

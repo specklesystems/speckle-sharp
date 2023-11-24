@@ -9,7 +9,7 @@ public partial class ConverterAutocadCivil
 {
   private IAsteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
   {
-    AsteelSpecialPart asteelSpecialPart = new AsteelSpecialPart();
+    AsteelSpecialPart asteelSpecialPart = new();
 
     SetDisplayValue(asteelSpecialPart, specialPart);
 

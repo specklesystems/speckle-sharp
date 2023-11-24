@@ -38,7 +38,7 @@ public sealed partial class ElementConverterManager
   private Dictionary<Type, IEnumerable<Base>> ReceivedObjects { get; set; }
   private Dictionary<string, IEnumerable<string>> SelectedObjects { get; set; }
 
-  private List<string> CanHaveSubElements = new List<string> { "Wall", "Roof", "Shell" }; // Hardcoded until we know whats the shared property that defines wether elements may be have subelements or not.
+  private List<string> CanHaveSubElements = new() { "Wall", "Roof", "Shell" }; // Hardcoded until we know whats the shared property that defines wether elements may be have subelements or not.
   #endregion
 
   #region --- Ctor \ Dtor ---
@@ -282,7 +282,7 @@ public sealed partial class ElementConverterManager
     Dictionary<string, IEnumerable<string>> allSubElementsByGuid
   )
   {
-    Dictionary<string, IEnumerable<string>> mutualSubElements = new Dictionary<string, IEnumerable<string>>();
+    Dictionary<string, IEnumerable<string>> mutualSubElements = new();
 
     foreach (var (element, guids) in allSubElementsByGuid)
     {

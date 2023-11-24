@@ -16,7 +16,7 @@ public partial class ConverterRevit
   private class MeshBuildHelper
   {
     //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
-    private readonly Dictionary<int, RenderMaterial> materialMap = new Dictionary<int, RenderMaterial>();
+    private readonly Dictionary<int, RenderMaterial> materialMap = new();
 
     public RenderMaterial GetOrCreateMaterial(DB.Material revitMaterial)
     {
@@ -41,7 +41,7 @@ public partial class ConverterRevit
     private Mesh nullMesh;
 
     //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
-    private readonly Dictionary<int, Mesh> meshMap = new Dictionary<int, Mesh>();
+    private readonly Dictionary<int, Mesh> meshMap = new();
 
     public Mesh GetOrCreateMesh(DB.Material mat, string units)
     {

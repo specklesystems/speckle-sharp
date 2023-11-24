@@ -18,7 +18,7 @@ public partial class ConverterTeklaStructures
 {
   public void BooleanPartToNative(BE.Opening opening)
   {
-    BooleanPart booleanPart = new BooleanPart();
+    BooleanPart booleanPart = new();
     switch (opening)
     {
       case TeklaContourOpening contourOpening:

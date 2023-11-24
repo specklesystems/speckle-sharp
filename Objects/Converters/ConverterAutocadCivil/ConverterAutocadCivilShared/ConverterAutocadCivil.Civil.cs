@@ -108,7 +108,7 @@ public partial class ConverterAutocadCivil
     _alignment.profiles = profiles;
 
     // get the alignment subentity curves
-    List<ICurve> curves = new List<ICurve>();
+    List<ICurve> curves = new();
     for (int i = 0; i < alignment.Entities.Count; i++)
     {
       var entity = alignment.Entities.GetEntityByOrder(i);
@@ -369,7 +369,7 @@ public partial class ConverterAutocadCivil
   private Arc AlignmentArcToSpeckle(CivilDB.AlignmentSubEntityArc arc)
   {
     // calculate midpoint of chord as between start and end point
-    Point2d chordMid = new Point2d((arc.StartPoint.X + arc.EndPoint.X) / 2, (arc.StartPoint.Y + arc.EndPoint.Y) / 2);
+    Point2d chordMid = new((arc.StartPoint.X + arc.EndPoint.X) / 2, (arc.StartPoint.Y + arc.EndPoint.Y) / 2);
 
     // calculate sagitta as radius minus distance between arc center and chord midpoint
     var sagitta = arc.Radius - arc.CenterPoint.GetDistanceTo(chordMid);
@@ -418,7 +418,7 @@ public partial class ConverterAutocadCivil
     spiralSegmentCount = (spiralSegmentCount < 10) ? 10 : spiralSegmentCount;
     double spiralSegmentLength = spiral.Length / spiralSegmentCount;
     
-    List<Point2d> points = new List<Point2d>();
+    List<Point2d> points = new();
     points.Add(spiral.StartPoint);
     for (int i = 1; i < spiralSegmentCount; i++)
     {
@@ -468,7 +468,7 @@ public partial class ConverterAutocadCivil
     _profile.endStation = profile.EndingStation;
 
     // get the profile entity curves
-    List<ICurve> curves = new List<ICurve>();
+    List<ICurve> curves = new();
     for (int i = 0; i < profile.Entities.Count; i++)
     {
       CivilDB.ProfileEntity entity = profile.Entities[i];
@@ -507,7 +507,7 @@ public partial class ConverterAutocadCivil
     catch { }
 
     // get points of vertical intersection (PVIs)
-    List<Point> pvisConverted = new List<Point>();
+    List<Point> pvisConverted = new();
     var pvis = new Point3dCollection();
     foreach (CivilDB.ProfilePVI pvi in profile.PVIs)
     {
@@ -1072,9 +1072,9 @@ public partial class ConverterAutocadCivil
   {
     var _corridor = new Base();
 
-    List<Alignment> alignments = new List<Alignment>();
-    List<Profile> profiles = new List<Profile>();
-    List<Featureline> featurelines = new List<Featureline>();
+    List<Alignment> alignments = new();
+    List<Profile> profiles = new();
+    List<Featureline> featurelines = new();
     foreach (var baseline in corridor.Baselines)
     {
 
@@ -1107,7 +1107,7 @@ public partial class ConverterAutocadCivil
     }
 
     // get corridor surfaces
-    List<Mesh> surfaces = new List<Mesh>();
+    List<Mesh> surfaces = new();
     foreach (var corridorSurface in corridor.CorridorSurfaces)
     {
       try

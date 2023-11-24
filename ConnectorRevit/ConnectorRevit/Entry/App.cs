@@ -221,11 +221,7 @@ public class App : IExternalApplication
     {
       var assembly = Assembly.LoadFrom(Path.Combine(path));
       var icon = assembly.GetManifestResourceStream(sourceName);
-      PngBitmapDecoder m_decoder = new PngBitmapDecoder(
-        icon,
-        BitmapCreateOptions.PreservePixelFormat,
-        BitmapCacheOption.Default
-      );
+      PngBitmapDecoder m_decoder = new(icon, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
       ImageSource m_source = m_decoder.Frames[0];
       return (m_source);
     }

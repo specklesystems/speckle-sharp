@@ -16,7 +16,7 @@ public class FilerObjectProperties : ASBaseProperties<FilerObject>, IASPropertie
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "layer", nameof(FilerObject.Layer));
     InsertProperty(dictionary, "handle", nameof(FilerObject.Handle));

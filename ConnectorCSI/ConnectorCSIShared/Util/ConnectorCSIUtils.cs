@@ -162,7 +162,7 @@ public static class ConnectorCSIUtils
   {
     var frameNames = GetAllFrameNames(model);
 
-    List<string> columnNames = new List<string>();
+    List<string> columnNames = new();
 
     string frameLabel = "";
     string frameStory = "";
@@ -184,7 +184,7 @@ public static class ConnectorCSIUtils
   {
     var frameNames = GetAllFrameNames(model);
 
-    List<string> beamNames = new List<string>();
+    List<string> beamNames = new();
 
     string frameLabel = "";
     string frameStory = "";
@@ -206,7 +206,7 @@ public static class ConnectorCSIUtils
   {
     var frameNames = GetAllFrameNames(model);
 
-    List<string> braceNames = new List<string>();
+    List<string> braceNames = new();
 
     string frameLabel = "";
     string frameStory = "";
@@ -271,7 +271,7 @@ public static class ConnectorCSIUtils
   {
     var WallNames = GetAllAreaNames(model);
 
-    List<string> WallName = new List<string>();
+    List<string> WallName = new();
 
     string wallLabel = "";
     string wallStory = "";
@@ -293,7 +293,7 @@ public static class ConnectorCSIUtils
   {
     var FloorNames = GetAllAreaNames(model);
 
-    List<string> FloorName = new List<string>();
+    List<string> FloorName = new();
 
     string FloorLabel = "";
     string FloorStory = "";

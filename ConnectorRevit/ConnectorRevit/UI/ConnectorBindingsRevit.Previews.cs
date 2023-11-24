@@ -23,7 +23,7 @@ public partial class ConnectorBindingsRevit
 {
   public override bool CanPreviewReceive => false;
   private string SelectedReceiveCommit { get; set; }
-  List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
+  List<IDirectContext3DServer> m_servers = new();
 
   public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
   {

@@ -40,7 +40,7 @@ public static class StreamStateManager
   {
     if (_speckleFilePath == null)
       GetOrCreateSpeckleFilePath(model);
-    FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+    FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 
     using (var streamWriter = new StreamWriter(fileStream))
     {
@@ -53,7 +53,7 @@ public static class StreamStateManager
   {
     if (_speckleFilePath == null)
       GetOrCreateSpeckleFilePath(model);
-    FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+    FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
     try
     {
       fileStream.SetLength(0);
@@ -110,7 +110,7 @@ public static class StreamStateManager
 
     if (_speckleFilePath == null)
       return "";
-    FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     try
     {
       using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))

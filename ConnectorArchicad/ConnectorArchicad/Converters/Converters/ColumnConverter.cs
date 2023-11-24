@@ -39,17 +39,18 @@ public sealed class Column : IConverter
             break;
           case Objects.BuiltElements.Column column:
             var baseLine = (Line)column.baseLine;
-            Objects.BuiltElements.Archicad.ArchicadColumn newColumn = new Objects.BuiltElements.Archicad.ArchicadColumn
-            {
-              id = column.id,
-              applicationId = column.applicationId,
-              archicadLevel = Archicad.Converters.Utils.ConvertLevel(column.level),
-              origoPos = Utils.ScaleToNative(baseLine.start),
-              height = Math.Abs(
-                Utils.ScaleToNative(baseLine.end.z, baseLine.end.units)
-                  - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units)
-              )
-            };
+            Objects.BuiltElements.Archicad.ArchicadColumn newColumn =
+              new()
+              {
+                id = column.id,
+                applicationId = column.applicationId,
+                archicadLevel = Archicad.Converters.Utils.ConvertLevel(column.level),
+                origoPos = Utils.ScaleToNative(baseLine.start),
+                height = Math.Abs(
+                  Utils.ScaleToNative(baseLine.end.z, baseLine.end.units)
+                    - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units)
+                )
+              };
 
             columns.Add(newColumn);
             break;

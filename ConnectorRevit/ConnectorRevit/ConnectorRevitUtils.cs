@@ -170,7 +170,7 @@ public static class ConnectorRevitUtils
   private static bool IsViewRevisionSchedule(string input)
   {
     string pattern = @"<.+>(\s*\d+)?";
-    Regex rgx = new Regex(pattern);
+    Regex rgx = new(pattern);
     return rgx.IsMatch(input);
   }
 

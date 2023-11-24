@@ -18,7 +18,7 @@ public class BeamProperties : ASBaseProperties<ASBeam>, IASProperties
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "profile section name", nameof(ASBeam.ProfSectionName));
     InsertProperty(dictionary, "profile section type", nameof(ASBeam.ProfSectionType));
@@ -63,7 +63,7 @@ public class BeamProperties : ASBaseProperties<ASBeam>, IASProperties
 
   private static Dictionary<string, double> GetOffsets(ASBeam beam)
   {
-    Dictionary<string, double> dictionary = new Dictionary<string, double>
+    Dictionary<string, double> dictionary = new()
     {
       { "Y", beam.Offsets.x },
       { "Z", beam.Offsets.y }

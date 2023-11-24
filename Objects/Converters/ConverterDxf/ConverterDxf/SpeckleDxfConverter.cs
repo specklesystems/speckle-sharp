@@ -20,7 +20,7 @@ public partial class SpeckleDxfConverter
   public string WebsiteOrEmail => "https://speckle.systems";
 
   public ProgressReport Report { get; } = new ProgressReport();
-  public ConverterDxfSettings Settings = new ConverterDxfSettings();
+  public ConverterDxfSettings Settings = new();
   public ReceiveMode ReceiveMode { get; set; } = ReceiveMode.Create;
 
   // TODO: Convert to Speckle is currently not supported.

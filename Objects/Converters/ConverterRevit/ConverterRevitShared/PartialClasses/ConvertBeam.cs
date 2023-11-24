@@ -104,7 +104,7 @@ public partial class ConverterRevit
 
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
       {
-        List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+        List<string> joinSettings = new(Regex.Split(Settings["disallow-join"], @"\,\ "));
         if (joinSettings.Contains(StructuralFraming))
         {
           StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);

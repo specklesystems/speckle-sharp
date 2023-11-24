@@ -123,7 +123,7 @@ public class App : IExtensionApplication
     RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
 
     // help and resources buttons
-    RibbonSplitButton helpButton = new RibbonSplitButton();
+    RibbonSplitButton helpButton = new();
     helpButton.Text = "Help & Resources";
     helpButton.Image = LoadPngImgSource("help16.png");
     helpButton.LargeImage = LoadPngImgSource("help32.png");
@@ -179,7 +179,7 @@ public class App : IExtensionApplication
 
   private RibbonToolTip CreateToolTip(string title, string content)
   {
-    RibbonToolTip toolTip = new RibbonToolTip();
+    RibbonToolTip toolTip = new();
 
     //toolTip.Command = "";
     toolTip.Title = title;
@@ -239,11 +239,7 @@ public class App : IExtensionApplication
         .FirstOrDefault();
       Assembly assembly = Assembly.GetExecutingAssembly();
       Stream stream = assembly.GetManifestResourceStream(resource);
-      PngBitmapDecoder decoder = new PngBitmapDecoder(
-        stream,
-        BitmapCreateOptions.PreservePixelFormat,
-        BitmapCacheOption.Default
-      );
+      PngBitmapDecoder decoder = new(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
       ImageSource source = decoder.Frames[0];
       return source;
     }

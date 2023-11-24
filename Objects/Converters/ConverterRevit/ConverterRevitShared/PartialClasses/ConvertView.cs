@@ -14,10 +14,11 @@ namespace Objects.Converter.Revit;
 
 public partial class ConverterRevit
 {
-  private List<string> excludedParameters = new List<string>()
-  {
-    "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors
-  };
+  private List<string> excludedParameters =
+    new()
+    {
+      "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors
+    };
 
   public Base ViewToSpeckle(DB.View revitView)
   {

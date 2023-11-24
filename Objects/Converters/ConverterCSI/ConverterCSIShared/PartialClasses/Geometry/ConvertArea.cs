@@ -356,7 +356,7 @@ public partial class ConverterCSI
     int numPoints = 0;
     string[] points = null;
     Model.AreaObj.GetPoints(name, ref numPoints, ref points);
-    List<Node> nodes = new List<Node>();
+    List<Node> nodes = new();
     foreach (string point in points)
     {
       Node node = PointToSpeckle(point);
@@ -377,7 +377,7 @@ public partial class ConverterCSI
       speckleStructArea.property = Property2DToSpeckle(name, propName);
     }
 
-    List<double> coordinates = new List<double> { };
+    List<double> coordinates = new() { };
     foreach (Node node in nodes)
     {
       coordinates.Add(node.basePoint.x);
@@ -392,15 +392,12 @@ public partial class ConverterCSI
     speckleStructArea.orientationAngle = angle;
     if (coordinates.Count != 0)
     {
-      PolygonMesher polygonMesher = new PolygonMesher();
+      PolygonMesher polygonMesher = new();
       polygonMesher.Init(coordinates);
       var faces = polygonMesher.Faces();
       var vertices = polygonMesher.Coordinates;
       //speckleStructArea.displayMesh = new Geometry.Mesh(vertices, faces.ToArray(), null, null, ModelUnits(), null);
-      speckleStructArea.displayValue = new List<Geometry.Mesh>
-      {
-        new Geometry.Mesh(vertices.ToList(), faces, units: ModelUnits())
-      };
+      speckleStructArea.displayValue = new List<Geometry.Mesh> { new(vertices.ToList(), faces, units: ModelUnits()) };
     }
 
     //Model.AreaObj.GetModifiers(area, ref value);

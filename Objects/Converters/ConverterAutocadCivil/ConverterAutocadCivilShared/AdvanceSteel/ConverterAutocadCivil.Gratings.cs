@@ -9,7 +9,7 @@ public partial class ConverterAutocadCivil
 {
   private IAsteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
   {
-    AsteelGrating asteelGrating = new AsteelGrating();
+    AsteelGrating asteelGrating = new();
 
     SetDisplayValue(asteelGrating, grating);
 

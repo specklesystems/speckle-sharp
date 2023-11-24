@@ -53,7 +53,7 @@ public class ReceiveViewCustomization : INodeViewCustomization<Receive>
     });
   }
 
-  private DebounceTimer debounceTimer = new DebounceTimer();
+  private DebounceTimer debounceTimer = new();
 
   private void InputsChanged()
   {

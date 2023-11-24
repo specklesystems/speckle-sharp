@@ -26,8 +26,8 @@ public partial class ConverterRevit
     private RenderingPassBufferStorage m_edgeBufferStorage;
     private Guid m_guid;
     private IEnumerable<OG.Mesh> speckleMeshes;
-    public OG.Point minValues = new OG.Point(double.MaxValue, double.MaxValue, double.MaxValue);
-    public OG.Point maxValues = new OG.Point(double.MinValue, double.MinValue, double.MinValue);
+    public OG.Point minValues = new(double.MaxValue, double.MaxValue, double.MaxValue);
+    public OG.Point maxValues = new(double.MinValue, double.MinValue, double.MinValue);
     public bool allMeshesStored =>
       speckleMeshes.Count()
       == m_nonTransparentFaceBufferStorage?.Meshes.Count + m_transparentFaceBufferStorage?.Meshes.Count;
@@ -215,7 +215,7 @@ public partial class ConverterRevit
     private void ProcessFaces(RenderingPassBufferStorage bufferStorage)
     {
       List<SpeckleMeshInfo> meshes = bufferStorage.Meshes;
-      List<int> numVerticesInMeshesBefore = new List<int>();
+      List<int> numVerticesInMeshesBefore = new();
       if (meshes.Count == 0)
         return;
 
@@ -326,7 +326,7 @@ public partial class ConverterRevit
       bufferStorage.FormatBits = VertexFormatBits.Position;
 
       int edgeVertexBufferSizeInFloats = VertexPosition.GetSizeInFloats() * bufferStorage.VertexBufferCount;
-      List<int> numVerticesInEdgesBefore = new List<int>();
+      List<int> numVerticesInEdgesBefore = new();
       numVerticesInEdgesBefore.Add(0);
 
       bufferStorage.VertexBuffer = new VertexBuffer(edgeVertexBufferSizeInFloats);
@@ -422,10 +422,10 @@ public partial class ConverterRevit
     public class SpeckleMeshInfo
     {
       public OG.Mesh Mesh;
-      public List<XYZ> Vertices = new List<XYZ>();
+      public List<XYZ> Vertices = new();
       public List<int[]> Faces;
-      public List<List<XYZ>> XYZs = new List<List<XYZ>>();
-      public List<XYZ> Normals = new List<XYZ>();
+      public List<List<XYZ>> XYZs = new();
+      public List<XYZ> Normals = new();
       public ColorWithTransparency ColorWithTransparency;
 
       public SpeckleMeshInfo(OG.Mesh mesh, ColorWithTransparency color, ref OG.Point minValues, ref OG.Point maxValue)

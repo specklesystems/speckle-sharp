@@ -20,7 +20,7 @@ public class SendViewCustomization : INodeViewCustomization<Send>
   private Send sendNode;
   private DynamoModel dynamoModel;
   private NodeView _nodeView;
-  private List<MenuItem> customMenuItems = new List<MenuItem>();
+  private List<MenuItem> customMenuItems = new();
 
   public void CustomizeView(Send model, NodeView nodeView)
   {
@@ -49,7 +49,7 @@ public class SendViewCustomization : INodeViewCustomization<Send>
     sendNode.CancelSend();
   }
 
-  private DebounceTimer debounceTimer = new DebounceTimer();
+  private DebounceTimer debounceTimer = new();
 
   private void InputsChanged()
   {

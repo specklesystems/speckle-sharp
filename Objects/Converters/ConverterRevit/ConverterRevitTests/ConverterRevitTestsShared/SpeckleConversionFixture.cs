@@ -36,7 +36,7 @@ public abstract class SpeckleConversionFixture : IAsyncLifetime
     {
       throw new System.Exception($"Category, {Category.ToLower()} is not a recognized category");
     }
-    ElementMulticategoryFilter filter = new ElementMulticategoryFilter(categories);
+    ElementMulticategoryFilter filter = new(categories);
 
     //get selection before opening docs, if any
     Selection = xru.GetActiveSelection().ToList();

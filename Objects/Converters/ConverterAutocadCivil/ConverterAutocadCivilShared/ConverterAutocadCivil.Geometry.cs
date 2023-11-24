@@ -179,7 +179,7 @@ public partial class ConverterAutocadCivil
   {
     // transform
     var scaledTransform = transform.ConvertToUnits(ModelUnits);
-    Matrix3d convertedTransform = new Matrix3d(scaledTransform);
+    Matrix3d convertedTransform = new(scaledTransform);
 
     //Autocad is very picky about transform basis being perfectly perpendicular, if they are not, we can correct for this by re-calculating basis vectors
     if (!convertedTransform.IsScaledOrtho())
@@ -194,8 +194,8 @@ public partial class ConverterAutocadCivil
   private static double[] MakePerpendicular(Matrix3d matrix)
   {
     // Get the basis vectors of the matrix
-    Vector3d right = new Vector3d(matrix[0, 0], matrix[1, 0], matrix[2, 0]);
-    Vector3d up = new Vector3d(matrix[0, 1], matrix[1, 1], matrix[2, 1]);
+    Vector3d right = new(matrix[0, 0], matrix[1, 0], matrix[2, 0]);
+    Vector3d up = new(matrix[0, 1], matrix[1, 1], matrix[2, 1]);
 
     Vector3d newForward = right.CrossProduct(up).GetNormal();
     ;
@@ -440,7 +440,7 @@ public partial class ConverterAutocadCivil
   private Polyline PolylineToSpeckle(Point3dCollection points, bool closed)
   {
     double length = 0;
-    List<Point3d> vertices = new List<Point3d>();
+    List<Point3d> vertices = new();
     foreach (Point3d point in points)
     {
       if (vertices.Count != 0)
@@ -515,7 +515,7 @@ public partial class ConverterAutocadCivil
     var segments = new List<ICurve>();
     var exploded = new DBObjectCollection();
     polyline.Explode(exploded);
-    Point3d previousPoint = new Point3d();
+    Point3d previousPoint = new();
     for (int i = 0; i < exploded.Count; i++)
     {
       var segment = exploded[i] as AcadDB.Curve;
@@ -556,7 +556,7 @@ public partial class ConverterAutocadCivil
 
     // extract segments
     var segments = new List<ICurve>();
-    Point3d previousPoint = new Point3d();
+    Point3d previousPoint = new();
     for (int i = 0; i < polyline.NumberOfVertices; i++)
     {
       var segment = GetSegmentByType(polyline, i);
@@ -721,7 +721,7 @@ public partial class ConverterAutocadCivil
   // polylines can only support curve segments of type circular arc.
   public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve)
   {
-    AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
+    AcadDB.Polyline polyline = new() { Closed = polycurve.closed };
     var plane = new Autodesk.AutoCAD.Geometry.Plane(
       Point3d.Origin,
       Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)
@@ -871,7 +871,7 @@ public partial class ConverterAutocadCivil
     };
 
     Entity first = null;
-    List<Entity> others = new List<Entity>();
+    List<Entity> others = new();
     BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
     for (int i = 0; i < polycurve.segments.Count; i++)
     {
@@ -1053,7 +1053,7 @@ public partial class ConverterAutocadCivil
     DoubleCollection weights;
     weights = (_weights.Distinct().Count() == 1) ? new DoubleCollection() : new DoubleCollection(_weights.ToArray());
 
-    NurbCurve3d _curve = new NurbCurve3d(curve.degree, knots, points, weights, curve.periodic);
+    NurbCurve3d _curve = new(curve.degree, knots, points, weights, curve.periodic);
     if (curve.closed)
       _curve.MakeClosed();
     _curve.SetInterval(IntervalToNative(curve.domain));
@@ -1365,7 +1365,7 @@ public partial class ConverterAutocadCivil
     int edgeCount = 0;
     for (int i = 0; i < faceArr.Length; i = i + edgeCount + 1)
     {
-      List<int> faceVertices = new List<int>();
+      List<int> faceVertices = new();
       edgeCount = faceArr[i];
       for (int j = i + 1; j <= i + edgeCount; j++)
         faceVertices.Add(faceArr[j]);

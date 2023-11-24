@@ -108,7 +108,7 @@ class Program
     // call Speckle plugin
     try
     {
-      cPlugin p = new cPlugin();
+      cPlugin p = new();
       cPluginCallback cb = new PluginCallback();
 
       // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.

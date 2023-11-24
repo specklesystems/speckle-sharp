@@ -10,7 +10,7 @@ public partial class ConverterAutocadCivil
 {
   private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
   {
-    AsteelPlate asteelPlate = new AsteelPlate();
+    AsteelPlate asteelPlate = new();
 
     plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 

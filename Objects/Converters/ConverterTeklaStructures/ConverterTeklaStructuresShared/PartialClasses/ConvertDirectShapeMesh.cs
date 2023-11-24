@@ -113,21 +113,21 @@ public partial class ConverterTeklaStructures
   public FacetedBrep CreateFacetedBrep(GE.Mesh mesh)
   {
     var faces = mesh.faces;
-    List<List<int>> faceList = new List<List<int>> { };
+    List<List<int>> faceList = new() { };
     faceList = faces
       .Select((x, i) => new { Index = i, Value = x })
       .GroupBy(x => x.Index / 4)
       .Select(x => x.Select(v => v.Value).ToList())
       .ToList();
     var vertices = mesh.vertices;
-    List<List<double>> verticesList = new List<List<double>> { };
+    List<List<double>> verticesList = new() { };
     verticesList = vertices
       .Select((x, i) => new { Index = i, Value = x })
       .GroupBy(x => x.Index / 3)
       .Select(x => x.Select(v => v.Value).ToList())
       .ToList();
-    List<Vector> vertexs = new List<Vector>();
-    List<int[]> outerWires = new List<int[]>();
+    List<Vector> vertexs = new();
+    List<int[]> outerWires = new();
     var innerLoop = new Dictionary<int, int[][]> { };
     foreach (var vertex in verticesList)
     {
@@ -161,7 +161,7 @@ public partial class ConverterTeklaStructures
 
   public ShapeItem CheckFingerprint(ShapeItem si)
   {
-    CatalogHandler catalogHandler = new CatalogHandler();
+    CatalogHandler catalogHandler = new();
     ShapeItemEnumerator sie = catalogHandler.GetShapeItems();
     while (sie.MoveNext())
     {

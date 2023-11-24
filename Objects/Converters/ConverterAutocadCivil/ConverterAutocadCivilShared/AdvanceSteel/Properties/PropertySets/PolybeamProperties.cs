@@ -16,7 +16,7 @@ public class PolybeamProperties : ASBaseProperties<PolyBeam>, IASProperties
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "continuous", nameof(PolyBeam.IsContinuous));
 

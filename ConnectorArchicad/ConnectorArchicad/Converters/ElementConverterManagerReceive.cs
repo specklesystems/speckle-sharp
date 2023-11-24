@@ -87,11 +87,9 @@ public sealed partial class ElementConverterManager
 
   public async Task<bool> ConvertToNative(StreamState state, Base commitObject, ProgressViewModel progress)
   {
-    ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+    ConversionOptions conversionOptions = new(state.Settings);
 
-    Objects.Converter.Archicad.ConverterArchicad converter = new Objects.Converter.Archicad.ConverterArchicad(
-      conversionOptions
-    );
+    Objects.Converter.Archicad.ConverterArchicad converter = new(conversionOptions);
     List<TraversalContext> flattenObjects = FlattenCommitObject(commitObject, converter);
 
     converter.SetContextObjects(flattenObjects);
@@ -110,7 +108,7 @@ public sealed partial class ElementConverterManager
   )
   {
     // to filter out already traversed objects (e.g. the same Mesh in displayValue and in topRail member of the Railing)
-    HashSet<string> traversedObjects = new HashSet<string>();
+    HashSet<string> traversedObjects = new();
 
     TraversalContext Store(TraversalContext context, Objects.Converter.Archicad.ConverterArchicad converter)
     {

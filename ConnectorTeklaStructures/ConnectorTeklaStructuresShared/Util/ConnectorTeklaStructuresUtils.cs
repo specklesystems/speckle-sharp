@@ -52,8 +52,6 @@ class ConnectorTeklaStructuresUtils
   }
   #endregion
 
-  private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>
-  {
-    ModelObject.ModelObjectEnum.BEAM
-  };
+  private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories =
+    new() { ModelObject.ModelObjectEnum.BEAM };
 }

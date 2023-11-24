@@ -115,7 +115,7 @@ public partial class ConverterBentley
 
   public LineElement PointToNative(Point pt)
   {
-    DSegment3d dSegment = new DSegment3d(Point3dToNative(pt), Point3dToNative(pt));
+    DSegment3d dSegment = new(Point3dToNative(pt), Point3dToNative(pt));
     var _line = new LineElement(Model, null, dSegment);
     return _line;
   }
@@ -275,7 +275,7 @@ public partial class ConverterBentley
 
   public LineElement LineToNative(Line line)
   {
-    DSegment3d dSegment = new DSegment3d(Point3dToNative(line.start), Point3dToNative(line.end));
+    DSegment3d dSegment = new(Point3dToNative(line.start), Point3dToNative(line.end));
     var _line = new LineElement(Model, null, dSegment);
     return _line;
   }
@@ -363,7 +363,7 @@ public partial class ConverterBentley
         double sweep = GetElementProperty(arc, "SweepAngle").DoubleValue;
         DPoint3d center = (DPoint3d)GetElementProperty(arc, "Center").NativeValue;
         DPoint3d normal = (DPoint3d)GetElementProperty(arc, "Normal").NativeValue;
-        DPlane3d plane = new DPlane3d(center, new DVector3d(normal));
+        DPlane3d plane = new(center, new DVector3d(normal));
 
         // an additional arc rotation can be applied in MicroStation, need to rotate the start/end points to correspond to this rotation before conversion
         double rotation = GetElementProperty(arc, "RotationAngle").DoubleValue;
@@ -453,7 +453,7 @@ public partial class ConverterBentley
     var length = ellipse.ArcLength();
 
     var range = DRange3d.FromEllipse(ellipse);
-    DPlane3d plane = new DPlane3d(center, normal);
+    DPlane3d plane = new(center, normal);
 
     var _arc = new Arc();
     _arc.radius = radius / UoR;
@@ -532,7 +532,7 @@ public partial class ConverterBentley
     vec.GetRange(out DRange3d range);
     vec.CentroidNormalArea(out DPoint3d center, out DVector3d normal, out double area);
 
-    DPlane3d plane = new DPlane3d(center, new DVector3d(normal));
+    DPlane3d plane = new(center, new DVector3d(normal));
 
     var u = units ?? ModelUnits;
     var _ellipse = new Ellipse(PlaneToSpeckle(plane), axis1, axis2, u);
@@ -551,7 +551,7 @@ public partial class ConverterBentley
   {
     var plane = PlaneToNative(ellipse.plane);
 
-    DPlacementZX placement = new DPlacementZX(plane.Origin);
+    DPlacementZX placement = new(plane.Origin);
     var e = new DEllipse3d(
       placement,
       (double)ellipse.firstRadius,
@@ -587,7 +587,7 @@ public partial class ConverterBentley
     vec.GetRange(out DRange3d range);
     vec.CentroidNormalArea(out DPoint3d center, out DVector3d normal, out double area);
 
-    DPlane3d plane = new DPlane3d(center, new DVector3d(normal));
+    DPlane3d plane = new(center, new DVector3d(normal));
     var specklePlane = PlaneToSpeckle(plane);
 
     var u = units ?? ModelUnits;
@@ -695,10 +695,10 @@ public partial class ConverterBentley
   // Line string element
   public Polyline PolylineToSpeckle(LineStringElement lineString, string units = null)
   {
-    List<DPoint3d> vertices = new List<DPoint3d>();
+    List<DPoint3d> vertices = new();
     double totalLength = 0;
-    DPoint3d firstPoint = new DPoint3d();
-    DPoint3d lastPoint = new DPoint3d();
+    DPoint3d firstPoint = new();
+    DPoint3d lastPoint = new();
     bool closed = true;
 
     var segments = GetElementProperty(lineString, "Segments").ContainedValues;
@@ -775,7 +775,7 @@ public partial class ConverterBentley
     if (polyline.closed)
       points.Add(points[0]);
 
-    LineStringElement _lineString = new LineStringElement(Model, null, points.ToArray());
+    LineStringElement _lineString = new(Model, null, points.ToArray());
     return _lineString;
   }
 
@@ -783,7 +783,7 @@ public partial class ConverterBentley
   {
     var segments = PolycurveToSpeckleList(complexString, units);
 
-    DRange3d range = new DRange3d();
+    DRange3d range = new();
     double length = 0;
     bool closed = false;
     CurvePathQuery q = CurvePathQuery.GetAsCurvePathQuery(complexString);
@@ -816,7 +816,7 @@ public partial class ConverterBentley
   {
     var segments = new List<ICurve>();
 
-    Processor processor = new Processor();
+    Processor processor = new();
     ElementGraphicsOutput.Process(complexString, processor);
     var curves = processor.curveVectors;
 
@@ -1397,7 +1397,7 @@ public partial class ConverterBentley
     var subElements = complexShapeElement.GetSubElements().BuildArrayFromContents();
     var segments = ProcessComplexElementSegments(subElements);
 
-    DRange3d range = new DRange3d();
+    DRange3d range = new();
     CurvePathQuery q = CurvePathQuery.GetAsCurvePathQuery(shape);
     if (q != null)
     {
@@ -1632,7 +1632,7 @@ public partial class ConverterBentley
 
     var segments = new List<ICurve>();
 
-    Processor processor = new Processor();
+    Processor processor = new();
     ElementGraphicsOutput.Process(extendedElement, processor);
     var curves = processor.curveVectors;
 
@@ -1693,7 +1693,7 @@ public partial class ConverterBentley
   public Base Type2ElementToSpeckle(Type2Element cellHeader, string units = null)
   {
     var element = new Base();
-    Processor processor = new Processor();
+    Processor processor = new();
     ElementGraphicsOutput.Process(cellHeader, processor);
 
     var x = cellHeader.GetChildren();
@@ -1745,9 +1745,9 @@ public partial class ConverterBentley
   {
     private DTransform3d _transform;
 
-    public List<CurveVector> curveVectors = new List<CurveVector>();
-    public List<CurvePrimitive> curvePrimitives = new List<CurvePrimitive>();
-    public List<Base> elements = new List<Base>();
+    public List<CurveVector> curveVectors = new();
+    public List<CurvePrimitive> curvePrimitives = new();
+    public List<Base> elements = new();
 
     public override void AnnounceElementDisplayParameters(ElementDisplayParameters displayParams)
     {

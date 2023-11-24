@@ -16,7 +16,7 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "volume", nameof(AtomicElement.Volume));
     InsertProperty(dictionary, "numbering - assembly", nameof(AtomicElement.AssemblyUsedForNumbering));
@@ -104,13 +104,13 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
   {
     var holes = GetHolesFeatures(atomicElement);
 
-    List<Dictionary<object, object>> listHolesDetails = new List<Dictionary<object, object>>();
+    List<Dictionary<object, object>> listHolesDetails = new();
 
     foreach (var hole in holes)
     {
       hole.CS.GetCoordSystem(out var point, out _, out _, out var vectorZ);
 
-      Dictionary<object, object> holeProperties = new Dictionary<object, object>
+      Dictionary<object, object> holeProperties = new()
       {
         { "diameter", hole.Hole.Diameter},
         { "center", point },
@@ -125,7 +125,7 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
 
   private static List<ConnectionHoleFeature> GetHolesFeatures(AtomicElement pAtomicElement)
   {
-    List<ConnectionHoleFeature> holes = new List<ConnectionHoleFeature>();
+    List<ConnectionHoleFeature> holes = new();
 
     if (pAtomicElement == null)
       return holes;

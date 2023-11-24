@@ -26,7 +26,7 @@ namespace Speckle.ConnectorCSI.UI;
 public partial class ConnectorBindingsCSI : ConnectorBindings
 {
   public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
-  public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+  public Dictionary<string, Base> StoredObjects = new();
   public override bool CanPreviewReceive => false;
 
   public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)

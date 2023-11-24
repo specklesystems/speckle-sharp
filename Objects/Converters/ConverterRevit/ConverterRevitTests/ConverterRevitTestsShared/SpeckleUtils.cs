@@ -15,7 +15,7 @@ namespace ConverterRevitTests;
 
 internal static class SpeckleUtils
 {
-  public static SemaphoreSlim Throttler = new SemaphoreSlim(1, 1);
+  public static SemaphoreSlim Throttler = new(1, 1);
 
   internal async static Task<string> RunInTransaction(
     Action action,

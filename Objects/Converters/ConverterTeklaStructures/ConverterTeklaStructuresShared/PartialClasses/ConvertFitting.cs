@@ -21,7 +21,7 @@ public partial class ConverterTeklaStructures
     if (fitting is BE.TeklaStructures.Fitting)
     {
       var fit = fitting as BE.TeklaStructures.Fitting;
-      Fitting teklaFitting = new Fitting();
+      Fitting teklaFitting = new();
       teklaFitting.Father = Model.SelectModelObject(new Tekla.Structures.Identifier(fit.hostID));
       teklaFitting.Plane = new Tekla.Structures.Model.Plane();
       teklaFitting.Plane.Origin = new TSG.Point(fit.origin.x, fit.origin.y, fit.origin.z);

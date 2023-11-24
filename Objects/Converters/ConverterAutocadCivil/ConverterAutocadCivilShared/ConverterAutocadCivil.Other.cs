@@ -521,7 +521,7 @@ public partial class ConverterAutocadCivil
     // add block reference
     BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
     var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
-    BlockReference br = new BlockReference(insertionPoint, definitionId);
+    BlockReference br = new(insertionPoint, definitionId);
     br.BlockTransform = convertedTransform;
 
     // add attributes if there are any
@@ -678,7 +678,7 @@ public partial class ConverterAutocadCivil
 
     // create btr
     ObjectId blockId = ObjectId.Null;
-    using (BlockTableRecord btr = new BlockTableRecord())
+    using (BlockTableRecord btr = new())
     {
       btr.Name = definitionName;
       btr.Origin = basePoint;

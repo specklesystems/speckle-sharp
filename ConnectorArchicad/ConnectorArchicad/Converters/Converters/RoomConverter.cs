@@ -41,22 +41,23 @@ public sealed class Room : IConverter
           case Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom:
 
             {
-              Archicad.Room archicadRoom = new Archicad.Room
-              {
-                // convert from Speckle to Archicad data structure
-                // Speckle base properties
-                id = speckleRoom.id,
-                applicationId = speckleRoom.applicationId,
-                // Speckle general properties
-                name = speckleRoom.name,
-                number = speckleRoom.number,
-                // Archicad properties
-                elementType = speckleRoom.elementType,
-                classifications = speckleRoom.classifications,
-                level = speckleRoom.archicadLevel,
-                height = speckleRoom.height,
-                shape = speckleRoom.shape
-              };
+              Archicad.Room archicadRoom =
+                new()
+                {
+                  // convert from Speckle to Archicad data structure
+                  // Speckle base properties
+                  id = speckleRoom.id,
+                  applicationId = speckleRoom.applicationId,
+                  // Speckle general properties
+                  name = speckleRoom.name,
+                  number = speckleRoom.number,
+                  // Archicad properties
+                  elementType = speckleRoom.elementType,
+                  classifications = speckleRoom.classifications,
+                  level = speckleRoom.archicadLevel,
+                  height = speckleRoom.height,
+                  shape = speckleRoom.shape
+                };
 
               rooms.Add(archicadRoom);
             }
@@ -64,18 +65,19 @@ public sealed class Room : IConverter
           case Objects.BuiltElements.Room speckleRoom:
 
             {
-              Archicad.Room archicadRoom = new Archicad.Room
-              {
-                // Speckle base properties
-                id = speckleRoom.id,
-                applicationId = speckleRoom.applicationId,
-                // Speckle general properties
-                name = speckleRoom.name,
-                number = speckleRoom.number,
-                // Archicad properties
-                level = Archicad.Converters.Utils.ConvertLevel(speckleRoom.level),
-                shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
-              };
+              Archicad.Room archicadRoom =
+                new()
+                {
+                  // Speckle base properties
+                  id = speckleRoom.id,
+                  applicationId = speckleRoom.applicationId,
+                  // Speckle general properties
+                  name = speckleRoom.name,
+                  number = speckleRoom.number,
+                  // Archicad properties
+                  level = Archicad.Converters.Utils.ConvertLevel(speckleRoom.level),
+                  shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
+                };
 
               rooms.Add(archicadRoom);
             }
@@ -108,7 +110,7 @@ public sealed class Room : IConverter
     {
       foreach (Archicad.Room archicadRoom in data)
       {
-        Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new Objects.BuiltElements.Archicad.ArchicadRoom();
+        Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new();
 
         // convert from Archicad to Speckle data structure
         // Speckle base properties

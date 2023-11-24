@@ -152,7 +152,7 @@ public partial class ConverterRevit
     switch (speckleStick.type)
     {
       case ElementType1D.Beam:
-        RevitBeam revitBeam = new RevitBeam();
+        RevitBeam revitBeam = new();
         revitBeam.type = propertyName;
         revitBeam.baseLine = speckleStick.baseLine;
 #if REVIT2020 || REVIT2021 || REVIT2022

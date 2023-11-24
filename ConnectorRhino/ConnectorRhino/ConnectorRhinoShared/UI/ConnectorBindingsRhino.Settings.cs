@@ -13,7 +13,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override List<ISetting> GetSettings()
   {
-    List<string> meshImportOptions = new List<string>() { defaultValue, mergeCoplanar };
+    List<string> meshImportOptions = new() { defaultValue, mergeCoplanar };
 
     return new List<ISetting>
     {

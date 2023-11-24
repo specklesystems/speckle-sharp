@@ -186,10 +186,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           // create applicationobject for reporting
           Base converted = null;
           var descriptor = Utils.ObjectDescriptor(obj);
-          ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor)
-          {
-            applicationId = autocadObjectHandle
-          };
+          ApplicationObject reportObj = new(autocadObjectHandle, descriptor) { applicationId = autocadObjectHandle };
 
           if (!converter.CanConvertToSpeckle(obj))
           {

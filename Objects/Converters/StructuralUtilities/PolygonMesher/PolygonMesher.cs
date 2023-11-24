@@ -12,11 +12,11 @@ public class PolygonMesher
 {
   private CoordinateSystem CoordinateTranslation = null;
 
-  private readonly ClosedLoop ExternalLoop = new ClosedLoop();
-  private readonly List<ClosedLoop> Openings = new List<ClosedLoop>();
+  private readonly ClosedLoop ExternalLoop = new();
+  private readonly List<ClosedLoop> Openings = new();
 
-  private readonly Dictionary<IndexPair, Line2D> Internals = new Dictionary<IndexPair, Line2D>();
-  private readonly List<TriangleIndexSet> Triangles = new List<TriangleIndexSet>();
+  private readonly Dictionary<IndexPair, Line2D> Internals = new();
+  private readonly List<TriangleIndexSet> Triangles = new();
 
   private readonly double tolerance = 0.001;
 

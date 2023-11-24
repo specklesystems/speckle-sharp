@@ -22,7 +22,7 @@ public partial class ConverterTeklaStructures
     {
       case BE.TeklaStructures.BoltsArray ba:
       {
-        BoltArray teklaBoltArray = new BoltArray();
+        BoltArray teklaBoltArray = new();
         SetBoltGroupProperties(teklaBoltArray, ba);
         for (int i = 0; i < ba.xDistance.Count; i++)
         {
@@ -37,7 +37,7 @@ public partial class ConverterTeklaStructures
       }
       case BE.TeklaStructures.BoltsXY bx:
       {
-        BoltXYList teklaBoltXY = new BoltXYList();
+        BoltXYList teklaBoltXY = new();
         SetBoltGroupProperties(teklaBoltXY, bx);
         for (int i = 0; i < bx.xPosition.Count; i++)
         {
@@ -52,7 +52,7 @@ public partial class ConverterTeklaStructures
       }
       case BE.TeklaStructures.BoltsCircle bc:
       {
-        BoltCircle teklaBoltCircle = new BoltCircle();
+        BoltCircle teklaBoltCircle = new();
         SetBoltGroupProperties(teklaBoltCircle, bc);
         teklaBoltCircle.NumberOfBolts = bc.boltCount;
         teklaBoltCircle.Diameter = bc.diameter;

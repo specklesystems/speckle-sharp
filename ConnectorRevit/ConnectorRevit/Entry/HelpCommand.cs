@@ -61,7 +61,7 @@ public class NewRibbonCommand : IExternalCommand
 {
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
-    TaskDialog mainDialog = new TaskDialog("Speckle has moved!");
+    TaskDialog mainDialog = new("Speckle has moved!");
     mainDialog.MainInstruction = "Speckle has moved!";
     mainDialog.MainContent = "The Speckle Connector for Revit has moved to its own Tab named 'Speckle' 👉";
     mainDialog.FooterText = "<a href=\"https://speckle.community/\">" + "Feedback?</a>";

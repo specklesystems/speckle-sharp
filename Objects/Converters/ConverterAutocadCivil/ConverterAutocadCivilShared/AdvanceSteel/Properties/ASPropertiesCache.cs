@@ -36,7 +36,7 @@ public class ASPropertiesCache
 
   }
 
-  private readonly Dictionary<Type, ASTypeData> ASPropertiesSets = new Dictionary<Type, ASTypeData>()
+  private readonly Dictionary<Type, ASTypeData> ASPropertiesSets = new()
   {
     { typeof(AtomicElement), new ASTypeData ("assembly") },
     { typeof(Beam), new ASTypeData("beam") },

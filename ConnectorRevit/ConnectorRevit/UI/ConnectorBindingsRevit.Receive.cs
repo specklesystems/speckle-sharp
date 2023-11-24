@@ -29,7 +29,7 @@ namespace Speckle.ConnectorRevit.UI;
 public partial class ConnectorBindingsRevit
 {
   public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
-  public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+  public Dictionary<string, Base> StoredObjects = new();
 
   public CancellationTokenSource CurrentOperationCancellation { get; set; }
 
