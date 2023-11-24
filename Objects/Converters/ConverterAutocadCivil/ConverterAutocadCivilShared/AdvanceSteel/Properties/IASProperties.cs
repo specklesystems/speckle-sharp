@@ -3,13 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.Converter.AutocadCivil
-{
-  public interface IASProperties
-  {
-    Type ObjectType { get; }
+namespace Objects.Converter.AutocadCivil;
 
-    Dictionary<string, ASProperty> BuildedPropertyList();
-  }
+public interface IASProperties
+{
+  Type ObjectType { get; }
+
+  Dictionary<string, ASProperty> BuildedPropertyList();
 }
 #endif

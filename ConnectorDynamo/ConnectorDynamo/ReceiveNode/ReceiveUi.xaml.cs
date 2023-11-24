@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Speckle.ConnectorDynamo.ReceiveNode
+namespace Speckle.ConnectorDynamo.ReceiveNode;
+
+/// <summary>
+/// Interaction logic for SendUi.xaml
+/// </summary>
+public partial class ReceiveUi : UserControl
 {
-  /// <summary>
-  /// Interaction logic for SendUi.xaml
-  /// </summary>
-  public partial class ReceiveUi : UserControl
+  public ReceiveUi()
   {
-    public ReceiveUi()
-    {
-      InitializeComponent();
-    }
+    InitializeComponent();
   }
 }

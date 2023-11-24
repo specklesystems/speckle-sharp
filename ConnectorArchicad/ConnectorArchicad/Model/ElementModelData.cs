@@ -1,13 +1,12 @@
-namespace Archicad.Model
+namespace Archicad.Model;
+
+public sealed class ElementModelData
 {
-  public sealed class ElementModelData
-  {
-    #region --- Fields ---
+  #region --- Fields ---
 
-    public MeshModel model { get; set; }
+  public MeshModel model { get; set; }
 
-    public string applicationId { get; set; }
+  public string applicationId { get; set; }
 
-    #endregion
-  }
+  #endregion
 }

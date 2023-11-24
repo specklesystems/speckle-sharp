@@ -17,153 +17,152 @@ using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using ConnectorRevit.Revit;
 
-namespace Speckle.ConnectorRevit.UI
+namespace Speckle.ConnectorRevit.UI;
+
+public partial class ConnectorBindingsRevit
 {
-  public partial class ConnectorBindingsRevit
+  public override bool CanPreviewReceive => false;
+  private string SelectedReceiveCommit { get; set; }
+  List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
+
+  public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
   {
-    public override bool CanPreviewReceive => false;
-    private string SelectedReceiveCommit { get; set; }
-    List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
-
-    public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
+    try
     {
-      try
+      // first check if commit is the same and preview objects have already been generated
+      Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
+      progress.Report = new ProgressReport();
+
+      if (commit.id != SelectedReceiveCommit)
       {
-        // first check if commit is the same and preview objects have already been generated
-        Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
-        progress.Report = new ProgressReport();
+        // check for converter
+        var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
+        converter.SetContextDocument(CurrentDoc.Document);
 
-        if (commit.id != SelectedReceiveCommit)
-        {
-          // check for converter
-          var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
-          converter.SetContextDocument(CurrentDoc.Document);
+        var settings = new Dictionary<string, string>();
+        CurrentSettings = state.Settings;
+        foreach (var setting in state.Settings)
+          settings.Add(setting.Slug, setting.Selection);
 
-          var settings = new Dictionary<string, string>();
-          CurrentSettings = state.Settings;
-          foreach (var setting in state.Settings)
-            settings.Add(setting.Slug, setting.Selection);
+        settings["preview"] = "true";
+        converter.SetConverterSettings(settings);
 
-          settings["preview"] = "true";
-          converter.SetConverterSettings(settings);
+        var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
-          var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+        Preview.Clear();
+        StoredObjects.Clear();
 
-          Preview.Clear();
-          StoredObjects.Clear();
+        Preview = FlattenCommitObject(commitObject, converter);
+        foreach (var previewObj in Preview)
+          progress.Report.Log(previewObj);
 
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-
-          IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await APIContext
-            .Run(app =>
+        IConvertedObjectsCache<Base, Element> convertedObjects = null;
+        await APIContext
+          .Run(app =>
+          {
+            using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
             {
-              using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
-              {
-                t.Start();
-                convertedObjects = ConvertReceivedObjects(converter, progress, new TransactionManager(null, null));
-                t.Commit();
-              }
+              t.Start();
+              convertedObjects = ConvertReceivedObjects(converter, progress, new TransactionManager(null, null));
+              t.Commit();
+            }
 
-              AddMultipleRevitElementServers(convertedObjects);
-            })
-            .ConfigureAwait(false);
-        }
-        else // just generate the log
-        {
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-        }
+            AddMultipleRevitElementServers(convertedObjects);
+          })
+          .ConfigureAwait(false);
       }
-      catch (Exception ex)
+      else // just generate the log
       {
-        SpeckleLog.Logger.Error(ex, "Failed to preview receive: {exceptionMessage}", ex.Message);
+        foreach (var previewObj in Preview)
+          progress.Report.Log(previewObj);
       }
-
-      return null;
+    }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Error(ex, "Failed to preview receive: {exceptionMessage}", ex.Message);
     }
 
-    public override void ResetDocument()
+    return null;
+  }
+
+  public override void ResetDocument()
+  {
+    UnregisterServers();
+  }
+
+  public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
+  {
+    ExternalService directContext3DService = ExternalServiceRegistry.GetService(
+      ExternalServices.BuiltInExternalServices.DirectContext3DService
+    );
+    MultiServerService msDirectContext3DService = directContext3DService as MultiServerService;
+    IList<Guid> serverIds = msDirectContext3DService.GetActiveServerIds();
+
+    foreach (var obj in convertedObjects.GetConvertedObjects())
     {
-      UnregisterServers();
+      if (obj is not IDirectContext3DServer server)
+        continue;
+
+      directContext3DService.AddServer(server);
+      m_servers.Add(server);
+      serverIds.Add(server.GetServerId());
+      //RefreshView();
     }
 
-    public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
+    msDirectContext3DService.SetActiveServers(serverIds);
+
+    //m_documents.Add(uidoc.Document);
+    CurrentDoc.UpdateAllOpenViews();
+  }
+
+  public void UnregisterServers()
+  {
+    ExternalServiceId externalDrawerServiceId = ExternalServices.BuiltInExternalServices.DirectContext3DService;
+    var externalDrawerService = ExternalServiceRegistry.GetService(externalDrawerServiceId) as MultiServerService;
+    if (externalDrawerService == null)
+      return;
+
+    foreach (var registeredServerId in externalDrawerService.GetRegisteredServerIds())
     {
-      ExternalService directContext3DService = ExternalServiceRegistry.GetService(
-        ExternalServices.BuiltInExternalServices.DirectContext3DService
-      );
-      MultiServerService msDirectContext3DService = directContext3DService as MultiServerService;
-      IList<Guid> serverIds = msDirectContext3DService.GetActiveServerIds();
-
-      foreach (var obj in convertedObjects.GetConvertedObjects())
-      {
-        if (obj is not IDirectContext3DServer server)
-          continue;
-
-        directContext3DService.AddServer(server);
-        m_servers.Add(server);
-        serverIds.Add(server.GetServerId());
-        //RefreshView();
-      }
-
-      msDirectContext3DService.SetActiveServers(serverIds);
-
-      //m_documents.Add(uidoc.Document);
-      CurrentDoc.UpdateAllOpenViews();
+      var externalDrawServer = externalDrawerService.GetServer(registeredServerId) as IDirectContext3DServer;
+      if (externalDrawServer == null)
+        continue;
+      //if (document != null && !document.Equals(externalDrawServer.Document))
+      //  continue;
+      externalDrawerService.RemoveServer(registeredServerId);
     }
 
-    public void UnregisterServers()
-    {
-      ExternalServiceId externalDrawerServiceId = ExternalServices.BuiltInExternalServices.DirectContext3DService;
-      var externalDrawerService = ExternalServiceRegistry.GetService(externalDrawerServiceId) as MultiServerService;
-      if (externalDrawerService == null)
-        return;
+    m_servers.Clear();
+    CurrentDoc.UpdateAllOpenViews();
+  }
 
-      foreach (var registeredServerId in externalDrawerService.GetRegisteredServerIds())
+  public override bool CanPreviewSend => true;
+
+  public override void PreviewSend(StreamState state, ProgressViewModel progress)
+  {
+    try
+    {
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      var filterObjs = GetSelectionFilterObjects(converter, state.Filter);
+      foreach (var filterObj in filterObjs)
       {
-        var externalDrawServer = externalDrawerService.GetServer(registeredServerId) as IDirectContext3DServer;
-        if (externalDrawServer == null)
-          continue;
-        //if (document != null && !document.Equals(externalDrawServer.Document))
-        //  continue;
-        externalDrawerService.RemoveServer(registeredServerId);
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
+        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
+        if (!converter.CanConvertToSpeckle(filterObj))
+          reportObj.Update(
+            status: ApplicationObject.State.Skipped,
+            logItem: $"Sending this object type is not supported in Revit"
+          );
+        else
+          reportObj.Update(status: ApplicationObject.State.Created);
+        progress.Report.Log(reportObj);
       }
 
-      m_servers.Clear();
-      CurrentDoc.UpdateAllOpenViews();
+      SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList(), true);
     }
-
-    public override bool CanPreviewSend => true;
-
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    catch (Exception ex)
     {
-      try
-      {
-        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjects(converter, state.Filter);
-        foreach (var filterObj in filterObjs)
-        {
-          var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
-          var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
-          if (!converter.CanConvertToSpeckle(filterObj))
-            reportObj.Update(
-              status: ApplicationObject.State.Skipped,
-              logItem: $"Sending this object type is not supported in Revit"
-            );
-          else
-            reportObj.Update(status: ApplicationObject.State.Created);
-          progress.Report.Log(reportObj);
-        }
-
-        SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList(), true);
-      }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Error(ex, "Failed to preview send: {exceptionMessage}", ex.Message);
-      }
+      SpeckleLog.Logger.Error(ex, "Failed to preview send: {exceptionMessage}", ex.Message);
     }
   }
 }

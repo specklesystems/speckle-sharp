@@ -10,110 +10,109 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 
-namespace Speckle.ConnectorDynamo.ReceiveNode
+namespace Speckle.ConnectorDynamo.ReceiveNode;
+
+public class ReceiveViewCustomization : INodeViewCustomization<Receive>
 {
-  public class ReceiveViewCustomization : INodeViewCustomization<Receive>
+  private DynamoViewModel dynamoViewModel;
+  private DispatcherSynchronizationContext syncContext;
+  private Receive receiveNode;
+  private NodeView _nodeView;
+  private DynamoModel dynamoModel;
+  private MenuItem viewStreamMenuItem;
+
+  public void CustomizeView(Receive model, NodeView nodeView)
   {
-    private DynamoViewModel dynamoViewModel;
-    private DispatcherSynchronizationContext syncContext;
-    private Receive receiveNode;
-    private NodeView _nodeView;
-    private DynamoModel dynamoModel;
-    private MenuItem viewStreamMenuItem;
+    _nodeView = nodeView;
+    dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
+    dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
+    syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
+    receiveNode = model;
 
-    public void CustomizeView(Receive model, NodeView nodeView)
-    {
-      _nodeView = nodeView;
-      dynamoModel = nodeView.ViewModel.DynamoViewModel.Model;
-      dynamoViewModel = nodeView.ViewModel.DynamoViewModel;
-      syncContext = new DispatcherSynchronizationContext(nodeView.Dispatcher);
-      receiveNode = model;
+    receiveNode.OnInputsChanged += InputsChanged;
+    receiveNode.OnNewDataAvail += NewDataAvail;
 
-      receiveNode.OnInputsChanged += InputsChanged;
-      receiveNode.OnNewDataAvail += NewDataAvail;
+    var ui = new ReceiveUi();
+    nodeView.inputGrid.Children.Add(ui);
 
-      var ui = new ReceiveUi();
-      nodeView.inputGrid.Children.Add(ui);
+    //bindings
+    ui.DataContext = model;
 
-      //bindings
-      ui.DataContext = model;
+    ui.Loaded += Loaded;
+    ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
+    ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
 
-      ui.Loaded += Loaded;
-      ui.ReceiveStreamButton.Click += ReceiveStreamButtonClick;
-      ui.CancelReceiveStreamButton.Click += CancelReceiveStreamButtonClick;
-
-      //nodeView.grid.ContextMenu.Items.Add(new Separator());
-    }
-
-    private void Loaded(object o, RoutedEventArgs a)
-    {
-      Task.Run(async () =>
-      {
-        receiveNode.InitializeReceiver();
-      });
-    }
-
-    private DebounceTimer debounceTimer = new DebounceTimer();
-
-    private void InputsChanged()
-    {
-      debounceTimer.Debounce(
-        300,
-        () =>
-        {
-          Task.Run(async () =>
-          {
-            receiveNode.LoadInputs(dynamoModel.EngineController);
-            UpdateContextMenu();
-          });
-        }
-      );
-    }
-
-    private void NewDataAvail()
-    {
-      Task.Run(async () =>
-      {
-        receiveNode.DoReceive();
-      });
-    }
-
-    private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
-    {
-      NewDataAvail();
-    }
-
-    private void UpdateContextMenu()
-    {
-      receiveNode.DispatchOnUIThread(() =>
-      {
-        if (viewStreamMenuItem != null)
-        {
-          _nodeView.grid.ContextMenu.Items.Remove(viewStreamMenuItem);
-        }
-
-        viewStreamMenuItem = null;
-
-        if (receiveNode.Stream != null)
-        {
-          viewStreamMenuItem = new MenuItem
-          {
-            Header = $"View stream {receiveNode.Stream.StreamId} @ {receiveNode.Stream.ServerUrl} online ↗"
-          };
-          viewStreamMenuItem.Click += (a, e) =>
-          {
-            System.Diagnostics.Process.Start($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
-          };
-          _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
-        }
-      });
-    }
-
-    private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)
-    {
-      receiveNode.CancelReceive();
-    }
-
-    public void Dispose() { }
+    //nodeView.grid.ContextMenu.Items.Add(new Separator());
   }
+
+  private void Loaded(object o, RoutedEventArgs a)
+  {
+    Task.Run(async () =>
+    {
+      receiveNode.InitializeReceiver();
+    });
+  }
+
+  private DebounceTimer debounceTimer = new DebounceTimer();
+
+  private void InputsChanged()
+  {
+    debounceTimer.Debounce(
+      300,
+      () =>
+      {
+        Task.Run(async () =>
+        {
+          receiveNode.LoadInputs(dynamoModel.EngineController);
+          UpdateContextMenu();
+        });
+      }
+    );
+  }
+
+  private void NewDataAvail()
+  {
+    Task.Run(async () =>
+    {
+      receiveNode.DoReceive();
+    });
+  }
+
+  private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
+  {
+    NewDataAvail();
+  }
+
+  private void UpdateContextMenu()
+  {
+    receiveNode.DispatchOnUIThread(() =>
+    {
+      if (viewStreamMenuItem != null)
+      {
+        _nodeView.grid.ContextMenu.Items.Remove(viewStreamMenuItem);
+      }
+
+      viewStreamMenuItem = null;
+
+      if (receiveNode.Stream != null)
+      {
+        viewStreamMenuItem = new MenuItem
+        {
+          Header = $"View stream {receiveNode.Stream.StreamId} @ {receiveNode.Stream.ServerUrl} online ↗"
+        };
+        viewStreamMenuItem.Click += (a, e) =>
+        {
+          System.Diagnostics.Process.Start($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
+        };
+        _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
+      }
+    });
+  }
+
+  private void CancelReceiveStreamButtonClick(object sender, RoutedEventArgs e)
+  {
+    receiveNode.CancelReceive();
+  }
+
+  public void Dispose() { }
 }

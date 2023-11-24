@@ -13,29 +13,28 @@ using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 
-namespace Archicad
-{
-  public static class ElementTypeProvider
-  {
-    private static Dictionary<string, Type> _nameToType =
-      new()
-      {
-        { "Wall", typeof(Wall) },
-        { "Slab", typeof(Floor) },
-        { "Roof", typeof(Roof) },
-        { "Shell", typeof(Shell) },
-        { "Zone", typeof(Room) },
-        { "Beam", typeof(Beam) },
-        { "Column", typeof(Column) },
-        { "Door", typeof(Door) },
-        { "Window", typeof(Window) },
-        { "Skylight", typeof(Skylight) },
-        { "GridElement", typeof(GridElement) }
-      };
+namespace Archicad;
 
-    public static Type GetTypeByName(string name)
+public static class ElementTypeProvider
+{
+  private static Dictionary<string, Type> _nameToType =
+    new()
     {
-      return _nameToType.TryGetValue(name, out var value) ? value : typeof(DirectShape);
-    }
+      { "Wall", typeof(Wall) },
+      { "Slab", typeof(Floor) },
+      { "Roof", typeof(Roof) },
+      { "Shell", typeof(Shell) },
+      { "Zone", typeof(Room) },
+      { "Beam", typeof(Beam) },
+      { "Column", typeof(Column) },
+      { "Door", typeof(Door) },
+      { "Window", typeof(Window) },
+      { "Skylight", typeof(Skylight) },
+      { "GridElement", typeof(GridElement) }
+    };
+
+  public static Type GetTypeByName(string name)
+  {
+    return _nameToType.TryGetValue(name, out var value) ? value : typeof(DirectShape);
   }
 }

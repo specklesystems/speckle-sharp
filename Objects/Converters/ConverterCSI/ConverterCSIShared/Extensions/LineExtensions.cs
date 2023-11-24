@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using Objects.Geometry;
 
-namespace ConverterCSIShared.Extensions
+namespace ConverterCSIShared.Extensions;
+
+internal static class LineExtensions
 {
-  internal static class LineExtensions
+  public static IEnumerable<Point> ToPoints(this Line line)
   {
-    public static IEnumerable<Point> ToPoints(this Line line)
-    {
-      yield return line.start;
-      yield return line.end;
-    }
+    yield return line.start;
+    yield return line.end;
   }
 }

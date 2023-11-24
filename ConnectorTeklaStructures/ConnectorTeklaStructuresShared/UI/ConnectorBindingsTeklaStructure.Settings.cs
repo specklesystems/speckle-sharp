@@ -6,23 +6,22 @@ using System.Text;
 using DesktopUI2.Models.Settings;
 using System.Linq;
 
-namespace Speckle.ConnectorTeklaStructures.UI
+namespace Speckle.ConnectorTeklaStructures.UI;
+
+public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 {
-  public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
+  public override List<ISetting> GetSettings()
   {
-    public override List<ISetting> GetSettings()
+    return new List<ISetting>
     {
-      return new List<ISetting>
+      new CheckBoxSetting
       {
-        new CheckBoxSetting
-        {
-          Slug = "recieve-objects-mesh",
-          Name = "Receive Objects as Direct Mesh",
-          Icon = "Link",
-          IsChecked = false,
-          Description = "Recieve the stream as a Meshes only"
-        }
-      };
-    }
+        Slug = "recieve-objects-mesh",
+        Name = "Receive Objects as Direct Mesh",
+        Icon = "Link",
+        IsChecked = false,
+        Description = "Recieve the stream as a Meshes only"
+      }
+    };
   }
 }

@@ -9,27 +9,26 @@ using System.Linq;
 using System.Threading.Tasks;
 using DesktopUI2.Models.Settings;
 
-namespace Speckle.ConnectorCSI.UI
+namespace Speckle.ConnectorCSI.UI;
+
+public partial class ConnectorBindingsCSI : ConnectorBindings
 {
-  public partial class ConnectorBindingsCSI : ConnectorBindings
+  #region Local stream I/O with local file
+  public override List<MenuItem> GetCustomStreamMenuItems()
   {
-    #region Local stream I/O with local file
-    public override List<MenuItem> GetCustomStreamMenuItems()
-    {
-      return new List<MenuItem>();
-    }
-
-    public override void WriteStreamsToFile(List<StreamState> streams)
-    {
-      StreamStateManager.ClearStreamStateList(Model);
-      StreamStateManager.WriteStreamStateList(Model, streams);
-    }
-
-    public override List<StreamState> GetStreamsInFile()
-    {
-      return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
-    }
-
-    #endregion
+    return new List<MenuItem>();
   }
+
+  public override void WriteStreamsToFile(List<StreamState> streams)
+  {
+    StreamStateManager.ClearStreamStateList(Model);
+    StreamStateManager.WriteStreamStateList(Model, streams);
+  }
+
+  public override List<StreamState> GetStreamsInFile()
+  {
+    return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
+  }
+
+  #endregion
 }

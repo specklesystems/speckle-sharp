@@ -11,81 +11,77 @@ using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Archicad.Converters
+namespace Archicad.Converters;
+
+public sealed class Door : IConverter
 {
-  public sealed class Door : IConverter
+  public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadDoor);
+
+  public async Task<List<ApplicationObject>> ConvertToArchicad(
+    IEnumerable<TraversalContext> elements,
+    CancellationToken token
+  )
   {
-    public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadDoor);
+    var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(
-      IEnumerable<TraversalContext> elements,
-      CancellationToken token
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
     )
     {
-      var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
-
-      var context = Archicad.Helpers.Timer.Context.Peek;
-      using (
-        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
-      )
+      foreach (var tc in elements)
       {
-        foreach (var tc in elements)
-        {
-          token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
-          switch (tc.current)
-          {
-            case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
-              archicadDoor.parentApplicationId = tc.parent.current.id;
-              doors.Add(archicadDoor);
-              break;
-            //case Objects.BuiltElements.Opening window:
-            //  var baseLine = (Line)wall.baseLine;
-            //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
-            //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-            //  if (el is RevitWall revitWall)
-            //    newWall.flipped = revitWall.flipped;
-            //  walls.Add(newWall);
-            //  break;
-          }
+        switch (tc.current)
+        {
+          case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
+            archicadDoor.parentApplicationId = tc.parent.current.id;
+            doors.Add(archicadDoor);
+            break;
+          //case Objects.BuiltElements.Opening window:
+          //  var baseLine = (Line)wall.baseLine;
+          //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
+          //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+          //  if (el is RevitWall revitWall)
+          //    newWall.flipped = revitWall.flipped;
+          //  walls.Add(newWall);
+          //  break;
         }
       }
-
-      IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
-
-      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(
-      IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token
-    )
-    {
-      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId))
-      );
+    IEnumerable<ApplicationObject> result;
+    result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
 
-      var openings = new List<Base>();
-      if (data is null)
-        return openings;
+    return result is null ? new List<ApplicationObject>() : result.ToList();
+  }
 
-      var context = Archicad.Helpers.Timer.Context.Peek;
-      using (
-        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
-      )
-      {
-        foreach (Objects.BuiltElements.Archicad.ArchicadDoor subelement in data)
-        {
-          subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-            elementModels.First(e => e.applicationId == subelement.applicationId).model
-          );
-          openings.Add(subelement);
-        }
-      }
+  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  {
+    var elementModels = elements as ElementModelData[] ?? elements.ToArray();
+    IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> data = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId))
+    );
 
+    var openings = new List<Base>();
+    if (data is null)
       return openings;
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
+    )
+    {
+      foreach (Objects.BuiltElements.Archicad.ArchicadDoor subelement in data)
+      {
+        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == subelement.applicationId).model
+        );
+        openings.Add(subelement);
+      }
     }
+
+    return openings;
   }
 }

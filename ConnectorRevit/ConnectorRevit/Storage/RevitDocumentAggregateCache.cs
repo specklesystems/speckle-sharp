@@ -4,75 +4,74 @@ using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 
-namespace ConnectorRevit.Storage
+namespace ConnectorRevit.Storage;
+
+/// <summary>
+/// Simple conversion cache to store elements that are retrieved and may be needed again throughout the conversion operation
+/// </summary>
+public sealed class RevitDocumentAggregateCache : IRevitDocumentAggregateCache
 {
-  /// <summary>
-  /// Simple conversion cache to store elements that are retrieved and may be needed again throughout the conversion operation
-  /// </summary>
-  public sealed class RevitDocumentAggregateCache : IRevitDocumentAggregateCache
+  private readonly Dictionary<Type, IRevitObjectCache> objectCaches;
+  private readonly UIDocumentProvider uiDocumentProvider;
+  public Document Document => uiDocumentProvider.Entity.Document;
+
+  public RevitDocumentAggregateCache(UIDocumentProvider uiDocumentProvider)
   {
-    private readonly Dictionary<Type, IRevitObjectCache> objectCaches;
-    private readonly UIDocumentProvider uiDocumentProvider;
-    public Document Document => uiDocumentProvider.Entity.Document;
+    this.uiDocumentProvider = uiDocumentProvider;
+    this.objectCaches = new();
+  }
 
-    public RevitDocumentAggregateCache(UIDocumentProvider uiDocumentProvider)
-    {
-      this.uiDocumentProvider = uiDocumentProvider;
-      this.objectCaches = new();
-    }
+  public IRevitObjectCache<T> GetOrInitializeEmptyCacheOfType<T>(out bool isExistingCache)
+  {
+    return GetOrInitializeCacheOfTypeNullable<T>(null, out isExistingCache);
+  }
 
-    public IRevitObjectCache<T> GetOrInitializeEmptyCacheOfType<T>(out bool isExistingCache)
-    {
-      return GetOrInitializeCacheOfTypeNullable<T>(null, out isExistingCache);
-    }
+  public IRevitObjectCache<T> GetOrInitializeCacheOfType<T>(
+    Action<IRevitObjectCache<T>> initializer,
+    out bool isExistingCache
+  )
+  {
+    return GetOrInitializeCacheOfTypeNullable<T>(initializer, out isExistingCache);
+  }
 
-    public IRevitObjectCache<T> GetOrInitializeCacheOfType<T>(
-      Action<IRevitObjectCache<T>> initializer,
-      out bool isExistingCache
-    )
+  private IRevitObjectCache<T> GetOrInitializeCacheOfTypeNullable<T>(
+    Action<IRevitObjectCache<T>>? initializer,
+    out bool isExistingCache
+  )
+  {
+    if (!objectCaches.TryGetValue(typeof(T), out var singleCache))
     {
-      return GetOrInitializeCacheOfTypeNullable<T>(initializer, out isExistingCache);
-    }
-
-    private IRevitObjectCache<T> GetOrInitializeCacheOfTypeNullable<T>(
-      Action<IRevitObjectCache<T>>? initializer,
-      out bool isExistingCache
-    )
-    {
-      if (!objectCaches.TryGetValue(typeof(T), out var singleCache))
+      isExistingCache = false;
+      singleCache = new RevitObjectCache<T>(this);
+      if (initializer != null)
       {
-        isExistingCache = false;
-        singleCache = new RevitObjectCache<T>(this);
-        if (initializer != null)
-        {
-          initializer((IRevitObjectCache<T>)singleCache);
-        }
-        objectCaches.Add(typeof(T), singleCache);
+        initializer((IRevitObjectCache<T>)singleCache);
       }
-      else
-      {
-        isExistingCache = true;
-      }
-      return (IRevitObjectCache<T>)singleCache;
+      objectCaches.Add(typeof(T), singleCache);
     }
-
-    public IRevitObjectCache<T>? TryGetCacheOfType<T>()
+    else
     {
-      if (!objectCaches.TryGetValue(typeof(T), out var singleCache))
-      {
-        return null;
-      }
-      return singleCache as IRevitObjectCache<T>;
+      isExistingCache = true;
     }
+    return (IRevitObjectCache<T>)singleCache;
+  }
 
-    public void Invalidate<T>()
+  public IRevitObjectCache<T>? TryGetCacheOfType<T>()
+  {
+    if (!objectCaches.TryGetValue(typeof(T), out var singleCache))
     {
-      objectCaches.Remove(typeof(T));
+      return null;
     }
+    return singleCache as IRevitObjectCache<T>;
+  }
 
-    public void InvalidateAll()
-    {
-      objectCaches.Clear();
-    }
+  public void Invalidate<T>()
+  {
+    objectCaches.Remove(typeof(T));
+  }
+
+  public void InvalidateAll()
+  {
+    objectCaches.Clear();
   }
 }

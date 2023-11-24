@@ -4,24 +4,23 @@ using Objects.BuiltElements.AdvanceSteel;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
 using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
 
-namespace Objects.Converter.AutocadCivil
+namespace Objects.Converter.AutocadCivil;
+
+public partial class ConverterAutocadCivil
 {
-  public partial class ConverterAutocadCivil
+  private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
   {
-    private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
-    {
-      AsteelPlate asteelPlate = new AsteelPlate();
+    AsteelPlate asteelPlate = new AsteelPlate();
 
-      plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
+    plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
-      asteelPlate.outline = PolycurveToSpeckle(ptsContour);
+    asteelPlate.outline = PolycurveToSpeckle(ptsContour);
 
-      asteelPlate.area = plate.GetPaintArea();
+    asteelPlate.area = plate.GetPaintArea();
 
-      SetDisplayValue(asteelPlate, plate);
+    SetDisplayValue(asteelPlate, plate);
 
-      return asteelPlate;
-    }
+    return asteelPlate;
   }
 }
 

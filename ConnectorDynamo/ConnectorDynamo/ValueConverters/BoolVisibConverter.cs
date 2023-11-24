@@ -3,30 +3,29 @@ using System.Windows;
 using System.Windows.Data;
 using System.Globalization;
 
-namespace Speckle.ConnectorDynamo.ValueConverters
+namespace Speckle.ConnectorDynamo.ValueConverters;
+
+/// <summary>
+/// return visible if true.
+/// can set second parameter to be "opposite" to reverse the functionality
+/// </summary>
+[ValueConversion(typeof(String), typeof(Visibility))]
+public class BoolVisibConverter : IValueConverter
 {
-  /// <summary>
-  /// return visible if true.
-  /// can set second parameter to be "opposite" to reverse the functionality
-  /// </summary>
-  [ValueConversion(typeof(String), typeof(Visibility))]
-  public class BoolVisibConverter : IValueConverter
+  public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
   {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-      if (value == null)
-        value = false;
-      bool c = (bool)value;
+    if (value == null)
+      value = false;
+    bool c = (bool)value;
 
-      if (parameter != null && parameter.ToString() == "opposite")
-        c = !c;
+    if (parameter != null && parameter.ToString() == "opposite")
+      c = !c;
 
-      return (c) ? Visibility.Visible : Visibility.Collapsed;
-    }
+    return (c) ? Visibility.Visible : Visibility.Collapsed;
+  }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-      throw new NotImplementedException();
-    }
+  public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+  {
+    throw new NotImplementedException();
   }
 }

@@ -15,88 +15,87 @@ using Tekla.Structures.Dialog;
 using Tekla.Structures.Model;
 using Assembly = System.Reflection.Assembly;
 
-namespace Speckle.ConnectorTeklaStructures
+namespace Speckle.ConnectorTeklaStructures;
+
+public partial class MainForm : PluginFormBase
 {
-  public partial class MainForm : PluginFormBase
+  //window owner call
+  [DllImport("user32.dll", SetLastError = true)]
+  [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
+  static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+
+  const int GWL_HWNDPARENT = -8;
+
+  private static Avalonia.Application AvaloniaApp { get; set; }
+  public Model Model { get; private set; }
+  public static Window MainWindow { get; private set; }
+  public static ConnectorBindingsTeklaStructures Bindings { get; set; }
+
+  public MainForm()
   {
-    //window owner call
-    [DllImport("user32.dll", SetLastError = true)]
-    [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
-    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
-
-    const int GWL_HWNDPARENT = -8;
-
-    private static Avalonia.Application AvaloniaApp { get; set; }
-    public Model Model { get; private set; }
-    public static Window MainWindow { get; private set; }
-    public static ConnectorBindingsTeklaStructures Bindings { get; set; }
-
-    public MainForm()
+    Load += MainForm_Load;
+    if (MainWindow == null)
     {
-      Load += MainForm_Load;
-      if (MainWindow == null)
+      // Link to model.
+      Model = new Model();
+      Bindings = new ConnectorBindingsTeklaStructures(Model);
+
+      try
       {
-        // Link to model.
-        Model = new Model();
-        Bindings = new ConnectorBindingsTeklaStructures(Model);
+        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-        try
-        {
-          AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+        BuildAvaloniaApp().Start(AppMain, null);
+        var viewModel = new MainViewModel(Bindings);
+        MainWindow = new DesktopUI2.Views.MainWindow { DataContext = viewModel };
 
-          Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
-          BuildAvaloniaApp().Start(AppMain, null);
-          var viewModel = new MainViewModel(Bindings);
-          MainWindow = new DesktopUI2.Views.MainWindow { DataContext = viewModel };
-
-          Bindings.OpenTeklaStructures();
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Fatal(ex, "Failed to create main form");
-        }
+        Bindings.OpenTeklaStructures();
       }
-
-      MainWindow.Show();
-      MainWindow.Activate();
-      MainWindow.Focus();
-
-      //set Tekla app as owner
-      var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-      SetWindowLongPtr(hwnd, GWL_HWNDPARENT, Tekla.Structures.Dialog.MainWindow.Frame.Handle);
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Fatal(ex, "Failed to create main form");
+      }
     }
 
-    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-    {
-      Assembly a = null;
-      var name = args.Name.Split(',')[0];
-      string path = Path.GetDirectoryName(typeof(MainPlugin).Assembly.Location);
+    MainWindow.Show();
+    MainWindow.Activate();
+    MainWindow.Focus();
 
-      string assemblyFile = Path.Combine(path, name + ".dll");
+    //set Tekla app as owner
+    var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+    SetWindowLongPtr(hwnd, GWL_HWNDPARENT, Tekla.Structures.Dialog.MainWindow.Frame.Handle);
+  }
 
-      if (File.Exists(assemblyFile))
-        a = Assembly.LoadFrom(assemblyFile);
+  static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  {
+    Assembly a = null;
+    var name = args.Name.Split(',')[0];
+    string path = Path.GetDirectoryName(typeof(MainPlugin).Assembly.Location);
 
-      return a;
-    }
+    string assemblyFile = Path.Combine(path, name + ".dll");
 
-    public static AppBuilder BuildAvaloniaApp() =>
-      AppBuilder
-        .Configure<DesktopUI2.App>()
-        .UsePlatformDetect()
-        .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
-        .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
-        .LogToTrace()
-        .UseReactiveUI();
+    if (File.Exists(assemblyFile))
+      a = Assembly.LoadFrom(assemblyFile);
 
-    private static void AppMain(Application app, string[] args)
-    {
-      AvaloniaApp = app;
-    }
+    return a;
+  }
 
-    private void MainForm_Load(object sender, EventArgs e)
-    {
-      Close();
-    }
+  public static AppBuilder BuildAvaloniaApp() =>
+    AppBuilder
+      .Configure<DesktopUI2.App>()
+      .UsePlatformDetect()
+      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+      .LogToTrace()
+      .UseReactiveUI();
+
+  private static void AppMain(Application app, string[] args)
+  {
+    AvaloniaApp = app;
+  }
+
+  private void MainForm_Load(object sender, EventArgs e)
+  {
+    Close();
   }
 }

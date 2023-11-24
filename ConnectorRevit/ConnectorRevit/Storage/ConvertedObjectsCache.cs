@@ -4,76 +4,75 @@ using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 
-namespace ConnectorRevit.Storage
+namespace ConnectorRevit.Storage;
+
+public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
 {
-  public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
+  private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
+
+  public void AddConvertedObjects(Base converted, IList<Element> created)
   {
-    private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
+    if (string.IsNullOrEmpty(converted.applicationId))
+      return;
+    convertedObjects[converted.applicationId] = (converted, created.ToList());
+  }
 
-    public void AddConvertedObjects(Base converted, IList<Element> created)
+  public IEnumerable<Base> GetConvertedObjects()
+  {
+    foreach (var kvp in convertedObjects)
     {
-      if (string.IsNullOrEmpty(converted.applicationId))
-        return;
-      convertedObjects[converted.applicationId] = (converted, created.ToList());
+      yield return kvp.Value.Item1;
     }
+  }
 
-    public IEnumerable<Base> GetConvertedObjects()
+  public IEnumerable<Base> GetConvertedObjectsFromCreatedId(string id)
+  {
+    foreach (var kvp in convertedObjects)
     {
-      foreach (var kvp in convertedObjects)
+      foreach (var obj in kvp.Value.Item2)
       {
+        if (obj.UniqueId != id)
+          continue;
+
         yield return kvp.Value.Item1;
+        yield break;
       }
     }
+  }
 
-    public IEnumerable<Base> GetConvertedObjectsFromCreatedId(string id)
+  public bool HasConvertedObjectWithId(string id)
+  {
+    return convertedObjects.ContainsKey(id);
+  }
+
+  public IEnumerable<Element> GetCreatedObjects()
+  {
+    foreach (var kvp in convertedObjects)
     {
-      foreach (var kvp in convertedObjects)
+      foreach (var obj in kvp.Value.Item2)
       {
-        foreach (var obj in kvp.Value.Item2)
-        {
-          if (obj.UniqueId != id)
-            continue;
-
-          yield return kvp.Value.Item1;
-          yield break;
-        }
+        yield return obj;
       }
     }
+  }
 
-    public bool HasConvertedObjectWithId(string id)
-    {
-      return convertedObjects.ContainsKey(id);
-    }
+  public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
+  {
+    if (convertedObjects.TryGetValue(id, out var value))
+      return value.Item2;
+    return Enumerable.Empty<Element>();
+  }
 
-    public IEnumerable<Element> GetCreatedObjects()
+  public bool HasCreatedObjectWithId(string id)
+  {
+    foreach (var kvp in convertedObjects)
     {
-      foreach (var kvp in convertedObjects)
+      foreach (var obj in kvp.Value.Item2)
       {
-        foreach (var obj in kvp.Value.Item2)
-        {
-          yield return obj;
-        }
+        if (obj.UniqueId == id)
+          return true;
       }
     }
-
-    public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
-    {
-      if (convertedObjects.TryGetValue(id, out var value))
-        return value.Item2;
-      return Enumerable.Empty<Element>();
-    }
-
-    public bool HasCreatedObjectWithId(string id)
-    {
-      foreach (var kvp in convertedObjects)
-      {
-        foreach (var obj in kvp.Value.Item2)
-        {
-          if (obj.UniqueId == id)
-            return true;
-        }
-      }
-      return false;
-    }
+    return false;
   }
 }
