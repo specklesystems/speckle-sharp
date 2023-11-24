@@ -153,7 +153,7 @@ namespace Archicad.Launcher
         using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
         {
           Base commitObject;
-          
+
           var context = Archicad.Helpers.Timer.Context.Peek;
           using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
           {

@@ -24,8 +24,5 @@ public class AsteelPlate : Area, IDisplayValue<List<Mesh>>, IHasArea, IHasVolume
     this.units = units;
   }
 
-
-  public AsteelPlate()
-  {
-  }
+  public AsteelPlate() { }
 }

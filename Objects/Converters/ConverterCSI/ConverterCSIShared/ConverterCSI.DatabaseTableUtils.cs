@@ -6,6 +6,7 @@ namespace Objects.Converter.CSI
   {
     private ETABSGridLineDefinitionTable gridLineDefinitionTable;
     private ETABSGridLineDefinitionTable GridLineDefinitionTable => gridLineDefinitionTable ??= new(Model, new(Model));
+
     public void CommitAllDatabaseTableChanges()
     {
       GridLineDefinitionTable.CommitPendingChanges();

@@ -96,7 +96,8 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "Link",
           Values = new List<string> { DsFallbackAways, DsFallbackOnError, DsFallbackNever },
           Selection = DsFallbackOnError,
-          Description = "Determines when to fallback to DirectShape on receive.\n\nAways: all objects will be received as DirectShapes\nOn Error: only objects that fail or whose types are missing\nNever: disables the fallback behavior"
+          Description =
+            "Determines when to fallback to DirectShape on receive.\n\nAways: all objects will be received as DirectShapes\nOn Error: only objects that fail or whose types are missing\nNever: disables the fallback behavior"
         },
         new MultiSelectBoxSetting
         {
@@ -122,7 +123,8 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "LocationSearching",
           Values = mappingOptions,
           Selection = forNewTypes,
-          Description = "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types\n\nNOTE: no dialog is shown if Fallback to DirectShape is set to Always"
+          Description =
+            "Determines when the missing types dialog is shown\n\nNever: the dialog is never shown\nAlways: the dialog is always shown, useful to edit existing mappings\nFor New Types: the dialog is only shown if there are new unmapped types\n\nNOTE: no dialog is shown if Fallback to DirectShape is set to Always"
         },
         new ListBoxSetting
         {
@@ -131,7 +133,8 @@ namespace Speckle.ConnectorRevit.UI
           Icon = "Link",
           Values = new List<string>() { DetailLevelCoarse, DetailLevelMedium, DetailLevelFine },
           Selection = DetailLevelFine,
-          Description = "Determines the level of detail in which meshes are sent to Speckle. \n\nThis feature is in alpha because primitive objects such as curves, \nwhich are commonly found in coarse or medium detail level element representations, are not supported yet."
+          Description =
+            "Determines the level of detail in which meshes are sent to Speckle. \n\nThis feature is in alpha because primitive objects such as curves, \nwhich are commonly found in coarse or medium detail level element representations, are not supported yet."
         },
       };
     }

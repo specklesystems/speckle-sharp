@@ -4,7 +4,7 @@ using Speckle.Core.Models;
 namespace RevitSharedResources.Interfaces
 {
   /// <summary>
-  /// <para>This interface defines the functionality related to getting and setting the "type" and "family" values on Base objects. This functionality lives in the converter, because getting and setting the type of a specific Base object requires knowledge of the Objects kit.</para> 
+  /// <para>This interface defines the functionality related to getting and setting the "type" and "family" values on Base objects. This functionality lives in the converter, because getting and setting the type of a specific Base object requires knowledge of the Objects kit.</para>
   /// </summary>
   public interface IRevitElementTypeRetriever
   {

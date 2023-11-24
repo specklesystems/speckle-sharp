@@ -38,7 +38,10 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     [NodeCategory("Transports")]
     public static object MemoryTransport(string name = "Memory")
     {
-      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+      Analytics.TrackEvent(
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Memory Transport" } }
+      );
       return new MemoryTransport { TransportName = name };
     }
 
@@ -50,7 +53,6 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     [NodeCategory("Transports")]
     public static object ServerTransport(StreamWrapper stream)
     {
-
       var userId = stream.UserId;
       Core.Credentials.Account account;
 
@@ -61,19 +63,22 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
         // Get the default account
         account = AccountManager.GetAccounts(stream.ServerUrl).FirstOrDefault();
         error = new WarningException(
-          "Original account not found. Please make sure you have permissions to access this stream!");
+          "Original account not found. Please make sure you have permissions to access this stream!"
+        );
         if (account == null)
         {
           // No default
-          error = new WarningException(
-            $"No account found for {stream.ServerUrl}.");
+          error = new WarningException($"No account found for {stream.ServerUrl}.");
         }
       }
 
-      if (error != null) throw error;
+      if (error != null)
+        throw error;
 
-      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
-
+      Analytics.TrackEvent(
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Server Transport" } }
+      );
 
       return new ServerTransport(account, stream.StreamId);
     }
@@ -86,7 +91,11 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     /// <param name="scope">The name of the actual database file. Defaults to `UserLocalDefaultDb`.</param>
     /// <returns></returns>
     [NodeCategory("Transports")]
-    public static object SQLiteTransport(string basePath = "", string applicationName = "Speckle", string scope = "UserLocalDefaultDb")
+    public static object SQLiteTransport(
+      string basePath = "",
+      string applicationName = "Speckle",
+      string scope = "UserLocalDefaultDb"
+    )
     {
       if (string.IsNullOrEmpty(basePath))
         basePath = null;
@@ -95,7 +104,10 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
       if (string.IsNullOrEmpty(scope))
         scope = "UserLocalDefaultDb";
 
-      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
+      Analytics.TrackEvent(
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "SQLite Transport" } }
+      );
 
       return new SQLiteTransport(basePath, applicationName, scope);
     }

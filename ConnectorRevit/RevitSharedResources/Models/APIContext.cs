@@ -6,14 +6,14 @@ using System.Threading;
 namespace RevitSharedResources.Models
 {
   /// <summary>
-  /// This class gives access to the Revit API context from anywhere in your codebase. This is essentially a 
+  /// This class gives access to the Revit API context from anywhere in your codebase. This is essentially a
   /// lite version of the Revit.Async package from Kennan Chan. Most of the functionality was taken from that code.
   /// The main difference is that this class does not subscribe to the applicationIdling event from revit
   /// which the docs say will impact the performance of Revit
   /// </summary>
   public static class APIContext
   {
-    private static SemaphoreSlim semaphore = new(1,1);
+    private static SemaphoreSlim semaphore = new(1, 1);
     private static UIControlledApplication uiApplication;
     private static ExternalEventHandler<IExternalEventHandler, ExternalEvent> factoryExternalEventHandler;
     private static ExternalEvent factoryExternalEvent;
@@ -25,7 +25,7 @@ namespace RevitSharedResources.Models
     /// <param name="application"></param>
     public static void Initialize(UIControlledApplication application)
     {
-      uiApplication = application; 
+      uiApplication = application;
       factoryExternalEventHandler = new(ExternalEvent.Create);
       factoryExternalEvent = ExternalEvent.Create(factoryExternalEventHandler);
     }
@@ -46,28 +46,32 @@ namespace RevitSharedResources.Models
         semaphore.Release();
       }
     }
-    
+
     public static async Task Run(Action<UIControlledApplication> action)
     {
       await Run<object>(app =>
-      {
-        action(app);
-        return null;
-      }).ConfigureAwait(false);
+        {
+          action(app);
+          return null;
+        })
+        .ConfigureAwait(false);
     }
+
     public static async Task Run(Action action)
     {
       await Run<object>(_ =>
-      {
-        action();
-        return null;
-      }).ConfigureAwait(false);
+        {
+          action();
+          return null;
+        })
+        .ConfigureAwait(false);
     }
 
     private static async Task<TResult> Run<TParameter, TResult>(
       ExternalEventHandler<TParameter, TResult> handler,
       TParameter parameter,
-      ExternalEvent externalEvent)
+      ExternalEvent externalEvent
+    )
     {
       var task = handler.GetTask(parameter);
       externalEvent.Raise();
@@ -87,6 +91,7 @@ namespace RevitSharedResources.Models
   internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
   {
     public TaskCompletionSource<TResult> Result { get; private set; }
+
     public Task<TResult> GetTask(TParameter parameter)
     {
       Parameter = parameter;
@@ -95,6 +100,7 @@ namespace RevitSharedResources.Models
     }
 
     private Func<TParameter, TResult> func;
+
     public ExternalEventHandler(Func<TParameter, TResult> func)
     {
       this.func = func;
@@ -102,6 +108,7 @@ namespace RevitSharedResources.Models
 
     public HandlerStatus Status { get; private set; } = HandlerStatus.NotStarted;
     public TParameter Parameter { get; private set; }
+
     public void Execute(UIApplication app)
     {
       Status = HandlerStatus.Started;

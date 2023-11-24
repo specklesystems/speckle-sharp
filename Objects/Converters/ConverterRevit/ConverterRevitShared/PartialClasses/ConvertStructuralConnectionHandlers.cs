@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
   {
     private ApplicationObject StructuralConnectionHandlerToNative(StructuralConnectionHandler speckleConnectionHandler)
     {
-      // I think the code below is mostly what we need to get this working. However, the 
+      // I think the code below is mostly what we need to get this working. However, the
       // StructuralConnectionHandler has a one to many relationship and we need to make sure
       // that every object that the connection is connected to has been converted before
       // this object is converted. Therefore I'm waiting on Jedd's new traversal function to make this
@@ -49,13 +49,16 @@ namespace Objects.Converter.Revit
 
       return null;
     }
+
     private Base StructuralConnectionHandlerToSpeckle(DB.Structure.StructuralConnectionHandler revitConnection)
     {
-      var type = revitConnection.Document.GetElement(revitConnection.GetTypeId()) as Structure.StructuralConnectionHandlerType;
+      var type =
+        revitConnection.Document.GetElement(revitConnection.GetTypeId()) as Structure.StructuralConnectionHandlerType;
 
       //var connectedElements = revitConnection.GetConnectedElementIds();
 
-      var speckleConnection = new StructuralConnectionHandler() { 
+      var speckleConnection = new StructuralConnectionHandler()
+      {
         family = type.FamilyName,
         type = type.Name,
         //connectedElements = connectedElements
@@ -63,10 +66,13 @@ namespace Objects.Converter.Revit
 
       // Structural Connection Handlers are (supposedly) view specific which requires getting mesh by view
       // TODO: not guarenteed that the active view is what we need (3D view with fine detail where the element is visible
-      speckleConnection.displayValue = GetElementDisplayValue(revitConnection, new DB.Options() { View = Doc.ActiveView });
+      speckleConnection.displayValue = GetElementDisplayValue(
+        revitConnection,
+        new DB.Options() { View = Doc.ActiveView }
+      );
 
       GetAllRevitParamsAndIds(speckleConnection, revitConnection);
-      
+
       return speckleConnection;
     }
   }

@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
       var speckleRevitConduit = speckleConduit as RevitConduit;
 
       var docObj = GetExistingElementByApplicationId(speckleConduit.applicationId);
-      var appObj = new ApplicationObject(speckleConduit.id, speckleConduit.speckle_type) { applicationId = speckleConduit.applicationId };
+      var appObj = new ApplicationObject(speckleConduit.id, speckleConduit.speckle_type)
+      {
+        applicationId = speckleConduit.applicationId
+      };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
         appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj);
@@ -26,7 +29,10 @@ namespace Objects.Converter.Revit
 
       if (!(speckleConduit.baseCurve is Line))
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleConduit.baseCurve.GetType()} cannot be used to create a Revit Conduit");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"BaseCurve of type ${speckleConduit.baseCurve.GetType()} cannot be used to create a Revit Conduit"
+        );
         return appObj;
       }
 
@@ -40,7 +46,10 @@ namespace Objects.Converter.Revit
       DB.Line baseLine = LineToNative(speckleConduit.baseCurve as Line);
       XYZ startPoint = baseLine.GetEndPoint(0);
       XYZ endPoint = baseLine.GetEndPoint(1);
-      DB.Level lineLevel = ConvertLevelToRevit(speckleRevitConduit != null ? speckleRevitConduit.level : LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+      DB.Level lineLevel = ConvertLevelToRevit(
+        speckleRevitConduit != null ? speckleRevitConduit.level : LevelFromCurve(baseLine),
+        out ApplicationObject.State levelState
+      );
       var conduit = Conduit.Create(Doc, conduitType.Id, startPoint, endPoint, lineLevel.Id);
 
       if (conduit == null)
@@ -55,7 +64,12 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitConduit != null)
       {
-        TrySetParam(conduit, BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM, speckleRevitConduit.diameter, speckleRevitConduit.units);
+        TrySetParam(
+          conduit,
+          BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM,
+          speckleRevitConduit.diameter,
+          speckleRevitConduit.units
+        );
         TrySetParam(conduit, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitConduit.length, speckleRevitConduit.units);
         SetInstanceParameters(conduit, speckleRevitConduit);
       }
@@ -86,11 +100,11 @@ namespace Objects.Converter.Revit
         displayValue = GetElementDisplayValue(revitConduit)
       };
 
-      GetAllRevitParamsAndIds(speckleConduit, revitConduit,
-        new List<string>
-        {
-          "RBS_CONDUIT_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM"
-        });
+      GetAllRevitParamsAndIds(
+        speckleConduit,
+        revitConduit,
+        new List<string> { "RBS_CONDUIT_DIAMETER_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM" }
+      );
 
       foreach (var connector in revitConduit.GetConnectorSet())
       {

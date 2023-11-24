@@ -14,9 +14,9 @@ namespace Archicad.Communication.Commands
     {
       [JsonProperty("objects")]
       private IEnumerable<ArchicadObject> Objects { get; }
+
       [JsonProperty("meshModels")]
       private IEnumerable<MeshModel> MeshModels { get; }
-
 
       public Parameters(IEnumerable<ArchicadObject> objects, IEnumerable<MeshModel> meshModels)
       {
@@ -43,7 +43,10 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<ApplicationObject>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects, MeshModels));
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "CreateObject",
+        new Parameters(Objects, MeshModels)
+      );
       return result == null ? null : result.ApplicationObjects;
     }
   }

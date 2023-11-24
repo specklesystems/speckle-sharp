@@ -1,4 +1,4 @@
-﻿using Objects.Structural.CSI.Properties;
+using Objects.Structural.CSI.Properties;
 using Speckle.Core.Kits;
 
 namespace Objects.Converter.CSI

@@ -1,4 +1,4 @@
-﻿using Objects.Structural.Geometry;
+using Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {

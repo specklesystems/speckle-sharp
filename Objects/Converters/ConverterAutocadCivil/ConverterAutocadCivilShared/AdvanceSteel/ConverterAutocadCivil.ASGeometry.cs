@@ -321,7 +321,7 @@ namespace Objects.Converter.AutocadCivil
       return Math.Round(value, digits, MidpointRounding.AwayFromZero);
     }
 
-    #region Units
+#region Units
 
     private UnitsSet _unitsSet;
 
@@ -401,7 +401,7 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    #endregion
+#endregion
   }
 }
 #endif

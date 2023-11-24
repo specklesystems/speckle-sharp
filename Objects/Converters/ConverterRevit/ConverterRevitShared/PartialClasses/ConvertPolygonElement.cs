@@ -23,19 +23,16 @@ namespace Objects.Converter.Revit
       };
 
       var traversal = new GraphTraversal(DefaultTraversal.DefaultRule);
-      var meshes = traversal
-        .Traverse(polygonElement)
-        .Select(tc => tc.current)
-        .Where(b => b is Mesh);
+      var meshes = traversal.Traverse(polygonElement).Select(tc => tc.current).Where(b => b is Mesh);
 
       speckleDirectShape.baseGeometries.AddRange(meshes);
 
       foreach (var kvp in polygonElement.attributes.GetMembers())
       {
-        speckleDirectShape.parameters[kvp.Key] = new Objects.BuiltElements.Revit.Parameter() 
+        speckleDirectShape.parameters[kvp.Key] = new Objects.BuiltElements.Revit.Parameter()
         {
           name = kvp.Key,
-          value = kvp.Value 
+          value = kvp.Value
         };
       }
 

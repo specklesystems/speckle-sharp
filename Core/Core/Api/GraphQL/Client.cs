@@ -155,7 +155,9 @@ public partial class Client : IDisposable
     {
       var result = await ExecuteWithResiliencePolicies(async () =>
         {
-          GraphQLResponse<T> result = await GQLClient.SendMutationAsync<T>(request, cancellationToken).ConfigureAwait(false);
+          GraphQLResponse<T> result = await GQLClient
+            .SendMutationAsync<T>(request, cancellationToken)
+            .ConfigureAwait(false);
           MaybeThrowFromGraphQLErrors(request, result);
           return result.Data;
         })

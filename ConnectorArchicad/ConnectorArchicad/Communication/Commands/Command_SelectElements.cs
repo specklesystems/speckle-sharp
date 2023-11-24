@@ -69,7 +69,10 @@ namespace Archicad.Communication.Commands
 
     public async Task<object> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("SelectElements", new Parameters(ElementIds, Deselect));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "SelectElements",
+        new Parameters(ElementIds, Deselect)
+      );
       return result;
     }
 

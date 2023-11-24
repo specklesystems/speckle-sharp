@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Serialisation;
 
-internal readonly struct OperationTask<T> where T : struct
+internal readonly struct OperationTask<T>
+  where T : struct
 {
   public readonly T OperationType;
   public readonly object? InputValue;
@@ -28,7 +29,8 @@ internal readonly struct OperationTask<T> where T : struct
   }
 }
 
-internal abstract class ParallelOperationExecutor<TOperation> : IDisposable where TOperation : struct
+internal abstract class ParallelOperationExecutor<TOperation> : IDisposable
+  where TOperation : struct
 {
   protected BlockingCollection<OperationTask<TOperation>> Tasks { get; set; } = new();
 

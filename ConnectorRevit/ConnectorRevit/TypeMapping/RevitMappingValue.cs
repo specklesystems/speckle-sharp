@@ -10,10 +10,12 @@ namespace ConnectorRevit.TypeMapping
   [DataContract]
   public class RevitMappingValue : MappingValue
   {
-    public RevitMappingValue(string inType, ISingleHostType inGuess, string inFamily = null, bool inNewType = false) : base(inType, inGuess, inNewType)
+    public RevitMappingValue(string inType, ISingleHostType inGuess, string inFamily = null, bool inNewType = false)
+      : base(inType, inGuess, inNewType)
     {
       IncomingFamily = inFamily;
     }
+
     [DataMember]
     public string IncomingFamily { get; set; }
 

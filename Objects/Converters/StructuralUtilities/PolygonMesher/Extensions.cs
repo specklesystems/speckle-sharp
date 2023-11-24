@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics;
@@ -22,29 +22,29 @@ namespace StructuralUtilities.PolygonMesher
     // Adapted from: http://geomalgorithms.com/a03-_inclusion.html
     private static int Wn_PnPoly(Point2D P, List<Point2D> V)
     {
-      int wn = 0;    // the  winding number counter
+      int wn = 0; // the  winding number counter
       int n = V.Count() - 1;
 
       // loop through all edges of the polygon
       for (int i = 0; i < n; i++)
-      {   // edge from V[i] to  V[i+1]
+      { // edge from V[i] to  V[i+1]
         if (V[i].Y <= P.Y)
-        {          // start y <= P.y
-          if (V[i + 1].Y > P.Y)      // an upward crossing
+        { // start y <= P.y
+          if (V[i + 1].Y > P.Y) // an upward crossing
           {
-            if (IsLeft(V[i], V[i + 1], P) > 0)  // P left of  edge
+            if (IsLeft(V[i], V[i + 1], P) > 0) // P left of  edge
             {
-              ++wn;            // have  a valid up intersect
+              ++wn; // have  a valid up intersect
             }
           }
         }
         else
-        {                        // start y > P.y (no test needed)
-          if (V[i + 1].Y <= P.Y)     // a downward crossing
+        { // start y > P.y (no test needed)
+          if (V[i + 1].Y <= P.Y) // a downward crossing
           {
-            if (IsLeft(V[i], V[i + 1], P) < 0)  // P right of  edge
+            if (IsLeft(V[i], V[i + 1], P) < 0) // P right of  edge
             {
-              --wn;            // have  a valid down intersect
+              --wn; // have  a valid down intersect
             }
           }
         }
@@ -61,9 +61,12 @@ namespace StructuralUtilities.PolygonMesher
     // Adapted from: http://geomalgorithms.com/a03-_inclusion.html
     private static int IsLeft(Point2D P0, Point2D P1, Point2D P2)
     {
-      var result = (((P1.X - P0.X) * (P2.Y - P0.Y)
-              - (P2.X - P0.X) * (P1.Y - P0.Y)));
-      return (result == 0) ? 0 : (result < 0) ? -1 : 1;
+      var result = (((P1.X - P0.X) * (P2.Y - P0.Y) - (P2.X - P0.X) * (P1.Y - P0.Y)));
+      return (result == 0)
+        ? 0
+        : (result < 0)
+          ? -1
+          : 1;
     }
 
     //Using pseudocode found in https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order/1180256#1180256
@@ -103,13 +106,16 @@ namespace StructuralUtilities.PolygonMesher
     {
       var intPtIntersection = intersectee.IntersectWith(intersector);
       if (!intPtIntersection.HasValue)
-      { 
-        return false; 
+      {
+        return false;
       }
       var intPt = intPtIntersection.Value;
 
       //There is no intersection if it's at the end points of the line doing the suppposed intersection
-      if (intersector.StartPoint.EqualsWithinTolerance(intPt, tolerance) || intersector.EndPoint.EqualsWithinTolerance(intPt, tolerance))
+      if (
+        intersector.StartPoint.EqualsWithinTolerance(intPt, tolerance)
+        || intersector.EndPoint.EqualsWithinTolerance(intPt, tolerance)
+      )
       {
         return false;
       }

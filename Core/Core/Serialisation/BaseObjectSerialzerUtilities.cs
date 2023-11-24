@@ -31,12 +31,10 @@ internal static class SerializationUtilities
   )
   {
     cancellationToken.ThrowIfCancellationRequested();
-    
+
     if (jsonProperty is { PropertyType: null })
-      throw new ArgumentException(
-        $"Expected {nameof(JsonProperty.PropertyType)} to be non-null",
-        nameof(jsonProperty));
-    
+      throw new ArgumentException($"Expected {nameof(JsonProperty.PropertyType)} to be non-null", nameof(jsonProperty));
+
     switch (value)
     {
       case JValue jValue when jsonProperty != null:
@@ -97,12 +95,13 @@ internal static class SerializationUtilities
       }
       case JArray array when jsonProperty != null:
       {
-        var arr = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
+        var arr = (IList)
+          Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
 
         foreach (var val in array)
         {
           cancellationToken.ThrowIfCancellationRequested();
-          
+
           if (val == null)
             continue;
 
@@ -150,9 +149,10 @@ internal static class SerializationUtilities
         return jObject.ToObject<Base>(serializer);
       case JObject jObject:
       {
-        var dict = jsonProperty != null 
-          ? Activator.CreateInstance(jsonProperty.PropertyType) as IDictionary
-          : new Dictionary<string, object>();
+        var dict =
+          jsonProperty != null
+            ? Activator.CreateInstance(jsonProperty.PropertyType) as IDictionary
+            : new Dictionary<string, object>();
         foreach (var prop in jObject)
         {
           cancellationToken.ThrowIfCancellationRequested();

@@ -11,16 +11,26 @@ namespace ConnectorRevit.TypeMapping
   public class TypeMap : ITypeMap
   {
     public IEnumerable<string> Categories => categoryToCategoryMap.Keys;
+
     [JsonProperty]
     private Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
+
     [JsonIgnore]
     private Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
+
     [JsonIgnore]
     private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess)
+    public void AddIncomingType(
+      Base @base,
+      string incomingType,
+      string? incomingFamily,
+      string category,
+      ISingleHostType initialGuess
+    )
     {
-      if (baseIds.Contains(@base.id)) return;
+      if (baseIds.Contains(@base.id))
+        return;
       baseIds.Add(@base.id);
 
       // add empty category if it isn't already present
@@ -54,7 +64,7 @@ namespace ConnectorRevit.TypeMapping
       return singleCategoryMap.GetMappingValues();
     }
 
-    public IEnumerable<(Base,ISingleValueToMap)> GetAllBasesWithMappings()
+    public IEnumerable<(Base, ISingleValueToMap)> GetAllBasesWithMappings()
     {
       foreach (var kvp in baseToMappingValue)
       {
@@ -69,7 +79,7 @@ namespace ConnectorRevit.TypeMapping
         return null;
       }
 
-      if (!singleCategoryMap.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap)) 
+      if (!singleCategoryMap.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap))
       {
         return null;
       }
@@ -91,7 +101,9 @@ namespace ConnectorRevit.TypeMapping
       {
         if (mapping is not RevitMappingValue revitMappingValue)
         {
-          throw new ArgumentException($"expected a {nameof(RevitMappingValue)}, but was passed a value of type {mapping.GetType()}");
+          throw new ArgumentException(
+            $"expected a {nameof(RevitMappingValue)}, but was passed a value of type {mapping.GetType()}"
+          );
         }
 
         // add empty category if it isn't already present
@@ -101,7 +113,13 @@ namespace ConnectorRevit.TypeMapping
           categoryToCategoryMap[category] = categoryMappingValues;
         }
 
-        if (!categoryMappingValues.TryGetMappingValue(revitMappingValue.IncomingFamily, revitMappingValue.IncomingType, out var existingMappingValue))
+        if (
+          !categoryMappingValues.TryGetMappingValue(
+            revitMappingValue.IncomingFamily,
+            revitMappingValue.IncomingType,
+            out var existingMappingValue
+          )
+        )
         {
           categoryMappingValues.AddMappingValue(revitMappingValue);
         }

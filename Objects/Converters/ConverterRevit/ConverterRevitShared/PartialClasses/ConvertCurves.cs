@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +82,10 @@ namespace Objects.Converter.Revit
 
         appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-      appObj.Update(status: ApplicationObject.State.Created, logItem: $"Created as {appObj.CreatedIds.Count} detail curves");
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        logItem: $"Created as {appObj.CreatedIds.Count} detail curves"
+      );
       return appObj;
     }
 
@@ -131,7 +134,9 @@ namespace Objects.Converter.Revit
         // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
         if (speckleLine is IDisplayValue<Geometry.Polyline> d)
         {
-          appObj.Update(logItem: $"Curve failed conversion (probably a closed period curve or non-planar nurbs): used polyline display value instead.");
+          appObj.Update(
+            logItem: $"Curve failed conversion (probably a closed period curve or non-planar nurbs): used polyline display value instead."
+          );
           return ModelCurvesFromEnumerator(CurveToNative(d.displayValue).GetEnumerator(), speckleLine, appObj);
         }
         else
@@ -153,17 +158,26 @@ namespace Objects.Converter.Revit
       try
       {
         View drawingView = GetCurvePlanView(speckleCurve, out bool isTempView);
-        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView).get_Item(0);
+        var revitCurve = Doc.Create
+          .NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView)
+          .get_Item(0);
 
         // Delete the temp view after drawing
         if (isTempView)
           Doc.Delete(drawingView.Id);
 
-        appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
+        appObj.Update(
+          status: ApplicationObject.State.Created,
+          createdId: revitCurve.UniqueId,
+          convertedItem: revitCurve
+        );
       }
       catch (Exception)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "View is not valid for room boundary line creation.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "View is not valid for room boundary line creation."
+        );
       }
       return appObj;
     }
@@ -200,23 +214,33 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var res = Doc.Create.NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        var res = Doc.Create
+          .NewSpaceBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView)
+          .get_Item(0);
         appObj.Update(status: ApplicationObject.State.Created, createdId: res.UniqueId, convertedItem: res);
       }
       catch (Exception)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "View is not valid for space separation line creation.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "View is not valid for space separation line creation."
+        );
       }
       return appObj;
     }
 
-    public ApplicationObject ModelCurvesFromEnumerator(IEnumerator curveEnum, ICurve speckleLine, ApplicationObject appObj)
+    public ApplicationObject ModelCurvesFromEnumerator(
+      IEnumerator curveEnum,
+      ICurve speckleLine,
+      ApplicationObject appObj
+    )
     {
       while (curveEnum.MoveNext() && curveEnum.Current != null)
       {
         var curve = curveEnum.Current as DB.Curve;
         // Curves must be bound in order to be valid model curves
-        if (!curve.IsBound) curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+        if (!curve.IsBound)
+          curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
         DB.ModelCurve revitCurve = null;
 
         if (Doc.IsFamilyDocument)
@@ -227,7 +251,8 @@ namespace Objects.Converter.Revit
         if (revitCurve != null)
           appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
-      if (appObj.CreatedIds.Count > 1) appObj.Update(logItem: $"Created as {appObj.CreatedIds.Count} model curves");
+      if (appObj.CreatedIds.Count > 1)
+        appObj.Update(logItem: $"Created as {appObj.CreatedIds.Count} model curves");
       appObj.Update(status: ApplicationObject.State.Created);
       return appObj;
     }
@@ -238,7 +263,10 @@ namespace Objects.Converter.Revit
 
     public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document), revitCurve.LineStyle.Name);
+      var speckleCurve = new ModelCurve(
+        CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document),
+        revitCurve.LineStyle.Name
+      );
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
@@ -247,7 +275,10 @@ namespace Objects.Converter.Revit
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
     {
-      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document), revitCurve.LineStyle.Name);
+      var speckleCurve = new DetailCurve(
+        CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document),
+        revitCurve.LineStyle.Name
+      );
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
@@ -301,15 +332,12 @@ namespace Objects.Converter.Revit
       // If Z Values are equal the Plane is XY
       if (startPoint.Z == endPoint.Z)
         plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, startPoint);
-
       // If X Values are equal the Plane is YZ
       else if (startPoint.X == endPoint.X)
         plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisX, startPoint);
-
       // If Y Values are equal the Plane is XZ
       else if (startPoint.Y == endPoint.Y)
         plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisY, startPoint);
-
       // Otherwise the Planes Normal Vector is not X,Y or Z.
       // We draw lines from the Origin to each Point and use the Plane this one spans up.
       else

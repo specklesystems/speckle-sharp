@@ -1,4 +1,4 @@
-﻿using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET;
 using Bentley.GeometryNET;
 using Bentley.MstnPlatformNET;
 using Speckle.Core.Kits;

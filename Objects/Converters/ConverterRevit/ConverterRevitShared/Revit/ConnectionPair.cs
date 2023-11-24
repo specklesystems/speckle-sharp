@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
 
@@ -20,9 +20,10 @@ namespace ConverterRevitShared.Revit
 
     public bool IsConnected { get; private set; }
 
-    public string Name => RefConnector != null
-      ? $"{Owner.Category.Name}: {Connector.Owner.Name} --> {RefConnector.Owner.Category.Name}: {RefConnector.Owner.Name}"
-      : $"{Owner.Category.Name}: {Connector.Owner.Name} --> NULL";
+    public string Name =>
+      RefConnector != null
+        ? $"{Owner.Category.Name}: {Connector.Owner.Name} --> {RefConnector.Owner.Category.Name}: {RefConnector.Owner.Name}"
+        : $"{Owner.Category.Name}: {Connector.Owner.Name} --> NULL";
 
     private ConnectionPair(Element element, Connector connector, Connector refConnector = null)
     {
@@ -76,9 +77,7 @@ namespace ConverterRevitShared.Revit
 
     public bool IsValid()
     {
-      return Connector.Owner.Id.Equals(Owner.Id) && RefConnector != null ? 
-        Connector.IsConnectedTo(RefConnector):
-        true;
+      return Connector.Owner.Id.Equals(Owner.Id) && RefConnector != null ? Connector.IsConnectedTo(RefConnector) : true;
     }
 
     public int CompareTo(ConnectionPair other)
@@ -99,9 +98,9 @@ namespace ConverterRevitShared.Revit
 
     private static ConnectorSet GetConnectors(Element e)
     {
-      return e is MEPCurve cure ?
-        cure.ConnectorManager.Connectors:
-        (e as FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
+      return e is MEPCurve cure
+        ? cure.ConnectorManager.Connectors
+        : (e as FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
   }
 }

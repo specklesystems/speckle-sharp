@@ -1,4 +1,4 @@
-﻿using Bentley.DgnPlatformNET;
+using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.GeometryNET;
 using Bentley.MstnPlatformNET;
@@ -20,9 +20,8 @@ namespace Speckle.ConnectorBentley.Entry
   {
     public static SpeckleBentleyApp App;
 
-    public SpeckleBentleyApp(IntPtr mdlDesc) : base(mdlDesc)
-    {
-    }
+    public SpeckleBentleyApp(IntPtr mdlDesc)
+      : base(mdlDesc) { }
 
     protected override int Run(string[] commandLine)
     {
@@ -45,7 +44,7 @@ namespace Speckle.ConnectorBentley.Entry
       SpeckleBentleyCommand.CreateOrFocusSpeckle();
     }
 
-    // This is necessary for finding assemblies when building Avalonia 
+    // This is necessary for finding assemblies when building Avalonia
     static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
     {
       Assembly a = null;
@@ -60,5 +59,4 @@ namespace Speckle.ConnectorBentley.Entry
       return a;
     }
   }
-
 }

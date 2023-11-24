@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -152,7 +152,8 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [JsonConstructor]
-    private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private Send(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts)
+      : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 3)
       {
@@ -178,7 +179,6 @@ namespace Speckle.ConnectorDynamo.SendNode
     /// </summary>
     public Send()
     {
-
       AddInputs();
       AddOutputs();
 
@@ -193,16 +193,21 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("data", "The data to send")));
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream", "The stream or streams to send to")));
-      InPorts.Add(new PortModel(PortType.Input, this,
-        new PortData("message", "Commit message. If left blank, one will be generated for you.", defaultMessageValue)));
+      InPorts.Add(
+        new PortModel(
+          PortType.Input,
+          this,
+          new PortData("message", "Commit message. If left blank, one will be generated for you.", defaultMessageValue)
+        )
+      );
     }
 
     private void AddOutputs()
     {
-      OutPorts.Add(new PortModel(PortType.Output, this,
-        new PortData("stream", "Stream or streams pointing to the created commit")));
+      OutPorts.Add(
+        new PortModel(PortType.Output, this, new PortData("stream", "Stream or streams pointing to the created commit"))
+      );
     }
-
 
     internal void CancelSend()
     {
@@ -227,7 +232,6 @@ namespace Speckle.ConnectorDynamo.SendNode
       if (Transmitting)
         CancelSend();
 
-
       Transmitting = true;
       Message = "Converting...";
       _cancellationToken = new CancellationTokenSource();
@@ -236,7 +240,6 @@ namespace Speckle.ConnectorDynamo.SendNode
       {
         if (_transports == null)
           throw new SpeckleException("The stream provided is invalid");
-
 
         Base @base = null;
         var converter = new BatchConverter();
@@ -287,9 +290,15 @@ namespace Speckle.ConnectorDynamo.SendNode
           ResetNode();
         }
 
-        var commitIds = Functions.Functions.Send(@base, _transports, _cancellationToken.Token, _branchNames,
+        var commitIds = Functions.Functions.Send(
+          @base,
+          _transports,
+          _cancellationToken.Token,
+          _branchNames,
           _commitMessage,
-          ProgressAction, ErrorAction);
+          ProgressAction,
+          ErrorAction
+        );
 
         if (!hasErrors && commitIds != null)
         {
@@ -378,7 +387,6 @@ namespace Speckle.ConnectorDynamo.SendNode
           }
         }
 
-
         _transports = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
@@ -401,21 +409,15 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       try
       {
-        _commitMessage =
-          InPorts[2].Connectors.Any()
-            ? GetInputAs<string>(engine, 2)
-            : ""; //IsConnected not working because has default value
+        _commitMessage = InPorts[2].Connectors.Any() ? GetInputAs<string>(engine, 2) : ""; //IsConnected not working because has default value
       }
       catch
       {
         Message = "Message is invalid, will skip it";
       }
 
-
       InitializeSender();
     }
-
-
 
     private void InitializeSender()
     {
@@ -427,14 +429,14 @@ namespace Speckle.ConnectorDynamo.SendNode
         //if we're dealing with a single Base (preconverted obj) use GetTotalChildrenCount to count its children
         _objectCount = (int)@base.GetTotalChildrenCount();
         //exclude wrapper obj.... this is a bit of a hack...
-        if (_objectCount > 1) _objectCount--;
+        if (_objectCount > 1)
+          _objectCount--;
       }
 
       ExpiredCount = _objectCount.ToString();
       if (string.IsNullOrEmpty(Message))
         Message = "Updates ready";
     }
-
 
     private T GetInputAs<T>(EngineController engine, int port, bool count = false)
     {
@@ -443,8 +445,8 @@ namespace Speckle.ConnectorDynamo.SendNode
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
       var inputMirror = engine.GetMirror(astId);
 
-
-      if (inputMirror == null || inputMirror.GetData() == null) return default(T);
+      if (inputMirror == null || inputMirror.GetData() == null)
+        return default(T);
 
       var data = inputMirror.GetData();
       var value = RecurseInput(data, count);
@@ -471,7 +473,6 @@ namespace Speckle.ConnectorDynamo.SendNode
 
       return @object;
     }
-
 
     private void ExpireNode()
     {
@@ -532,13 +533,15 @@ namespace Speckle.ConnectorDynamo.SendNode
     {
       if (!InPorts[0].IsConnected || !InPorts[1].IsConnected || !_hasOutput)
       {
-        return OutPorts.Enumerate().Select(output =>
-          AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+        return OutPorts
+          .Enumerate()
+          .Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
 
       var dataFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, object>(Functions.Functions.SendData),
-        new List<AssociativeNode> { AstFactory.BuildStringNode(_outputInfo) });
+        new List<AssociativeNode> { AstFactory.BuildStringNode(_outputInfo) }
+      );
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall) };
     }

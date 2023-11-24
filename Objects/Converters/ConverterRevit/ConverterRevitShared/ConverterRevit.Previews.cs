@@ -1,4 +1,4 @@
-﻿using ConverterRevitShared;
+using ConverterRevitShared;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -22,7 +22,10 @@ namespace Objects.Converter.Revit
       var meshes = @object.Flatten().Where(b => b is Mesh).Cast<Mesh>();
       if (meshes == null || !meshes.Any())
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"No displayable meshes found for object of type {@object.speckle_type}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"No displayable meshes found for object of type {@object.speckle_type}"
+        );
         return appObj;
       }
       try

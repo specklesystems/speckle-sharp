@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -16,7 +16,6 @@ namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
-
     public TeklaBeam PolyBeamToSpeckle(PolyBeam PolyBeam)
     {
       var speckleBeam = new TeklaBeam();

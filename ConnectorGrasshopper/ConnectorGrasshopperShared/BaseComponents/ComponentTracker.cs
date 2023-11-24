@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
 

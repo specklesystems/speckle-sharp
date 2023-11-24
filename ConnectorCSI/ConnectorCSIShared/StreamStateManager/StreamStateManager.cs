@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
 using System;

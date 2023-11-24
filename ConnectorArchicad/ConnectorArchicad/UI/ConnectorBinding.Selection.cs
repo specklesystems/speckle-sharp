@@ -9,7 +9,9 @@ namespace Archicad.Launcher
   {
     public override void SelectClientObjects(List<string> elemntIds, bool deselect = false)
     {
-      var result = AsyncCommandProcessor.Execute(new Communication.Commands.SelectElements(elemntIds, deselect))?.Result;
+      var result = AsyncCommandProcessor
+        .Execute(new Communication.Commands.SelectElements(elemntIds, deselect))
+        ?.Result;
     }
   }
 }

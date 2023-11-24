@@ -61,7 +61,7 @@ namespace Objects.Converter.AutocadCivil
       return steelTypeDataList;
     }
 
-    #region Load dictionary
+#region Load dictionary
 
     /// <summary>
     /// Load all properties of each Advance Steel object type
@@ -98,7 +98,7 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    #endregion
+#endregion
   }
 }
 #endif

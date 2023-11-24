@@ -98,7 +98,6 @@ public partial class ConverterRevit
         return BuiltInCategory.OST_CableTray.ToString();
       default:
         return BuiltInCategory.OST_GenericModel.ToString();
-
     }
   }
 }

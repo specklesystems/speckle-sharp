@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
       var speckleRevitCableTray = speckleCableTray as RevitCableTray;
 
       var docObj = GetExistingElementByApplicationId((speckleCableTray).applicationId);
-      var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
+      var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type)
+      {
+        applicationId = speckleCableTray.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -36,13 +39,19 @@ namespace Objects.Converter.Revit
         DB.Line baseLine = LineToNative(speckleCableTray.baseCurve as Line);
         XYZ startPoint = baseLine.GetEndPoint(0);
         XYZ endPoint = baseLine.GetEndPoint(1);
-        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitCableTray != null ? speckleRevitCableTray.level : LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+        DB.Level lineLevel = ConvertLevelToRevit(
+          speckleRevitCableTray != null ? speckleRevitCableTray.level : LevelFromCurve(baseLine),
+          out ApplicationObject.State levelState
+        );
         CableTray lineCableTray = CableTray.Create(Doc, cableTrayType.Id, startPoint, endPoint, lineLevel.Id);
         cableTray = lineCableTray;
       }
       else
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"BaseCurve of type ${speckleCableTray.baseCurve.GetType()} cannot be used to create a Revit CableTray"
+        );
         return appObj;
       }
 
@@ -52,9 +61,24 @@ namespace Objects.Converter.Revit
 
       if (speckleRevitCableTray != null)
       {
-        TrySetParam(cableTray, BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM, speckleRevitCableTray.height, speckleRevitCableTray.units);
-        TrySetParam(cableTray, BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM, speckleRevitCableTray.width, speckleRevitCableTray.units);
-        TrySetParam(cableTray, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitCableTray.length, speckleRevitCableTray.units);
+        TrySetParam(
+          cableTray,
+          BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM,
+          speckleRevitCableTray.height,
+          speckleRevitCableTray.units
+        );
+        TrySetParam(
+          cableTray,
+          BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM,
+          speckleRevitCableTray.width,
+          speckleRevitCableTray.units
+        );
+        TrySetParam(
+          cableTray,
+          BuiltInParameter.CURVE_ELEM_LENGTH,
+          speckleRevitCableTray.length,
+          speckleRevitCableTray.units
+        );
         SetInstanceParameters(cableTray, speckleRevitCableTray);
       }
 
@@ -85,11 +109,17 @@ namespace Objects.Converter.Revit
         displayValue = GetElementDisplayValue(revitCableTray)
       };
 
-      GetAllRevitParamsAndIds(speckleCableTray, revitCableTray,
+      GetAllRevitParamsAndIds(
+        speckleCableTray,
+        revitCableTray,
         new List<string>
         {
-          "RBS_CABLETRAY_HEIGHT_PARAM", "RBS_CABLETRAY_WIDTH_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM"
-        });
+          "RBS_CABLETRAY_HEIGHT_PARAM",
+          "RBS_CABLETRAY_WIDTH_PARAM",
+          "CURVE_ELEM_LENGTH",
+          "RBS_START_LEVEL_PARAM"
+        }
+      );
 
       foreach (var connector in revitCableTray.GetConnectorSet())
       {

@@ -34,7 +34,8 @@ namespace ConverterCSIShared.Models
       bool sendBeamForces,
       bool sendBraceForces,
       bool sendColumnForces,
-      bool sendOtherForces)
+      bool sendOtherForces
+    )
     {
       this.sapModel = sapModel;
       this.frameNames = frameNames;
@@ -62,10 +63,7 @@ namespace ConverterCSIShared.Models
     {
       if (SendForces(elementType))
       {
-        return new()
-        {
-          resultsByLoadCombination = GetAnalysisResultsForElement1D(elementName).Cast<Result>().ToList()
-        };
+        return new() { resultsByLoadCombination = GetAnalysisResultsForElement1D(elementName).Cast<Result>().ToList() };
       }
       return null;
     }
@@ -76,12 +74,12 @@ namespace ConverterCSIShared.Models
       {
         return GetAnalysisResultsForFrame(elementName);
       }
-      
+
       if (pierNames.Contains(elementName))
       {
         return GetAnalysisResultsForPier(elementName);
       }
-      
+
       if (spandrelNames.Contains(elementName))
       {
         return GetAnalysisResultsForSpandrel(elementName);
@@ -144,7 +142,8 @@ namespace ConverterCSIShared.Models
         v3,
         t,
         m2,
-        m3);
+        m3
+      );
     }
 
     private ResultSet1D GetOrCreateResult(Dictionary<string, ResultSet1D> dict, string loadCaseName)
@@ -152,10 +151,7 @@ namespace ConverterCSIShared.Models
       if (!dict.TryGetValue(loadCaseName, out ResultSet1D comboResults))
       {
         Base loadCaseOrCombination = loadCombinationsAndCases[loadCaseName];
-        comboResults = new ResultSet1D(new())
-        {
-          resultCase = loadCaseOrCombination
-        };
+        comboResults = new ResultSet1D(new()) { resultCase = loadCaseOrCombination };
         dict[loadCaseName] = comboResults;
       }
       return comboResults;
@@ -204,7 +200,8 @@ namespace ConverterCSIShared.Models
         v3,
         t,
         m2,
-        m3);
+        m3
+      );
 
       // local function that just returns 0 in order to avoid unnecessary heap allocations
       // that would occur if we were using a lambda
@@ -246,18 +243,19 @@ namespace ConverterCSIShared.Models
       );
 
       return CreateLoadCombinationResults(
-        elementName, 
-        forcesSuccess, 
-        numberOfResults, 
-        spandrelName, 
+        elementName,
+        forcesSuccess,
+        numberOfResults,
+        spandrelName,
         loadCase,
         Return0Position,
-        p, 
-        v2, 
-        v3, 
-        t, 
-        m2, 
-        m3);
+        p,
+        v2,
+        v3,
+        t,
+        m2,
+        m3
+      );
 
       // local function that just returns 0 in order to avoid unnecessary heap allocations
       // that would occur if we were using a lambda
@@ -273,13 +271,14 @@ namespace ConverterCSIShared.Models
       int numberOfResults,
       string[]? names,
       string[] loadCase,
-      Func<int, float> positionCalculator, 
+      Func<int, float> positionCalculator,
       double[] p,
       double[] v2,
       double[] v3,
       double[] t,
       double[] m2,
-      double[] m3)
+      double[] m3
+    )
     {
       Dictionary<string, ResultSet1D> loadCombinationResults = new();
       for (int i = 0; i < numberOfResults; i++)
@@ -299,7 +298,8 @@ namespace ConverterCSIShared.Models
           result.momentXX = (float)t[i];
           result.momentYY = (float)m2[i];
           result.momentZZ = (float)m3[i];
-        };
+        }
+        ;
         GetOrCreateResult(loadCombinationResults, loadCase[i]).results1D.Add(result);
       }
       return loadCombinationResults.Values;

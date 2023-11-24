@@ -14,31 +14,36 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
   {
     public static IRevitObjectCache<T> GetOrInitializeWithDefaultFactory<T>(this IRevitDocumentAggregateCache cache)
     {
-      return cache.GetOrInitializeCacheOfType<T>(singleCache =>
-      {
-        MethodInfo cacheFactoryMethod = null;
-        foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
+      return cache.GetOrInitializeCacheOfType<T>(
+        singleCache =>
         {
-          var firstParam = method.GetParameters().FirstOrDefault();
-          if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>)) continue;
+          MethodInfo cacheFactoryMethod = null;
+          foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
+          {
+            var firstParam = method.GetParameters().FirstOrDefault();
+            if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>))
+              continue;
 
-          cacheFactoryMethod = method;
-          break;
-        }
+            cacheFactoryMethod = method;
+            break;
+          }
 
-        if (cacheFactoryMethod == null)
-        {
-          throw new ArgumentException($"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object");
-        }
+          if (cacheFactoryMethod == null)
+          {
+            throw new ArgumentException(
+              $"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object"
+            );
+          }
 
-        cacheFactoryMethod.Invoke(null, new object[] { singleCache, cache.Document });
-      }, out _);
+          cacheFactoryMethod.Invoke(null, new object[] { singleCache, cache.Document });
+        },
+        out _
+      );
     }
 
     public static void CacheInitializer(IRevitObjectCache<Category> cache, Document doc)
     {
       var _categories = new Dictionary<string, Category>();
-
 
       foreach (Category category in doc.Settings.Categories)
       {
@@ -77,6 +82,7 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
     {
       // don't do any default initialization
     }
+
     public static void CacheInitializer(IRevitObjectCache<List<ElementType>> cache, Document doc)
     {
       // don't do any default initialization

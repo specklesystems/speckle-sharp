@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Views;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -88,7 +88,7 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   internal void EndSubOperation()
   {
-    Update(1.0);    
+    Update(1.0);
     Invoke(new Action(_progressBar.EndSubOperation));
   }
 

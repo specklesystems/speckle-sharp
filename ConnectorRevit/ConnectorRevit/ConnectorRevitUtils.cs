@@ -96,10 +96,7 @@ namespace Speckle.ConnectorRevit
       using var categoryFilter = new ElementMulticategoryFilter(categoryIds);
       using var collector = new FilteredElementCollector(doc);
 
-      var elements = collector
-        .WhereElementIsElementType()
-        .WherePasses(categoryFilter)
-        .ToList();
+      var elements = collector.WhereElementIsElementType().WherePasses(categoryFilter).ToList();
 
       return elements;
     }

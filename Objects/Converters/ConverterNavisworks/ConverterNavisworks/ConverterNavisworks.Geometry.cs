@@ -43,27 +43,19 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
     SetPoints(new List<PointD>());
   }
 
-
   public IReadOnlyList<double> Coords => _coords.AsReadOnly();
-
 
   private IReadOnlyList<int> Faces => _faces.AsReadOnly();
 
-
   public IReadOnlyList<TriangleD> Triangles => _triangles.AsReadOnly();
-
 
   public IReadOnlyList<LineD> Lines => _lines.AsReadOnly();
 
-
   public IReadOnlyList<PointD> Points => _points.AsReadOnly();
-
 
   public IEnumerable<double> LocalToWorldTransformation { get; set; }
 
-
   private bool ElevationMode { get; set; }
-
 
   public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
   {
@@ -213,7 +205,7 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   private static Vector3 VectorFromVertex(InwSimpleVertex v)
   {
     var arrayV = (Array)v.coord;
-    return  new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
+    return new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
   }
 }
 
@@ -231,18 +223,13 @@ public class NavisworksGeometry
     Selection = ComBridge.ToInwOpSelection(modelItemCollection);
   }
 
-
   public InwOpSelection Selection { get; set; }
-
 
   public ModelItem ModelItem { get; set; }
 
-
   private IEnumerable<InwOaFragment3> ModelFragments => ModelFragmentStack;
 
-
   public bool ElevationMode { get; set; }
-
 
   public IEnumerable<PrimitiveProcessor> GetUniqueGeometryFragments()
   {
@@ -302,12 +289,9 @@ public class TriangleD
     Vertex3 = v3;
   }
 
-
   public Vector3D Vertex1 { get; set; }
 
-
   public Vector3D Vertex2 { get; set; }
-
 
   public Vector3D Vertex3 { get; set; }
 }
@@ -329,9 +313,7 @@ public class LineD
     Vertex2 = v2;
   }
 
-
   public Vector3D Vertex1 { get; set; }
-
 
   public Vector3D Vertex2 { get; set; }
 }
@@ -354,15 +336,11 @@ public partial class ConverterNavisworks
 {
   private static Vector3D TransformVector3D { get; set; }
 
-
   public Vector SettingOutPoint { get; set; }
-
 
   public Vector TransformVector { get; set; }
 
-
   private BoundingBox3D ModelBoundingBox { get; set; }
-
 
   /// <summary>
   ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
@@ -423,8 +401,8 @@ public partial class ConverterNavisworks
   private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
   {
     return Math.Abs(vectorA.X - vectorB.X) < tolerance
-        && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
-        && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
+      && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
+      && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
   }
 
   private static void PopulateModelFragments(NavisworksGeometry geometry)

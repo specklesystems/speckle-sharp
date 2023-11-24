@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +20,12 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="message">Commit message. If left blank, one will be generated for you.</param>
     /// <param name="enabled">Enable or disable this node</param>
     /// <returns></returns>
-    public static List<string> AutoSend([ArbitraryDimensionArrayImport] object data, object stream, string message = "", bool enabled = true)
+    public static List<string> AutoSend(
+      [ArbitraryDimensionArrayImport] object data,
+      object stream,
+      string message = "",
+      bool enabled = true
+    )
     {
       var result = new List<string>();
       if (!enabled)
@@ -33,10 +38,17 @@ namespace Speckle.ConnectorDynamo.Functions
 
       // .Result is Thread Blocking inRevit
       Task.Run(() =>
-      {
-        var transportsDict = Utils.TryConvertInputToTransport(stream);
-        result = Functions.Send(@base, transportsDict.Keys.ToList(), new System.Threading.CancellationToken(), transportsDict, message);
-      }).Wait();
+        {
+          var transportsDict = Utils.TryConvertInputToTransport(stream);
+          result = Functions.Send(
+            @base,
+            transportsDict.Keys.ToList(),
+            new System.Threading.CancellationToken(),
+            transportsDict,
+            message
+          );
+        })
+        .Wait();
 
       return result;
     }
@@ -54,36 +66,34 @@ namespace Speckle.ConnectorDynamo.Functions
       if (!enabled)
         return result;
 
-
       StreamWrapper sw = null;
-
 
       // .Result is Thread Blocking inRevit
       Task.Run(() =>
-      {
-        //try parse as streamWrapper
-        if (stream is StreamWrapper)
         {
-          sw = (StreamWrapper)stream;
-        }
-        //try parse as Url
-        else if (stream is string)
-        {
-          try
+          //try parse as streamWrapper
+          if (stream is StreamWrapper)
           {
-            sw = new StreamWrapper((string)stream);
+            sw = (StreamWrapper)stream;
           }
-          catch
+          //try parse as Url
+          else if (stream is string)
           {
-            // ignored
+            try
+            {
+              sw = new StreamWrapper((string)stream);
+            }
+            catch
+            {
+              // ignored
+            }
           }
-        }
 
-        result = Functions.Receive(sw, new CancellationToken());
-      }).Wait();
+          result = Functions.Receive(sw, new CancellationToken());
+        })
+        .Wait();
 
       return result;
     }
-
   }
 }

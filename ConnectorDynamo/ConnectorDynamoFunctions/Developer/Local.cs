@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
@@ -19,7 +19,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
 
       var converter = new BatchConverter();
       converter.OnError += (sender, args) => throw args.Error;
-      
+
       var @base = converter.ConvertRecursivelyToSpeckle(data);
       var objectId = Task.Run(async () => await Operations.Send(@base, disposeTransports: true)).Result;
 
@@ -40,7 +40,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
       var converter = new BatchConverter();
       // If a conversion error occurs, throw error.
       converter.OnError += (sender, args) => throw args.Error;
-      
+
       var data = converter.ConvertRecursivelyToNative(@base);
       return data;
     }

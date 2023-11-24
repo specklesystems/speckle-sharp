@@ -9,8 +9,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-      [JsonProperty("applicationIds")] private IEnumerable<string> ApplicationIds { get; }
-
+      [JsonProperty("applicationIds")]
+      private IEnumerable<string> ApplicationIds { get; }
 
       public Parameters(IEnumerable<string> applicationIds)
       {
@@ -21,23 +21,23 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-      [JsonProperty("models")] public IEnumerable<Model.ElementModelData> Models { get; private set; }
+      [JsonProperty("models")]
+      public IEnumerable<Model.ElementModelData> Models { get; private set; }
     }
 
-
     private IEnumerable<string> ApplicationIds { get; }
-
 
     public GetModelForElements(IEnumerable<string> applicationIds)
     {
       ApplicationIds = applicationIds;
     }
 
-
     public async Task<IEnumerable<Model.ElementModelData>> Execute()
     {
-      Result result =
-        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetModelForElements",
+        new Parameters(ApplicationIds)
+      );
       return result.Models;
     }
   }

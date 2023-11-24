@@ -1,4 +1,4 @@
-﻿using Dynamo.Configuration;
+using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
 using Dynamo.Scheduler;
@@ -47,14 +47,18 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(async () => { receiveNode.InitializeReceiver(); });
+      Task.Run(async () =>
+      {
+        receiveNode.InitializeReceiver();
+      });
     }
 
     private DebounceTimer debounceTimer = new DebounceTimer();
 
     private void InputsChanged()
     {
-      debounceTimer.Debounce(300,
+      debounceTimer.Debounce(
+        300,
         () =>
         {
           Task.Run(async () =>
@@ -62,13 +66,16 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
             receiveNode.LoadInputs(dynamoModel.EngineController);
             UpdateContextMenu();
           });
-        });
+        }
+      );
     }
-
 
     private void NewDataAvail()
     {
-      Task.Run(async () => { receiveNode.DoReceive(); });
+      Task.Run(async () =>
+      {
+        receiveNode.DoReceive();
+      });
     }
 
     private void ReceiveStreamButtonClick(object sender, RoutedEventArgs e)
@@ -89,14 +96,15 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
         if (receiveNode.Stream != null)
         {
-
-          viewStreamMenuItem = new MenuItem { Header = $"View stream {receiveNode.Stream.StreamId} @ {receiveNode.Stream.ServerUrl} online ↗" };
+          viewStreamMenuItem = new MenuItem
+          {
+            Header = $"View stream {receiveNode.Stream.StreamId} @ {receiveNode.Stream.ServerUrl} online ↗"
+          };
           viewStreamMenuItem.Click += (a, e) =>
           {
             System.Diagnostics.Process.Start($"{receiveNode.Stream.ServerUrl}/streams/{receiveNode.Stream.StreamId}");
           };
           _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
-
         }
       });
     }
@@ -106,8 +114,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       receiveNode.CancelReceive();
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using NUnit.Framework;
 using Speckle.Core.Transports;
 

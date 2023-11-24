@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Rhino;
 using Rhino.Commands;
 using Rhino.UI;

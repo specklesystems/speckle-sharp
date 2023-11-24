@@ -23,6 +23,7 @@ namespace Objects.Converter.CSI
         yield return LoadPatternToSpeckle(loadCase);
       }
     }
+
     private IEnumerable<LoadCombination> GetLoadCombos()
     {
       var numberOfLoadCombos = 0;

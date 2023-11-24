@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.netDxf.Units;
@@ -18,7 +18,7 @@ namespace Objects.Converters.DxfConverter
 
       if (Doc == null)
         throw new Exception("null doc");
-      
+
       return value * Units.GetConversionFactor(units, DocUnitsToUnits(Doc.DrawingVariables.InsUnits));
     }
 

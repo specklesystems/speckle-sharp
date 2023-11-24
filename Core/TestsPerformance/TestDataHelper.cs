@@ -1,4 +1,4 @@
-﻿using System.Reactive;
+using System.Reactive;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;

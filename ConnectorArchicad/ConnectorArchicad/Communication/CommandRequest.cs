@@ -1,9 +1,10 @@
-﻿using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication
 {
   [JsonObject(MemberSerialization.OptIn)]
-  internal sealed class AddOnCommandRequest<T> where T : class
+  internal sealed class AddOnCommandRequest<T>
+    where T : class
   {
     #region --- Classes ---
 

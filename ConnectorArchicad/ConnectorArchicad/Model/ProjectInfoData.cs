@@ -1,4 +1,4 @@
-﻿namespace Archicad.Model
+namespace Archicad.Model
 {
   public sealed class ProjectInfoData
   {

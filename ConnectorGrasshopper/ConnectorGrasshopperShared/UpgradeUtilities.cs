@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 

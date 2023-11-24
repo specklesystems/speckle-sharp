@@ -4,7 +4,5 @@ using System.Text;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitCurtainWallPanel : RevitElement
-  {
-  }
+  public class RevitCurtainWallPanel : RevitElement { }
 }

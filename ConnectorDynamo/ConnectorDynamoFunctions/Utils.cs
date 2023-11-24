@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,6 @@ namespace Speckle.ConnectorDynamo.Functions
 {
   public static class Utils
   {
-
     public static Dictionary<ITransport, string> TryConvertInputToTransport(object o)
     {
       var defaultBranch = "main";
@@ -34,11 +33,14 @@ namespace Speckle.ConnectorDynamo.Functions
           transports.Add(t, defaultBranch);
           break;
         case List<object> s:
-          transports = s
-            .Select(TryConvertInputToTransport)
-            .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
-              .SelectMany(dict => dict)
-              .ToDictionary(pair => pair.Key, pair => pair.Value));
+          transports = s.Select(TryConvertInputToTransport)
+            .Aggregate(
+              transports,
+              (current, t) =>
+                new List<Dictionary<ITransport, string>> { current, t }
+                  .SelectMany(dict => dict)
+                  .ToDictionary(pair => pair.Key, pair => pair.Value)
+            );
           break;
         default:
           //Warning("Input was neither a transport nor a stream.");
@@ -73,7 +75,6 @@ namespace Speckle.ConnectorDynamo.Functions
             return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2021);
           else
             return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
-
         }
         catch (Exception e)
         {
@@ -82,7 +83,7 @@ namespace Speckle.ConnectorDynamo.Functions
       }
     }
 
-    //My god this function sucks. It took me 20 mins to understand. Why not one that simply deals with one stream wrapper, and then use linq to cast things around? 
+    //My god this function sucks. It took me 20 mins to understand. Why not one that simply deals with one stream wrapper, and then use linq to cast things around?
     internal static List<StreamWrapper> InputToStream(object input)
     {
       try

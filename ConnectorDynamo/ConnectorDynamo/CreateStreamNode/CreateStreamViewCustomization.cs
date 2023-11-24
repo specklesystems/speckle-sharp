@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
@@ -49,7 +49,10 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(async () => { createNode.RestoreSelection(); });
+      Task.Run(async () =>
+      {
+        createNode.RestoreSelection();
+      });
     }
 
     private void CreateStreamButtonClick(object sender, RoutedEventArgs e)
@@ -65,23 +68,21 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     {
       createNode.DispatchOnUIThread(() =>
       {
-
         if (createNode.Stream != null)
         {
-          var viewStreamMenuItem = new MenuItem { Header = $"View stream {createNode.Stream.StreamId} @ {createNode.Stream.ServerUrl} online ↗" };
+          var viewStreamMenuItem = new MenuItem
+          {
+            Header = $"View stream {createNode.Stream.StreamId} @ {createNode.Stream.ServerUrl} online ↗"
+          };
           viewStreamMenuItem.Click += (a, e) =>
           {
             System.Diagnostics.Process.Start($"{createNode.Stream.ServerUrl}/streams/{createNode.Stream.StreamId}");
           };
           _nodeView.grid.ContextMenu.Items.Add(viewStreamMenuItem);
-
         }
       });
     }
 
-
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
   }
 }

@@ -166,9 +166,9 @@ namespace Objects.Converter.CSI
         }
       }
 
-      speckleStructNode.AnalysisResults = resultsConverter?
-        .NodeAnalyticalResultsConverter?
-        .AnalyticalResultsToSpeckle(speckleStructNode.name);
+      speckleStructNode.AnalysisResults = resultsConverter?.NodeAnalyticalResultsConverter?.AnalyticalResultsToSpeckle(
+        speckleStructNode.name
+      );
 
       var GUID = "";
       Model.PointObj.GetGUID(name, ref GUID);

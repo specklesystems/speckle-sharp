@@ -238,7 +238,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       SetupComponent(SelectedConstructor);
     ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
 #if RHINO7
-    if(!Instances.RunningHeadless)
+    if (!Instances.RunningHeadless)
       (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 #else
     (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);

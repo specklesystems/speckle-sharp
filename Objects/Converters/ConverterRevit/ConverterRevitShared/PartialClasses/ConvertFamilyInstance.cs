@@ -40,9 +40,13 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null &&
-        (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
-        || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
+      if (
+        @base == null
+        && (
+          revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
+          || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels
+        )
+      )
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
@@ -109,7 +113,6 @@ namespace Objects.Converter.Revit
         @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
       if (revitFi.FromRoom != null)
         @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
-
 
       return @base;
     }
@@ -523,10 +526,15 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallMullions)
-        || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallPanels))
+      if (
+        familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallMullions)
+        || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_CurtainWallPanels)
+      )
       {
-        appObj.Update(logItem: "Revit cannot create standalone curtain panels or mullions", status: ApplicationObject.State.Skipped);
+        appObj.Update(
+          logItem: "Revit cannot create standalone curtain panels or mullions",
+          status: ApplicationObject.State.Skipped
+        );
         return appObj;
       }
 
@@ -819,11 +827,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(
-          instance,
-          isConvertedAsInstance: true,
-          transform: parentTransform
-        );
+        var meshes = GetElementDisplayValue(instance, isConvertedAsInstance: true, transform: parentTransform);
         symbol.displayValue = meshes;
       }
       catch (Exception e)

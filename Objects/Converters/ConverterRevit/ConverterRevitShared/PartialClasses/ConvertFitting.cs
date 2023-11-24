@@ -13,7 +13,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public DB.FamilyInstance FittingToNative(RevitMEPFamilyInstance speckleRevitFitting, PartType partType, ApplicationObject appObj)
+    public DB.FamilyInstance FittingToNative(
+      RevitMEPFamilyInstance speckleRevitFitting,
+      PartType partType,
+      ApplicationObject appObj
+    )
     {
       var docObj = GetExistingElementByApplicationId(speckleRevitFitting.applicationId);
       // skip if element already exists in doc & receive mode is set to ignore
@@ -22,17 +26,26 @@ namespace Objects.Converter.Revit
 
       var connectorInfo = ValidateConnectorsAndPopulateList(speckleRevitFitting);
 
-      var familyInstance = TryCreateFitting(partType, docObj, connectorInfo)
+      var familyInstance =
+        TryCreateFitting(partType, docObj, connectorInfo)
         ?? throw new SpeckleException($"{nameof(FittingToNative)} yeilded a null familyInstance");
 
-      var familySymbol = GetElementType<FamilySymbol>(speckleRevitFitting, new ApplicationObject(null, null), out bool isExactMatch);
+      var familySymbol = GetElementType<FamilySymbol>(
+        speckleRevitFitting,
+        new ApplicationObject(null, null),
+        out bool isExactMatch
+      );
 
       if (isExactMatch && familyInstance.Symbol.Id.IntegerValue != familySymbol.Id.IntegerValue)
       {
         familyInstance.ChangeTypeId(familySymbol.Id);
       }
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        createdId: familyInstance.UniqueId,
+        convertedItem: familyInstance
+      );
 
       return familyInstance;
     }
@@ -44,7 +57,9 @@ namespace Objects.Converter.Revit
         case PartType.Elbow:
           if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Elbow)} must have 2 connectors, not {connectorInfo.Count}");
+            throw new SpeckleException(
+              $"A fitting with a partType of {nameof(PartType.Elbow)} must have 2 connectors, not {connectorInfo.Count}"
+            );
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
@@ -54,7 +69,9 @@ namespace Objects.Converter.Revit
         case PartType.Transition:
           if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Transition)} must have 2 connectors, not {connectorInfo.Count}");
+            throw new SpeckleException(
+              $"A fitting with a partType of {nameof(PartType.Transition)} must have 2 connectors, not {connectorInfo.Count}"
+            );
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
@@ -72,7 +89,9 @@ namespace Objects.Converter.Revit
         case PartType.Union:
           if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Union)} must have 2 connectors, not {connectorInfo.Count}");
+            throw new SpeckleException(
+              $"A fitting with a partType of {nameof(PartType.Union)} must have 2 connectors, not {connectorInfo.Count}"
+            );
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
@@ -82,25 +101,40 @@ namespace Objects.Converter.Revit
         case PartType.Tee:
           if (connectorInfo.Count != 3)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Tee)} must have 3 connectors, not {connectorInfo.Count}");
+            throw new SpeckleException(
+              $"A fitting with a partType of {nameof(PartType.Tee)} must have 3 connectors, not {connectorInfo.Count}"
+            );
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewTeeFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]), GetConnector(connectorInfo[2]));
+          return Doc.Create.NewTeeFitting(
+            GetConnector(connectorInfo[0]),
+            GetConnector(connectorInfo[1]),
+            GetConnector(connectorInfo[2])
+          );
         case PartType.Cross:
           if (connectorInfo.Count != 4)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Cross)} must have 4 connectors, not {connectorInfo.Count}");
+            throw new SpeckleException(
+              $"A fitting with a partType of {nameof(PartType.Cross)} must have 4 connectors, not {connectorInfo.Count}"
+            );
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewCrossFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]), GetConnector(connectorInfo[2]), GetConnector(connectorInfo[3]));
+          return Doc.Create.NewCrossFitting(
+            GetConnector(connectorInfo[0]),
+            GetConnector(connectorInfo[1]),
+            GetConnector(connectorInfo[2]),
+            GetConnector(connectorInfo[3])
+          );
         default:
-          throw new SpeckleException($"Method named {nameof(FittingToNative)} was not expecting an element with a partType of {partType}");
+          throw new SpeckleException(
+            $"Method named {nameof(FittingToNative)} was not expecting an element with a partType of {partType}"
+          );
       }
     }
 
@@ -112,9 +146,8 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="connectorInfo"></param>
     /// <returns></returns>
-    private Connector GetConnector((Element, int) connectorInfo) => connectorInfo.Item1
-      .GetConnectorSet()
-      .First(c => c.Id == connectorInfo.Item2);
+    private Connector GetConnector((Element, int) connectorInfo) =>
+      connectorInfo.Item1.GetConnectorSet().First(c => c.Id == connectorInfo.Item2);
 
     private List<(Element, int)> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
     {
@@ -126,13 +159,16 @@ namespace Objects.Converter.Revit
       }
       return connectors;
     }
-    
+
     private (Element, int) FindNativeConnectorForSpeckleRevitConnector(RevitMEPConnector speckleRevitConnector)
     {
       List<Exception> exceptions = new();
-      foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
+      foreach (
+        var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
           speckleRevitConnector,
-          receivedObjectsCache))
+          receivedObjectsCache
+        )
+      )
       {
         if (existingConnector != null)
         {
@@ -141,9 +177,13 @@ namespace Objects.Converter.Revit
         }
         else if (element != null)
         {
-          // if the element is not null but the connector is, then the correct connector on the element could not 
+          // if the element is not null but the connector is, then the correct connector on the element could not
           // be found by trying to compare locations of all the connectors on the element
-          exceptions.Add(new SpeckleException("Fitting found native element to connect to but could not find \"connector\" subelement which is needed for connection in Revit"));
+          exceptions.Add(
+            new SpeckleException(
+              "Fitting found native element to connect to but could not find \"connector\" subelement which is needed for connection in Revit"
+            )
+          );
         }
         else if (string.IsNullOrEmpty(elementAppId))
         {
@@ -151,14 +191,16 @@ namespace Objects.Converter.Revit
         }
         else if (ContextObjects.ContainsKey(elementAppId))
         {
-          // here a native element could not be found. Hopefully it is yet to be converted and we can 
+          // here a native element could not be found. Hopefully it is yet to be converted and we can
           // try to convert the fitting later
           throw new ConversionNotReadyException("All connectors must be converted before fitting");
         }
         else
         {
           // TODO: the fitting doesn't exist in the incoming commit. Maybe we can add a placeholder?
-          exceptions.Add(new SpeckleException("The element that the fitting connects to is not in the incoming Commit object"));
+          exceptions.Add(
+            new SpeckleException("The element that the fitting connects to is not in the incoming Commit object")
+          );
         }
       }
       throw new AggregateException(exceptions);

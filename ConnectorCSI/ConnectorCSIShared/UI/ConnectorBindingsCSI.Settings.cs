@@ -24,6 +24,7 @@ namespace Speckle.ConnectorCSI.UI
     public const string DISPLACEMENTS = "Displacements";
     public const string VELOCITIES = "Velocities";
     public const string ACCELERATIONS = "Accelerations";
+
     public override List<ISetting> GetSettings()
     {
       return new List<ISetting>
@@ -33,10 +34,10 @@ namespace Speckle.ConnectorCSI.UI
           Slug = RESULTS_LOAD_CASES_SLUG,
           Name = "Load Case Results To Send",
           Icon = "Link",
-          Description = "Only the analytical results that belong to the load combinations selected here \nwill be sent to Speckle",
+          Description =
+            "Only the analytical results that belong to the load combinations selected here \nwill be sent to Speckle",
           Values = ResultUtils.GetNamesOfAllLoadCasesAndCombos(Model)
         },
-        
         new MultiSelectBoxSetting
         {
           Slug = RESULTS_NODE_SLUG,
@@ -45,7 +46,6 @@ namespace Speckle.ConnectorCSI.UI
           Description = "Determines which node results are sent to Speckle",
           Values = new List<string>() { DISPLACEMENTS, FORCES, VELOCITIES, ACCELERATIONS }
         },
-        
         new MultiSelectBoxSetting
         {
           Slug = RESULTS_1D_SLUG,
@@ -54,7 +54,6 @@ namespace Speckle.ConnectorCSI.UI
           Description = "Determines which 1D element results and sent to Speckle",
           Values = new List<string>() { BEAM_FORCES, BRACE_FORCES, COLUMN_FORCES, OTHER_FORCES }
         },
-        
         new MultiSelectBoxSetting
         {
           Slug = RESULTS_2D_SLUG,

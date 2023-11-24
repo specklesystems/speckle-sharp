@@ -21,8 +21,12 @@ namespace Objects.Converter.CSI
         ref numItems,
         ref cNameTypes,
         ref loadCaseNames,
-        ref scaleFactors);
-      ApiResultValidator.ThrowIfUnsuccessful(success, $"Unable to get load cases for load combination named {loadComboName}");
+        ref scaleFactors
+      );
+      ApiResultValidator.ThrowIfUnsuccessful(
+        success,
+        $"Unable to get load cases for load combination named {loadComboName}"
+      );
 
       List<double> factors = new();
       List<LoadCase> loadCases = new();

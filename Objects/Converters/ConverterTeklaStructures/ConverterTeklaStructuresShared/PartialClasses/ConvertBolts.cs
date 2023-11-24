@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -21,46 +21,47 @@ namespace Objects.Converter.TeklaStructures
       switch (bolts)
       {
         case BE.TeklaStructures.BoltsArray ba:
+        {
+          BoltArray teklaBoltArray = new BoltArray();
+          SetBoltGroupProperties(teklaBoltArray, ba);
+          for (int i = 0; i < ba.xDistance.Count; i++)
           {
-            BoltArray teklaBoltArray = new BoltArray();
-            SetBoltGroupProperties(teklaBoltArray, ba);
-            for (int i = 0; i < ba.xDistance.Count; i++)
-            {
-              teklaBoltArray.AddBoltDistX(ba.xDistance[i]);
-            }
-            for (int i = 0; i < ba.yDistance.Count; i++)
-            {
-              teklaBoltArray.AddBoltDistY(ba.yDistance[i]);
-            }
-            teklaBoltArray.Insert();
-            return;
+            teklaBoltArray.AddBoltDistX(ba.xDistance[i]);
           }
+          for (int i = 0; i < ba.yDistance.Count; i++)
+          {
+            teklaBoltArray.AddBoltDistY(ba.yDistance[i]);
+          }
+          teklaBoltArray.Insert();
+          return;
+        }
         case BE.TeklaStructures.BoltsXY bx:
+        {
+          BoltXYList teklaBoltXY = new BoltXYList();
+          SetBoltGroupProperties(teklaBoltXY, bx);
+          for (int i = 0; i < bx.xPosition.Count; i++)
           {
-            BoltXYList teklaBoltXY = new BoltXYList();
-            SetBoltGroupProperties(teklaBoltXY, bx);
-            for (int i = 0; i < bx.xPosition.Count; i++)
-            {
-              teklaBoltXY.AddBoltDistX(bx.xPosition[i]);
-            }
-            for (int i = 0; i < bx.yPosition.Count; i++)
-            {
-              teklaBoltXY.AddBoltDistY(bx.yPosition[i]);
-            }
-            teklaBoltXY.Insert();
-            return;
+            teklaBoltXY.AddBoltDistX(bx.xPosition[i]);
           }
+          for (int i = 0; i < bx.yPosition.Count; i++)
+          {
+            teklaBoltXY.AddBoltDistY(bx.yPosition[i]);
+          }
+          teklaBoltXY.Insert();
+          return;
+        }
         case BE.TeklaStructures.BoltsCircle bc:
-          {
-            BoltCircle teklaBoltCircle = new BoltCircle();
-            SetBoltGroupProperties(teklaBoltCircle, bc);
-            teklaBoltCircle.NumberOfBolts = bc.boltCount;
-            teklaBoltCircle.Diameter = bc.diameter;
-            teklaBoltCircle.Insert();
-            return;
-          }
+        {
+          BoltCircle teklaBoltCircle = new BoltCircle();
+          SetBoltGroupProperties(teklaBoltCircle, bc);
+          teklaBoltCircle.NumberOfBolts = bc.boltCount;
+          teklaBoltCircle.Diameter = bc.diameter;
+          teklaBoltCircle.Insert();
+          return;
+        }
       }
     }
+
     public BE.TeklaStructures.Bolts BoltsToSpeckle(BoltGroup Bolts)
     {
       BE.TeklaStructures.Bolts speckleTeklaBolt;
@@ -118,9 +119,9 @@ namespace Objects.Converter.TeklaStructures
 
       // global bolt coordinates
       speckleTeklaBolt.coordinates = Bolts.BoltPositions
-          .Cast<TSG.Point>()
-          .Select(p => new Point(p.X, p.Y, p.Z, units))
-          .ToList();
+        .Cast<TSG.Point>()
+        .Select(p => new Point(p.X, p.Y, p.Z, units))
+        .ToList();
 
       // Add bolted parts necessary for insertion into Tekla
       speckleTeklaBolt.boltedPartsIds.Add(Bolts.PartToBeBolted.Identifier.GUID.ToString());
@@ -142,13 +143,17 @@ namespace Objects.Converter.TeklaStructures
 
     public void SetBoltGroupProperties(BoltGroup boltGroup, BE.TeklaStructures.Bolts bolts)
     {
-      boltGroup.PartToBeBolted = Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[0])) as Part;
-      boltGroup.PartToBoltTo = Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[1])) as Part;
+      boltGroup.PartToBeBolted =
+        Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[0])) as Part;
+      boltGroup.PartToBoltTo =
+        Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[1])) as Part;
       if (bolts.boltedPartsIds.Count > 2)
       {
         for (int i = 2; i < bolts.boltedPartsIds.Count; i++)
         {
-          boltGroup.AddOtherPartToBolt(Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[i])) as Part);
+          boltGroup.AddOtherPartToBolt(
+            Model.SelectModelObject(new Tekla.Structures.Identifier(bolts.boltedPartsIds[i])) as Part
+          );
         }
       }
       boltGroup.FirstPosition = new TSG.Point(bolts.firstPosition.x, bolts.firstPosition.y, bolts.firstPosition.z);

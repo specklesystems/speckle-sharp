@@ -57,10 +57,12 @@ public static class Extensions
   /// <returns>True if the CategoryType is Model, AnalyticalModel or Internal</returns>
   public static bool IsCategorySupported(this Category category)
   {
-    if (category.CategoryType == CategoryType.Model ||
-        category.CategoryType == CategoryType.AnalyticalModel ||
-        category.CategoryType == CategoryType.Internal ||
-        category.Id.IntegerValue == -2000220) // Grids
+    if (
+      category.CategoryType == CategoryType.Model
+      || category.CategoryType == CategoryType.AnalyticalModel
+      || category.CategoryType == CategoryType.Internal
+      || category.Id.IntegerValue == -2000220
+    ) // Grids
       return true;
 
     return false;
@@ -73,9 +75,7 @@ public static class Extensions
   /// <returns>True if the element's category is supported and if the element is not view dependent</returns>
   public static bool IsElementSupported(this Element e)
   {
-    if (e.Category == null ||
-        e.ViewSpecific ||
-        !IsCategorySupported(e.Category))
+    if (e.Category == null || e.ViewSpecific || !IsCategorySupported(e.Category))
       return false;
 
     return true;

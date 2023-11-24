@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dynamo.Applications.Models;
 using Dynamo.ViewModels;
 using Dynamo.Wpf.Extensions;
@@ -17,8 +17,6 @@ namespace Speckle.ConnectorDynamo.Extension
 
     public void Loaded(ViewLoadedParams viewLoadedParams)
     {
-
-
       try
       {
         var dynamoViewModel = viewLoadedParams.DynamoWindow.DataContext as DynamoViewModel;
@@ -27,30 +25,30 @@ namespace Speckle.ConnectorDynamo.Extension
         if (dynamoViewModel.Model is RevitDynamoModel rdm)
         {
           rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
-          Globals.RevitDocument = DocumentManager.Instance.GetType().GetProperty("CurrentDBDocument").GetValue(DocumentManager.Instance);
+          Globals.RevitDocument = DocumentManager.Instance
+            .GetType()
+            .GetProperty("CurrentDBDocument")
+            .GetValue(DocumentManager.Instance);
         }
         //sets a read-only property using reflection WatchHandler
         //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
         Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
       }
-      catch (Exception e)
-      {
-
-      }
+      catch (Exception e) { }
     }
 
     private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
     {
-
-      Globals.RevitDocument = DocumentManager.Instance.GetType().GetProperty("CurrentDBDocument").GetValue(DocumentManager.Instance);
+      Globals.RevitDocument = DocumentManager.Instance
+        .GetType()
+        .GetProperty("CurrentDBDocument")
+        .GetValue(DocumentManager.Instance);
     }
 
     public void Dispose() { }
 
-    public void Shutdown()
-    {
-    }
+    public void Shutdown() { }
 
     public void Startup(ViewStartupParams p)
     {

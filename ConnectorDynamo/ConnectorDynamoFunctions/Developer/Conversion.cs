@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -14,7 +14,10 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     /// <returns name="base">Base object</returns>
     public static Base ToSpeckle([ArbitraryDimensionArrayImport] object data)
     {
-      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
+      Analytics.TrackEvent(
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Convert To Speckle" } }
+      );
       var converter = new BatchConverter();
       converter.OnError += (sender, args) => throw args.Error;
       return converter.ConvertRecursivelyToSpeckle(data);
@@ -27,7 +30,10 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     /// <returns name="data">Dynamo data</returns>
     public static object ToNative(Base @base)
     {
-      Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
+      Analytics.TrackEvent(
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Convert To Native" } }
+      );
       var converter = new BatchConverter();
       converter.OnError += (sender, args) => throw args.Error;
       return converter.ConvertRecursivelyToNative(@base);

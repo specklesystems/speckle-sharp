@@ -18,15 +18,17 @@ namespace Objects.Converter.Revit
       var speckleRevitWire = speckleWire as RevitWire;
 
       var docObj = GetExistingElementByApplicationId(speckleWire.applicationId);
-      var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
+      var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type)
+      {
+        applicationId = speckleWire.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
         return appObj;
 
-      var wiringType = speckleRevitWire?.wiringType == "Chamfer"
-        ? DB.Electrical.WiringType.Chamfer
-        : DB.Electrical.WiringType.Arc;
+      var wiringType =
+        speckleRevitWire?.wiringType == "Chamfer" ? DB.Electrical.WiringType.Chamfer : DB.Electrical.WiringType.Arc;
       var wireType = GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out bool _);
       if (wireType == null)
       {
@@ -50,7 +52,7 @@ namespace Objects.Converter.Revit
             case Polyline line:
               points.AddRange(PointListToNative(line.value));
               break;
-            default:  // what other curves should be supported? currently just the ones you can create from revit
+            default: // what other curves should be supported? currently just the ones you can create from revit
               appObj.Update(logItem: $"Wire segment geometry of type {segment.GetType()} not currently supported");
               break;
           }
@@ -76,9 +78,7 @@ namespace Objects.Converter.Revit
         }
       var isUpdate = wire != null;
       // create a new one if there isn't one to update
-      wire ??= DB.Electrical.Wire.Create(Doc, wireType.Id, Doc.ActiveView.Id,
-        wiringType,
-        points, null, null);
+      wire ??= DB.Electrical.Wire.Create(Doc, wireType.Id, Doc.ActiveView.Id, wiringType, points, null, null);
 
       if (speckleRevitWire != null)
         SetInstanceParameters(wire, speckleRevitWire);
@@ -126,11 +126,13 @@ namespace Objects.Converter.Revit
             speckleWire.segments.Add(line);
             break;
           case DB.NurbSpline nurbSpline:
-            var revitCurve = nurbSpline.CreateTransformed(
-              Transform.CreateTranslation(new XYZ(0, 0, start.Z)));
+            var revitCurve = nurbSpline.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, start.Z)));
             // add display value
             var curve = (Curve)CurveToSpeckle(revitCurve, revitWire.Document);
-            var polyCoords = revitCurve.Tessellate().SelectMany(pt => PointToSpeckle(pt, revitWire.Document).ToList()).ToList();
+            var polyCoords = revitCurve
+              .Tessellate()
+              .SelectMany(pt => PointToSpeckle(pt, revitWire.Document).ToList())
+              .ToList();
             curve.displayValue = new Polyline(polyCoords, ModelUnits);
             speckleWire.segments.Add(curve);
             break;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -13,7 +13,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject GridLineToNative(GridLine speckleGridline)
     {
       var revitGrid = GetExistingElementByApplicationId(speckleGridline.applicationId) as Grid;
-      var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
+      var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type)
+      {
+        applicationId = speckleGridline.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitGrid, appObj))
@@ -27,7 +30,6 @@ namespace Objects.Converter.Revit
       {
         if (revitGrid.IsCurved)
           Doc.Delete(revitGrid.Id); //not sure how to modify arc grids
-
         else
         {
           //dim's magic from 1.0
@@ -51,7 +53,12 @@ namespace Objects.Converter.Revit
             if (angle > 0.00001)
             {
               var crossProd = newDirection.CrossProduct(currentDirection).Z;
-              ElementTransformUtils.RotateElement(Doc, revitGrid.Id, Autodesk.Revit.DB.Line.CreateUnbound(newStart, XYZ.BasisZ), crossProd < 0 ? angle : -angle);
+              ElementTransformUtils.RotateElement(
+                Doc,
+                revitGrid.Id,
+                Autodesk.Revit.DB.Line.CreateUnbound(newStart, XYZ.BasisZ),
+                crossProd < 0 ? angle : -angle
+              );
             }
 
             try
@@ -59,7 +66,11 @@ namespace Objects.Converter.Revit
               var datumLine = revitGrid.GetCurvesInView(DatumExtentType.Model, Doc.ActiveView)[0];
               var datumLineZ = datumLine.GetEndPoint(0).Z;
               //note the new datum line has endpoints flipped!
-              revitGrid.SetCurveInView(DatumExtentType.Model, Doc.ActiveView, Line.CreateBound(new XYZ(newEnd.X, newEnd.Y, datumLineZ), new XYZ(newStart.X, newStart.Y, datumLineZ)));
+              revitGrid.SetCurveInView(
+                DatumExtentType.Model,
+                Doc.ActiveView,
+                Line.CreateBound(new XYZ(newEnd.X, newEnd.Y, datumLineZ), new XYZ(newStart.X, newStart.Y, datumLineZ))
+              );
             }
             catch (Exception e)
             {
@@ -79,14 +90,23 @@ namespace Objects.Converter.Revit
           revitGrid = Grid.Create(Doc, l);
         else
         {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve type {curve.GetType().FullName} not supported for Grid");
+          appObj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: $"Curve type {curve.GetType().FullName} not supported for Grid"
+          );
           return appObj;
         }
       }
 
       if (!string.IsNullOrEmpty(speckleGridline.label))
       {
-        var names = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(Grid)).ToElements().Cast<Grid>().ToList().Select(x => x.Name);
+        var names = new FilteredElementCollector(Doc)
+          .WhereElementIsElementType()
+          .OfClass(typeof(Grid))
+          .ToElements()
+          .Cast<Grid>()
+          .ToList()
+          .Select(x => x.Name);
         if (!names.Contains(speckleGridline.label))
           revitGrid.Name = speckleGridline.label;
       }

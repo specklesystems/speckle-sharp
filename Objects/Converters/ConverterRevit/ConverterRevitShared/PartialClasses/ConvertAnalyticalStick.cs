@@ -30,11 +30,15 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance physicalMember = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
       SetAnalyticalProps(physicalMember, speckleStick, offset1, offset2);
 #else
-      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+      var analyticalToPhysicalManager =
+        AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
 
       // check for existing member
       var docObj = GetExistingElementByApplicationId(speckleStick.applicationId);
-      appObj = new ApplicationObject(speckleStick.id, speckleStick.speckle_type) { applicationId = speckleStick.applicationId };
+      appObj = new ApplicationObject(speckleStick.id, speckleStick.speckle_type)
+      {
+        applicationId = speckleStick.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -42,7 +46,10 @@ namespace Objects.Converter.Revit
 
       if (speckleStick.baseLine == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Analytical Members are currently supported.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "Only line based Analytical Members are currently supported."
+        );
         return appObj;
       }
 
@@ -76,8 +83,10 @@ namespace Objects.Converter.Revit
         if (isExactMatch)
         {
           //update type
-          if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
-            || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming))
+          if (
+            familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
+            || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming)
+          )
           {
             analyticalMember.SectionTypeId = familySymbol.Id;
           }
@@ -99,8 +108,10 @@ namespace Objects.Converter.Revit
       {
         revitMember = AnalyticalMember.Create(Doc, baseLine);
         //set type
-        if (familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
-            || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming))
+        if (
+          familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralColumns)
+          || familySymbol.Category.EqualsBuiltInCategory(BuiltInCategory.OST_StructuralFraming)
+        )
         {
           revitMember.SectionTypeId = familySymbol.Id;
         }
@@ -190,12 +201,33 @@ namespace Objects.Converter.Revit
 #else
       if (element is AnalyticalMember analyticalMember)
       {
-        analyticalMember.SetReleaseConditions(new ReleaseConditions(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5])));
-        analyticalMember.SetReleaseConditions(new ReleaseConditions(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5])));
+        analyticalMember.SetReleaseConditions(
+          new ReleaseConditions(
+            true,
+            releaseConvert(element1d.end1Releases.code[0]),
+            releaseConvert(element1d.end1Releases.code[1]),
+            releaseConvert(element1d.end1Releases.code[2]),
+            releaseConvert(element1d.end1Releases.code[3]),
+            releaseConvert(element1d.end1Releases.code[4]),
+            releaseConvert(element1d.end1Releases.code[5])
+          )
+        );
+        analyticalMember.SetReleaseConditions(
+          new ReleaseConditions(
+            false,
+            releaseConvert(element1d.end2Releases.code[0]),
+            releaseConvert(element1d.end2Releases.code[1]),
+            releaseConvert(element1d.end2Releases.code[2]),
+            releaseConvert(element1d.end2Releases.code[3]),
+            releaseConvert(element1d.end2Releases.code[4]),
+            releaseConvert(element1d.end2Releases.code[5])
+          )
+        );
       }
       //TODO Set offsets
 #endif
     }
+
 #if REVIT2020 || REVIT2021 || REVIT2022
     private Element1D AnalyticalStickToSpeckle(AnalyticalModelStick revitStick)
     {
@@ -307,14 +339,17 @@ namespace Objects.Converter.Revit
       SetEndReleases(revitStick, ref speckleElement1D);
 
       var prop = new Property1D();
-  
+
       var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
       var speckleSection = GetSectionProfile(stickFamily);
 
       var structMat = (DB.Material)stickFamily.Document.GetElement(revitStick.MaterialId);
       if (structMat == null)
-        structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
+        structMat = (DB.Material)
+          stickFamily.Document.GetElement(
+            stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()
+          );
 
       prop.profile = speckleSection;
       prop.material = GetStructuralMaterial(structMat);
@@ -344,7 +379,8 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleElement1D, revitStick);
 
-      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+      var analyticalToPhysicalManager =
+        AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
       if (analyticalToPhysicalManager.HasAssociation(revitStick.Id))
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitStick.Id);
@@ -364,12 +400,18 @@ namespace Objects.Converter.Revit
         speckleElement1D.end1Releases = new Restraint(RestraintType.Fixed);
       else
       {
-        var botReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FX) == 1 ? "R" : "F";
-        var botReleaseY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FY) == 1 ? "R" : "F";
-        var botReleaseZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FZ) == 1 ? "R" : "F";
-        var botReleaseXX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MX) == 1 ? "R" : "F";
-        var botReleaseYY = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MY) == 1 ? "R" : "F";
-        var botReleaseZZ = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MZ) == 1 ? "R" : "F";
+        var botReleaseX =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FX) == 1 ? "R" : "F";
+        var botReleaseY =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FY) == 1 ? "R" : "F";
+        var botReleaseZ =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FZ) == 1 ? "R" : "F";
+        var botReleaseXX =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MX) == 1 ? "R" : "F";
+        var botReleaseYY =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MY) == 1 ? "R" : "F";
+        var botReleaseZZ =
+          GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_MZ) == 1 ? "R" : "F";
 
         string botReleaseCode = botReleaseX + botReleaseY + botReleaseZ + botReleaseXX + botReleaseYY + botReleaseZZ;
         speckleElement1D.end1Releases = new Restraint(botReleaseCode);
@@ -407,7 +449,6 @@ namespace Objects.Converter.Revit
       // therefore switch on the object itself instead
       switch (revitSection)
       {
-
         case StructuralSectionIWelded _: // Built up wide flange
         case StructuralSectionIWideFlange _: // I shaped wide flange
         case StructuralSectionGeneralI _: // General Double T shape
@@ -465,7 +506,7 @@ namespace Objects.Converter.Revit
       {
         // static props
         //TODO change this prop, Iyy can mean different things
-        speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis * scaleFactor2; 
+        speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis * scaleFactor2;
         speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis * scaleFactor2;
         speckleSection.weight = revitSection.NominalWeight / scaleFactor;
         speckleSection.area = revitSection.SectionArea * scaleFactor2;
@@ -537,7 +578,7 @@ namespace Objects.Converter.Revit
       }
       if (revitSection is StructuralSectionGeneralR r)
       {
-        // static props 
+        // static props
         speckleSection["wallThickness"] = r.WallNominalThickness * scaleFactor;
 
         //dynamic props
@@ -568,7 +609,9 @@ namespace Objects.Converter.Revit
       string name = null;
       if (material.StructuralAssetId != ElementId.InvalidElementId)
       {
-        materialAsset = ((PropertySetElement)material.Document.GetElement(material.StructuralAssetId)).GetStructuralAsset();
+        materialAsset = (
+          (PropertySetElement)material.Document.GetElement(material.StructuralAssetId)
+        ).GetStructuralAsset();
 
         name = material.Document.GetElement(material.StructuralAssetId)?.Name;
       }
@@ -581,7 +624,11 @@ namespace Objects.Converter.Revit
       return speckleMaterial;
     }
 
-    private StructuralMaterial GetStructuralMaterial(StructuralMaterialType materialType, StructuralAsset materialAsset, string name)
+    private StructuralMaterial GetStructuralMaterial(
+      StructuralMaterialType materialType,
+      StructuralAsset materialAsset,
+      string name
+    )
     {
       Structural.Materials.StructuralMaterial speckleMaterial = null;
 
@@ -592,11 +639,7 @@ namespace Objects.Converter.Revit
       switch (materialType)
       {
         case StructuralMaterialType.Concrete:
-          var concreteMaterial = new Concrete
-          {
-            name = name,
-            materialType = Structural.MaterialType.Concrete,
-          };
+          var concreteMaterial = new Concrete { name = name, materialType = Structural.MaterialType.Concrete, };
 
           if (materialAsset != null)
           {
@@ -650,10 +693,7 @@ namespace Objects.Converter.Revit
           speckleMaterial = timberMaterial;
           break;
         default:
-          var defaultMaterial = new Objects.Structural.Materials.StructuralMaterial
-          {
-            name = name,
-          };
+          var defaultMaterial = new Objects.Structural.Materials.StructuralMaterial { name = name, };
           speckleMaterial = defaultMaterial;
           break;
       }
@@ -665,7 +705,7 @@ namespace Objects.Converter.Revit
         speckleMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter
         speckleMaterial.poissonsRatio = materialAsset.PoissonRatio.X; // Unitless
         speckleMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
-        speckleMaterial.density = materialAsset.Density; // kilograms per cubed feet 
+        speckleMaterial.density = materialAsset.Density; // kilograms per cubed feet
         speckleMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
       }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using GE = Objects.Geometry;
 using GES = Objects.Structural.Geometry;
@@ -69,7 +69,7 @@ namespace Objects.Converter.TeklaStructures
           brep.Position.Depth = Position.DepthEnum.MIDDLE;
           brep.Position.Plane = Position.PlaneEnum.MIDDLE;
           brep.Position.Rotation = Position.RotationEnum.TOP;
-          brep.Insert(); 
+          brep.Insert();
         }
 
         incr++;
@@ -91,7 +91,7 @@ namespace Objects.Converter.TeklaStructures
       //  };
       //var outerWires = new[]
       //{
-      //foreach 
+      //foreach
       //  };
       //var innerWires = new Dictionary<int, int[][]>
       //  {
@@ -112,35 +112,38 @@ namespace Objects.Converter.TeklaStructures
 
     public FacetedBrep CreateFacetedBrep(GE.Mesh mesh)
     {
-        var faces = mesh.faces;
-        List<List<int>> faceList = new List<List<int>> { };
-        faceList = faces.Select((x, i) => new { Index = i, Value = x })
-          .GroupBy(x => x.Index / 4)
-          .Select(x => x.Select(v => v.Value).ToList())
-          .ToList();
-        var vertices = mesh.vertices;
-        List<List<double>> verticesList = new List<List<double>> { };
-        verticesList = vertices.Select((x, i) => new { Index = i, Value = x })
-          .GroupBy(x => x.Index / 3)
-          .Select(x => x.Select(v => v.Value).ToList())
-          .ToList();
-        List<Vector> vertexs = new List<Vector>();
-        List<int[]> outerWires = new List<int[]>();
-        var innerLoop = new Dictionary<int, int[][]> { };
-        foreach (var vertex in verticesList)
-        {
-          var teklaVectorVertex = new Vector(vertex[0], vertex[1], vertex[2]);
-          vertexs.Add(teklaVectorVertex);
-        }
-        foreach (var face in faceList)
-        {
-          // Tekla wants the face loops in reverse
-          var teklaFaceLoop = new[] { face[3], face[2], face[1] };
-          outerWires.Add(teklaFaceLoop);
-        }
-        var brep = new FacetedBrep(vertexs.ToArray(), outerWires.ToArray(), innerLoop);
-        return brep;
+      var faces = mesh.faces;
+      List<List<int>> faceList = new List<List<int>> { };
+      faceList = faces
+        .Select((x, i) => new { Index = i, Value = x })
+        .GroupBy(x => x.Index / 4)
+        .Select(x => x.Select(v => v.Value).ToList())
+        .ToList();
+      var vertices = mesh.vertices;
+      List<List<double>> verticesList = new List<List<double>> { };
+      verticesList = vertices
+        .Select((x, i) => new { Index = i, Value = x })
+        .GroupBy(x => x.Index / 3)
+        .Select(x => x.Select(v => v.Value).ToList())
+        .ToList();
+      List<Vector> vertexs = new List<Vector>();
+      List<int[]> outerWires = new List<int[]>();
+      var innerLoop = new Dictionary<int, int[][]> { };
+      foreach (var vertex in verticesList)
+      {
+        var teklaVectorVertex = new Vector(vertex[0], vertex[1], vertex[2]);
+        vertexs.Add(teklaVectorVertex);
+      }
+      foreach (var face in faceList)
+      {
+        // Tekla wants the face loops in reverse
+        var teklaFaceLoop = new[] { face[3], face[2], face[1] };
+        outerWires.Add(teklaFaceLoop);
+      }
+      var brep = new FacetedBrep(vertexs.ToArray(), outerWires.ToArray(), innerLoop);
+      return brep;
     }
+
     public string GetShapeName(Base @object)
     {
       string name = "";
@@ -155,11 +158,12 @@ namespace Objects.Converter.TeklaStructures
 
       return name;
     }
+
     public ShapeItem CheckFingerprint(ShapeItem si)
     {
       CatalogHandler catalogHandler = new CatalogHandler();
       ShapeItemEnumerator sie = catalogHandler.GetShapeItems();
-      while(sie.MoveNext())
+      while (sie.MoveNext())
       {
         ShapeItem siItem = sie.Current;
         if (siItem.Fingerprint == Polymesh.Fingerprint(si.ShapeFacetedBrep))
@@ -168,6 +172,4 @@ namespace Objects.Converter.TeklaStructures
       return null;
     }
   }
-
 }
-

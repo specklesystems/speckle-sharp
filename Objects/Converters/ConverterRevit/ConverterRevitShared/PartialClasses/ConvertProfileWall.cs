@@ -12,7 +12,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject ProfileWallToNative(RevitProfileWall speckleRevitWall)
     {
       var revitWall = GetExistingElementByApplicationId(speckleRevitWall.applicationId) as DB.Wall;
-      var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type) { applicationId = speckleRevitWall.applicationId };
+      var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type)
+      {
+        applicationId = speckleRevitWall.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitWall, appObj))

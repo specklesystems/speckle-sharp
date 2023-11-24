@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.DoubleNumerics;
 using System.Linq;
@@ -54,6 +54,7 @@ namespace Objects.Converter.AutocadCivil
       var extPt = ToExternalCoordinates(point);
       return new Point(extPt.X, extPt.Y, extPt.Z, u);
     }
+
     public Point PointToSpeckle(Point2d point, string units = null)
     {
       //TODO: handle units.none?
@@ -61,15 +62,18 @@ namespace Objects.Converter.AutocadCivil
       var extPt = ToExternalCoordinates(new Point3d(point.X, point.Y, 0));
       return new Point(extPt.X, extPt.Y, extPt.Z, u);
     }
+
     public Point3d PointToNative(Point point)
     {
-      var _point = new Point3d(ScaleToNative(point.x, point.units),
+      var _point = new Point3d(
+        ScaleToNative(point.x, point.units),
         ScaleToNative(point.y, point.units),
-        ScaleToNative(point.z, point.units));
+        ScaleToNative(point.z, point.units)
+      );
       var intPt = ToInternalCoordinates(_point);
       return intPt;
     }
-    
+
     public List<List<ControlPoint>> ControlPointsToSpeckle(AcadGeo.NurbSurface surface, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -95,16 +99,19 @@ namespace Objects.Converter.AutocadCivil
       }
       return points;
     }
+
     public Point PointToSpeckle(DBPoint point, string units = null)
     {
       var u = units ?? ModelUnits;
       return PointToSpeckle(point.Position, u);
     }
+
     public DBPoint PointToNativeDB(Point point)
     {
       var _point = PointToNative(point);
       return new DBPoint(_point);
     }
+
     public List<List<ControlPoint>> ControlPointsToSpeckle(AcadDB.NurbSurface surface)
     {
       var points = new List<List<ControlPoint>>();
@@ -129,12 +136,14 @@ namespace Objects.Converter.AutocadCivil
       var extV = ToExternalCoordinates(vector);
       return new Vector(extV.X, extV.Y, extV.Z, ModelUnits);
     }
+
     public Vector3d VectorToNative(Vector vector)
     {
       var _vector = new Vector3d(
         ScaleToNative(vector.x, vector.units),
         ScaleToNative(vector.y, vector.units),
-        ScaleToNative(vector.z, vector.units));
+        ScaleToNative(vector.z, vector.units)
+      );
       var intV = ToInternalCoordinates(_vector);
       return intV;
     }
@@ -144,24 +153,32 @@ namespace Objects.Converter.AutocadCivil
     {
       return new Interval(interval.LowerBound, interval.UpperBound);
     }
+
     public AcadGeo.Interval IntervalToNative(Interval interval)
     {
       return new AcadGeo.Interval((double)interval.start, (double)interval.end, tolerance);
     }
 
-    // Plane 
+    // Plane
     public Plane PlaneToSpeckle(AcadGeo.Plane plane)
     {
       Vector xAxis = VectorToSpeckle(plane.GetCoordinateSystem().Xaxis);
       Vector yAxis = VectorToSpeckle(plane.GetCoordinateSystem().Yaxis);
-      var _plane = new Plane(PointToSpeckle(plane.PointOnPlane), VectorToSpeckle(plane.Normal), xAxis, yAxis, ModelUnits);
+      var _plane = new Plane(
+        PointToSpeckle(plane.PointOnPlane),
+        VectorToSpeckle(plane.Normal),
+        xAxis,
+        yAxis,
+        ModelUnits
+      );
       return _plane;
     }
+
     public AcadGeo.Plane PlaneToNative(Plane plane)
     {
       return new AcadGeo.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
     }
-    
+
     //Matrix
 
     public Matrix3d TransformToNativeMatrix(Transform transform)
@@ -178,27 +195,40 @@ namespace Objects.Converter.AutocadCivil
 
       return convertedTransform;
     }
-    
+
     // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
     private static double[] MakePerpendicular(Matrix3d matrix)
     {
       // Get the basis vectors of the matrix
-      Vector3d right = new Vector3d(matrix[0,0], matrix[1,0], matrix[2,0]);
-      Vector3d up = new Vector3d(matrix[0,1], matrix[1,1], matrix[2,1]);
+      Vector3d right = new Vector3d(matrix[0, 0], matrix[1, 0], matrix[2, 0]);
+      Vector3d up = new Vector3d(matrix[0, 1], matrix[1, 1], matrix[2, 1]);
 
-      
-      Vector3d newForward = right.CrossProduct(up).GetNormal();;
-      
+      Vector3d newForward = right.CrossProduct(up).GetNormal();
+      ;
+
       Vector3d newUp = newForward.CrossProduct(right).GetNormal();
 
-      return new []{
-        right.X,  newUp.X,  newForward.X,  matrix[0,3],
-        right.Y,  newUp.Y,  newForward.Y,  matrix[1,3],
-        right.Z,  newUp.Z,  newForward.Z,  matrix[2,3],
-        0.0,      0.0,      0.0,           matrix[3,3],
+      return new[]
+      {
+        right.X,
+        newUp.X,
+        newForward.X,
+        matrix[0, 3],
+        right.Y,
+        newUp.Y,
+        newForward.Y,
+        matrix[1, 3],
+        right.Z,
+        newUp.Z,
+        newForward.Z,
+        matrix[2, 3],
+        0.0,
+        0.0,
+        0.0,
+        matrix[3, 3],
       };
-
     }
+
     // Line
     public Line LineToSpeckle(LineSegment2d line)
     {
@@ -207,6 +237,7 @@ namespace Objects.Converter.AutocadCivil
       _line.domain = IntervalToSpeckle(line.GetInterval());
       return _line;
     }
+
     public Line LineToSpeckle(Line3d line, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -220,6 +251,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _line;
     }
+
     public Line LineToSpeckle(LineSegment3d line)
     {
       var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
@@ -228,6 +260,7 @@ namespace Objects.Converter.AutocadCivil
       _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
       return _line;
     }
+
     public Line3d LineToNative(Line line)
     {
       var _line = new Line3d(PointToNative(line.start), PointToNative(line.end));
@@ -239,6 +272,7 @@ namespace Objects.Converter.AutocadCivil
         catch { }
       return _line;
     }
+
     public Line LineToSpeckle(AcadDB.Line line, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -249,6 +283,7 @@ namespace Objects.Converter.AutocadCivil
       _line.bbox = BoxToSpeckle(line.GeometricExtents);
       return _line;
     }
+
     public AcadDB.Line LineToNativeDB(Line line)
     {
       return new AcadDB.Line(PointToNative(line.start), PointToNative(line.end));
@@ -257,7 +292,13 @@ namespace Objects.Converter.AutocadCivil
     // Rectangle
     public Polyline RectangleToSpeckle(Rectangle3d rectangle)
     {
-      var _points = new List<Point3d>() { rectangle.LowerLeft, rectangle.LowerRight, rectangle.UpperLeft, rectangle.UpperRight };
+      var _points = new List<Point3d>()
+      {
+        rectangle.LowerLeft,
+        rectangle.LowerRight,
+        rectangle.UpperLeft,
+        rectangle.UpperRight
+      };
       var points = _points.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
       return new Polyline(points, ModelUnits) { closed = true };
     }
@@ -269,10 +310,14 @@ namespace Objects.Converter.AutocadCivil
 
       // find arc plane (normal is in clockwise dir)
       var center3 = new Point3d(arc.Center.X, arc.Center.Y, 0);
-      AcadGeo.Plane plane = (arc.IsClockWise) ? new AcadGeo.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1)) : new AcadGeo.Plane(center3, Vector3d.ZAxis);
+      AcadGeo.Plane plane =
+        (arc.IsClockWise)
+          ? new AcadGeo.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1))
+          : new AcadGeo.Plane(center3, Vector3d.ZAxis);
 
       // calculate total angle. TODO: This needs to be validated across all possible arc orientations
-      var totalAngle = (arc.IsClockWise) ? Math.Abs(arc.EndAngle - arc.StartAngle) : Math.Abs(arc.EndAngle - arc.StartAngle);
+      var totalAngle =
+        (arc.IsClockWise) ? Math.Abs(arc.EndAngle - arc.StartAngle) : Math.Abs(arc.EndAngle - arc.StartAngle);
 
       // create arc
       var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, arc.StartAngle, arc.EndAngle, totalAngle, ModelUnits);
@@ -284,10 +329,18 @@ namespace Objects.Converter.AutocadCivil
       _arc.bbox = BoxToSpeckle(arc.BoundBlock);
       return _arc;
     }
+
     public Arc ArcToSpeckle(CircularArc3d arc)
     {
       var interval = arc.GetInterval();
-      var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, Math.Abs(arc.EndAngle - arc.StartAngle), ModelUnits);
+      var _arc = new Arc(
+        PlaneToSpeckle(arc.GetPlane()),
+        arc.Radius,
+        arc.StartAngle,
+        arc.EndAngle,
+        Math.Abs(arc.EndAngle - arc.StartAngle),
+        ModelUnits
+      );
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
@@ -296,18 +349,31 @@ namespace Objects.Converter.AutocadCivil
       _arc.bbox = BoxToSpeckle(arc.OrthoBoundBlock);
       return _arc;
     }
+
     public CircularArc3d ArcToNative(Arc arc)
     {
-      var _arc = new CircularArc3d(PointToNative(arc.startPoint), PointToNative(arc.midPoint), PointToNative(arc.endPoint));
+      var _arc = new CircularArc3d(
+        PointToNative(arc.startPoint),
+        PointToNative(arc.midPoint),
+        PointToNative(arc.endPoint)
+      );
 
       _arc.SetAxes(VectorToNative(arc.plane.normal), VectorToNative(arc.plane.xdir));
       _arc.SetAngles((double)arc.startAngle, (double)arc.endAngle);
 
       return _arc;
     }
+
     public Arc ArcToSpeckle(AcadDB.Arc arc)
     {
-      var _arc = new Arc(PlaneToSpeckle(arc.GetPlane()), arc.Radius, arc.StartAngle, arc.EndAngle, arc.TotalAngle, ModelUnits);
+      var _arc = new Arc(
+        PlaneToSpeckle(arc.GetPlane()),
+        arc.Radius,
+        arc.StartAngle,
+        arc.EndAngle,
+        arc.TotalAngle,
+        ModelUnits
+      );
       _arc.startPoint = PointToSpeckle(arc.StartPoint);
       _arc.endPoint = PointToSpeckle(arc.EndPoint);
       _arc.midPoint = PointToSpeckle(arc.GetPointAtDist(arc.Length / 2));
@@ -316,6 +382,7 @@ namespace Objects.Converter.AutocadCivil
       _arc.bbox = BoxToSpeckle(arc.GeometricExtents);
       return _arc;
     }
+
     public AcadDB.Arc ArcToNativeDB(Arc arc)
     {
       // because of different plane & start/end angle conventions, most reliable method to convert to autocad convention is to calculate from start, end, and midpoint
@@ -331,7 +398,8 @@ namespace Objects.Converter.AutocadCivil
         VectorToNative(arc.plane.normal),
         ScaleToNative((double)arc.radius, arc.units),
         startAngle,
-        endAngle);
+        endAngle
+      );
 
       return _arc;
     }
@@ -344,6 +412,7 @@ namespace Objects.Converter.AutocadCivil
       _circle.bbox = BoxToSpeckle(circle.GeometricExtents);
       return _circle;
     }
+
     public AcadDB.Circle CircleToNativeDB(Circle circle)
     {
       var normal = VectorToNative(circle.plane.normal);
@@ -361,6 +430,7 @@ namespace Objects.Converter.AutocadCivil
       _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents);
       return _ellipse;
     }
+
     public AcadDB.Ellipse EllipseToNativeDB(Ellipse ellipse)
     {
       var normal = VectorToNative(ellipse.plane.normal);
@@ -379,7 +449,8 @@ namespace Objects.Converter.AutocadCivil
       List<Point3d> vertices = new List<Point3d>();
       foreach (Point3d point in points)
       {
-        if (vertices.Count != 0) length += point.DistanceTo(vertices.Last());
+        if (vertices.Count != 0)
+          length += point.DistanceTo(vertices.Last());
         vertices.Add(point);
       }
       var _points = vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
@@ -390,6 +461,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _polyline;
     }
+
     public Polyline PolylineToSpeckle(AcadDB.Polyline polyline) // AcadDB.Polylines can have linear or arc segments. This will convert to linear
     {
       var points = new List<double>();
@@ -403,6 +475,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _polyline;
     }
+
     public Polyline PolylineToSpeckle(Polyline3d polyline)
     {
       var points = new List<double>();
@@ -430,6 +503,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _polyline;
     }
+
     public Polyline3d PolylineToNativeDB(Polyline polyline)
     {
       var vertices = new Point3dCollection();
@@ -457,7 +531,9 @@ namespace Objects.Converter.AutocadCivil
           // get the connection point to the next segment - this is necessary since imported polycurves might have segments in different directions
           var connectionPoint = new Point3d();
           var nextSegment = exploded[i + 1] as AcadDB.Curve;
-          if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+          if (
+            nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
+          )
             connectionPoint = nextSegment.StartPoint;
           else
             connectionPoint = nextSegment.EndPoint;
@@ -481,6 +557,7 @@ namespace Objects.Converter.AutocadCivil
 
       return polycurve;
     }
+
     public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are polycurves with linear or arc segments
     {
       var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
@@ -509,7 +586,9 @@ namespace Objects.Converter.AutocadCivil
           }
           else
           {
-            if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+            if (
+              nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
+            )
               connectionPoint = nextSegment.StartPoint;
             else
               connectionPoint = nextSegment.EndPoint;
@@ -535,6 +614,7 @@ namespace Objects.Converter.AutocadCivil
 
       return polycurve;
     }
+
     private Curve3d GetSegmentByType(AcadDB.Polyline polyline, int i)
     {
       SegmentType type = polyline.GetSegmentType(i);
@@ -548,7 +628,13 @@ namespace Objects.Converter.AutocadCivil
           return null;
       }
     }
-    private AcadDB.Curve GetCorrectSegmentDirection(AcadDB.Curve segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
+
+    private AcadDB.Curve GetCorrectSegmentDirection(
+      AcadDB.Curve segment,
+      Point3d connectionPoint,
+      bool isFirstSegment,
+      out Point3d nextPoint
+    ) // note sometimes curve3d may not have endpoints
     {
       nextPoint = segment.EndPoint;
 
@@ -559,18 +645,27 @@ namespace Objects.Converter.AutocadCivil
       if (isFirstSegment)
       {
         reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
-        if (reverseDirection) nextPoint = segment.StartPoint;
+        if (reverseDirection)
+          nextPoint = segment.StartPoint;
       }
       else
       {
         reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
-        if (reverseDirection) nextPoint = segment.StartPoint;
+        if (reverseDirection)
+          nextPoint = segment.StartPoint;
       }
 
-      if (reverseDirection) segment.ReverseCurve();
+      if (reverseDirection)
+        segment.ReverseCurve();
       return segment;
     }
-    private Curve3d GetCorrectSegmentDirection(Curve3d segment, Point3d connectionPoint, bool isFirstSegment, out Point3d nextPoint) // note sometimes curve3d may not have endpoints
+
+    private Curve3d GetCorrectSegmentDirection(
+      Curve3d segment,
+      Point3d connectionPoint,
+      bool isFirstSegment,
+      out Point3d nextPoint
+    ) // note sometimes curve3d may not have endpoints
     {
       nextPoint = segment.EndPoint;
 
@@ -581,16 +676,19 @@ namespace Objects.Converter.AutocadCivil
       if (isFirstSegment)
       {
         reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
-        if (reverseDirection) nextPoint = segment.StartPoint;
+        if (reverseDirection)
+          nextPoint = segment.StartPoint;
       }
       else
       {
         reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
-        if (reverseDirection) nextPoint = segment.StartPoint;
+        if (reverseDirection)
+          nextPoint = segment.StartPoint;
       }
 
       return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
     }
+
     private bool IsPolycurvePlanar(Polycurve polycurve)
     {
       double? z = null;
@@ -599,21 +697,29 @@ namespace Objects.Converter.AutocadCivil
         switch (segment)
         {
           case Line o:
-            if (z == null) z = o.start.z;
-            if (o.start.z != z || o.end.z != z) return false;
+            if (z == null)
+              z = o.start.z;
+            if (o.start.z != z || o.end.z != z)
+              return false;
             break;
           case Arc o:
-            if (z == null) z = o.startPoint.z;
-            if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z) return false;
+            if (z == null)
+              z = o.startPoint.z;
+            if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z)
+              return false;
             break;
           case Curve o:
-            if (z == null) z = o.points[2];
+            if (z == null)
+              z = o.points[2];
             for (int i = 2; i < o.points.Count; i += 3)
-              if (o.points[i] != z) return false;
+              if (o.points[i] != z)
+                return false;
             break;
           case Spiral o:
-            if (z == null) z = o.startPoint.z;
-            if (o.startPoint.z != z || o.endPoint.z != z) return false;
+            if (z == null)
+              z = o.startPoint.z;
+            if (o.startPoint.z != z || o.endPoint.z != z)
+              return false;
             break;
         }
       }
@@ -624,7 +730,10 @@ namespace Objects.Converter.AutocadCivil
     public AcadDB.Polyline PolycurveToNativeDB(Polycurve polycurve)
     {
       AcadDB.Polyline polyline = new AcadDB.Polyline() { Closed = polycurve.closed };
-      var plane = new Autodesk.AutoCAD.Geometry.Plane(Point3d.Origin, Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)); // TODO: check this 
+      var plane = new Autodesk.AutoCAD.Geometry.Plane(
+        Point3d.Origin,
+        Vector3d.ZAxis.TransformBy(Doc.Editor.CurrentUserCoordinateSystem)
+      ); // TODO: check this
 
       // add all vertices
       int count = 0;
@@ -662,6 +771,7 @@ namespace Objects.Converter.AutocadCivil
 
       return polyline;
     }
+
     // calculates bulge direction: (-) clockwise, (+) counterclockwise
     private int BulgeDirection(Point start, Point mid, Point end)
     {
@@ -683,7 +793,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var curve = new Curve();
 
-      // get nurbs and geo data 
+      // get nurbs and geo data
       var data = spline.NurbsData;
       var _spline = spline.GetGeCurve() as NurbCurve3d;
 
@@ -759,10 +869,14 @@ namespace Objects.Converter.AutocadCivil
 
       return curve;
     }
+
     // handles polycurves with spline segments: bakes segments individually and then joins
     public ApplicationObject PolycurveSplineToNativeDB(Polycurve polycurve)
     {
-      var appObj = new ApplicationObject(polycurve.id, polycurve.speckle_type) { applicationId = polycurve.applicationId };
+      var appObj = new ApplicationObject(polycurve.id, polycurve.speckle_type)
+      {
+        applicationId = polycurve.applicationId
+      };
 
       Entity first = null;
       List<Entity> others = new List<Entity>();
@@ -811,7 +925,7 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Curve
-    // TODO: NOT TESTED 
+    // TODO: NOT TESTED
     public ICurve CurveToSpeckle(Curve3d curve, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -827,6 +941,7 @@ namespace Objects.Converter.AutocadCivil
           return NurbsToSpeckle(curve as NurbCurve3d);
       }
     }
+
     public ICurve CurveToSpeckle(Curve2d curve, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -842,6 +957,7 @@ namespace Objects.Converter.AutocadCivil
           return NurbsToSpeckle(curve as NurbCurve2d);
       }
     }
+
     public Curve NurbsToSpeckle(NurbCurve2d curve)
     {
       var _curve = new Curve();
@@ -875,6 +991,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _curve;
     }
+
     public Curve NurbsToSpeckle(NurbCurve3d curve)
     {
       var _curve = new Curve();
@@ -909,6 +1026,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _curve;
     }
+
     // TODO: need to handle curves generated from polycurves with spline segments (this probably has to do with control points with varying # of knots associated with it)
     public NurbCurve3d NurbcurveToNative(Curve curve)
     {
@@ -950,6 +1068,7 @@ namespace Objects.Converter.AutocadCivil
 
       return _curve;
     }
+
     public ICurve CurveToSpeckle(AcadDB.Curve curve, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -987,11 +1106,13 @@ namespace Objects.Converter.AutocadCivil
           return null;
       }
     }
+
     public AcadDB.Curve NurbsToNativeDB(Curve curve)
     {
       var _curve = AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
       return _curve;
     }
+
     public List<AcadDB.Curve> CurveToNativeDB(ICurve icurve)
     {
       var convertedList = new List<AcadDB.Curve>();
@@ -1070,7 +1191,11 @@ namespace Objects.Converter.AutocadCivil
 
       // get the base plane of the bounding box from extents and current UCS
       var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
-      var plane = new AcadGeo.Plane(new Point3d(bound.GetMinimumPoint().X, bound.GetMinimumPoint().Y, 0), ucs.Xaxis, ucs.Yaxis);
+      var plane = new AcadGeo.Plane(
+        new Point3d(bound.GetMinimumPoint().X, bound.GetMinimumPoint().Y, 0),
+        ucs.Xaxis,
+        ucs.Yaxis
+      );
 
       var box = new Box()
       {
@@ -1084,6 +1209,7 @@ namespace Objects.Converter.AutocadCivil
 
       return box;
     }
+
     public Box BoxToSpeckle(BoundBlock3d bound)
     {
       try
@@ -1118,6 +1244,7 @@ namespace Objects.Converter.AutocadCivil
         return null;
       }
     }
+
     public Box BoxToSpeckle(Extents3d extents)
     {
       try
@@ -1207,7 +1334,8 @@ namespace Objects.Converter.AutocadCivil
               for (short i = 0; i < 4; i++)
               {
                 short index = o.GetVertexAt(i);
-                if (index == 0) continue;
+                if (index == 0)
+                  continue;
                 var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
                 indices.Add(adjustedIndex);
               }
@@ -1231,6 +1359,7 @@ namespace Objects.Converter.AutocadCivil
 
       return speckleMesh;
     }
+
     public Mesh MeshToSpeckle(SubDMesh mesh)
     {
       //vertices
@@ -1255,13 +1384,16 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // colors
-      var colors = mesh.VertexColorArray.Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb()).ToList();
+      var colors = mesh.VertexColorArray
+        .Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb())
+        .ToList();
 
       var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits);
       speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents);
 
       return speckleMesh;
     }
+
     // Polyface mesh vertex indexing starts at 1. Add 1 to face vertex index when converting to native
     public PolyFaceMesh MeshToNativeDB(Mesh mesh)
     {
@@ -1312,12 +1444,22 @@ namespace Objects.Converter.AutocadCivil
           FaceRecord face;
           if (mesh.faces[j] == 3) // triangle
           {
-            face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), 0);
+            face = new FaceRecord(
+              (short)(mesh.faces[j + 1] + 1),
+              (short)(mesh.faces[j + 2] + 1),
+              (short)(mesh.faces[j + 3] + 1),
+              0
+            );
             j += 4;
           }
           else // quad
           {
-            face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), (short)(mesh.faces[j + 4] + 1));
+            face = new FaceRecord(
+              (short)(mesh.faces[j + 1] + 1),
+              (short)(mesh.faces[j + 2] + 1),
+              (short)(mesh.faces[j + 3] + 1),
+              (short)(mesh.faces[j + 4] + 1)
+            );
             j += 5;
           }
 
@@ -1335,7 +1477,12 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // Based on Kean Walmsley's blog post on mesh conversion using Brep API
-    private Mesh GetMeshFromSolidOrSurface(out List<string> notes, Solid3d solid = null, AcadDB.Surface surface = null, Region region = null)
+    private Mesh GetMeshFromSolidOrSurface(
+      out List<string> notes,
+      Solid3d solid = null,
+      AcadDB.Surface surface = null,
+      Region region = null
+    )
     {
       Mesh mesh = null;
       double volume = 0;
@@ -1352,8 +1499,8 @@ namespace Objects.Converter.AutocadCivil
           area = solid.Area;
           volume = solid.MassProperties.Volume;
         }
-        catch (Exception e)
-        { };
+        catch (Exception e) { }
+        ;
 
         bbox = BoxToSpeckle(solid.GeometricExtents);
       }
@@ -1428,6 +1575,5 @@ namespace Objects.Converter.AutocadCivil
 
       return mesh;
     }
-
   }
 }

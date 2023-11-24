@@ -711,10 +711,22 @@ namespace Objects.Converter.Revit
           return false;
 
         var matrix = new Matrix4x4(
-          points[0].X, points[1].X, points[2].X, points[3].X,
-          points[0].Y, points[1].Y, points[2].Y, points[3].Y,
-          points[0].Z, points[1].Z, points[2].Z, points[3].Z,
-          1, 1, 1, 1
+          points[0].X,
+          points[1].X,
+          points[2].X,
+          points[3].X,
+          points[0].Y,
+          points[1].Y,
+          points[2].Y,
+          points[3].Y,
+          points[0].Z,
+          points[1].Z,
+          points[2].Z,
+          points[3].Z,
+          1,
+          1,
+          1,
+          1
         );
         return matrix.GetDeterminant() != 0;
       }

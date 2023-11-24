@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;

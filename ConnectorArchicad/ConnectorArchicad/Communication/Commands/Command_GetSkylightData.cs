@@ -8,11 +8,9 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class GetSkylightData : ICommand<IEnumerable<ArchicadSkylight>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-
       [JsonProperty("applicationIds")]
       private IEnumerable<string> ApplicationIds { get; }
 
@@ -20,16 +18,13 @@ namespace Archicad.Communication.Commands
       {
         ApplicationIds = applicationIds;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("skylights")]
       public IEnumerable<ArchicadSkylight> Datas { get; private set; }
-
     }
 
     private IEnumerable<string> ApplicationIds { get; }
@@ -41,12 +36,14 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<ArchicadSkylight>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSkylightData", new Parameters(ApplicationIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetSkylightData",
+        new Parameters(ApplicationIds)
+      );
       //foreach (var subelement in result.Datas)
       //subelement.units = Units.Meters;
 
       return result.Datas;
     }
-
   }
 }

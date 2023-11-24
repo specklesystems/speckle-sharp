@@ -13,7 +13,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject TopographyToNative(Topography speckleSurface)
     {
       var docObj = GetExistingElementByApplicationId(((Base)speckleSurface).applicationId);
-      var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
+      var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type)
+      {
+        applicationId = speckleSurface.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
@@ -30,12 +33,17 @@ namespace Objects.Converter.Revit
         pts.Capacity += displayMesh.vertices.Count / 3;
         for (int i = 0; i < displayMesh.vertices.Count; i += 3)
         {
-          // add a check for duplicate points, if 'keepXYDuplicates' is false 
+          // add a check for duplicate points, if 'keepXYDuplicates' is false
           var ptTuple = (displayMesh.vertices[i], displayMesh.vertices[i + 1]);
           if (!pointTuplesList.Contains(ptTuple))
           {
             pointTuplesList.Add(ptTuple);
-            var point = new Geometry.Point(displayMesh.vertices[i], displayMesh.vertices[i + 1], displayMesh.vertices[i + 2], displayMesh.units);
+            var point = new Geometry.Point(
+              displayMesh.vertices[i],
+              displayMesh.vertices[i + 1],
+              displayMesh.vertices[i + 2],
+              displayMesh.units
+            );
             pts.Add(PointToNative(point));
           }
         }
@@ -48,7 +56,11 @@ namespace Objects.Converter.Revit
       if (speckleSurface is RevitTopography rt)
         SetInstanceParameters(revitSurface, rt);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitSurface.UniqueId, convertedItem: revitSurface);
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        createdId: revitSurface.UniqueId,
+        convertedItem: revitSurface
+      );
       return appObj;
     }
 

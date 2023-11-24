@@ -166,6 +166,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     NestUnderProperty(parent, child, Elements);
   }
+
   protected static void NestUnderProperty(Base parent, Base child, string property)
   {
     if (parent.GetDetachedProp(property) is not IList elements)

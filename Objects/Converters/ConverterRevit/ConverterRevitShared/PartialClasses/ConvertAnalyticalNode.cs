@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -17,15 +17,23 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject AnalyticalNodeToNative(Node speckleNode)
     {
-      return new ApplicationObject(speckleNode.id, speckleNode.speckle_type) { applicationId = speckleNode.applicationId };
+      return new ApplicationObject(speckleNode.id, speckleNode.speckle_type)
+      {
+        applicationId = speckleNode.applicationId
+      };
     }
 
     private Node AnalyticalNodeToSpeckle(ReferencePoint revitNode)
     {
       var cs = revitNode.GetCoordinateSystem();
-      var localAxis = new Plane(PointToSpeckle(cs.Origin, revitNode.Document), VectorToSpeckle(cs.BasisZ, revitNode.Document), VectorToSpeckle(cs.BasisX, revitNode.Document), VectorToSpeckle(cs.BasisY, revitNode.Document));
+      var localAxis = new Plane(
+        PointToSpeckle(cs.Origin, revitNode.Document),
+        VectorToSpeckle(cs.BasisZ, revitNode.Document),
+        VectorToSpeckle(cs.BasisX, revitNode.Document),
+        VectorToSpeckle(cs.BasisY, revitNode.Document)
+      );
       var basePoint = PointToSpeckle(cs.Origin, revitNode.Document); // alternative to revitNode.Position
-                                                                     //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
+      //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
       var speckleNode = new Node();
 
       GetAllRevitParamsAndIds(speckleNode, revitNode);
@@ -39,7 +47,12 @@ namespace Objects.Converter.Revit
       var nodes = new List<Node> { };
 
       var cs = revitBoundary.GetDegreesOfFreedomCoordinateSystem();
-      var localAxis = new Plane(PointToSpeckle(cs.Origin, revitBoundary.Document), VectorToSpeckle(cs.BasisZ, revitBoundary.Document), VectorToSpeckle(cs.BasisX, revitBoundary.Document), VectorToSpeckle(cs.BasisY, revitBoundary.Document));
+      var localAxis = new Plane(
+        PointToSpeckle(cs.Origin, revitBoundary.Document),
+        VectorToSpeckle(cs.BasisZ, revitBoundary.Document),
+        VectorToSpeckle(cs.BasisX, revitBoundary.Document),
+        VectorToSpeckle(cs.BasisY, revitBoundary.Document)
+      );
 
       var restraintType = revitBoundary.GetBoundaryConditionsType();
       var state = 0;
@@ -99,7 +112,8 @@ namespace Objects.Converter.Revit
       else if (presetState == 2)
         return new Restraint(RestraintType.Roller);
 
-      var boundaryParams = new BuiltInParameter[] {
+      var boundaryParams = new BuiltInParameter[]
+      {
         BuiltInParameter.BOUNDARY_DIRECTION_X,
         BuiltInParameter.BOUNDARY_DIRECTION_Y,
         BuiltInParameter.BOUNDARY_DIRECTION_Z,
@@ -108,7 +122,8 @@ namespace Objects.Converter.Revit
         BuiltInParameter.BOUNDARY_DIRECTION_ROT_Z
       };
 
-      var springValueParams = new BuiltInParameter[] {
+      var springValueParams = new BuiltInParameter[]
+      {
         BuiltInParameter.BOUNDARY_RESTRAINT_X,
         BuiltInParameter.BOUNDARY_RESTRAINT_Y,
         BuiltInParameter.BOUNDARY_RESTRAINT_Z,
@@ -117,14 +132,16 @@ namespace Objects.Converter.Revit
         BuiltInParameter.BOUNDARY_RESTRAINT_ROT_Z,
       };
 
-      var linSpringValueParams = new BuiltInParameter[] {
+      var linSpringValueParams = new BuiltInParameter[]
+      {
         BuiltInParameter.BOUNDARY_LINEAR_RESTRAINT_X,
         BuiltInParameter.BOUNDARY_LINEAR_RESTRAINT_Y,
         BuiltInParameter.BOUNDARY_LINEAR_RESTRAINT_Z,
         BuiltInParameter.BOUNDARY_LINEAR_RESTRAINT_ROT_X,
       };
 
-      var areaSpingValueParams = new BuiltInParameter[] {
+      var areaSpingValueParams = new BuiltInParameter[]
+      {
         BuiltInParameter.BOUNDARY_AREA_RESTRAINT_X,
         BuiltInParameter.BOUNDARY_AREA_RESTRAINT_Y,
         BuiltInParameter.BOUNDARY_AREA_RESTRAINT_Z,
@@ -196,7 +213,15 @@ namespace Objects.Converter.Revit
         }
       }
 
-      var restraint = new Restraint(code, springStiffness[0], springStiffness[1], springStiffness[2], springStiffness[3], springStiffness[4], springStiffness[5]);
+      var restraint = new Restraint(
+        code,
+        springStiffness[0],
+        springStiffness[1],
+        springStiffness[2],
+        springStiffness[3],
+        springStiffness[4],
+        springStiffness[5]
+      );
 
       return restraint;
     }

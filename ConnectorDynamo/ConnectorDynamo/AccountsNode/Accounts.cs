@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -55,14 +55,14 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       }
     }
 
-
     /// <summary>
     /// JSON constructor, called on file open
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [JsonConstructor]
-    private Accounts(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private Accounts(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts)
+      : base(inPorts, outPorts)
     {
       if (outPorts.Count() == 0)
         AddOutputs();
@@ -106,7 +106,11 @@ namespace Speckle.ConnectorDynamo.AccountsNode
     {
       SelectedUserId = account.userInfo.id;
 
-      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Select" } });
+      Analytics.TrackEvent(
+        account,
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Account Select" } }
+      );
 
       OnNodeModified(true);
     }
@@ -125,7 +129,8 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       var id = SelectedUserId ?? "";
       var functionCall = AstFactory.BuildFunctionCall(
         new Func<string, Account>(Functions.Account.GetById),
-        new List<AssociativeNode> { AstFactory.BuildStringNode(id) });
+        new List<AssociativeNode> { AstFactory.BuildStringNode(id) }
+      );
 
       return new[] { AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), functionCall) };
     }

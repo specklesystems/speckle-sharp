@@ -11,7 +11,6 @@ using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
-
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
@@ -56,7 +55,10 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject AnalyticalSurfaceToNative(Element2D speckleElement)
     {
-      var appObj = new ApplicationObject(speckleElement.id, speckleElement.speckle_type) { applicationId = speckleElement.applicationId };
+      var appObj = new ApplicationObject(speckleElement.id, speckleElement.speckle_type)
+      {
+        applicationId = speckleElement.applicationId
+      };
       if (speckleElement.property is not Property2D prop2D)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "\"Property\" cannot be null");
@@ -74,7 +76,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+      var analyticalToPhysicalManager =
+        AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
 
       // check for existing member
       var docObj = GetExistingElementByApplicationId(speckleElement.applicationId);
@@ -108,15 +111,25 @@ namespace Objects.Converter.Revit
           {
             // collect info about current floor location and depth
             var currentType = Doc.GetElement(physicalMember.GetTypeId());
-            var currentTypeDepth = GetParamValue<double>(currentType, BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM);
-            var currentHeightOffset = GetParamValue<double>(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
+            var currentTypeDepth = GetParamValue<double>(
+              currentType,
+              BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM
+            );
+            var currentHeightOffset = GetParamValue<double>(
+              physicalMember,
+              BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM
+            );
 
             // change type
             physicalMember.ChangeTypeId(elementType.Id);
 
             // make sure that the bottom of the floor remains in the same location
             var newTypeDepth = GetParamValue<double>(elementType, BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM);
-            TrySetParam(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, currentHeightOffset + (newTypeDepth - currentTypeDepth));
+            TrySetParam(
+              physicalMember,
+              BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM,
+              currentHeightOffset + (newTypeDepth - currentTypeDepth)
+            );
           }
         }
       }
@@ -124,7 +137,7 @@ namespace Objects.Converter.Revit
       //create analytical panel (floor or wall)
       if (revitMember == null)
       {
-        var polycurve = PolycurveFromTopology(speckleElement.topology);       
+        var polycurve = PolycurveFromTopology(speckleElement.topology);
         var curveArray = CurveToNative(polycurve, true);
         var curveLoop = CurveArrayToCurveLoop(curveArray);
         revitMember = AnalyticalPanel.Create(Doc, curveLoop);
@@ -166,7 +179,13 @@ namespace Objects.Converter.Revit
           var topNode = speckleElement.topology.Find(node => node.basePoint.z == topElevation);
           var bottemLevel = LevelFromPoint(PointToNative(bottomNode.basePoint));
           var topLevel = LevelFromPoint(PointToNative(topNode.basePoint));
-          var revitWall = new RevitWall(speckleElement.property.name, speckleElement.property.name, baseline, bottemLevel, topLevel);
+          var revitWall = new RevitWall(
+            speckleElement.property.name,
+            speckleElement.property.name,
+            baseline,
+            bottemLevel,
+            topLevel
+          );
 #if REVIT2020 || REVIT2021 || REVIT2022
           revitWall.applicationId = speckleElement.applicationId;
 #endif
@@ -199,7 +218,7 @@ namespace Objects.Converter.Revit
       var edgePoints = GetSurfaceOuterLoop(revitSurface).ToList();
 
       Element2DOutlineBuilder outlineBuilder = new(openings, edgePoints);
-      
+
       speckleElement2D.openings = openings.Select(polyLine => new Polycurve(ModelUnits)
       {
         segments = new() { polyLine }
@@ -346,7 +365,8 @@ namespace Objects.Converter.Revit
       }
 
       speckleElement2D.topology = edgeNodes;
-      var analyticalToPhysicalManager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
+      var analyticalToPhysicalManager =
+        AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
       if (analyticalToPhysicalManager.HasAssociation(revitSurface.Id))
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
@@ -371,7 +391,6 @@ namespace Objects.Converter.Revit
       }
       else if (structuralElement.StructuralRole is AnalyticalStructuralRole.StructuralRoleWall)
       {
-
         structMaterial = structuralElement.Document.GetElement(structuralElement.MaterialId) as DB.Material;
         thickness = structuralElement.Thickness;
         memberType = MemberType2D.Wall;
@@ -397,7 +416,8 @@ namespace Objects.Converter.Revit
       var openings = new List<Polycurve>();
       foreach (var openingId in revitSurface.GetAnalyticalOpeningsIds())
       {
-        if (revitSurface.Document.GetElement(openingId) is not AnalyticalOpening opening) continue;
+        if (revitSurface.Document.GetElement(openingId) is not AnalyticalOpening opening)
+          continue;
 
         var curveLoop = opening.GetOuterContour();
         openings.Add(CurveLoopToSpeckle(curveLoop, revitSurface.Document));
@@ -406,5 +426,4 @@ namespace Objects.Converter.Revit
     }
 #endif
   }
-
 }

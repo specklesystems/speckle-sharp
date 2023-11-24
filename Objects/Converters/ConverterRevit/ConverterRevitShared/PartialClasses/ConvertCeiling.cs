@@ -1,4 +1,3 @@
-
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -15,7 +14,7 @@ namespace Objects.Converter.Revit
     private RevitCeiling CeilingToSpeckle(DB.Ceiling revitCeiling, out List<string> notes)
     {
       notes = new List<string>();
-#if REVIT2020 || REVIT2021  
+#if REVIT2020 || REVIT2021
       var profiles = GetProfiles(revitCeiling);
 #else
       var sketch = Doc.GetElement(revitCeiling.SketchId) as Sketch;
@@ -32,7 +31,8 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM" });
 
       GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
-      if (hostedNotes.Any()) notes.AddRange(hostedNotes); //TODO: what are we doing here?
+      if (hostedNotes.Any())
+        notes.AddRange(hostedNotes); //TODO: what are we doing here?
 
       speckleCeiling.displayValue = GetElementDisplayValue(revitCeiling);
 
@@ -44,12 +44,15 @@ namespace Objects.Converter.Revit
     public ApplicationObject CeilingToNative(Ceiling speckleCeiling)
     {
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);
-      var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type) { applicationId = speckleCeiling.applicationId };
-      
+      var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type)
+      {
+        applicationId = speckleCeiling.applicationId
+      };
+
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj))
         return appObj;
-      
+
       if (speckleCeiling.outline == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Missing an outline curve.");
@@ -69,7 +72,8 @@ namespace Objects.Converter.Revit
       {
         level = ConvertLevelToRevit(speckleRevitCeiling.level, out levelState);
         slope = speckleRevitCeiling.slope;
-        slopeDirection = (speckleRevitCeiling.slopeDirection != null) ? LineToNative(speckleRevitCeiling.slopeDirection) : null;
+        slopeDirection =
+          (speckleRevitCeiling.slopeDirection != null) ? LineToNative(speckleRevitCeiling.slopeDirection) : null;
       }
       else
       {
@@ -82,14 +86,21 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
-   
+
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
       DB.Ceiling revitCeiling;
-      
+
       if (slope != 0 && slopeDirection != null)
-        revitCeiling = DB.Ceiling.Create(Doc, new List<CurveLoop> { profile }, ceilingType.Id, level.Id, slopeDirection, slope);
+        revitCeiling = DB.Ceiling.Create(
+          Doc,
+          new List<CurveLoop> { profile },
+          ceilingType.Id,
+          level.Id,
+          slopeDirection,
+          slope
+        );
       else
         revitCeiling = DB.Ceiling.Create(Doc, new List<CurveLoop> { profile }, ceilingType.Id, level.Id);
 
@@ -106,7 +117,11 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitCeiling, speckleCeiling);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitCeiling.UniqueId, convertedItem: revitCeiling);
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        createdId: revitCeiling.UniqueId,
+        convertedItem: revitCeiling
+      );
       //appObj = SetHostedElements(speckleCeiling, revitCeiling, appObj);
       return appObj;
     }

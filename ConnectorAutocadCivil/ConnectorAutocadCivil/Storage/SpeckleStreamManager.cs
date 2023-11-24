@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -61,8 +61,7 @@ namespace Speckle.ConnectorAutocadCivil.Storage
           //Try to decode here because there is old data
           value = Base64Decode(value);
         }
-        catch (Exception e)
-        { }
+        catch (Exception e) { }
 
         streams = JsonConvert.DeserializeObject<List<StreamState>>(value);
 
@@ -154,6 +153,5 @@ namespace Speckle.ConnectorAutocadCivil.Storage
         yield return text.Substring(offset, size);
       }
     }
-
   }
 }

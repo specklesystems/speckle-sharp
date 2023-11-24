@@ -21,6 +21,7 @@ namespace DesktopUI2.Models.TypeMappingOnReceive
     public bool NewType { get; set; }
 
     private ISingleHostType _initialGuess;
+
     [DataMember]
     public ISingleHostType InitialGuess
     {
@@ -29,6 +30,7 @@ namespace DesktopUI2.Models.TypeMappingOnReceive
     }
 
     private ISingleHostType _mappedHostType;
+
     [DataMember]
     public ISingleHostType MappedHostType
     {

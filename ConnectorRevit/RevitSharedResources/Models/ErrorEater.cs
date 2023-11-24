@@ -78,7 +78,10 @@ namespace RevitSharedResources.Models
     {
       if (CommitErrorsDict.Count > 0 && _exceptions.Count > 0)
       {
-        return new SpeckleNonUserFacingException("Error eater was unable to resolve exceptions", new AggregateException(_exceptions));
+        return new SpeckleNonUserFacingException(
+          "Error eater was unable to resolve exceptions",
+          new AggregateException(_exceptions)
+        );
       }
       return null;
     }

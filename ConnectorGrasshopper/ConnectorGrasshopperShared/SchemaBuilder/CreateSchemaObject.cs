@@ -170,7 +170,7 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       }
       (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
 #if RHINO7
-      if(!Instances.RunningHeadless)
+      if (!Instances.RunningHeadless)
         (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 #else
       (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);

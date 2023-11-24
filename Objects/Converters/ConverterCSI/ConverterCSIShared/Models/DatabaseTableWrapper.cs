@@ -9,22 +9,24 @@ namespace ConverterCSIShared.Models
   internal abstract class DatabaseTableWrapper
   {
     public abstract string TableKey { get; }
-    
+
     protected readonly cSapModel cSapModel;
     protected readonly ToNativeScalingService toNativeScalingService;
-    
+
     private int tableVersion;
     protected string[] fieldKeysIncluded;
     private int numRecords;
     private List<string> tableData;
 
     private readonly List<string[]> rowsToAdd = new();
+
     protected DatabaseTableWrapper(cSapModel cSapModel, ToNativeScalingService toNativeScalingService)
     {
       this.cSapModel = cSapModel;
       this.toNativeScalingService = toNativeScalingService;
       RefreshTableData();
     }
+
     private void RefreshTableData()
     {
       var tableData = Array.Empty<string>();
@@ -43,7 +45,9 @@ namespace ConverterCSIShared.Models
     {
       if (arguments.Length != fieldKeysIncluded.Length)
       {
-        throw new ArgumentException($"Method {nameof(AddRowToBeCommitted)} was passed an array of length {arguments.Length}, but was expecting an array of length {fieldKeysIncluded.Length}");
+        throw new ArgumentException(
+          $"Method {nameof(AddRowToBeCommitted)} was passed an array of length {arguments.Length}, but was expecting an array of length {fieldKeysIncluded.Length}"
+        );
       }
       rowsToAdd.Add(arguments);
     }
@@ -74,11 +78,24 @@ namespace ConverterCSIShared.Models
       int numInfoMsgs = 0;
       int numErrorMsgs = 0;
       string importLog = "";
-      cSapModel.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+      cSapModel.DatabaseTables.ApplyEditedTables(
+        false,
+        ref numFatalErrors,
+        ref numErrorMsgs,
+        ref numWarnMsgs,
+        ref numInfoMsgs,
+        ref importLog
+      );
 
       if (numFatalErrors == 0 && numErrorMsgs == 0)
       {
-        SpeckleLog.Logger.Error("{numErrors} errors and {numFatalErrors} fatal errors occurred when attempting to add {numRowsToAdd} rows to table with key, {tableKey}", numErrorMsgs, numFatalErrors, rowsToAdd.Count, TableKey);
+        SpeckleLog.Logger.Error(
+          "{numErrors} errors and {numFatalErrors} fatal errors occurred when attempting to add {numRowsToAdd} rows to table with key, {tableKey}",
+          numErrorMsgs,
+          numFatalErrors,
+          rowsToAdd.Count,
+          TableKey
+        );
       }
       rowsToAdd.Clear();
     }

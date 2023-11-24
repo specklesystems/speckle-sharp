@@ -46,14 +46,16 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         else
         {
           // load the custom ribbon on startup, but wait for ribbon control to be created
-          ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
+          ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(
+            ComponentManager_ItemInitialized
+          );
           Application.SystemVariableChanged += TrapWSCurrentChange;
         }
 
         //Some dlls fail to load due to versions matching (0.10.7 vs 0.10.0)
-        //the below should fix it! This affects Avalonia and Material 
+        //the below should fix it! This affects Avalonia and Material
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-        
+
         // DUI2
         var bindings = new ConnectorBindingsAutocad();
         Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
@@ -63,7 +65,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       }
       catch (System.Exception e)
       {
-        Forms.MessageBox.Show($"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}");
+        Forms.MessageBox.Show(
+          $"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}"
+        );
       }
     }
 
@@ -89,7 +93,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       {
         Create();
         // remove the event handler
-        ComponentManager.ItemInitialized -= new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
+        ComponentManager.ItemInitialized -= new System.EventHandler<RibbonItemEventArgs>(
+          ComponentManager_ItemInitialized
+        );
       }
     }
 
@@ -109,7 +115,10 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       if (panel == null)
         return;
       RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
-      RibbonToolTip oneClickTip = CreateToolTip("Send", "Sends your selected objects to your account's document stream. If nothing is selected, sends everything in the document.");
+      RibbonToolTip oneClickTip = CreateToolTip(
+        "Send",
+        "Sends your selected objects to your account's document stream. If nothing is selected, sends everything in the document."
+      );
       RibbonButton button = CreateButton("Connector " + Utils.AppName, "Speckle", panel, null, speckleTip, "logo");
       RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
 
@@ -124,17 +133,28 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       helpButton.Orientation = Orientation.Vertical;
       panel.Items.Add(helpButton);
 
-      RibbonToolTip communityTip = CreateToolTip("Community", "Check out our community forum! Opens a page in your web browser.");
-      RibbonToolTip tutorialsTip = CreateToolTip("Tutorials", "Check out our tutorials! Opens a page in your web browser");
+      RibbonToolTip communityTip = CreateToolTip(
+        "Community",
+        "Check out our community forum! Opens a page in your web browser."
+      );
+      RibbonToolTip tutorialsTip = CreateToolTip(
+        "Tutorials",
+        "Check out our tutorials! Opens a page in your web browser"
+      );
       RibbonToolTip docsTip = CreateToolTip("Docs", "Check out our documentation! Opens a page in your web browser");
       RibbonButton community = CreateButton("Community", "SpeckleCommunity", null, helpButton, communityTip, "forum");
-      RibbonButton tutorials = CreateButton("Tutorials", "SpeckleTutorials", null, helpButton, tutorialsTip, "tutorials");
+      RibbonButton tutorials = CreateButton(
+        "Tutorials",
+        "SpeckleTutorials",
+        null,
+        helpButton,
+        tutorialsTip,
+        "tutorials"
+      );
       RibbonButton docs = CreateButton("Docs", "SpeckleDocs", null, helpButton, docsTip, "docs");
     }
 
-    public void Terminate()
-    {
-    }
+    public void Terminate() { }
 
     private RibbonTab FindOrMakeTab(string name)
     {
@@ -176,7 +196,14 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       return toolTip;
     }
 
-    private RibbonButton CreateButton(string name, string CommandParameter, RibbonPanelSource sourcePanel = null, RibbonSplitButton sourceButton = null, RibbonToolTip tooltip = null, string imageName = "")
+    private RibbonButton CreateButton(
+      string name,
+      string CommandParameter,
+      RibbonPanelSource sourcePanel = null,
+      RibbonSplitButton sourceButton = null,
+      RibbonToolTip tooltip = null,
+      string imageName = ""
+    )
     {
       var button = new RibbonButton();
 
@@ -213,10 +240,17 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        string resource = this.GetType().Assembly.GetManifestResourceNames().Where(o => o.EndsWith(sourceName)).FirstOrDefault();
+        string resource = this.GetType()
+          .Assembly.GetManifestResourceNames()
+          .Where(o => o.EndsWith(sourceName))
+          .FirstOrDefault();
         Assembly assembly = Assembly.GetExecutingAssembly();
         Stream stream = assembly.GetManifestResourceStream(resource);
-        PngBitmapDecoder decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+        PngBitmapDecoder decoder = new PngBitmapDecoder(
+          stream,
+          BitmapCreateOptions.PreservePixelFormat,
+          BitmapCacheOption.Default
+        );
         ImageSource source = decoder.Frames[0];
         return source;
       }

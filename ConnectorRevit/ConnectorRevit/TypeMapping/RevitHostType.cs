@@ -5,17 +5,20 @@ namespace ConnectorRevit.TypeMapping
 {
   internal class RevitHostType : HostType
   {
-    public RevitHostType(string hostFamilyName, string hostTypeName) : base(hostTypeName)
+    public RevitHostType(string hostFamilyName, string hostTypeName)
+      : base(hostTypeName)
     {
       HostFamilyName = hostFamilyName;
     }
+
     public string HostFamilyName { get; }
     private string _hostTypeDisplayName;
     public override string HostTypeDisplayName
     {
       get
       {
-        if (_hostTypeDisplayName != null) return _hostTypeDisplayName;
+        if (_hostTypeDisplayName != null)
+          return _hostTypeDisplayName;
 
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(HostFamilyName))

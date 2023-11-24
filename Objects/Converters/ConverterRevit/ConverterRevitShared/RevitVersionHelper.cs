@@ -37,8 +37,11 @@ namespace Objects.Converter.Revit
       // if a commit is sent in <=2021 and received in 2022+, the application unit will be a different format
       // therefore we need to check if the applicationUnit is in the wrong format
       ForgeTypeId sourceUnit = null;
-      if (!string.IsNullOrEmpty(applicationUnit) && applicationUnit.Length >= 3 &&
-          applicationUnit.Substring(0, 3) == "DUT")
+      if (
+        !string.IsNullOrEmpty(applicationUnit)
+        && applicationUnit.Length >= 3
+        && applicationUnit.Substring(0, 3) == "DUT"
+      )
         sourceUnit = DUTToForgeTypeId(applicationUnit);
       else
         sourceUnit = new ForgeTypeId(applicationUnit);
@@ -61,7 +64,7 @@ namespace Objects.Converter.Revit
       return UnitUtils.ConvertToInternalUnits(value, parameter.GetUnitTypeId());
 #endif
     }
-    
+
     public static string GetUnityTypeString(this Definition definition)
     {
 #if REVIT2020 || REVIT2021
@@ -71,7 +74,7 @@ namespace Objects.Converter.Revit
 #endif
     }
 
-#if REVIT2020    
+#if REVIT2020
     public static DisplayUnitType GetUnitTypeId(this Parameter parameter)
     {
       return parameter.DisplayUnitType;

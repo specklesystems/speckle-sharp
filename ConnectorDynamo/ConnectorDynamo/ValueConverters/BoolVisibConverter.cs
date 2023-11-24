@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Data;
 using System.Globalization;
@@ -26,10 +26,7 @@ namespace Speckle.ConnectorDynamo.ValueConverters
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-
       throw new NotImplementedException();
     }
-
-
   }
 }

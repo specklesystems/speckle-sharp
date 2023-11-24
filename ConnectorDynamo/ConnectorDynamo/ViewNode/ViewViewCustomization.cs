@@ -1,4 +1,4 @@
-﻿using Dynamo.Configuration;
+using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
 using Dynamo.Scheduler;
@@ -35,19 +35,22 @@ namespace Speckle.ConnectorDynamo.ViewNode
       ui.ViewStreamButton.Click += ViewStreamButtonClick;
     }
 
-
     private void UpdateNode()
     {
-      Task.Run(async () => { viewNode.UpdateNode(dynamoModel.EngineController); });
+      Task.Run(async () =>
+      {
+        viewNode.UpdateNode(dynamoModel.EngineController);
+      });
     }
 
     private void ViewStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(async () => { viewNode.ViewStream(); });
+      Task.Run(async () =>
+      {
+        viewNode.ViewStream();
+      });
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
   }
 }

@@ -4,7 +4,5 @@ using System.Text;
 
 namespace ConverterTeklaStructuresShared.Partial_Classes
 {
-  class ConvertPoint
-  {
-  }
+  class ConvertPoint { }
 }

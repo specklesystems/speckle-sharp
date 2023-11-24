@@ -1,4 +1,4 @@
-﻿using Autodesk.DesignScript.Runtime;
+using Autodesk.DesignScript.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,8 @@ namespace Speckle.ConnectorDynamo.Functions
   [IsVisibleInDynamoLibrary(false)]
   public static class InMemoryCache
   {
-    private static Dictionary<string, Dictionary<string, object>> _cache = new Dictionary<string, Dictionary<string, object>>();
+    private static Dictionary<string, Dictionary<string, object>> _cache =
+      new Dictionary<string, Dictionary<string, object>>();
 
     public static Dictionary<string, object> Get(string id)
     {

@@ -16,6 +16,7 @@ namespace ConverterCSIShared.Models
     private readonly bool sendForces;
     private readonly bool sendVelocity;
     private readonly bool sendAcceleration;
+
     public NodeAnalyticalResultsConverter(
       cSapModel sapModel,
       IEnumerable<LoadCombination> loadCombinations,
@@ -23,7 +24,8 @@ namespace ConverterCSIShared.Models
       bool sendDisplacements,
       bool sendForces,
       bool sendVelocity,
-      bool sendAcceleration)
+      bool sendAcceleration
+    )
     {
       this.sapModel = sapModel;
       this.sapModel = sapModel;
@@ -47,10 +49,7 @@ namespace ConverterCSIShared.Models
 
     public AnalyticalResults AnalyticalResultsToSpeckle(string nodeName)
     {
-      return new()
-      {
-        resultsByLoadCombination = GetAnalysisResultsForNode(nodeName).Cast<Result>().ToList()
-      };
+      return new() { resultsByLoadCombination = GetAnalysisResultsForNode(nodeName).Cast<Result>().ToList() };
     }
 
     private IEnumerable<ResultSetNode> GetAnalysisResultsForNode(string nodeName)
@@ -73,7 +72,8 @@ namespace ConverterCSIShared.Models
         out double[] R1,
         out double[] R2,
         out double[] R3,
-        sendDisplacements);
+        sendDisplacements
+      );
 
       if (displacementSuccess)
       {
@@ -96,7 +96,8 @@ namespace ConverterCSIShared.Models
         out double[] M1,
         out double[] M2,
         out double[] M3,
-        sendForces);
+        sendForces
+      );
 
       if (forceSuccess)
       {
@@ -119,7 +120,8 @@ namespace ConverterCSIShared.Models
         out double[] R1Vel,
         out double[] R2Vel,
         out double[] R3Vel,
-        sendVelocity);
+        sendVelocity
+      );
 
       if (velocitySuccess)
       {
@@ -142,7 +144,8 @@ namespace ConverterCSIShared.Models
         out double[] R1Acc,
         out double[] R2Acc,
         out double[] R3Acc,
-        sendAcceleration);
+        sendAcceleration
+      );
 
       if (accelerationSuccess)
       {
@@ -206,10 +209,7 @@ namespace ConverterCSIShared.Models
       if (!dict.TryGetValue(loadCaseName, out ResultSetNode comboResults))
       {
         Base loadCaseOrCombination = loadCombinationsAndCases[loadCaseName];
-        comboResults = new ResultSetNode(new())
-        {
-          resultCase = loadCaseOrCombination
-        };
+        comboResults = new ResultSetNode(new()) { resultCase = loadCaseOrCombination };
         dict[loadCaseName] = comboResults;
       }
       return comboResults;

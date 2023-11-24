@@ -10,6 +10,7 @@ namespace TestGenerator
     public string SyncAssertFunc;
     public string AsyncAssertFunc;
   }
+
   internal class Categories
   {
     public const string AdaptiveComponent = "adaptivecomponent";
@@ -29,106 +30,101 @@ namespace TestGenerator
     public const string Wall = "wall";
     public const string Wire = "wire";
 
-    public static Dictionary<string, CategoryProperties> CategoriesDict = new()
-    {
-      { AdaptiveComponent, new CategoryProperties()
+    public static Dictionary<string, CategoryProperties> CategoriesDict =
+      new()
+      {
         {
-          RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
-        } 
-      },
-      { Beam, new CategoryProperties()
+          AdaptiveComponent,
+          new CategoryProperties()
+          {
+            RevitType = "DB.FamilyInstance",
+            SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
+          }
+        },
         {
-          RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
-        }
-      },
-      //{ Brep, new CategoryProperties()
-      //  {
-      //    RevitType = "DB.FamilyInstance",
-      //    SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
-      //  }
-      //},
-      { Column, new CategoryProperties()
+          Beam,
+          new CategoryProperties()
+          {
+            RevitType = "DB.FamilyInstance",
+            SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
+          }
+        },
+        //{ Brep, new CategoryProperties()
+        //  {
+        //    RevitType = "DB.FamilyInstance",
+        //    SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
+        //  }
+        //},
         {
-          RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
-        }
-      },
-      { Curve, new CategoryProperties()
+          Column,
+          new CategoryProperties()
+          {
+            RevitType = "DB.FamilyInstance",
+            SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
+          }
+        },
         {
-          RevitType = "DB.CurveElement",
-          SyncAssertFunc = "AssertUtils.CurveEqual"
-        }
-      },
-      { DirectShape, new CategoryProperties()
+          Curve,
+          new CategoryProperties() { RevitType = "DB.CurveElement", SyncAssertFunc = "AssertUtils.CurveEqual" }
+        },
         {
-          RevitType = "DB.DirectShape",
-          SyncAssertFunc = "AssertUtils.DirectShapeEqual"
-        }
-      },
-      //{ Duct, new CategoryProperties()
-      //  {
-      //    RevitType = "DB.Mechanical.Duct",
-      //    SyncAssertFunc = "AssertUtils.DuctEqual"
-      //  }
-      //},
-      { FamilyInstance, new CategoryProperties()
+          DirectShape,
+          new CategoryProperties() { RevitType = "DB.DirectShape", SyncAssertFunc = "AssertUtils.DirectShapeEqual" }
+        },
+        //{ Duct, new CategoryProperties()
+        //  {
+        //    RevitType = "DB.Mechanical.Duct",
+        //    SyncAssertFunc = "AssertUtils.DuctEqual"
+        //  }
+        //},
         {
-          RevitType = "DB.Element",
-          SyncAssertFunc = "AssertUtils.NestedEqual"
-        }
-      },
-      { Floor, new CategoryProperties()
+          FamilyInstance,
+          new CategoryProperties() { RevitType = "DB.Element", SyncAssertFunc = "AssertUtils.NestedEqual" }
+        },
         {
-          RevitType = "DB.Floor",
-          SyncAssertFunc = "null",
-          AsyncAssertFunc = "AssertUtils.FloorEqual"
-        }
-      },
-      { Opening, new CategoryProperties()
+          Floor,
+          new CategoryProperties()
+          {
+            RevitType = "DB.Floor",
+            SyncAssertFunc = "null",
+            AsyncAssertFunc = "AssertUtils.FloorEqual"
+          }
+        },
         {
-          RevitType = "DB.Element",
-          SyncAssertFunc = "AssertUtils.OpeningEqual"
-        }
-      },
-      //{ Pipe, new CategoryProperties()
-      //  {
-      //    RevitType = "DB.Plumbing.Pipe",
-      //    SyncAssertFunc = "AssertUtils.PipeEqual"
-      //  }
-      //},
-      { Roof, new CategoryProperties()
+          Opening,
+          new CategoryProperties() { RevitType = "DB.Element", SyncAssertFunc = "AssertUtils.OpeningEqual" }
+        },
+        //{ Pipe, new CategoryProperties()
+        //  {
+        //    RevitType = "DB.Plumbing.Pipe",
+        //    SyncAssertFunc = "AssertUtils.PipeEqual"
+        //  }
+        //},
         {
-          RevitType = "DB.RoofBase",
-          SyncAssertFunc = "AssertUtils.RoofEqual"
-        }
-      },
-      { Room, new CategoryProperties()
+          Roof,
+          new CategoryProperties() { RevitType = "DB.RoofBase", SyncAssertFunc = "AssertUtils.RoofEqual" }
+        },
         {
-          RevitType = "null",
-          SyncAssertFunc = "null"
-        }
-      },
-      { Schedule, new CategoryProperties()
+          Room,
+          new CategoryProperties() { RevitType = "null", SyncAssertFunc = "null" }
+        },
         {
-          RevitType = "DB.ViewSchedule",
-          //SyncAssertFunc = "null",
-          AsyncAssertFunc = "AssertUtils.ScheduleEqual",
-        }
-      },
-      { Wall, new CategoryProperties()
+          Schedule,
+          new CategoryProperties()
+          {
+            RevitType = "DB.ViewSchedule",
+            //SyncAssertFunc = "null",
+            AsyncAssertFunc = "AssertUtils.ScheduleEqual",
+          }
+        },
         {
-          RevitType = "DB.Wall",
-          SyncAssertFunc = "AssertUtils.WallEqual"
-        }
-      },
-      { Wire, new CategoryProperties()
+          Wall,
+          new CategoryProperties() { RevitType = "DB.Wall", SyncAssertFunc = "AssertUtils.WallEqual" }
+        },
         {
-          RevitType = "DB.Electrical.Wire",
-          SyncAssertFunc = "AssertUtils.WireEqual"
-        }
-      },
-    };
+          Wire,
+          new CategoryProperties() { RevitType = "DB.Electrical.Wire", SyncAssertFunc = "AssertUtils.WireEqual" }
+        },
+      };
   }
 }

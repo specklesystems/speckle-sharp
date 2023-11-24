@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,15 +32,19 @@ namespace Speckle.ConnectorBentley.Storage
       var states = new List<StreamState>();
       try
       {
-        FindInstancesScope scope = FindInstancesScope.CreateScope(file, new FindInstancesScopeOption(DgnECHostType.All));
-        var schema = (ECSchema)DgnECManager.Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
+        FindInstancesScope scope = FindInstancesScope.CreateScope(
+          file,
+          new FindInstancesScopeOption(DgnECHostType.All)
+        );
+        var schema = (ECSchema)
+          DgnECManager.Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
 
         if (schema == null)
           return states;
 
         ECQuery readWidget = new ECQuery(schema.GetClass(className));
         readWidget.SelectClause.SelectAllProperties = true;
-        
+
         using (DgnECInstanceCollection ecInstances = DgnECManager.Manager.FindInstances(scope, readWidget))
         {
           var streamStatesInstance = ecInstances.First();
@@ -123,7 +127,6 @@ namespace Speckle.ConnectorBentley.Storage
           return null;
         }
       }
-
       else
       {
         return CreateSchema(File);

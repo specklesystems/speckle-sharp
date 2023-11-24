@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MathNet.Spatial.Euclidean;
@@ -12,7 +12,12 @@ namespace StructuralUtilities.PolygonMesher
     public int WindingDirection;
     public CoordinateSystem CoordinateTranslation;
 
-    public bool Init(IEnumerable<double> globalCoords, ref CoordinateSystem CoordinateTranslation, double tolerance, int ptIndexOffset = 0)
+    public bool Init(
+      IEnumerable<double> globalCoords,
+      ref CoordinateSystem CoordinateTranslation,
+      double tolerance,
+      int ptIndexOffset = 0
+    )
     {
       var essential = globalCoords.Essential();
 
@@ -67,7 +72,10 @@ namespace StructuralUtilities.PolygonMesher
       for (var i = 0; i < n; i++)
       {
         var indexPair = new IndexPair(ptIndexOffset + i, ptIndexOffset + (i == n - 1 ? 0 : i + 1));
-        IndexedLines.Add(indexPair, new Line2D(MeshPointByIndex(indexPair.Indices[0]).Local, MeshPointByIndex(indexPair.Indices[1]).Local));
+        IndexedLines.Add(
+          indexPair,
+          new Line2D(MeshPointByIndex(indexPair.Indices[0]).Local, MeshPointByIndex(indexPair.Indices[1]).Local)
+        );
       }
 
       WindingDirection = Vertices.Select(mp => mp.Local).GetWindingDirection();
@@ -76,8 +84,11 @@ namespace StructuralUtilities.PolygonMesher
     }
 
     public int NextIndex(int currIndex) => currIndex == Vertices.Last().Index ? Vertices.First().Index : currIndex + 1;
+
     public int PrevIndex(int currIndex) => currIndex == Vertices.First().Index ? Vertices.Last().Index : currIndex - 1;
+
     public int FirstIndex() => Vertices.First().Index;
+
     public int LastIndex() => Vertices.Last().Index;
 
     public void ReverseDirection()

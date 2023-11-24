@@ -1,4 +1,4 @@
-﻿using DesktopUI2;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
@@ -10,7 +10,6 @@ using Tekla.Structures.Model;
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
-
   {
     public override List<string> GetSelectedObjects()
     {
@@ -40,19 +39,32 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //views = ConnectorTeklaStructuresUtils.GetViewNames(Model);
       }
       return new List<ISelectionFilter>()
-            {
-         new AllSelectionFilter {Slug="all",  Name = "Everything",
-                Icon = "CubeScan", Description = "Selects all document objects." },
-
-            new ListSelectionFilter {Slug="type", Name = "Categories",
-                Icon = "Category", Values = categories,
-                Description="Adds all objects belonging to the selected types"},
-            new ListSelectionFilter {Slug="phase", Name = "Phases",
-              Icon = "SelectGroup", Values = phases,
-              Description="Adds all objects belonging to the selected phase"},
-
-            new ManualSelectionFilter(),
-            };
+      {
+        new AllSelectionFilter
+        {
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Selects all document objects."
+        },
+        new ListSelectionFilter
+        {
+          Slug = "type",
+          Name = "Categories",
+          Icon = "Category",
+          Values = categories,
+          Description = "Adds all objects belonging to the selected types"
+        },
+        new ListSelectionFilter
+        {
+          Slug = "phase",
+          Name = "Phases",
+          Icon = "SelectGroup",
+          Values = phases,
+          Description = "Adds all objects belonging to the selected phase"
+        },
+        new ManualSelectionFilter(),
+      };
     }
 
     public override void ResetDocument()
@@ -84,7 +96,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
           while (myEnum.MoveNext())
             selection.Add(myEnum.Current);
           return selection;
-
 
         case "phase":
           var phaseFilter = filter as ListSelectionFilter;

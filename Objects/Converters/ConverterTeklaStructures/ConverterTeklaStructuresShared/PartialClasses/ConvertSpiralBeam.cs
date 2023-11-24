@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -19,7 +19,6 @@ namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
-
     public SpiralBeam SpiralBeamToSpeckle(Tekla.Structures.Model.SpiralBeam SpiralBeam)
     {
       var units = GetUnitsFromModel();
@@ -33,7 +32,7 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Z);
       }
 
-      speckleBeam.baseLine = new Polyline(pointList,units);
+      speckleBeam.baseLine = new Polyline(pointList, units);
 
       speckleBeam.profile = GetBeamProfile(SpiralBeam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(SpiralBeam.Material.MaterialString);
@@ -41,8 +40,8 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.classNumber = SpiralBeam.Class;
       speckleBeam.name = SpiralBeam.Name;
       var beamCS = SpiralBeam.GetCoordinateSystem();
-        speckleBeam.position = GetPositioning(SpiralBeam.Position);
-        speckleBeam.alignmentVector = new Objects.Geometry.Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
+      speckleBeam.position = GetPositioning(SpiralBeam.Position);
+      speckleBeam.alignmentVector = new Objects.Geometry.Vector(beamCS.AxisY.X, beamCS.AxisY.Y, beamCS.AxisY.Z, units);
       GetAllUserProperties(speckleBeam, SpiralBeam);
       speckleBeam.TeklaBeamType = TeklaBeamType.SpiralBeam;
       //var refLine = SpiralBeam.GetReferenceLine(false);
@@ -50,8 +49,16 @@ namespace Objects.Converter.TeklaStructures
       speckleBeam.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
 
       speckleBeam.startPoint = new Point(SpiralBeam.StartPoint.X, SpiralBeam.StartPoint.Y, SpiralBeam.StartPoint.Z);
-      speckleBeam.rotationAxisPt1 = new Point(SpiralBeam.RotationAxisBasePoint.X, SpiralBeam.RotationAxisBasePoint.Y, SpiralBeam.RotationAxisBasePoint.Z);
-      speckleBeam.rotationAxisPt2 = new Point(SpiralBeam.RotationAxisUpPoint.X, SpiralBeam.RotationAxisUpPoint.Y, SpiralBeam.RotationAxisUpPoint.Z);
+      speckleBeam.rotationAxisPt1 = new Point(
+        SpiralBeam.RotationAxisBasePoint.X,
+        SpiralBeam.RotationAxisBasePoint.Y,
+        SpiralBeam.RotationAxisBasePoint.Z
+      );
+      speckleBeam.rotationAxisPt2 = new Point(
+        SpiralBeam.RotationAxisUpPoint.X,
+        SpiralBeam.RotationAxisUpPoint.Y,
+        SpiralBeam.RotationAxisUpPoint.Z
+      );
       speckleBeam.totalRise = SpiralBeam.TotalRise;
       speckleBeam.rotationAngle = SpiralBeam.RotationAngle;
       speckleBeam.twistAngleStart = SpiralBeam.TwistAngleStart;

@@ -20,10 +20,15 @@ namespace Objects.Converter.Revit
       return docLevels.FirstOrDefault(l => Math.Abs(l.Elevation - (double)elevation) < TOLERANCE);
     }
 
-    public DB.Level GetExistingLevelByClosestElevation(IEnumerable<DB.Level> docLevels, double elevation, out double elevationOffset)
+    public DB.Level GetExistingLevelByClosestElevation(
+      IEnumerable<DB.Level> docLevels,
+      double elevation,
+      out double elevationOffset
+    )
     {
       elevationOffset = 0.0;
-      DB.Level level = docLevels.LastOrDefault(l => (l.Elevation < elevation + TOLERANCE)) ?? docLevels.FirstOrDefault();
+      DB.Level level =
+        docLevels.LastOrDefault(l => (l.Elevation < elevation + TOLERANCE)) ?? docLevels.FirstOrDefault();
 
       if (level != null)
         elevationOffset = level.Elevation - elevation;
@@ -52,18 +57,24 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Tries to find a level by ELEVATION only, otherwise it creates it.
     /// Unless it was created before and we still have its app id in memory
-    /// Reason for not matching levels by name instead: 
+    /// Reason for not matching levels by name instead:
     /// source file has L0 @0m and L1 @4m
     /// dest file has L1 @0m and L2 @4m
     /// attempting to move or rename levels would just be a mess, hence, we don't do that!
     /// </summary>
     /// <param name="speckleLevel"></param>
     /// <returns></returns>
-    public DB.Level ConvertLevelToRevit(BuiltElements.Level speckleLevel, bool exactElevation, out ApplicationObject.State state, out double elevationOffset)
+    public DB.Level ConvertLevelToRevit(
+      BuiltElements.Level speckleLevel,
+      bool exactElevation,
+      out ApplicationObject.State state,
+      out double elevationOffset
+    )
     {
       state = ApplicationObject.State.Unknown;
       elevationOffset = 0.0;
-      if (speckleLevel == null) return null;
+      if (speckleLevel == null)
+        return null;
 
       var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
@@ -74,7 +85,7 @@ namespace Objects.Converter.Revit
         //see: https://speckle.community/t/revit-connector-levels-and-spaces/2824/5
         elevationMatch = false;
         if (GetExistingLevelByName(docLevels, speckleLevel.name) is DB.Level existingLevelWithSameName)
-            return existingLevelWithSameName;
+          return existingLevelWithSameName;
       }
 
       DB.Level revitLevel = null;
@@ -93,19 +104,28 @@ namespace Objects.Converter.Revit
         state = ApplicationObject.State.Updated;
       }
       //match by elevation
-      else if (!exactElevation && elevationMatch && (GetExistingLevelByClosestElevation(docLevels, speckleLevelElevation, out elevationOffset) is DB.Level existingLevelWithClosestElevation))
+      else if (
+        !exactElevation
+        && elevationMatch
+        && (
+          GetExistingLevelByClosestElevation(docLevels, speckleLevelElevation, out elevationOffset)
+          is DB.Level existingLevelWithClosestElevation
+        )
+      )
       {
         revitLevel = existingLevelWithClosestElevation;
         state = ApplicationObject.State.Skipped; // state should be eliminated
       }
       //match by elevation
-      else if (elevationMatch && (GetExistingLevelByElevation(docLevels, speckleLevelElevation) is DB.Level existingLevelWithSameElevation))
+      else if (
+        elevationMatch
+        && (GetExistingLevelByElevation(docLevels, speckleLevelElevation) is DB.Level existingLevelWithSameElevation)
+      )
       {
         revitLevel = existingLevelWithSameElevation;
         revitLevel.Name = speckleLevel.name;
         state = ApplicationObject.State.Updated;
       }
-
       else
       {
         // If we don't have an existing level, create it.
@@ -125,7 +145,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject LevelToNative(BuiltElements.Level speckleLevel)
     {
       var revitLevel = ConvertLevelToRevit(speckleLevel, out ApplicationObject.State state);
-      var appObj = new ApplicationObject(speckleLevel.id, speckleLevel.speckle_type) { applicationId = speckleLevel.applicationId };
+      var appObj = new ApplicationObject(speckleLevel.id, speckleLevel.speckle_type)
+      {
+        applicationId = speckleLevel.applicationId
+      };
       appObj.Update(status: state, createdId: revitLevel.UniqueId, convertedItem: revitLevel);
       return appObj;
     }
@@ -145,7 +168,10 @@ namespace Objects.Converter.Revit
 
     public ViewPlan CreateViewPlan(string name, ElementId levelId)
     {
-      var vt = new FilteredElementCollector(Doc).OfClass(typeof(ViewFamilyType)).Where(el => ((ViewFamilyType)el).ViewFamily == ViewFamily.FloorPlan).First();
+      var vt = new FilteredElementCollector(Doc)
+        .OfClass(typeof(ViewFamilyType))
+        .Where(el => ((ViewFamilyType)el).ViewFamily == ViewFamily.FloorPlan)
+        .First();
 
       var view = ViewPlan.Create(Doc, vt.Id, levelId);
       try
@@ -192,7 +218,8 @@ namespace Objects.Converter.Revit
     {
       var level = doc.GetElement(id) as DB.Level;
 
-      if (level == null) return null;
+      if (level == null)
+        return null;
       if (!Levels.ContainsKey(level.Name))
         Levels[level.Name] = LevelToSpeckle(level);
 
@@ -207,12 +234,22 @@ namespace Objects.Converter.Revit
 
     private RevitLevel LevelFromElevation(double z)
     {
-      return new RevitLevel() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
+      return new RevitLevel()
+      {
+        elevation = z,
+        name = "Generated Level " + z,
+        units = ModelUnits
+      };
     }
 
     private Objects.BuiltElements.Level ObjectsLevelFromElevation(double z)
     {
-      return new Objects.BuiltElements.Level() { elevation = z, name = "Generated Level " + z, units = ModelUnits };
+      return new Objects.BuiltElements.Level()
+      {
+        elevation = z,
+        name = "Generated Level " + z,
+        units = ModelUnits
+      };
     }
 
     private RevitLevel LevelFromPoint(XYZ point)

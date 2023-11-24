@@ -1,4 +1,4 @@
-﻿using Dynamo.Configuration;
+using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
 using Dynamo.Scheduler;
@@ -41,7 +41,6 @@ namespace Speckle.ConnectorDynamo.SendNode
       ui.SendStreamButton.Click += SendStreamButtonClick;
       ui.CancelSendStreamButton.Click += CancelSendStreamButtonClick;
 
-
       //nodeView.grid.ContextMenu.Items.Add(new Separator());
     }
 
@@ -54,7 +53,8 @@ namespace Speckle.ConnectorDynamo.SendNode
 
     private void InputsChanged()
     {
-      debounceTimer.Debounce(300,
+      debounceTimer.Debounce(
+        300,
         () =>
         {
           Task.Run(async () =>
@@ -64,7 +64,8 @@ namespace Speckle.ConnectorDynamo.SendNode
             if (sendNode.AutoUpdate)
               sendNode.DoSend(dynamoModel.EngineController);
           });
-        });
+        }
+      );
     }
 
     private void UpdateContextMenu()
@@ -80,7 +81,6 @@ namespace Speckle.ConnectorDynamo.SendNode
 
         foreach (var stream in sendNode._streamWrappers)
         {
-
           var viewStream = new MenuItem { Header = $"View stream {stream.StreamId} @ {stream.ServerUrl} online ↗" };
           viewStream.Click += (a, e) =>
           {
@@ -88,18 +88,18 @@ namespace Speckle.ConnectorDynamo.SendNode
           };
           customMenuItems.Add(viewStream);
           _nodeView.grid.ContextMenu.Items.Add(viewStream);
-
         }
       });
     }
 
     private void SendStreamButtonClick(object sender, RoutedEventArgs e)
     {
-      Task.Run(async () => { sendNode.DoSend(dynamoModel.EngineController); });
+      Task.Run(async () =>
+      {
+        sendNode.DoSend(dynamoModel.EngineController);
+      });
     }
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
   }
 }

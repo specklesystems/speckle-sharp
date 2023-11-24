@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -25,7 +25,7 @@ namespace Objects.Converter.Bentley
   {
     /// <summary>
     /// Computes the Speckle Units of the current model. The active MicroStation model is passed as a reference, so it will always be up to date.
-    /// </summary>  
+    /// </summary>
     private string _modelUnits;
     public string ModelUnits
     {
@@ -205,7 +205,8 @@ namespace Objects.Converter.Bentley
             return value;
           }
         }
-      };
+      }
+      ;
 
       return null;
     }

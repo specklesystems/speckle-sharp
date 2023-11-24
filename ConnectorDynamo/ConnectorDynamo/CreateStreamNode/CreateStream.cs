@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -34,7 +34,6 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     public StreamWrapper Stream { get; set; }
 
     public string SelectedUserId = "";
-
 
     /// <summary>
     /// UI Binding
@@ -79,14 +78,14 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
       }
     }
 
-
     /// <summary>
     /// JSON constructor, called on file open
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [JsonConstructor]
-    private CreateStream(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private CreateStream(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts)
+      : base(inPorts, outPorts)
     {
       if (outPorts.Count() == 0)
         AddOutputs();
@@ -147,7 +146,11 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
 
         this.Name = "Stream Created";
 
-        Analytics.TrackEvent(SelectedAccount, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Create" } });
+        Analytics.TrackEvent(
+          SelectedAccount,
+          Analytics.Events.NodeRun,
+          new Dictionary<string, object>() { { "name", "Stream Create" } }
+        );
 
         OnNodeModified(true);
       }
@@ -160,9 +163,7 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
           Error(ex.InnerException.Message);
         else
           Error(ex.Message);
-
       }
-
     }
 
     #region overrides
@@ -176,8 +177,9 @@ namespace Speckle.ConnectorDynamo.CreateStreamNode
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
       if (Stream == null)
-        return OutPorts.Enumerate().Select(output =>
-          AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+        return OutPorts
+          .Enumerate()
+          .Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
 
       var sw = AstFactory.BuildStringNode(Stream.ToString());
 

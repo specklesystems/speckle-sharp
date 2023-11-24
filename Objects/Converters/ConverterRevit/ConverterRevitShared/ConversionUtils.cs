@@ -275,12 +275,18 @@ namespace Objects.Converter.Revit
       {
         speckleElement["materialQuantities"] = MaterialQuantitiesToSpeckle(
           revitElement,
-          speckleElement["units"] as string)?
-          .ToList();
+          speckleElement["units"] as string
+        )
+          ?.ToList();
       }
       catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
-        SpeckleLog.Logger.Error(ex, "An exception occurred in the Revit API while retrieving material quantities from element of type {elementType} and category {elementCategory}", revitElement.GetType(), revitElement.Category);
+        SpeckleLog.Logger.Error(
+          ex,
+          "An exception occurred in the Revit API while retrieving material quantities from element of type {elementType} and category {elementCategory}",
+          revitElement.GetType(),
+          revitElement.Category
+        );
       }
     }
 
@@ -615,7 +621,7 @@ namespace Objects.Converter.Revit
       return null;
     }
 
-#endregion
+    #endregion
 
     #region conversion "edit existing if possible" utilities
 

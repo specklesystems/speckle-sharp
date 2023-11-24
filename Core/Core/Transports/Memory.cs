@@ -14,7 +14,8 @@ public sealed class MemoryTransport : ITransport, ICloneable
 {
   public IDictionary<string, string> Objects { get; }
 
-  public MemoryTransport() : this(new Dictionary<string, string>()) { }
+  public MemoryTransport()
+    : this(new Dictionary<string, string>()) { }
 
   public MemoryTransport(IDictionary<string, string> objects)
   {

@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Bentley.DgnPlatformNET;
@@ -22,12 +22,14 @@ namespace Speckle.ConnectorBentley.Entry
     public static ConnectorBindingsBentley Bindings { get; set; }
     private static Avalonia.Application AvaloniaApp { get; set; }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
-      .UsePlatformDetect()
-      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
-      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
-      .LogToTrace()
-      .UseReactiveUI();
+    public static AppBuilder BuildAvaloniaApp() =>
+      AppBuilder
+        .Configure<DesktopUI2.App>()
+        .UsePlatformDetect()
+        .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+        .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+        .LogToTrace()
+        .UseReactiveUI();
 
     public static void InitAvalonia()
     {
@@ -35,10 +37,7 @@ namespace Speckle.ConnectorBentley.Entry
       {
         BuildAvaloniaApp().Start(AppMain, null);
       }
-      catch (Exception e)
-      {
-
-      }
+      catch (Exception e) { }
     }
 
     public static void CreateOrFocusSpeckle()
@@ -46,10 +45,7 @@ namespace Speckle.ConnectorBentley.Entry
       if (MainWindow == null)
       {
         var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
+        MainWindow = new MainWindow { DataContext = viewModel };
         Task.Run(() => AvaloniaApp.Run(MainWindow));
       }
       MainWindow.Show();
@@ -60,6 +56,5 @@ namespace Speckle.ConnectorBentley.Entry
     {
       AvaloniaApp = app;
     }
-
   }
 }

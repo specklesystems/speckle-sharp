@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleArea, revitArea);
 
-      //no mesh seems to be retriavable, not even using the SpatialElementGeometryCalculator 
+      //no mesh seems to be retriavable, not even using the SpatialElementGeometryCalculator
       //speckleArea.displayValue = GetElementDisplayValue(revitArea);
       return speckleArea;
     }

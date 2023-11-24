@@ -1,4 +1,3 @@
-﻿
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;

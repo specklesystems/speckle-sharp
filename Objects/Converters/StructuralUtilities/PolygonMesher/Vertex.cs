@@ -1,4 +1,4 @@
-﻿using MathNet.Spatial.Euclidean;
+using MathNet.Spatial.Euclidean;
 
 namespace StructuralUtilities.PolygonMesher
 {
@@ -7,6 +7,7 @@ namespace StructuralUtilities.PolygonMesher
     public int Index;
     public Point2D Local;
     public Point3D Global;
+
     public Vertex(int index, Point2D local, Point3D global)
     {
       this.Local = local;
@@ -16,10 +17,7 @@ namespace StructuralUtilities.PolygonMesher
 
     public double[] Coordinates
     {
-      get
-      {
-        return new double[] { Global.X, Global.Y, Global.Z };
-      }
+      get { return new double[] { Global.X, Global.Y, Global.Z }; }
     }
   }
 }

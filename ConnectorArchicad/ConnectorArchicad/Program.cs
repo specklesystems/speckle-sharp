@@ -53,15 +53,24 @@ namespace Archicad.Launcher
       MainWindow.Activate();
     }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
-      .UsePlatformDetect()
-      .With(new X11PlatformOptions { UseGpu = false })
-      .With(new MacOSPlatformOptions { ShowInDock = true, DisableDefaultApplicationMenuItems = true, DisableNativeMenus = true })
-      .With(new AvaloniaNativePlatformOptions { UseGpu = false, UseDeferredRendering = true })
-      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
-      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
-      .LogToTrace()
-      .UseReactiveUI();
+    public static AppBuilder BuildAvaloniaApp() =>
+      AppBuilder
+        .Configure<DesktopUI2.App>()
+        .UsePlatformDetect()
+        .With(new X11PlatformOptions { UseGpu = false })
+        .With(
+          new MacOSPlatformOptions
+          {
+            ShowInDock = true,
+            DisableDefaultApplicationMenuItems = true,
+            DisableNativeMenus = true
+          }
+        )
+        .With(new AvaloniaNativePlatformOptions { UseGpu = false, UseDeferredRendering = true })
+        .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+        .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+        .LogToTrace()
+        .UseReactiveUI();
 
     private static void AppMain(Application app, string[] args)
     {

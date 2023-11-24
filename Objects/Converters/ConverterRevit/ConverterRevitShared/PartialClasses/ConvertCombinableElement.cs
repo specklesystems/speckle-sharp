@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
@@ -8,7 +8,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     public FreeformElement CombinableElementToSpeckle(CombinableElement combinableElement)
     {
       var cat = ((BuiltInCategory)combinableElement.Document.OwnerFamily.FamilyCategoryId.IntegerValue).ToString();
@@ -45,7 +44,10 @@ namespace Objects.Converter.Revit
         GetAllRevitParamsAndIds(speckleForm, combinableElement);
       }
 
-      if (combinableElement is GeomCombination || (combinableElement is GenericForm genericForm && genericForm.Combinations.Size == 0))
+      if (
+        combinableElement is GeomCombination
+        || (combinableElement is GenericForm genericForm && genericForm.Combinations.Size == 0)
+      )
       {
         List<Base> displayValue = new List<Base>();
         foreach (Base geo in geometries)

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using NUnit.Framework;
 using Speckle.Core.Transports;
 

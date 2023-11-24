@@ -1,4 +1,4 @@
-﻿using Objects.Structural.Materials;
+using Objects.Structural.Materials;
 using CSiAPIv1;
 using System.Linq;
 

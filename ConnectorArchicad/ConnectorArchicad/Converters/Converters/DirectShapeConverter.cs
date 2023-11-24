@@ -89,7 +89,9 @@ namespace Archicad.Converters
         return directShapes;
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
+      )
       {
         foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
         {

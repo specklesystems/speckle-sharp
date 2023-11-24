@@ -1,4 +1,4 @@
-﻿using Objects.Structural.Loading;
+using Objects.Structural.Loading;
 using System;
 using System.Collections.Generic;
 using Objects.Structural.Geometry;

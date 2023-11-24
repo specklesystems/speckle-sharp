@@ -97,9 +97,7 @@ public partial class ConverterNavisworks
     {
       var parts = referenceOrGuid.Split(':');
       using var savedItemReference = new SavedItemReference(parts[0], parts[1]);
-      savedViewpoint = parts.Length != 2
-        ? null
-        : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
+      savedViewpoint = parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
     }
 
     return savedViewpoint;
@@ -331,9 +329,7 @@ public partial class ConverterNavisworks
   /// <returns>A Speckle object.</returns>
   private static Base CreateSpeckleObject(ModelItem element, string categoryType)
   {
-    return element.HasGeometry
-      ? new GeometryNode()
-      : new Collection { collectionType = categoryType };
+    return element.HasGeometry ? new GeometryNode() : new Collection { collectionType = categoryType };
   }
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
@@ -371,10 +367,7 @@ public partial class ConverterNavisworks
       pathArray = @string
         .ToString()
         .Split('-')
-        .Select(
-          x => int.TryParse(x, out var value)
-            ? value
-            : throw new FormatException("malformed path pseudoId"))
+        .Select(x => int.TryParse(x, out var value) ? value : throw new FormatException("malformed path pseudoId"))
         .ToArray();
     }
     catch (FormatException)

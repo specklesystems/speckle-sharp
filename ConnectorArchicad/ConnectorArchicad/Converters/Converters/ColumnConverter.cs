@@ -79,7 +79,9 @@ namespace Archicad.Converters
         return columns;
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
+      )
       {
         foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
         {

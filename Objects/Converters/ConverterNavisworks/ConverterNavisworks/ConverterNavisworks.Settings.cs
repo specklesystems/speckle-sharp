@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Autodesk.Navisworks.Api;
@@ -20,9 +20,7 @@ public partial class ConverterNavisworks
   private const string ProxyOrigin = "Project Base Origin";
   private const string BBoxOrigin = "Boundingbox Origin";
 
-
   private static Dictionary<string, string> Settings { get; } = new();
-
 
   private static Vector2D ProjectBasePoint
   {

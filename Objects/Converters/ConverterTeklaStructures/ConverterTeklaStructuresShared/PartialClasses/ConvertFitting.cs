@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -30,6 +30,7 @@ namespace Objects.Converter.TeklaStructures
         teklaFitting.Insert();
       }
     }
+
     public BE.TeklaStructures.Fitting FittingsToSpeckle(Fitting fitting)
     {
       var speckleFitting = new BE.TeklaStructures.Fitting();

@@ -1,11 +1,10 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 
 namespace Speckle.ConnectorRevit
 {
   internal class CmdAvailabilityViews : IExternalCommandAvailability
   {
-
     /// <summary>
     /// Command Availability - Views
     /// </summary>

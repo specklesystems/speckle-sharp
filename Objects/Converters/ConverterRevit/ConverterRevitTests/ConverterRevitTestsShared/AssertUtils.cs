@@ -57,16 +57,19 @@ namespace ConverterRevitTests
       EqualParam(sourceElem, destElem, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM);
       EqualParam(sourceElem, destElem, BuiltInParameter.RBS_VELOCITY);
     }
-    
+
     internal static void ElementEqual(DB.Element sourceElem, DB.Element destElem)
     {
       Assert.NotNull(sourceElem);
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
-      Assert.Equal(sourceElem.Document.GetElement(sourceElem.GetTypeId())?.Name, destElem.Document.GetElement(destElem.GetTypeId())?.Name);
+      Assert.Equal(
+        sourceElem.Document.GetElement(sourceElem.GetTypeId())?.Name,
+        destElem.Document.GetElement(destElem.GetTypeId())?.Name
+      );
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
     }
-    
+
     internal static void FamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
       ElementEqual(sourceElem, destElem);
@@ -92,9 +95,12 @@ namespace ConverterRevitTests
     {
       ElementEqual(sourceElem, destElem);
 
-      var slopeArrow = await APIContext.Run(app => {
-        return ConverterRevit.GetSlopeArrow(sourceElem);
-      }).ConfigureAwait(false);
+      var slopeArrow = await APIContext
+        .Run(app =>
+        {
+          return ConverterRevit.GetSlopeArrow(sourceElem);
+        })
+        .ConfigureAwait(false);
 
       if (slopeArrow == null)
       {
@@ -105,9 +111,12 @@ namespace ConverterRevitTests
         var tailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
 
-        var newSlopeArrow = await APIContext.Run(app => {
-          return ConverterRevit.GetSlopeArrow(destElem);
-        }).ConfigureAwait(false);
+        var newSlopeArrow = await APIContext
+          .Run(app =>
+          {
+            return ConverterRevit.GetSlopeArrow(destElem);
+          })
+          .ConfigureAwait(false);
 
         Assert.NotNull(newSlopeArrow);
 
@@ -115,8 +124,14 @@ namespace ConverterRevitTests
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var newSlope);
         Assert.Equal(slope, newSlope);
 
-        var sourceOffset = ConverterRevit.GetParamValue<double>(sourceElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
-        Assert.Equal(sourceOffset + tailOffset, ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM));
+        var sourceOffset = ConverterRevit.GetParamValue<double>(
+          sourceElem,
+          BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM
+        );
+        Assert.Equal(
+          sourceOffset + tailOffset,
+          ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM)
+        );
       }
 
       EqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
@@ -138,7 +153,6 @@ namespace ConverterRevitTests
       EqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       EqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-
       if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
       {
         Assert.Equal(fi.Host.Name, fi2.Host.Name);
@@ -148,7 +162,6 @@ namespace ConverterRevitTests
       //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
       if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
         Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
-
 
       //walls
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -189,15 +202,15 @@ namespace ConverterRevitTests
           Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
           break;
         case StorageType.ElementId:
-          {
-            var e1 = expected.Document.GetElement(expecedParam.AsElementId());
-            var e2 = actual.Document.GetElement(actual.get_Parameter(param).AsElementId());
-            if (e1 is Level l1 && e2 is Level l2)
-              Assert.Equal(l1.Elevation, l2.Elevation, 3);
-            else if (e1 != null && e2 != null)
-              Assert.Equal(e1.Name, e2.Name);
-            break;
-          }
+        {
+          var e1 = expected.Document.GetElement(expecedParam.AsElementId());
+          var e2 = actual.Document.GetElement(actual.get_Parameter(param).AsElementId());
+          if (e1 is Level l1 && e2 is Level l2)
+            Assert.Equal(l1.Elevation, l2.Elevation, 3);
+          else if (e1 != null && e2 != null)
+            Assert.Equal(e1.Name, e2.Name);
+          break;
+        }
         case StorageType.None:
           break;
         default:
@@ -229,15 +242,19 @@ namespace ConverterRevitTests
     {
       ElementEqual(sourceElem, destElem);
 
-      var sourceValueList = await APIContext.Run(app =>
-      {
-        return GetTextValuesFromSchedule(sourceElem);
-      }).ConfigureAwait(false);
+      var sourceValueList = await APIContext
+        .Run(app =>
+        {
+          return GetTextValuesFromSchedule(sourceElem);
+        })
+        .ConfigureAwait(false);
 
-      var destValueList = await APIContext.Run(app =>
-      {
-        return GetTextValuesFromSchedule(destElem);
-      }).ConfigureAwait(false);
+      var destValueList = await APIContext
+        .Run(app =>
+        {
+          return GetTextValuesFromSchedule(destElem);
+        })
+        .ConfigureAwait(false);
 
       var index = 0;
       for (var i = 0; i < sourceValueList.Count; i++)
@@ -245,9 +262,10 @@ namespace ConverterRevitTests
         try
         {
           // you can't unassign parameter values in Revit, so just ignore those
-          var emptyIndicies = Enumerable.Range(0, sourceValueList[i].Count)
-             .Where(j => string.IsNullOrWhiteSpace(sourceValueList[i][j]))
-             .ToList();
+          var emptyIndicies = Enumerable
+            .Range(0, sourceValueList[i].Count)
+            .Where(j => string.IsNullOrWhiteSpace(sourceValueList[i][j]))
+            .ToList();
 
           if (emptyIndicies.Any())
           {
@@ -269,8 +287,7 @@ namespace ConverterRevitTests
 
     private static List<List<string>> GetTextValuesFromSchedule(ViewSchedule revitSchedule)
     {
-      var originalTableIds = new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id)
-        .ToElementIds();
+      var originalTableIds = new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id).ToElementIds();
       var values = new List<List<string>>();
       foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
@@ -278,7 +295,17 @@ namespace ConverterRevitTests
         {
           continue;
         }
-        if (!ConverterRevit.ElementApplicationIdsInRow(rowInfo.rowIndex, rowInfo.section, originalTableIds, revitSchedule, rowInfo.tableSection).Any())
+        if (
+          !ConverterRevit
+            .ElementApplicationIdsInRow(
+              rowInfo.rowIndex,
+              rowInfo.section,
+              originalTableIds,
+              revitSchedule,
+              rowInfo.tableSection
+            )
+            .Any()
+        )
         {
           continue;
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
@@ -20,7 +20,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject StructuralModelToNative(Model speckleStructModel)
     {
       var lengthUnits = speckleStructModel.specs.settings.modelUnits.length;
-      var appObj = new ApplicationObject(speckleStructModel.id, speckleStructModel.speckle_type) { applicationId = speckleStructModel.applicationId };
+      var appObj = new ApplicationObject(speckleStructModel.id, speckleStructModel.speckle_type)
+      {
+        applicationId = speckleStructModel.applicationId
+      };
       foreach (Node node in speckleStructModel.nodes)
       {
         var _node = AnalyticalNodeToNative(node);
@@ -28,7 +31,6 @@ namespace Objects.Converter.Revit
       }
       foreach (var element in speckleStructModel.elements)
       {
-        
         if (element is Element1D element1D)
         {
           element1D.units = lengthUnits;
@@ -40,7 +42,7 @@ namespace Objects.Converter.Revit
               appObj.Update(createdIds: _csiStick.CreatedIds, converted: _csiStick.Converted);
             }
             else
-            { 
+            {
               var _stick = AnalyticalStickToNative((Element1D)element);
               appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
             }
@@ -68,6 +70,5 @@ namespace Objects.Converter.Revit
 
       return appObj;
     }
-
   }
 }

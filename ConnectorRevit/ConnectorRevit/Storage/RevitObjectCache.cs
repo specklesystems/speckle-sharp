@@ -56,7 +56,7 @@ namespace ConnectorRevit.Storage
     {
       return dataStorage.Keys;
     }
-    
+
     public ICollection<T> GetAllObjects()
     {
       return dataStorage.Values;

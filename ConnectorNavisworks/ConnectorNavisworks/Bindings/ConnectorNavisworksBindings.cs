@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -78,8 +78,6 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     return HostAppNameVersion;
   }
 
-
-
   private static string GetDocPath()
   {
     return "";
@@ -134,10 +132,10 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
       commitObject.elements = CachedConvertedElements;
 
       var state = _cachedState;
-      
+
       _progressBar.BeginSubOperation(0.7, "Retrying cached conversion.");
       _progressBar.EndSubOperation();
-      
+
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
       if (_progressViewModel.Report.OperationErrors.Any())

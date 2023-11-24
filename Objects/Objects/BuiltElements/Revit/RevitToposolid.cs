@@ -15,8 +15,7 @@ namespace Objects.BuiltElements.Revit
       Level level,
       List<Polycurve> profiles,
       List<Point> topPlanePoints = null,
-      [SchemaParamInfo("Any nested elements that this floor might have")]
-      List<Base> elements = null,
+      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
       List<Parameter> parameters = null
     )
     {
@@ -31,10 +30,12 @@ namespace Objects.BuiltElements.Revit
 
     public List<Point> points { get; set; } = new();
 
-    [DetachProperty] public List<Base> elements { get; set; }
+    [DetachProperty]
+    public List<Base> elements { get; set; }
 
-    [DetachProperty] public List<Mesh> displayValue { get; set; }
-    
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
+
     public string family { get; set; }
     public string type { get; set; }
     public Level level { get; set; }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
 using Speckle.Core.Kits;

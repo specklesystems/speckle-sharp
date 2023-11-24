@@ -22,112 +22,103 @@ namespace ConverterRevitTests
     public const string Wall = "wall";
     public const string Wire = "wire";
 
-    public static Dictionary<string, List<BuiltInCategory>> CategoriesDict = new()
-    {
-      { AdaptiveComponent, new List<BuiltInCategory>()
+    public static Dictionary<string, List<BuiltInCategory>> CategoriesDict =
+      new()
+      {
         {
-          BuiltInCategory.OST_GenericModel
-        }
-      },
-      { Beam, new List<BuiltInCategory>()
+          AdaptiveComponent,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_GenericModel }
+        },
         {
-          BuiltInCategory.OST_StructuralFraming
-        }
-      },
-      { Brep, new List<BuiltInCategory>()
+          Beam,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_StructuralFraming }
+        },
         {
-          BuiltInCategory.OST_Mass
-        }
-      },
-      { Column, new List<BuiltInCategory>()
+          Brep,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Mass }
+        },
         {
-          BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns
-        }
-      },
-      { Curve, new List<BuiltInCategory>()
+          Column,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns }
+        },
         {
-          BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines
-        }
-      },
-      { DirectShape, new List<BuiltInCategory>()
+          Curve,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines }
+        },
         {
-            BuiltInCategory.OST_GenericModel
-        }
-      },
-      { Duct, new List<BuiltInCategory>()
+          DirectShape,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_GenericModel }
+        },
         {
-          BuiltInCategory.OST_DuctCurves
-        }
-      },
-      { FamilyInstance, new List<BuiltInCategory>()
+          Duct,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_DuctCurves }
+        },
         {
-          BuiltInCategory.OST_Furniture,
-          BuiltInCategory.OST_Doors,
-          BuiltInCategory.OST_Walls,
-          BuiltInCategory.OST_Windows,
-          BuiltInCategory.OST_CeilingOpening,
-          BuiltInCategory.OST_ColumnOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_ShaftOpening,
-          BuiltInCategory.OST_StructuralFramingOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_ArcWallRectOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_Floors
-        }
-      },
-      { Floor, new List<BuiltInCategory>()
-        {
+          FamilyInstance,
+          new List<BuiltInCategory>()
+          {
+            BuiltInCategory.OST_Furniture,
+            BuiltInCategory.OST_Doors,
+            BuiltInCategory.OST_Walls,
+            BuiltInCategory.OST_Windows,
+            BuiltInCategory.OST_CeilingOpening,
+            BuiltInCategory.OST_ColumnOpening,
+            BuiltInCategory.OST_FloorOpening,
+            BuiltInCategory.OST_ShaftOpening,
+            BuiltInCategory.OST_StructuralFramingOpening,
+            BuiltInCategory.OST_SWallRectOpening,
+            BuiltInCategory.OST_ArcWallRectOpening,
+            BuiltInCategory.OST_FloorOpening,
+            BuiltInCategory.OST_SWallRectOpening,
             BuiltInCategory.OST_Floors
-        }
-      },
-      { Opening, new List<BuiltInCategory>()
+          }
+        },
         {
-          BuiltInCategory.OST_CeilingOpening,
-          BuiltInCategory.OST_ColumnOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_ShaftOpening,
-          BuiltInCategory.OST_StructuralFramingOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_ArcWallRectOpening,
-          BuiltInCategory.OST_Walls,
-          BuiltInCategory.OST_Floors,
-          BuiltInCategory.OST_Ceilings,
-          BuiltInCategory.OST_RoofOpening,
-          BuiltInCategory.OST_Roofs
-        }
-      },
-      { Pipe, new List<BuiltInCategory>()
+          Floor,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Floors }
+        },
         {
-          BuiltInCategory.OST_PipeCurves
-        }
-      },
-      { Roof, new List<BuiltInCategory>()
+          Opening,
+          new List<BuiltInCategory>()
+          {
+            BuiltInCategory.OST_CeilingOpening,
+            BuiltInCategory.OST_ColumnOpening,
+            BuiltInCategory.OST_FloorOpening,
+            BuiltInCategory.OST_ShaftOpening,
+            BuiltInCategory.OST_StructuralFramingOpening,
+            BuiltInCategory.OST_SWallRectOpening,
+            BuiltInCategory.OST_ArcWallRectOpening,
+            BuiltInCategory.OST_Walls,
+            BuiltInCategory.OST_Floors,
+            BuiltInCategory.OST_Ceilings,
+            BuiltInCategory.OST_RoofOpening,
+            BuiltInCategory.OST_Roofs
+          }
+        },
         {
-          BuiltInCategory.OST_Roofs
-        }
-      },
-      { Room, new List<BuiltInCategory>()
+          Pipe,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_PipeCurves }
+        },
         {
-          BuiltInCategory.OST_Rooms
-        }
-      },
-      { Schedule, new List<BuiltInCategory>()
+          Roof,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Roofs }
+        },
         {
-          BuiltInCategory.OST_Schedules
-        }
-      },
-      { Wall, new List<BuiltInCategory>()
+          Room,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Rooms }
+        },
         {
-          BuiltInCategory.OST_Walls
-        }
-      },
-      { Wire, new List<BuiltInCategory>()
+          Schedule,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Schedules }
+        },
         {
-          BuiltInCategory.OST_Wire
-        }
-      },
-    };
+          Wall,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Walls }
+        },
+        {
+          Wire,
+          new List<BuiltInCategory>() { BuiltInCategory.OST_Wire }
+        },
+      };
   }
 }

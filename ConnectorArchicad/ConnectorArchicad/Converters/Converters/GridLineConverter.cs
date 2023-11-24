@@ -90,7 +90,9 @@ namespace Archicad.Converters
       }
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
+      )
       {
         List<Base> gridlines = new List<Base>();
         foreach (Archicad.GridElement archicadGridElement in data)
@@ -123,7 +125,9 @@ namespace Archicad.Converters
           }
 
           speckleGridLine.displayValue = Operations.ModelConverter
-            .MeshesAndLinesToSpeckle(elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model)
+            .MeshesAndLinesToSpeckle(
+              elementModels.First(e => e.applicationId == archicadGridElement.applicationId).model
+            )
             .Cast<Base>()
             .ToList();
 

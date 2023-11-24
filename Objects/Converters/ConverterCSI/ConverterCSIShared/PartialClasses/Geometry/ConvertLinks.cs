@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Speckle.Core.Models;

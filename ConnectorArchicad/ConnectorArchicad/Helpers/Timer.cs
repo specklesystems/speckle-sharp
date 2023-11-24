@@ -29,7 +29,7 @@ namespace Archicad.Helpers
       context.cumulativeTimer = new CumulativeTimer();
     }
 
-    public void Cancel ()
+    public void Cancel()
     {
       serilogOperation.Cancel();
     }

@@ -76,7 +76,7 @@ public partial class ConnectorBindingsNavisworks
       //
       // if (groupedClashResults.Count >= 0)
       // {
-      //   
+      //
       //
       //   var clashReportFilter = new TreeSelectionFilter
       //   {

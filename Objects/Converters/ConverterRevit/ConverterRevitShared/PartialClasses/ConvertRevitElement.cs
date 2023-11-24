@@ -12,7 +12,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public RevitElement RevitElementToSpeckle(Element revitElement, out List<string> notes, RevitElement speckleElement = null)
+    public RevitElement RevitElementToSpeckle(
+      Element revitElement,
+      out List<string> notes,
+      RevitElement speckleElement = null
+    )
     {
       notes = new List<string>();
       var symbol = revitElement.Document.GetElement(revitElement.GetTypeId()) as FamilySymbol;

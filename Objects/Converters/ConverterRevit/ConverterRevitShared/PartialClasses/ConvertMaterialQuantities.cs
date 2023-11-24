@@ -11,10 +11,10 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
     /// <summary>
-    /// Material Quantities in Revit are stored in different ways and therefore need to be retrieved 
+    /// Material Quantities in Revit are stored in different ways and therefore need to be retrieved
     /// using different methods. According to this forum post https://forums.autodesk.com/t5/revit-api-forum/method-getmaterialarea-appears-to-use-different-formulas-for/td-p/11988215
     /// "Hosts" (whatever that means) will return the area of a single side of the object while other
-    /// objects will return the combined area of every side of the element. Certain MEP element materials 
+    /// objects will return the combined area of every side of the element. Certain MEP element materials
     /// are attached to the MEP system that the element belongs to.
     /// </summary>
     /// <param name="element"></param>
@@ -61,7 +61,7 @@ namespace Objects.Converter.Revit
       (double area, double volume) = GetAreaAndVolumeFromSolids(solids);
       return CreateMaterialQuantity(element, material.Id, area, volume, units);
     }
-    
+
     private IEnumerable<MaterialQuantity> GetMaterialQuantitiesFromSolids(DB.Element element, string units)
     {
       DB.Options options = new() { DetailLevel = ViewDetailLevel.Fine };
@@ -79,7 +79,8 @@ namespace Objects.Converter.Revit
       ElementId materialId,
       double areaRevitInternalUnits,
       double volumeRevitInternalUnits,
-      string units)
+      string units
+    )
     {
       Other.Material speckleMaterial = ConvertAndCacheMaterial(materialId, element.Document);
       double factor = ScaleToSpeckle(1);
@@ -103,7 +104,8 @@ namespace Objects.Converter.Revit
             materialQuantity["length"] = curve.length;
           }
           break;
-      };
+      }
+      ;
 
       return materialQuantity;
     }
@@ -114,16 +116,15 @@ namespace Objects.Converter.Revit
       {
         solids = solids
           .Where(
-            solid => solid.Volume > 0
-            && !solid.Faces.IsEmpty
-            && solid.Faces.get_Item(0).MaterialElementId == materialId)
+            solid => solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == materialId
+          )
           .ToList();
       }
 
       double volume = solids.Sum(solid => solid.Volume);
-      IEnumerable<double> areaOfLargestFaceInEachSolid = solids
-          .Select(solid => solid.Faces.Cast<Face>().Select(face => face.Area)
-          .Max());
+      IEnumerable<double> areaOfLargestFaceInEachSolid = solids.Select(
+        solid => solid.Faces.Cast<Face>().Select(face => face.Area).Max()
+      );
       double area = areaOfLargestFaceInEachSolid.Sum();
       return (area, volume);
     }
@@ -135,26 +136,21 @@ namespace Objects.Converter.Revit
         .Select(m => m.Faces.get_Item(0).MaterialElementId)
         .Distinct();
     }
-    
+
     private bool MaterialAreaAPICallWillReportSingleFace(Element element)
     {
       return element switch
       {
-        DB.CeilingAndFloor 
-        or DB.Wall
-        or DB.RoofBase => true,
+        DB.CeilingAndFloor or DB.Wall or DB.RoofBase => true,
         _ => false
       };
     }
-    
+
     private bool MaterialIsAttachedToMEPSystem(Element element)
     {
       return element switch
       {
-        DB.Mechanical.Duct 
-        or DB.Mechanical.FlexDuct
-        or DB.Plumbing.Pipe
-        or DB.Plumbing.FlexPipe => true,
+        DB.Mechanical.Duct or DB.Mechanical.FlexDuct or DB.Plumbing.Pipe or DB.Plumbing.FlexPipe => true,
         _ => false
       };
     }

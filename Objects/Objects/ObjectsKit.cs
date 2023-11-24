@@ -91,7 +91,9 @@ public class ObjectsKit : ISpeckleKit
 
     //only get assemblies matching the Major and Minor version of Objects
     if (assemblyToLoad.Version.Major != objects.Version.Major || assemblyToLoad.Version.Minor != objects.Version.Minor)
-      throw new SpeckleException($"Mismatch between Objects library v{objects.Version} Converter v{assemblyToLoad.Version}.\nEnsure the same 2.x version of Speckle connectors is installed.");
+      throw new SpeckleException(
+        $"Mismatch between Objects library v{objects.Version} Converter v{assemblyToLoad.Version}.\nEnsure the same 2.x version of Speckle connectors is installed."
+      );
 
     var assembly = Assembly.LoadFrom(path);
 

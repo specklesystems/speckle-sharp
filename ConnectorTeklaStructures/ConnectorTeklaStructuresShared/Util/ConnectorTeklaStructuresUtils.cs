@@ -1,4 +1,4 @@
-﻿using Speckle.ConnectorTeklaStructures.UI;
+using Speckle.ConnectorTeklaStructures.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -43,7 +43,6 @@ namespace Speckle.ConnectorTeklaStructures.Util
       }
       return _categories;
     }
-
 
     #region Get List Names
 

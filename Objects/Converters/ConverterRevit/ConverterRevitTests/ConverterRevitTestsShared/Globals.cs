@@ -17,8 +17,8 @@ namespace ConverterRevitTests
       path = Path.Combine(GetTestModelFolderLocation(Directory.GetCurrentDirectory(), "2023"), filename);
 #endif
       return path;
-
     }
+
     public static string GetTestModelOfCategory(string category, string filename)
     {
       var path = string.Empty;
@@ -30,7 +30,6 @@ namespace ConverterRevitTests
       path = Path.Combine(GetTestModelFolderLocation(Directory.GetCurrentDirectory(), "2023"), category, filename);
 #endif
       return path;
-
     }
 
     /// <summary>
@@ -48,7 +47,8 @@ namespace ConverterRevitTests
       {
         var folderName = assemblyLocationList[i];
         assemblyLocationList.RemoveAt(i);
-        if (folderName == "speckle-sharp") break;
+        if (folderName == "speckle-sharp")
+          break;
       }
       assemblyLocationList.Add("speckle-sharp-test-models");
       assemblyLocationList.Add("Revit");

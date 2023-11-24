@@ -1,10 +1,9 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 
 namespace ConnectorRevit
 {
   public static class RevitVersionHelper
   {
-
     public static double ConvertFromInternalUnits(double val, Parameter parameter)
     {
 #if REVIT2020

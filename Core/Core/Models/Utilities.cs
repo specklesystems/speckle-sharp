@@ -59,10 +59,10 @@ public static class Utilities
   private static string Sha256(string input)
   {
     using MemoryStream ms = new();
-    
+
     new BinaryFormatter().Serialize(ms, input);
     using SHA256 sha = SHA256.Create();
-    
+
     var hash = sha.ComputeHash(ms.ToArray());
     StringBuilder sb = new();
     foreach (byte b in hash)
@@ -70,7 +70,7 @@ public static class Utilities
 
     return sb.ToString().ToLower();
   }
-  
+
   private static string Md5(string input)
   {
     using MD5 md5 = MD5.Create();
@@ -106,7 +106,12 @@ public static class Utilities
   /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
   /// <param name="ignore">Names of props to ignore</param>
   /// <returns></returns>
-  public static Base GetApplicationProps(object o, Type t, bool getParentProps = false, IReadOnlyList<string> ignore = null)
+  public static Base GetApplicationProps(
+    object o,
+    Type t,
+    bool getParentProps = false,
+    IReadOnlyList<string> ignore = null
+  )
   {
     var appProps = new Base();
     appProps["class"] = t.Name;

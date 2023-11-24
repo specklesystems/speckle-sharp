@@ -1,4 +1,3 @@
-﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,11 +20,10 @@ namespace Objects.Converter.Revit
 
       public RenderMaterial GetOrCreateMaterial(DB.Material revitMaterial)
       {
-        if (revitMaterial == null) return null;
+        if (revitMaterial == null)
+          return null;
 
-        int
-          hash = Hash(
-            revitMaterial); //Key using the hash as we may be given several instances with identical material properties
+        int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
         if (materialMap.TryGetValue(hash, out RenderMaterial m))
         {
           return m;
@@ -36,8 +34,8 @@ namespace Objects.Converter.Revit
         return material;
       }
 
-      private static int Hash(DB.Material mat)
-        => mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
+      private static int Hash(DB.Material mat) =>
+        mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
 
       //Mesh to use for null materials (because dictionary keys can't be null)
       private Mesh nullMesh;
@@ -47,10 +45,12 @@ namespace Objects.Converter.Revit
 
       public Mesh GetOrCreateMesh(DB.Material mat, string units)
       {
-        if (mat == null) return nullMesh ??= new Mesh { units = units };
+        if (mat == null)
+          return nullMesh ??= new Mesh { units = units };
 
         int materialHash = Hash(mat);
-        if (meshMap.TryGetValue(materialHash, out Mesh m)) return m;
+        if (meshMap.TryGetValue(materialHash, out Mesh m))
+          return m;
 
         var mesh = new Mesh { ["renderMaterial"] = GetOrCreateMaterial(mat), units = units };
         meshMap.Add(materialHash, mesh);
@@ -60,12 +60,12 @@ namespace Objects.Converter.Revit
       public List<Mesh> GetAllMeshes()
       {
         List<Mesh> meshes = meshMap.Values?.ToList() ?? new List<Mesh>();
-        if (nullMesh != null) meshes.Add(nullMesh);
+        if (nullMesh != null)
+          meshes.Add(nullMesh);
         return meshes;
       }
 
       public List<Mesh> GetAllValidMeshes() => GetAllMeshes().FindAll(m => m.vertices.Count > 0 && m.faces.Count > 0);
-
     }
   }
 }

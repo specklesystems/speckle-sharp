@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using ConnectorGrasshopper.Collections;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;

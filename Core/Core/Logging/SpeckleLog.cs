@@ -165,10 +165,7 @@ public static class SpeckleLog
     // show a warning about that...
     var canLogToFile = true;
     _logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
-    var logFilePath = Path.Combine(
-      _logFolderPath,
-      "SpeckleCoreLog.txt"
-    );
+    var logFilePath = Path.Combine(_logFolderPath, "SpeckleCoreLog.txt");
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
       .Is(logConfiguration.minimumLevel)
       .Enrich.FromLogContext()

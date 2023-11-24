@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.DB.Structure;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -12,8 +12,14 @@ namespace Objects.Converter.Revit
   {
     public Objects.Other.Material MaterialToSpeckle(DB.Material revitmaterial)
     {
-      var speckleMaterial = new Objects.Other.Revit.RevitMaterial(revitmaterial.Name, revitmaterial.MaterialCategory, revitmaterial.MaterialClass, revitmaterial.Shininess,
-          revitmaterial.Smoothness, revitmaterial.Transparency);
+      var speckleMaterial = new Objects.Other.Revit.RevitMaterial(
+        revitmaterial.Name,
+        revitmaterial.MaterialCategory,
+        revitmaterial.MaterialClass,
+        revitmaterial.Shininess,
+        revitmaterial.Smoothness,
+        revitmaterial.Transparency
+      );
 
       GetAllRevitParamsAndIds(speckleMaterial, revitmaterial);
 
@@ -21,13 +27,12 @@ namespace Objects.Converter.Revit
       return speckleMaterial;
     }
 
-      
-
     private Objects.Other.Material ConvertAndCacheMaterial(DB.ElementId id, DB.Document doc)
     {
       var material = doc.GetElement(id) as DB.Material;
 
-      if (material == null) return null;
+      if (material == null)
+        return null;
       if (!Materials.ContainsKey(material.Name))
       {
         Materials[material.Name] = MaterialToSpeckle(material);
@@ -35,5 +40,4 @@ namespace Objects.Converter.Revit
       return Materials[material.Name] as Objects.Other.Material;
     }
   }
-
 }

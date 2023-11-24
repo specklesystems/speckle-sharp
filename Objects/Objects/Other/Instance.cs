@@ -43,7 +43,8 @@ namespace Objects.Other
         .When(DefaultTraversal.HasDisplayValue)
         .ContinueTraversing(_ => DefaultTraversal.displayValueAndElementsPropAliases);
 
-      var instanceRule = TraversalRule.NewTraversalRule()
+      var instanceRule = TraversalRule
+        .NewTraversalRule()
         .When(b => b is Instance instance && instance != null)
         .ContinueTraversing(DefaultTraversal.None);
 
@@ -66,7 +67,7 @@ namespace Objects.Other
           {
             case Instance i:
               return i.GetTransformedGeometry()
-                .Select(b => 
+                .Select(b =>
                 {
                   b.TransformTo(transform, out var tranformed);
                   return tranformed;

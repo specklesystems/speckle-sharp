@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +16,7 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
     public static ConverterRevit Instance;
+
     public class DirectContext3DServer : IDirectContext3DServer
     {
       private Document document;
@@ -27,13 +28,17 @@ namespace Objects.Converter.Revit
       private IEnumerable<OG.Mesh> speckleMeshes;
       public OG.Point minValues = new OG.Point(double.MaxValue, double.MaxValue, double.MaxValue);
       public OG.Point maxValues = new OG.Point(double.MinValue, double.MinValue, double.MinValue);
-      public bool allMeshesStored => speckleMeshes.Count() == m_nonTransparentFaceBufferStorage?.Meshes.Count + m_transparentFaceBufferStorage?.Meshes.Count;
+      public bool allMeshesStored =>
+        speckleMeshes.Count()
+        == m_nonTransparentFaceBufferStorage?.Meshes.Count + m_transparentFaceBufferStorage?.Meshes.Count;
+
       public DirectContext3DServer(IEnumerable<OG.Mesh> meshes, Document doc)
       {
         m_guid = Guid.NewGuid();
         speckleMeshes = meshes;
         document = doc;
       }
+
       public bool CanExecute(View dBView)
       {
         //if (!m_element.IsValidObject)
@@ -45,33 +50,45 @@ namespace Objects.Converter.Revit
         Document otherDoc = document;
         return doc.Equals(otherDoc);
       }
+
       public string GetApplicationId() => " ";
+
       public Outline GetBoundingBox(View dBView)
       {
         //return new Outline(new XYZ(0, 0, 0), new XYZ(2, 2, 2));
 
-        return new Outline
-          (
-            new XYZ(minValues.x, minValues.y, minValues.z),
-            new XYZ(maxValues.x, maxValues.y, maxValues.z)
-          );
+        return new Outline(
+          new XYZ(minValues.x, minValues.y, minValues.z),
+          new XYZ(maxValues.x, maxValues.y, maxValues.z)
+        );
       }
+
       public string GetDescription() => "Implements preview functionality for a Speckle Object";
+
       public string GetName() => "Speckle Object Drawing Server";
+
       public Guid GetServerId() => m_guid;
+
       public ExternalServiceId GetServiceId() => ExternalServices.BuiltInExternalServices.DirectContext3DService;
+
       public string GetSourceId() => " ";
+
       public string GetVendorId() => "Speckle";
+
       public void RenderScene(View dBView, DisplayStyle displayStyle)
       {
         try
         {
           // Populate geometry buffers if they are not initialized or need updating.
-          if (m_nonTransparentFaceBufferStorage == null || m_nonTransparentFaceBufferStorage.NeedsUpdate(displayStyle) ||
-              m_transparentFaceBufferStorage == null || m_transparentFaceBufferStorage.NeedsUpdate(displayStyle) ||
-              m_edgeBufferStorage == null || m_edgeBufferStorage.NeedsUpdate(displayStyle))
+          if (
+            m_nonTransparentFaceBufferStorage == null
+            || m_nonTransparentFaceBufferStorage.NeedsUpdate(displayStyle)
+            || m_transparentFaceBufferStorage == null
+            || m_transparentFaceBufferStorage.NeedsUpdate(displayStyle)
+            || m_edgeBufferStorage == null
+            || m_edgeBufferStorage.NeedsUpdate(displayStyle)
+          )
           {
-
             CreateBufferStorageForMeshes(displayStyle);
           }
 
@@ -80,37 +97,50 @@ namespace Objects.Converter.Revit
 
           // If the server is requested to submit transparent geometry, DrawContext().IsTransparentPass()
           // will indicate that the current rendering pass is for transparent objects.
-          RenderingPassBufferStorage faceBufferStorage = DrawContext.IsTransparentPass() ? m_transparentFaceBufferStorage : m_nonTransparentFaceBufferStorage;
+          RenderingPassBufferStorage faceBufferStorage = DrawContext.IsTransparentPass()
+            ? m_transparentFaceBufferStorage
+            : m_nonTransparentFaceBufferStorage;
 
           // Conditionally submit triangle primitives (for non-wireframe views).
-          if (displayStyle != DisplayStyle.Wireframe &&
-              faceBufferStorage?.PrimitiveCount > 0)
-            DrawContext.FlushBuffer(faceBufferStorage.VertexBuffer,
-                                    faceBufferStorage.VertexBufferCount,
-                                    faceBufferStorage.IndexBuffer,
-                                    faceBufferStorage.IndexBufferCount,
-                                    faceBufferStorage.VertexFormat,
-                                    faceBufferStorage.EffectInstance, PrimitiveType.TriangleList, 0,
-                                    faceBufferStorage.PrimitiveCount);
+          if (displayStyle != DisplayStyle.Wireframe && faceBufferStorage?.PrimitiveCount > 0)
+            DrawContext.FlushBuffer(
+              faceBufferStorage.VertexBuffer,
+              faceBufferStorage.VertexBufferCount,
+              faceBufferStorage.IndexBuffer,
+              faceBufferStorage.IndexBufferCount,
+              faceBufferStorage.VertexFormat,
+              faceBufferStorage.EffectInstance,
+              PrimitiveType.TriangleList,
+              0,
+              faceBufferStorage.PrimitiveCount
+            );
 
           // Conditionally submit line segment primitives.
-          if (displayStyle == DisplayStyle.Wireframe &&
-            displayStyle != DisplayStyle.Shading &&
-            m_edgeBufferStorage?.PrimitiveCount > 0)
-            DrawContext.FlushBuffer(m_edgeBufferStorage.VertexBuffer,
-                                    m_edgeBufferStorage.VertexBufferCount,
-                                    m_edgeBufferStorage.IndexBuffer,
-                                    m_edgeBufferStorage.IndexBufferCount,
-                                    m_edgeBufferStorage.VertexFormat,
-                                    m_edgeBufferStorage.EffectInstance, PrimitiveType.LineList, 0,
-                                    m_edgeBufferStorage.PrimitiveCount);
+          if (
+            displayStyle == DisplayStyle.Wireframe
+            && displayStyle != DisplayStyle.Shading
+            && m_edgeBufferStorage?.PrimitiveCount > 0
+          )
+            DrawContext.FlushBuffer(
+              m_edgeBufferStorage.VertexBuffer,
+              m_edgeBufferStorage.VertexBufferCount,
+              m_edgeBufferStorage.IndexBuffer,
+              m_edgeBufferStorage.IndexBufferCount,
+              m_edgeBufferStorage.VertexFormat,
+              m_edgeBufferStorage.EffectInstance,
+              PrimitiveType.LineList,
+              0,
+              m_edgeBufferStorage.PrimitiveCount
+            );
         }
         catch (Exception e)
         {
           System.Diagnostics.Debug.WriteLine(e.ToString());
         }
       }
+
       public bool UseInTransparentPass(View dBView) => true;
+
       public bool UsesHandles() => false;
 
       private void CreateBufferStorageForMeshes(DisplayStyle displayStyle)
@@ -144,7 +174,12 @@ namespace Objects.Converter.Revit
           // System.Drawing.Color treats the A value as opacity, with 255 being fully opaque.
           // Revit interprets the A value as transparency, with 0 being fully opaque and 255 being fully transparent
           // so we need to translate the A value as below
-          color = new ColorWithTransparency(mat.diffuseColor.R, mat.diffuseColor.G, mat.diffuseColor.B, Math.Max((uint)(255 - mat.diffuseColor.A * mat.opacity), 0));
+          color = new ColorWithTransparency(
+            mat.diffuseColor.R,
+            mat.diffuseColor.G,
+            mat.diffuseColor.B,
+            Math.Max((uint)(255 - mat.diffuseColor.A * mat.opacity), 0)
+          );
         }
 
         color ??= new ColorWithTransparency(255, 255, 255, 0);
@@ -181,21 +216,26 @@ namespace Objects.Converter.Revit
       {
         List<SpeckleMeshInfo> meshes = bufferStorage.Meshes;
         List<int> numVerticesInMeshesBefore = new List<int>();
-        if (meshes.Count == 0) return;
+        if (meshes.Count == 0)
+          return;
 
-        bool useNormals = bufferStorage.DisplayStyle == DisplayStyle.Shading ||
-           bufferStorage.DisplayStyle == DisplayStyle.ShadingWithEdges;
+        bool useNormals =
+          bufferStorage.DisplayStyle == DisplayStyle.Shading
+          || bufferStorage.DisplayStyle == DisplayStyle.ShadingWithEdges;
 
         // Vertex attributes are stored sequentially in vertex buffers. The attributes can include position, normal vector, and color.
         // All vertices within a vertex buffer must have the same format. Possible formats are enumerated by VertexFormatBits.
         // Vertex format also determines the type of rendering effect that can be used with the vertex buffer. In this sample,
         // the color is always encoded in the vertex attributes.
 
-        bufferStorage.FormatBits = useNormals ? VertexFormatBits.PositionNormalColored : VertexFormatBits.PositionColored;
+        bufferStorage.FormatBits = useNormals
+          ? VertexFormatBits.PositionNormalColored
+          : VertexFormatBits.PositionColored;
 
         // The format of the vertices determines the size of the vertex buffer.
-        int vertexBufferSizeInFloats = (useNormals ? VertexPositionNormalColored.GetSizeInFloats() : VertexPositionColored.GetSizeInFloats()) *
-           bufferStorage.VertexBufferCount;
+        int vertexBufferSizeInFloats =
+          (useNormals ? VertexPositionNormalColored.GetSizeInFloats() : VertexPositionColored.GetSizeInFloats())
+          * bufferStorage.VertexBufferCount;
         numVerticesInMeshesBefore.Add(0);
 
         bufferStorage.VertexBuffer = new VertexBuffer(vertexBufferSizeInFloats);
@@ -204,7 +244,8 @@ namespace Objects.Converter.Revit
         if (useNormals) //must use normals for shaded displayStyle
         {
           // A VertexStream is used to write data into a VertexBuffer.
-          VertexStreamPositionNormalColored vertexStream = bufferStorage.VertexBuffer.GetVertexStreamPositionNormalColored();
+          VertexStreamPositionNormalColored vertexStream =
+            bufferStorage.VertexBuffer.GetVertexStreamPositionNormalColored();
           foreach (SpeckleMeshInfo meshInfo in meshes)
           {
             OG.Mesh mesh = meshInfo.Mesh;
@@ -217,7 +258,9 @@ namespace Objects.Converter.Revit
                   continue;
 
                 var p1 = meshInfo.Vertices.ElementAt(index);
-                vertexStream.AddVertex(new VertexPositionNormalColored(p1, meshInfo.Normals.ElementAt(i), meshInfo.ColorWithTransparency));
+                vertexStream.AddVertex(
+                  new VertexPositionNormalColored(p1, meshInfo.Normals.ElementAt(i), meshInfo.ColorWithTransparency)
+                );
                 addedVertexIndicies.Add(index);
               }
             }
@@ -259,15 +302,14 @@ namespace Objects.Converter.Revit
             foreach (var face in meshInfo.Faces)
             {
               // Add three indices that define a triangle.
-              indexStream.AddTriangle(new IndexTriangle(startIndex + face[0],
-                                                        startIndex + face[1],
-                                                        startIndex + face[2]));
+              indexStream.AddTriangle(
+                new IndexTriangle(startIndex + face[0], startIndex + face[1], startIndex + face[2])
+              );
             }
             meshNumber++;
           }
         }
         bufferStorage.IndexBuffer.Unmap();
-
 
         // VertexFormat is a specification of the data that is associated with a vertex (e.g., position).
         bufferStorage.VertexFormat = new VertexFormat(bufferStorage.FormatBits);
@@ -318,14 +360,12 @@ namespace Objects.Converter.Revit
             for (int i = 1; i < xyzs.Count; i++)
             {
               // Add two indices that define a line segment.
-              indexStream.AddLine(new IndexLine((int)(startIndex + i - 1),
-                                                (int)(startIndex + i)));
+              indexStream.AddLine(new IndexLine((int)(startIndex + i - 1), (int)(startIndex + i)));
             }
             edgeNumber++;
           }
         }
         bufferStorage.IndexBuffer.Unmap();
-
 
         bufferStorage.VertexFormat = new VertexFormat(bufferStorage.FormatBits);
         bufferStorage.EffectInstance = new EffectInstance(bufferStorage.FormatBits);
@@ -350,10 +390,16 @@ namespace Objects.Converter.Revit
             return true;
 
           if (PrimitiveCount > 0)
-            if (VertexBuffer == null || !VertexBuffer.IsValid() ||
-                IndexBuffer == null || !IndexBuffer.IsValid() ||
-                VertexFormat == null || !VertexFormat.IsValid() ||
-                EffectInstance == null || !EffectInstance.IsValid())
+            if (
+              VertexBuffer == null
+              || !VertexBuffer.IsValid()
+              || IndexBuffer == null
+              || !IndexBuffer.IsValid()
+              || VertexFormat == null
+              || !VertexFormat.IsValid()
+              || EffectInstance == null
+              || !EffectInstance.IsValid()
+            )
               return true;
 
           return false;
@@ -390,7 +436,7 @@ namespace Objects.Converter.Revit
           ColorWithTransparency = color;
           Faces = GetFaceIndices(mesh).ToList();
 
-          foreach(var vertex in mesh.GetPoints())
+          foreach (var vertex in mesh.GetPoints())
             Vertices.Add(Instance.PointToNative(vertex));
 
           var edges = new List<(int, int)>();
@@ -438,13 +484,15 @@ namespace Objects.Converter.Revit
             faceIndex++;
           }
         }
+
         public static IEnumerable<int[]> GetFaceIndices(OG.Mesh mesh)
         {
           var i = 0;
           while (i < mesh.faces.Count)
           {
             var n = mesh.faces[i];
-            if (n < 3) n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+            if (n < 3)
+              n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
 
             var points = mesh.faces.GetRange(i + 1, n).ToArray();
             yield return points;

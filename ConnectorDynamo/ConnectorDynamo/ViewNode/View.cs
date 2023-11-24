@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,7 +25,6 @@ namespace Speckle.ConnectorDynamo.ViewNode
     public string Url { get; set; }
     private bool _viewEnabled = false;
 
-
     /// <summary>
     /// UI Binding
     /// </summary>
@@ -40,14 +39,14 @@ namespace Speckle.ConnectorDynamo.ViewNode
       }
     }
 
-
     /// <summary>
     /// JSON constructor, called on file open
     /// </summary>
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [JsonConstructor]
-    private View(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private View(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts)
+      : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 1)
       {
@@ -90,7 +89,6 @@ namespace Speckle.ConnectorDynamo.ViewNode
       InPorts.Add(new PortModel(PortType.Input, this, new PortData("stream or url", "The stream to view")));
     }
 
-
     /// <summary>
     /// Takes care of actually sending the data
     /// </summary>
@@ -128,8 +126,9 @@ namespace Speckle.ConnectorDynamo.ViewNode
       }
 
       Uri uriResult;
-      bool result = Uri.TryCreate(url, UriKind.Absolute, out uriResult)
-                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+      bool result =
+        Uri.TryCreate(url, UriKind.Absolute, out uriResult)
+        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
       if (!result)
       {
@@ -142,7 +141,6 @@ namespace Speckle.ConnectorDynamo.ViewNode
       Url = url;
     }
 
-
     private string GetInputAsString(EngineController engine, int port, bool count = false)
     {
       var valuesNode = InPorts[port].Connectors[0].Start.Owner;
@@ -150,13 +148,13 @@ namespace Speckle.ConnectorDynamo.ViewNode
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
       var inputMirror = engine.GetMirror(astId);
 
-      if (inputMirror == null || inputMirror.GetData() == null) return null;
+      if (inputMirror == null || inputMirror.GetData() == null)
+        return null;
 
       var data = inputMirror.GetData().Data?.ToString();
 
       return data;
     }
-
 
     #region events
 
@@ -175,12 +173,10 @@ namespace Speckle.ConnectorDynamo.ViewNode
       if (!InPorts[0].IsConnected)
         return;
 
-
       RequestUpdates();
     }
 
-    void Connectors_CollectionChanged(object sender,
-      System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    void Connectors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
       RequestUpdates();
     }
@@ -190,14 +186,15 @@ namespace Speckle.ConnectorDynamo.ViewNode
     #region overrides
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="inputAstNodes"></param>
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-      return OutPorts.Enumerate().Select(output =>
-        AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+      return OutPorts
+        .Enumerate()
+        .Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
     }
 
     #endregion

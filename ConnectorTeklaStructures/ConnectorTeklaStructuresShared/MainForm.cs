@@ -19,23 +19,24 @@ namespace Speckle.ConnectorTeklaStructures
 {
   public partial class MainForm : PluginFormBase
   {
-
     //window owner call
     [DllImport("user32.dll", SetLastError = true)]
     [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+
     const int GWL_HWNDPARENT = -8;
 
     private static Avalonia.Application AvaloniaApp { get; set; }
     public Model Model { get; private set; }
     public static Window MainWindow { get; private set; }
     public static ConnectorBindingsTeklaStructures Bindings { get; set; }
+
     public MainForm()
     {
       Load += MainForm_Load;
       if (MainWindow == null)
       {
-        // Link to model.         
+        // Link to model.
         Model = new Model();
         Bindings = new ConnectorBindingsTeklaStructures(Model);
 
@@ -43,19 +44,12 @@ namespace Speckle.ConnectorTeklaStructures
         {
           AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-
           Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
           BuildAvaloniaApp().Start(AppMain, null);
           var viewModel = new MainViewModel(Bindings);
-          MainWindow = new DesktopUI2.Views.MainWindow
-          {
-            DataContext = viewModel
-          };
-
-
+          MainWindow = new DesktopUI2.Views.MainWindow { DataContext = viewModel };
 
           Bindings.OpenTeklaStructures();
-
         }
         catch (Exception ex)
         {
@@ -72,7 +66,6 @@ namespace Speckle.ConnectorTeklaStructures
       SetWindowLongPtr(hwnd, GWL_HWNDPARENT, Tekla.Structures.Dialog.MainWindow.Frame.Handle);
     }
 
-
     static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
     {
       Assembly a = null;
@@ -86,7 +79,10 @@ namespace Speckle.ConnectorTeklaStructures
 
       return a;
     }
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
+
+    public static AppBuilder BuildAvaloniaApp() =>
+      AppBuilder
+        .Configure<DesktopUI2.App>()
         .UsePlatformDetect()
         .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
         .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
@@ -98,11 +94,9 @@ namespace Speckle.ConnectorTeklaStructures
       AvaloniaApp = app;
     }
 
-
     private void MainForm_Load(object sender, EventArgs e)
     {
       Close();
     }
-
   }
 }

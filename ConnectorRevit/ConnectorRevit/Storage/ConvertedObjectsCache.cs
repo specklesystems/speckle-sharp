@@ -12,7 +12,8 @@ namespace ConnectorRevit.Storage
 
     public void AddConvertedObjects(Base converted, IList<Element> created)
     {
-      if (string.IsNullOrEmpty(converted.applicationId)) return;
+      if (string.IsNullOrEmpty(converted.applicationId))
+        return;
       convertedObjects[converted.applicationId] = (converted, created.ToList());
     }
 
@@ -20,7 +21,7 @@ namespace ConnectorRevit.Storage
     {
       foreach (var kvp in convertedObjects)
       {
-          yield return kvp.Value.Item1;
+        yield return kvp.Value.Item1;
       }
     }
 
@@ -30,7 +31,8 @@ namespace ConnectorRevit.Storage
       {
         foreach (var obj in kvp.Value.Item2)
         {
-          if (obj.UniqueId != id) continue;
+          if (obj.UniqueId != id)
+            continue;
 
           yield return kvp.Value.Item1;
           yield break;
@@ -56,7 +58,8 @@ namespace ConnectorRevit.Storage
 
     public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
     {
-      if (convertedObjects.TryGetValue(id, out var value)) return value.Item2;
+      if (convertedObjects.TryGetValue(id, out var value))
+        return value.Item2;
       return Enumerable.Empty<Element>();
     }
 
@@ -66,7 +69,8 @@ namespace ConnectorRevit.Storage
       {
         foreach (var obj in kvp.Value.Item2)
         {
-          if (obj.UniqueId == id) return true;
+          if (obj.UniqueId == id)
+            return true;
         }
       }
       return false;

@@ -61,7 +61,9 @@ namespace ConverterRevitShared.Models
       }
       else
       {
-        throw new InvalidOperationException("The provided list of points that doesn't start at the beginning or end of the existing outline");
+        throw new InvalidOperationException(
+          "The provided list of points that doesn't start at the beginning or end of the existing outline"
+        );
       }
     }
 
@@ -89,8 +91,10 @@ namespace ConverterRevitShared.Models
           .Select(GetLineOverlappingOutlineData)
           .ToList();
 
-        if (!lineOverlapData.Any(data => data.OverlapsOutline)
-          || RemoveIndicesFromOutline(lineOverlapData) is not int indexToAddTo)
+        if (
+          !lineOverlapData.Any(data => data.OverlapsOutline)
+          || RemoveIndicesFromOutline(lineOverlapData) is not int indexToAddTo
+        )
         {
           continue;
         }
@@ -100,9 +104,7 @@ namespace ConverterRevitShared.Models
           .Select(data => data.Line)
           .ToList();
 
-        List<Point> pointsToAddToOutline = linesToAddToOutline
-          .Select(line => line.start)
-          .ToList();
+        List<Point> pointsToAddToOutline = linesToAddToOutline.Select(line => line.start).ToList();
         pointsToAddToOutline.Add(linesToAddToOutline.Last().end);
 
         AddPointsToOutline(pointsToAddToOutline, indexToAddTo);
@@ -130,7 +132,7 @@ namespace ConverterRevitShared.Models
         previousPoint = currentPoint;
       }
     }
-    
+
     int? RemoveIndicesFromOutline(List<LineOverlappingOutlineData> allLineOverlapData)
     {
       SortedSet<int> allIndicesInvolved = new();
@@ -151,7 +153,7 @@ namespace ConverterRevitShared.Models
       //  ___                 ___________________________
       // |   |  not opening  |                           |
       // |   | but not wall  |                           |
-      // |   |_______________|          wall             | 
+      // |   |_______________|          wall             |
       // |   |    opening    |                           |
       // |   |_______________|                           |
       // |                                               |
@@ -178,7 +180,11 @@ namespace ConverterRevitShared.Models
       return indicesToRemove.Min();
     }
 
-    static void SortIndicesIntoCorrectSet(int currentIndex, SortedSet<int> allIndicesInvolved, SortedSet<int> indicesToRemove)
+    static void SortIndicesIntoCorrectSet(
+      int currentIndex,
+      SortedSet<int> allIndicesInvolved,
+      SortedSet<int> indicesToRemove
+    )
     {
       if (allIndicesInvolved.Contains(currentIndex))
       {
@@ -199,13 +205,17 @@ namespace ConverterRevitShared.Models
       for (int i = 1; i < outlinePoints.Count; i++)
       {
         Point currentPoint = outlinePoints[i];
-        if (openingLine.start.DistanceTo(currentPoint) < POINT_TOLERANCE
-          && openingLine.end.DistanceTo(previousPoint) < POINT_TOLERANCE)
+        if (
+          openingLine.start.DistanceTo(currentPoint) < POINT_TOLERANCE
+          && openingLine.end.DistanceTo(previousPoint) < POINT_TOLERANCE
+        )
         {
           return new(openingLine, true, i, i - 1);
         }
-        else if (openingLine.end.DistanceTo(currentPoint) < POINT_TOLERANCE
-          && openingLine.start.DistanceTo(previousPoint) < POINT_TOLERANCE)
+        else if (
+          openingLine.end.DistanceTo(currentPoint) < POINT_TOLERANCE
+          && openingLine.start.DistanceTo(previousPoint) < POINT_TOLERANCE
+        )
         {
           return new(openingLine, true, i - 1, i);
         }
@@ -218,7 +228,7 @@ namespace ConverterRevitShared.Models
   public readonly struct LineOverlappingOutlineData
   {
     public LineOverlappingOutlineData(
-      Line line, 
+      Line line,
       bool overlapsOutline,
       int? outlineIndexForStartPoint = null,
       int? outlineIndexForEndPoint = null

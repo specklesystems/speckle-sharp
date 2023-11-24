@@ -116,26 +116,27 @@ namespace ConverterRevitTests
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
 
       var spkElems = new List<Base>();
-      await APIContext.Run(() =>
-      {
-        foreach (var elem in elements)
+      await APIContext
+        .Run(() =>
         {
-          bool isAlreadyConverted = ConnectorBindingsRevit.GetOrCreateApplicationObject(
-            elem,
-            converter.Report,
-            out ApplicationObject reportObj
-          );
-          if (isAlreadyConverted)
-            continue;
-
-          var conversionResult = converter.ConvertToSpeckle(elem);
-          if (conversionResult != null)
+          foreach (var elem in elements)
           {
-            spkElems.Add(conversionResult);
+            bool isAlreadyConverted = ConnectorBindingsRevit.GetOrCreateApplicationObject(
+              elem,
+              converter.Report,
+              out ApplicationObject reportObj
+            );
+            if (isAlreadyConverted)
+              continue;
+
+            var conversionResult = converter.ConvertToSpeckle(elem);
+            if (conversionResult != null)
+            {
+              spkElems.Add(conversionResult);
+            }
           }
-        }
-      })
-      .ConfigureAwait(false);
+        })
+        .ConfigureAwait(false);
 
       converter = new ConverterRevit();
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;
@@ -143,19 +144,17 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
       converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       //setting context objects for update routine
-      var state = new StreamState()
-      {
-        ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
-      };
+      var state = new StreamState() { ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>() };
       converter.SetContextDocument(new StreamStateCache(state));
       converter.SetContextDocument(new ConvertedObjectsCache());
 
-      var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
+      var contextObjs = spkElems
+        .Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId })
+        .ToList();
       var appObjs = new List<ApplicationObject>();
       foreach (var contextObj in contextObjs)
       {
-        if (string.IsNullOrEmpty(contextObj.applicationId) 
-          && string.IsNullOrEmpty(contextObj.OriginalId))
+        if (string.IsNullOrEmpty(contextObj.applicationId) && string.IsNullOrEmpty(contextObj.OriginalId))
         {
           continue;
         }

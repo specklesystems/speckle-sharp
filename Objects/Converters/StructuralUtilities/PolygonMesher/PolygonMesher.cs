@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +42,7 @@ namespace StructuralUtilities.PolygonMesher
     public bool Init(IEnumerable<double> coords, IEnumerable<IEnumerable<double>> openingCoordsList = null)
     {
       // if there are less than 3 coordinates, we cannot create a mesh
-      if (coords.Count() < 9) 
+      if (coords.Count() < 9)
         return false;
 
       ExternalLoop.Init(coords, ref CoordinateTranslation, tolerance);
@@ -107,7 +107,8 @@ namespace StructuralUtilities.PolygonMesher
               {
                 var indexPair = new IndexPair(i, ptIndex);
                 var line = GetLine(indexPair);
-                if (!ValidNewInternalLine(indexPair, line)) continue;
+                if (!ValidNewInternalLine(indexPair, line))
+                  continue;
 
                 //Calculate distance - if currShortestDistance is either -1 or shorter than the shortest, replace the shortest
                 var distance = line.Length;
@@ -149,7 +150,7 @@ namespace StructuralUtilities.PolygonMesher
 
       return l;
     }
-        
+
     public List<int> Faces(int faceIndexOffset = 0)
     {
       var faces = new List<int>();
@@ -173,11 +174,17 @@ namespace StructuralUtilities.PolygonMesher
 
       foreach (var vertex in vertices)
       {
-        var linkedIndices = indexPairs.Where(v => v.Contains(vertex.Index)).Select(v => v.Other(vertex.Index).Value).ToList();
+        var linkedIndices = indexPairs
+          .Where(v => v.Contains(vertex.Index))
+          .Select(v => v.Other(vertex.Index).Value)
+          .ToList();
 
         foreach (var l1i in linkedIndices)
         {
-          var level2Indices = indexPairs.Where(v => v.Contains(l1i) && !v.Contains(vertex.Index)).Select(v => v.Other(l1i).Value).ToList();
+          var level2Indices = indexPairs
+            .Where(v => v.Contains(l1i) && !v.Contains(vertex.Index))
+            .Select(v => v.Other(l1i).Value)
+            .ToList();
           foreach (var l2i in level2Indices)
           {
             if (indexPairs.Any(ip => ip.Matches(new IndexPair(l2i, vertex.Index))))
@@ -261,16 +268,20 @@ namespace StructuralUtilities.PolygonMesher
 
     private bool ValidNewInternalLine(IndexPair indexPair, Line2D line)
     {
-      if (indexPair == null) return false;
+      if (indexPair == null)
+        return false;
 
       //Check if this line is already in the collection - if so, ignore it
-      if (ExistingLinesContains(indexPair)) return false;
+      if (ExistingLinesContains(indexPair))
+        return false;
 
       //Check if this line would intersect any external lines in this collection - if so, ignore it
-      if (IntersectsBoundaryLines(line)) return false;
+      if (IntersectsBoundaryLines(line))
+        return false;
 
       //Check if this line would intersect any already in this collection - if so, ignore it
-      if (IntersectsInternalLines(line)) return false;
+      if (IntersectsInternalLines(line))
+        return false;
 
       return true;
     }
@@ -358,7 +369,12 @@ namespace StructuralUtilities.PolygonMesher
 
     //Because multiple points can be aligned along the same direction from any given point, a dictionary is returned where
     //the (unit) vectors towards the points are the keys, and all points in that exact direction listed as the values
-    private Dictionary<Vector2D, List<int>> PointIndicesSweep(int ptIndex, int nextPtIndex, int prevPtIndex, int windingDirection)
+    private Dictionary<Vector2D, List<int>> PointIndicesSweep(
+      int ptIndex,
+      int nextPtIndex,
+      int prevPtIndex,
+      int windingDirection
+    )
     {
       if (windingDirection == 0)
       {
@@ -374,12 +390,16 @@ namespace StructuralUtilities.PolygonMesher
 
       for (var i = 0; i < allPts.Count(); i++)
       {
-        if (i == ptIndex || i == nextPtIndex || i == prevPtIndex) continue;
+        if (i == ptIndex || i == nextPtIndex || i == prevPtIndex)
+          continue;
 
         var vItem = allPts[ptIndex].VectorTo(allPts[i]).Normalize();
 
         //The swapping of the vectors below is to align with the fact that the vector angle comparison is always done anti-clockwise
-        var isBetween = (windingDirection > 0) ? vItem.IsBetweenVectors(vCurrToNext, vCurrToPrev) : vItem.IsBetweenVectors(vCurrToPrev, vCurrToNext);
+        var isBetween =
+          (windingDirection > 0)
+            ? vItem.IsBetweenVectors(vCurrToNext, vCurrToPrev)
+            : vItem.IsBetweenVectors(vCurrToPrev, vCurrToNext);
 
         if (isBetween)
         {

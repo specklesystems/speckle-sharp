@@ -41,17 +41,24 @@ namespace Archicad.Converters
     {
       public string cumulativeTransformKey { get; set; }
 
-      public ArchicadGeometryCollectorContext(Base current, string? propName = null, ArchicadGeometryCollectorContext? parent = default)
-        : base(current, propName, parent)
-      {
-      }
+      public ArchicadGeometryCollectorContext(
+        Base current,
+        string? propName = null,
+        ArchicadGeometryCollectorContext? parent = default
+      )
+        : base(current, propName, parent) { }
     }
 
     public sealed class ArchicadGeometryCollector : GraphTraversal<ArchicadGeometryCollectorContext>
     {
-      public ArchicadGeometryCollector(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+      public ArchicadGeometryCollector(params ITraversalRule[] traversalRule)
+        : base(traversalRule) { }
 
-      protected override ArchicadGeometryCollectorContext NewContext(Base current, string? propName, ArchicadGeometryCollectorContext? parent)
+      protected override ArchicadGeometryCollectorContext NewContext(
+        Base current,
+        string? propName,
+        ArchicadGeometryCollectorContext? parent
+      )
       {
         return new ArchicadGeometryCollectorContext(current, propName, parent);
       }
@@ -65,7 +72,7 @@ namespace Archicad.Converters
 
         // hosted elements traversals
         {
-          // #1: via the "elements" field of definition classes, but don't traverse the "elements" field of the root (it is traversed by the main element traversal) 
+          // #1: via the "elements" field of definition classes, but don't traverse the "elements" field of the root (it is traversed by the main element traversal)
           if (root != @base)
             membersToTraverse.AddRange(DefaultTraversal.elementsPropAliases);
 
@@ -84,7 +91,7 @@ namespace Archicad.Converters
           membersToTraverse.AddRange(DefaultTraversal.displayValuePropAliases);
 
           // #2: visiting the elements in "geometry" field
-          membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases);  // already added before
+          membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases); // already added before
         }
 
         return membersToTraverse;
@@ -95,7 +102,10 @@ namespace Archicad.Converters
       return new ArchicadGeometryCollector(traversalRule);
     }
 
-    private static TraversalContext StoreTransformationMatrix(ArchicadGeometryCollectorContext tc, Dictionary<string, Transform> transformMatrixById)
+    private static TraversalContext StoreTransformationMatrix(
+      ArchicadGeometryCollectorContext tc,
+      Dictionary<string, Transform> transformMatrixById
+    )
     {
       if (tc.parent != null)
       {
@@ -105,9 +115,14 @@ namespace Archicad.Converters
 
         // transform appleid only elements via the "definition" property (not via "elements" property)
         // and root elements transform is skipped, because it will be added on GDL level
-        var currentTransform = (tc.parent.current != root.current && (tc.parent.current["transform"] is Transform) && DefaultTraversal.definitionPropAliases.Contains (tc.propName))
-                               ? (Transform)(tc.parent.current["transform"])
-                               : new Transform();
+        var currentTransform =
+          (
+            tc.parent.current != root.current
+            && (tc.parent.current["transform"] is Transform)
+            && DefaultTraversal.definitionPropAliases.Contains(tc.propName)
+          )
+            ? (Transform)(tc.parent.current["transform"])
+            : new Transform();
 
         string parentCumulativeTransformId = (tc.parent as ArchicadGeometryCollectorContext).cumulativeTransformKey;
         string cumulativeTransformId = Utilities.HashString(parentCumulativeTransformId + currentTransform.id);
@@ -133,18 +148,21 @@ namespace Archicad.Converters
     {
       var meshes = GetMesh(tc.current);
 
-      return meshes.Select(mesh => {
-        string cumulativeTransformId = (tc as ArchicadGeometryCollectorContext).cumulativeTransformKey;
-        var transformedMeshId = Utilities.HashString(cumulativeTransformId + mesh.id);
-        if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
+      return meshes
+        .Select(mesh =>
         {
-          transformedMesh = (Mesh)mesh.ShallowCopy();
-          transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
-          transformedMesh.id = transformedMeshId;
-          transformedMeshById.Add(transformedMeshId, transformedMesh);
-        }
-        return transformedMeshId;
-      }).ToList();
+          string cumulativeTransformId = (tc as ArchicadGeometryCollectorContext).cumulativeTransformKey;
+          var transformedMeshId = Utilities.HashString(cumulativeTransformId + mesh.id);
+          if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
+          {
+            transformedMesh = (Mesh)mesh.ShallowCopy();
+            transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
+            transformedMesh.id = transformedMeshId;
+            transformedMeshById.Add(transformedMeshId, transformedMesh);
+          }
+          return transformedMeshId;
+        })
+        .ToList();
     }
 
     public async Task<List<ApplicationObject>> ConvertToArchicad(
@@ -180,7 +198,8 @@ namespace Archicad.Converters
           List<string> meshIdHashes;
           {
             ArchicadGeometryCollector collector = CreateArchicadGeometryCollectorFunc(element);
-            meshIdHashes = collector.Traverse(element)
+            meshIdHashes = collector
+              .Traverse(element)
               .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
               .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
               .ToList();

@@ -27,9 +27,8 @@ namespace ConverterRevitTests
     public virtual string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, $"{TestName}Updated.rvt");
     public virtual string NewFile => Globals.GetTestModelOfCategory(Category, $"{TestName}ToNative.rvt");
     public virtual string ExpectedFailuresFile { get; }
-    public SpeckleConversionFixture()
-    {
-    }
+
+    public SpeckleConversionFixture() { }
 
     public void Initialize()
     {
@@ -46,7 +45,10 @@ namespace ConverterRevitTests
       if (File.Exists(UpdatedTestFile))
       {
         UpdatedDoc = xru.OpenDoc(UpdatedTestFile);
-        UpdatedRevitElements = new FilteredElementCollector(UpdatedDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
+        UpdatedRevitElements = new FilteredElementCollector(UpdatedDoc)
+          .WhereElementIsNotElementType()
+          .WherePasses(filter)
+          .ToElements();
       }
 
       if (File.Exists(NewFile))
@@ -54,7 +56,10 @@ namespace ConverterRevitTests
         NewDoc = xru.OpenDoc(NewFile);
       }
 
-      RevitElements = new FilteredElementCollector(SourceDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
+      RevitElements = new FilteredElementCollector(SourceDoc)
+        .WhereElementIsNotElementType()
+        .WherePasses(filter)
+        .ToElements();
     }
 
     public async Task InitializeAsync()

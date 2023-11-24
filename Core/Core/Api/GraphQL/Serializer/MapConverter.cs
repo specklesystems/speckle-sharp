@@ -44,7 +44,7 @@ public class MapConverter : JsonConverter<Map>
       _ => throw new ArgumentOutOfRangeException(nameof(token), $"Invalid token type {token?.Type}")
     };
   }
-  
+
   private Dictionary<string, object> ReadDictionary(JToken element, Dictionary<string, object> to)
   {
     foreach (var property in ((JObject)element).Properties())

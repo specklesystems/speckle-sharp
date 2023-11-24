@@ -31,13 +31,13 @@ namespace Objects.Converter.Revit
     public IRevitCategoryInfo GetRevitCategoryInfo<T>(Base @base)
     {
       var elementType = GetRevitCategoryInfo(@base);
-      if (elementType != SHC.Undefined) return elementType;
+      if (elementType != SHC.Undefined)
+        return elementType;
 
       var matchingType = revitDocumentAggregateCache
         .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
         .GetAllObjects()
-        .Where(catInfo => catInfo.ElementTypeType == typeof(T)
-          && catInfo.BuiltInCategories.Count == 0)
+        .Where(catInfo => catInfo.ElementTypeType == typeof(T) && catInfo.BuiltInCategories.Count == 0)
         .FirstOrDefault();
 
       if (matchingType != null)
@@ -47,10 +47,14 @@ namespace Objects.Converter.Revit
 
       var categoryInfo = revitDocumentAggregateCache
         .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
-        .GetOrAdd(typeof(T).Name, () =>
-        {
-          return new RevitCategoryInfo(typeof(T).Name, null, typeof(T), new List<BuiltInCategory>());
-        }, out _);
+        .GetOrAdd(
+          typeof(T).Name,
+          () =>
+          {
+            return new RevitCategoryInfo(typeof(T).Name, null, typeof(T), new List<BuiltInCategory>());
+          },
+          out _
+        );
 
       return categoryInfo;
     }
@@ -101,23 +105,23 @@ namespace Objects.Converter.Revit
 
       var newCategoryInfo = GetRevitCategoryInfo(instanceCategory);
 
-      if (newCategoryInfo != SHC.Undefined) return newCategoryInfo;
+      if (newCategoryInfo != SHC.Undefined)
+        return newCategoryInfo;
       return categoryInfo;
     }
+
     public IRevitCategoryInfo GetRevitCategoryInfo(string categoryName)
     {
       var categoryInfo = GetCategoryInfoForObjectWithExactName(categoryName);
-      if (categoryInfo != null) return categoryInfo;
-
+      if (categoryInfo != null)
+        return categoryInfo;
 
       categoryName = CategoryNameFormatted(categoryName);
-      var revitCategoryInfoCache = revitDocumentAggregateCache
-        .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>();
+      var revitCategoryInfoCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>();
 
-      categoryInfo = revitCategoryInfoCache
-        .TryGet(categoryName);
-      if (categoryInfo != null) return categoryInfo;
-
+      categoryInfo = revitCategoryInfoCache.TryGet(categoryName);
+      if (categoryInfo != null)
+        return categoryInfo;
 
       foreach (var info in revitCategoryInfoCache.GetAllObjects())
       {
@@ -160,7 +164,8 @@ namespace Objects.Converter.Revit
           .GetOrInitializeWithDefaultFactory<Category>()
           .TryGet(unformattedCatName);
 
-        if (revitCat == null) return null;
+        if (revitCat == null)
+          return null;
 
         bic = Categories.GetBuiltInCategory(revitCat);
         formattedName = CategoryNameFormatted(unformattedCatName);
@@ -168,10 +173,14 @@ namespace Objects.Converter.Revit
 
       return revitDocumentAggregateCache
         .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
-        .GetOrAdd(formattedName, () =>
-        {
-          return new RevitCategoryInfo(formattedName, null, null, new List<BuiltInCategory> { bic });
-        }, out _);
+        .GetOrAdd(
+          formattedName,
+          () =>
+          {
+            return new RevitCategoryInfo(formattedName, null, null, new List<BuiltInCategory> { bic });
+          },
+          out _
+        );
     }
 
     private static string CategoryNameFormatted(string name)

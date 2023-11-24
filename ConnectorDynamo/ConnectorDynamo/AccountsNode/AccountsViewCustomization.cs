@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
@@ -15,7 +15,6 @@ namespace Speckle.ConnectorDynamo.AccountsNode
 {
   public class AccountsViewCustomization : INodeViewCustomization<Accounts>
   {
-
     private DynamoViewModel dynamoViewModel;
     private DispatcherSynchronizationContext syncContext;
     private Accounts accountsNode;
@@ -36,7 +35,6 @@ namespace Speckle.ConnectorDynamo.AccountsNode
       ui.Loaded += Loaded;
       ui.AccountsComboBox.SelectionChanged += SelectionChanged;
       ui.AccountsComboBox.DropDownOpened += AccountsComboBoxOnDropDownOpened;
-
     }
 
     private void AccountsComboBoxOnDropDownOpened(object sender, EventArgs e)
@@ -47,19 +45,20 @@ namespace Speckle.ConnectorDynamo.AccountsNode
 
     private void Loaded(object o, RoutedEventArgs a)
     {
-      Task.Run(async () => { accountsNode.RestoreSelection(); });
+      Task.Run(async () =>
+      {
+        accountsNode.RestoreSelection();
+      });
     }
 
     private void SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      if(e.AddedItems.Count ==0)
+      if (e.AddedItems.Count == 0)
         return;
       var account = e.AddedItems[0] as Account;
       accountsNode.SelectionChanged(account);
     }
-    
 
     public void Dispose() { }
-
   }
 }

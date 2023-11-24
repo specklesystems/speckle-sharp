@@ -124,6 +124,5 @@ namespace Objects.Converter.Dynamo
       var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits);
       return value * f;
     }
-
   }
 }

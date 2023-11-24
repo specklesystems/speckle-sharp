@@ -1,4 +1,4 @@
-﻿namespace Objects.Converter.Revit
+namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
@@ -18,7 +18,8 @@
     {
       get
       {
-        if (!Settings.ContainsKey("pretty-mesh")) return ToNativeMeshSettingEnum.Default;
+        if (!Settings.ContainsKey("pretty-mesh"))
+          return ToNativeMeshSettingEnum.Default;
         var value = Settings["pretty-mesh"];
         switch (value)
         {
@@ -28,7 +29,7 @@
             return ToNativeMeshSettingEnum.DxfImportInFamily;
           case defaultValue:
           default:
-            return ToNativeMeshSettingEnum.Default; 
+            return ToNativeMeshSettingEnum.Default;
         }
       }
       set

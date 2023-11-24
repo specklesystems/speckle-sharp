@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
@@ -16,9 +16,15 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject TeklaBeamToNative(BuiltElements.TeklaStructures.TeklaBeam teklaBeam, StructuralType structuralType = StructuralType.Beam)
+    public ApplicationObject TeklaBeamToNative(
+      BuiltElements.TeklaStructures.TeklaBeam teklaBeam,
+      StructuralType structuralType = StructuralType.Beam
+    )
     {
-      var appObj = new ApplicationObject(teklaBeam.id, teklaBeam.speckle_type) { applicationId = teklaBeam.applicationId };
+      var appObj = new ApplicationObject(teklaBeam.id, teklaBeam.speckle_type)
+      {
+        applicationId = teklaBeam.applicationId
+      };
 
       RevitBeam revitBeam = new RevitBeam();
       //This only works for CSIC sections now for sure. Need to test on other sections

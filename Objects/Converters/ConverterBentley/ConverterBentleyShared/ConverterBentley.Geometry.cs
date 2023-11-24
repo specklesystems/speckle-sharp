@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,12 +30,13 @@ namespace Objects.Converter.Bentley
 {
   public partial class ConverterBentley
   {
-    public double tolerance = 0.000;  // tolerance for geometry      
+    public double tolerance = 0.000; // tolerance for geometry
 
     public double[] PointToArray(DPoint2d pt)
     {
       return new double[] { pt.X, pt.Y, 0 };
     }
+
     public double[] PointToArray(DPoint3d pt)
     {
       return new double[] { ScaleToSpeckle(pt.X, UoR), ScaleToSpeckle(pt.Y, UoR), ScaleToSpeckle(pt.Z, UoR) };
@@ -44,7 +45,8 @@ namespace Objects.Converter.Bentley
     public DPoint3d[] PointListToNative(IEnumerable<double> arr, string units)
     {
       var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
+      if (enumerable.Count % 3 != 0)
+        throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
       DPoint3d[] points = new DPoint3d[enumerable.Count / 3];
       var asArray = enumerable.ToArray();
@@ -52,7 +54,8 @@ namespace Objects.Converter.Bentley
         points[k++] = new DPoint3d(
           ScaleToNative(asArray[i - 2], units, UoR),
           ScaleToNative(asArray[i - 1], units, UoR),
-          ScaleToNative(asArray[i], units, UoR));
+          ScaleToNative(asArray[i], units, UoR)
+        );
 
       return points;
     }
@@ -82,9 +85,7 @@ namespace Objects.Converter.Bentley
 
     public DPoint2d Point2dToNative(Point pt)
     {
-      var myPoint = new DPoint2d(
-        ScaleToNative(pt.x, pt.units, UoR),
-        ScaleToNative(pt.y, pt.units, UoR));
+      var myPoint = new DPoint2d(ScaleToNative(pt.x, pt.units, UoR), ScaleToNative(pt.y, pt.units, UoR));
 
       return myPoint;
     }
@@ -106,7 +107,8 @@ namespace Objects.Converter.Bentley
       var myPoint = new DPoint3d(
         ScaleToNative(pt.x, pt.units, UoR),
         ScaleToNative(pt.y, pt.units, UoR),
-        ScaleToNative(pt.z, pt.units, UoR));
+        ScaleToNative(pt.z, pt.units, UoR)
+      );
 
       return myPoint;
     }
@@ -126,9 +128,7 @@ namespace Objects.Converter.Bentley
 
     public DVector2d Vector2dToNative(Vector pt)
     {
-      return new DVector2d(
-        ScaleToNative(pt.x, pt.units, UoR),
-        ScaleToNative(pt.y, pt.units, UoR));
+      return new DVector2d(ScaleToNative(pt.x, pt.units, UoR), ScaleToNative(pt.y, pt.units, UoR));
     }
 
     public Vector Vector3dToSpeckle(DVector3d pt, string units = null)
@@ -141,7 +141,8 @@ namespace Objects.Converter.Bentley
       return new DVector3d(
         ScaleToNative(pt.x, pt.units, UoR),
         ScaleToNative(pt.y, pt.units, UoR),
-        ScaleToNative(pt.z, pt.units, UoR));
+        ScaleToNative(pt.z, pt.units, UoR)
+      );
     }
 
     // Interval
@@ -157,7 +158,10 @@ namespace Objects.Converter.Bentley
 
     public DRange1d IntervalToNative(Interval interval)
     {
-      return DRange1d.From(ScaleToNative((double)interval.start, ModelUnits, UoR), ScaleToNative((double)interval.end, ModelUnits, UoR));
+      return DRange1d.From(
+        ScaleToNative((double)interval.start, ModelUnits, UoR),
+        ScaleToNative((double)interval.end, ModelUnits, UoR)
+      );
     }
 
     public Interval2d Interval2dToSpeckle(DRange2d range)
@@ -170,11 +174,12 @@ namespace Objects.Converter.Bentley
     public DRange2d Interval2dToNative(Interval2d interval)
     {
       var u = new DPoint2d((double)interval.u.start, (double)interval.u.end);
-      var v = new DPoint2d((double)interval.v.start, (double)interval.v.end); ;
+      var v = new DPoint2d((double)interval.v.start, (double)interval.v.end);
+      ;
       return DRange2d.FromPoints(u, v);
     }
 
-    // Plane 
+    // Plane
     public Plane PlaneToSpeckle(DPlane3d plane, string units = null)
     {
       DPoint3d origin = plane.Origin;
@@ -184,7 +189,13 @@ namespace Objects.Converter.Bentley
       DVector3d yAxis = normal.CrossProduct(xAxis);
 
       var u = units ?? ModelUnits;
-      var _plane = new Plane(Point3dToSpeckle(origin), Vector3dToSpeckle(normal), Vector3dToSpeckle(xAxis), Vector3dToSpeckle(yAxis), u);
+      var _plane = new Plane(
+        Point3dToSpeckle(origin),
+        Vector3dToSpeckle(normal),
+        Vector3dToSpeckle(xAxis),
+        Vector3dToSpeckle(yAxis),
+        u
+      );
       return _plane;
     }
 
@@ -202,7 +213,13 @@ namespace Objects.Converter.Bentley
       DVector3d yAxis = normal.CrossProduct(xAxis);
 
       var u = units ?? ModelUnits;
-      var _plane = new Plane(Point3dToSpeckle(origin), Vector3dToSpeckle(normal), Vector3dToSpeckle(xAxis), Vector3dToSpeckle(yAxis), u);
+      var _plane = new Plane(
+        Point3dToSpeckle(origin),
+        Vector3dToSpeckle(normal),
+        Vector3dToSpeckle(xAxis),
+        Vector3dToSpeckle(yAxis),
+        u
+      );
       return _plane;
     }
 
@@ -219,9 +236,9 @@ namespace Objects.Converter.Bentley
       {
         CurveVector vec = q.GetCurveVector();
         if (vec != null)
-        {          
+        {
           vec.GetStartEnd(out DPoint3d startPoint, out DPoint3d endPoint);
-          if (startPoint == endPoint) 
+          if (startPoint == endPoint)
             return Point3dToSpeckle(startPoint, units);
 
           double length = vec.SumOfLengths() / UoR;
@@ -288,10 +305,16 @@ namespace Objects.Converter.Bentley
       }
     }
 
-
     public ICurve ArcToSpeckle(DEllipse3d ellipse, string units = null)
     {
-      ellipse.GetMajorMinorData(out DPoint3d center, out DMatrix3d matrix, out double majorAxis, out double minorAxis, out Angle startAngle, out Angle endAngle);
+      ellipse.GetMajorMinorData(
+        out DPoint3d center,
+        out DMatrix3d matrix,
+        out double majorAxis,
+        out double minorAxis,
+        out Angle startAngle,
+        out Angle endAngle
+      );
       var startPoint = ellipse.PointAtAngle(startAngle);
       var endPoint = ellipse.PointAtAngle(endAngle);
       var axisRatio = majorAxis / minorAxis;
@@ -324,7 +347,12 @@ namespace Objects.Converter.Bentley
         CurveVector vec = q.GetCurveVector();
         if (vec != null)
         {
-          vec.GetStartEnd(out DPoint3d startPoint, out DPoint3d endPoint, out DVector3d startTangent, out DVector3d endTangent);
+          vec.GetStartEnd(
+            out DPoint3d startPoint,
+            out DPoint3d endPoint,
+            out DVector3d startTangent,
+            out DVector3d endTangent
+          );
 
           double length = vec.SumOfLengths();
           double radius = GetElementProperty(arc, "Radius").DoubleValue / UoR;
@@ -337,7 +365,7 @@ namespace Objects.Converter.Bentley
           DPoint3d normal = (DPoint3d)GetElementProperty(arc, "Normal").NativeValue;
           DPlane3d plane = new DPlane3d(center, new DVector3d(normal));
 
-          // an additional arc rotation can be applied in MicroStation, need to rotate the start/end points to correspond to this rotation before conversion                     
+          // an additional arc rotation can be applied in MicroStation, need to rotate the start/end points to correspond to this rotation before conversion
           double rotation = GetElementProperty(arc, "RotationAngle").DoubleValue;
           startAngle = rotation + startAngle;
           endAngle = rotation + endAngle;
@@ -482,7 +510,12 @@ namespace Objects.Converter.Bentley
       var endAngle = (double)arc.endAngle;
       var center = Point3dToNative(arc.plane.origin);
 
-      DEllipse3d.TryCircularArcFromStartMiddleEnd(Point3dToNative(arc.startPoint), Point3dToNative(arc.midPoint), Point3dToNative(arc.endPoint), out DEllipse3d ellipse);
+      DEllipse3d.TryCircularArcFromStartMiddleEnd(
+        Point3dToNative(arc.startPoint),
+        Point3dToNative(arc.midPoint),
+        Point3dToNative(arc.endPoint),
+        out DEllipse3d ellipse
+      );
 
       var _arc = new ArcElement(Model, null, ellipse);
       return _arc;
@@ -519,7 +552,13 @@ namespace Objects.Converter.Bentley
       var plane = PlaneToNative(ellipse.plane);
 
       DPlacementZX placement = new DPlacementZX(plane.Origin);
-      var e = new DEllipse3d(placement, (double)ellipse.firstRadius, (double)ellipse.secondRadius, Angle.Zero, Angle.TWOPI);
+      var e = new DEllipse3d(
+        placement,
+        (double)ellipse.firstRadius,
+        (double)ellipse.secondRadius,
+        Angle.Zero,
+        Angle.TWOPI
+      );
       var _ellipse = new EllipseElement(Model, null, e);
 
       return _ellipse;
@@ -547,7 +586,6 @@ namespace Objects.Converter.Bentley
       var vec = ellipse.GetCurveVector();
       vec.GetRange(out DRange3d range);
       vec.CentroidNormalArea(out DPoint3d center, out DVector3d normal, out double area);
-
 
       DPlane3d plane = new DPlane3d(center, new DVector3d(normal));
       var specklePlane = PlaneToSpeckle(plane);
@@ -592,7 +630,14 @@ namespace Objects.Converter.Bentley
 
     public Circle CircleToSpeckle(DEllipse3d ellipse, string units = null)
     {
-      ellipse.GetMajorMinorData(out DPoint3d center, out DMatrix3d matrix, out double majorAxis, out double minorAxis, out Angle startAngle, out Angle endAngle);
+      ellipse.GetMajorMinorData(
+        out DPoint3d center,
+        out DMatrix3d matrix,
+        out double majorAxis,
+        out double minorAxis,
+        out Angle startAngle,
+        out Angle endAngle
+      );
       ellipse.IsCircular(out double radius, out DVector3d normal);
       var range = DRange3d.FromEllipse(ellipse);
 
@@ -779,19 +824,17 @@ namespace Objects.Converter.Bentley
       {
         foreach (var curve in curves)
         {
-
           foreach (var primitive in curve)
           {
-
             var curvePrimitiveType = primitive.GetCurvePrimitiveType();
 
             switch (curvePrimitiveType)
             {
               case CurvePrimitive.CurvePrimitiveType.Line:
-                if(primitive.TryGetLine(out DSegment3d segment))
+                if (primitive.TryGetLine(out DSegment3d segment))
                 {
                   segments.Add(LineToSpeckle(segment));
-                }                
+                }
                 break;
               case CurvePrimitive.CurvePrimitiveType.Arc:
                 if (primitive.TryGetArc(out DEllipse3d arc))
@@ -804,11 +847,11 @@ namespace Objects.Converter.Bentley
                 if (primitive.TryGetLineString(pointList))
                 {
                   segments.Add(PolylineToSpeckle(pointList));
-                }                
+                }
                 break;
               case CurvePrimitive.CurvePrimitiveType.BsplineCurve:
-                  var spline = primitive.GetBsplineCurve();
-                  segments.Add(BSplineCurveToSpeckle(spline));
+                var spline = primitive.GetBsplineCurve();
+                segments.Add(BSplineCurveToSpeckle(spline));
                 break;
               case CurvePrimitive.CurvePrimitiveType.Spiral:
                 var spiralSpline = primitive.GetProxyBsplineCurve();
@@ -821,7 +864,6 @@ namespace Objects.Converter.Bentley
 
       return segments;
     }
-
 
     //// Complex string element (complex chain)
     public ComplexStringElement PolycurveToNative(Polycurve polycurve)
@@ -930,33 +972,31 @@ namespace Objects.Converter.Bentley
 
         var _points = new List<DPoint3d>();
 
-          // get control points
-          var controlPoints = GetElementProperty(curve, "ControlPointData.ControlPoints").ContainedValues;
+        // get control points
+        var controlPoints = GetElementProperty(curve, "ControlPointData.ControlPoints").ContainedValues;
 
-          // get weights
-          var controlPointWeights = GetElementProperty(curve, "ControlPointData.ControlPointsWeights").ContainedValues;
+        // get weights
+        var controlPointWeights = GetElementProperty(curve, "ControlPointData.ControlPointsWeights").ContainedValues;
 
-          // get knots
-          var knotData = GetElementProperty(curve, "KnotData.Knots").ContainedValues;
+        // get knots
+        var knotData = GetElementProperty(curve, "KnotData.Knots").ContainedValues;
 
-          if (controlPoints.Count() > 0)
+        if (controlPoints.Count() > 0)
+        {
+          foreach (var controlPoint in controlPoints)
           {
-            foreach (var controlPoint in controlPoints)
-            {
-              var point = (DPoint3d)controlPoint.NativeValue;
-              _points.Add(point);
-            }
+            var point = (DPoint3d)controlPoint.NativeValue;
+            _points.Add(point);
           }
-          else
+        }
+        else
+        {
+          foreach (var controlPoint in controlPointWeights)
           {
-            foreach (var controlPoint in controlPointWeights)
-            {
-              var point = (DPoint3d)controlPoint.ContainedValues["Point"].NativeValue;
-              _points.Add(point);
-            }
+            var point = (DPoint3d)controlPoint.ContainedValues["Point"].NativeValue;
+            _points.Add(point);
           }
-
-        
+        }
 
         // set nurbs curve info
         _curve.points = PointsToFlatList(_points).ToList();
@@ -1221,29 +1261,35 @@ namespace Objects.Converter.Bentley
       switch (curve)
       {
         case ComplexStringElement polyCurve:
-          outCurves.AddRange(PolycurveToSpeckleList(polyCurve, units)); break;
+          outCurves.AddRange(PolycurveToSpeckleList(polyCurve, units));
+          break;
 
         case ArcElement arc:
-          outCurves.Add(CircularArcToSpeckle(arc, units)); break;
+          outCurves.Add(CircularArcToSpeckle(arc, units));
+          break;
 
         case EllipseElement ellipse:
-          outCurves.Add(EllipseToSpeckle(ellipse, units)); break;
+          outCurves.Add(EllipseToSpeckle(ellipse, units));
+          break;
 
         case BSplineCurveElement crv:
-          outCurves.Add(BSplineCurveToSpeckle(crv, units)); break;
+          outCurves.Add(BSplineCurveToSpeckle(crv, units));
+          break;
 
         case LineElement line:
-          outCurves.Add((Line)LineToSpeckle(line, units)); break;
+          outCurves.Add((Line)LineToSpeckle(line, units));
+          break;
 
         case LineStringElement polyLine:
-          outCurves.Add(PolylineToSpeckle(polyLine, units)); break;
+          outCurves.Add(PolylineToSpeckle(polyLine, units));
+          break;
 
-        default: break;
+        default:
+          break;
       }
 
       return outCurves;
     }
-
 
     // Box
     public Box BoxToSpeckle(DRange3d range, bool OrientToWorldXY = false, string units = null)
@@ -1261,7 +1307,8 @@ namespace Objects.Converter.Bentley
         var zSize = new Interval(ScaleToSpeckle(min.Z, UoR), ScaleToSpeckle(max.Z, UoR));
 
         // get box size info
-        double area = 2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
+        double area =
+          2 * ((xSize.Length * ySize.Length) + (xSize.Length * zSize.Length) + (ySize.Length * zSize.Length));
         double volume = xSize.Length * ySize.Length * zSize.Length;
 
         if (OrientToWorldXY)
@@ -1341,8 +1388,9 @@ namespace Objects.Converter.Bentley
 
     public Polycurve ComplexShapeToSpeckle(ComplexShapeElement shape, string units = null)
     {
-      //terrible, need to figure out how to avoid using COM interface!! 
-      BIM.ComplexShapeElement complexShapeElement = BMIU.ComApp.ActiveModelReference.GetElementByID(shape.ElementId) as BIM.ComplexShapeElement;
+      //terrible, need to figure out how to avoid using COM interface!!
+      BIM.ComplexShapeElement complexShapeElement =
+        BMIU.ComApp.ActiveModelReference.GetElementByID(shape.ElementId) as BIM.ComplexShapeElement;
 
       var closed = complexShapeElement.IsClosedElement();
       var length = complexShapeElement.Perimeter();
@@ -1400,7 +1448,7 @@ namespace Objects.Converter.Bentley
 
       // get faces
       var faces = new List<int>();
-      
+
       var _pointIndex = meshData.PointIndex.ToList();
       var _faceIndices = new List<int>();
       for (int i = 0; i < _pointIndex.Count(); i++)
@@ -1427,7 +1475,12 @@ namespace Objects.Converter.Bentley
       var _mesh = new Mesh(vertices, faces);
       _mesh.units = u;
 
-      meshData.ComputePrincipalAreaMoments(out double area, out DPoint3d centoid, out DMatrix3d axes, out DVector3d moments);
+      meshData.ComputePrincipalAreaMoments(
+        out double area,
+        out DPoint3d centoid,
+        out DMatrix3d axes,
+        out DVector3d moments
+      );
       _mesh.area = area / Math.Pow(UoR, 2);
 
       var range = meshData.PointRange();
@@ -1449,7 +1502,8 @@ namespace Objects.Converter.Bentley
       while (j < mesh.faces.Count)
       {
         int n = mesh.faces[j];
-        if (n < 3) n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+        if (n < 3)
+          n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
 
         List<DPoint3d> faceVertices = mesh.faces.GetRange(j + 1, n).Select(x => vertices[x]).ToList();
 
@@ -1537,7 +1591,7 @@ namespace Objects.Converter.Bentley
       //        row.Add(new ControlPoint(ScaleToSpeckle(point.X, UoR), ScaleToSpeckle(point.Y, UoR), ScaleToSpeckle(point.Z, UoR), weight[i], null));
 
       //        points.Add(row);
-      //    }                
+      //    }
       //}
 
       var _points = ControlPointsToSpeckle(nurbsSurface);
@@ -1558,7 +1612,15 @@ namespace Objects.Converter.Bentley
 
         var point = surface.get_PoleAt(Convert.ToUInt32(i));
         var weight = surface.get_WeightAt(Convert.ToUInt32(i));
-        row.Add(new ControlPoint(ScaleToSpeckle(point.X, UoR), ScaleToSpeckle(point.Y, UoR), ScaleToSpeckle(point.Z, UoR), weight, ModelUnits));
+        row.Add(
+          new ControlPoint(
+            ScaleToSpeckle(point.X, UoR),
+            ScaleToSpeckle(point.Y, UoR),
+            ScaleToSpeckle(point.Z, UoR),
+            weight,
+            ModelUnits
+          )
+        );
 
         points.Add(row);
       }
@@ -1619,7 +1681,6 @@ namespace Objects.Converter.Bentley
     {
       var element = new Base();
 
-
       return element;
     }
 
@@ -1627,10 +1688,8 @@ namespace Objects.Converter.Bentley
     {
       var element = new CellHeaderElement(Model, null, new DPoint3d(), new DMatrix3d(), new List<Element>() { });
 
-
       return element;
     }
-
 
     public Base Type2ElementToSpeckle(Type2Element cellHeader, string units = null)
     {
@@ -1683,8 +1742,6 @@ namespace Objects.Converter.Bentley
       return element;
     }
 
-
-
     internal class Processor : ElementGraphicsProcessor
     {
       private DTransform3d _transform;
@@ -1698,13 +1755,9 @@ namespace Objects.Converter.Bentley
         var asdfsaf = displayParams.ElementClass;
       }
 
-      public override void AnnounceElementMatSymbology(ElementMatSymbology matSymb)
-      {
-      }
+      public override void AnnounceElementMatSymbology(ElementMatSymbology matSymb) { }
 
-      public override void AnnounceIdentityTransform()
-      {
-      }
+      public override void AnnounceIdentityTransform() { }
 
       public override void AnnounceTransform(DTransform3d trans)
       {
@@ -1768,7 +1821,6 @@ namespace Objects.Converter.Bentley
           case CurvePrimitive.CurvePrimitiveType.BsplineCurve:
             var curve = curvePrimitive.GetBsplineCurve();
             break;
-
         }
 
         return BentleyStatus.Success;

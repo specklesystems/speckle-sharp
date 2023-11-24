@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Navisworks.Api;
 using Objects.Other;
 using Color = System.Drawing.Color;

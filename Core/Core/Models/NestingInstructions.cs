@@ -9,6 +9,7 @@ namespace Speckle.Core.Models
   public struct NestingInstructions
   {
     public delegate void NestAction(Base parent, Base child);
+
     public NestingInstructions(string? parentApplicationId, NestAction nestAction)
     {
       ParentApplicationId = parentApplicationId;

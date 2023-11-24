@@ -35,6 +35,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     [DllImport("user32.dll", SetLastError = true)]
     [SuppressMessage("Security", "CA5392:Use DefaultDllImportSearchPaths attribute for P/Invokes")]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+
     const int GWL_HWNDPARENT = -8;
     #endregion
     private static Avalonia.Application AvaloniaApp { get; set; }
@@ -42,12 +43,14 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     private static CancellationTokenSource Lifetime = null;
     public static ConnectorBindingsAutocad Bindings { get; set; }
 
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
-      .UsePlatformDetect()
-      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
-      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
-      .LogToTrace()
-      .UseReactiveUI();
+    public static AppBuilder BuildAvaloniaApp() =>
+      AppBuilder
+        .Configure<DesktopUI2.App>()
+        .UsePlatformDetect()
+        .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+        .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+        .LogToTrace()
+        .UseReactiveUI();
 
     /// <summary>
     /// Main command to initialize Speckle Connector
@@ -68,10 +71,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       if (MainWindow == null)
       {
         var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow
-        {
-          DataContext = viewModel
-        };
+        MainWindow = new MainWindow { DataContext = viewModel };
       }
 
       try
@@ -110,7 +110,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.community ", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute(
+          "_browser https://speckle.community ",
+          false,
+          false,
+          true
+        );
       }
       catch { }
     }
@@ -120,7 +125,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.systems/tutorials ", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute(
+          "_browser https://speckle.systems/tutorials ",
+          false,
+          false,
+          true
+        );
       }
       catch { }
     }
@@ -130,7 +140,12 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
-        Application.DocumentManager.MdiActiveDocument.SendStringToExecute("_browser https://speckle.guide/user/autocadcivil.html ", false, false, true);
+        Application.DocumentManager.MdiActiveDocument.SendStringToExecute(
+          "_browser https://speckle.guide/user/autocadcivil.html ",
+          false,
+          false,
+          true
+        );
       }
       catch { }
     }
@@ -168,4 +183,3 @@ namespace Speckle.ConnectorAutocadCivil.Entry
   }
   */
 }
-

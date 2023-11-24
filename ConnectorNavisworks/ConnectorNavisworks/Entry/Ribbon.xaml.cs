@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -70,7 +70,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// <returns>The state of the command.</returns>
   public override CommandState CanExecuteCommand(string commandId)
   {
-
     return commandId switch
     {
       TurnPersistCacheOn.Command

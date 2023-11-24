@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;

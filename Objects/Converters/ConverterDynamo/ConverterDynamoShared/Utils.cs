@@ -1,4 +1,4 @@
-﻿using Autodesk.DesignScript.Geometry;
+using Autodesk.DesignScript.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,8 +76,6 @@ namespace Objects.Converter.Dynamo
       return DS.Line.ByStartPointEndPoint(curve.StartPoint, curve.EndPoint);
     }
 
-
-
     public static DS.Arc GetAsArc(this DS.Curve curve)
     {
       if (curve.IsClosed)
@@ -121,14 +119,15 @@ namespace Objects.Converter.Dynamo
 
       DS.Point start = curve.StartPoint;
       using (DS.Point midPoint = curve.PointAtParameter(0.5))
-      using (DS.Point centre = DS.Point.ByCoordinates(Median(start.X, midPoint.X), Median(start.Y, midPoint.Y),
-        Median(start.Z, midPoint.Z)))
+      using (
+        DS.Point centre = DS.Point.ByCoordinates(
+          Median(start.X, midPoint.X),
+          Median(start.Y, midPoint.Y),
+          Median(start.Z, midPoint.Z)
+        )
+      )
       {
-        return DS.Circle.ByCenterPointRadiusNormal(
-          centre,
-          centre.DistanceTo(start),
-          curve.Normal
-        );
+        return DS.Circle.ByCenterPointRadiusNormal(centre, centre.DistanceTo(start), curve.Normal);
       }
     }
 
@@ -171,8 +170,13 @@ namespace Objects.Converter.Dynamo
       double a = points[0].DistanceTo(points[2]) * 0.5; // Max Radius
       double b = points[1].DistanceTo(points[3]) * 0.5; // Min Radius
 
-      using (DS.Point centre = DS.Point.ByCoordinates(Median(points[0].X, points[2].X),
-        Median(points[0].Y, points[2].Y), Median(points[0].Z, points[2].Z)))
+      using (
+        DS.Point centre = DS.Point.ByCoordinates(
+          Median(points[0].X, points[2].X),
+          Median(points[0].Y, points[2].Y),
+          Median(points[0].Z, points[2].Z)
+        )
+      )
       {
         points.ForEach(p => p.Dispose());
 
@@ -220,7 +224,6 @@ namespace Objects.Converter.Dynamo
       return userData.ToSpeckleX();
       ;
     }
-
 
     public static T SetDynamoProperties<T>(this DesignScriptEntity geometry, Dictionary<string, object> properties)
     {

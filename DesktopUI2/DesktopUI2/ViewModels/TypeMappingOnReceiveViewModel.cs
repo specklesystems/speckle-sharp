@@ -24,11 +24,7 @@ namespace DesktopUI2.ViewModels
 
     public const string TypeCatMisc = "Miscellaneous";
 
-    public TypeMappingOnReceiveViewModel(
-      ITypeMap typeMap,
-      IHostTypeContainer container,
-      bool newTypesExist = false
-    )
+    public TypeMappingOnReceiveViewModel(ITypeMap typeMap, IHostTypeContainer container, bool newTypesExist = false)
     {
       Mapping = typeMap;
       hostTypeContainer = container;
@@ -48,7 +44,9 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
-        SearchResults = GetCategoryOrAll(SelectedCategory).Where(ht => ht.HostTypeDisplayName.ToLower().Contains(SearchQuery.ToLower())).ToList();
+        SearchResults = GetCategoryOrAll(SelectedCategory)
+          .Where(ht => ht.HostTypeDisplayName.ToLower().Contains(SearchQuery.ToLower()))
+          .ToList();
         this.RaisePropertyChanged(nameof(SearchResults));
       }
     }

@@ -12,6 +12,7 @@ namespace RevitSharedResources.Interfaces
     ICollection<string> GetAllKeys();
     void Remove(string key);
   }
+
   public interface IRevitObjectCache<T> : IRevitObjectCache
   {
     T GetOrAdd(string key, Func<T> factory, out bool isExistingValue);

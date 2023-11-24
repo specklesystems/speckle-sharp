@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Timers;
 using System.Windows.Threading;
 
@@ -10,13 +10,13 @@ namespace Speckle.ConnectorDynamo
 
     /// <summary>
     /// Adapted from: https://weblog.west-wind.com/posts/2017/jul/02/debouncing-and-throttling-dispatcher-events
-    /// Debounce an event by resetting the event timeout every time the event is 
+    /// Debounce an event by resetting the event timeout every time the event is
     /// fired. The behavior is that the Action passed is fired only after events
     /// stop firing for the given timeout period.
-    /// 
+    ///
     /// Use Debounce when you want events to fire only after events stop firing
     /// after the given interval timeout period.
-    /// 
+    ///
     /// Wrap the logic you would normally use in your event code into
     /// the  Action you pass to this method to debounce the event.
     /// Example: https://gist.github.com/RickStrahl/0519b678f3294e27891f4d4f0608519a

@@ -21,7 +21,8 @@ namespace ConverterRevitTests
   {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public BrepTests(BrepFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture)
+    public BrepTests(BrepFixture fixture, ITestOutputHelper testOutputHelper)
+      : base(fixture)
     {
       _testOutputHelper = testOutputHelper;
     }
@@ -42,21 +43,25 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
     public async Task BrepToNative(string fileName)
     {
-
       // Read and obtain `base` object.
       var contents = System.IO.File.ReadAllText(Globals.GetTestModelOfCategory(fixture.Category, fileName));
       var converter = new ConverterRevit();
       var @base = Operations.Deserialize(contents);
 
       // You read the wrong file, OOOPS!!
-      if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
+      if (!(@base is Brep brep))
+        throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
 
-      await SpeckleUtils.RunInTransaction(() =>
-      {
-        converter.SetContextDocument(fixture.NewDoc);
-        native = converter.BrepToDirectShape(brep, out List<string> notes);
-      }, fixture.NewDoc, converter);
+      await SpeckleUtils.RunInTransaction(
+        () =>
+        {
+          converter.SetContextDocument(fixture.NewDoc);
+          native = converter.BrepToDirectShape(brep, out List<string> notes);
+        },
+        fixture.NewDoc,
+        converter
+      );
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }
@@ -75,7 +80,8 @@ namespace ConverterRevitTests
       var converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
 
-      if (fixture.Selection.Count == 0) return;
+      if (fixture.Selection.Count == 0)
+        return;
       if (!(fixture.Selection[0] is DirectShape ds))
         throw new Exception("Selected object was not a direct shape.");
       var geo = ds.get_Geometry(new Options());
@@ -85,8 +91,5 @@ namespace ConverterRevitTests
       var nativeconverted = converter.BrepToNative(converted, out List<string> notes);
       Assert.NotNull(nativeconverted);
     }
-
   }
-
 }
-

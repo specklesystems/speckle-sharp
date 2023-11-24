@@ -74,7 +74,7 @@ namespace Objects.Converter.Revit
     {
       return ScaleToSpeckle(value, RevitLengthTypeId);
     }
-    
+
     public static double ScaleToSpeckle(double value, DisplayUnitType unitType)
     {
       return UnitUtils.ConvertFromInternalUnits(value, unitType);

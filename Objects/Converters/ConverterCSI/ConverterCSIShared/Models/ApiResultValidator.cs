@@ -9,6 +9,7 @@ namespace ConverterCSIShared.Models
     {
       return success == 0;
     }
+
     public static void ThrowIfUnsuccessful(int success, string message)
     {
       if (IsSuccessful(success))
@@ -18,6 +19,7 @@ namespace ConverterCSIShared.Models
 
       throw new ConversionException(message);
     }
+
     public static void ThrowIfUnsuccessful<T>(int success, string message)
       where T : Exception
     {

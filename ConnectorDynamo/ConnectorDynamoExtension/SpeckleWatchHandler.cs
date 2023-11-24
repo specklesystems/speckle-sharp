@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -21,9 +21,15 @@ namespace Speckle.ConnectorDynamo.Extension
       preferences = prefs;
     }
 
-    private WatchViewModel ProcessThing(Account account, List<string> preferredDictionaryOrdering, ProtoCore.RuntimeCore runtimeCore, string tag, bool showRawData, WatchHandlerCallback callback)
+    private WatchViewModel ProcessThing(
+      Account account,
+      List<string> preferredDictionaryOrdering,
+      ProtoCore.RuntimeCore runtimeCore,
+      string tag,
+      bool showRawData,
+      WatchHandlerCallback callback
+    )
     {
-
       var node = new WatchViewModel(account.userInfo.email, tag, RequestSelectGeometry);
 
       node.Clicked += () =>
@@ -37,12 +43,26 @@ namespace Speckle.ConnectorDynamo.Extension
     }
 
     //If no dispatch target is found, then invoke base watch handler.
-    private WatchViewModel ProcessThing(object obj, List<string> preferredDictionaryOrdering, ProtoCore.RuntimeCore runtimeCore, string tag, bool showRawData, WatchHandlerCallback callback)
+    private WatchViewModel ProcessThing(
+      object obj,
+      List<string> preferredDictionaryOrdering,
+      ProtoCore.RuntimeCore runtimeCore,
+      string tag,
+      bool showRawData,
+      WatchHandlerCallback callback
+    )
     {
       return baseHandler.Process(obj, preferredDictionaryOrdering, runtimeCore, tag, showRawData, callback);
     }
 
-    private WatchViewModel ProcessThing(MirrorData data, List<string> preferredDictionaryOrdering, ProtoCore.RuntimeCore runtimeCore, string tag, bool showRawData, WatchHandlerCallback callback)
+    private WatchViewModel ProcessThing(
+      MirrorData data,
+      List<string> preferredDictionaryOrdering,
+      ProtoCore.RuntimeCore runtimeCore,
+      string tag,
+      bool showRawData,
+      WatchHandlerCallback callback
+    )
     {
       try
       {
@@ -54,13 +74,19 @@ namespace Speckle.ConnectorDynamo.Extension
       }
     }
 
-    public WatchViewModel Process(dynamic value, IEnumerable<string> preferredDictionaryOrdering, ProtoCore.RuntimeCore runtimeCore, string tag, bool showRawData, WatchHandlerCallback callback)
+    public WatchViewModel Process(
+      dynamic value,
+      IEnumerable<string> preferredDictionaryOrdering,
+      ProtoCore.RuntimeCore runtimeCore,
+      string tag,
+      bool showRawData,
+      WatchHandlerCallback callback
+    )
     {
       return Object.ReferenceEquals(value, null)
-          ? new WatchViewModel("null", tag, RequestSelectGeometry)
-          : ProcessThing(value, preferredDictionaryOrdering?.ToList(), runtimeCore, tag, showRawData, callback);
+        ? new WatchViewModel("null", tag, RequestSelectGeometry)
+        : ProcessThing(value, preferredDictionaryOrdering?.ToList(), runtimeCore, tag, showRawData, callback);
     }
-
 
     public event Action<string> RequestSelectGeometry;
   }

@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject FreeformElementToNative(Objects.BuiltElements.Revit.FreeformElement freeformElement)
     {
-      var appObj = new ApplicationObject(freeformElement.id, freeformElement.speckle_type) { applicationId = freeformElement.applicationId };
+      var appObj = new ApplicationObject(freeformElement.id, freeformElement.speckle_type)
+      {
+        applicationId = freeformElement.applicationId
+      };
 
       // 1. Convert the freeformElement geometry to native
       var solids = new List<DB.Solid>();
@@ -28,19 +31,27 @@ namespace Objects.Converter.Revit
             try
             {
               var solid = BrepToNative(geom as Brep, out List<string> brepNotes);
-              if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
+              if (brepNotes.Count > 0)
+                appObj.Update(log: brepNotes);
               solids.Add(solid);
             }
             catch (Exception e)
             {
-              appObj.Update(logItem: $"Could not convert brep to native, falling back to mesh representation: {e.Message}");
+              appObj.Update(
+                logItem: $"Could not convert brep to native, falling back to mesh representation: {e.Message}"
+              );
               var brepMeshSolids = GetSolidMeshes(brep.displayValue);
               solids.AddRange(brepMeshSolids);
             }
             break;
           case Objects.Geometry.Mesh mesh:
-            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort, mesh["renderMaterial"] as RenderMaterial)
-                .Select(m => m as DB.Solid);
+            var meshSolids = MeshToNative(
+                mesh,
+                DB.TessellatedShapeBuilderTarget.Solid,
+                DB.TessellatedShapeBuilderFallback.Abort,
+                mesh["renderMaterial"] as RenderMaterial
+              )
+              .Select(m => m as DB.Solid);
             solids.AddRange(meshSolids);
             break;
         }
@@ -84,7 +95,8 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep, out List<string> brepNotes);
-        if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
+        if (brepNotes.Count > 0)
+          appObj.Update(log: brepNotes);
         solids.Add(solid);
       }
       catch (Exception e)
@@ -109,8 +121,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
       var solids = new List<DB.Solid>();
       var d = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid);
-      var revitMesh =
-          d.Select(m => m as DB.Solid);
+      var revitMesh = d.Select(m => m as DB.Solid);
       solids.AddRange(revitMesh);
 
       foreach (var s in solids)
@@ -124,9 +135,11 @@ namespace Objects.Converter.Revit
 
     private IEnumerable<Solid> GetSolidMeshes(IEnumerable<Mesh> meshes)
     {
-      var allMeshes = meshes
-        .SelectMany(
-        m => MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort) ?? new List<GeometryObject>());
+      var allMeshes = meshes.SelectMany(
+        m =>
+          MeshToNative(m, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+          ?? new List<GeometryObject>()
+      );
       var notNull = allMeshes.Where(m => m != null);
       var solids = notNull.Select(m => m as DB.Solid);
       return solids;
@@ -139,7 +152,8 @@ namespace Objects.Converter.Revit
       try
       {
         var solid = BrepToNative(brep, out List<string> brepNotes);
-        if (brepNotes.Count > 0) appObj.Update(log: brepNotes);
+        if (brepNotes.Count > 0)
+          appObj.Update(log: brepNotes);
         solids.Add(solid);
       }
       catch (Exception e)
@@ -148,7 +162,8 @@ namespace Objects.Converter.Revit
       }
 
       var tempPath = CreateFreeformElementFamily(solids, brep.id, out List<string> freeformNotes);
-      if (freeformNotes.Count > 0) appObj.Update(log: freeformNotes);
+      if (freeformNotes.Count > 0)
+        appObj.Update(log: freeformNotes);
       if (tempPath == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
@@ -167,7 +182,12 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private string CreateFreeformElementFamily(List<DB.Solid> solids, string name, out List<string> notes, Objects.BuiltElements.Revit.FreeformElement freeformElement = null)
+    private string CreateFreeformElementFamily(
+      List<DB.Solid> solids,
+      string name,
+      out List<string> notes,
+      Objects.BuiltElements.Revit.FreeformElement freeformElement = null
+    )
     {
       notes = new List<string>();
       // FreeformElements can only be created in a family context.
@@ -253,6 +273,5 @@ namespace Objects.Converter.Revit
       symbol.Activate();
       return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
     }
-
   }
 }

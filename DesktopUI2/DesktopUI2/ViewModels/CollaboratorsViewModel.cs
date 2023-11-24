@@ -116,14 +116,13 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SearchUsers()
   {
-
     ShowProgress = true;
     try
     {
       //exclude existing ones
       var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
-      x => !AddedUsers.Any(u => u.Id == x.id)
-    );
+        x => !AddedUsers.Any(u => u.Id == x.id)
+      );
       //exclude myself
       users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
 
@@ -133,7 +132,6 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     {
       //ignore
     }
-
 
     ShowProgress = false;
     DropDownOpen = true;
@@ -149,13 +147,13 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
           return true;
         if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
         )
           return true;
         if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
         )
           return true;
       }
@@ -226,11 +224,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Invite Email"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite Email" } }
             );
           }
           catch (Exception ex)
@@ -239,8 +233,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
           }
         //add new collaborators
         else if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
         )
           try
           {
@@ -258,11 +252,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Invite User"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite User" } }
             );
           }
           catch (Exception ex)
@@ -271,8 +261,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
           }
         //update permissions, only if changed
         else if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
         )
           try
           {
@@ -289,11 +279,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Update Permissions"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Update Permissions" } }
             );
           }
           catch (Exception ex)
@@ -309,21 +295,13 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
           {
             await _stream.StreamState.Client
               .StreamRevokePermission(
-                new StreamRevokePermissionInput
-                {
-                  userId = user.id,
-                  streamId = _stream.StreamState.StreamId
-                }
+                new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Remove User"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Remove User" } }
             );
           }
           catch (Exception ex)
@@ -342,11 +320,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Cancel Invite"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Cancel Invite" } }
             );
           }
           catch (Exception ex)
@@ -378,7 +352,6 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       if (IsDialog)
         MainViewModel.RouterInstance.NavigateBack.Execute();
     }
-
     catch (Exception ex)
     {
       SpeckleLog.Logger.Error(

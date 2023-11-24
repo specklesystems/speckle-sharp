@@ -189,7 +189,11 @@ public static class Analytics
           { "token", MixpanelToken },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
-          { "core_version", FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion ?? executingAssembly.GetName().Version.ToString()},
+          {
+            "core_version",
+            FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion
+              ?? executingAssembly.GetName().Version.ToString()
+          },
           { "$os", GetOs() }
         };
 

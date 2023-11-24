@@ -74,6 +74,7 @@ namespace Objects.Converter.CSI
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
     private ResultsConverter? resultsConverter;
+
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;

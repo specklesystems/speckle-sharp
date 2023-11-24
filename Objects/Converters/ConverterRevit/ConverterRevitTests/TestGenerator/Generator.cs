@@ -13,6 +13,7 @@ namespace TestGenerator
   {
     public const string ToNative = "ToNative";
     public const string Updated = "Updated";
+
     public void Execute(GeneratorExecutionContext context)
     {
       //Debugger.Launch();
@@ -47,15 +48,20 @@ namespace TestGenerator
         foreach (var file in Directory.GetFiles(subdir))
         {
           var strippedFile = file.Split('\\').Last();
-          if (!strippedFile.EndsWith(".rvt")) continue;
+          if (!strippedFile.EndsWith(".rvt"))
+            continue;
           strippedFile = strippedFile.Replace(".rvt", "");
 
           // illegal character in revit file name
-          if (strippedFile.Contains('.')) continue;
+          if (strippedFile.Contains('.'))
+            continue;
 
-          if (strippedFile.EndsWith(ToNative)) toNativeFiles.Add(strippedFile);
-          else if (strippedFile.EndsWith(Updated)) updatedFiles.Add(strippedFile);
-          else baseFiles.Add(strippedFile);
+          if (strippedFile.EndsWith(ToNative))
+            toNativeFiles.Add(strippedFile);
+          else if (strippedFile.EndsWith(Updated))
+            updatedFiles.Add(strippedFile);
+          else
+            baseFiles.Add(strippedFile);
         }
 
         ValidateFilesInFolder(category, baseFiles, toNativeFiles, updatedFiles);
@@ -66,7 +72,14 @@ namespace TestGenerator
       context.AddSource($"GeneratedTests.g.cs", sb.ToString());
     }
 
-    private static void AddTestToStringBuilder(StringBuilder sb, string category, CategoryProperties categoryProps, List<string> baseFiles, List<string> toNativeFiles, List<string> updatedFiles)
+    private static void AddTestToStringBuilder(
+      StringBuilder sb,
+      string category,
+      CategoryProperties categoryProps,
+      List<string> baseFiles,
+      List<string> toNativeFiles,
+      List<string> updatedFiles
+    )
     {
       foreach (var file in baseFiles)
       {
@@ -79,47 +92,64 @@ namespace TestGenerator
 
         if (runToNativeTest)
         {
-          sb.Append(TestTemplate.CreateToNativeTest(
-            category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
-          sb.Append(TestTemplate.CreateSelectionTest(category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
+          sb.Append(
+            TestTemplate.CreateToNativeTest(
+              category,
+              file,
+              categoryProps.RevitType,
+              categoryProps.SyncAssertFunc ?? "null",
+              categoryProps.AsyncAssertFunc ?? "null"
+            )
+          );
+          sb.Append(
+            TestTemplate.CreateSelectionTest(
+              category,
+              file,
+              categoryProps.RevitType,
+              categoryProps.SyncAssertFunc ?? "null",
+              categoryProps.AsyncAssertFunc ?? "null"
+            )
+          );
         }
         if (runUpdateTest)
         {
-          sb.Append(TestTemplate.CreateUpdateTest(category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
+          sb.Append(
+            TestTemplate.CreateUpdateTest(
+              category,
+              file,
+              categoryProps.RevitType,
+              categoryProps.SyncAssertFunc ?? "null",
+              categoryProps.AsyncAssertFunc ?? "null"
+            )
+          );
         }
         sb.Append(TestTemplate.EndClass);
       }
     }
 
-    private static void ValidateFilesInFolder(string category, List<string> baseFiles, List<string> toNativeFiles, List<string> updatedFiles)
+    private static void ValidateFilesInFolder(
+      string category,
+      List<string> baseFiles,
+      List<string> toNativeFiles,
+      List<string> updatedFiles
+    )
     {
       foreach (var file in toNativeFiles)
       {
         if (!baseFiles.Contains(file.Substring(0, file.Length - ToNative.Length)))
         {
-          throw new FileNotFoundException($"There is a file named {file} in folder {category}, but there is no corrosponding base file (without the {ToNative} extension).");
+          throw new FileNotFoundException(
+            $"There is a file named {file} in folder {category}, but there is no corrosponding base file (without the {ToNative} extension)."
+          );
         }
       }
       foreach (var file in updatedFiles)
       {
         if (!baseFiles.Contains(file.Substring(0, file.Length - Updated.Length)))
         {
-          throw new FileNotFoundException($"There is a file named {file} in folder {category}, but there is no corrosponding base file (without the {Updated} extension).");
+          throw new FileNotFoundException(
+            $"There is a file named {file} in folder {category}, but there is no corrosponding base file (without the {Updated} extension)."
+          );
         }
       }
     }

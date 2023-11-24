@@ -7,6 +7,7 @@ namespace Objects.Structural.Results
   {
     public string? lengthUnits { get; set; }
     public string? forceUnits { get; set; }
+
     [DetachProperty]
     public List<Result> resultsByLoadCombination { get; set; }
   }

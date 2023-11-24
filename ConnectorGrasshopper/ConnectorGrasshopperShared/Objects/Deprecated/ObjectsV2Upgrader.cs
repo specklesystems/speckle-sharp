@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ConnectorGrasshopper.UpgradeUtilities;
 using Grasshopper.Kernel;
 

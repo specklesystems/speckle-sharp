@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -36,8 +36,8 @@ namespace Objects.Converter.TeklaStructures
       }
       ContourPlate.Insert();
       //Model.CommitChanges();
-
     }
+
     public TeklaContourPlate ContourPlateToSpeckle(Tekla.Structures.Model.ContourPlate plate)
     {
       var specklePlate = new TeklaContourPlate();
@@ -70,20 +70,21 @@ namespace Objects.Converter.TeklaStructures
       GetAllUserProperties(specklePlate, plate);
 
       var solid = plate.GetSolid();
-      specklePlate.displayValue = new List<Mesh>{ GetMeshFromSolid(solid)};
+      specklePlate.displayValue = new List<Mesh> { GetMeshFromSolid(solid) };
       var rebars = plate.GetReinforcements();
       if (rebars != null)
       {
         foreach (var rebar in rebars)
         {
-          if (rebar is RebarGroup) { specklePlate.rebars = RebarGroupToSpeckle((RebarGroup)rebar); }
-
+          if (rebar is RebarGroup)
+          {
+            specklePlate.rebars = RebarGroupToSpeckle((RebarGroup)rebar);
+          }
         }
       }
       return specklePlate;
-
-
     }
+
     /// <summary>
     /// Create a contour plate without a display mesh for boolean parts
     /// </summary>
@@ -117,6 +118,7 @@ namespace Objects.Converter.TeklaStructures
       specklePlate["units"] = units;
       return specklePlate;
     }
+
     public void SetPartProperties(Part part, TeklaContourPlate teklaPlate)
     {
       part.Material.MaterialString = teklaPlate.material?.name;
@@ -127,5 +129,4 @@ namespace Objects.Converter.TeklaStructures
       part.Position = SetPositioning(teklaPlate.position);
     }
   }
-
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
@@ -125,7 +125,6 @@ namespace Speckle.ConnectorRevit.Storage
       return builder.Finish();
     }
   }
-
 
   /// <summary>
   /// Unique schema for... something ¯\_(ツ)_/¯

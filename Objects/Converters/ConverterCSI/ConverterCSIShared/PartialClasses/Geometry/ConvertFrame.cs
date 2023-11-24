@@ -301,9 +301,11 @@ namespace Objects.Converter.CSI
         speckleStructFrame.Modifiers = modifiers;
       }
 
-      speckleStructFrame.AnalysisResults = resultsConverter?
-        .Element1DAnalyticalResultConverter?
-        .AnalyticalResultsToSpeckle(speckleStructFrame.name, speckleStructFrame.type);
+      speckleStructFrame.AnalysisResults =
+        resultsConverter?.Element1DAnalyticalResultConverter?.AnalyticalResultsToSpeckle(
+          speckleStructFrame.name,
+          speckleStructFrame.type
+        );
 
       var GUID = "";
       Model.FrameObj.GetGUID(name, ref GUID);

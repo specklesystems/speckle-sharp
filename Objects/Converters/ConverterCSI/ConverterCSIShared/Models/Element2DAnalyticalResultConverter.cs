@@ -22,7 +22,8 @@ namespace ConverterCSIShared.Models
       IEnumerable<LoadCombination> loadCombinations,
       IEnumerable<LoadCase> loadCases,
       bool sendForces,
-      bool sendStresses)
+      bool sendStresses
+    )
     {
       this.sapModel = sapModel;
       this.sapModel = sapModel;
@@ -44,10 +45,7 @@ namespace ConverterCSIShared.Models
 
     public AnalyticalResults AnalyticalResultsToSpeckle(string areaName)
     {
-      return new()
-      {
-        resultsByLoadCombination = GetAnalysisResultsForElement2D(areaName).Cast<Result>().ToList()
-      };
+      return new() { resultsByLoadCombination = GetAnalysisResultsForElement2D(areaName).Cast<Result>().ToList() };
     }
 
     private ICollection<ResultSet2D> GetAnalysisResultsForElement2D(string areaName)
@@ -175,7 +173,7 @@ namespace ConverterCSIShared.Models
       for (int i = 0; i < numberOfForceResults; i++)
       {
         Result2D speckleResult2D = new();
-        
+
         if (ApiResultValidator.IsSuccessful(forceSuccess))
         {
           speckleResult2D.forceXX = (float)f11[i];
@@ -214,10 +212,7 @@ namespace ConverterCSIShared.Models
       if (!dict.TryGetValue(loadCaseName, out ResultSet2D comboResults))
       {
         Base loadCaseOrCombination = loadCombinationsAndCases[loadCaseName];
-        comboResults = new ResultSet2D(new())
-        {
-          resultCase = loadCaseOrCombination
-        };
+        comboResults = new ResultSet2D(new()) { resultCase = loadCaseOrCombination };
         dict[loadCaseName] = comboResults;
       }
       return comboResults;

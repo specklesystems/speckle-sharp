@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,9 +19,11 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="account">Optional Speckle account to get the Stream with</param>
     /// <returns name="stream">A Stream</returns>
     [NodeCategory("Create")]
-    public static object Get([ArbitraryDimensionArrayImport] object stream, [DefaultArgument("null")] Core.Credentials.Account account)
+    public static object Get(
+      [ArbitraryDimensionArrayImport] object stream,
+      [DefaultArgument("null")] Core.Credentials.Account account
+    )
     {
-
       var streams = Utils.InputToStream(stream);
       if (!streams.Any())
       {
@@ -34,7 +36,6 @@ namespace Speckle.ConnectorDynamo.Functions
 
       try
       {
-
         foreach (var s in streams)
         {
           //lets ppl override the account for the specified stream
@@ -50,15 +51,17 @@ namespace Speckle.ConnectorDynamo.Functions
           Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
           s.UserId = accountToUse.userInfo.id;
 
-          Analytics.TrackEvent(accountToUse, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Get" } });
+          Analytics.TrackEvent(
+            accountToUse,
+            Analytics.Events.NodeRun,
+            new Dictionary<string, object>() { { "name", "Stream Get" } }
+          );
         }
       }
       catch (Exception ex)
       {
         Utils.HandleApiExeption(ex);
       }
-
-
 
       if (streams.Count() == 1)
         return streams[0];
@@ -74,7 +77,12 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="description">Description of the Stream</param>
     /// <param name="isPublic">True if the stream is to be publicly available</param>
     /// <returns name="stream">Updated Stream object</returns>
-    public static StreamWrapper Update([DefaultArgument("null")] object stream, [DefaultArgument("null")] string name, [DefaultArgument("null")] string description, [DefaultArgument("null")] bool? isPublic)
+    public static StreamWrapper Update(
+      [DefaultArgument("null")] object stream,
+      [DefaultArgument("null")] string name,
+      [DefaultArgument("null")] string description,
+      [DefaultArgument("null")] bool? isPublic
+    )
     {
       if (stream == null)
       {
@@ -114,7 +122,11 @@ namespace Speckle.ConnectorDynamo.Functions
       if (isPublic != null)
         input.isPublic = (bool)isPublic;
 
-      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Update" } });
+      Analytics.TrackEvent(
+        account,
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Stream Update" } }
+      );
 
       try
       {
@@ -132,25 +144,15 @@ namespace Speckle.ConnectorDynamo.Functions
     }
 
     /// <summary>
-    /// Extracts the details of a given stream, use is limited to max 20 streams 
+    /// Extracts the details of a given stream, use is limited to max 20 streams
     /// </summary>
     /// <param name="stream">Stream object</param>
     [NodeCategory("Query")]
-    [MultiReturn(new[]
-    {
-      "id",
-      "name",
-      "description",
-      "createdAt",
-      "updatedAt",
-      "isPublic",
-      "collaborators",
-      "branches"
-    })]
+    [MultiReturn(
+      new[] { "id", "name", "description", "createdAt", "updatedAt", "isPublic", "collaborators", "branches" }
+    )]
     public static object Details([ArbitraryDimensionArrayImport] object stream)
     {
-
-
       var streams = Utils.InputToStream(stream);
 
       if (!streams.Any())
@@ -180,26 +182,31 @@ namespace Speckle.ConnectorDynamo.Functions
         {
           Core.Api.Stream res = Task.Run(async () => await client.StreamGet(streamWrapper.StreamId)).Result;
 
-          details.Add(new Dictionary<string, object>
-          { { "id", res.id },
-            { "name", res.name },
-            { "description", res.description },
-            { "createdAt", res.createdAt },
-            { "updatedAt", res.updatedAt },
-            { "isPublic", res.isPublic },
-            { "collaborators", res.collaborators },
-            { "branches", res.branches?.items }
-          });
+          details.Add(
+            new Dictionary<string, object>
+            {
+              { "id", res.id },
+              { "name", res.name },
+              { "description", res.description },
+              { "createdAt", res.createdAt },
+              { "updatedAt", res.updatedAt },
+              { "isPublic", res.isPublic },
+              { "collaborators", res.collaborators },
+              { "branches", res.branches?.items }
+            }
+          );
         }
         catch (Exception ex)
         {
           Utils.HandleApiExeption(ex);
           return details;
         }
-        Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream Details" } });
+        Analytics.TrackEvent(
+          account,
+          Analytics.Events.NodeRun,
+          new Dictionary<string, object>() { { "name", "Stream Details" } }
+        );
       }
-
-
 
       if (details.Count() == 1)
         return details[0];
@@ -214,15 +221,19 @@ namespace Speckle.ConnectorDynamo.Functions
     /// <param name="limit">Max number of streams to get</param>
     /// <returns name="streams">Your Streams</returns>
     [NodeCategory("Query")]
-    public static List<StreamWrapper> List([DefaultArgument("null")] Core.Credentials.Account account = null, [DefaultArgument("10")] int limit = 10)
+    public static List<StreamWrapper> List(
+      [DefaultArgument("null")] Core.Credentials.Account account = null,
+      [DefaultArgument("10")] int limit = 10
+    )
     {
-
       if (account == null)
         account = AccountManager.GetDefaultAccount();
 
       if (account == null)
       {
-        Utils.HandleApiExeption(new Exception("No accounts found. Please use the Speckle Manager to manage your accounts on this computer."));
+        Utils.HandleApiExeption(
+          new Exception("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.")
+        );
       }
 
       var client = new Client(account);
@@ -231,17 +242,23 @@ namespace Speckle.ConnectorDynamo.Functions
       try
       {
         var res = Task.Run(async () => await client.StreamsGet(limit)).Result;
-        res.ForEach(x => { streamWrappers.Add(new StreamWrapper(x.id, account.userInfo.id, account.serverInfo.url)); });
+        res.ForEach(x =>
+        {
+          streamWrappers.Add(new StreamWrapper(x.id, account.userInfo.id, account.serverInfo.url));
+        });
       }
       catch (Exception ex)
       {
         Utils.HandleApiExeption(ex);
       }
 
-      Analytics.TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream List" } });
+      Analytics.TrackEvent(
+        account,
+        Analytics.Events.NodeRun,
+        new Dictionary<string, object>() { { "name", "Stream List" } }
+      );
 
       return streamWrappers;
-
     }
   }
 }

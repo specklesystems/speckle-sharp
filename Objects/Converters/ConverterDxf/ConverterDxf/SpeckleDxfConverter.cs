@@ -1,4 +1,4 @@
-﻿using Objects.Geometry;
+using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -25,9 +25,10 @@ namespace Objects.Converters.DxfConverter
 
     // TODO: Convert to Speckle is currently not supported.
     public List<Base> ConvertToSpeckle(List<object> objects) => throw new NotImplementedException();
-    public bool CanConvertToSpeckle(object @object) => throw new NotImplementedException();
-    public Base ConvertToSpeckle(object @object) => throw new NotImplementedException();
 
+    public bool CanConvertToSpeckle(object @object) => throw new NotImplementedException();
+
+    public Base ConvertToSpeckle(object @object) => throw new NotImplementedException();
 
     public bool CanConvertToNative(Base @base)
     {
@@ -43,6 +44,7 @@ namespace Objects.Converters.DxfConverter
           return false;
       }
     }
+
     public object ConvertToNative(Base @base)
     {
       switch (@base)

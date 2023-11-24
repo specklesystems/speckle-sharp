@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,8 +13,12 @@ namespace ConverterRevitShared.Revit
       return true;
     }
 
-
-    public bool OnSharedFamilyFound(Family sharedFamily, bool familyInUse, out FamilySource source, out bool overwriteParameterValues)
+    public bool OnSharedFamilyFound(
+      Family sharedFamily,
+      bool familyInUse,
+      out FamilySource source,
+      out bool overwriteParameterValues
+    )
     {
       source = FamilySource.Family;
       overwriteParameterValues = true;

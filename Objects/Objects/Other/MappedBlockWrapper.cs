@@ -1,4 +1,4 @@
-﻿using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 
 namespace Objects.Other;

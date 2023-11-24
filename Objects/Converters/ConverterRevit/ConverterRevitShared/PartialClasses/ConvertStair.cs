@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -28,11 +27,24 @@ namespace Objects.Converter.Revit
       speckleStair.height = ScaleToSpeckle(revitStair.Height);
       speckleStair.numberOfStories = revitStair.NumberOfStories;
 
-      speckleStair.runs = revitStair.GetStairsRuns().Select(x => StairRunToSpeckle(revitStair.Document.GetElement(x) as StairsRun)).ToList();
-      speckleStair.landings = revitStair.GetStairsLandings().Select(x => StairLandingToSpeckle(revitStair.Document.GetElement(x) as StairsLanding)).ToList();
-      speckleStair.supports = revitStair.GetStairsSupports().Select(x => StairSupportToSpeckle(revitStair.Document.GetElement(x))).ToList();
+      speckleStair.runs = revitStair
+        .GetStairsRuns()
+        .Select(x => StairRunToSpeckle(revitStair.Document.GetElement(x) as StairsRun))
+        .ToList();
+      speckleStair.landings = revitStair
+        .GetStairsLandings()
+        .Select(x => StairLandingToSpeckle(revitStair.Document.GetElement(x) as StairsLanding))
+        .ToList();
+      speckleStair.supports = revitStair
+        .GetStairsSupports()
+        .Select(x => StairSupportToSpeckle(revitStair.Document.GetElement(x)))
+        .ToList();
 
-      GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
+      GetAllRevitParamsAndIds(
+        speckleStair,
+        revitStair,
+        new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" }
+      );
 
       speckleStair.displayValue = GetElementDisplayValue(revitStair);
 

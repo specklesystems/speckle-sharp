@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
@@ -20,10 +20,10 @@ namespace Objects.Converter.TeklaStructures
   {
     public TeklaRebar RebarGroupToSpeckle(RebarGroup rebarGroup)
     {
-
       var Rebar = new TeklaRebar();
       Rebar.displayValue = new List<Mesh> { GetMeshFromSolid(rebarGroup.GetSolid()) };
-      foreach (Polygon polygon in rebarGroup.Polygons){
+      foreach (Polygon polygon in rebarGroup.Polygons)
+      {
         var polyline = ToSpecklePolyline(polygon);
         Rebar.curves.Add(polyline);
       }
@@ -38,7 +38,8 @@ namespace Objects.Converter.TeklaStructures
       Rebar.startHook.angle = rebarGroup.StartHook.Angle;
       Rebar.startHook.length = rebarGroup.StartHook.Length;
       Rebar.startHook.radius = rebarGroup.StartHook.Radius;
-      switch (rebarGroup.StartHook.Shape){
+      switch (rebarGroup.StartHook.Shape)
+      {
         case RebarHookData.RebarHookShapeEnum.NO_HOOK:
           Rebar.startHook.shape = shape.NO_HOOK;
           break;
@@ -79,8 +80,5 @@ namespace Objects.Converter.TeklaStructures
       }
       return Rebar;
     }
-
   }
-
-
 }

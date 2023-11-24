@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.DesignScript.Runtime;
 
 namespace Speckle.ConnectorDynamo

@@ -1,4 +1,4 @@
-﻿using DesktopUI2;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;

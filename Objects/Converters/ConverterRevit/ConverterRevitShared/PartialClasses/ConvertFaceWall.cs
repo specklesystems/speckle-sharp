@@ -20,7 +20,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject FaceWallToNative(RevitFaceWall speckleWall)
     {
       FaceWall revitWall = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
-      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type)
+      {
+        applicationId = speckleWall.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitWall, appObj))
@@ -38,7 +41,10 @@ namespace Objects.Converter.Revit
       var templatePath = GetTemplatePath("Mass");
       if (!File.Exists(templatePath))
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find file {Path.GetFileName(templatePath)}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Could not find file {Path.GetFileName(templatePath)}"
+        );
         return appObj;
       }
 
@@ -60,7 +66,8 @@ namespace Objects.Converter.Revit
       var level = new FilteredElementCollector(Doc)
         .WhereElementIsNotElementType()
         .OfCategory(BuiltInCategory.OST_Levels) // this throws a null error if user tries to recieve stream in a file with no levels
-        .ToElements().FirstOrDefault();
+        .ToElements()
+        .FirstOrDefault();
 
       if (level == null) // create a new level at 0 if no levels could be retrieved from doc
         level = Level.Create(Doc, 0);
@@ -79,7 +86,10 @@ namespace Objects.Converter.Revit
       }
       if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for facewall");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Wall type {wallType.Name} not valid for facewall"
+        );
         return appObj;
       }
 
@@ -88,8 +98,7 @@ namespace Objects.Converter.Revit
       {
         revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceRef);
       }
-      catch (Exception e)
-      { }
+      catch (Exception e) { }
 
       if (revitWall == null)
       {
@@ -104,9 +113,13 @@ namespace Objects.Converter.Revit
       //appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
+
     public ApplicationObject FaceWallToNativeV2(RevitFaceWall speckleWall)
     {
-      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type)
+      {
+        applicationId = speckleWall.applicationId
+      };
       try
       {
         var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
@@ -132,10 +145,13 @@ namespace Objects.Converter.Revit
           appObj.Update(status: ApplicationObject.State.Failed);
           return appObj;
         }
-        
+
         if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
         {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for FaceWall");
+          appObj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: $"Wall type {wallType.Name} not valid for FaceWall"
+          );
           return appObj;
         }
 
@@ -143,7 +159,7 @@ namespace Objects.Converter.Revit
         var solid = BrepToNative(speckleWall.brep, out notes);
         var faceReference = solid.Faces.get_Item(0);
         var faceref = faceReference.Reference;
-        var freeform = CreateFreeformElementFamily(new List<Solid>{solid}, speckleWall.id, "Mass");
+        var freeform = CreateFreeformElementFamily(new List<Solid> { solid }, speckleWall.id, "Mass");
         Doc.Regenerate();
         faceref = GetFaceRef(freeform);
         var revitWall = FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceref);
@@ -154,9 +170,13 @@ namespace Objects.Converter.Revit
         return appObj;
       }
       catch (Exception e)
-      {  
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Revit wall creation failed: {e.Message}", log: new List<string>{e.ToFormattedString()});
-        return appObj; 
+      {
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Revit wall creation failed: {e.Message}",
+          log: new List<string> { e.ToFormattedString() }
+        );
+        return appObj;
       }
     }
 
@@ -210,10 +230,7 @@ namespace Objects.Converter.Revit
 
           var loft = famDoc.FamilyCreate.NewLoftForm(true, curveArray);
         }
-        catch (Exception e)
-        {
-
-        }
+        catch (Exception e) { }
 
         t.Commit();
       }

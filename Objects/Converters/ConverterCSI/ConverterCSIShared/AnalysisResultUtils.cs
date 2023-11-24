@@ -20,7 +20,8 @@ namespace ConverterCSIShared
       ref double[] z,
       ref double[] xx,
       ref double[] yy,
-      ref double[] zz);
+      ref double[] zz
+    );
 
     public static bool TryGetAPIResult(
       ApiResultMethod apiResultMethod,
@@ -37,7 +38,8 @@ namespace ConverterCSIShared
       out double[] M1,
       out double[] M2,
       out double[] M3,
-      bool shouldGetResults = true)
+      bool shouldGetResults = true
+    )
     {
       numberResults = 0;
       obj = null;
@@ -71,7 +73,8 @@ namespace ConverterCSIShared
         ref F3,
         ref M1,
         ref M2,
-        ref M3);
+        ref M3
+      );
       return ApiResultValidator.IsSuccessful(success);
     }
   }
