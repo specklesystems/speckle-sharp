@@ -14,11 +14,14 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.PlugIns;
 using Rhino.Runtime;
-using Rhino.UI;
 using Serilog.Context;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
+
+#if !MAC
+using Rhino.UI;
+#endif
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 [assembly: NeutralResourcesLanguage("en")]
@@ -293,8 +296,10 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
       return;
     }
 #else
-      if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
-        return;
+    if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
+    {
+      return;
+    }
 #endif
 
     try
