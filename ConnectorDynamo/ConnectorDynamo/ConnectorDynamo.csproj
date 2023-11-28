@@ -160,7 +160,7 @@
         </Page>
     </ItemGroup>
 
-    <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <Target Name="AfterBuildMigrated" AfterTargets="Build">
 
       <!-- Icons stuff -->
       <!-- Get System.Drawing.dll -->

@@ -38,7 +38,7 @@
         <None Include="Resources\logo32.png" />
     </ItemGroup>
 
-    <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <Target Name="AfterBuildMigrated" AfterTargets="Build">
       <!-- Icons stuff -->
       <!-- Get System.Drawing.dll -->
       <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
