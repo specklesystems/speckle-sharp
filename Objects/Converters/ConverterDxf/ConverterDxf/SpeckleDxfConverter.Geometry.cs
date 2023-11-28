@@ -16,20 +16,33 @@ namespace Objects.Converters.DxfConverter;
 
 public partial class SpeckleDxfConverter
 {
-  public Dxf.Vector3 VectorToNative(Point pt) => VectorToNative(new Vector(pt) { units = pt.units });
+  public Dxf.Vector3 VectorToNative(Point pt)
+  {
+    return VectorToNative(new Vector(pt) { units = pt.units });
+  }
 
-  public Dxf.Vector3 VectorToNative(Vector pt) =>
-    new(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+  public Dxf.Vector3 VectorToNative(Vector pt)
+  {
+    return new(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+  }
 
-  public Dxf.Entities.Point PointToNative(Point pt) => new(VectorToNative(pt));
+  public Dxf.Entities.Point PointToNative(Point pt)
+  {
+    return new(VectorToNative(pt));
+  }
 
-  public Dxf.Entities.Line LineToNative(Line line) => new(VectorToNative(line.start), VectorToNative(line.end));
+  public Dxf.Entities.Line LineToNative(Line line)
+  {
+    return new(VectorToNative(line.start), VectorToNative(line.end));
+  }
 
-  public Dxfe.Mesh MeshToNative(Mesh mesh) =>
-    new(mesh.GetPoints().Select(VectorToNative), mesh.GetFaceIndices())
+  public Dxfe.Mesh MeshToNative(Mesh mesh)
+  {
+    return new(mesh.GetPoints().Select(VectorToNative), mesh.GetFaceIndices())
     {
       Color = MaterialToNativeColor(mesh["renderMaterial"] as RenderMaterial)
     };
+  }
 
   public IEnumerable<Dxfe.EntityObject> MeshToNativePretty(Mesh mesh, RenderMaterial renderMaterial = null)
   {
@@ -41,8 +54,9 @@ public partial class SpeckleDxfConverter
   private IEnumerable<Dxfe.Line> MeshEdgesToNative(
     MeshTopologyResult topology,
     string edgeLayerName = "Mesh boundaries"
-  ) =>
-    topology.EdgeFaceConnection
+  )
+  {
+    return topology.EdgeFaceConnection
       .Where((kv) => kv.Value.Count == 1)
       .Select(kv =>
       {
@@ -51,6 +65,7 @@ public partial class SpeckleDxfConverter
         line.Layer = new Dxf.Tables.Layer(edgeLayerName);
         return line;
       });
+  }
 
   private IEnumerable<Dxfe.Face3D> MeshFacesToNative(
     MeshTopologyResult topology,

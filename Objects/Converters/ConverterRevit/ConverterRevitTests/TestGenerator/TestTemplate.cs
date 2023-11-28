@@ -20,8 +20,9 @@ namespace ConverterRevitTests
 }
 ";
 
-  public static string CreateFixture(string category, string fileName) =>
-    $@"
+  public static string CreateFixture(string category, string fileName)
+  {
+    return $@"
   public class {category}{fileName}Fixture : SpeckleConversionFixture
   {{
     public override string Category => ""{category}"";
@@ -32,18 +33,22 @@ namespace ConverterRevitTests
     }}
   }}
 ";
+  }
 
-  public static string InitTest(string category, string fileName) =>
-    $@"
+  public static string InitTest(string category, string fileName)
+  {
+    return $@"
   public class {category}{fileName}Tests : SpeckleConversionTest, IClassFixture<{category}{fileName}Fixture>
   {{
     public {category}{fileName}Tests({category}{fileName}Fixture fixture) : base(fixture)
     {{
     }}
 ";
+  }
 
-  public static string CreateToSpeckleTest(string category, string fileName) =>
-    $@"
+  public static string CreateToSpeckleTest(string category, string fileName)
+  {
+    return $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}ToSpeckle"")]
     public async Task {category}{fileName}ToSpeckle()
@@ -51,6 +56,7 @@ namespace ConverterRevitTests
       await NativeToSpeckle();
     }}
 ";
+  }
 
   public static string CreateToNativeTest(
     string category,
@@ -58,8 +64,9 @@ namespace ConverterRevitTests
     string revitType,
     string syncAssertFunc,
     string asyncAssertFunc
-  ) =>
-    $@"
+  )
+  {
+    return $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}ToNative"")]
     public async Task {category}{fileName}ToNative()
@@ -67,6 +74,7 @@ namespace ConverterRevitTests
       await SpeckleToNative<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
     }}
 ";
+  }
 
   public static string CreateUpdateTest(
     string category,
@@ -74,8 +82,9 @@ namespace ConverterRevitTests
     string revitType,
     string syncAssertFunc,
     string asyncAssertFunc
-  ) =>
-    $@"
+  )
+  {
+    return $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}ToNativeUpdates"")]
     public async Task {category}{fileName}ToNativeUpdates()
@@ -83,6 +92,7 @@ namespace ConverterRevitTests
       await SpeckleToNativeUpdates<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
     }}
 ";
+  }
 
   public static string CreateSelectionTest(
     string category,
@@ -90,8 +100,9 @@ namespace ConverterRevitTests
     string revitType,
     string syncAssertFunc,
     string asyncAssertFunc
-  ) =>
-    $@"
+  )
+  {
+    return $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}Selection"")]
     public async Task {category}{fileName}SelectionToNative()
@@ -99,6 +110,7 @@ namespace ConverterRevitTests
       await SelectionToNative<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
     }}
 ";
+  }
 
   public const string EndClass =
     @"

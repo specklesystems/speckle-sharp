@@ -54,17 +54,35 @@ public partial class ConnectorBindingsRevit : ConnectorBindings
   public static string HostAppNameVersion => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
   public static string HostAppName => HostApplications.Revit.Slug;
 
-  public override string GetHostAppName() => HostAppName;
+  public override string GetHostAppName()
+  {
+    return HostAppName;
+  }
 
-  public override string GetHostAppNameVersion() => HostAppNameVersion;
+  public override string GetHostAppNameVersion()
+  {
+    return HostAppNameVersion;
+  }
 
-  public override string GetDocumentId() => CurrentDoc?.Document?.GetHashCode().ToString();
+  public override string GetDocumentId()
+  {
+    return CurrentDoc?.Document?.GetHashCode().ToString();
+  }
 
-  public override string GetDocumentLocation() => CurrentDoc.Document.PathName;
+  public override string GetDocumentLocation()
+  {
+    return CurrentDoc.Document.PathName;
+  }
 
-  public override string GetActiveViewName() => CurrentDoc.Document.ActiveView.Title;
+  public override string GetActiveViewName()
+  {
+    return CurrentDoc.Document.ActiveView.Title;
+  }
 
-  public override string GetFileName() => CurrentDoc.Document.Title;
+  public override string GetFileName()
+  {
+    return CurrentDoc.Document.Title;
+  }
 
   public override List<StreamState> GetStreamsInFile()
   {

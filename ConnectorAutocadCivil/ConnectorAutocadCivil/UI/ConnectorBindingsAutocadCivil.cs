@@ -72,16 +72,23 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   }
   #endregion
 
-  public override string GetHostAppNameVersion() =>
-    Utils.VersionedAppName
+  public override string GetHostAppNameVersion()
+  {
+    return Utils.VersionedAppName
       .Replace("AutoCAD", "AutoCAD ")
       .Replace("Civil3D", "Civil 3D ")
       .Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
+  }
 
-  public override string GetHostAppName() => Utils.Slug;
+  public override string GetHostAppName()
+  {
+    return Utils.Slug;
+  }
 
-  private string GetDocPath(Document doc) =>
-    HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
+  private string GetDocPath(Document doc)
+  {
+    return HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
+  }
 
   public override string GetDocumentId()
   {
@@ -98,11 +105,20 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     return hash;
   }
 
-  public override string GetDocumentLocation() => GetDocPath(Doc);
+  public override string GetDocumentLocation()
+  {
+    return GetDocPath(Doc);
+  }
 
-  public override string GetFileName() => (Doc != null) ? System.IO.Path.GetFileName(Doc.Name) : string.Empty;
+  public override string GetFileName()
+  {
+    return (Doc != null) ? System.IO.Path.GetFileName(Doc.Name) : string.Empty;
+  }
 
-  public override string GetActiveViewName() => "Entire Document";
+  public override string GetActiveViewName()
+  {
+    return "Entire Document";
+  }
 
   private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
 

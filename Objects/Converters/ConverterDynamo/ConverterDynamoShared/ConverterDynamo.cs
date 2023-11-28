@@ -48,7 +48,10 @@ public partial class ConverterDynamo : ISpeckleConverter
 
   public ReceiveMode ReceiveMode { get; set; }
 
-  public IEnumerable<string> GetServicedApplications() => new string[] { AppName };
+  public IEnumerable<string> GetServicedApplications()
+  {
+    return new string[] { AppName };
+  }
 
   public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
 
@@ -60,9 +63,15 @@ public partial class ConverterDynamo : ISpeckleConverter
 
   public ProgressReport Report => new();
 
-  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+  public void SetContextObjects(List<ApplicationObject> objects)
+  {
+    ContextObjects = objects;
+  }
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
+  public void SetPreviousContextObjects(List<ApplicationObject> objects)
+  {
+    throw new NotImplementedException();
+  }
 
   public void SetConverterSettings(object settings)
   {

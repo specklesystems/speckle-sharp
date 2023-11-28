@@ -92,9 +92,15 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
   #endregion
 
   #region boilerplate
-  public override string GetHostAppNameVersion() => Utils.VersionedAppName;
+  public override string GetHostAppNameVersion()
+  {
+    return Utils.VersionedAppName;
+  }
 
-  public override string GetHostAppName() => Utils.Slug;
+  public override string GetHostAppName()
+  {
+    return Utils.Slug;
+  }
 
   public override string GetDocumentId()
   {
@@ -105,11 +111,20 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     );
   }
 
-  public override string GetDocumentLocation() => Path.GetDirectoryName(File.GetFileName());
+  public override string GetDocumentLocation()
+  {
+    return Path.GetDirectoryName(File.GetFileName());
+  }
 
-  public override string GetFileName() => Path.GetFileName(File.GetFileName());
+  public override string GetFileName()
+  {
+    return Path.GetFileName(File.GetFileName());
+  }
 
-  public override string GetActiveViewName() => "Entire Document";
+  public override string GetActiveViewName()
+  {
+    return "Entire Document";
+  }
 
   public override List<string> GetObjectsInView()
   {

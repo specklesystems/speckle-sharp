@@ -43,14 +43,16 @@ public class SpeckleRevitCommand : IExternalCommand
     BuildAvaloniaApp().SetupWithoutStarting();
   }
 
-  public static AppBuilder BuildAvaloniaApp() =>
-    AppBuilder
+  public static AppBuilder BuildAvaloniaApp()
+  {
+    return AppBuilder
       .Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .LogToTrace()
       .UseReactiveUI();
+  }
 
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {

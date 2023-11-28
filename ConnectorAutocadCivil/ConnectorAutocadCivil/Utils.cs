@@ -85,8 +85,10 @@ public static class Utils
   /// The Handle is a persisitent indentifier which is unique per drawing.
   /// The ObjectId is a non - persitent identifier(reassigned each time the drawing is opened) which is unique per session.
   /// </remarks>
-  public static List<string> ToStrings(this ObjectId[] ids) =>
-    ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
+  public static List<string> ToStrings(this ObjectId[] ids)
+  {
+    return ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
+  }
 
   /// <summary>
   /// Retrieve handles of visible objects in a selection

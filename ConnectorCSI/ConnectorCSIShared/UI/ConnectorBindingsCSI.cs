@@ -32,18 +32,35 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     throw new NotImplementedException();
   }
 
-  public override string GetDocumentId() => GetDocHash();
+  public override string GetDocumentId()
+  {
+    return GetDocHash();
+  }
 
-  private string GetDocHash() =>
-    Utilities.HashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFunctions.MD5);
+  private string GetDocHash()
+  {
+    return Utilities.HashString(Model.GetModelFilepath() + Model.GetModelFilename(), Utilities.HashingFunctions.MD5);
+  }
 
-  public override string GetDocumentLocation() => Model.GetModelFilepath();
+  public override string GetDocumentLocation()
+  {
+    return Model.GetModelFilepath();
+  }
 
-  public override string GetFileName() => Model.GetModelFilename();
+  public override string GetFileName()
+  {
+    return Model.GetModelFilename();
+  }
 
-  public override string GetHostAppNameVersion() => GetHostAppVersion(Model);
+  public override string GetHostAppNameVersion()
+  {
+    return GetHostAppVersion(Model);
+  }
 
-  public override string GetHostAppName() => GetHostAppName(Model);
+  public override string GetHostAppName()
+  {
+    return GetHostAppName(Model);
+  }
 
   public string GetHostAppVersion(cSapModel model)
   {
