@@ -51,7 +51,9 @@ public static class Utilities
     {
       var n = mesh.faces[i];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+      }
 
       var points = mesh.faces.GetRange(i + 1, n).ToArray();
       yield return points;

@@ -107,7 +107,9 @@ public class SelectionHandler
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
     if (string.IsNullOrEmpty(selection))
+    {
       return Enumerable.Empty<ModelItem>();
+    }
 
     // Resolve the saved viewpoint based on the selection
     // Makes the view active on the main thread.
@@ -120,7 +122,9 @@ public class SelectionHandler
         {
           var savedViewpoint = ResolveSavedViewpoint(selection);
           if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+          {
             return;
+          }
 
           Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
           success = true;
@@ -129,7 +133,9 @@ public class SelectionHandler
     );
 
     if (!success)
+    {
       return Enumerable.Empty<ModelItem>();
+    }
 
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
@@ -139,7 +145,9 @@ public class SelectionHandler
       var model = models.ElementAt(i);
       var rootItem = model.RootItem;
       if (!rootItem.IsHidden)
+      {
         _uniqueModelItems.Add(rootItem);
+      }
 
       ProgressBar.Update(i + 1 / (double)models.Count);
     }
@@ -171,13 +179,20 @@ public class SelectionHandler
     );
 
     if (viewPointMatch != null)
+    {
       return ResolveSavedViewpointMatch(savedViewReference);
+    }
+
     {
       foreach (var node in flattenedViewpointList)
       {
         if (node.Guid.ToString() != savedViewReference)
+        {
           if (node.Reference != savedViewReference)
+          {
             continue;
+          }
+        }
 
         viewPointMatch = node;
         break;
@@ -197,9 +212,13 @@ public class SelectionHandler
   private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
   {
     if (Guid.TryParse(savedViewReference, out var guid))
+    {
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
       if (savedViewReference != Guid.Empty.ToString())
+      {
         return (SavedViewpoint)Application.ActiveDocument.SavedViewpoints.ResolveGuid(guid);
+      }
+    }
 
     var savedRef = new SavedItemReference("LcOpSavedViewsElement", savedViewReference);
 
@@ -266,10 +285,16 @@ public class SelectionHandler
     var savedItems = selections.Select(Application.ActiveDocument.SelectionSets.ResolveGuid).OfType<SelectionSet>();
 
     foreach (var item in savedItems)
+    {
       if (item.HasExplicitModelItems)
+      {
         _uniqueModelItems.AddRange(item.ExplicitModelItems);
+      }
       else if (item.HasSearch)
+      {
         _uniqueModelItems.AddRange(item.Search.FindAll(Application.ActiveDocument, false));
+      }
+    }
 
     return _uniqueModelItems;
   }
@@ -281,7 +306,9 @@ public class SelectionHandler
   public void PopulateHierarchyAndOmitHidden()
   {
     if (_uniqueModelItems == null || !_uniqueModelItems.Any())
+    {
       return;
+    }
 
     var startNodes = _uniqueModelItems.ToList();
 
@@ -301,7 +328,9 @@ public class SelectionHandler
             || Equals(e, firstObjectAncestor)
             || _uniqueModelItems.Contains(firstObjectAncestor)
           )
+          {
             return Enumerable.Empty<ModelItem>();
+          }
 
           var trimmedAncestors = targetFirstObjectChild.Ancestors
             .TakeWhile(ancestor => ancestor != firstObjectAncestor)
@@ -337,7 +366,10 @@ public class SelectionHandler
     ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
 
     foreach (var node in startNodes)
+    {
       TraverseDescendants(node, allDescendants);
+    }
+
     ProgressBar.EndSubOperation();
   }
 
@@ -358,13 +390,19 @@ public class SelectionHandler
     while (stack.Count > 0)
     {
       if (ProgressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
+
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       ModelItem currentNode = stack.Pop();
 
       if (_visited.Contains(currentNode))
+      {
         continue;
+      }
+
       _visited.Add(currentNode);
 
       if (currentNode.IsHidden)
@@ -379,14 +417,21 @@ public class SelectionHandler
       }
 
       if (currentNode.Children.Any())
+      {
         foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
+        {
           stack.Push(child);
+        }
+      }
 
       _uniqueModelItems.AddRange(validDescendants);
 
       int currentPercentile = (int)(_descendantProgress / descendantInterval);
       if (currentPercentile <= lastPercentile)
+      {
         continue;
+      }
+
       double progress = _descendantProgress / (double)totalDescendants;
       ProgressBar.Update(progress);
       lastPercentile = currentPercentile;
@@ -415,16 +460,23 @@ public class SelectionHandler
     for (int i = 0; i < totalCount; i++)
     {
       if (ProgressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
+
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       bool shouldContinue = fn(i);
 
       if (!shouldContinue)
+      {
         break;
+      }
 
       if (i % updateInterval != 0 && i != totalCount)
+      {
         continue;
+      }
 
       double progress = (i + 1) * increment;
       ProgressBar.Update(progress);

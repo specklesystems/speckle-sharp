@@ -32,7 +32,10 @@ public partial class ConverterRevit
     var material = doc.GetElement(id) as DB.Material;
 
     if (material == null)
+    {
       return null;
+    }
+
     if (!Materials.ContainsKey(material.Name))
     {
       Materials[material.Name] = MaterialToSpeckle(material);

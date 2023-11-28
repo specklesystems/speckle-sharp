@@ -27,7 +27,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitWall, appObj))
+    {
       return appObj;
+    }
 
     if (speckleWall.surface == null)
     {
@@ -36,7 +38,9 @@ public partial class ConverterRevit
     }
 
     if (revitWall != null)
+    {
       Doc.Delete(revitWall.Id);
+    }
 
     var templatePath = GetTemplatePath("Mass");
     if (!File.Exists(templatePath))
@@ -70,7 +74,9 @@ public partial class ConverterRevit
       .FirstOrDefault();
 
     if (level == null) // create a new level at 0 if no levels could be retrieved from doc
+    {
       level = Level.Create(Doc, 0);
+    }
 
     TrySetParam(mass, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM, level);
 
@@ -126,7 +132,9 @@ public partial class ConverterRevit
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(existing, appObj))
+      {
         return appObj;
+      }
 
       if (speckleWall.brep == null)
       {
@@ -193,9 +201,15 @@ public partial class ConverterRevit
     {
       Solid geomSolid = geomObj as Solid;
       if (null != geomSolid)
+      {
         foreach (Face geomFace in geomSolid.Faces)
+        {
           if (FaceWall.IsValidFaceReferenceForFaceWall(e.Document, geomFace.Reference))
+          {
             return geomFace.Reference;
+          }
+        }
+      }
     }
     return null;
   }

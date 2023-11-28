@@ -25,10 +25,14 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     Opening revitOpening = null;
 
@@ -136,7 +140,9 @@ public partial class ConverterRevit
     }
 
     if (speckleOpening is RevitOpening ro)
+    {
       SetInstanceParameters(revitOpening, ro);
+    }
 
     appObj.Update(
       status: ApplicationObject.State.Created,
@@ -192,8 +198,12 @@ public partial class ConverterRevit
       var poly = new Polycurve(ModelUnits);
       poly.segments = new List<ICurve>();
       foreach (DB.Curve curve in revitOpening.BoundaryCurves)
+      {
         if (curve != null)
+        {
           poly.segments.Add(CurveToSpeckle(curve, revitOpening.Document));
+        }
+      }
 
       speckleOpening.outline = poly;
     }

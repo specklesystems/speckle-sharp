@@ -77,7 +77,9 @@ public sealed class Wall : IConverter
 
     var walls = new List<Base>();
     if (jArray is null)
+    {
       return walls;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (

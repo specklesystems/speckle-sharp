@@ -26,7 +26,10 @@ public class ConstantCaseEnumConverter : StringEnumConverter
       if (string.IsNullOrEmpty(memberName))
       {
         if (!AllowIntegerValues)
+        {
           throw new JsonSerializationException($"Integer value {value} is not allowed.");
+        }
+
         writer.WriteValue(value);
       }
       else

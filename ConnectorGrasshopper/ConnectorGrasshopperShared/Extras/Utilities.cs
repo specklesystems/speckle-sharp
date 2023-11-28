@@ -31,7 +31,10 @@ public static class Utilities
   {
     var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
     if (RhinoApp.Version.Major >= 7)
+    {
       version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+    }
+
     return version;
   }
 
@@ -89,7 +92,10 @@ public static class Utilities
     foreach (var path in dataInput.Paths.ToList())
     {
       if (cancellationToken.IsCancellationRequested)
+      {
         break;
+      }
+
       var key = path.ToString();
       //TODO: Rolled back chunking due to issue with detaching children. Revisit this once done.
       var chunkingPrefix = "@";
@@ -98,11 +104,17 @@ public static class Utilities
       foreach (var item in value)
       {
         if (cancellationToken.IsCancellationRequested)
+        {
           break;
+        }
+
         converted.Add(TryConvertItemToSpeckle(item, converter, true, onConversionProgress));
       }
       if (cancellationToken.IsCancellationRequested)
+      {
         break;
+      }
+
       @base[chunkingPrefix + key] = converted;
     }
     return @base;
@@ -132,11 +144,17 @@ public static class Utilities
         var pattern = new Regex(dataTreePathPattern); // Match for the dynamic detach magic "@(DETACH_INT)PATH"
         var matchRes = pattern.Match(key);
         if (matchRes.Length == 0)
+        {
           return;
+        }
+
         var pathKey = matchRes.Groups["path"].Value;
         var res = path.FromString(pathKey);
         if (!res)
+        {
           return;
+        }
+
         var converted = value.Select(item => TryConvertItemToNative(item, converter));
         dataTree.AppendRange(converted, path);
       });
@@ -157,7 +175,10 @@ public static class Utilities
     var regex = new Regex(dataTreePathPattern);
     var dynamicMembers = @base.GetDynamicMembers().ToList();
     if (dynamicMembers.Count == 0)
+    {
       return false;
+    }
+
     var isDataTree = dynamicMembers.All(el => regex.Match(el).Success);
     return isDataTree;
   }
@@ -182,7 +203,9 @@ public static class Utilities
     for (var i = 0; i < dataInput.Branches.Count; i++)
     {
       if (cancellationToken.IsCancellationRequested)
+      {
         return output;
+      }
 
       var path = dataInput.Paths[i].Indices.ToList();
       var leaves = new List<object>();
@@ -190,7 +213,10 @@ public static class Utilities
       foreach (var goo in dataInput.Branches[i])
       {
         if (cancellationToken.IsCancellationRequested)
+        {
           return output;
+        }
+
         OnConversionProgress?.Invoke();
         leaves.Add(TryConvertItemToSpeckle(goo, converter, true));
       }
@@ -255,10 +281,16 @@ public static class Utilities
   private static List<object> EnsureHasSublistAtIndex(List<object> parent, int index)
   {
     while (parent.Count <= index || !(parent[index] is List<object>))
+    {
       if (parent.Count > index)
+      {
         parent.Insert(index, new List<object>());
+      }
       else
+      {
         parent.Add(new List<object>());
+      }
+    }
 
     return parent;
   }
@@ -294,7 +326,10 @@ public static class Utilities
         {
           var converted = new Dictionary<string, object>();
           foreach (DictionaryEntry kvp in keyval.Value as IDictionary)
+          {
             converted[kvp.Key.ToString()] = TryConvertItemToNative(kvp.Value, converter, true);
+          }
+
           copy[keyval.Key] = converted;
         }
         else
@@ -322,7 +357,10 @@ public static class Utilities
   {
     var subclass = @base.GetType().IsSubclassOf(typeof(Base));
     if (subclass)
+    {
       return @base;
+    }
+
     var copy = @base.ShallowCopy();
     var keyValuePairs = copy.GetMembers().ToList();
     keyValuePairs.ForEach(keyval =>
@@ -350,7 +388,10 @@ public static class Utilities
       {
         var converted = new Dictionary<string, object>();
         foreach (DictionaryEntry kvp in value as IDictionary)
+        {
           converted[kvp.Key.ToString()] = TryConvertItemToSpeckle(kvp.Value, converter, true);
+        }
+
         copy[keyval.Key] = converted;
       }
       else
@@ -371,16 +412,24 @@ public static class Utilities
   public static IGH_Goo TryConvertItemToNative(object value, ISpeckleConverter converter, bool recursive = false)
   {
     if (converter == null)
+    {
       return WrapInGhType(value);
+    }
+
     if (value == null)
+    {
       return null;
+    }
 
     if (value is IGH_Goo)
+    {
       value = value.GetType().GetProperty("Value")?.GetValue(value);
+    }
 
     if (value is Base @base)
     {
       if (converter.CanConvertToNative(@base))
+      {
         try
         {
           var converted = converter.ConvertToNative(@base);
@@ -391,6 +440,7 @@ public static class Utilities
           converter.Report.ConversionErrors.Add(new Exception($"Could not convert {@base}", e));
           return null;
         }
+      }
 
       if (recursive)
       {
@@ -401,10 +451,14 @@ public static class Utilities
     }
 
     if (value is Base base2)
+    {
       return new GH_SpeckleBase { Value = base2 };
+    }
 
     if (value.GetType().IsSimpleType())
+    {
       return GH_Convert.ToGoo(value);
+    }
 
     if (value is Enum)
     {
@@ -429,34 +483,49 @@ public static class Utilities
   )
   {
     if (value is null)
+    {
       return value;
+    }
 
     string refId = GetRefId(value);
 
     if (value is IGH_Goo)
+    {
       value = value.GetType().GetProperty("Value").GetValue(value);
+    }
 
     if (value.GetType().IsSimpleType())
+    {
       return value;
+    }
 
     if (converter != null && converter.CanConvertToSpeckle(value))
     {
       var result = converter.ConvertToSpeckle(value);
       if (result != null)
+      {
         result.applicationId = refId;
+      }
+
       return result;
     }
 
     var subclass = value.GetType().IsSubclassOf(typeof(Base));
     if (subclass)
+    {
       // TODO: Traverse through dynamic props only.
       return value;
+    }
 
     if (recursive && value is Base @base)
+    {
       return TraverseAndConvertToSpeckle(@base, converter);
+    }
 
     if (value is Base base2)
+    {
       return base2;
+    }
 
     return null;
   }
@@ -469,7 +538,9 @@ public static class Utilities
     try
     {
       if (r.IsReferencedGeometry)
+      {
         refId = r.ReferenceID.ToString();
+      }
     }
     catch (RuntimeBinderException)
     {
@@ -584,7 +655,10 @@ public static class Utilities
     else
     {
       if (onError != null)
+      {
         onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
+      }
+
       data.Append(new GH_SpeckleBase(@base));
     }
     return data;

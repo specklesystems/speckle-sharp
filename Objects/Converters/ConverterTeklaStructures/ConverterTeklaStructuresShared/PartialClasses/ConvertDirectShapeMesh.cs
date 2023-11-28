@@ -150,11 +150,15 @@ public partial class ConverterTeklaStructures
 
     // Take application id
     if (string.IsNullOrEmpty(name))
+    {
       name = @object.applicationId;
+    }
 
     // If still empty then do Speckle id but can cause failure since changes with every commit
     if (string.IsNullOrEmpty(name))
+    {
       name = @object.id;
+    }
 
     return name;
   }
@@ -167,7 +171,9 @@ public partial class ConverterTeklaStructures
     {
       ShapeItem siItem = sie.Current;
       if (siItem.Fingerprint == Polymesh.Fingerprint(si.ShapeFacetedBrep))
+      {
         return siItem;
+      }
     }
     return null;
   }

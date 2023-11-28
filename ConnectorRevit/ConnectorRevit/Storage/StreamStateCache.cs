@@ -22,7 +22,10 @@ public class StreamStateCache : IReceivedObjectIdMap<Base, Element>
     {
       var key = ao.applicationId ?? ao.OriginalId;
       if (previousContextObjects.ContainsKey(key))
+      {
         continue;
+      }
+
       previousContextObjects.Add(key, ao);
     }
   }

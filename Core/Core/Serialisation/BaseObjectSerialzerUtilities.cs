@@ -33,7 +33,9 @@ internal static class SerializationUtilities
     cancellationToken.ThrowIfCancellationRequested();
 
     if (jsonProperty is { PropertyType: null })
+    {
       throw new ArgumentException($"Expected {nameof(JsonProperty.PropertyType)} to be non-null", nameof(jsonProperty));
+    }
 
     switch (value)
     {
@@ -54,37 +56,49 @@ internal static class SerializationUtilities
           cancellationToken.ThrowIfCancellationRequested();
 
           if (val == null)
+          {
             continue;
+          }
 
           var item = HandleValue(val, serializer, cancellationToken);
 
           if (item is DataChunk chunk)
           {
             foreach (var dataItem in chunk.data)
+            {
               if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
               {
                 if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
+                {
                   addMethod.Invoke(arr, new[] { dataItem });
+                }
                 else
+                {
                   addMethod.Invoke(
                     arr,
                     new[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) }
                   );
+                }
               }
               else
               {
                 addMethod.Invoke(arr, new[] { dataItem });
               }
+            }
           }
           else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
           {
             if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
+            {
               addMethod.Invoke(arr, new[] { item });
+            }
             else
+            {
               addMethod.Invoke(
                 arr,
                 new[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) }
               );
+            }
           }
           else
           {
@@ -103,23 +117,35 @@ internal static class SerializationUtilities
           cancellationToken.ThrowIfCancellationRequested();
 
           if (val == null)
+          {
             continue;
+          }
 
           var item = HandleValue(val, serializer, cancellationToken);
           if (item is DataChunk chunk)
           {
             foreach (var dataItem in chunk.data)
+            {
               if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+              {
                 arr.Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()!));
+              }
               else
+              {
                 arr.Add(dataItem);
+              }
+            }
           }
           else
           {
             if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+            {
               arr.Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()!));
+            }
             else
+            {
               arr.Add(item);
+            }
           }
         }
         var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType()!, arr.Count);
@@ -134,14 +160,20 @@ internal static class SerializationUtilities
           cancellationToken.ThrowIfCancellationRequested();
 
           if (val == null)
+          {
             continue;
+          }
 
           var item = HandleValue(val, serializer, cancellationToken);
 
           if (item is DataChunk chunk)
+          {
             arr.AddRange(chunk.data);
+          }
           else
+          {
             arr.Add(item);
+          }
         }
         return arr;
       }
@@ -159,7 +191,10 @@ internal static class SerializationUtilities
 
           object key = prop.Key;
           if (jsonProperty != null)
+          {
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
+          }
+
           dict[key] = HandleValue(prop.Value, serializer, cancellationToken);
         }
         return dict;
@@ -184,7 +219,9 @@ internal static class SerializationUtilities
     lock (_cachedTypes)
     {
       if (_cachedTypes.TryGetValue(objFullType, out Type? type1))
+      {
         return type1;
+      }
 
       var type = GetAtomicType(objFullType);
       _cachedTypes[objFullType] = type;
@@ -201,7 +238,9 @@ internal static class SerializationUtilities
       //we get it from a specific Kit
       var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
       if (type != null)
+      {
         return type;
+      }
 
       //To allow for backwards compatibility saving deserialization target types.
       //We also check a ".Deprecated" prefixed namespace
@@ -209,7 +248,9 @@ internal static class SerializationUtilities
 
       var deprecatedType = KitManager.Types.FirstOrDefault(tp => tp.FullName == deprecatedTypeName);
       if (deprecatedType != null)
+      {
         return deprecatedType;
+      }
     }
 
     return typeof(Base);
@@ -231,7 +272,10 @@ internal static class SerializationUtilities
         Type type = GetType(objFullType);
         PropertyInfo[] properties = type.GetProperties();
         foreach (PropertyInfo prop in properties)
+        {
           ret[prop.Name.ToLower()] = prop;
+        }
+
         TypeProperties[objFullType] = ret;
       }
       return TypeProperties[objFullType];
@@ -255,7 +299,9 @@ internal static class SerializationUtilities
             .GetCustomAttributes<OnDeserializedAttribute>(true)
             .ToList();
           if (onDeserializedAttributes.Count > 0)
+          {
             ret.Add(method);
+          }
         }
         OnDeserializedCallbacks[objFullType] = ret;
       }
@@ -267,7 +313,10 @@ internal static class SerializationUtilities
   {
     var systemType = Type.GetType(typeName);
     if (systemType != null)
+    {
       return systemType;
+    }
+
     return GetAtomicType(typeName);
   }
 
@@ -295,17 +344,23 @@ internal static class SerializationUtilities
   )
   {
     if (CachedAbstractTypes.TryGetValue(assemblyQualifiedName, out Type? type))
+    {
       return jToken.ToObject(type);
+    }
 
     var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
 
     var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
     if (myAssembly == null)
+    {
       throw new SpeckleException("Could not load abstract object's assembly.");
+    }
 
     var myType = myAssembly.GetType(pieces[0]);
     if (myType == null)
+    {
       throw new SpeckleException("Could not load abstract object's assembly.");
+    }
 
     CachedAbstractTypes[assemblyQualifiedName] = myType;
 
@@ -333,6 +388,7 @@ internal static class CallSiteCache
       CallSite<Func<CallSite, object, object?, object>> site;
 
       lock (Setters)
+      {
         if (!Setters.TryGetValue(propertyName, out site))
         {
           var binder = Binder.SetMember(
@@ -347,6 +403,7 @@ internal static class CallSiteCache
           );
           Setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
         }
+      }
 
       site.Target.Invoke(site, target, value);
     }

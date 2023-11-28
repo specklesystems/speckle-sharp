@@ -56,14 +56,18 @@ internal sealed class ElementTypeMapper
       throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
+    {
       this.typeRetriever = typeRetriever;
+    }
 
     if (converter is not IAllRevitCategoriesExposer typeInfoExposer)
     {
       throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
+    {
       revitCategoriesExposer = typeInfoExposer;
+    }
 
     this.revitDocumentAggregateCache =
       revitDocumentAggregateCache ?? throw new ArgumentException($"RevitDocumentAggregateCache cannot be null");
@@ -164,15 +168,19 @@ internal sealed class ElementTypeMapper
       .ConfigureAwait(false);
 
     if (response)
+    {
       Analytics.TrackEvent(
         Analytics.Events.DUIAction,
         new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Accept" } }
       );
+    }
     else
+    {
       Analytics.TrackEvent(
         Analytics.Events.DUIAction,
         new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Dialog Ignore" } }
       );
+    }
 
     return response;
   }
@@ -233,7 +241,9 @@ internal sealed class ElementTypeMapper
     {
       var mappedHostType = mappingValue.MappedHostType ?? mappingValue.InitialGuess;
       if (mappedHostType == null)
+      {
         continue;
+      }
 
       if (mappedHostType is RevitHostType revitHostType)
       {
@@ -296,7 +306,9 @@ internal sealed class ElementTypeMapper
 
         // if the neither the document nor the masterTypeMap contain a matching type, then it is new
         if (!exactTypeMatch)
+        {
           numNewTypes++;
+        }
       }
 
       currentTypeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, mappedValue);
@@ -403,9 +415,15 @@ internal sealed class ElementTypeMapper
       return n;
     }
     for (int i = 0; i <= n; d[i, 0] = i++)
+    {
       ;
+    }
+
     for (int j = 0; j <= m; d[0, j] = j++)
+    {
       ;
+    }
+
     for (int i = 1; i <= n; i++)
     {
       for (int j = 1; j <= m; j++)

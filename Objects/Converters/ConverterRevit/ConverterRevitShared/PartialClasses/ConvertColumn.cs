@@ -24,7 +24,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (speckleColumn.baseLine == null)
     {
@@ -43,7 +45,9 @@ public partial class ConverterRevit
 
     // If the start point elevation is higher than the end point elevation, reverse the line.
     if (baseLine.GetEndPoint(0).Z > baseLine.GetEndPoint(1).Z)
+    {
       baseLine = DB.Line.CreateBound(baseLine.GetEndPoint(1), baseLine.GetEndPoint(0));
+    }
 
     DB.FamilyInstance revitColumn = null;
     //var structuralType = StructuralType.Column;
@@ -69,7 +73,9 @@ public partial class ConverterRevit
     }
 
     if (topLevel == null)
+    {
       topLevel = ConvertLevelToRevit(baseLine.GetEndPoint(1), out levelState, out topOffset);
+    }
 
     //try update existing
 
@@ -82,7 +88,9 @@ public partial class ConverterRevit
 
         // if family changed, tough luck. delete and let us create a new one.
         if (familySymbol.FamilyName != revitType.FamilyName)
+        {
           Doc.Delete(docObj.Id);
+        }
         else
         {
           revitColumn = (DB.FamilyInstance)docObj;
@@ -122,7 +130,9 @@ public partial class ConverterRevit
     var basePoint = start.Z < end.Z ? start : end; // pick the lowest
     //try with a point based column
     if (speckleRevitColumn != null && revitColumn == null && !isLineBased)
+    {
       revitColumn = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
+    }
 
     //rotate
     if (speckleRevitColumn != null && revitColumn != null)
@@ -151,13 +161,18 @@ public partial class ConverterRevit
     if (speckleRevitColumn != null)
     {
       if (speckleRevitColumn.handFlipped != revitColumn.HandFlipped)
+      {
         revitColumn.flipHand();
+      }
 
       if (speckleRevitColumn.facingFlipped != revitColumn.FacingFlipped)
+      {
         revitColumn.flipFacing();
+      }
 
       //don't change offset for slanted columns, it's automatic
       if (!isLineBased)
+      {
         SetOffsets(
           revitColumn,
           level,
@@ -165,6 +180,7 @@ public partial class ConverterRevit
           ScaleToNative(speckleRevitColumn.baseOffset, speckleRevitColumn.units),
           ScaleToNative(speckleRevitColumn.topOffset, speckleRevitColumn.units)
         );
+      }
 
       SetInstanceParameters(revitColumn, speckleRevitColumn);
     }
@@ -199,7 +215,9 @@ public partial class ConverterRevit
     var topLevelParam = familyInstance.get_Parameter(BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
     if (topLevelParam == null || baseLevelParam == null || baseOffsetParam == null || topOffsetParam == null)
+    {
       return;
+    }
 
     // the column length cannot be 0 for even an instance or Revit will throw a fit.
     // Make sure that setting the offset on one side of the column before setting the
@@ -253,7 +271,9 @@ public partial class ConverterRevit
         symbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased
         || symbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased
       )
+      {
         return RevitInstanceToSpeckle(revitColumn, out notes, null);
+      }
 
       var elevation = speckleColumn.topLevel.elevation;
       baseLine = new Line(
@@ -264,7 +284,9 @@ public partial class ConverterRevit
     }
 
     if (baseLine == null)
+    {
       return RevitElementToSpeckle(revitColumn, out notes);
+    }
 
     speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 
@@ -283,7 +305,9 @@ public partial class ConverterRevit
     );
 
     if (revitColumn.Location is LocationPoint)
+    {
       speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
+    }
 
     speckleColumn.displayValue = GetElementDisplayValue(revitColumn);
 

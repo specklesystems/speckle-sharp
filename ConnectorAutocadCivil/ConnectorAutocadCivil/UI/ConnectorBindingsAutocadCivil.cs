@@ -67,7 +67,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   {
     var streams = new List<StreamState>();
     if (Doc != null)
+    {
       streams = SpeckleStreamManager.ReadState(Doc);
+    }
+
     return streams;
   }
   #endregion
@@ -116,7 +119,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
     // add the current UCS if it exists
     if (Doc.Editor.CurrentUserCoordinateSystem != null)
+    {
       referencePoints.Add(UCS);
+    }
 
     // add any named UCS if they exist
     var namedUCS = new List<string>();
@@ -131,7 +136,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       tr.Commit();
     }
     if (namedUCS.Any())
+    {
       referencePoints.AddRange(namedUCS);
+    }
 
     return new List<ISetting>
     {

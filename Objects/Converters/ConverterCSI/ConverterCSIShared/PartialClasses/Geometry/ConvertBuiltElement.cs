@@ -29,9 +29,13 @@ public partial class ConverterCSI
   {
     string endMessage;
     if (isUpdate)
+    {
       endMessage = "Section was not updated.";
+    }
     else
+    {
       endMessage = "Default section was assigned.";
+    }
 
     var speckleObjectType = @base["type"] as string;
 

@@ -239,7 +239,9 @@ public class App : IExternalApplication
     string assemblyFile = Path.Combine(path, name + ".dll");
 
     if (File.Exists(assemblyFile))
+    {
       a = Assembly.LoadFrom(assemblyFile);
+    }
 
     return a;
   }

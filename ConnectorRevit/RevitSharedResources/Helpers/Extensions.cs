@@ -20,13 +20,21 @@ public static class Extensions
   public static bool IsPhysicalElement(this Element e)
   {
     if (e.Category == null)
+    {
       return false;
+    }
+
     if (e.ViewSpecific)
+    {
       return false;
+    }
     // TODO: Should this be filtering using the Supported categories list instead?
     // exclude specific unwanted categories
     if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones)
+    {
       return false;
+    }
+
     return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
   }
 
@@ -63,7 +71,9 @@ public static class Extensions
       || category.CategoryType == CategoryType.Internal
       || category.Id.IntegerValue == -2000220
     ) // Grids
+    {
       return true;
+    }
 
     return false;
   }
@@ -76,7 +86,9 @@ public static class Extensions
   public static bool IsElementSupported(this Element e)
   {
     if (e.Category == null || e.ViewSpecific || !IsCategorySupported(e.Category))
+    {
       return false;
+    }
 
     return true;
   }

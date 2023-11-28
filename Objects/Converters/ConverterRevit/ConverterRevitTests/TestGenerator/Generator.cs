@@ -49,19 +49,30 @@ public class Generator : ISourceGenerator
       {
         var strippedFile = file.Split('\\').Last();
         if (!strippedFile.EndsWith(".rvt"))
+        {
           continue;
+        }
+
         strippedFile = strippedFile.Replace(".rvt", "");
 
         // illegal character in revit file name
         if (strippedFile.Contains('.'))
+        {
           continue;
+        }
 
         if (strippedFile.EndsWith(ToNative))
+        {
           toNativeFiles.Add(strippedFile);
+        }
         else if (strippedFile.EndsWith(Updated))
+        {
           updatedFiles.Add(strippedFile);
+        }
         else
+        {
           baseFiles.Add(strippedFile);
+        }
       }
 
       ValidateFilesInFolder(category, baseFiles, toNativeFiles, updatedFiles);

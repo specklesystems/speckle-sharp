@@ -31,7 +31,10 @@ public partial class ConverterRevit
   {
     blockWrapper.instance.typedDefinition["category"] = blockWrapper.category;
     if (blockWrapper.nameOverride != null)
+    {
       blockWrapper.instance.typedDefinition.name = blockWrapper.nameOverride;
+    }
+
     return BlockInstanceToNative(blockWrapper.instance);
   }
 
@@ -48,7 +51,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     var isUpdate = false;
     if (docObj != null && ReceiveMode == ReceiveMode.Update)
@@ -183,13 +188,17 @@ public partial class ConverterRevit
     // Get the RevitCategory from a string value
     var success = Enum.TryParse(categoryName, out RevitFamilyCategory cat);
     if (!success)
+    {
       cat = RevitFamilyCategory.GenericModel;
+    }
 
     // Get the BuiltInCategory corresponding to the RevitCategory
     var catName = Categories.GetBuiltInFromSchemaBuilderCategory(cat);
     success = Enum.TryParse(catName, out DB.BuiltInCategory bic);
     if (!success)
+    {
       bic = DB.BuiltInCategory.OST_GenericModel;
+    }
 
     // Get the actual category from the document
     DB.Category familyCategory = famDoc.Settings.Categories.get_Item(bic);
@@ -228,7 +237,10 @@ public partial class ConverterRevit
     using DB.Transaction t = new(famDoc, $"Create geometry for block definition");
     t.Start();
     foreach (var o in geometry)
+    {
       converter.ConvertToNativeObject(o);
+    }
+
     t.Commit();
   }
 
@@ -247,9 +259,15 @@ public partial class ConverterRevit
     // TODO: For now, we're just picking the first.
     var element = Doc.GetElement(family.GetFamilySymbolIds().First());
     if (element is not DB.FamilySymbol symbol)
+    {
       return null;
+    }
+
     if (!symbol.IsActive)
+    {
       symbol.Activate();
+    }
+
     return symbol;
   }
 
@@ -277,7 +295,10 @@ public partial class ConverterRevit
   {
     var templatePath = GetTemplatePath(name);
     if (!File.Exists(templatePath))
+    {
       throw new FileNotFoundException($"Could not find '{name}.rft' template file - {templatePath}");
+    }
+
     return Doc.Application.NewFamilyDocument(templatePath);
   }
 
@@ -307,8 +328,12 @@ public partial class ConverterRevit
     var families = collector.OfClass(typeof(DB.Family)).ToElements();
 
     foreach (DB.Element elem in families)
+    {
       if (elem is DB.Family fam && fam.Name == familyName)
+      {
         return fam; // Cast to Family and return if the names match
+      }
+    }
 
     return null; // Return null if not found
   }

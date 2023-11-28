@@ -22,7 +22,9 @@ public class GSALoadCombination : LoadCombination
     this.name = name;
 
     if (loadCases.Count != loadFactors.Count)
+    {
       throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
+    }
 
     this.loadFactors = loadFactors;
     this.loadCases = loadCases;

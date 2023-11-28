@@ -19,7 +19,10 @@ public partial class ConverterRevit
     get
     {
       if (!Settings.ContainsKey("pretty-mesh"))
+      {
         return ToNativeMeshSettingEnum.Default;
+      }
+
       var value = Settings["pretty-mesh"];
       switch (value)
       {

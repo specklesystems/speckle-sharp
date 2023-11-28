@@ -25,7 +25,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
     var existing = CheckForExistingObject(ds);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
     appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -37,7 +39,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
     var existing = CheckForExistingObject(ds);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImportFamily(
       new List<Base>(ds.baseGeometries),
@@ -54,7 +58,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
     var existing = CheckForExistingObject(mesh);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImport(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}.dxf", 1, doc);
     appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -66,7 +72,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
     var existing = CheckForExistingObject(mesh);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImportFamily(new List<Base> { mesh }, $"Speckle-Mesh-{mesh.id}-{mesh.applicationId}", 1, doc);
     appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
@@ -78,7 +86,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
     var existing = CheckForExistingObject(brep);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImport(new List<Base> { brep }, $"Speckle-Brep-{brep.id}-{brep.applicationId}", 1, doc);
 
@@ -91,7 +101,9 @@ public partial class ConverterRevit
     var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
     var existing = CheckForExistingObject(brep);
     if (existing != null)
+    {
       return existing;
+    }
 
     var el = CreateDxfImportFamily(new List<Base> { brep }, $"Speckle-Brep-{brep.id}-{brep.applicationId}", 1, doc);
 
@@ -120,14 +132,19 @@ public partial class ConverterRevit
       .SelectMany(o =>
       {
         if (o is IEnumerable<EntityObject> e)
+        {
           return e;
+        }
+
         return new List<EntityObject> { (EntityObject)o };
       })
       .Where(e => e != null)
       .ToList();
 
     if (collection.Count == 0)
+    {
       throw new SpeckleException("No objects could be converted to DXF.");
+    }
 
     dxfConverter.Doc.Entities.Add(collection.Where(x => x != null));
 
@@ -135,7 +152,9 @@ public partial class ConverterRevit
 
     // Ensure directory exists
     if (!Directory.Exists(folderPath))
+    {
       Directory.CreateDirectory(folderPath);
+    }
 
     // Save the DXF file
     var path = Path.Combine(folderPath, fileName + ".dxf");
@@ -161,7 +180,9 @@ public partial class ConverterRevit
     File.Delete(path);
 
     if (!success)
+    {
       throw new SpeckleException($"Failed to import DXF file: {path}");
+    }
 
     var el = doc.GetElement(elementId);
     el.Pinned = false;
@@ -187,7 +208,9 @@ public partial class ConverterRevit
     doc ??= Doc; // Use the global doc if no doc is passed in.
     var templatePath = GetTemplatePath("Generic Model");
     if (!File.Exists(templatePath))
+    {
       throw new Exception($"Could not find Generic Model rft file - {templatePath}");
+    }
 
     var famDoc = doc.Application.NewFamilyDocument(templatePath);
     using (var t = new DB.Transaction(famDoc, "Import DXF elements"))

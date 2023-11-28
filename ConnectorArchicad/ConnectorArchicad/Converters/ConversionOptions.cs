@@ -12,8 +12,12 @@ public class ConversionOptions
     foreach (var setting in settings)
     {
       if (setting.Slug.Equals("receive - parametric"))
+      {
         if (bool.Parse(setting.Selection ?? "False"))
+        {
           ReceiveParametric = true;
+        }
+      }
     }
     ;
   }

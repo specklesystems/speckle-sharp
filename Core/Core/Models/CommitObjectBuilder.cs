@@ -134,16 +134,24 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     foreach (var instruction in instructions)
     {
       if (instruction.ParentApplicationId is null)
+      {
         continue;
+      }
 
       Base? parent;
       if (instruction.ParentApplicationId == Root)
+      {
         parent = rootCommitObject;
+      }
       else
+      {
         converted.TryGetValue(instruction.ParentApplicationId, out parent);
+      }
 
       if (parent is null)
+      {
         continue;
+      }
 
       try
       {

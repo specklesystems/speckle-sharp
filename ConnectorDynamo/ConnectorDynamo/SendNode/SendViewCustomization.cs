@@ -62,7 +62,9 @@ public class SendViewCustomization : INodeViewCustomization<Send>
           sendNode.LoadInputs(dynamoModel.EngineController);
           UpdateContextMenu();
           if (sendNode.AutoUpdate)
+          {
             sendNode.DoSend(dynamoModel.EngineController);
+          }
         });
       }
     );

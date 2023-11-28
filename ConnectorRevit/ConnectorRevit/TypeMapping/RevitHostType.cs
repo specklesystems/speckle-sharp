@@ -18,7 +18,9 @@ internal class RevitHostType : HostType
     get
     {
       if (_hostTypeDisplayName != null)
+      {
         return _hostTypeDisplayName;
+      }
 
       var sb = new StringBuilder();
       if (!string.IsNullOrEmpty(HostFamilyName))

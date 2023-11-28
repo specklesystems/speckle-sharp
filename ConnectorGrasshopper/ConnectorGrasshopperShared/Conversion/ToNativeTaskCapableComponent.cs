@@ -20,11 +20,16 @@ public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IG
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
     };
   }
@@ -66,7 +71,10 @@ public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IG
       object item = null;
       DA.GetData(0, ref item);
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
+
       var task = Task.Run(() => DoWork(item, DA), CancelToken);
       TaskList.Add(task);
       return;
@@ -96,7 +104,9 @@ public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IG
     {
       // If we reach this, something happened that we weren't expecting...
       if (ex is AggregateException aggregateException)
+      {
         ex = aggregateException.Flatten();
+      }
 
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());

@@ -73,11 +73,17 @@ internal static class SpeckleUtils
     {
       case IList list:
         foreach (var item in list)
+        {
           DeleteElement(item);
+        }
+
         break;
       case ApplicationObject o:
         foreach (var item in o.Converted)
+        {
           DeleteElement(item);
+        }
+
         break;
       case DB.ViewSchedule _:
         // don't delete a view schedule since we didn't create it in the first place
@@ -126,7 +132,9 @@ internal static class SpeckleUtils
     {
       var parts = param.Definition.Name.Split('-');
       if (parts.Length != 3)
+      {
         continue;
+      }
 
       var assertionType = parts[1];
       var prop = parts[2];

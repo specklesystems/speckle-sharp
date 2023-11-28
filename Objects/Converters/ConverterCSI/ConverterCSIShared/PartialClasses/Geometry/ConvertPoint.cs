@@ -18,7 +18,9 @@ public partial class ConverterCSI
   {
     basePoint = basePoint ?? speckleNode.basePoint;
     if (basePoint == null)
+    {
       return name;
+    }
 
     CreatePoint(basePoint, out string newName);
     name = newName;
@@ -30,7 +32,9 @@ public partial class ConverterCSI
   public void UpdatePointProperties(Node speckleStructNode, ref string name)
   {
     if (speckleStructNode == null)
+    {
       return;
+    }
 
     if (speckleStructNode.restraint != null)
     {
@@ -45,10 +49,14 @@ public partial class ConverterCSI
     }
 
     if (!(speckleStructNode is CSINode csiNode))
+    {
       return;
+    }
 
     if (csiNode.CSISpringProperty != null)
+    {
       Model.PointObj.SetSpringAssignment(csiNode.name, csiNode.CSISpringProperty.name);
+    }
 
     if (csiNode.DiaphragmAssignment != null)
     {
@@ -97,7 +105,9 @@ public partial class ConverterCSI
     UpdatePointProperties(speckleStructNode, ref name);
 
     if (success != 0)
+    {
       throw new ConversionException("Failed create point");
+    }
 
     return speckleStructNode.name;
   }

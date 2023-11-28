@@ -44,7 +44,9 @@ public partial class ConverterRevit
       //if (!m_element.IsValidObject)
       //  return false;
       if (dBView.ViewType != ViewType.ThreeD)
+      {
         return false;
+      }
 
       Document doc = dBView.Document;
       Document otherDoc = document;
@@ -103,6 +105,7 @@ public partial class ConverterRevit
 
         // Conditionally submit triangle primitives (for non-wireframe views).
         if (displayStyle != DisplayStyle.Wireframe && faceBufferStorage?.PrimitiveCount > 0)
+        {
           DrawContext.FlushBuffer(
             faceBufferStorage.VertexBuffer,
             faceBufferStorage.VertexBufferCount,
@@ -114,6 +117,7 @@ public partial class ConverterRevit
             0,
             faceBufferStorage.PrimitiveCount
           );
+        }
 
         // Conditionally submit line segment primitives.
         if (
@@ -121,6 +125,7 @@ public partial class ConverterRevit
           && displayStyle != DisplayStyle.Shading
           && m_edgeBufferStorage?.PrimitiveCount > 0
         )
+        {
           DrawContext.FlushBuffer(
             m_edgeBufferStorage.VertexBuffer,
             m_edgeBufferStorage.VertexBufferCount,
@@ -132,6 +137,7 @@ public partial class ConverterRevit
             0,
             m_edgeBufferStorage.PrimitiveCount
           );
+        }
       }
       catch (Exception e)
       {
@@ -146,10 +152,16 @@ public partial class ConverterRevit
     private void CreateBufferStorageForMeshes(DisplayStyle displayStyle)
     {
       if (allMeshesStored)
+      {
         RefreshBufferStorage(displayStyle);
+      }
       else
+      {
         foreach (var mesh in speckleMeshes)
+        {
           CreateBufferStorageForMesh(mesh, displayStyle);
+        }
+      }
     }
 
     private void RefreshBufferStorage(DisplayStyle displayStyle)
@@ -162,7 +174,9 @@ public partial class ConverterRevit
       ProcessFaces(m_nonTransparentFaceBufferStorage);
       ProcessFaces(m_transparentFaceBufferStorage);
       if (displayStyle == DisplayStyle.Wireframe)
+      {
         ProcessEdges(m_edgeBufferStorage);
+      }
     }
 
     // Initialize and populate buffers that hold graphics primitives, set up related parameters that are needed for drawing.
@@ -217,7 +231,9 @@ public partial class ConverterRevit
       List<SpeckleMeshInfo> meshes = bufferStorage.Meshes;
       List<int> numVerticesInMeshesBefore = new();
       if (meshes.Count == 0)
+      {
         return;
+      }
 
       bool useNormals =
         bufferStorage.DisplayStyle == DisplayStyle.Shading
@@ -253,7 +269,9 @@ public partial class ConverterRevit
             foreach (var index in meshInfo.Faces[i])
             {
               if (addedVertexIndicies.Contains(index))
+              {
                 continue;
+              }
 
               var p1 = meshInfo.Vertices.ElementAt(index);
               vertexStream.AddVertex(
@@ -274,7 +292,9 @@ public partial class ConverterRevit
           OG.Mesh mesh = meshInfo.Mesh;
 
           foreach (XYZ vertex in meshInfo.Vertices)
+          {
             vertexStream.AddVertex(new VertexPositionColored(vertex, meshInfo.ColorWithTransparency));
+          }
 
           numVerticesInMeshesBefore.Add(numVerticesInMeshesBefore.Last() + mesh.VerticesCount);
         }
@@ -320,7 +340,9 @@ public partial class ConverterRevit
     {
       List<IList<XYZ>> edges = bufferStorage.EdgeXYZs;
       if (edges.Count == 0)
+      {
         return;
+      }
 
       // Edges are encoded as line segment primitives whose vertices contain only position information.
       bufferStorage.FormatBits = VertexFormatBits.Position;
@@ -385,9 +407,12 @@ public partial class ConverterRevit
       public bool NeedsUpdate(DisplayStyle newDisplayStyle)
       {
         if (newDisplayStyle != DisplayStyle)
+        {
           return true;
+        }
 
         if (PrimitiveCount > 0)
+        {
           if (
             VertexBuffer == null
             || !VertexBuffer.IsValid()
@@ -398,7 +423,10 @@ public partial class ConverterRevit
             || EffectInstance == null
             || !EffectInstance.IsValid()
           )
+          {
             return true;
+          }
+        }
 
         return false;
       }
@@ -435,7 +463,9 @@ public partial class ConverterRevit
         Faces = GetFaceIndices(mesh).ToList();
 
         foreach (var vertex in mesh.GetPoints())
+        {
           Vertices.Add(Instance.PointToNative(vertex));
+        }
 
         var edges = new List<(int, int)>();
         var faceIndex = 0;
@@ -464,7 +494,9 @@ public partial class ConverterRevit
             iB = temp < iB ? iB : temp;
 
             if (edges.Contains((iA, iB)))
+            {
               continue;
+            }
 
             edges.Add((iA, iB));
             var p1 = Vertices.ElementAt(iA);
@@ -490,7 +522,9 @@ public partial class ConverterRevit
         {
           var n = mesh.faces[i];
           if (n < 3)
+          {
             n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+          }
 
           var points = mesh.faces.GetRange(i + 1, n).ToArray();
           yield return points;

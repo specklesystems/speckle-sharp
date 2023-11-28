@@ -38,7 +38,9 @@ public class SpeckleConversionTest
         var spkElem = converter.ConvertToSpeckle(elem);
 
         if (spkElem is Base re)
+        {
           AssertUtils.ValidSpeckleElement(elem, re);
+        }
       });
     }
     Assert.Equal(0, converter.Report.ConversionErrorsCount);
@@ -94,14 +96,20 @@ public class SpeckleConversionTest
       foreach (var appObj in appPlaceholders)
       {
         if (!(appObj.Converted.FirstOrDefault() is DB.Element element))
+        {
           continue;
+        }
 
         var testNumber = SpeckleUtils.GetSpeckleObjectTestNumber(element);
         if (testNumber == 0)
+        {
           continue;
+        }
 
         if (updateElementTestNumberMap.TryGetValue(testNumber, out var toNativeElementId))
+        {
           appObj.applicationId = toNativeElementId;
+        }
       }
     }
 
@@ -127,7 +135,9 @@ public class SpeckleConversionTest
             out ApplicationObject reportObj
           );
           if (isAlreadyConverted)
+          {
             continue;
+          }
 
           var conversionResult = converter.ConvertToSpeckle(elem);
           if (conversionResult != null)
@@ -190,7 +200,10 @@ public class SpeckleConversionTest
             resEls.AddRange(apls);
             flatSpkElems.Add(el);
             if (el["elements"] == null)
+            {
               continue;
+            }
+
             flatSpkElems.AddRange((el["elements"] as List<Base>).Where(b => converter.CanConvertToNative(b)));
           }
           else if (res is ApplicationObject appObj)
@@ -286,9 +299,13 @@ public class SpeckleConversionTest
         {
           var res = converter.ConvertToNative(el);
           if (res is List<ApplicationObject> apls)
+          {
             revitEls.AddRange(apls);
+          }
           else
+          {
             revitEls.Add(res);
+          }
         }
         //}, fixture.NewDoc).Wait();
       },

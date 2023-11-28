@@ -60,7 +60,9 @@ public partial class ConverterRevit
 
     // deleting instead of updating for now!
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     if (speckleRevitConduit != null)
     {
@@ -84,7 +86,9 @@ public partial class ConverterRevit
   {
     var baseGeometry = LocationToSpeckle(revitConduit);
     if (!(baseGeometry is Line baseLine))
+    {
       throw new Speckle.Core.Logging.SpeckleException("Only line based Conduits are currently supported.");
+    }
 
     var conduitType = revitConduit.Document.GetElement(revitConduit.GetTypeId()) as ConduitType;
 

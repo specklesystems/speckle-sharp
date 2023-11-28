@@ -41,7 +41,10 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     ;
 
     if (!string.IsNullOrEmpty(type))
+    {
       return type;
+    }
+
     return @base["type"] as string;
   }
 
@@ -51,22 +54,34 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     {
       case OSG.Element1D el:
         if (el.property == null)
+        {
           goto default;
+        }
+
         el.property.name = type;
         break;
       case OSG.Element2D el:
         if (el.property == null)
+        {
           goto default;
+        }
+
         el.property.name = type;
         break;
       case Other.Revit.RevitInstance el:
         if (el.typedDefinition == null)
+        {
           goto default;
+        }
+
         el.typedDefinition.type = type;
         break;
       case BuiltElements.TeklaStructures.TeklaBeam el:
         if (el.profile == null)
+        {
           goto default;
+        }
+
         el.profile.name = type;
         break;
       default:
@@ -95,7 +110,10 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     {
       case Other.Revit.RevitInstance el:
         if (el.typedDefinition == null)
+        {
           goto default;
+        }
+
         el.typedDefinition.family = family;
         break;
       default:
@@ -130,7 +148,9 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     {
       var name = typeof(T).Name;
       if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+      {
         name = category;
+      }
 
       appObj.Update(
         status: ApplicationObject.State.Failed,
@@ -158,7 +178,10 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     {
       isExactMatch = true;
       if (exactType is FamilySymbol fs && !fs.IsActive)
+      {
         fs.Activate();
+      }
+
       return (T)exactType;
     }
 
@@ -185,17 +208,24 @@ public partial class ConverterRevit : IRevitElementTypeRetriever, IAllRevitCateg
     if (match == null)
     {
       if (element is Objects.BuiltElements.Wall) // specifies the basic wall sub type as default
+      {
         match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+      }
+
       match ??= types.First();
     }
 
     if (!isExactMatch)
+    {
       appObj.Update(
         logItem: $"Missing type. Family: {family ?? "Unknown"} Type: {type ?? "Unknown"}\nType was replaced with: {match.FamilyName}, {match.Name}"
       );
+    }
 
     if (match is FamilySymbol fs && !fs.IsActive)
+    {
       fs.Activate();
+    }
 
     return (T)(object)match;
   }

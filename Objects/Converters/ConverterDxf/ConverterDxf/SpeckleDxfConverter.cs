@@ -57,7 +57,10 @@ public partial class SpeckleDxfConverter
         return LineToNative(line);
       case Mesh mesh:
         if (Settings.PrettyMeshes)
+        {
           return MeshToNativePretty(mesh);
+        }
+
         return MeshToNative(mesh);
       case Brep brep:
         return BrepToNative(brep);

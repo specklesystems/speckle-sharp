@@ -72,8 +72,12 @@ public partial class ConverterRevit
       case BoundaryConditionsType.Area:
         var loops = revitBoundary.GetLoops();
         foreach (var loop in loops)
+        {
           foreach (var areaCurve in loop)
+          {
             points.Add(areaCurve.GetEndPoint(1));
+          }
+        }
 
         points = points.Distinct().ToList();
         state = GetParamValue<int>(revitBoundary, BuiltInParameter.BOUNDARY_PARAM_PRESET_AREA);
@@ -96,9 +100,13 @@ public partial class ConverterRevit
 
     var speckleBoundaryCondition = new Base();
     if (nodes.Count > 1)
+    {
       speckleBoundaryCondition["nodes"] = nodes;
+    }
     else
+    {
       speckleBoundaryCondition = nodes[0];
+    }
 
     return speckleBoundaryCondition;
   }
@@ -106,11 +114,17 @@ public partial class ConverterRevit
   private Restraint GetRestraintCode(DB.Element elem, BoundaryConditionsType type, int presetState)
   {
     if (presetState == 0)
+    {
       return new Restraint(RestraintType.Fixed);
+    }
     else if (presetState == 1)
+    {
       return new Restraint(RestraintType.Pinned);
+    }
     else if (presetState == 2)
+    {
       return new Restraint(RestraintType.Roller);
+    }
 
     var boundaryParams = new BuiltInParameter[]
     {
@@ -206,7 +220,10 @@ public partial class ConverterRevit
             }
           }
           else
+          {
             springStiffness[i] = GetParamValue<double>(elem, springValueParams[i]);
+          }
+
           break;
         default:
           return null;

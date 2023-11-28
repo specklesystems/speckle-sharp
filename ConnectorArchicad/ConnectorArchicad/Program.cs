@@ -47,7 +47,9 @@ class Program
   public static void CreateOrFocusSpeckle(string[] args)
   {
     if (MainWindow == null)
+    {
       BuildAvaloniaApp().Start(AppMain, args);
+    }
 
     MainWindow.Show();
     MainWindow.Activate();

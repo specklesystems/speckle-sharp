@@ -15,7 +15,9 @@ public partial class ConverterRevit
   {
     var elIdsToConvert = GetHostedElementIds(revitGroup);
     if (!elIdsToConvert.Any())
+    {
       return null;
+    }
 
     var @base = new Base();
     @base["name"] = revitGroup.Name;
@@ -35,12 +37,16 @@ public partial class ConverterRevit
       // if it's already part of the selection, remove this element from the list of element
       // we can't prevent the other element (with same id) to be converted, like we do for hosted elements
       if (ContextObjects.ContainsKey(element.UniqueId))
+      {
         hostedIds.RemoveAt(i);
+      }
       // otherwise, add the elements to the ContextObjects before converting them because a group
       // may contain a wall that has a window, so we still want the window to search through the contextObjects
       // and recognize that it's host, the wall, is listed in there and not to convert itself
       else
+      {
         ContextObjects.Add(element.UniqueId, new ApplicationObject(null, null) { applicationId = element.UniqueId });
+      }
     }
 
     GetHostedElementsFromIds(@base, revitElement, hostedIds, out List<string> notes);

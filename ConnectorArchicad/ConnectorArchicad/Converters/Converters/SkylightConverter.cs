@@ -66,7 +66,9 @@ public sealed class Skylight : IConverter
 
     var openings = new List<Base>();
     if (data is null)
+    {
       return openings;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (

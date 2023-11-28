@@ -63,7 +63,10 @@ public partial class ConverterAutocadCivil
     LayerTableRecord GetLayer(string path)
     {
       if (layerTable.Has(path))
+      {
         return (LayerTableRecord)Trans.GetObject(layerTable[path], OpenMode.ForWrite);
+      }
+
       return null;
     }
     LayerTableRecord MakeLayer(string name)
@@ -168,7 +171,9 @@ public partial class ConverterAutocadCivil
       lineWeight = GetLineWeight(style.lineweight * conversionFactor);
 
       if (LineTypeDictionary.ContainsKey(style.linetype))
+      {
         lineType = LineTypeDictionary[style.linetype];
+      }
     }
     else if (styleBase is RenderMaterial material) // this is the fallback value if a rendermaterial is passed instead
     {
@@ -182,7 +187,9 @@ public partial class ConverterAutocadCivil
   public DisplayStyle DisplayStyleToSpeckle(Entity entity)
   {
     if (entity is null)
+    {
       return null;
+    }
 
     var style = new DisplayStyle();
 
@@ -237,9 +244,13 @@ public partial class ConverterAutocadCivil
           {
             var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
             if (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
+            {
               lineWeight = (int)LineWeight.LineWeight025;
+            }
             else
+            {
               lineWeight = (int)layer.LineWeight;
+            }
           }
           tr.Commit();
         }
@@ -264,9 +275,15 @@ public partial class ConverterAutocadCivil
   private HatchLoopType HatchLoopTypeToSpeckle(HatchLoopTypes type)
   {
     if (type.HasFlag(HatchLoopTypes.Outermost) || type.HasFlag(HatchLoopTypes.External))
+    {
       return HatchLoopType.Outer;
+    }
+
     if (type.HasFlag(HatchLoopTypes.Default))
+    {
       return HatchLoopType.Unknown;
+    }
+
     return HatchLoopType.Unknown;
   }
 
@@ -385,7 +402,9 @@ public partial class ConverterAutocadCivil
 
     var style = hatch["style"] as string;
     if (style != null)
+    {
       _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
+    }
 
     // create loops
     foreach (var entry in loops)
@@ -444,10 +463,12 @@ public partial class ConverterAutocadCivil
 
     var btrObjId = reference.BlockTableRecord;
     if (reference.IsDynamicBlock)
+    {
       btrObjId =
         reference.AnonymousBlockTableRecord != ObjectId.Null
           ? reference.AnonymousBlockTableRecord
           : reference.DynamicBlockTableRecord;
+    }
 
     var btr = (BlockTableRecord)Trans.GetObject(btrObjId, OpenMode.ForRead);
     definition = BlockRecordToSpeckle(btr);
@@ -458,7 +479,9 @@ public partial class ConverterAutocadCivil
     }
 
     if (definition == null)
+    {
       return null;
+    }
 
     var instance = new BlockInstance()
     {
@@ -469,7 +492,9 @@ public partial class ConverterAutocadCivil
 
     // add attributes
     if (attributes.Any())
+    {
       instance["attributes"] = attributes;
+    }
 
     return instance;
   }
@@ -501,14 +526,19 @@ public partial class ConverterAutocadCivil
       catch (Exception e)
       {
         if (!e.Message.Contains("eWasErased")) // this couldve been previously deleted & received?
+        {
           appObj.Update(logItem: $"Could not remove one or more existing instances on update: {e.Message}");
+        }
       }
     }
 
     // convert the definition
     ObjectId definitionId = DefinitionToNativeDB(definition, out List<string> notes);
     if (notes.Count > 0)
+    {
       appObj.Update(log: notes);
+    }
+
     if (definitionId == ObjectId.Null)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
@@ -532,7 +562,9 @@ public partial class ConverterAutocadCivil
     }
     ObjectId id = ObjectId.Null;
     if (AppendToModelSpace)
+    {
       id = modelSpaceRecord.Append(br);
+    }
 
     if ((!id.IsValid || id.IsNull) && AppendToModelSpace)
     {
@@ -544,7 +576,10 @@ public partial class ConverterAutocadCivil
     var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
     appObj.Update(status: status, convertedItem: br);
     if (AppendToModelSpace)
+    {
       appObj.CreatedIds.Add(id.Handle.ToString());
+    }
+
     return appObj;
   }
 
@@ -590,10 +625,15 @@ public partial class ConverterAutocadCivil
         ? RemoveInvalidAutocadChars($"{revitDef.family} - {revitDef.type} - {definition.id}")
         : definition.id;
     if (ReceiveMode == ReceiveMode.Create)
+    {
       definitionName = $"{commitInfo} - " + definitionName;
+    }
+
     BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
     if (blckTbl.Has(definitionName))
+    {
       return blckTbl[definitionName];
+    }
 
     // get definition geometry to traverse and base point
     Point3d basePoint = Point3d.Origin;
@@ -602,7 +642,10 @@ public partial class ConverterAutocadCivil
     {
       case BlockDefinition o:
         if (o.basePoint != null)
+        {
           basePoint = PointToNative(o.basePoint);
+        }
+
         toTraverse = o.geometry ?? (o["@geometry"] as List<object>).Cast<Base>().ToList();
         break;
       default:
@@ -664,9 +707,13 @@ public partial class ConverterAutocadCivil
       foreach (var convertedItem in convertedGeo)
       {
         if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
+        {
           bakedGeometry.Add(convertedItem.Id);
+        }
         else
+        {
           converted.Add(convertedItem);
+        }
       }
     }
 
@@ -730,12 +777,16 @@ public partial class ConverterAutocadCivil
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
       if (context.propName == null)
+      {
         return stringBuilder;
+      }
 
       // see if there's a layer property on this obj
       var layer = context.current["layer"] as string ?? context.current["Layer"] as string;
       if (!string.IsNullOrEmpty(layer))
+      {
         return new StringBuilder(layer);
+      }
 
       var objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
 
@@ -772,7 +823,9 @@ public partial class ConverterAutocadCivil
       BlockReference reference =
         referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
       if (reference == null)
+      {
         return fullName;
+      }
 
       if (btr.IsAnonymous)
       {
@@ -781,16 +834,24 @@ public partial class ConverterAutocadCivil
             ? Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord
             : null;
         if (dynamicBlock != null)
+        {
           fullName = dynamicBlock.Name;
+        }
       }
 
       var descriptiveProps = new List<string>();
       foreach (DynamicBlockReferenceProperty prop in reference.DynamicBlockReferencePropertyCollection)
+      {
         if (prop.VisibleInCurrentVisibilityState && !prop.ReadOnly && IsSimpleType(prop.Value, out string value))
+        {
           descriptiveProps.Add(value);
+        }
+      }
 
       if (descriptiveProps.Count > 0)
+      {
         fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
+      }
     }
 
     return fullName;
@@ -822,23 +883,36 @@ public partial class ConverterAutocadCivil
   )
   {
     if (TryUseObjDisplay && obj["displayStyle"] as DisplayStyle != null)
+    {
       style = obj["displayStyle"] as DisplayStyle;
+    }
+
     if (TryUseObjDisplay && obj["renderMaterial"] as RenderMaterial != null)
+    {
       material = obj["renderMaterial"] as RenderMaterial;
+    }
 
     var convertedList = new List<object>();
     var convertedGeo = ConvertToNative(obj);
     if (convertedGeo == null)
+    {
       return;
+    }
 
     //Iteratively flatten any lists
     void FlattenConvertedObject(object item)
     {
       if (item is System.Collections.IList list)
+      {
         foreach (object child in list)
+        {
           FlattenConvertedObject(child);
+        }
+      }
       else
+      {
         convertedList.Add(item);
+      }
     }
     FlattenConvertedObject(convertedGeo);
 
@@ -914,7 +988,9 @@ public partial class ConverterAutocadCivil
     Entity _text = null;
     Base sourceAppProps = text[AutocadPropName] as Base;
     if (sourceAppProps == null)
+    {
       return TextToNative(text);
+    }
 
     Point textPosition =
       sourceAppProps["TextPosition"] != null ? sourceAppProps["TextPosition"] as Point : text.plane.origin;
@@ -956,9 +1032,14 @@ public partial class ConverterAutocadCivil
     var _text = new MText();
 
     if (string.IsNullOrEmpty(text.richText))
+    {
       _text.Contents = text.value;
+    }
     else
+    {
       _text.ContentsRTF = text.richText;
+    }
+
     _text.TextHeight = ScaleToNative(text.height, text.units);
     _text.Location = PointToNative(text.plane.origin);
     _text.Rotation = text.rotation;
@@ -974,7 +1055,9 @@ public partial class ConverterAutocadCivil
     {
       var textStyle = Trans.GetObject(id, OpenMode.ForRead) as DimStyleTableRecord;
       if (textStyle.Name == styleName)
+      {
         return id;
+      }
     }
     return ObjectId.Null;
   }
@@ -1185,14 +1268,19 @@ public partial class ConverterAutocadCivil
     AcadDB.Dimension _dimension = null;
     Base sourceAppProps = dimension[AutocadPropName] as Base;
     if (sourceAppProps == null)
+    {
       return DimensionToNative(dimension);
+    }
 
     ObjectId dimensionStyle =
       sourceAppProps["DimensionStyleName"] != null
         ? GetDimensionStyle(sourceAppProps["DimensionStyleName"] as string)
         : Doc.Database.Dimstyle;
     if (dimensionStyle == ObjectId.Null)
+    {
       dimensionStyle = Doc.Database.Dimstyle;
+    }
+
     Point3d position = PointToNative(dimension.position);
     string className = sourceAppProps["class"] as string;
     switch (className)
@@ -1200,7 +1288,10 @@ public partial class ConverterAutocadCivil
       case "AlignedDimension":
         var alignedSpeckle = dimension as DistanceDimension;
         if (alignedSpeckle == null || alignedSpeckle.measured.Count < 2)
+        {
           return null;
+        }
+
         try
         {
           var alignedStart = PointToNative(alignedSpeckle.measured[0]);
@@ -1221,7 +1312,10 @@ public partial class ConverterAutocadCivil
       case "RotatedDimension":
         var rotatedSpeckle = dimension as DistanceDimension;
         if (rotatedSpeckle == null || rotatedSpeckle.measured.Count < 2)
+        {
           return null;
+        }
+
         double rotation = sourceAppProps["Rotation"] as double? ?? 0;
         try
         {
@@ -1245,7 +1339,10 @@ public partial class ConverterAutocadCivil
         {
           var ordinateDimension = DimensionToNative(dimension) as OrdinateDimension;
           if (ordinateDimension != null)
+          {
             Utilities.SetApplicationProps(ordinateDimension, typeof(OrdinateDimension), sourceAppProps);
+          }
+
           _dimension = ordinateDimension;
         }
         catch { }
@@ -1255,7 +1352,10 @@ public partial class ConverterAutocadCivil
         {
           var radialDimension = DimensionToNative(dimension) as RadialDimension;
           if (radialDimension != null)
+          {
             Utilities.SetApplicationProps(radialDimension, typeof(RadialDimension), sourceAppProps);
+          }
+
           _dimension = radialDimension;
         }
         catch { }
@@ -1263,7 +1363,10 @@ public partial class ConverterAutocadCivil
       case "DiametricDimension":
         var diametricSpeckle = dimension as LengthDimension;
         if (diametricSpeckle == null || diametricSpeckle.measured as Line == null)
+        {
           return null;
+        }
+
         try
         {
           var line = diametricSpeckle.measured as Line;
@@ -1280,7 +1383,10 @@ public partial class ConverterAutocadCivil
       case "ArcDimension":
         var arcSpeckle = dimension as LengthDimension;
         if (arcSpeckle == null || arcSpeckle.measured as Arc == null)
+        {
           return null;
+        }
+
         try
         {
           var arc = ArcToNative(arcSpeckle.measured as Arc);
@@ -1302,7 +1408,10 @@ public partial class ConverterAutocadCivil
         {
           var lineAngularDimension = DimensionToNative(dimension) as LineAngularDimension2;
           if (lineAngularDimension != null)
+          {
             Utilities.SetApplicationProps(lineAngularDimension, typeof(LineAngularDimension2), sourceAppProps);
+          }
+
           _dimension = lineAngularDimension;
         }
         catch { }
@@ -1312,7 +1421,10 @@ public partial class ConverterAutocadCivil
         {
           var pointAngularDimension = DimensionToNative(dimension) as Point3AngularDimension;
           if (pointAngularDimension != null)
+          {
             Utilities.SetApplicationProps(pointAngularDimension, typeof(Point3AngularDimension), sourceAppProps);
+          }
+
           _dimension = pointAngularDimension;
         }
         catch { }
@@ -1367,14 +1479,20 @@ public partial class ConverterAutocadCivil
         try
         {
           if (o.measured.Count < 2)
+          {
             break;
+          }
+
           var line1Start = PointToNative(o.measured[0].start);
           var line1End = PointToNative(o.measured[0].end);
           var line2Start = PointToNative(o.measured[1].start);
           var line2End = PointToNative(o.measured[1].end);
           if (Math.Round(line1Start.DistanceTo(line2Start), 3) == 0)
+          {
             _dimension = new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style);
+          }
           else
+          {
             _dimension = new LineAngularDimension2(
               line1Start,
               line1End,
@@ -1384,12 +1502,16 @@ public partial class ConverterAutocadCivil
               dimension.value,
               style
             );
+          }
         }
         catch { }
         break;
       case DistanceDimension o:
         if (o.measured.Count < 2)
+        {
           break;
+        }
+
         try
         {
           var start = PointToNative(o.measured[0]);
@@ -1408,9 +1530,13 @@ public partial class ConverterAutocadCivil
             var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
             var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
             if (dir.IsParallelTo(normal, Tolerance.Global))
+            {
               _dimension = new AlignedDimension(start, end, position, dimension.value, style);
+            }
             else
+            {
               _dimension = new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
+            }
           }
         }
         catch { }
@@ -1430,7 +1556,9 @@ public partial class ConverterAutocadCivil
     {
       var dimStyle = Trans.GetObject(id, OpenMode.ForRead) as DimStyleTableRecord;
       if (dimStyle.Name == styleName)
+      {
         return id;
+      }
     }
     return ObjectId.Null;
   }
@@ -1447,7 +1575,9 @@ public partial class ConverterAutocadCivil
     props["OriginalDxfName"] = proxy.OriginalDxfName;
     props["ProxyFlags"] = proxy.ProxyFlags;
     if (props != null)
+    {
       _proxy[AutocadPropName] = props;
+    }
 
     return _proxy;
   }

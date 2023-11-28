@@ -59,7 +59,9 @@ public partial class ConverterRevit
   {
     //from 2.16 onwards we're passing the BuiltInCategory on every object
     if (@object["builtInCategory"] is not null)
+    {
       return @object["builtInCategory"] as string;
+    }
 
     if (RevitCategory.TryParse(@object["category"] as string, out RevitCategory category))
     {

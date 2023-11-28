@@ -68,7 +68,9 @@ public class SpeckleRevitCommand : IExternalCommand
       }
     }
     else
+    {
       CreateOrFocusSpeckle();
+    }
 
     return Result.Succeeded;
   }
@@ -78,7 +80,9 @@ public class SpeckleRevitCommand : IExternalCommand
     try
     {
       if (!UseDockablePanel)
+      {
         return;
+      }
 
       var registered = DockablePane.PaneIsRegistered(PanelId);
       var created = DockablePane.PaneExists(PanelId);

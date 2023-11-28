@@ -75,7 +75,9 @@ public class cPlugin
     foreach (Process p in processCollection)
     {
       if (p.ProcessName == "DriverCSharp")
+      {
         Environment.Exit(0);
+      }
     }
     //Environment.Exit(0);
     pluginCallback.Finish(0);
@@ -96,7 +98,9 @@ public class cPlugin
     string assemblyFile = Path.Combine(path, name + ".dll");
 
     if (File.Exists(assemblyFile))
+    {
       a = Assembly.LoadFrom(assemblyFile);
+    }
 
     return a;
   }

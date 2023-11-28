@@ -156,10 +156,12 @@ public partial class ConverterRevit
             }
 
             if (offset != null)
+            {
               revitFootprintRoof.set_Offset(
                 curveArray.get_Item(i),
                 ScaleToNative((double)offset, speckleFootprintRoof.units)
               );
+            }
           }
         }
 
@@ -169,7 +171,9 @@ public partial class ConverterRevit
         if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope != 0)
         {
           for (var i = 0; i < curveArray.Size; i++)
+          {
             revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
+          }
 
           TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
         }
@@ -279,14 +283,18 @@ public partial class ConverterRevit
     speckleRoof.family = elementType.FamilyName;
 
     if (profiles == null)
+    {
       profiles = GetProfiles(revitRoof);
+    }
 
     // TODO handle case if not one of our supported roofs
     if (profiles.Any())
     {
       speckleRoof.outline = profiles[0];
       if (profiles.Count > 1)
+      {
         speckleRoof.voids = profiles.Skip(1).ToList();
+      }
     }
 
     GetAllRevitParamsAndIds(
@@ -307,7 +315,10 @@ public partial class ConverterRevit
 
     GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
     if (hostedNotes.Any())
+    {
       notes.AddRange(hostedNotes);
+    }
+
     return speckleRoof;
   }
 
@@ -336,27 +347,41 @@ public partial class ConverterRevit
           for (var i = 0; i < crvLoops.Size; i++)
           {
             if (definesRoofSlope != null)
+            {
               break;
+            }
 
             var crvLoop = crvLoops.get_Item(i);
             var poly = new Polycurve(ModelUnits);
             foreach (DB.ModelCurve curve in crvLoop)
             {
               if (curve == null)
+              {
                 continue;
+              }
+
               if (!(curve.Location is DB.LocationCurve c))
+              {
                 continue;
+              }
+
               if (!(c.Curve is DB.Line line))
+              {
                 continue;
+              }
 
               var start = PointToSpeckle(line.GetEndPoint(0), roof.Document);
               var end = PointToSpeckle(line.GetEndPoint(1), roof.Document);
 
               if (!IsBetween(start, end, tailPoint))
+              {
                 continue;
+              }
 
               if (!CheckOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
+              {
                 break;
+              }
 
               definesRoofSlope = curve;
               var distance = Math.Sqrt(
@@ -375,7 +400,9 @@ public partial class ConverterRevit
           foreach (DB.ModelCurve curve in crvLoop)
           {
             if (curve == null)
+            {
               continue;
+            }
 
             var segment = CurveToSpeckle(curve.GeometryCurve, roof.Document) as Base; //it's a safe casting
             if (definesRoofSlope != null && curve == definesRoofSlope)
@@ -394,7 +421,9 @@ public partial class ConverterRevit
 
             //roud profiles are returned duplicated!
             if (curve is ModelArc arc && RevitVersionHelper.IsCurveClosed(arc.GeometryCurve))
+            {
               break;
+            }
           }
           profiles.Add(poly);
         }
@@ -408,7 +437,9 @@ public partial class ConverterRevit
         foreach (DB.ModelCurve curve in crvloop)
         {
           if (curve == null)
+          {
             continue;
+          }
 
           poly.segments.Add(CurveToSpeckle(curve.GeometryCurve, roof.Document));
         }
@@ -426,15 +457,21 @@ public partial class ConverterRevit
 
     // compare versus epsilon for floating point values, or != 0 if using integers
     if (Math.Abs(crossproduct) > TOLERANCE)
+    {
       return false;
+    }
 
     var dotProduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y);
     if (dotProduct < 0)
+    {
       return false;
+    }
 
     var squaredLengthBA = (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
     if (dotProduct > squaredLengthBA)
+    {
       return false;
+    }
 
     return true;
   }
@@ -446,24 +483,34 @@ public partial class ConverterRevit
 
     // Both lines have infinite slope
     if (Math.Abs(x2 - x1) < TOLERANCE && Math.Abs(x4 - x3) < TOLERANCE)
+    {
       return false;
+    }
     // Only line 1 has infinite slope
     else if (Math.Abs(x2 - x1) < TOLERANCE)
     {
       m2 = (y4 - y3) / (x4 - x3);
       if (Math.Abs(m2) < TOLERANCE)
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
     // Only line 2 has infinite slope
     else if (Math.Abs(x4 - x3) < TOLERANCE)
     {
       m1 = (y2 - y1) / (x2 - x1);
       if (Math.Abs(m1) < TOLERANCE)
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
     else
     {
@@ -473,9 +520,13 @@ public partial class ConverterRevit
 
       // Check if their product is -1
       if (Math.Abs(m1 * m2 + 1) < TOLERANCE)
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
   }
 }

@@ -166,7 +166,9 @@ public partial class ConverterRevit
         {
           var element = Doc.GetElement(id);
           if (element == null)
+          {
             continue;
+          }
 
           TrySetParam(element, revitScheduleData.Parameter, newValue, "none");
         }
@@ -465,7 +467,10 @@ public partial class ConverterRevit
     foreach (var id in orginialTableIds)
     {
       if (remainingIdsInRow.Contains(id))
+      {
         continue;
+      }
+
       yield return revitSchedule.Document.GetElement(id).UniqueId;
     }
   }

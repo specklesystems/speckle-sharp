@@ -138,7 +138,9 @@ public class DeconstructSpeckleObjectTaskComponent
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Expand Object");
+      }
 
       var task = Task.Run(() => DoWork(@base));
       TaskList.Add(task);
@@ -147,15 +149,21 @@ public class DeconstructSpeckleObjectTaskComponent
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
     if (!GetSolveResults(DA, out Dictionary<string, object> result))
+    {
       // Normal mode not supported
       return;
+    }
 
     if (result != null)
+    {
       foreach (var key in result.Keys)
       {
         var isDetached = key.StartsWith("@");
@@ -188,6 +196,7 @@ public class DeconstructSpeckleObjectTaskComponent
           }
         }
       }
+    }
   }
 
   private bool OutputMismatch()
@@ -211,7 +220,9 @@ public class DeconstructSpeckleObjectTaskComponent
   {
     var equalLength = outputList.Count == Params.Output.Count;
     if (!equalLength)
+    {
       return false;
+    }
 
     var diffParams = Params.Output.Where(
       param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
@@ -222,7 +233,9 @@ public class DeconstructSpeckleObjectTaskComponent
   private void AutoCreateOutputs()
   {
     if (!OutputMismatch())
+    {
       return;
+    }
 
     RecordUndoEvent("Creating Outputs");
 
@@ -261,7 +274,9 @@ public class DeconstructSpeckleObjectTaskComponent
       remove.ForEach(b =>
       {
         if (b != -1 && Params.Output[b].Recipients.Count == 0)
+        {
           Params.UnregisterOutputParameter(Params.Output[b]);
+        }
       });
 
       outputList.Sort();
@@ -283,7 +298,9 @@ public class DeconstructSpeckleObjectTaskComponent
           Params.RegisterOutputParam(newParam);
         }
         if (param is GenericAccessParam srParam)
+        {
           srParam.Detachable = isDetached;
+        }
       });
     }
 
@@ -328,10 +345,16 @@ public class DeconstructSpeckleObjectTaskComponent
     {
       object converted = null;
       if (ghGoo is GH_SpeckleBase ghBase)
+      {
         converted = ghBase.Value;
+      }
       else
+      {
         converted = Utilities.TryConvertItemToSpeckle(ghGoo, Converter);
+      }
+
       if (converted is Base b)
+      {
         b.GetMembers(
           DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed
         )
@@ -339,8 +362,11 @@ public class DeconstructSpeckleObjectTaskComponent
           .ForEach(prop =>
           {
             if (!fullProps.Contains(prop))
+            {
               fullProps.Add(prop);
+            }
           });
+      }
     }
 
     fullProps.Sort();
@@ -370,7 +396,10 @@ public class DeconstructSpeckleObjectTaskComponent
     // Assign all values to it's corresponding dictionary entry and branch path.
     var obj = @base;
     if (obj == null)
+    {
       return new Dictionary<string, object>();
+    }
+
     foreach (
       var prop in obj.GetMembers(
         DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed
@@ -411,7 +440,9 @@ public class DeconstructSpeckleObjectTaskComponent
           {
             IGH_Goo wrapper = new GH_ObjectWrapper();
             foreach (var b in kvp.Value)
+            {
               wrapper = Utilities.TryConvertItemToNative(b, Converter);
+            }
 
             outputDict[prop.Key] = wrapper;
           }
@@ -419,9 +450,14 @@ public class DeconstructSpeckleObjectTaskComponent
           break;
         default:
           if (prop.Value is Base temp && Utilities.CanConvertToDataTree(temp))
+          {
             outputDict[prop.Key] = Utilities.DataTreeToNative(temp, Converter);
+          }
           else
+          {
             outputDict[prop.Key] = Utilities.TryConvertItemToNative(prop.Value, Converter);
+          }
+
           break;
       }
     }

@@ -168,7 +168,10 @@ public partial class ConverterRevit
   public static double ScaleToNative(double value, string units)
   {
     if (string.IsNullOrEmpty(units))
+    {
       return value;
+    }
+
     return UnitUtils.ConvertToInternalUnits(value, UnitsToNative(units));
   }
 
@@ -197,15 +200,25 @@ public partial class ConverterRevit
   public string UnitsToSpeckle(string typeId)
   {
     if (typeId == UnitTypeId.Millimeters.TypeId)
+    {
       return Speckle.Core.Kits.Units.Millimeters;
+    }
     else if (typeId == UnitTypeId.Centimeters.TypeId)
+    {
       return Speckle.Core.Kits.Units.Centimeters;
+    }
     else if (typeId == UnitTypeId.Meters.TypeId || typeId == UnitTypeId.MetersCentimeters.TypeId)
+    {
       return Speckle.Core.Kits.Units.Meters;
+    }
     else if (typeId == UnitTypeId.Inches.TypeId || typeId == UnitTypeId.FractionalInches.TypeId)
+    {
       return Speckle.Core.Kits.Units.Inches;
+    }
     else if (typeId == UnitTypeId.Feet.TypeId || typeId == UnitTypeId.FeetFractionalInches.TypeId)
+    {
       return Speckle.Core.Kits.Units.Feet;
+    }
 
     throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
   }

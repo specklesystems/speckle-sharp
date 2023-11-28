@@ -88,7 +88,10 @@ public partial class SpeckleDxfConverter
   public Dxf.AciColor MaterialToNativeColor(RenderMaterial renderMaterial)
   {
     if (renderMaterial == null)
+    {
       return Dxf.AciColor.ByLayer;
+    }
+
     var sysColor = System.Drawing.Color.FromArgb(renderMaterial.diffuse);
     return new Dxf.AciColor(sysColor.R, sysColor.G, sysColor.B);
   }

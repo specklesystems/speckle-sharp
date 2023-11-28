@@ -151,7 +151,9 @@ public partial class ConverterTeklaStructures : ISpeckleConverter
           foreach (var displayAlias in DefaultTraversal.displayValuePropAliases)
           {
             if (@base[displayAlias] is not List<GE.Mesh> meshes)
+            {
               continue;
+            }
 
             MeshToNative(@base, meshes);
           }
@@ -250,7 +252,9 @@ public partial class ConverterTeklaStructures : ISpeckleConverter
   private string GetElemInfo(object o)
   {
     if (o is ModelObject e)
+    {
       return $", name: {e.Identifier.GetType().ToString()}, id: {e.Identifier.ToString()}";
+    }
 
     return "";
   }

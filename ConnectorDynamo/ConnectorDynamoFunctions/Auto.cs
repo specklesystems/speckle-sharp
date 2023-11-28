@@ -29,7 +29,9 @@ public static class Auto
   {
     var result = new List<string>();
     if (!enabled)
+    {
       return result;
+    }
 
     var converter = new BatchConverter();
     converter.OnError += (sender, args) => throw args.Error;
@@ -64,7 +66,9 @@ public static class Auto
     var result = new Dictionary<string, object>();
 
     if (!enabled)
+    {
       return result;
+    }
 
     StreamWrapper sw = null;
 

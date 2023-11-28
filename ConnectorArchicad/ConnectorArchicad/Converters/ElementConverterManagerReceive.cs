@@ -95,7 +95,9 @@ public sealed partial class ElementConverterManager
     converter.SetContextObjects(flattenObjects);
 
     foreach (var applicationObject in converter.ContextObjects)
+    {
       progress.Report.Log(applicationObject);
+    }
 
     converter.ReceiveMode = state.ReceiveMode;
 
@@ -113,10 +115,14 @@ public sealed partial class ElementConverterManager
     TraversalContext Store(TraversalContext context, Objects.Converter.Archicad.ConverterArchicad converter)
     {
       if (!converter.CanConvertToNativeImplemented(context.current))
+      {
         return null;
+      }
 
       if (traversedObjects.Contains(context.current.id))
+      {
         return null;
+      }
 
       traversedObjects.Add(context.current.id);
 

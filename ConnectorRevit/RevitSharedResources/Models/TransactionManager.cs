@@ -91,18 +91,22 @@ public class TransactionManager : IDisposable
 
       var exception = errorEater.GetException();
       if (exception == null)
+      {
         SpeckleLog.Logger.Fatal(
           "Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions",
           numUniqueErrors,
           numTotalErrors
         );
+      }
       else
+      {
         SpeckleLog.Logger.Fatal(
           exception,
           "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.",
           numUniqueErrors,
           numTotalErrors
         );
+      }
 
       throw exception
         ?? new SpeckleException(
@@ -223,17 +227,27 @@ public class TransactionManager : IDisposable
   protected virtual void Dispose(bool disposing)
   {
     if (isDisposed)
+    {
       return;
+    }
 
     if (disposing)
     {
       // free managed resources
       if (subTransaction != null && subTransaction.IsValidObject)
+      {
         subTransaction.Dispose();
+      }
+
       if (transaction != null && transaction.IsValidObject)
+      {
         transaction.Dispose();
+      }
+
       if (transactionGroup != null && transactionGroup.IsValidObject)
+      {
         transactionGroup.Dispose();
+      }
     }
 
     isDisposed = true;

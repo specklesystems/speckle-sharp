@@ -180,7 +180,9 @@ public partial class ConverterRevit
           break;
         case DB.Mesh mesh:
           if (IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
+          {
             continue;
+          }
 
           if (inverseTransform != null)
           {
@@ -239,14 +241,20 @@ public partial class ConverterRevit
   private bool IsSkippableGraphicStyle(ElementId id, Document doc)
   {
     if (!_graphicStyleCache.ContainsKey(id.ToString()))
+    {
       _graphicStyleCache.Add(id.ToString(), doc.GetElement(id) as GraphicsStyle);
+    }
+
     var graphicStyle = _graphicStyleCache[id.ToString()];
 
     if (
       graphicStyle != null
       && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource)
     )
+    {
       return true;
+    }
+
     return false;
   }
 
@@ -311,7 +319,10 @@ public partial class ConverterRevit
       foreach (DB.Mesh mesh in meshData.Value)
       {
         if (mesh == null)
+        {
           continue;
+        }
+
         numberOfVertices += mesh.Vertices.Count * 3;
         numberOfFaces += mesh.NumTriangles * 4;
       }
@@ -321,7 +332,10 @@ public partial class ConverterRevit
       foreach (DB.Mesh mesh in meshData.Value)
       {
         if (mesh == null)
+        {
           continue;
+        }
+
         ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d, doNotTransformWithReferencePoint);
       }
     }

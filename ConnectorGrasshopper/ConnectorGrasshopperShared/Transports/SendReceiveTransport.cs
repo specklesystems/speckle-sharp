@@ -20,11 +20,16 @@ public class SendReceiveTransport : GH_SpeckleComponent
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -93,10 +98,17 @@ public class SendReceiveTransport : GH_SpeckleComponent
 
     var freshTransports = new List<ITransport>();
     foreach (var tr in transports)
+    {
       if (tr is ICloneable cloneable)
+      {
         freshTransports.Add(cloneable.Clone() as ITransport);
+      }
       else
+      {
         freshTransports.Add(tr);
+      }
+    }
+
     transports = freshTransports;
 
     var res = Task.Run(async () => await Operations.Send(obj.Value, transports, false, disposeTransports: true)).Result;
@@ -111,11 +123,16 @@ public class ReceiveFromTransport : GH_SpeckleComponent
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -172,10 +189,14 @@ public class ReceiveFromTransport : GH_SpeckleComponent
     var transport = transportGoo.GetType().GetProperty("Value").GetValue(transportGoo) as ITransport;
 
     if (transport == null)
+    {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Transport is null.");
+    }
 
     if (transport is ICloneable disposedTwin)
+    {
       transport = disposedTwin.Clone() as ITransport;
+    }
 
     List<Base> results = new();
     foreach (var id in ids)

@@ -42,7 +42,9 @@ public partial class ConverterCSI
     );
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to set the stories");
+    }
 
     return storyNames.ToList();
   }

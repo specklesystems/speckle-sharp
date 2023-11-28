@@ -69,6 +69,7 @@ public partial class ConnectorBindingsRevit
     };
 
     if (schedules.Any())
+    {
       filters.Add(
         new ListSelectionFilter
         {
@@ -79,8 +80,10 @@ public partial class ConnectorBindingsRevit
           Description = "Sends the selected schedule as a DataTable"
         }
       );
+    }
 
     if (viewFilters.Any())
+    {
       filters.Add(
         new ListSelectionFilter
         {
@@ -91,8 +94,10 @@ public partial class ConnectorBindingsRevit
           Description = "Adds all elements that pass the selected filters"
         }
       );
+    }
 
     if (worksets.Any())
+    {
       filters.Add(
         new ListSelectionFilter
         {
@@ -103,6 +108,7 @@ public partial class ConnectorBindingsRevit
           Description = "Adds all elements belonging to the selected workset"
         }
       );
+    }
 
     filters.Add(
       new ListSelectionFilter
@@ -155,7 +161,9 @@ public partial class ConnectorBindingsRevit
       .Select(x => x.Id)
       ?.ToList();
     if (!selection.Any())
+    {
       return;
+    }
 
     //merge two lists
     if (!deselect)
@@ -175,7 +183,9 @@ public partial class ConnectorBindingsRevit
     // Get settings and return empty list if we should not send linked models
     var sendLinkedModels = CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
     if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
+    {
       return linkedDocs;
+    }
 
     var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document)
       .OfCategory(BuiltInCategory.OST_RvtLinks)
@@ -297,7 +307,9 @@ public partial class ConnectorBindingsRevit
     foreach (var selectedLinkedFile in selectedLinkedFiles)
     {
       if (linkedDocs.ContainsKey(selectedLinkedFile.Id))
+      {
         selection.AddRange(linkedDocs[selectedLinkedFile.Id].GetSupportedElements(revitDocumentAggregateCache));
+      }
     }
 
     return selection;
@@ -354,7 +366,9 @@ public partial class ConnectorBindingsRevit
     {
       var revitCategory = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<Category>().TryGet(cat);
       if (revitCategory == null)
+      {
         continue;
+      }
 
       catIds.Add(revitCategory.Id);
     }
@@ -458,7 +472,9 @@ public partial class ConnectorBindingsRevit
         //check if linked doc is visible in main doc
         var linkedObject = CurrentDoc.Document.GetElement(linkedDoc.Key);
         if (linkedObject.IsHidden(view))
+        {
           continue;
+        }
 
         //get ALL the linked model objects
         selection
@@ -510,19 +526,29 @@ public partial class ConnectorBindingsRevit
     var projectInfoFilter = filter as ListSelectionFilter;
 
     if (projectInfoFilter.Selection.Contains("Project Info"))
+    {
       selection.Add(CurrentDoc.Document.ProjectInformation);
+    }
 
     if (projectInfoFilter.Selection.Contains("Views 2D"))
+    {
       selection.AddRange(CurrentDoc.Document.Views2D());
+    }
 
     if (projectInfoFilter.Selection.Contains("Views 3D"))
+    {
       selection.AddRange(CurrentDoc.Document.Views3D());
+    }
 
     if (projectInfoFilter.Selection.Contains("Levels"))
+    {
       selection.AddRange(CurrentDoc.Document.Levels());
+    }
 
     if (projectInfoFilter.Selection.Contains("Families & Types"))
+    {
       selection.AddRange(CurrentDoc.Document.GetSupportedTypes(revitDocumentAggregateCache));
+    }
 
     return selection;
   }
@@ -594,7 +620,10 @@ public partial class ConnectorBindingsRevit
       {
         case Autodesk.Revit.DB.Mechanical.Zone zone:
           foreach (var space in zone.Spaces.OfType<Autodesk.Revit.DB.Mechanical.Space>())
+          {
             yield return space;
+          }
+
           break;
 
         default:

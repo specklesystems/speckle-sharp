@@ -62,7 +62,9 @@ internal sealed class FamilyImporter
       .ConfigureAwait(false);
 
     if (familyPaths.Length == 0)
+    {
       return;
+    }
 
     var allSymbols = new Dictionary<string, List<Symbol>>();
     var familyInfo = new Dictionary<string, FamilyInfo>();
@@ -112,7 +114,9 @@ internal sealed class FamilyImporter
           );
 
           if (!successfullyImported)
+          {
             continue;
+          }
 
           // get all possible speckle-defined mapping categories that the newly imported symbol may belong to.
           // cache the values per each family that is imported
@@ -188,7 +192,9 @@ internal sealed class FamilyImporter
 
       string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
       if (string.IsNullOrEmpty(familyName))
+      {
         continue;
+      }
 
       var typeInfo = GetTypeInfo(xmlDoc, nsman);
       familyInfo.Add(familyName, new FamilyInfo(path));
@@ -231,7 +237,9 @@ internal sealed class FamilyImporter
     var familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
 
     if (familySymbols.Count == 0)
+    {
       return;
+    }
 
     if (!allSymbols.TryGetValue(familyName, out var symbols))
     {
@@ -267,16 +275,22 @@ internal sealed class FamilyImporter
     foreach (var node in catRoot)
     {
       if (node is not XmlElement xmlNode)
+      {
         continue;
+      }
 
       var term = xmlNode.SelectSingleNode("ab:term", nsman);
       if (term == null)
+      {
         continue;
+      }
 
       category = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(term.InnerText);
 
       if (category != SHC.Undefined)
+      {
         break;
+      }
     }
 
     return category;

@@ -60,7 +60,9 @@ public partial class ConverterRevit
     {
       // some views have null origin, not sure why, but for now we just ignore them and don't bother the user
       if (rv3d.Origin == null)
+      {
         throw new ConversionSkippedException($"Views with no origin are not supported");
+      }
 
       // get orientation
       var forward = rv3d.GetSavedOrientation().ForwardDirection; // this is unit vector
@@ -136,9 +138,13 @@ public partial class ConverterRevit
 
       // create view
       if (speckleView.isOrthogonal)
+      {
         view = DB.View3D.CreateIsometric(Doc, viewType.Id);
+      }
       else
+      {
         view = DB.View3D.CreatePerspective(Doc, viewType.Id);
+      }
 
       view.Name = editViewName;
       appObj.Update(status: ApplicationObject.State.Created);
@@ -152,14 +158,19 @@ public partial class ConverterRevit
       return appObj;
     }
     else
+    {
       appObj.Update(status: ApplicationObject.State.Updated);
+    }
 
     // set props
     view.SetOrientation(orientation);
     view.SaveOrientationAndLock();
 
     if (view.IsValidObject)
+    {
       SetInstanceParameters(view, speckleView, excludedParameters);
+    }
+
     view = SetViewParams(view, speckleView);
 
     appObj.Update(createdId: view.UniqueId, convertedItem: view);
@@ -188,8 +199,12 @@ public partial class ConverterRevit
     // crop
     var crop = speckleView["cropped"] as string;
     if (crop != null)
+    {
       if (bool.TryParse(crop, out bool IsCropped))
+      {
         view.CropBoxActive = IsCropped;
+      }
+    }
 
     return view;
   }
@@ -211,19 +226,25 @@ public partial class ConverterRevit
     var viewNameSplit = name.Split('-');
     // if the name already starts with the prefix, don't add the prefix again
     if (viewNameSplit.Length > 0 && viewNameSplit.First() == prefix)
+    {
       return name;
+    }
 
     var newName = name;
     // append commit info as prefix
     if (prefix != null)
+    {
       newName = prefix + "-" + name;
+    }
 
     // Check for invalid characters in view name
     var results = new Regex("[\\{\\}\\[\\]\\:|;<>?`~]").Match(newName);
 
     // If none, fast exit
     if (results.Length <= 0)
+    {
       return newName;
+    }
 
     // Name contains invalid characters, replace accordingly.
     var corrected = Regex.Replace(newName, "[\\{\\[]", "(");

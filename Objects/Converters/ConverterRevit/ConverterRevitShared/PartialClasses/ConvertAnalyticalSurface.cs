@@ -85,7 +85,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     AnalyticalPanel revitMember = null;
     DB.Element physicalMember = null;
@@ -208,7 +210,9 @@ public partial class ConverterRevit
   private Element2D AnalyticalSurfaceToSpeckle(AnalyticalModelSurface revitSurface)
   {
     if (!revitSurface.IsEnabled())
+    {
       return new Element2D();
+    }
 
     var speckleElement2D = new Element2D();
     var structuralElement = revitSurface.Document.GetElement(revitSurface.GetElementId());
@@ -419,7 +423,9 @@ public partial class ConverterRevit
     foreach (var openingId in revitSurface.GetAnalyticalOpeningsIds())
     {
       if (revitSurface.Document.GetElement(openingId) is not AnalyticalOpening opening)
+      {
         continue;
+      }
 
       var curveLoop = opening.GetOuterContour();
       openings.Add(CurveLoopToSpeckle(curveLoop, revitSurface.Document));

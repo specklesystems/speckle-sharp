@@ -11,13 +11,17 @@ public class CreateSpeckleObjectByKeyValueV2UpgradeObject : IGH_UpgradeObject
   public IGH_DocumentObject Upgrade(IGH_DocumentObject target, GH_Document document)
   {
     if (!(target is CreateSpeckleObjectByKeyValueTaskComponent component))
+    {
       return null; // Ensure the type of the target is correct
+    }
 
     // Upgrade the component
     var upgraded = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
 
     if (!(upgraded is CreateSpeckleObjectByKeyValueV2TaskComponent upgradedComponent))
+    {
       return null; // Ensure the type of the upgraded component is correct
+    }
 
     // Swap the groups this node belongs to.
     UpgradeUtils.SwapGroups(document, component, upgradedComponent);
@@ -38,13 +42,17 @@ public class ExtendSpeckleObjectByKeyValueV2UpgradeObject : IGH_UpgradeObject
   public IGH_DocumentObject Upgrade(IGH_DocumentObject target, GH_Document document)
   {
     if (!(target is ExtendSpeckleObjectByKeyValueTaskComponent component))
+    {
       return null; // Ensure the type of the target is correct
+    }
 
     // Upgrade the component
     var upgraded = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
 
     if (!(upgraded is ExtendSpeckleObjectByKeyValueV2TaskComponent upgradedComponent))
+    {
       return null; // Ensure the type of the upgraded component is correct
+    }
 
     // Swap the groups this node belongs to.
     UpgradeUtils.SwapGroups(document, component, upgradedComponent);

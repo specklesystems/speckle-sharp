@@ -16,7 +16,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
     var names = new List<string>();
     ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
     while (myEnum.MoveNext())
+    {
       names.Add(myEnum.Current.Identifier.GUID.ToString());
+    }
 
     return names;
   }
@@ -31,7 +33,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
     {
       var phaseCollection = Model.GetPhases();
       foreach (Phase p in phaseCollection)
+      {
         phases.Add(p.PhaseName);
+      }
 
       //selectionCount = Model.Selection.GetElementIds().Count();
       categories = ConnectorTeklaStructuresUtils.GetCategoryNames(Model);
@@ -88,13 +92,19 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
       case "manual":
         ModelObjectEnumerator myEnum = new Tekla.Structures.Model.UI.ModelObjectSelector().GetSelectedObjects();
         while (myEnum.MoveNext())
+        {
           selection.Add(myEnum.Current);
+        }
+
         return selection;
       //  return GetSelectedObjects();
       case "all":
         myEnum = Model.GetModelObjectSelector().GetAllObjects();
         while (myEnum.MoveNext())
+        {
           selection.Add(myEnum.Current);
+        }
+
         return selection;
 
       case "phase":
@@ -107,7 +117,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
             Phase phaseTemp = new();
             myEnum.Current.GetPhase(out phaseTemp);
             if (phaseTemp.PhaseName == phase)
+            {
               selection.Add(myEnum.Current);
+            }
           }
         }
 
@@ -122,7 +134,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
           {
             myEnum = Model.GetModelObjectSelector().GetAllObjectsWithType(categories[cat]);
             while (myEnum.MoveNext())
+            {
               selection.Add(myEnum.Current);
+            }
           }
         }
         return selection;

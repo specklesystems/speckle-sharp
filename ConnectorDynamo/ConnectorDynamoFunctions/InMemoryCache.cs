@@ -18,7 +18,10 @@ public static class InMemoryCache
   public static Dictionary<string, object> Get(string id)
   {
     if (_cache.ContainsKey(id))
+    {
       return _cache[id];
+    }
+
     return null;
   }
 

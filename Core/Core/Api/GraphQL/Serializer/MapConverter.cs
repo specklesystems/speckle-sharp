@@ -27,7 +27,10 @@ public class MapConverter : JsonConverter<Map>
   {
     var rootToken = JToken.ReadFrom(reader);
     if (rootToken is JObject)
+    {
       return (Map)ReadDictionary(rootToken, new Map());
+    }
+
     throw new ArgumentException("This converter can only parse when the root element is a JSON Object.");
   }
 
@@ -50,7 +53,10 @@ public class MapConverter : JsonConverter<Map>
     foreach (var property in ((JObject)element).Properties())
     {
       if (IsUnsupportedJTokenType(property.Value.Type))
+      {
         continue;
+      }
+
       to[property.Name] = ReadToken(property.Value);
     }
     return to;
@@ -61,7 +67,10 @@ public class MapConverter : JsonConverter<Map>
     foreach (var item in element)
     {
       if (IsUnsupportedJTokenType(item.Type))
+      {
         continue;
+      }
+
       yield return ReadToken(item);
     }
   }

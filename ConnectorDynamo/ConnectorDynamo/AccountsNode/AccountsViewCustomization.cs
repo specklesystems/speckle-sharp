@@ -54,7 +54,10 @@ public class AccountsViewCustomization : INodeViewCustomization<Accounts>
   private void SelectionChanged(object sender, SelectionChangedEventArgs e)
   {
     if (e.AddedItems.Count == 0)
+    {
       return;
+    }
+
     var account = e.AddedItems[0] as Account;
     accountsNode.SelectionChanged(account);
   }

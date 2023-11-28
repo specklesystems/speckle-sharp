@@ -42,7 +42,10 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
     var settings = new Dictionary<string, string>();
     CurrentSettings = state.Settings;
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     converter.SetConverterSettings(settings);
 
     using var d0 = LogContext.PushProperty("converterName", converter.Name);
@@ -105,7 +108,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
       {
         converted = converter.ConvertToSpeckle(obj);
         if (converted == null)
+        {
           throw new ConversionException("Conversion returned null");
+        }
       }
       catch (Exception ex)
       {

@@ -21,6 +21,7 @@ public static class CurveArrayEncodingExtensions
   {
     var list = new List<double>();
     foreach (var curve in curves)
+    {
       switch (curve)
       {
         case Arc a:
@@ -47,6 +48,7 @@ public static class CurveArrayEncodingExtensions
         default:
           throw new Exception($"Unkown curve type: {curve.GetType()}.");
       }
+    }
 
     return list;
   }
@@ -55,7 +57,10 @@ public static class CurveArrayEncodingExtensions
   {
     var curves = new List<ICurve>();
     if (list.Count == 0)
+    {
       return curves;
+    }
+
     var done = false;
     var currentIndex = 0;
 

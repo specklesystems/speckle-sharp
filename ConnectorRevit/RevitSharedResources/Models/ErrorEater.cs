@@ -53,9 +53,13 @@ public class ErrorEater : IFailuresPreprocessor
         else
         {
           if (CommitErrorsDict.ContainsKey(t))
+          {
             CommitErrorsDict[t]++;
+          }
           else
+          {
             CommitErrorsDict.Add(t, 1);
+          }
           // currently, the whole commit is rolled back. this should be investigated further at a later date
           // to properly proceed with commit
           failedElements.AddRange(failure.GetFailingElementIds());
@@ -69,9 +73,13 @@ public class ErrorEater : IFailuresPreprocessor
     }
 
     if (resolvedFailures > 0)
+    {
       return FailureProcessingResult.ProceedWithCommit;
+    }
     else
+    {
       return FailureProcessingResult.Continue;
+    }
   }
 
   public SpeckleNonUserFacingException? GetException()

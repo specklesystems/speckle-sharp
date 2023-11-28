@@ -28,7 +28,9 @@ public class Invoker
   private static object InvokeOnUIThreadWithException(Control control, Delegate method, object[] args)
   {
     if (control == null)
+    {
       return null;
+    }
 
     object result = null;
 
@@ -123,7 +125,9 @@ public sealed class ProgressInvoker : Invoker
   public void Cancel()
   {
     if (!_progressBar.IsDisposed)
+    {
       Invoke(new Action(_progressBar.Cancel), null);
+    }
   }
 }
 

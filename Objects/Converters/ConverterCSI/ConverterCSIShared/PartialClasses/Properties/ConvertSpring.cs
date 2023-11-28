@@ -27,7 +27,10 @@ public partial class ConverterCSI
           iGUID: springProperty.applicationId
         );
         if (success != 0)
+        {
           throw new ConversionException("Failed to create or modify named point spring property");
+        }
+
         return springProperty.name;
       default:
         //springOption = 2;
@@ -77,7 +80,9 @@ public partial class ConverterCSI
     );
 
     if (success != 0)
+    {
       throw new ConversionException($"Failed to create/modify named line spring property {linearSpringProperty.name}");
+    }
 
     return linearSpringProperty.name;
   }
@@ -107,7 +112,9 @@ public partial class ConverterCSI
     );
 
     if (success != 0)
+    {
       throw new ConversionException($"Failed to create/modify named area spring property {areaSpring.name}");
+    }
 
     return areaSpring.name;
   }

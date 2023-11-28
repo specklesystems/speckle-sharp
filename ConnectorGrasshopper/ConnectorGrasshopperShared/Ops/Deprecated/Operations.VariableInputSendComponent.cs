@@ -135,7 +135,9 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
       }
 
       if (OutputWrappers.Count != 0)
+      {
         JustPastedIn = true;
+      }
     }
 
     return base.Read(reader);
@@ -210,15 +212,18 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
     {
       Menu_AppendSeparator(menu);
       foreach (var ow in OutputWrappers)
+      {
         Menu_AppendItem(
           menu,
           $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
           (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
         );
+      }
     }
     Menu_AppendSeparator(menu);
 
     if (CurrentComponentState == "sending")
+    {
       Menu_AppendItem(
         menu,
         "Cancel Send",
@@ -228,6 +233,7 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
           RequestCancellation();
         }
       );
+    }
 
     base.AppendAdditionalMenuItems(menu);
   }
@@ -263,7 +269,9 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
     if (Workers.Count == 0)
+    {
       return;
+    }
 
     Message = "";
     var total = 0.0;
@@ -308,7 +316,10 @@ public class VariableInputSendComponent : SelectKitAsyncComponentBase, IGH_Varia
     Params.ParameterChanged += (sender, args) =>
     {
       if (args.ParameterSide != GH_ParameterSide.Input)
+      {
         return;
+      }
+
       switch (args.OriginalArguments.Type)
       {
         case GH_ObjectEventType.NickName:
@@ -404,6 +415,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
       int convertedCount = 0;
 
       foreach (var d in DataInputs)
+      {
         try
         {
           var converted = Utilities.DataTreeToNestedLists(
@@ -421,8 +433,13 @@ public class VariableInputSendComponentWorker : WorkerInstance
           var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
           var key = d.Key;
           if (param is SendReceiveDataParam srParam)
+          {
             if (srParam.Detachable && !key.StartsWith("@"))
+            {
               key = "@" + key;
+            }
+          }
+
           ObjectToSend[key] = converted;
           TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
         }
@@ -432,6 +449,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
           Done();
           return;
         }
+      }
 
       if (convertedCount == 0)
       {
@@ -461,6 +479,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
         var transport = data.GetType().GetProperty("Value").GetValue(data);
 
         if (transport is string s)
+        {
           try
           {
             transport = new StreamWrapper(s);
@@ -470,6 +489,7 @@ public class VariableInputSendComponentWorker : WorkerInstance
             // TODO: Check this with team.
             RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
           }
+        }
 
         if (transport is StreamWrapper sw)
         {
@@ -527,9 +547,11 @@ public class VariableInputSendComponentWorker : WorkerInstance
       InternalProgressAction = dict =>
       {
         foreach (var kvp in dict)
+        {
           //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
           //ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
           ReportProgress(kvp.Key, kvp.Value);
+        }
       };
 
       ErrorAction = (transportName, exception) =>
@@ -544,7 +566,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
         asyncParent.CancellationSources.ForEach(source =>
         {
           if (source.Token != CancellationToken)
+          {
             source.Cancel();
+          }
         });
       };
 
@@ -580,7 +604,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
 
           var message = _MessageInput.get_FirstItem(true).Value;
           if (message == "")
+          {
             message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
+          }
 
           var prevCommits = sendComponent.OutputWrappers;
 
@@ -593,7 +619,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
             }
 
             if (!(transport is ServerTransport))
+            {
               continue; // skip non-server transports (for now)
+            }
 
             try
             {
@@ -614,7 +642,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
                 c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
+              {
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
+              }
 
               var commitId = await client.CommitCreate(commitCreateInput, CancellationToken);
 
@@ -669,7 +699,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
     }
 
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
 
     DA.SetDataList(0, OutputWrappers);
 
@@ -694,7 +726,9 @@ public class VariableInputSendComponentWorker : WorkerInstance
       foreach (var t in Transports)
       {
         if (!(t is ServerTransport st))
+        {
           continue;
+        }
 
         var mb = st.TotalSentBytes / 1e6;
         Parent.AddRuntimeMessage(
@@ -785,6 +819,7 @@ public class VariableInputSendComponentAttributes : GH_ComponentAttributes
   public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
   {
     if (e.Button == MouseButtons.Left)
+    {
       if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
       {
         if (((VariableInputSendComponent)Owner).AutoSend)
@@ -794,12 +829,14 @@ public class VariableInputSendComponentAttributes : GH_ComponentAttributes
           return GH_ObjectResponse.Handled;
         }
         if (((VariableInputSendComponent)Owner).CurrentComponentState == "sending")
+        {
           return GH_ObjectResponse.Handled;
-
+        }
         ((VariableInputSendComponent)Owner).CurrentComponentState = "primed_to_send";
         Owner.ExpireSolution(true);
         return GH_ObjectResponse.Handled;
       }
+    }
 
     return base.RespondToMouseDown(sender, e);
   }

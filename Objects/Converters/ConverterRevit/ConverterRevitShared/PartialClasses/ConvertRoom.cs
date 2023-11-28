@@ -20,7 +20,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitRoom, appObj))
+    {
       return appObj;
+    }
 
     var level = ConvertLevelToRevit(speckleRoom.level, out ApplicationObject.State levelState);
 
@@ -44,7 +46,9 @@ public partial class ConverterRevit
     revitRoom.Number = speckleRoom.number;
 
     if (speckleRoom.height > 0.0)
+    {
       TrySetParam(revitRoom, BuiltInParameter.ROOM_UPPER_OFFSET, ScaleToNative(speckleRoom.height, speckleRoom.units));
+    }
 
     SetInstanceParameters(revitRoom, speckleRoom);
 
@@ -64,10 +68,15 @@ public partial class ConverterRevit
     speckleRoom.basePoint = (Point)LocationToSpeckle(revitRoom);
     speckleRoom.level = ConvertAndCacheLevel(revitRoom, BuiltInParameter.ROOM_LEVEL_ID);
     if (profiles.Any())
+    {
       speckleRoom.outline = profiles[0];
+    }
+
     speckleRoom.area = GetParamValue<double>(revitRoom, BuiltInParameter.ROOM_AREA);
     if (profiles.Count > 1)
+    {
       speckleRoom.voids = profiles.Skip(1).ToList();
+    }
 
     GetAllRevitParamsAndIds(speckleRoom, revitRoom);
 

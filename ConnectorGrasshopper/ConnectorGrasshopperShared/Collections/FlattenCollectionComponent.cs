@@ -37,7 +37,9 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
   {
     Collection collection = null;
     if (!DA.GetData(0, ref collection))
+    {
       return;
+    }
 
     var excludeTypeFromFullName = new List<string> { "rhino model" };
     var flattened = FlattenCollection(collection, null, excludeTypeFromFullName);
@@ -58,9 +60,13 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
     foreach (Base e in collection.elements)
     {
       if (e is Collection c)
+      {
         innerCollections.AddRange(FlattenCollection(c, nextPrefix, excludeTypeFromFullName));
+      }
       else
+      {
         elements.Add(e);
+      }
     }
 
     var newCollection = new Collection(collection.name, collection.collectionType)
@@ -80,9 +86,14 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
   {
     var nameParts = new List<string>();
     if (!string.IsNullOrEmpty(fullNamePrefix))
+    {
       nameParts.Add(fullNamePrefix);
+    }
+
     if (excludeTypeFromFullName == null || !excludeTypeFromFullName.Contains(collection.collectionType))
+    {
       nameParts.Add(collection.name);
+    }
 
     var nextPrefix = string.Join("::", nameParts);
     return nextPrefix;

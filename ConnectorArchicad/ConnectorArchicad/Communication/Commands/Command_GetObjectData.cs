@@ -41,7 +41,9 @@ sealed internal class GetObjectData : ICommand<IEnumerable<ArchicadObject>>
       new Parameters(ApplicationIds)
     );
     foreach (var @object in result.Datas)
+    {
       @object.units = Units.Meters;
+    }
 
     return result.Datas;
   }

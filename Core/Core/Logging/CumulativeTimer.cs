@@ -46,7 +46,9 @@ public class CumulativeTimer
     private void StopTiming()
     {
       if (!_stop.HasValue)
+      {
         _stop = GetTimestamp();
+      }
     }
 
     public void Dispose()

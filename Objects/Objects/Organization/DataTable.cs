@@ -21,9 +21,11 @@ public class DataTable : Base
   public void AddRow(Base metadata, int index = -1, params object[] objects)
   {
     if (objects.Length != columnCount)
+    {
       throw new ArgumentException(
         $"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {columnCount} columns. Partial and extended table rows are not accepted by the DataTable object."
       );
+    }
 
     if (index < 0 || index >= data.Count)
     {

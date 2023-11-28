@@ -19,7 +19,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitWall, appObj))
+    {
       return appObj;
+    }
 
     if (speckleRevitWall.profile == null)
     {
@@ -43,14 +45,21 @@ public partial class ConverterRevit
       var curve = CurveToNative(speckleRevitWall.profile).get_Item(i);
       profile.Add(curve);
       if (curve.GetEndPoint(0).Z < minZ)
+      {
         minZ = curve.GetEndPoint(0).Z;
+      }
+
       if (curve.GetEndPoint(1).Z < minZ)
+      {
         minZ = curve.GetEndPoint(1).Z;
+      }
     }
 
     //cannot update
     if (revitWall != null)
+    {
       Doc.Delete(revitWall.Id);
+    }
 
     revitWall = DB.Wall.Create(Doc, profile, structural);
 
@@ -67,7 +76,9 @@ public partial class ConverterRevit
     TrySetParam(revitWall, BuiltInParameter.WALL_BASE_OFFSET, offset);
 
     if (revitWall.WallType.Name != wallType.Name)
+    {
       revitWall.ChangeTypeId(wallType.Id);
+    }
 
     SetInstanceParameters(revitWall, speckleRevitWall);
 

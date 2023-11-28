@@ -15,11 +15,16 @@ public class BoolVisibConverter : IValueConverter
   public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
   {
     if (value == null)
+    {
       value = false;
+    }
+
     bool c = (bool)value;
 
     if (parameter != null && parameter.ToString() == "opposite")
+    {
       c = !c;
+    }
 
     return (c) ? Visibility.Visible : Visibility.Collapsed;
   }

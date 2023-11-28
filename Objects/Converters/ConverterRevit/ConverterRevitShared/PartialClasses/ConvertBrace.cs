@@ -54,7 +54,9 @@ public partial class ConverterRevit
     var dynamicProps = myBeam.GetMembers(DynamicBaseMemberType.Dynamic);
 
     foreach (var dp in dynamicProps)
+    {
       myBrace[dp.Key] = dp.Value;
+    }
 
     return myBrace;
   }

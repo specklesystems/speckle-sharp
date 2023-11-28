@@ -17,7 +17,9 @@ public partial class ConverterRevit
     specklePad.type = revitPad.Document.GetElement(revitPad.GetTypeId()).Name;
     specklePad.outline = profiles[0];
     if (profiles.Count > 1)
+    {
       specklePad.voids = profiles.Skip(1).ToList();
+    }
 
     specklePad.level = ConvertAndCacheLevel(revitPad, BuiltInParameter.LEVEL_PARAM);
 

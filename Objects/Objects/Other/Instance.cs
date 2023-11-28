@@ -108,7 +108,9 @@ namespace Objects.Other
       internal set
       {
         if (value is T type)
+        {
           typedDefinition = type;
+        }
       }
     }
   }
@@ -179,7 +181,10 @@ namespace Objects.Other.Revit
     {
       var allChildren = typedDefinition.elements ?? new List<Base>();
       if (typedDefinition.displayValue.Any())
+      {
         allChildren.AddRange(typedDefinition.displayValue);
+      }
+
       return allChildren;
     }
 
@@ -191,12 +196,16 @@ namespace Objects.Other.Revit
       // add any dynamically attached elements on this instance
       var elements = (this["elements"] ?? this["@elements"]) as List<object>;
       if (elements != null)
+      {
         foreach (var element in elements)
         {
           var display = ((Base)element)["displayValue"] as List<object>;
           if (display != null)
+          {
             transformed.AddRange(display.Cast<ITransformable>());
+          }
         }
+      }
 
       return transformed;
     }

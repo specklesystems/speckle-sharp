@@ -129,13 +129,21 @@ public partial class ConverterRevit
 
       var partType = networkElement.elements["partType"] as string ?? "Unknown";
       if (partType.Contains("Elbow") && connector1 != null && connector2 != null)
+      {
         familyInstance = Doc.Create.NewElbowFitting(connector1, connector2);
+      }
       else if (partType.Contains("Transition") && connector1 != null && connector2 != null)
+      {
         familyInstance = Doc.Create.NewTransitionFitting(connector1, connector2);
+      }
       else if (partType.Contains("Union") && connector1 != null && connector2 != null)
+      {
         familyInstance = Doc.Create.NewUnionFitting(connector1, connector2);
+      }
       else if (partType.Contains("Tee") && connector1 != null && connector2 != null && connector3 != null)
+      {
         familyInstance = Doc.Create.NewTeeFitting(connector1, connector2, connector3);
+      }
       else if (
         partType.Contains("Cross")
         && connector1 != null
@@ -143,7 +151,9 @@ public partial class ConverterRevit
         && connector3 != null
         && connector4 != null
       )
+      {
         familyInstance = Doc.Create.NewCrossFitting(connector1, connector2, connector3, connector4);
+      }
       else
       {
         var convAppObj = ConvertToNative(networkElement.elements) as ApplicationObject;
@@ -238,9 +248,13 @@ public partial class ConverterRevit
       var element = Doc.GetElement(group.Key);
 
       if (ContextObjects.ContainsKey(element.UniqueId))
+      {
         ContextObjects.Remove(element.UniqueId);
+      }
       else
+      {
         continue;
+      }
 
       ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId)
         ? Report.ReportObjects[element.UniqueId]
@@ -266,7 +280,9 @@ public partial class ConverterRevit
             var partType = (PartType)
               fi.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
             if (obj != null)
+            {
               obj["partType"] = partType.ToString();
+            }
           }
           break;
         case DB.Plumbing.Pipe pipe:
@@ -360,7 +376,9 @@ public partial class ConverterRevit
 
         // add it in case it exists
         if (refIndex != -1)
+        {
           link.elementIndices.Add(refIndex);
+        }
 
         @network.links.Add(link);
         var linkIndex = @network.links.IndexOf(link);
@@ -369,7 +387,9 @@ public partial class ConverterRevit
     }
 
     if (@network.elements.Any())
+    {
       notes.Add($"Converted and attached {@network.elements.Count} connected elements");
+    }
   }
 
   private void GetNetworkConnections(Element element, ref List<ConnectionPair> networkConnections)
@@ -382,7 +402,9 @@ public partial class ConverterRevit
         networkConnections.Add(connectionPair);
         var refElement = connectionPair.RefConnector?.Owner;
         if (connectionPair.IsConnected && IsWithinContext(refElement))
+        {
           GetNetworkConnections(refElement, ref networkConnections);
+        }
       }
     }
   }
@@ -465,7 +487,9 @@ public partial class ConverterRevit
         {
           var refConnector = refsIterator.Current as Connector;
           if (refConnector != null && !refConnector.Owner.Id.Equals(element.Id) && !(refConnector.Owner is MEPSystem))
+          {
             refConnectionPairs.Add(Tuple.Create(connector, refConnector));
+          }
         }
       }
       else
@@ -521,7 +545,10 @@ public partial class ConverterRevit
       case Domain.DomainHvac:
         curveType = GetDefaultMEPCurveType(Doc, typeof(DuctType), profile);
         if (curveType == null)
+        {
           goto default;
+        }
+
         var mechanicalSystemType = new FilteredElementCollector(Doc)
           .WhereElementIsElementType()
           .OfClass(typeof(MechanicalSystemType))
@@ -542,7 +569,10 @@ public partial class ConverterRevit
       case Domain.DomainPiping:
         curveType = GetDefaultMEPCurveType(Doc, typeof(PipeType), profile);
         if (curveType == null)
+        {
           goto default;
+        }
+
         var pipingSystemType = new FilteredElementCollector(Doc)
           .WhereElementIsElementType()
           .OfClass(typeof(PipingSystemType))
@@ -557,7 +587,10 @@ public partial class ConverterRevit
         {
           curveType = GetDefaultMEPCurveType(Doc, typeof(CableTrayType), profile);
           if (curveType == null)
+          {
             goto default;
+          }
+
           curve = CableTray.Create(Doc, curveType.Id, start, end, level.Id);
           curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM).Set(link.width);
           curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM).Set(link.height);
@@ -566,7 +599,10 @@ public partial class ConverterRevit
         {
           curveType = GetDefaultMEPCurveType(Doc, typeof(ConduitType), profile);
           if (curveType == null)
+          {
             goto default;
+          }
+
           curve = Conduit.Create(Doc, curveType.Id, start, end, level.Id);
           curve.get_Parameter(BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM).Set(link.diameter);
         }

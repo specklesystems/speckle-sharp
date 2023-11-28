@@ -80,7 +80,9 @@ public class App : IExtensionApplication
     string assemblyFile = Path.Combine(path, name + ".dll");
 
     if (File.Exists(assemblyFile))
+    {
       a = Assembly.LoadFrom(assemblyFile);
+    }
 
     return a;
   }
@@ -103,17 +105,25 @@ public class App : IExtensionApplication
   public void TrapWSCurrentChange(object sender, SystemVariableChangedEventArgs e)
   {
     if (e.Name.Equals("WSCURRENT"))
+    {
       Create();
+    }
   }
 
   public void Create()
   {
     RibbonTab tab = FindOrMakeTab("Add-ins"); // add to Add-Ins tab
     if (tab == null)
+    {
       return;
+    }
+
     RibbonPanelSource panel = CreateButtonPanel("Speckle 2", tab);
     if (panel == null)
+    {
       return;
+    }
+
     RibbonToolTip speckleTip = CreateToolTip("Speckle", "Speckle Connector for " + Utils.AppName);
     RibbonToolTip oneClickTip = CreateToolTip(
       "Send",
@@ -264,6 +274,7 @@ public class App : IExtensionApplication
     {
       RibbonButton btn = parameter as RibbonButton;
       if (btn != null)
+      {
         switch (commandParameter)
         {
           case "Speckle":
@@ -279,6 +290,7 @@ public class App : IExtensionApplication
             SpeckleAutocadCommand.SpeckleDocs();
             break;
         }
+      }
     }
 
     public bool CanExecute(object parameter) => true;

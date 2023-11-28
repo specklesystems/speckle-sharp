@@ -25,7 +25,9 @@ public partial class NavisworksOptionsManager
 
     var currentSetting = rootOptions.GetBoolean(optionName);
     if (currentSetting == enable)
+    {
       return;
+    }
 
     optionSetting = currentSetting;
 

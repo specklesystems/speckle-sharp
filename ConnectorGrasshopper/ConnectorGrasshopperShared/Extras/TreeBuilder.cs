@@ -24,7 +24,9 @@ public class TreeBuilder
     _path = new List<int>();
     var tree = new GH_Structure<IGH_Goo>();
     if (data == null)
+    {
       return tree;
+    }
 
     RecurseNestedLists(data, tree);
     return tree;
@@ -33,6 +35,7 @@ public class TreeBuilder
   private void RecurseNestedLists(object data, GH_Structure<IGH_Goo> tree)
   {
     if (data is IList list)
+    {
       for (var i = 0; i < list.Count; i++)
       {
         var item = list[i];
@@ -41,27 +44,38 @@ public class TreeBuilder
           //add list index to path
           _path.Add(i);
           if (subList.Any())
+          {
             RecurseNestedLists(item, tree);
+          }
           else
+          {
             tree.EnsurePath(_path.ToArray());
+          }
           //reached the bottom of a sublist, step back one level
           if (_path.Any())
+          {
             _path.RemoveAt(_path.Count - 1);
+          }
         }
         else
         {
           AddLeaf(item, tree);
         }
       }
+    }
     else
+    {
       AddLeaf(data, tree);
+    }
   }
 
   private void AddLeaf(object data, GH_Structure<IGH_Goo> tree)
   {
     //paths must have at least one element
     if (!_path.Any())
+    {
       _path.Add(0);
+    }
 
     var path = new GH_Path(_path.ToArray());
     tree.Append(

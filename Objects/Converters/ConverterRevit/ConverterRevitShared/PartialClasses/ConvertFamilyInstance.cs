@@ -34,7 +34,9 @@ public partial class ConverterRevit
 
     //adaptive components
     if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
+    {
       @base = AdaptiveComponentToSpeckle(revitFi);
+    }
 
     //these elements come when the curtain wall is generated
     //if they are contained in 'subelements' then they have already been accounted for from a wall
@@ -49,7 +51,9 @@ public partial class ConverterRevit
     )
     {
       if (SubelementIds.Contains(revitFi.Id))
+      {
         return null;
+      }
       else if (revitFi is Mullion mullion)
       {
         if (mullion.LocationCurve is DB.Line locationLine && locationLine.Direction != null)
@@ -60,17 +64,23 @@ public partial class ConverterRevit
         }
       }
       else
+      {
         //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
         SubelementIds.Add(revitFi.Id);
+      }
     }
 
     //beams & braces
     if (@base == null && SHC.StructuralFraming.BuiltInCategories.HasCategory(revitFi.Category))
     {
       if (revitFi.StructuralType == StructuralType.Beam)
+      {
         @base = BeamToSpeckle(revitFi, out notes);
+      }
       else if (revitFi.StructuralType == StructuralType.Brace)
+      {
         @base = BraceToSpeckle(revitFi, out notes);
+      }
     }
 
     //columns
@@ -78,7 +88,9 @@ public partial class ConverterRevit
       @base == null && SHC.Column.BuiltInCategories.HasCategory(revitFi.Category)
       || revitFi.StructuralType == StructuralType.Column
     )
+    {
       @base = ColumnToSpeckle(revitFi, out notes);
+    }
 
     // MEP elements
     if (revitFi.MEPModel?.ConnectorManager?.Connectors?.Size > 0)
@@ -96,7 +108,9 @@ public partial class ConverterRevit
     var baseGeometry = LocationToSpeckle(revitFi);
     var basePoint = baseGeometry as Point;
     if (@base == null && basePoint == null)
+    {
       @base = RevitElementToSpeckle(revitFi, out notes);
+    }
 
     // point based, convert these as revit instances
     if (@base == null)
@@ -106,13 +120,24 @@ public partial class ConverterRevit
 
     // add additional props to base object
     if (isUGridLine.HasValue)
+    {
       @base["isUGridLine"] = isUGridLine.Value;
+    }
+
     if (revitFi.Room != null)
+    {
       @base["roomId"] = revitFi.Room.Id.ToString();
+    }
+
     if (revitFi.ToRoom != null)
+    {
       @base["toRoomId"] = revitFi.ToRoom.Id.ToString();
+    }
+
     if (revitFi.FromRoom != null)
+    {
       @base["fromRoomId"] = revitFi.FromRoom.Id.ToString();
+    }
 
     return @base;
   }
@@ -134,7 +159,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     var familySymbol = GetElementType<FamilySymbol>(speckleFi, appObj, out bool isExactMatch);
     if (familySymbol == null)
@@ -151,7 +178,9 @@ public partial class ConverterRevit
 
         // if family changed, tough luck. delete and let us create a new one.
         if (familySymbol.FamilyName != revitType.FamilyName)
+        {
           Doc.Delete(docObj.Id);
+        }
         else
         {
           familyInstance = (DB.FamilyInstance)docObj;
@@ -173,7 +202,9 @@ public partial class ConverterRevit
           // it seems like just reassigning the location to the same thing we just assigned it to works
           // I don't know why this is happening
           if ((familyInstance.Location as LocationPoint).Point != newLocationPoint)
+          {
             (familyInstance.Location as LocationPoint).Point = newLocationPoint;
+          }
 
           // check for a type change
           if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
@@ -212,10 +243,14 @@ public partial class ConverterRevit
     Doc.Regenerate();
 
     if (familyInstance.CanFlipHand && speckleFi.handFlipped != familyInstance.HandFlipped)
+    {
       familyInstance.flipHand();
+    }
 
     if (familyInstance.CanFlipFacing && speckleFi.facingFlipped != familyInstance.FacingFlipped)
+    {
       familyInstance.flipFacing();
+    }
 
     // NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
     // some point based families don't have a rotation, so keep this in a try catch
@@ -243,9 +278,11 @@ public partial class ConverterRevit
 
     SetInstanceParameters(familyInstance, speckleFi);
     if (speckleFi.mirrored)
+    {
       appObj.Update(
         logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so."
       );
+    }
 
     var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
     appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
@@ -264,7 +301,9 @@ public partial class ConverterRevit
     //If the current host element is not null, it means we're coming from inside a nested conversion.
 
     if (level == null)
+    {
       level = Doc.GetElement(CurrentHostElement.LevelId) as DB.Level;
+    }
 
     // there are two (i think) main types of hosted elements which can be found with family.familyplacementtype
     // the two placement types for hosted elements are onelevelbasedhosted and workplanebased
@@ -309,11 +348,16 @@ public partial class ConverterRevit
         IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
 
         if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+        {
           InstanceVoidCutUtils.AddInstanceVoidCut(Doc, el, familyInstance);
+        }
+
         try
         {
           if (lvlParams.ElementAtOrDefault(0) != null)
+          {
             lvlParams[0].Set(level.Id); // this can be null
+          }
         }
         catch { }
       }
@@ -335,14 +379,20 @@ public partial class ConverterRevit
         var curtainGrids = roof.CurtainGrids;
         CurtainGrid lastGrid = null;
         foreach (var curtainGrid in curtainGrids)
+        {
           if (curtainGrid is CurtainGrid c)
+          {
             lastGrid = c;
+          }
+        }
 
         if (lastGrid != null && isUGridLine)
         {
           var gridLine = lastGrid.AddGridLine(isUGridLine, insertionPoint, false);
           foreach (var seg in gridLine.AllSegmentCurves)
+          {
             gridLine.AddMullions(seg as Curve, familySymbol as MullionType, isUGridLine);
+          }
         }
       }
     }
@@ -462,7 +512,10 @@ public partial class ConverterRevit
 
     // translation
     if (transform.matrix.M44 == 0)
+    {
       return _transform;
+    }
+
     var tX = ScaleToNative(transform.matrix.M14 / transform.matrix.M44, transform.units);
     var tY = ScaleToNative(transform.matrix.M24 / transform.matrix.M44, transform.units);
     var tZ = ScaleToNative(transform.matrix.M34 / transform.matrix.M44, transform.units);
@@ -496,7 +549,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     // get the definition
     var definition = instance.definition as RevitSymbolElementType;
@@ -540,7 +595,9 @@ public partial class ConverterRevit
 
         // if family changed, tough luck. delete and let us create a new one.
         if (familySymbol.FamilyName != revitType.FamilyName)
+        {
           Doc.Delete(docObj.Id);
+        }
         else
         {
           familyInstance = (DB.FamilyInstance)docObj;
@@ -620,7 +677,9 @@ public partial class ConverterRevit
           IList<DB.Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
           IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
           if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+          {
             InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
+          }
 
           if (lvlParams.ElementAtOrDefault(0) != null && level != null)
           {
@@ -633,14 +692,21 @@ public partial class ConverterRevit
           var curtainGrids = roof.CurtainGrids;
           CurtainGrid lastGrid = null;
           foreach (var curtainGrid in curtainGrids)
+          {
             if (curtainGrid is CurtainGrid c)
+            {
               lastGrid = c;
+            }
+          }
+
           var isUGridLine = instance["isUGridLine"] as bool? != null ? (bool)instance["isUGridLine"] : false;
           if (lastGrid != null && isUGridLine)
           {
             var gridLine = lastGrid.AddGridLine(isUGridLine, insertionPoint, false);
             foreach (var seg in gridLine.AllSegmentCurves)
+            {
               gridLine.AddMullions(seg as Curve, familySymbol as MullionType, isUGridLine);
+            }
           }
           break;
 
@@ -696,10 +762,14 @@ public partial class ConverterRevit
 
     // face flipping must happen after mirroring
     if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
+    {
       familyInstance.flipHand();
+    }
 
     if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
+    {
       familyInstance.flipFacing();
+    }
 
     var currentTransform = familyInstance.GetTotalTransform();
     var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
@@ -829,7 +899,10 @@ public partial class ConverterRevit
         case DB.FamilyInstance o:
           converted = RevitInstanceToSpeckle(o, out notes, parentTransform, true);
           if (converted == null)
+          {
             goto default;
+          }
+
           break;
         default:
           converted = ConvertToSpeckle(subElem);
@@ -851,8 +924,12 @@ public partial class ConverterRevit
     var material = ConverterRevit.GetMEPSystemMaterial(instance);
 
     if (material != null)
+    {
       foreach (var mesh in symbol.displayValue)
+      {
         mesh["renderMaterial"] = material;
+      }
+    }
 
     return symbol;
   }

@@ -102,7 +102,9 @@ public static class Utils
     var handles = new List<string>();
 
     if (selection == null)
+    {
       return handles;
+    }
 
     Document Doc = Application.DocumentManager.MdiActiveDocument;
     using (TransactionContext.StartTransaction(Doc))
@@ -141,13 +143,18 @@ public static class Utils
     var db = (entity.Database == null) ? Application.DocumentManager.MdiActiveDocument.Database : entity.Database;
     Transaction tr = db.TransactionManager.TopTransaction;
     if (tr == null)
+    {
       return ObjectId.Null;
+    }
 
     BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
     if (entity.IsNewObject)
     {
       if (layer != null)
+      {
         entity.Layer = layer;
+      }
+
       var id = btr.AppendEntity(entity);
       tr.AddNewlyCreatedDBObject(entity, true);
       return id;
@@ -155,7 +162,10 @@ public static class Utils
     else
     {
       if (layer != null)
+      {
         entity.Layer = layer;
+      }
+
       return entity.Id;
     }
   }
@@ -224,14 +234,19 @@ public static class Utils
       Entity ent = obj as Entity;
 
       if (!ent.Visible)
+      {
         return ent.Visible;
+      }
 
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
       {
         LayerTableRecord lyrTblRec = tr.GetObject(ent.LayerId, OpenMode.ForRead) as LayerTableRecord;
         if (lyrTblRec.IsOff)
+        {
           isVisible = false;
+        }
+
         tr.Commit();
       }
     }
@@ -296,7 +311,10 @@ public static class Utils
         propDef.Name = entry.Key;
         var dataType = GetPropertySetType(entry.Value);
         if (dataType != null)
+        {
           propDef.DataType = (Autodesk.Aec.PropertyData.DataType)dataType;
+        }
+
         propDef.DefaultData = entry.Value;
         propSetDef.Definitions.Add(propDef);
       }
@@ -336,7 +354,10 @@ public static class Utils
     }
     catch (Exception e)
     { }
-    if (propertySets == null) return sets;
+    if (propertySets == null)
+    {
+      return sets;
+    }
 
     foreach (ObjectId id in propertySets)
     {
@@ -347,18 +368,27 @@ public static class Utils
 
       PropertyDefinitionCollection propDef = setDef.Definitions;
       var propDefs = new Dictionary<int, PropertyDefinition>();
-      foreach (PropertyDefinition def in propDef) propDefs.Add(def.Id, def);
+      foreach (PropertyDefinition def in propDef)
+      {
+        propDefs.Add(def.Id, def);
+      }
 
       foreach (PropertySetData data in propertySet.PropertySetData)
       {
         if (propDefs.ContainsKey(data.Id))
+        {
           setDictionary.Add(propDefs[data.Id].Name, data.GetData());
+        }
         else
+        {
           setDictionary.Add(data.FieldBucketId, data.GetData());
+        }
       }
 
       if (setDictionary.Count > 0)
+      {
         sets.Add(CleanDictionary(setDictionary));
+      }
     }
     return sets;
   }
@@ -417,7 +447,9 @@ public static class Utils
       {
         DBObject dbObj = tr.GetObject(id, OpenMode.ForRead);
         if (converter.CanConvertToSpeckle(dbObj) && dbObj.Visible())
+        {
           objs.Add(dbObj.Handle.ToString());
+        }
       }
       tr.Commit();
     }
@@ -462,7 +494,9 @@ public static class Utils
     {
       string appId = null;
       if (!obj.IsReadEnabled)
+      {
         obj.UpgradeOpen();
+      }
 
       ResultBuffer rb = obj.GetXDataForApplication(ApplicationIdKey);
       if (rb != null)
@@ -502,7 +536,10 @@ public static class Utils
       try
       {
         if (!obj.IsWriteEnabled)
+        {
           obj.UpgradeOpen();
+        }
+
         obj.XData = rb;
       }
       catch (Exception e)
@@ -533,7 +570,9 @@ public static class Utils
     {
       var foundObjects = new List<ObjectId>();
       if (string.IsNullOrEmpty(appId))
+      {
         return foundObjects;
+      }
       // first check for custom xdata application ids, because object handles tend to be duplicated
 
       // Create a TypedValue array to define the filter criteria
@@ -566,7 +605,9 @@ public static class Utils
         }
       }
       if (foundObjects.Any())
+      {
         return foundObjects;
+      }
 
       // if no matching xdata appids were found, loop through handles instead
       var autocadAppIdParts = appId.Split('-');
@@ -595,7 +636,10 @@ public static class Utils
   public static string ObjectDescriptor(DBObject obj)
   {
     if (obj == null)
+    {
       return String.Empty;
+    }
+
     var simpleType = obj.GetType().Name;
     return $"{simpleType}";
   }
@@ -664,7 +708,10 @@ public static class Utils
     var units = styleBase["units"] as string;
     var color = styleBase["color"] as int?;
     if (color == null)
+    {
       color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+    }
+
     var transparency = styleBase["opacity"] as double?;
     var lineType = styleBase["linetype"] as string;
     var lineWidth = styleBase["lineweight"] as double?;
@@ -683,11 +730,17 @@ public static class Utils
     double conversionFactor =
       (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
     if (lineWidth != null)
+    {
       entity.LineWeight = GetLineWeight((double)lineWidth * conversionFactor);
+    }
 
     if (lineType != null)
+    {
       if (lineTypeDictionary.ContainsKey(lineType))
+      {
         entity.LinetypeId = lineTypeDictionary[lineType];
+      }
+    }
   }
 
   /// <summary>

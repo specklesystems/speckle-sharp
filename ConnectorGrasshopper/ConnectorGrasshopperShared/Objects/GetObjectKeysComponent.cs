@@ -55,10 +55,14 @@ public class GetObjectKeysComponent : GH_SpeckleComponent
     {
       GH_SpeckleBase speckleObject = null;
       if (!DA.GetData(0, ref speckleObject))
+      {
         return;
+      }
 
       if (speckleObject.Value == null)
+      {
         return;
+      }
 
       var keys = speckleObject.Value.GetMemberNames();
 
@@ -67,22 +71,32 @@ public class GetObjectKeysComponent : GH_SpeckleComponent
     else
     {
       if (!DA.GetDataTree(0, out GH_Structure<GH_SpeckleBase> objectTree))
+      {
         return;
+      }
 
       var keys = new List<string>();
 
       foreach (var branch in objectTree.Branches)
+      {
         foreach (var item in branch)
         {
           var speckleObject = item?.Value;
           if (speckleObject == null)
+          {
             return;
+          }
 
           var objKeys = speckleObject.GetMemberNames();
           foreach (var key in objKeys)
+          {
             if (!keys.Contains(key))
+            {
               keys.Add(key);
+            }
+          }
         }
+      }
 
       DA.SetDataList(0, keys);
     }

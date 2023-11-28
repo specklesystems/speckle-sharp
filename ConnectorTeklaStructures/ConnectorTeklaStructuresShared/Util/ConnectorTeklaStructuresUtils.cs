@@ -37,7 +37,10 @@ class ConnectorTeklaStructuresUtils
       {
         var category = model.GetModelObjectSelector().GetAllObjectsWithType(bic);
         if (category == null)
+        {
           continue;
+        }
+
         _categories.Add(bic.ToString(), bic);
       }
     }

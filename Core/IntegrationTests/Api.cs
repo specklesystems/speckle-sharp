@@ -330,7 +330,9 @@ public class Api
     var myObject = new Base();
     var ptsList = new List<Point>();
     for (int i = 0; i < 100; i++)
+    {
       ptsList.Add(new Point(i, i, i));
+    }
 
     myObject["@Points"] = ptsList;
 

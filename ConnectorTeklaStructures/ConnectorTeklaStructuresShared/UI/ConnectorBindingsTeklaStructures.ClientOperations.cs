@@ -28,7 +28,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
   {
     var streams = new List<StreamState>();
     if (Model != null)
+    {
       streams = StreamStateManager.ReadState(Model);
+    }
 
     return streams;
   }

@@ -40,9 +40,13 @@ public static class RevitVersionHelper
     if (
       !string.IsNullOrEmpty(applicationUnit) && applicationUnit.Length >= 3 && applicationUnit.Substring(0, 3) == "DUT"
     )
+    {
       sourceUnit = DUTToForgeTypeId(applicationUnit);
+    }
     else
+    {
       sourceUnit = new ForgeTypeId(applicationUnit);
+    }
 
     return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(value), sourceUnit);
 #endif
@@ -104,9 +108,14 @@ public static class RevitVersionHelper
   {
 #if REVIT2020
     if (curve.IsBound && curve.GetEndPoint(0).IsAlmostEqualTo(curve.GetEndPoint(1)))
+    {
       return true;
+    }
     else if (!curve.IsBound && curve.IsCyclic)
+    {
       return true;
+    }
+
     return false;
 #else
 

@@ -17,7 +17,9 @@ public partial class SpeckleDxfConverter
     }
 
     if (Doc == null)
+    {
       throw new Exception("null doc");
+    }
 
     return value * Units.GetConversionFactor(units, DocUnitsToUnits(Doc.DrawingVariables.InsUnits));
   }

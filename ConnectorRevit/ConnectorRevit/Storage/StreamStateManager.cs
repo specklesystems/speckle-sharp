@@ -27,7 +27,9 @@ public static class StreamStateManager
     {
       var streamStatesEntity = GetSpeckleEntity(doc);
       if (streamStatesEntity == null || !streamStatesEntity.IsValid())
+      {
         return new List<StreamState>();
+      }
 
       var str = streamStatesEntity.Get<string>("StreamStates");
       var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
@@ -50,7 +52,9 @@ public static class StreamStateManager
     var ds = GetSettingsDataStorage(doc);
 
     if (ds == null)
+    {
       ds = DataStorage.Create(doc);
+    }
 
     var streamStatesEntity = new Entity(StreamStateListSchema2.GetSchema());
 
@@ -76,12 +80,16 @@ public static class StreamStateManager
       var settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaStreamStateStorage2.GetSchema());
 
       if (!settingIdEntity.IsValid())
+      {
         continue;
+      }
 
       var id = settingIdEntity.Get<Guid>("Id");
 
       if (!id.Equals(ID))
+      {
         continue;
+      }
 
       return dataStorage;
     }
@@ -97,7 +105,9 @@ public static class StreamStateManager
     {
       Entity settingEntity = dataStorage.GetEntity(StreamStateListSchema2.GetSchema());
       if (!settingEntity.IsValid())
+      {
         continue;
+      }
 
       return settingEntity;
     }
@@ -116,7 +126,9 @@ public static class StreamStateListSchema2
   {
     var schema = Schema.Lookup(schemaGuid);
     if (schema != null)
+    {
       return schema;
+    }
 
     var builder = new SchemaBuilder(schemaGuid);
     builder.SetSchemaName("StreamStateWrapper");
@@ -138,7 +150,9 @@ static class DSUniqueSchemaStreamStateStorage2
     Schema schema = Schema.Lookup(schemaGuid);
 
     if (schema != null)
+    {
       return schema;
+    }
 
     SchemaBuilder schemaBuilder = new(schemaGuid);
 

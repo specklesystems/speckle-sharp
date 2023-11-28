@@ -102,7 +102,9 @@ public partial class ConverterRevit
     var diffY = Math.Abs(curve.GetEndPoint(0).Y - curve.GetEndPoint(1).Y);
 
     if (diffX < 0.1 && diffY < 0.1)
+    {
       return true;
+    }
 
     return false;
   }

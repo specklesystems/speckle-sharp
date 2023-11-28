@@ -25,7 +25,10 @@ public static class Categories
 
     var res = Enum.TryParse(cleanName, out RevitCategory cat);
     if (!res)
+    {
       throw new NotSupportedException($"Built-in category {builtInCategory} is not supported.");
+    }
+
     return cat;
   }
 

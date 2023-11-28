@@ -34,9 +34,13 @@ public partial class ConverterRevit
 
     var baseGeometry = LocationToSpeckle(revitElement);
     if (baseGeometry is Geometry.Point point)
+    {
       speckleElement["basePoint"] = point;
+    }
     else if (baseGeometry is Geometry.Line line)
+    {
       speckleElement["baseLine"] = line;
+    }
 
     speckleElement.category = revitElement.Category.Name;
 
@@ -45,11 +49,15 @@ public partial class ConverterRevit
     var displayValue = GetElementDisplayValue(revitElement);
 
     if (!displayValue.Any())
+    {
       notes.Add(
         "Element does not have visible geometry. It will be sent to Speckle but won't be visible in the viewer."
       );
+    }
     else
+    {
       speckleElement.displayValue = displayValue;
+    }
 
     GetAllRevitParamsAndIds(speckleElement, revitElement);
 

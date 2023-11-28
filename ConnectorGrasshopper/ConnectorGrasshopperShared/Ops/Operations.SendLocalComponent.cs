@@ -53,7 +53,9 @@ public class SendLocalComponent : SelectKitAsyncComponentBase
   {
     base.SolveInstance(DA);
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun();
+    }
   }
 }
 
@@ -98,7 +100,10 @@ public class SendLocalWorker : WorkerInstance
   {
     DA.SetData(0, sentObjectId);
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
+
     data = null;
   }
 

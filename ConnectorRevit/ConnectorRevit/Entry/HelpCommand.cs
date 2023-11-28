@@ -49,9 +49,14 @@ public class ManagerCommand : IExternalCommand
       "Manager.exe"
     );
     if (File.Exists(path))
+    {
       Process.Start(path);
+    }
     else
+    {
       TaskDialog.Show("No Manager found", "Seems like Manager is not installed on this pc.");
+    }
+
     return Result.Succeeded;
   }
 }

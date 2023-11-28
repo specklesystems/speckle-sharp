@@ -27,7 +27,9 @@ public partial class ConverterRevit
     state = ApplicationObject.State.Unknown;
 
     if (speckleZone == null)
+    {
       return null;
+    }
 
     var revitZone = GetExistingZone(speckleZone);
 
@@ -84,7 +86,10 @@ public partial class ConverterRevit
     var newZone = Doc.Create.NewZone(revitZoneLevel, targetPhase);
 
     if (zoneName != null)
+    {
       newZone.Name = zoneName;
+    }
+
     Doc.Regenerate();
     return newZone;
   }
@@ -170,7 +175,9 @@ public partial class ConverterRevit
     var level = revitZone.Spaces.Cast<DB.Space>().Select(x => x.Level).First();
 
     if (level != null)
+    {
       speckleZone.level = LevelToSpeckle(level);
+    }
 
     GetAllRevitParamsAndIds(speckleZone, revitZone);
 

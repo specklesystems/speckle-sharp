@@ -50,7 +50,9 @@ public static class Functions
     catch (Exception e) { }
 
     if (totalCount == 0)
+    {
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
+    }
 
     if (string.IsNullOrEmpty(message))
     {
@@ -63,7 +65,9 @@ public static class Functions
       .Result;
 
     if (cancellationToken.IsCancellationRequested)
+    {
       return null;
+    }
 
     foreach (var t in transports)
     {
@@ -118,7 +122,9 @@ public static class Functions
   {
     var commits = output.Split('|').ToList();
     if (commits.Count == 1)
+    {
       return commits[0];
+    }
 
     return commits;
   }
@@ -185,7 +191,9 @@ public static class Functions
     }
 
     if (cancellationToken.IsCancellationRequested)
+    {
       return null;
+    }
 
     var transport = new ServerTransport(account, stream.StreamId);
 
@@ -225,7 +233,9 @@ public static class Functions
     }
 
     if (cancellationToken.IsCancellationRequested)
+    {
       return null;
+    }
 
     var converter = new BatchConverter();
     converter.OnError += (sender, args) => onErrorAction?.Invoke("C", args.Error);

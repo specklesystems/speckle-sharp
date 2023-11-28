@@ -34,15 +34,21 @@ public static class BaseExtensions
       b =>
       {
         if (!cache.Add(b.id))
+        {
           return true;
+        }
 
         return recursionBreaker.Invoke(b);
       }
     );
 
     foreach (var b in traversal)
+    {
       if (!cache.Contains(b.id))
+      {
         yield return b;
+      }
+    }
     //Recursion break will be called after the above
   }
 
@@ -63,9 +69,12 @@ public static class BaseExtensions
       yield return current;
 
       if (recursionBreaker(current))
+      {
         continue;
+      }
 
       foreach (string child in current.GetDynamicMemberNames())
+      {
         switch (current[child])
         {
           case Base o:
@@ -74,18 +83,29 @@ public static class BaseExtensions
           case IDictionary dictionary:
           {
             foreach (object obj in dictionary.Keys)
+            {
               if (obj is Base b)
+              {
                 stack.Push(b);
+              }
+            }
+
             break;
           }
           case IList collection:
           {
             foreach (object obj in collection)
+            {
               if (obj is Base b)
+              {
                 stack.Push(b);
+              }
+            }
+
             break;
           }
         }
+      }
     }
   }
 
@@ -104,11 +124,19 @@ public static class BaseExtensions
     yield return exception;
 
     if (exception is AggregateException aggrEx)
+    {
       foreach (var innerEx in aggrEx.InnerExceptions.SelectMany(e => e.GetAllExceptions()))
+      {
         yield return innerEx;
+      }
+    }
     else if (exception.InnerException != null)
+    {
       foreach (var innerEx in exception.InnerException.GetAllExceptions())
+      {
         yield return innerEx;
+      }
+    }
   }
 
   /// <summary>

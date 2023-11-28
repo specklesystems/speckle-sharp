@@ -168,7 +168,9 @@ public class Send : NodeModel
     }
 
     if (outPorts.Count() == 0)
+    {
       AddOutputs();
+    }
 
     ArgumentLacing = LacingStrategy.Disabled;
     this.PropertyChanged += HandlePropertyChanged;
@@ -230,7 +232,9 @@ public class Send : NodeModel
 
     //if already receiving, stop and start again
     if (Transmitting)
+    {
       CancelSend();
+    }
 
     Transmitting = true;
     Message = "Converting...";
@@ -239,7 +243,9 @@ public class Send : NodeModel
     try
     {
       if (_transports == null)
+      {
         throw new SpeckleException("The stream provided is invalid");
+      }
 
       Base @base = null;
       var converter = new BatchConverter();
@@ -430,12 +436,16 @@ public class Send : NodeModel
       _objectCount = (int)@base.GetTotalChildrenCount();
       //exclude wrapper obj.... this is a bit of a hack...
       if (_objectCount > 1)
+      {
         _objectCount--;
+      }
     }
 
     ExpiredCount = _objectCount.ToString();
     if (string.IsNullOrEmpty(Message))
+    {
       Message = "Updates ready";
+    }
   }
 
   private T GetInputAs<T>(EngineController engine, int port, bool count = false)
@@ -446,7 +456,9 @@ public class Send : NodeModel
     var inputMirror = engine.GetMirror(astId);
 
     if (inputMirror == null || inputMirror.GetData() == null)
+    {
       return default(T);
+    }
 
     var data = inputMirror.GetData();
     var value = RecurseInput(data, count);
@@ -468,7 +480,9 @@ public class Send : NodeModel
     {
       @object = data.Data;
       if (count)
+      {
         _objectCount++;
+      }
     }
 
     return @object;
@@ -494,7 +508,9 @@ public class Send : NodeModel
   void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
   {
     if (e.PropertyName != "CachedValue")
+    {
       return;
+    }
 
     if (!InPorts[0].IsConnected || !InPorts[1].IsConnected)
     {

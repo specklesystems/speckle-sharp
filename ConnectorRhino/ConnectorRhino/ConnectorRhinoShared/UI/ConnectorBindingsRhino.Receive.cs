@@ -95,7 +95,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
                 isPreviewIgnore = IsPreviewIgnore(storedObj);
                 if (!isPreviewIgnore)
+                {
                   previewObj.Converted = ConvertObject(storedObj, converter);
+                }
               }
               else
               {
@@ -112,17 +114,23 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
                   .Where(o => o.Converted != null || o.Converted.Count > 0)
                   .ToList();
                 if (convertedFallback.Any())
+                {
                   previewObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+                }
                 else
+                {
                   previewObj.Update(
                     status: ApplicationObject.State.Failed,
                     logItem: "Couldn't convert object or any fallback values"
                   );
+                }
               }
 
               progress.Report.Log(previewObj);
               if (progress.CancellationToken.IsCancellationRequested)
+              {
                 return;
+              }
             }
 
             progress.Report.Merge(converter.Report);
@@ -132,7 +140,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             Preview.ForEach(o => o.Status = ApplicationObject.State.Unknown);
           }
           if (progress.Report.OperationErrorsCount != 0)
+          {
             return;
+          }
 
           #region layer creation
 
@@ -203,7 +213,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           foreach (var previewObj in Preview)
           {
             if (previewObj.Status != ApplicationObject.State.Unknown)
+            {
               continue; // this has already been converted and baked
+            }
 
             var isUpdate = false;
 
@@ -236,7 +248,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
               }
             }
             if (toRemove.Count() > 0)
+            {
               isUpdate = true;
+            }
 
             // find layer and bake
             previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
@@ -258,7 +272,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             else
             {
               foreach (var fallback in previewObj.Fallback)
+              {
                 BakeObject(fallback, converter, layer, previewObj);
+              }
+
               previewObj.Status =
                 previewObj.Fallback.Count(o => o.Status == ApplicationObject.State.Failed) == previewObj.Fallback.Count
                   ? ApplicationObject.State.Failed
@@ -270,7 +287,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             progress.Report.Log(previewObj);
 
             if (progress.CancellationToken.IsCancellationRequested)
+            {
               return;
+            }
+
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
           }
@@ -295,20 +315,26 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
   {
     if (string.IsNullOrEmpty(applicationId))
+    {
       return new List<RhinoObject>();
+    }
 
     // first try to find the object by app id user string
     var match = Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true).ToList();
 
     // if nothing is found, look for the geom obj by its guid directly
     if (!match.Any())
+    {
       try
       {
         RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId));
         if (obj != null)
+        {
           match.Add(obj);
+        }
       }
       catch { }
+    }
 
     return match;
   }
@@ -324,10 +350,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
     {
       if (!StoredObjects.ContainsKey(@base.id))
+      {
         StoredObjects.Add(@base.id, @base);
+      }
 
       if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
+      {
         StoredObjectParams.Add(@base.id, parameters);
+      }
     }
 
     ApplicationObject CreateApplicationObject(Base current, string containerId)
@@ -347,7 +377,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
       // skip if it is the base commit collection
       if (current is Collection && string.IsNullOrEmpty(containerId))
+      {
         return null;
+      }
 
       // get parameters
       var parameters = current["parameters"] as Base;
@@ -385,7 +417,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
       if (context.propName == null)
+      {
         return stringBuilder; // this was probably the base commit collection
+      }
 
       // handle elements hosting case from Revit
       // WARNING: THIS IS REVIT-SPECIFIC CODE!!
@@ -404,14 +438,21 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
       // handle collections case
       if (context.current is Collection coll && DefaultTraversal.elementsPropAliases.Contains(context.propName))
+      {
         objectLayerName = coll.name;
+      }
       // handle default case
       else if (!DefaultTraversal.elementsPropAliases.Contains(context.propName))
+      {
         objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+      }
 
       LayerIdRecurse(context.parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
+      {
         stringBuilder.Append(Layer.PathSeparator);
+      }
+
       stringBuilder.Append(objectLayerName);
 
       return stringBuilder;
@@ -436,16 +477,24 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
     var converted = converter.ConvertToNative(obj);
     if (converted == null)
+    {
       return convertedList;
+    }
 
     //Iteratively flatten any lists
     void FlattenConvertedObject(object item)
     {
       if (item is IList list)
+      {
         foreach (object child in list)
+        {
           FlattenConvertedObject(child);
+        }
+      }
       else
+      {
         convertedList.Add(item);
+      }
     }
     FlattenConvertedObject(converted);
 
@@ -463,8 +512,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     int bakedCount = 0;
     // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
     if (IsPreviewIgnore(obj))
+    {
       appObj.Converted = ConvertObject(obj, converter);
+    }
+
     foreach (var convertedItem in appObj.Converted)
+    {
       switch (convertedItem)
       {
         case GeometryBase o:
@@ -472,9 +525,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           {
             var invalidMessage = $"{log.Replace("\n", "").Replace("\r", "")}";
             if (parent != null)
+            {
               parent.Update(logItem: $"fallback {appObj.applicationId}: {invalidMessage}");
+            }
             else
+            {
               appObj.Update(logItem: invalidMessage);
+            }
+
             continue;
           }
           var attributes = new ObjectAttributes();
@@ -524,9 +582,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           {
             var bakeMessage = "Could not bake to document.";
             if (parent != null)
+            {
               parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
+            }
             else
+            {
               appObj.Update(logItem: bakeMessage);
+            }
+
             continue;
           }
 
@@ -560,9 +623,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           SetUserInfo(obj, o.Attributes, parent); // handle user info, including application id
           o.CommitChanges();
           if (parent != null)
+          {
             parent.Update(o.Id.ToString());
+          }
           else
+          {
             appObj.Update(o.Id.ToString());
+          }
+
           bakedCount++;
           break;
 
@@ -576,13 +644,18 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           bakedCount++;
           break;
       }
+    }
 
     if (bakedCount == 0)
     {
       if (parent != null)
+      {
         parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
+      }
       else
+      {
         appObj.Update(logItem: "Could not bake object");
+      }
     }
   }
 
@@ -590,8 +663,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     // set user strings
     if (obj[UserStrings] is Base userStrings)
+    {
       foreach (var member in userStrings.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
         attributes.SetUserString(member.Key, member.Value as string);
+      }
+    }
 
     // set application id
     var appId = parent != null ? parent.applicationId : obj.applicationId;
@@ -603,11 +680,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
     // set user dictionaries
     if (obj[UserDictionary] is Base userDictionary)
+    {
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
+    }
 
     var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
     if (name != null)
+    {
       attributes.Name = name;
+    }
   }
 
   // Clears the stored objects, params, and preview objects

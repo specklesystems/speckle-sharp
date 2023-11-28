@@ -64,7 +64,10 @@ public class StreamGetComponent : GH_SpeckleComponent
     GH_SpeckleStream ghIdWrapper = null;
     DA.DisableGapLogic();
     if (!DA.GetData(0, ref ghIdWrapper))
+    {
       return;
+    }
+
     DA.GetData(1, ref userId);
     var idWrapper = ghIdWrapper.Value;
     var account = string.IsNullOrEmpty(userId)
@@ -101,7 +104,9 @@ public class StreamGetComponent : GH_SpeckleComponent
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       // Run
       Task.Run(async () =>

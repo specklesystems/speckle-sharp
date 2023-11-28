@@ -58,9 +58,11 @@ public sealed partial class ElementConverterManager
 
     IEnumerable<string> elementIds = filter.Selection;
     if (filter.Slug == "all")
+    {
       elementIds = AsyncCommandProcessor
         .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
         ?.Result;
+    }
     else if (filter.Slug == "elementType")
     {
       var elementTypes = filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
@@ -98,8 +100,12 @@ public sealed partial class ElementConverterManager
 
         // itermediate solution for the OneClick Send report
         for (int i = 0; i < objects.Count(); i++)
+        {
           if (!progress.Report.ReportObjects.ContainsKey(objects[i].applicationId))
+          {
             progress.Report.ReportObjects.Add(objects[i].applicationId, new ApplicationObject("", ""));
+          }
+        }
       }
     }
 
@@ -138,7 +144,9 @@ public sealed partial class ElementConverterManager
     {
       var converter = Activator.CreateInstance(converterType) as Converters.IConverter;
       if (converter?.Type is null)
+      {
         continue;
+      }
 
       Converters.Add(converter.Type, converter);
     }
@@ -154,34 +162,70 @@ public sealed partial class ElementConverterManager
     {
       // always convert to Archicad GridElement
       if (elementType.IsAssignableFrom(typeof(GridLine)))
+      {
         return Converters[typeof(Archicad.GridElement)];
+      }
 
       if (conversionOptions != null && !conversionOptions.ReceiveParametric)
+      {
         return DefaultConverterForReceive;
+      }
     }
 
     if (Converters.ContainsKey(elementType))
+    {
       return Converters[elementType];
+    }
+
     if (elementType.IsSubclassOf(typeof(Wall)))
+    {
       return Converters[typeof(Wall)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Beam)))
+    {
       return Converters[typeof(Beam)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Column)))
+    {
       return Converters[typeof(Column)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Door)))
+    {
       return Converters[typeof(Door)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Window)))
+    {
       return Converters[typeof(Window)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Skylight)))
+    {
       return Converters[typeof(Skylight)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)))
+    {
       return Converters[typeof(Floor)];
+    }
+
     if (elementType.IsSubclassOf(typeof(Roof)))
+    {
       return Converters[typeof(Roof)];
+    }
+
     if (elementType.IsAssignableFrom(typeof(Objects.BuiltElements.Room)))
+    {
       return Converters[typeof(Archicad.Room)];
+    }
+
     if (elementType.IsAssignableFrom(typeof(Archicad.GridElement)))
+    {
       return Converters[typeof(Archicad.GridElement)];
+    }
 
     return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
   }
@@ -243,11 +287,15 @@ public sealed partial class ElementConverterManager
         or Objects.BuiltElements.Archicad.ArchicadShell
       )
     )
+    {
       return subElementsAsBases;
+    }
 
     var subElements = await GetAllSubElements(convertedObject.applicationId);
     if (subElements.Count() == 0)
+    {
       return subElementsAsBases;
+    }
 
     var subElementsByGuid = await GetElementsType(subElements.Select(e => e.applicationId), token);
     var mutualSubElements = GetAllMutualSubElements(subElementsByGuid);
@@ -255,7 +303,10 @@ public sealed partial class ElementConverterManager
     foreach (var (element, guids) in mutualSubElements)
     {
       if (guids.Count() == 0)
+      {
         continue;
+      }
+
       var convertedSubElements = await ConvertOneTypeToSpeckle(
         guids,
         ElementTypeProvider.GetTypeByName(element),
@@ -295,7 +346,9 @@ public sealed partial class ElementConverterManager
   private IEnumerable<string> GetMutualSubElementsByType(string elementType, IEnumerable<string> applicationIds)
   {
     if (!SelectedObjects.ContainsKey(elementType))
+    {
       return new List<string>();
+    }
 
     return SelectedObjects[elementType].Where(guid => applicationIds.Contains(guid));
   }
@@ -305,7 +358,10 @@ public sealed partial class ElementConverterManager
     foreach (var (element, guids) in mutualSubElements)
     {
       if (guids.Count() == 0)
+      {
         continue;
+      }
+
       var guidsToKeep = SelectedObjects[element].Where(guid => !guids.Contains(guid));
       SelectedObjects[element] = guidsToKeep.ToList();
     }

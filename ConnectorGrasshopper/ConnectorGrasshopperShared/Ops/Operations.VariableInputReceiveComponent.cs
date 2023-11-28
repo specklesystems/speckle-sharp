@@ -120,6 +120,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       {
         // Will execute every time a document becomes active (from background or opening file.).
         if (StreamWrapper != null)
+        {
           Task.Run(async () =>
           {
             // Ensure fresh instance of client.
@@ -133,10 +134,13 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
             if (b.commits.items[0].id != ReceivedCommitId)
+            {
               HandleNewCommit();
+            }
 
             OnDisplayExpired(true);
           });
+        }
 
         break;
       }
@@ -162,9 +166,13 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
         delegate
         {
           if (AutoReceive)
+          {
             ExpireSolution(true);
+          }
           else
+          {
             OnDisplayExpired(true);
+          }
         }
     );
   }
@@ -199,7 +207,10 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     ExpandOutput = expand;
     var swString = reader.GetString("StreamWrapper");
     if (!string.IsNullOrEmpty(swString))
+    {
       StreamWrapper = new StreamWrapper(swString);
+    }
+
     JustPastedIn = true;
     return base.Read(reader);
   }
@@ -311,6 +322,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     Menu_AppendSeparator(menu);
 
     if (CurrentComponentState == "receiving")
+    {
       Menu_AppendItem(
         menu,
         "Cancel Receive",
@@ -320,16 +332,19 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
           RequestCancellation();
         }
       );
+    }
 
     Menu_AppendSeparator(menu);
 
     if (StreamWrapper != null && !string.IsNullOrEmpty(ReceivedCommitId))
+    {
       Menu_AppendItem(
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
         (s, e) =>
           Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
+    }
   }
 
   protected override void SolveInstance(IGH_DataAccess DA)
@@ -390,7 +405,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
     if (Workers.Count == 0)
+    {
       return;
+    }
 
     Message = "";
     var total = 0.0;
@@ -430,7 +447,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
 
     var ghGoo = DataInput.get_DataItem(0);
     if (ghGoo == null)
+    {
       return;
+    }
 
     var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -499,7 +518,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     }
 
     if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn)
+    {
       return;
+    }
 
     StreamWrapper = wrapper;
 
@@ -517,7 +538,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
     {
       var hasInternet = await Http.UserHasInternet();
       if (!hasInternet)
+      {
         throw new Exception("You are not connected to the internet.");
+      }
 
       Account account;
       try
@@ -551,7 +574,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
   {
     // Break if wrapper is branch type and branch name is not equal.
     if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    {
       return;
+    }
 
     HandleNewCommit();
   }
@@ -599,7 +624,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
         //foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / (TotalObjectCount + 1));
         foreach (var kvp in dict)
+        {
           ReportProgress(kvp.Key, kvp.Value);
+        }
       };
 
       ErrorAction = (transportName, exception) =>
@@ -614,12 +641,17 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         asyncParent.CancellationSources.ForEach(source =>
         {
           if (source.Token != CancellationToken)
+          {
             source.Cancel();
+          }
         });
       };
 
       if (receiveComponent.ApiResetTask == null)
+      {
         receiveComponent.ApiResetTask = receiveComponent.ResetApiClient(InputWrapper);
+      }
+
       receiveComponent.ApiResetTask.Wait();
 
       Account acc = receiveComponent.ApiClient.Account;
@@ -631,7 +663,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       {
         receiveComponent.JustPastedIn = false;
         if (!receiveComponent.ReceiveOnOpen)
+        {
           return;
+        }
 
         receiveComponent.CurrentComponentState = "receiving";
         RhinoApp.InvokeOnUiThread(
@@ -647,7 +681,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       {
         var hasInternet = await Http.UserHasInternet();
         if (!hasInternet)
+        {
           throw new Exception("You are not connected to the internet.");
+        }
 
         receiveComponent.PrevReceivedData = null;
         var myCommit = await GetCommit(
@@ -680,7 +716,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         );
 
         if (CancellationToken.IsCancellationRequested)
+        {
           return;
+        }
 
         ReceivedObject = await Operations.Receive(
           myCommit.referencedObject,
@@ -711,9 +749,15 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         }
 
         if (CancellationToken.IsCancellationRequested)
+        {
           return;
+        }
+
         if (ReceivedObject != null)
+        {
           AutoCreateOutputs(ReceivedObject);
+        }
+
         Done();
       });
       t.Wait();
@@ -742,10 +786,13 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         {
           myCommit = await client.CommitGet(InputWrapper.StreamId, InputWrapper.CommitId, CancellationToken);
           if (myCommit == null)
+          {
             OnFail(
               GH_RuntimeMessageLevel.Warning,
               $"Commit with id {InputWrapper.CommitId} was not found in stream {InputWrapper.StreamId}."
             );
+          }
+
           return myCommit;
         }
         catch (Exception e)
@@ -760,13 +807,17 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       case StreamWrapperType.Undefined:
         var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1, CancellationToken);
         if (mb.commits.totalCount == 0)
+        {
           // TODO: Warn that we're not pulling from the main branch
           OnFail(
             GH_RuntimeMessageLevel.Remark,
             "Main branch was empty. Defaulting to latest commit regardless of branch."
           );
+        }
         else
+        {
           return mb.commits.items[0];
+        }
 
         var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1, CancellationToken);
         if (cms.Count == 0)
@@ -800,10 +851,14 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
   public override void SetData(IGH_DataAccess DA)
   {
     if (CancellationToken.IsCancellationRequested)
+    {
       return;
+    }
 
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
 
     var parent = (VariableInputReceiveComponent)Parent;
 
@@ -824,7 +879,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
     DA.SetData(infoIndex, parent.LastInfoMessage);
 
     if (ReceivedObject == null)
+    {
       return;
+    }
 
     //the active document may have changed
     var converter = parent.Converter;
@@ -847,7 +904,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         var param = Parent.Params.Output.FindIndex(p => p.Name == name || p.Name == name.Substring(1));
         var ighP = Parent.Params.Output[param];
         if (ighP is SendReceiveDataParam srParam)
+        {
           srParam.Detachable = name.StartsWith("@");
+        }
 
         GH_Structure<IGH_Goo> dataTree;
         if (prop is Base b && Utilities.CanConvertToDataTree(b))
@@ -872,7 +931,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       !receiveComponent.ExpandOutput
       || receiveComponent.Converter != null && receiveComponent.Converter.CanConvertToNative(b)
     )
+    {
       return new List<string> { "Data" };
+    }
 
     // Get the full list of output parameters
     var fullProps = new List<string>();
@@ -881,7 +942,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       .ForEach(prop =>
       {
         if (!fullProps.Contains(prop))
+        {
           fullProps.Add(prop);
+        }
       });
     fullProps.Sort();
     return fullProps;
@@ -897,7 +960,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
   {
     var equalLength = outputList.Count == Parent?.Params.Output.Count;
     if (!equalLength)
+    {
       return false;
+    }
 
     var diffParams = Parent?.Params.Output.Where(
       param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name)
@@ -910,7 +975,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
     outputList = GetOutputList(@base);
     outputList.Insert(0, "Info");
     if (!OutputMismatch())
+    {
       return;
+    }
 
     Parent.RecordUndoEvent("Creating Outputs");
     if (HasSingleRename())
@@ -943,7 +1010,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
     remove.ForEach(b =>
     {
       if (b != -1 && Parent.Params.Output[b].Recipients.Count == 0)
+      {
         Parent.Params.UnregisterOutputParameter(Parent.Params.Output[b]);
+      }
     });
 
     outputList.ForEach(s =>
@@ -965,7 +1034,9 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
         Parent.Params.RegisterOutputParam(newParam, Parent.Params.Output.Count);
       }
       if (param is SendReceiveDataParam srParam)
+      {
         srParam.Detachable = isDetached;
+      }
     });
 
     var paramNames = Parent.Params.Output.Select(p => p.Name).ToList();
@@ -1059,13 +1130,19 @@ public class VariableInputReceiveComponentAttributes : GH_ComponentAttributes
   public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
   {
     if (e.Button != MouseButtons.Left)
+    {
       return base.RespondToMouseDown(sender, e);
+    }
 
     if (!((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+    {
       return base.RespondToMouseDown(sender, e);
+    }
 
     if (((VariableInputReceiveComponent)Owner).CurrentComponentState == "receiving")
+    {
       return GH_ObjectResponse.Handled;
+    }
 
     if (((VariableInputReceiveComponent)Owner).AutoReceive)
     {

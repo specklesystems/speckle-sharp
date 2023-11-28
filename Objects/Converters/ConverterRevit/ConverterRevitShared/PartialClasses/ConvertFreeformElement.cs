@@ -25,6 +25,7 @@ public partial class ConverterRevit
     // 1. Convert the freeformElement geometry to native
     var solids = new List<DB.Solid>();
     foreach (var geom in freeformElement.baseGeometries)
+    {
       switch (geom)
       {
         case Brep brep:
@@ -32,7 +33,10 @@ public partial class ConverterRevit
           {
             var solid = BrepToNative(geom as Brep, out List<string> brepNotes);
             if (brepNotes.Count > 0)
+            {
               appObj.Update(log: brepNotes);
+            }
+
             solids.Add(solid);
           }
           catch (Exception e)
@@ -55,6 +59,7 @@ public partial class ConverterRevit
           solids.AddRange(meshSolids);
           break;
       }
+    }
 
     var tempPath = CreateFreeformElementFamily(solids, freeformElement.id, out List<string> notes, freeformElement);
     appObj.Update(log: notes);
@@ -96,7 +101,10 @@ public partial class ConverterRevit
     {
       var solid = BrepToNative(brep, out List<string> brepNotes);
       if (brepNotes.Count > 0)
+      {
         appObj.Update(log: brepNotes);
+      }
+
       solids.Add(solid);
     }
     catch (Exception e)
@@ -109,7 +117,10 @@ public partial class ConverterRevit
     {
       var form = DB.FreeFormElement.Create(Doc, s);
       if (cat != null)
+      {
         form.Subcategory = cat;
+      }
+
       appObj.Update(createdId: form.UniqueId, convertedItem: form);
     }
 
@@ -153,7 +164,10 @@ public partial class ConverterRevit
     {
       var solid = BrepToNative(brep, out List<string> brepNotes);
       if (brepNotes.Count > 0)
+      {
         appObj.Update(log: brepNotes);
+      }
+
       solids.Add(solid);
     }
     catch (Exception e)
@@ -163,7 +177,10 @@ public partial class ConverterRevit
 
     var tempPath = CreateFreeformElementFamily(solids, brep.id, out List<string> freeformNotes);
     if (freeformNotes.Count > 0)
+    {
       appObj.Update(log: freeformNotes);
+    }
+
     if (tempPath == null)
     {
       appObj.Update(status: ApplicationObject.State.Failed);
@@ -249,7 +266,9 @@ public partial class ConverterRevit
   {
     var templatePath = GetTemplatePath(templateName);
     if (!File.Exists(templatePath))
+    {
       throw new FileNotFoundException($"Could not find Generic Model rft file - {templatePath}");
+    }
 
     var famDoc = Doc.Application.NewFamilyDocument(templatePath);
 
@@ -257,7 +276,10 @@ public partial class ConverterRevit
     {
       t.Start();
       foreach (var s in solids)
+      {
         FreeFormElement.Create(famDoc, s);
+      }
+
       t.Commit();
     }
 

@@ -80,7 +80,9 @@ public class StreamListComponent : GH_SpeckleComponent
         : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
       if (userId == null)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
+      }
 
       if (account == null)
       {
@@ -135,10 +137,14 @@ public class StreamListComponent : GH_SpeckleComponent
       DA.GetData(1, ref limit); // Has default value so will never be empty.
 
       if (limit > 50)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+      }
 
       if (streams != null)
+      {
         DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
+      }
 
       streams = null;
     }

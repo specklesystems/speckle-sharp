@@ -22,7 +22,9 @@ public static class IRevitDocumentAggregateCacheExtensions
         {
           var firstParam = method.GetParameters().FirstOrDefault();
           if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>))
+          {
             continue;
+          }
 
           cacheFactoryMethod = method;
           break;
@@ -48,18 +50,25 @@ public static class IRevitDocumentAggregateCacheExtensions
     foreach (Category category in doc.Settings.Categories)
     {
       if (!Helpers.Extensions.Extensions.IsCategorySupported(category))
+      {
         continue;
+      }
 
       //some categories, in other languages (eg DEU) have duplicated names #542
       if (_categories.ContainsKey(category.Name))
       {
         var spec = category.Id.ToString();
         if (category.Parent != null)
+        {
           spec = category.Parent.Name;
+        }
+
         _categories.Add($"{category.Name} ({spec})", category);
       }
       else
+      {
         _categories.Add(category.Name, category);
+      }
     }
 
     cache.AddMany(_categories);

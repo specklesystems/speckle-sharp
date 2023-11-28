@@ -51,12 +51,18 @@ public sealed class DirectShape : IConverter
               List<Mesh> meshes = null;
               var m = directShape["displayValue"] ?? directShape["@displayValue"];
               if (m is List<Mesh>)
+              {
                 meshes = (List<Mesh>)m;
+              }
               else if (m is List<object>)
+              {
                 meshes = ((List<object>)m).Cast<Mesh>().ToList();
+              }
 
               if (meshes == null)
+              {
                 continue;
+              }
 
               meshModel = ModelConverter.MeshToNative(meshes);
             }
@@ -83,7 +89,9 @@ public sealed class DirectShape : IConverter
 
     var directShapes = new List<Base>();
     if (data is null)
+    {
       return directShapes;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (

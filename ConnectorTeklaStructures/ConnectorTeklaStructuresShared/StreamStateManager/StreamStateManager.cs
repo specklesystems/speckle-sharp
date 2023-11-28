@@ -37,7 +37,10 @@ public static class StreamStateManager
   public static void WriteStreamStateList(Model model, List<StreamState> streamStates)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
     try
     {
@@ -53,7 +56,10 @@ public static class StreamStateManager
   public static void ClearStreamStateList(Model model)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
     try
     {
@@ -111,10 +117,15 @@ public static class StreamStateManager
   private static string ReadSpeckleFile(Model model)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
 
     if (_speckleFilePath == null)
+    {
       return "";
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     try
     {

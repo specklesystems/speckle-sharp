@@ -25,7 +25,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (speckleBeam.baseLine == null)
     {
@@ -52,8 +54,12 @@ public partial class ConverterRevit
     //comes from revit or schema builder, has these props
     var speckleRevitBeam = speckleBeam as RevitBeam;
     if (speckleRevitBeam != null)
+    {
       if (level != null)
+      {
         level = GetLevelByName(speckleRevitBeam.level.name);
+      }
+    }
 
     DB.FamilyInstance revitBeam = null;
 
@@ -117,9 +123,13 @@ public partial class ConverterRevit
     TrySetParam(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM, level);
 
     if (speckleRevitBeam != null)
+    {
       SetInstanceParameters(revitBeam, speckleRevitBeam);
+    }
     else
+    {
       TrySetParam(revitBeam, BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM, -baseOffset);
+    }
 
     // TODO: get sub families, it's a family!
     var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;

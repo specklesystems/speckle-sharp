@@ -36,22 +36,30 @@ public static class SpeckleStreamManager
     var streams = new List<StreamState>();
 
     if (doc == null)
+    {
       return streams;
+    }
 
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
       var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
       if (!NOD.Contains(SpeckleExtensionDictionary))
+      {
         return streams;
+      }
 
       var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
       if (speckleDict == null || speckleDict.Count == 0)
+      {
         return streams;
+      }
 
       var id = speckleDict.GetAt(SpeckleStreamStates);
       if (id == ObjectId.Null)
+      {
         return streams;
+      }
 
       var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
       var value = GetXrecordData(record);
@@ -77,7 +85,9 @@ public static class SpeckleStreamManager
   public static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
   {
     if (doc == null)
+    {
       return;
+    }
 
     using (TransactionContext.StartTransaction(doc))
     {

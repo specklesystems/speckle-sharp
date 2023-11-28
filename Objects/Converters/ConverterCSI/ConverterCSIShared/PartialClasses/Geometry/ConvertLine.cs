@@ -32,7 +32,9 @@ public partial class ConverterCSI
     );
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to add new frame");
+    }
 
     return newFrame;
   }

@@ -88,7 +88,9 @@ internal static class AssertUtils
 
     //rotation
     if (sourceElem.Location is LocationPoint)
+    {
       Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
+    }
   }
 
   internal static async Task FloorEqual(DB.Floor sourceElem, DB.Floor destElem)
@@ -161,7 +163,9 @@ internal static class AssertUtils
     //rotation
     //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
     if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
+    {
       Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
+    }
 
     //walls
     EqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -175,7 +179,9 @@ internal static class AssertUtils
   internal static void OpeningEqual(DB.Element sourceElem, DB.Element destElem)
   {
     if (!(sourceElem is DB.Opening))
+    {
       return;
+    }
 
     ElementEqual(sourceElem, destElem);
 
@@ -188,7 +194,9 @@ internal static class AssertUtils
   {
     var expecedParam = expected.get_Parameter(param);
     if (expecedParam == null)
+    {
       return;
+    }
 
     switch (expecedParam.StorageType)
     {
@@ -206,9 +214,14 @@ internal static class AssertUtils
         var e1 = expected.Document.GetElement(expecedParam.AsElementId());
         var e2 = actual.Document.GetElement(actual.get_Parameter(param).AsElementId());
         if (e1 is Level l1 && e2 is Level l2)
+        {
           Assert.Equal(l1.Elevation, l2.Elevation, 3);
+        }
         else if (e1 != null && e2 != null)
+        {
           Assert.Equal(e1.Name, e2.Name);
+        }
+
         break;
       }
       case StorageType.None:

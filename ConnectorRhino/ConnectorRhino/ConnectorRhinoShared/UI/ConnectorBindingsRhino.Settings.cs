@@ -37,7 +37,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     var settings = new Dictionary<string, string>();
     foreach (var setting in currentSettings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     return settings;
   }
 }

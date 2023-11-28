@@ -19,7 +19,9 @@ public class DiskTransport : ICloneable, ITransport
   public DiskTransport(string? basePath = null)
   {
     if (basePath == null)
+    {
       basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
+    }
 
     RootPath = Path.Combine(basePath);
 
@@ -73,7 +75,9 @@ public class DiskTransport : ICloneable, ITransport
 
     var filePath = Path.Combine(RootPath, id);
     if (File.Exists(filePath))
+    {
       return File.ReadAllText(filePath, Encoding.UTF8);
+    }
 
     return null;
   }
@@ -85,7 +89,9 @@ public class DiskTransport : ICloneable, ITransport
 
     var filePath = Path.Combine(RootPath, id);
     if (File.Exists(filePath))
+    {
       return;
+    }
 
     File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
     SavedObjectCount++;
@@ -101,10 +107,12 @@ public class DiskTransport : ICloneable, ITransport
     var serializedObject = sourceTransport.GetObject(id);
 
     if (serializedObject is null)
+    {
       throw new TransportException(
         this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
+    }
 
     SaveObject(id, serializedObject);
   }
@@ -121,14 +129,18 @@ public class DiskTransport : ICloneable, ITransport
 
     var parent = GetObject(id);
     if (parent is null)
+    {
       throw new InvalidOperationException($"Requested id {id} was not found within this transport {TransportName}");
+    }
 
     targetTransport.SaveObject(id, parent);
 
     var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
     if (partial?.__closure is null || partial.__closure.Count == 0)
+    {
       return parent;
+    }
 
     int i = 0;
     foreach (var kvp in partial.__closure)
@@ -137,9 +149,11 @@ public class DiskTransport : ICloneable, ITransport
 
       var child = GetObject(kvp.Key);
       if (child is null)
+      {
         throw new InvalidOperationException(
           $"Closure id {kvp.Key} was not found within this transport {TransportName}"
         );
+      }
 
       targetTransport.SaveObject(kvp.Key, child);
       OnProgressAction?.Invoke($"{TransportName}", i++);

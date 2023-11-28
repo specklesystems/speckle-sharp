@@ -19,7 +19,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitRailing, appObj))
+    {
       return appObj;
+    }
 
     if (speckleRailing.path == null)
     {
@@ -66,10 +68,14 @@ public partial class ConverterRevit
       var topRailType = GetElementType<TopRailType>(speckleRailing.topRail, appObj, out bool isTopRailExactMatch);
 
       if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
+      {
         TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
+      }
 
       if (topRailType != null && isTopRailExactMatch)
+      {
         railingType.TopRailType = topRailType.Id;
+      }
     }
 
     if (isUpdate)
@@ -79,7 +85,9 @@ public partial class ConverterRevit
     }
 
     if (speckleRailing.flipped != revitRailing.Flipped)
+    {
       revitRailing.Flip();
+    }
 
     SetInstanceParameters(revitRailing, speckleRailing);
 

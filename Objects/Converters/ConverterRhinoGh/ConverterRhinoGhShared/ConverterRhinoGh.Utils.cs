@@ -39,13 +39,18 @@ public partial class ConverterRhinoGh
   {
     var index = -1;
     if (string.IsNullOrEmpty(name))
+    {
       return index;
+    }
+
     for (int i = 0; i < Doc.Materials.Count; i++)
+    {
       if (Doc.Materials[i].Name == name)
       {
         index = i;
         break;
       }
+    }
 
     return index;
   }
@@ -82,6 +87,7 @@ public partial class ConverterRhinoGh
     {
       var userStringsBase = new Base();
       foreach (var key in userStrings.AllKeys)
+      {
         try
         {
           userStringsBase[key] = userStrings[key];
@@ -90,6 +96,7 @@ public partial class ConverterRhinoGh
         {
           notes.Add($"Could not attach user string: {e.Message}");
         }
+      }
 
       obj[UserStrings] = userStringsBase;
     }
@@ -104,7 +111,9 @@ public partial class ConverterRhinoGh
 
     // obj name
     if (!string.IsNullOrEmpty(name))
+    {
       obj["name"] = name;
+    }
   }
 
   /// <summary>
@@ -245,9 +254,15 @@ public partial class ConverterRhinoGh
         currentLayerPath = i == 0 ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
         currentLayer = GetLayer(doc, currentLayerPath, out index);
         if (currentLayer == null)
+        {
           currentLayer = MakeLayer(doc, layerNames[i], out index, parent);
+        }
+
         if (currentLayer == null)
+        {
           break;
+        }
+
         parent = currentLayer;
       }
       layer = currentLayer;
@@ -260,10 +275,15 @@ public partial class ConverterRhinoGh
     index = -1;
     Layer newLayer = new() { Color = Color.White, Name = name };
     if (parentLayer != null)
+    {
       newLayer.ParentLayerId = parentLayer.Id;
+    }
+
     int newIndex = doc.Layers.Add(newLayer);
     if (newIndex < 0)
+    {
       return null;
+    }
 
     index = newIndex;
     return doc.Layers.FindIndex(newIndex);

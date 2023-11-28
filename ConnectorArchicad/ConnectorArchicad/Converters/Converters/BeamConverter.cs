@@ -76,7 +76,9 @@ public sealed class Beam : IConverter
 
     var beams = new List<Base>();
     if (jArray is null)
+    {
       return beams;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (

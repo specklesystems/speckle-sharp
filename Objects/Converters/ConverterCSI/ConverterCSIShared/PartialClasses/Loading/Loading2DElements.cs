@@ -55,7 +55,9 @@ public partial class ConverterCSI
     }
 
     if (!convertedNames.Any())
+    {
       throw new ConversionException($"Zero out of {loadFace.elements.Count} sub-elements converted successfully");
+    }
 
     return loadFace.name; //TODO: why return loadFace name here? is there an object with that name?
   }

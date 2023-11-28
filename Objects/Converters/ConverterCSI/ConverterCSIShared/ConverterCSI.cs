@@ -84,7 +84,9 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
     ProgramVersion = versionString;
 
     if (!Settings.ContainsKey("operation"))
+    {
       throw new Exception("operation setting was not set before calling converter.SetContextDocument");
+    }
 
     if (Settings["operation"] == "receive")
     {
@@ -97,7 +99,9 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
       resultsConverter = new ResultsConverter(Model, Settings, GetLoadCases(), GetLoadCombos());
     }
     else
+    {
       throw new Exception("operation setting was not set to \"send\" or \"receive\"");
+    }
   }
 
   public void SetConverterSettings(object settings)
@@ -144,7 +148,10 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
   public bool CanConvertToSpeckle(object @object)
   {
     if (@object == null)
+    {
       return false;
+    }
+
     foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIAPIUsableTypes)))
     {
       if (type == @object.ToString())
@@ -426,7 +433,9 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
 
     // send the object out with the same appId that it came in with for updating purposes
     if (returnObject != null)
+    {
       returnObject.applicationId = GetOriginalApplicationId(returnObject.applicationId);
+    }
 
     return returnObject;
   }

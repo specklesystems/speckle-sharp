@@ -52,10 +52,14 @@ public class AccountDetailsComponent : GH_SpeckleComponent
   {
     string userId = null;
     if (!DA.GetData(0, ref userId))
+    {
       return;
+    }
 
     if (string.IsNullOrEmpty(userId))
+    {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
+    }
 
     var account = string.IsNullOrEmpty(userId)
       ? AccountManager.GetDefaultAccount()
@@ -71,7 +75,9 @@ public class AccountDetailsComponent : GH_SpeckleComponent
     }
 
     if (DA.Iteration == 0) // Only report on first iteration of the component.
+    {
       Tracker.TrackNodeRun();
+    }
 
     Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 

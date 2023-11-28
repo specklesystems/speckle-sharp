@@ -22,7 +22,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObjs.FirstOrDefault(), appObj))
+    {
       return appObj;
+    }
 
     foreach (var docObj in docObjs)
     {
@@ -40,7 +42,9 @@ public partial class ConverterRevit
   {
     var appObj = CreateAppObject(alignment.id, alignment.applicationId, alignment.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     var curves = CurveToNative(alignment.curves);
     var curveEnumerator = curves.GetEnumerator();
@@ -58,7 +62,9 @@ public partial class ConverterRevit
   {
     var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     var crvEnum = CurveToNative(speckleCurve.baseCurve).GetEnumerator();
     while (crvEnum.MoveNext() && crvEnum.Current != null)
@@ -78,7 +84,9 @@ public partial class ConverterRevit
       var lineStyles = revitCurve.GetLineStyleIds();
       var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
       if (lineStyleId != null)
+      {
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+      }
 
       appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
     }
@@ -93,7 +101,9 @@ public partial class ConverterRevit
   {
     var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     var curves = CurveToNative(speckleCurve.baseCurve);
     var curveEnumerator = curves.GetEnumerator();
@@ -105,7 +115,9 @@ public partial class ConverterRevit
       var lineStyles = revitCurve.GetLineStyleIds();
       var lineStyleId = lineStyles.FirstOrDefault(x => Doc.GetElement(x).Name == speckleCurve.lineStyle);
       if (lineStyleId != null)
+      {
         revitCurve.LineStyle = Doc.GetElement(lineStyleId);
+      }
 
       appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
     }
@@ -118,12 +130,16 @@ public partial class ConverterRevit
   {
     // if it comes from GH it doesn't have an applicationId, the use the hash id
     if ((speckleLine as Base).applicationId == null)
+    {
       (speckleLine as Base).applicationId = (speckleLine as Base).id;
+    }
 
     var speckleCurve = speckleLine as Base;
     var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     try
     {
@@ -151,7 +167,9 @@ public partial class ConverterRevit
   {
     var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
@@ -164,7 +182,9 @@ public partial class ConverterRevit
 
       // Delete the temp view after drawing
       if (isTempView)
+      {
         Doc.Delete(drawingView.Id);
+      }
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
     }
@@ -182,7 +202,9 @@ public partial class ConverterRevit
   {
     var appObj = CreateAppObject(speckleCurve.id, speckleCurve.applicationId, speckleCurve.speckle_type);
     if (appObj.Status == ApplicationObject.State.Skipped)
+    {
       return appObj;
+    }
 
     var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
@@ -236,19 +258,31 @@ public partial class ConverterRevit
       var curve = curveEnum.Current as DB.Curve;
       // Curves must be bound in order to be valid model curves
       if (!curve.IsBound)
+      {
         curve.MakeBound(speckleLine.domain.start ?? 0, speckleLine.domain.end ?? Math.PI * 2);
+      }
+
       DB.ModelCurve revitCurve = null;
 
       if (Doc.IsFamilyDocument)
+      {
         revitCurve = Doc.FamilyCreate.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+      }
       else
+      {
         revitCurve = Doc.Create.NewModelCurve(curve, NewSketchPlaneFromCurve(curve, Doc));
+      }
 
       if (revitCurve != null)
+      {
         appObj.Update(createdId: revitCurve.UniqueId, convertedItem: revitCurve);
+      }
     }
     if (appObj.CreatedIds.Count > 1)
+    {
       appObj.Update(logItem: $"Created as {appObj.CreatedIds.Count} model curves");
+    }
+
     appObj.Update(status: ApplicationObject.State.Created);
     return appObj;
   }
@@ -327,13 +361,19 @@ public partial class ConverterRevit
 
     // If Z Values are equal the Plane is XY
     if (startPoint.Z == endPoint.Z)
+    {
       plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, startPoint);
+    }
     // If X Values are equal the Plane is YZ
     else if (startPoint.X == endPoint.X)
+    {
       plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisX, startPoint);
+    }
     // If Y Values are equal the Plane is XZ
     else if (startPoint.Y == endPoint.Y)
+    {
       plane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisY, startPoint);
+    }
     // Otherwise the Planes Normal Vector is not X,Y or Z.
     // We draw lines from the Origin to each Point and use the Plane this one spans up.
     else

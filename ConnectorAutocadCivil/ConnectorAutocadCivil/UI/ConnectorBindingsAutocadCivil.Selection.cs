@@ -25,7 +25,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       {
         var dbObj = tr.GetObject(id, OpenMode.ForRead);
         if (dbObj.Visible())
+        {
           objs.Add(dbObj.Handle.ToString());
+        }
       }
       tr.Commit();
     }
@@ -39,7 +41,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     {
       PromptSelectionResult selection = Doc.Editor.SelectImplied();
       if (selection.Status == PromptStatus.OK)
+      {
         objs = selection.Value.GetHandles();
+      }
     }
     return objs;
   }
@@ -76,26 +80,37 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       try
       {
         if (Utils.GetHandle(arg, out Handle handle))
+        {
           if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
           {
             if (deselect)
             {
               if (currentSelection.Contains(id))
+              {
                 currentSelection.Remove(id);
+              }
             }
             else
             {
               if (!currentSelection.Contains(id))
+              {
                 currentSelection.Add(id);
+              }
             }
           }
+        }
       }
       catch { }
     }
     if (currentSelection.Count == 0)
+    {
       editor.SetImpliedSelection(new ObjectId[0]);
+    }
     else
+    {
       Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
+    }
+
     Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
   }
 
@@ -114,7 +129,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           TypedValue[] layerType = new TypedValue[1] { new((int)DxfCode.LayerName, layerName) };
           PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
           if (prompt.Status == PromptStatus.OK)
+          {
             selection.AddRange(prompt.Value.GetHandles());
+          }
         }
         return selection;
     }

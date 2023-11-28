@@ -72,15 +72,22 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     {
       var list = new List<double>();
       if (Surfaces != null)
+      {
         foreach (var srf in Surfaces)
+        {
           list.AddRange(srf.ToList());
+        }
+      }
 
       return list;
     }
     set
     {
       if (value == null)
+      {
         return;
+      }
+
       var list = new List<Surface>();
       var done = false;
       var currentIndex = 0;
@@ -115,7 +122,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     set
     {
       if (value != null)
+      {
         Curve3D = CurveArrayEncodingExtensions.FromArray(value);
+      }
     }
   }
 
@@ -138,7 +147,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     set
     {
       if (value != null)
+      {
         Curve2D = CurveArrayEncodingExtensions.FromArray(value);
+      }
     }
   }
 
@@ -162,7 +173,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
       var list = new List<double>();
       list.Add(Units.GetEncodingFromUnit(units));
       foreach (var vertex in Vertices)
+      {
         list.AddRange(vertex.ToList());
+      }
 
       return list;
     }
@@ -172,7 +185,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
       {
         var units = value.Count % 3 == 0 ? Units.None : Units.GetUnitFromEncoding(value[0]);
         for (int i = value.Count % 3 == 0 ? 0 : 1; i < value.Count; i += 3)
+        {
           Vertices.Add(new Point(value[i], value[i + 1], value[i + 2], units));
+        }
       }
     }
   }
@@ -211,7 +226,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     {
       Edges = new List<BrepEdge>();
       if (value == null || value.Count == 0)
+      {
         return;
+      }
+
       var i = 0;
       while (i < value.Count)
       {
@@ -226,7 +244,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         var domainEnd = loopValues[5];
         Interval domain = null;
         if (domainStart.HasValue && domainEnd.HasValue)
+        {
           domain = new Interval(domainStart.Value, domainEnd.Value);
+        }
+
         var trimIndices = loopValues.GetRange(6, loopValues.Count - 6).Select(d => Convert.ToInt32(d)).ToArray();
 
         var edge = new BrepEdge(this, curve3dIndex, trimIndices, startIndex, endIndex, proxyReversed, domain);
@@ -266,7 +287,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     {
       Loops = new List<BrepLoop>();
       if (value == null || value.Count == 0)
+      {
         return;
+      }
+
       var i = 0;
       while (i < value.Count)
       {
@@ -319,7 +343,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     set
     {
       if (value == null)
+      {
         return;
+      }
+
       var list = new List<BrepTrim>();
       for (int i = 0; i < value.Count; i += 9)
       {
@@ -373,7 +400,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     {
       Faces = new List<BrepFace>();
       if (value == null || value.Count == 0)
+      {
         return;
+      }
+
       var i = 0;
       while (i < value.Count)
       {
@@ -437,6 +467,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     var success3D = true;
     var transformedCurve3D = new List<ICurve>();
     foreach (var curve in Curve3D)
+    {
       if (curve is ITransformable c)
       {
         c.TransformTo(transform, out ITransformable tc);
@@ -446,6 +477,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
       {
         success3D = false;
       }
+    }
 
     // transform vertices
     var transformedVertices = new List<Point>();
@@ -474,14 +506,19 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     };
 
     foreach (var e in Edges)
+    {
       brep.Edges.Add(
         new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex, e.ProxyCurveIsReversed, e.Domain)
       );
+    }
 
     foreach (var l in Loops)
+    {
       brep.Loops.Add(new BrepLoop(brep, l.FaceIndex, l.TrimIndices, l.Type));
+    }
 
     foreach (var t in Trims)
+    {
       brep.Trims.Add(
         new BrepTrim(
           brep,
@@ -496,9 +533,12 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
           t.EndIndex
         )
       );
+    }
 
     foreach (var f in Faces)
+    {
       brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
+    }
 
     return success3D;
   }
@@ -520,6 +560,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     {
       var e = Edges[i];
       lock (e)
+      {
         if (e.Brep != null)
         {
           e = new BrepEdge(
@@ -537,12 +578,14 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         {
           e.Brep = this;
         }
+      }
     }
 
     for (var i = 0; i < Loops.Count; i++)
     {
       var l = Loops[i];
       lock (l)
+      {
         if (l.Brep != null)
         {
           l = new BrepLoop(this, l.FaceIndex, l.TrimIndices, l.Type);
@@ -552,12 +595,14 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         {
           l.Brep = this;
         }
+      }
     }
 
     for (var i = 0; i < Trims.Count; i++)
     {
       var t = Trims[i];
       lock (t)
+      {
         if (t.Brep != null)
         {
           t = new BrepTrim(
@@ -578,12 +623,14 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         {
           t.Brep = this;
         }
+      }
     }
 
     for (var i = 0; i < Faces.Count; i++)
     {
       var f = Faces[i];
       lock (f)
+      {
         if (f.Brep != null)
         {
           f = new BrepFace(this, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed);
@@ -593,6 +640,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         {
           f.Brep = this;
         }
+      }
     }
   }
 }

@@ -24,7 +24,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitSpace, appObj))
+    {
       return appObj;
+    }
 
     // Determine Space Location
     if (speckleSpace.basePoint is null)
@@ -104,7 +106,10 @@ public partial class ConverterRevit
   private static void SetSpaceType(Space speckleSpace, DB.Space revitSpace)
   {
     if (string.IsNullOrEmpty(speckleSpace.spaceType))
+    {
       return;
+    }
+
     revitSpace.SpaceType = Enum.TryParse(speckleSpace.spaceType, out DB.SpaceType spaceType)
       ? spaceType
       : DB.SpaceType.NoSpaceType;
@@ -123,7 +128,9 @@ public partial class ConverterRevit
   private void SetSpaceLimits(Space speckleSpace, Element upperLimit, DB.Space revitSpace)
   {
     if (upperLimit == null)
+    {
       return;
+    }
 
     TrySetParam(revitSpace, BuiltInParameter.ROOM_UPPER_LEVEL, upperLimit);
 
@@ -256,11 +263,15 @@ public partial class ConverterRevit
     };
 
     if (profiles.Count > 1)
+    {
       speckleSpace.voids = profiles.Skip(1).ToList();
+    }
 
     // Spaces are typically associated with a Room, but not always
     if (revitSpace.Room != null)
+    {
       speckleSpace["roomId"] = revitSpace.Room.Id.ToString();
+    }
 
     // Zones are stored as a Space prop despite being a parent object, so we need to convert it here
     speckleSpace.zone = revitDocumentAggregateCache

@@ -57,7 +57,10 @@ public class StreamUpdateComponentV2 : GH_SpeckleTaskCapableComponent<bool>
       bool? isPublic = null;
 
       if (!DA.GetData(0, ref ghSpeckleStream))
+      {
         return;
+      }
+
       DA.GetData(1, ref name);
       DA.GetData(2, ref description);
       DA.GetData(3, ref isPublic);
@@ -71,13 +74,17 @@ public class StreamUpdateComponentV2 : GH_SpeckleTaskCapableComponent<bool>
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       TaskList.Add(Task.Run(() => UpdateStream(streamWrapper, name, description, isPublic), CancelToken));
     }
 
     if (!GetSolveResults(DA, out var success))
+    {
       return;
+    }
 
     DA.SetData(0, success);
   }

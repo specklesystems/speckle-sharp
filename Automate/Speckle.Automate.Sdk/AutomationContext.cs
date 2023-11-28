@@ -77,7 +77,10 @@ public class AutomationContext
       .Receive(commit.referencedObject, serverTransport, memoryTransport)
       .ConfigureAwait(false);
     if (commitRootObject == null)
+    {
       throw new Exception("Commit root object was null");
+    }
+
     Console.WriteLine(
       $"It took {Elapsed.TotalSeconds} seconds to receive the speckle version {AutomationRunData.VersionId}"
     );
@@ -87,10 +90,13 @@ public class AutomationContext
   public async Task<string> CreateNewVersionInProject(Base rootObject, string branchName, string versionMessage = "")
   {
     if (branchName == AutomationRunData.BranchName)
+    {
       throw new ArgumentException(
         $"The target model: {branchName} cannot match the model that triggered this automation: {AutomationRunData.ModelId}/{AutomationRunData.BranchName}",
         nameof(branchName)
       );
+    }
+
     var rootObjectId = await Operations
       .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport }, useDefaultCache: false)
       .ConfigureAwait(false);
@@ -121,11 +127,19 @@ public class AutomationContext
   {
     var linkResources = new List<string>();
     if (includeSourceModelVersion)
+    {
       linkResources.Add($@"{AutomationRunData.ModelId}@{AutomationRunData.VersionId}");
+    }
+
     if (resourceIds is not null)
+    {
       linkResources.AddRange(resourceIds);
+    }
+
     if (linkResources.Count == 0)
+    {
       throw new Exception("We do not have enough resource ids to compose a context view");
+    }
 
     AutomationResult.ResultView = $"/projects/{AutomationRunData.ProjectId}/models/{string.Join(",", linkResources)}";
   }
@@ -204,7 +218,10 @@ public class AutomationContext
   public async Task StoreFileResult(string filePath)
   {
     if (!File.Exists(filePath))
+    {
       throw new FileNotFoundException("The given file path doesn't exist", fileName: filePath);
+    }
+
     using var formData = new MultipartFormDataContent();
 
     var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
@@ -221,7 +238,10 @@ public class AutomationContext
     Console.WriteLine("RESPONSE - " + responseString);
     var uploadResponse = JsonConvert.DeserializeObject<BlobUploadResponse>(responseString);
     if (uploadResponse.UploadResults.Count != 1)
+    {
       throw new Exception("Expected one upload result.");
+    }
+
     AutomationResult.Blobs.AddRange(uploadResponse.UploadResults.Select(r => r.BlobId));
   }
 
@@ -235,7 +255,10 @@ public class AutomationContext
 
     var msg = $"Automation run {statusValue} after {duration} seconds.";
     if (statusMessage is not null)
+    {
       msg += $"\n{statusMessage}";
+    }
+
     Console.WriteLine(msg);
   }
 

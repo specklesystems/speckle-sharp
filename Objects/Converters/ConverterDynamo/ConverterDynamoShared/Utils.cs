@@ -220,7 +220,10 @@ public static class Utils
   {
     var userData = geometry.Tags.LookupTag(speckleKey) as DesignScript.Builtin.Dictionary;
     if (userData == null)
+    {
       return new Dictionary<string, object>();
+    }
+
     return userData.ToSpeckleX();
     ;
   }

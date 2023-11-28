@@ -161,7 +161,9 @@ public partial class ArchicadBinding : ConnectorBindings
         }
 
         if (commitObject is not null)
+        {
           await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+        }
 
         await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
 
@@ -176,7 +178,9 @@ public partial class ArchicadBinding : ConnectorBindings
     {
       // log
       if (ex is not OperationCanceledException)
+      {
         SpeckleLog.Logger.Error("Conversion to native failed.");
+      }
 
       // throw
       switch (ex)
@@ -233,7 +237,9 @@ public partial class ArchicadBinding : ConnectorBindings
     {
       // log
       if (ex is not OperationCanceledException)
+      {
         SpeckleLog.Logger.Error("Conversion to Speckle failed.");
+      }
 
       // throw
       switch (ex)

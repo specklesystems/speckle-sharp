@@ -70,7 +70,9 @@ public partial class ConnectorBindingsRevit : ConnectorBindings
   {
     var streams = new List<StreamState>();
     if (CurrentDoc != null)
+    {
       streams = StreamStateManager.ReadState(CurrentDoc.Document);
+    }
 
     return streams;
   }

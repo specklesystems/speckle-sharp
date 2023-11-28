@@ -21,7 +21,9 @@ public partial class ConverterRevit
     public RenderMaterial GetOrCreateMaterial(DB.Material revitMaterial)
     {
       if (revitMaterial == null)
+      {
         return null;
+      }
 
       int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
       if (materialMap.TryGetValue(hash, out RenderMaterial m))
@@ -46,11 +48,15 @@ public partial class ConverterRevit
     public Mesh GetOrCreateMesh(DB.Material mat, string units)
     {
       if (mat == null)
+      {
         return nullMesh ??= new Mesh { units = units };
+      }
 
       int materialHash = Hash(mat);
       if (meshMap.TryGetValue(materialHash, out Mesh m))
+      {
         return m;
+      }
 
       var mesh = new Mesh { ["renderMaterial"] = GetOrCreateMaterial(mat), units = units };
       meshMap.Add(materialHash, mesh);
@@ -61,7 +67,10 @@ public partial class ConverterRevit
     {
       List<Mesh> meshes = meshMap.Values?.ToList() ?? new List<Mesh>();
       if (nullMesh != null)
+      {
         meshes.Add(nullMesh);
+      }
+
       return meshes;
     }
 

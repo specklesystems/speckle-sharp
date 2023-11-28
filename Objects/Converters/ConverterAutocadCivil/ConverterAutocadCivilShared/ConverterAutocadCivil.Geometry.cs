@@ -259,11 +259,14 @@ public partial class ConverterAutocadCivil
   {
     var _line = new Line3d(PointToNative(line.start), PointToNative(line.end));
     if (line.domain != null)
+    {
       try
       {
         _line.SetInterval(IntervalToNative(line.domain));
       }
       catch { }
+    }
+
     return _line;
   }
 
@@ -444,7 +447,10 @@ public partial class ConverterAutocadCivil
     foreach (Point3d point in points)
     {
       if (vertices.Count != 0)
+      {
         length += point.DistanceTo(vertices.Last());
+      }
+
       vertices.Add(point);
     }
     var _points = vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
@@ -460,7 +466,9 @@ public partial class ConverterAutocadCivil
   {
     var points = new List<double>();
     for (int i = 0; i < polyline.NumberOfVertices; i++)
+    {
       points.AddRange(PointToSpeckle(polyline.GetPoint3dAt(i)).ToList());
+    }
 
     var _polyline = new Polyline(points, ModelUnits);
     _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false; // hatch boundary polylines are not closed, cannot rely on .Closed prop
@@ -478,7 +486,9 @@ public partial class ConverterAutocadCivil
     if (polyline.IsNewObject)
     {
       foreach (Point3d vertex in polyline.Spline.NurbsData.GetControlPoints())
+      {
         points.AddRange(PointToSpeckle(vertex).ToList());
+      }
     }
     // otherwise retrieve actual vertices from transaction
     else
@@ -502,7 +512,10 @@ public partial class ConverterAutocadCivil
   {
     var vertices = new Point3dCollection();
     for (int i = 0; i < polyline.points.Count; i++)
+    {
       vertices.Add(PointToNative(polyline.points[i]));
+    }
+
     return new Polyline3d(Poly3dType.SimplePoly, vertices, polyline.closed);
   }
 
@@ -526,9 +539,14 @@ public partial class ConverterAutocadCivil
         var connectionPoint = new Point3d();
         var nextSegment = exploded[i + 1] as AcadDB.Curve;
         if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+        {
           connectionPoint = nextSegment.StartPoint;
+        }
         else
+        {
           connectionPoint = nextSegment.EndPoint;
+        }
+
         previousPoint = connectionPoint;
         segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
       }
@@ -540,7 +558,9 @@ public partial class ConverterAutocadCivil
     }
 
     if (segments.Count() == 0)
+    {
       throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
+    }
 
     polycurve.segments = segments;
 
@@ -561,7 +581,10 @@ public partial class ConverterAutocadCivil
     {
       var segment = GetSegmentByType(polyline, i);
       if (segment == null)
+      {
         continue;
+      }
+
       if (i == 0 && polyline.NumberOfVertices > 1)
       {
         // get the connection point to the next segment
@@ -574,16 +597,22 @@ public partial class ConverterAutocadCivil
             connectionPoint = polyline.GetPoint3dAt(i + 1);
           }
           else
+          {
             continue;
+          }
         }
         else
         {
           if (
             nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
           )
+          {
             connectionPoint = nextSegment.StartPoint;
+          }
           else
+          {
             connectionPoint = nextSegment.EndPoint;
+          }
         }
 
         previousPoint = connectionPoint;
@@ -597,7 +626,9 @@ public partial class ConverterAutocadCivil
     }
 
     if (segments.Count() == 0)
+    {
       throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
+    }
 
     polycurve.segments = segments;
 
@@ -631,24 +662,33 @@ public partial class ConverterAutocadCivil
     nextPoint = segment.EndPoint;
 
     if (connectionPoint == null)
+    {
       return segment;
+    }
 
     bool reverseDirection = false;
     if (isFirstSegment)
     {
       reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
       if (reverseDirection)
+      {
         nextPoint = segment.StartPoint;
+      }
     }
     else
     {
       reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
       if (reverseDirection)
+      {
         nextPoint = segment.StartPoint;
+      }
     }
 
     if (reverseDirection)
+    {
       segment.ReverseCurve();
+    }
+
     return segment;
   }
 
@@ -662,20 +702,26 @@ public partial class ConverterAutocadCivil
     nextPoint = segment.EndPoint;
 
     if (connectionPoint == null)
+    {
       return segment;
+    }
 
     bool reverseDirection = false;
     if (isFirstSegment)
     {
       reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
       if (reverseDirection)
+      {
         nextPoint = segment.StartPoint;
+      }
     }
     else
     {
       reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
       if (reverseDirection)
+      {
         nextPoint = segment.StartPoint;
+      }
     }
 
     return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
@@ -690,28 +736,54 @@ public partial class ConverterAutocadCivil
       {
         case Line o:
           if (z == null)
+          {
             z = o.start.z;
+          }
+
           if (o.start.z != z || o.end.z != z)
+          {
             return false;
+          }
+
           break;
         case Arc o:
           if (z == null)
+          {
             z = o.startPoint.z;
+          }
+
           if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z)
+          {
             return false;
+          }
+
           break;
         case Curve o:
           if (z == null)
+          {
             z = o.points[2];
+          }
+
           for (int i = 2; i < o.points.Count; i += 3)
+          {
             if (o.points[i] != z)
+            {
               return false;
+            }
+          }
+
           break;
         case Spiral o:
           if (z == null)
+          {
             z = o.startPoint.z;
+          }
+
           if (o.startPoint.z != z || o.endPoint.z != z)
+          {
             return false;
+          }
+
           break;
       }
     }
@@ -736,7 +808,10 @@ public partial class ConverterAutocadCivil
         case Line o:
           polyline.AddVertexAt(count, PointToNative(o.start).Convert2d(plane), 0, 0, 0);
           if (!polycurve.closed && count == polycurve.segments.Count - 1)
+          {
             polyline.AddVertexAt(count + 1, PointToNative(o.end).Convert2d(plane), 0, 0, 0);
+          }
+
           count++;
           break;
         case Arc o:
@@ -745,7 +820,10 @@ public partial class ConverterAutocadCivil
           var bulge = Math.Tan((double)angle / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
           polyline.AddVertexAt(count, PointToNative(o.startPoint).Convert2d(plane), bulge, 0, 0);
           if (!polycurve.closed && count == polycurve.segments.Count - 1)
+          {
             polyline.AddVertexAt(count + 1, PointToNative(o.endPoint).Convert2d(plane), 0, 0, 0);
+          }
+
           count++;
           break;
         case Spiral o:
@@ -775,9 +853,13 @@ public partial class ConverterAutocadCivil
     double z = v1[0] * v2[1] - v2[0] * v1[1];
 
     if (z > 0)
+    {
       return -1;
+    }
     else
+    {
       return 1;
+    }
   }
 
   // Spline
@@ -792,7 +874,9 @@ public partial class ConverterAutocadCivil
     // hack: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
     bool periodicClosed = false;
     if (_spline.Knots.Count < _spline.NumberOfControlPoints + _spline.Degree + 1 && spline.IsPeriodic)
+    {
       periodicClosed = true;
+    }
 
     // handle the display polyline
     try
@@ -807,7 +891,9 @@ public partial class ConverterAutocadCivil
     // NOTE: for closed periodic splines, autocad does not track last #degree points. Add the first #degree control points to the list if so.
     var points = data.GetControlPoints().OfType<Point3d>().ToList();
     if (periodicClosed)
+    {
       points.AddRange(points.GetRange(0, spline.Degree));
+    }
 
     // get knots
     // NOTE: for closed periodic splines, autocad has #control points + 1 knots. Add #degree extra knots to beginning and end with #degree - 1 multiplicity for first and last
@@ -839,12 +925,18 @@ public partial class ConverterAutocadCivil
     {
       double weight = spline.WeightAt(i);
       if (weight <= 0)
+      {
         weights.Add(1);
+      }
       else
+      {
         weights.Add(weight);
+      }
     }
     if (periodicClosed)
+    {
       weights.AddRange(weights.GetRange(0, spline.Degree));
+    }
 
     // set nurbs curve info
     curve.points = points.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
@@ -889,9 +981,13 @@ public partial class ConverterAutocadCivil
         appObj.Update(createdId: newEntity.Handle.ToString(), convertedItem: newEntity);
 
         if (first == null)
+        {
           first = newEntity;
+        }
         else
+        {
           others.Add(newEntity);
+        }
       }
     }
 
@@ -957,17 +1053,23 @@ public partial class ConverterAutocadCivil
     // get control points
     var points = new List<double>();
     for (int i = 0; i < curve.NumControlPoints; i++)
+    {
       points.AddRange(PointToSpeckle(curve.GetControlPointAt(i)).ToList());
+    }
 
     // get knots
     var knots = new List<double>();
     for (int i = 0; i < curve.NumKnots; i++)
+    {
       knots.Add(curve.GetKnotAt(i));
+    }
 
     // get weights
     var weights = new List<double>();
     for (int i = 0; i < curve.NumWeights; i++)
+    {
       weights.Add(curve.GetWeightAt(i));
+    }
 
     // set nurbs curve info
     _curve.points = points;
@@ -991,17 +1093,23 @@ public partial class ConverterAutocadCivil
     // get control points
     var points = new List<double>();
     for (int i = 0; i < curve.NumberOfControlPoints; i++)
+    {
       points.AddRange(PointToSpeckle(curve.ControlPointAt(i)).ToList());
+    }
 
     // get knots
     var knots = new List<double>();
     for (int i = 0; i < curve.NumberOfKnots; i++)
+    {
       knots.Add(curve.KnotAt(i));
+    }
 
     // get weights
     var weights = new List<double>();
     for (int i = 0; i < curve.NumWeights; i++)
+    {
       weights.Add(curve.GetWeightAt(i));
+    }
 
     // set nurbs curve info
     _curve.points = points;
@@ -1026,7 +1134,10 @@ public partial class ConverterAutocadCivil
     // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove extra pts for autocad.
     var _points = curve.GetPoints().Select(o => PointToNative(o)).ToList();
     if (curve.closed && curve.periodic)
+    {
       _points = _points.GetRange(0, _points.Count - curve.degree);
+    }
+
     var points = new Point3dCollection(_points.ToArray());
 
     // process knots
@@ -1040,22 +1151,33 @@ public partial class ConverterAutocadCivil
       _knots.Insert(_knots.Count - 1, _knots[_knots.Count - 1]);
     }
     if (curve.closed && curve.periodic) // handles closed periodic curves
+    {
       _knots = _knots.GetRange(curve.degree, _knots.Count - curve.degree * 2);
+    }
+
     var knots = new KnotCollection();
     foreach (var _knot in _knots)
+    {
       knots.Add(_knot);
+    }
 
     // process weights
     // NOTE: if all weights are the same, autocad convention is to pass an empty list (this will assign them a value of -1)
     var _weights = curve.weights;
     if (curve.closed && curve.periodic) // handles closed periodic curves
+    {
       _weights = curve.weights.GetRange(0, _points.Count);
+    }
+
     DoubleCollection weights;
     weights = (_weights.Distinct().Count() == 1) ? new DoubleCollection() : new DoubleCollection(_weights.ToArray());
 
     NurbCurve3d _curve = new(curve.degree, knots, points, weights, curve.periodic);
     if (curve.closed)
+    {
       _curve.MakeClosed();
+    }
+
     _curve.SetInterval(IntervalToNative(curve.domain));
 
     return _curve;
@@ -1072,9 +1194,13 @@ public partial class ConverterAutocadCivil
 
       case AcadDB.Polyline polyline:
         if (polyline.IsOnlyLines)
+        {
           return PolylineToSpeckle(polyline);
+        }
         else
+        {
           return PolycurveToSpeckle(polyline);
+        }
 
       case AcadDB.Polyline2d polyline2d:
         return PolycurveToSpeckle(polyline2d);
@@ -1144,7 +1270,10 @@ public partial class ConverterAutocadCivil
         break;
     }
     if (converted != null)
+    {
       convertedList.Add(converted);
+    }
+
     return convertedList;
   }
 
@@ -1327,15 +1456,23 @@ public partial class ConverterAutocadCivil
             {
               short index = o.GetVertexAt(i);
               if (index == 0)
+              {
                 continue;
+              }
+
               var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
               indices.Add(adjustedIndex);
             }
 
             if (indices.Count == 4)
+            {
               faces.AddRange(new List<int> { 4, indices[0], indices[1], indices[2], indices[3] });
+            }
             else
+            {
               faces.AddRange(new List<int> { 3, indices[0], indices[1], indices[2] });
+            }
+
             break;
         }
       }
@@ -1344,7 +1481,9 @@ public partial class ConverterAutocadCivil
 
     var vertices = new List<double>(_vertices.Count * 3);
     foreach (Point3d vert in _vertices)
+    {
       vertices.AddRange(PointToSpeckle(vert).ToList());
+    }
 
     var speckleMesh = new Mesh(vertices, faces, colors, null, u);
     speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents);
@@ -1357,7 +1496,9 @@ public partial class ConverterAutocadCivil
     //vertices
     var vertices = new List<double>(mesh.Vertices.Count * 3);
     foreach (Point3d vert in mesh.Vertices)
+    {
       vertices.AddRange(PointToSpeckle(vert).ToList());
+    }
 
     // faces
     var faces = new List<int>();
@@ -1368,11 +1509,18 @@ public partial class ConverterAutocadCivil
       List<int> faceVertices = new();
       edgeCount = faceArr[i];
       for (int j = i + 1; j <= i + edgeCount; j++)
+      {
         faceVertices.Add(faceArr[j]);
+      }
+
       if (edgeCount == 4) // quad face
+      {
         faces.AddRange(new List<int> { 4, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
+      }
       else // triangle face
+      {
         faces.AddRange(new List<int> { 3, faceVertices[0], faceVertices[1], faceVertices[2] });
+      }
     }
 
     // colors
@@ -1395,7 +1543,9 @@ public partial class ConverterAutocadCivil
     var vertices = new Point3dCollection();
     var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
     foreach (var point in points)
+    {
       vertices.Add(point);
+    }
 
     PolyFaceMesh _mesh = null;
 
@@ -1541,9 +1691,14 @@ public partial class ConverterAutocadCivil
 
                 // get faces
                 if (e.Nodes.Count() == 3)
+                {
                   faces.AddRange(new List<int> { 3, faceIndices[0], faceIndices[1], faceIndices[2] });
+                }
                 else if (e.Nodes.Count() == 4)
+                {
                   faces.AddRange(new List<int> { 4, faceIndices[0], faceIndices[1], faceIndices[2], faceIndices[3] });
+                }
+
                 e.Dispose();
               }
             }

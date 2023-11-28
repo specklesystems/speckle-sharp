@@ -51,10 +51,15 @@ public partial class ConverterRevit
     speckleArea.center = (Point)LocationToSpeckle(revitArea);
     speckleArea.level = ConvertAndCacheLevel(revitArea, BuiltInParameter.ROOM_LEVEL_ID);
     if (profiles.Any())
+    {
       speckleArea.outline = profiles[0];
+    }
+
     speckleArea.area = GetParamValue<double>(revitArea, BuiltInParameter.ROOM_AREA);
     if (profiles.Count > 1)
+    {
       speckleArea.voids = profiles.Skip(1).ToList();
+    }
 
     GetAllRevitParamsAndIds(speckleArea, revitArea);
 

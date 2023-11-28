@@ -11,7 +11,9 @@ public partial class ConverterCSI
   {
     var success = SetDeck(property2D);
     if (success != 0)
+    {
       throw new ConversionException("Failed to initialize deck property");
+    }
 
     switch (property2D.deckType)
     {
@@ -58,7 +60,9 @@ public partial class ConverterCSI
     }
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to set deck property");
+    }
 
     return property2D.name;
   }
@@ -107,7 +111,9 @@ public partial class ConverterCSI
     }
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to set slab property");
+    }
 
     return property2D.name;
   }

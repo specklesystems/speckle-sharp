@@ -14,15 +14,22 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     var names = new List<string>();
     var typeNameTupleList = ConnectorCSIUtils.SelectedObjects(Model);
     if (typeNameTupleList == null)
+    {
       return new List<string>() { };
+    }
+
     foreach (var item in typeNameTupleList)
     {
       (string typeName, string name) = item;
       if (ConnectorCSIUtils.IsTypeCSIAPIUsable(typeName))
+      {
         names.Add(string.Concat(typeName, ": ", name));
+      }
     }
     if (names.Count == 0)
+    {
       return new List<string>() { };
+    }
 
     return names;
   }
@@ -47,6 +54,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
       var objectTypes = ConnectorCSIUtils.ObjectIDsTypesAndNames.Select(pair => pair.Value.Item1).Distinct().ToList();
 
       if (objectTypes.Any())
+      {
         filters.Add(
           new ListSelectionFilter
           {
@@ -57,11 +65,13 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
             Description = "Adds all objects belonging to the selected types."
           }
         );
+      }
 
       string[] groupNames = new string[0];
       int numNames = 0;
       Model.GroupDef.GetNameList(ref numNames, ref groupNames);
       if (groupNames.Any())
+      {
         filters.Add(
           new ListSelectionFilter
           {
@@ -72,6 +82,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
             Description = "Add all objects belonging to CSI Group."
           }
         );
+      }
     }
 
     return filters;

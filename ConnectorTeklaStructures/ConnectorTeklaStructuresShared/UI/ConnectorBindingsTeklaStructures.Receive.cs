@@ -38,7 +38,10 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
     var settings = new Dictionary<string, string>();
     CurrentSettings = state.Settings;
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     converter.SetConverterSettings(settings);
 
     Exceptions.Clear();

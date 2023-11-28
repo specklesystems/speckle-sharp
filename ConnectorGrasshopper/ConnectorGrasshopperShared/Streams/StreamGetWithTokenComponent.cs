@@ -25,11 +25,16 @@ public class StreamGetWithTokenComponent : GH_TaskCapableComponent<StreamWrapper
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -69,9 +74,14 @@ public class StreamGetWithTokenComponent : GH_TaskCapableComponent<StreamWrapper
       GH_SpeckleStream ssp = null;
       string token = null;
       if (!DA.GetData(0, ref ssp))
+      {
         return;
+      }
+
       if (!DA.GetData(1, ref token))
+      {
         return;
+      }
 
       var sw = ssp.Value;
 

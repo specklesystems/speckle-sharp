@@ -73,7 +73,9 @@ public sealed class Column : IConverter
 
     var columns = new List<Base>();
     if (jArray is null)
+    {
       return columns;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (

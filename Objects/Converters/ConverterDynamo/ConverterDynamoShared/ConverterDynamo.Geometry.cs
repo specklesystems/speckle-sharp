@@ -71,16 +71,20 @@ public partial class ConverterDynamo
   public DS.Point[] ArrayToPointList(IEnumerable<double> arr, string units = null)
   {
     if (arr.Count() % 3 != 0)
+    {
       throw new SpeckleException("Array malformed: length%3 != 0.");
+    }
 
     DS.Point[] points = new DS.Point[arr.Count() / 3];
     var asArray = arr.ToArray();
     for (int i = 2, k = 0; i < arr.Count(); i += 3)
+    {
       points[k++] = DS.Point.ByCoordinates(
         ScaleToNative(asArray[i - 2], units),
         ScaleToNative(asArray[i - 1], units),
         ScaleToNative(asArray[i], units)
       );
+    }
 
     return points;
   }
@@ -271,10 +275,12 @@ public partial class ConverterDynamo
   {
     var points = ArrayToPointList(polyline.value, polyline.units);
     if (polyline.closed)
+    {
       return DS.PolyCurve
         .ByPoints(points)
         .CloseWithLine()
         .SetDynamoProperties<DS.PolyCurve>(GetDynamicMembersFromBase(polyline));
+    }
 
     return PolyCurve.ByPoints(points).SetDynamoProperties<PolyCurve>(GetDynamicMembersFromBase(polyline));
   }
@@ -742,7 +748,9 @@ public partial class ConverterDynamo
     CopyProperties(speckleMesh, mesh);
 
     using (var box = ComputeMeshBoundingBox(mesh))
+    {
       speckleMesh.bbox = BoxToSpeckle(box, u);
+    }
 
     return speckleMesh;
   }
@@ -758,22 +766,41 @@ public partial class ConverterDynamo
     mesh.VertexPositions.ForEach(pos =>
     {
       if (pos.X < lowX)
+      {
         lowX = pos.X;
+      }
+
       if (pos.Y < lowY)
+      {
         lowY = pos.Y;
+      }
+
       if (pos.Z < lowZ)
+      {
         lowZ = pos.Z;
+      }
+
       if (pos.X > highX)
+      {
         highX = pos.X;
+      }
+
       if (pos.Y > highY)
+      {
         highY = pos.Y;
+      }
+
       if (pos.Z > highZ)
+      {
         highZ = pos.Z;
+      }
     });
 
     using (var low = DS.Point.ByCoordinates(lowX, lowY, lowZ))
     using (var high = DS.Point.ByCoordinates(highX, highY, highZ))
+    {
       return DS.Cuboid.ByCorners(low, high);
+    }
   }
 
   public DS.Mesh MeshToNative(Mesh mesh)
@@ -841,7 +868,9 @@ public partial class ConverterDynamo
         box.zSize.end ?? 0
       )
     )
+    {
       return Cuboid.ByCorners(cLow, cHigh);
+    }
   }
 
   public Box BoxToSpeckle(BoundingBox box, string units = null)

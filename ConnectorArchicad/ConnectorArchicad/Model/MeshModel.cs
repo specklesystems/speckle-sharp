@@ -30,12 +30,18 @@ public sealed class MeshModel
       {
         // skip hidden edges
         if (entry.Value.edgeStatus == EdgeStatus.HiddenEdge)
+        {
           continue;
+        }
 
         if (!first)
+        {
           jsonString.Append(", ");
+        }
         else
+        {
           first = false;
+        }
 
         jsonString.Append("{ \"v1\": ");
         jsonString.Append(entry.Key.vertexId1.ToString());
@@ -95,15 +101,21 @@ public sealed class MeshModel
         jo.TryGetValue("p2", out p2);
 
         if (v1 == null || v2 == null || s == null)
+        {
           continue;
+        }
 
         EdgeId edgeId = new(((int)v1), ((int)v2));
 
         MeshModel.EdgeStatus edgeStatus = MeshModel.EdgeStatus.HiddenEdge;
         if (((string)s).Equals("SmoothEdge"))
+        {
           edgeStatus = MeshModel.EdgeStatus.SmoothEdge;
+        }
         else if (((string)s).Equals("VisibleEdge"))
+        {
           edgeStatus = MeshModel.EdgeStatus.VisibleEdge;
+        }
 
         EdgeData edgeData =
           new(
@@ -250,7 +262,9 @@ public sealed class MeshModel
     {
       Vector vector4 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[i]]);
       if (!IsCoplanar(vector1, vector2, vector3, vector4))
+      {
         return false;
+      }
     }
     return true;
   }

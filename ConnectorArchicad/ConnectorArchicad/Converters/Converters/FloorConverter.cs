@@ -69,7 +69,9 @@ public sealed class Floor : IConverter
 
     var floors = new List<Base>();
     if (jArray is null)
+    {
       return floors;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (
@@ -88,7 +90,10 @@ public sealed class Floor : IConverter
         );
         slab.outline = Utils.PolycurveToSpeckle(slab.shape.contourPolyline);
         if (slab.shape.holePolylines?.Count > 0)
+        {
           slab.voids = new List<ICurve>(slab.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+        }
+
         floors.Add(slab);
       }
     }

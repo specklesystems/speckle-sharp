@@ -13,7 +13,10 @@ public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element
   public void AddConvertedObjects(Base converted, IList<Element> created)
   {
     if (string.IsNullOrEmpty(converted.applicationId))
+    {
       return;
+    }
+
     convertedObjects[converted.applicationId] = (converted, created.ToList());
   }
 
@@ -32,7 +35,9 @@ public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element
       foreach (var obj in kvp.Value.Item2)
       {
         if (obj.UniqueId != id)
+        {
           continue;
+        }
 
         yield return kvp.Value.Item1;
         yield break;
@@ -59,7 +64,10 @@ public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element
   public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
   {
     if (convertedObjects.TryGetValue(id, out var value))
+    {
       return value.Item2;
+    }
+
     return Enumerable.Empty<Element>();
   }
 
@@ -70,7 +78,9 @@ public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element
       foreach (var obj in kvp.Value.Item2)
       {
         if (obj.UniqueId == id)
+        {
           return true;
+        }
       }
     }
     return false;

@@ -48,7 +48,9 @@ public static class Globals
       var folderName = assemblyLocationList[i];
       assemblyLocationList.RemoveAt(i);
       if (folderName == "speckle-sharp")
+      {
         break;
+      }
     }
     assemblyLocationList.Add("speckle-sharp-test-models");
     assemblyLocationList.Add("Revit");

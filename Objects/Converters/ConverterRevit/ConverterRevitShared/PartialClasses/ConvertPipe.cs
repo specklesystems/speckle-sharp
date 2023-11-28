@@ -176,7 +176,9 @@ public partial class ConverterRevit
     // geometry
     var baseGeometry = LocationToSpeckle(revitPipe);
     if (!(baseGeometry is Line baseLine))
+    {
       throw new Speckle.Core.Logging.SpeckleException("Only line based Pipes are currently supported.");
+    }
 
     // speckle pipe
     var specklePipe = new RevitPipe
@@ -194,8 +196,12 @@ public partial class ConverterRevit
 
     var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
     if (material != null)
+    {
       foreach (var mesh in specklePipe.displayValue)
+      {
         mesh["renderMaterial"] = material;
+      }
+    }
 
     GetAllRevitParamsAndIds(
       specklePipe,
@@ -250,8 +256,12 @@ public partial class ConverterRevit
     var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
 
     if (material != null)
+    {
       foreach (var mesh in specklePipe.displayValue)
+      {
         mesh["renderMaterial"] = material;
+      }
+    }
 
     GetAllRevitParamsAndIds(
       specklePipe,

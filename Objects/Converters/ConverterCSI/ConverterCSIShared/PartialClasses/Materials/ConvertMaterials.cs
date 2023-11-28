@@ -14,7 +14,9 @@ public partial class ConverterCSI
     Model.PropMaterial.GetNameList(ref numbMaterial, ref materials);
 
     if (materials.Contains(material.name))
+    {
       return material.name;
+    }
 
     var matType = material.materialType;
     var eMaterialType = eMatType.NoDesign;

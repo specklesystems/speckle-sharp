@@ -60,7 +60,9 @@ public class StreamCreateComponent : GH_SpeckleComponent
   public override bool Write(GH_IWriter writer)
   {
     if (stream == null)
+    {
       return base.Write(writer);
+    }
 
     var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.UserId}";
     writer.SetString("stream", serialisedStreamWrapper);

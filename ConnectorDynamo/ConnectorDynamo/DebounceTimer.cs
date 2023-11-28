@@ -36,7 +36,9 @@ public class DebounceTimer
     timer.Elapsed += delegate
     {
       if (timer == null)
+      {
         return;
+      }
 
       timer?.Stop();
       timer = null;

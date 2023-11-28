@@ -30,7 +30,10 @@ public class ComponentTracker
   {
     var customProperties = new Dictionary<string, object> { { "name", name ?? Parent?.Name ?? "unset" } };
     if (node != null)
+    {
       customProperties.Add("node", node);
+    }
+
     Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeRun, customProperties);
   }
 
@@ -38,9 +41,15 @@ public class ComponentTracker
   {
     var customProperties = new Dictionary<string, object>();
     if (auto)
+    {
       customProperties.Add("auto", auto);
+    }
+
     if (sync)
+    {
       customProperties.Add("sync", sync);
+    }
+
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, customProperties);
   }
 

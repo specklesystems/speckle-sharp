@@ -24,7 +24,9 @@ public partial class ConverterRevit
     speckleCeiling.type = revitCeiling.Document.GetElement(revitCeiling.GetTypeId()).Name;
     speckleCeiling.outline = profiles[0];
     if (profiles.Count > 1)
+    {
       speckleCeiling.voids = profiles.Skip(1).ToList();
+    }
 
     speckleCeiling.level = ConvertAndCacheLevel(revitCeiling, BuiltInParameter.LEVEL_PARAM);
 
@@ -32,7 +34,9 @@ public partial class ConverterRevit
 
     GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
     if (hostedNotes.Any())
+    {
       notes.AddRange(hostedNotes); //TODO: what are we doing here?
+    }
 
     speckleCeiling.displayValue = GetElementDisplayValue(revitCeiling);
 
@@ -51,7 +55,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (speckleCeiling.outline == null)
     {
@@ -62,7 +68,9 @@ public partial class ConverterRevit
     var outline = CurveToNative(speckleCeiling.outline);
     var profile = new CurveLoop();
     foreach (DB.Curve segment in outline)
+    {
       profile.Append(segment);
+    }
 
     DB.Level level = null;
     double slope = 0;
@@ -88,11 +96,14 @@ public partial class ConverterRevit
     }
 
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     DB.Ceiling revitCeiling;
 
     if (slope != 0 && slopeDirection != null)
+    {
       revitCeiling = DB.Ceiling.Create(
         Doc,
         new List<CurveLoop> { profile },
@@ -101,8 +112,11 @@ public partial class ConverterRevit
         slopeDirection,
         slope
       );
+    }
     else
+    {
       revitCeiling = DB.Ceiling.Create(Doc, new List<CurveLoop> { profile }, ceilingType.Id, level.Id);
+    }
 
     Doc.Regenerate();
 

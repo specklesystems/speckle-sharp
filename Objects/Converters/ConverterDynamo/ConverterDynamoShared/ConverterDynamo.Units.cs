@@ -96,21 +96,37 @@ public partial class ConverterDynamo
   private string UnitsToSpeckle(ForgeTypeId typeId)
   {
     if (typeId == UnitTypeId.Millimeters)
+    {
       return Speckle.Core.Kits.Units.Millimeters;
+    }
     else if (typeId == UnitTypeId.Centimeters)
+    {
       return Speckle.Core.Kits.Units.Centimeters;
+    }
     else if (typeId == UnitTypeId.Meters)
+    {
       return Speckle.Core.Kits.Units.Meters;
+    }
     else if (typeId == UnitTypeId.MetersCentimeters)
+    {
       return Speckle.Core.Kits.Units.Meters;
+    }
     else if (typeId == UnitTypeId.Inches)
+    {
       return Speckle.Core.Kits.Units.Inches;
+    }
     else if (typeId == UnitTypeId.Feet)
+    {
       return Speckle.Core.Kits.Units.Feet;
+    }
     else if (typeId == UnitTypeId.FeetFractionalInches)
+    {
       return Speckle.Core.Kits.Units.Feet;
+    }
     else if (typeId == UnitTypeId.FractionalInches)
+    {
       return Speckle.Core.Kits.Units.Inches;
+    }
 
     throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
   }

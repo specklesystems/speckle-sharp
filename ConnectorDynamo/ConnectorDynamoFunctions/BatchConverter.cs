@@ -25,11 +25,15 @@ public class BatchConverter
     _converter = kit.LoadConverter(Utils.GetAppName());
 
     if (_converter == null)
+    {
       throw new SpeckleException("Cannot find the Dynamo converter. Has it been copied to the Kits folder?");
+    }
 
     // if in Revit, we have a doc, injected by the Extension
     if (Globals.RevitDocument != null)
+    {
       _converter.SetContextDocument(Globals.RevitDocument);
+    }
   }
 
   /// <summary>
@@ -40,12 +44,17 @@ public class BatchConverter
   public Base ConvertRecursivelyToSpeckle(object @object)
   {
     if (@object is ProtoCore.DSASM.StackValue)
+    {
       throw new SpeckleException("Invalid input");
+    }
 
     var converted = RecurseTreeToSpeckle(@object);
 
     if (converted is null)
+    {
       return null;
+    }
+
     var @base = new Base();
 
     //case 1: lists and basic types => add them to a wrapper Base object in a `data` prop
@@ -115,7 +124,9 @@ public class BatchConverter
       var baseType = typeof(Base);
       type = _kit.Types.FirstOrDefault(t => t.FullName == s) ?? baseType;
       if (type != baseType)
+      {
         @base = Activator.CreateInstance(type) as Base;
+      }
     }
     var regex = new Regex("//");
     foreach (var key in dic.Keys)
@@ -135,7 +146,9 @@ public class BatchConverter
       }
       // It's an instance field, check if we can set it
       if (!propInfo.CanWrite)
+      {
         continue;
+      }
 
       // Check if it's a list, and if so, try to create the according typed instance.
       if (IsList(convertedValue))
@@ -173,7 +186,9 @@ public class BatchConverter
     }
 
     if (value is Base || value is null || value.GetType().IsSimpleType())
+    {
       return value;
+    }
 
     return result;
   }
@@ -185,7 +200,10 @@ public class BatchConverter
     var regex = dataTreePathRegex;
     var members = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys.ToList();
     if (members.Count == 0)
+    {
       return false;
+    }
+
     var isDataTree = members.All(el => regex.Match(el).Success);
     return members.Count > 0 && isDataTree;
   }
@@ -197,7 +215,9 @@ public class BatchConverter
     foreach (var name in names)
     {
       if (!dataTreePathRegex.Match(name).Success)
+      {
         continue; // Ignore non matching elements, done for extra safety.
+      }
 
       var parts = name.Split('{')[
         1
@@ -239,11 +259,15 @@ public class BatchConverter
   public object ConvertRecursivelyToNative(Base @base)
   {
     if (@base == null)
+    {
       return null;
+    }
 
     // case 1: it's an item that has a direct conversion method, eg a point
     if (_converter.CanConvertToNative(@base))
+    {
       return TryConvertItemToNative(@base);
+    }
 
     // case 2: it's a wrapper Base
     //       2a: if there's only one member unpack it
@@ -281,7 +305,9 @@ public class BatchConverter
   private object TryConvertItemToNative(object value)
   {
     if (value == null)
+    {
       return null;
+    }
 
     //it's a simple type or not a Base
     if (value.GetType().IsSimpleType() || !(value is Base))
@@ -316,7 +342,9 @@ public class BatchConverter
   public static bool IsList(object @object)
   {
     if (@object == null)
+    {
       return false;
+    }
 
     var type = @object.GetType();
     return (
@@ -329,7 +357,9 @@ public class BatchConverter
   public static bool IsDictionary(object @object)
   {
     if (@object == null)
+    {
       return false;
+    }
 
     Type type = @object.GetType();
     return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);

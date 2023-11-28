@@ -39,7 +39,10 @@ public static class StreamStateManager
   public static void WriteStreamStateList(cSapModel model, List<StreamState> streamStates)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 
     using (var streamWriter = new StreamWriter(fileStream))
@@ -52,7 +55,10 @@ public static class StreamStateManager
   public static void ClearStreamStateList(cSapModel model)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
     try
     {
@@ -106,10 +112,15 @@ public static class StreamStateManager
   private static string ReadSpeckleFile(cSapModel model)
   {
     if (_speckleFilePath == null)
+    {
       GetOrCreateSpeckleFilePath(model);
+    }
 
     if (_speckleFilePath == null)
+    {
       return "";
+    }
+
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     try
     {
@@ -134,8 +145,10 @@ public static class StreamStateManager
     string CSIModelfilePath = model.GetModelFilename(true);
     string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
     if (string.IsNullOrEmpty(CSIModelFolder))
+    {
       // CSI model is probably not saved, so speckle shouldn't do much
       return;
+    }
 
     string fileExtension = CSIModelfilePath.Split('.').Last();
     string CSIFileName = Path.GetFileNameWithoutExtension(CSIModelfilePath);

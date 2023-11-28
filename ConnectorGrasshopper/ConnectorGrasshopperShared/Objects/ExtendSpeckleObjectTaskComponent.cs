@@ -148,7 +148,9 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Extend Object");
+      }
 
       var inputData = new Dictionary<string, object>();
       for (int i = 1; i < Params.Input.Count; i++)
@@ -164,28 +166,37 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
           key = param.NickName;
           willOverwrite = true;
           if (detachable)
+          {
             willChangeDetach = true;
+          }
         }
         else if (@base.GetMembers().ContainsKey("@" + param.NickName))
         {
           key = "@" + param.NickName;
           willOverwrite = true;
           if (!detachable)
+          {
             willChangeDetach = true;
+          }
         }
         var targetIndex = DA.ParameterTargetIndex(0);
         var path = DA.ParameterTargetPath(0);
 
         if (willChangeDetach)
+        {
           AddRuntimeMessage(
             GH_RuntimeMessageLevel.Remark,
             $"Key {key} already exists in object at {path}[{targetIndex}] with different detach flag. The detach flag of this input will be ignored"
           );
+        }
+
         if (willOverwrite)
+        {
           AddRuntimeMessage(
             GH_RuntimeMessageLevel.Remark,
             $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten"
           );
+        }
 
         switch (param.Access)
         {
@@ -202,7 +213,9 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             }
 
             if (value is SpeckleObjectGroup group)
+            {
               value = group.Value;
+            }
 
             inputData[key] = value;
             break;
@@ -210,6 +223,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             var values = new List<object>();
             DA.GetDataList(i, values);
             if (!param.Optional)
+            {
               if (values.Count == 0)
               {
                 AddRuntimeMessage(
@@ -218,6 +232,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 );
                 hasErrors = true;
               }
+            }
 
             inputData[key] = values;
             break;
@@ -229,7 +244,9 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
       }
 
       if (hasErrors)
+      {
         inputData = null;
+      }
 
       var task = Task.Run(() => DoWork(@base, inputData));
       TaskList.Add(task);
@@ -240,16 +257,23 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
     if (!GetSolveResults(DA, out Base result))
+    {
       // Normal mode not supported
       return;
+    }
 
     if (result != null)
+    {
       DA.SetData(0, result);
+    }
   }
 
   public Base DoWork(Base @base, Dictionary<string, object> inputData)
@@ -301,9 +325,13 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             try
             {
               if (Converter != null)
+              {
                 @base[key] = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
+              }
               else
+              {
                 @base[key] = value;
+              }
             }
             catch (Exception ex)
             {
@@ -315,7 +343,9 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
         });
 
       if (hasErrors)
+      {
         @base = null;
+      }
     }
     catch (Exception ex)
     {
@@ -333,7 +363,10 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
     Params.ParameterChanged += (sender, args) =>
     {
       if (args.ParameterSide != GH_ParameterSide.Input || args.ParameterIndex == 0)
+      {
         return;
+      }
+
       switch (args.OriginalArguments.Type)
       {
         case GH_ObjectEventType.NickName:

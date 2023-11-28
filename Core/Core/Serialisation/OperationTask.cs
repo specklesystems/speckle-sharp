@@ -44,18 +44,30 @@ internal abstract class ParallelOperationExecutor<TOperation> : IDisposable
   protected virtual void Stop()
   {
     if (!HasStarted)
+    {
       throw new InvalidOperationException($"Unable to {nameof(Stop)} {this} as it has not started!");
+    }
+
     foreach (Thread _ in Threads)
+    {
       Tasks.Add(default);
+    }
+
     foreach (Thread t in Threads)
+    {
       t.Join();
+    }
+
     Threads = new List<Thread>();
   }
 
   public virtual void Start()
   {
     if (HasStarted)
+    {
       throw new InvalidOperationException($"{this}: Threads already started");
+    }
+
     for (int i = 0; i < NumThreads; i++)
     {
       Thread t = new(ThreadMain) { Name = ToString(), IsBackground = true };
@@ -67,7 +79,10 @@ internal abstract class ParallelOperationExecutor<TOperation> : IDisposable
   public virtual void Dispose()
   {
     if (HasStarted)
+    {
       Stop();
+    }
+
     Tasks.Dispose();
   }
 }

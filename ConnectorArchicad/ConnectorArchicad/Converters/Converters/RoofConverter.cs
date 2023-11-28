@@ -65,10 +65,14 @@ public sealed class Roof : IConverter
 
     var result = new List<ApplicationObject>();
     if (resultRoofs is not null)
+    {
       result.AddRange(resultRoofs.ToList());
+    }
 
     if (resultShells is not null)
+    {
       result.AddRange(resultShells.ToList());
+    }
 
     return result is null ? new List<ApplicationObject>() : result;
   }
@@ -103,7 +107,9 @@ public sealed class Roof : IConverter
           {
             roof.outline = Utils.PolycurveToSpeckle(roof.shape.contourPolyline);
             if (roof.shape.holePolylines?.Count > 0)
+            {
               roof.voids = new List<ICurve>(roof.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+            }
           }
 
           roofs.Add(roof);
@@ -139,7 +145,9 @@ public sealed class Roof : IConverter
           {
             shell.outline = Utils.PolycurveToSpeckle(shell.shape.contourPolyline);
             if (shell.shape.holePolylines?.Count > 0)
+            {
               shell.voids = new List<ICurve>(shell.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+            }
           }
 
           shells.Add(shell);

@@ -29,7 +29,10 @@ public static class Utils
   public static ObjectId Append(this BlockTableRecord owner, Entity entity)
   {
     if (!entity.IsNewObject)
+    {
       return entity.Id;
+    }
+
     var tr = owner.Database.TransactionManager.TopTransaction;
     var id = owner.AppendEntity(entity);
     tr.AddNewlyCreatedDBObject(entity, true);
@@ -39,7 +42,9 @@ public static class Utils
   public static Base GetObjectExtensionDictionaryAsBase(this DBObject source)
   {
     if (source is null || source.ExtensionDictionary == ObjectId.Null)
+    {
       return null;
+    }
 
     var extensionDictionaryBase = new Base();
     var tr = source.Database.TransactionManager.TopTransaction;
@@ -133,12 +138,18 @@ public partial class ConverterAutocadCivil
     var ids = new List<ObjectId>();
 
     if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+    {
       return ids;
+    }
 
     // first see if this appid is a handle (autocad appid)
     if (GetHandle(applicationId, out Handle handle))
+    {
       if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+      {
         return new List<ObjectId>() { id };
+      }
+    }
 
     // Create a TypedValue array to define the filter criteria
     TypedValue[] acTypValAr = new TypedValue[1];
@@ -148,23 +159,31 @@ public partial class ConverterAutocadCivil
     SelectionFilter acSelFtr = new(acTypValAr);
     var res = Doc.Editor.SelectAll(acSelFtr);
     if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
+    {
       return ids;
+    }
 
     // loop through all obj with an appId
     foreach (var appIdObj in res.Value.GetObjectIds())
     {
       if (appIdObj.IsErased)
+      {
         continue;
+      }
 
       // get the db object from id
       var obj = Trans.GetObject(appIdObj, OpenMode.ForRead);
       if (obj != null)
+      {
         foreach (var entry in obj.XData)
+        {
           if (entry.Value as string == applicationId)
           {
             ids.Add(appIdObj);
             break;
           }
+        }
+      }
     }
 
     return ids;
@@ -174,7 +193,9 @@ public partial class ConverterAutocadCivil
   {
     var id = ObjectId.Null;
     if ((string.IsNullOrEmpty(name) && !useFirstIfNull) || (string.IsNullOrEmpty(name) && collection.Count == 0))
+    {
       return id;
+    }
 
     foreach (ObjectId collectionId in collection)
     {
@@ -195,7 +216,9 @@ public partial class ConverterAutocadCivil
     }
 
     if (id == ObjectId.Null && useFirstIfNull && collection.Count > 0)
+    {
       id = collection[0];
+    }
 
     return id;
   }
@@ -233,6 +256,7 @@ public partial class ConverterAutocadCivil
       case UCS:
         var cs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
         if (cs != null)
+        {
           referencePointTransform = Matrix3d.AlignCoordinateSystem(
             Point3d.Origin,
             Vector3d.XAxis,
@@ -243,6 +267,8 @@ public partial class ConverterAutocadCivil
             cs.Yaxis,
             cs.Zaxis
           );
+        }
+
         break;
       default: // try to see if this is a named UCS
         using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())

@@ -22,7 +22,9 @@ public partial class ConverterCSI
     var success = Model.Diaphragm.SetDiaphragm(csiDiaphragm.name, csiDiaphragm.SemiRigid);
 
     if (success != 0)
+    {
       throw new ConversionException($"Failed to create/modify diaphragm {csiDiaphragm.name}");
+    }
 
     return csiDiaphragm.name;
   }

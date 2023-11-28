@@ -115,7 +115,9 @@ public class CreateSchemaObjectDialog : Dialog
   {
     var key = ns[0];
     if (!tree.ContainsKey(ns[0]))
+    {
       tree[key] = new Dictionary<string, object>();
+    }
 
     if (ns.Length > 1)
     {
@@ -128,10 +130,14 @@ public class CreateSchemaObjectDialog : Dialog
       {
         var constructors = temp.ToDictionary(x => x.GetCustomAttribute<SchemaInfo>().Name, x => (object)x);
         if (constructors.Values.Count > 1)
+        {
           ((Dictionary<string, object>)tree[key])[t.Name] = constructors;
+        }
         else
+        {
           //simplify structure if only 1 constructor
           ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
+        }
       }
       catch (Exception e)
       {
@@ -143,6 +149,7 @@ public class CreateSchemaObjectDialog : Dialog
   private void RecurseTree(Dictionary<string, object> tree, TreeGridItem item, string ns = "")
   {
     foreach (var key in tree.Keys)
+    {
       if (tree[key] is ConstructorInfo c)
       {
         var child = new TreeGridItem(c.GetCustomAttribute<SchemaInfo>().Name);
@@ -158,6 +165,7 @@ public class CreateSchemaObjectDialog : Dialog
         RecurseTree(d, child, subNs);
         item.Children.Add(child);
       }
+    }
   }
 
   private void IncreaseCounts(string ns, int constrCount)
@@ -167,9 +175,13 @@ public class CreateSchemaObjectDialog : Dialog
     {
       var name = string.Join(".", parts.Take(i + 1));
       if (!counts.ContainsKey(name))
+      {
         counts[name] = constrCount;
+      }
       else
+      {
         counts[name] += constrCount;
+      }
     }
   }
 
@@ -178,9 +190,13 @@ public class CreateSchemaObjectDialog : Dialog
   private void Search_TextChanged(object sender, EventArgs e)
   {
     if (!string.IsNullOrEmpty(search.Text))
+    {
       typesFiltered = types.Where(x => x.Name.ToLowerInvariant().Contains(search.Text.ToLowerInvariant())).ToList();
+    }
     else
+    {
       typesFiltered = types;
+    }
 
     tree.DataStore = GenerateTree();
     //list.DataStore = typesFiltered;
@@ -189,14 +205,19 @@ public class CreateSchemaObjectDialog : Dialog
   private string GetDescription(TreeGridItem t)
   {
     if (t == null || (ConstructorInfo)t.Tag == null)
+    {
       return "";
+    }
+
     var constructor = (ConstructorInfo)t.Tag;
 
     var description = "";
 
     var attr = constructor.GetCustomAttribute<SchemaInfo>();
     if (attr != null)
+    {
       description += attr.Description + "\n\n";
+    }
 
     var props = constructor.GetParameters();
     if (props.Any())
@@ -208,7 +229,10 @@ public class CreateSchemaObjectDialog : Dialog
         var d = inputDesc != null ? $": {inputDesc.Description}" : "";
         var type = p.ParameterType;
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
           type = Nullable.GetUnderlyingType(type);
+        }
+
         description += $"\n- {p.Name} ({type.Name}){d}";
         if (p.IsOptional)
         {

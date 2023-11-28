@@ -99,7 +99,10 @@ public static class SpeckleLog
     get
     {
       if (_logger == null)
+      {
         Initialize("Core", "unknown");
+      }
+
       return _logger!;
     }
   }
@@ -172,26 +175,34 @@ public static class SpeckleLog
       .Enrich.FromGlobalLogContext();
 
     if (logConfiguration.enhancedLogContext)
+    {
       serilogLogConfiguration = serilogLogConfiguration.Enrich
         .WithClientAgent()
         .Enrich.WithClientIp()
         .Enrich.WithExceptionDetails();
+    }
 
     if (logConfiguration.logToFile && canLogToFile)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
         logFilePath,
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 10
       );
+    }
 
     if (logConfiguration.logToConsole)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Console();
+    }
 
     if (logConfiguration.logToSeq)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
         "https://seq.speckle.systems",
         apiKey: "agZqxG4jQELxQQXh0iZQ"
       );
+    }
 
     if (logConfiguration.logToSentry)
     {
@@ -223,7 +234,10 @@ public static class SpeckleLog
 
     var logger = serilogLogConfiguration.CreateLogger();
     if (logConfiguration.logToFile && !canLogToFile)
+    {
       logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
+    }
+
     return logger;
   }
 
@@ -248,7 +262,9 @@ public static class SpeckleLog
     {
       var defaultAccount = AccountManager.GetDefaultAccount();
       if (defaultAccount != null)
+      {
         id = defaultAccount.GetHashedEmail();
+      }
     }
     catch (Exception ex)
     {
@@ -274,11 +290,20 @@ public static class SpeckleLog
   private static string _deterimineHostOsSlug()
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
       return "Windows";
+    }
+
     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+    {
       return "MacOS";
+    }
+
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    {
       return "Linux";
+    }
+
     return RuntimeInformation.OSDescription;
   }
 

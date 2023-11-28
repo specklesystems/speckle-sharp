@@ -32,7 +32,9 @@ public sealed class Object : IConverter
   {
     List<Mesh> meshes = new();
     if (element is Mesh mesh)
+    {
       meshes.Add(mesh);
+    }
 
     return meshes;
   }
@@ -74,7 +76,9 @@ public sealed class Object : IConverter
       {
         // #1: via the "elements" field of definition classes, but don't traverse the "elements" field of the root (it is traversed by the main element traversal)
         if (root != @base)
+        {
           membersToTraverse.AddRange(DefaultTraversal.elementsPropAliases);
+        }
 
         // #2: BlockInstance elements could be also in geometry field
         membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases);
@@ -111,7 +115,9 @@ public sealed class Object : IConverter
     {
       TraversalContext root = tc.parent;
       while (root.parent != null)
+      {
         root = root.parent;
+      }
 
       // transform appleid only elements via the "definition" property (not via "elements" property)
       // and root elements transform is skipped, because it will be added on GDL level
@@ -205,7 +211,9 @@ public sealed class Object : IConverter
             .ToList();
 
           if (meshIdHashes == null)
+          {
             continue;
+          }
         }
 
         // if the same geometry representation is not used before

@@ -50,7 +50,10 @@ public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
 
     // You read the wrong file, OOOPS!!
     if (!(@base is Brep brep))
+    {
       throw new Exception("Object was not a brep, did you choose the right file?");
+    }
+
     DirectShape native = null;
 
     await SpeckleUtils.RunInTransaction(
@@ -81,12 +84,21 @@ public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
     converter.SetContextDocument(fixture.NewDoc);
 
     if (fixture.Selection.Count == 0)
+    {
       return;
+    }
+
     if (!(fixture.Selection[0] is DirectShape ds))
+    {
       throw new Exception("Selected object was not a direct shape.");
+    }
+
     var geo = ds.get_Geometry(new Options());
     if (!(geo.First() is Solid solid))
+    {
       throw new Exception("DS was not composed of a solid.");
+    }
+
     var converted = converter.BrepToSpeckle(solid, fixture.NewDoc);
     var nativeconverted = converter.BrepToNative(converted, out List<string> notes);
     Assert.NotNull(nativeconverted);

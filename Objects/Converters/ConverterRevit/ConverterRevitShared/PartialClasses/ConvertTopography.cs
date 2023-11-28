@@ -20,7 +20,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     var pts = new List<XYZ>();
     var pointTuplesList = new List<(double, double)>();
@@ -50,11 +52,15 @@ public partial class ConverterRevit
     }
 
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     var revitSurface = TopographySurface.Create(Doc, pts);
     if (speckleSurface is RevitTopography rt)
+    {
       SetInstanceParameters(revitSurface, rt);
+    }
 
     appObj.Update(
       status: ApplicationObject.State.Created,

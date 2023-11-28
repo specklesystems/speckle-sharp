@@ -28,7 +28,10 @@ public partial class ConverterCSI
         PropName: link.property.name
       );
       if (success != 0)
+      {
         throw new ConversionException("Failed to add new link by point");
+      }
+
       return linkName;
     }
     else

@@ -131,7 +131,9 @@ public partial class ConverterRevit
 
     // deleting instead of updating for now!
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     appObj.Update(status: ApplicationObject.State.Created, createdId: rebar.UniqueId, convertedItem: rebar);
 

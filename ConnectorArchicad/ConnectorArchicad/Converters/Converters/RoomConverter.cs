@@ -101,7 +101,9 @@ public sealed class Room : IConverter
 
     var rooms = new List<Base>();
     if (data is null)
+    {
       return rooms;
+    }
 
     var context = Archicad.Helpers.Timer.Context.Peek;
     using (
@@ -138,7 +140,9 @@ public sealed class Room : IConverter
         Polycurve polycurve = Utils.PolycurveToSpeckle(polyLine);
         speckleRoom.outline = polycurve;
         if (archicadRoom.shape.holePolylines?.Count > 0)
+        {
           speckleRoom.voids = new List<ICurve>(archicadRoom.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+        }
 
         // calculate base point
         speckleRoom.basePoint = archicadRoom.basePoint;

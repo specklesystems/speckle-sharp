@@ -80,7 +80,9 @@ public partial class ConnectorBindingsRevit
   private void RevitApp_ApplicationClosing(object sender, Autodesk.Revit.UI.Events.ApplicationClosingEventArgs e)
   {
     if (HomeViewModel.Instance == null)
+    {
       return;
+    }
 
     ///ensure WS connections etc are disposed, otherwise it might throw
     HomeViewModel.Instance.SavedStreams.ForEach(s => s.Dispose());
@@ -165,7 +167,9 @@ public partial class ConnectorBindingsRevit
     {
       var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
       if (stream == null)
+      {
         return;
+      }
 
       var progress = new ProgressViewModel();
       progress.ProgressTitle = "Sending to Speckle 🚀";
@@ -178,7 +182,9 @@ public partial class ConnectorBindingsRevit
       dialog.Show();
 
       if (message != null)
+      {
         stream.CommitMessage = message;
+      }
 
       await Task.Run(() => SendStream(stream, progress));
       progress.IsProgressing = false;
@@ -205,7 +211,9 @@ public partial class ConnectorBindingsRevit
         || e.PreviousActiveView == null
         || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode()
       )
+      {
         return;
+      }
 
       // if the dialog body is open, then avalonia will freak out and crash Revit when trying to re-initialize
       // so we need to close the dialog and cancel any ongoing send / receive operation. (Maybe we can somehow
@@ -237,14 +245,18 @@ public partial class ConnectorBindingsRevit
       // is both doc A and B are open and B is closed, this would result in wiping the list of streams retrieved for A
       // only proceed if it's the last document open (the current is null)
       if (CurrentDoc != null)
+      {
         return;
+      }
 
       //if (SpeckleRevitCommand2.MainWindow != null)
       //  SpeckleRevitCommand2.MainWindow.Hide();
 
       //clear saved streams if closig a doc
       if (UpdateSavedStreams != null)
+      {
         UpdateSavedStreams(new List<StreamState>());
+      }
 
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
@@ -260,7 +272,9 @@ public partial class ConnectorBindingsRevit
 
     //clear saved streams if opening a new doc
     if (UpdateSavedStreams != null)
+    {
       UpdateSavedStreams(new List<StreamState>());
+    }
   }
 
   private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
@@ -275,10 +289,14 @@ public partial class ConnectorBindingsRevit
         panel.Show();
       }
       else
+      {
         SpeckleRevitCommand.CreateOrFocusSpeckle();
+      }
     }
     if (UpdateSavedStreams != null)
+    {
       UpdateSavedStreams(streams);
+    }
 
     //exit "stream view" when changing documents
     MainViewModel.Instance.NavigateToDefaultScreen();
@@ -313,7 +331,9 @@ public partial class ConnectorBindingsRevit
         {
           var nonPerspectiveView = views.FirstOrDefault(x => !x.IsPerspective);
           if (nonPerspectiveView != null)
+          {
             CurrentDoc.ActiveView = nonPerspectiveView;
+          }
         }
       }
 

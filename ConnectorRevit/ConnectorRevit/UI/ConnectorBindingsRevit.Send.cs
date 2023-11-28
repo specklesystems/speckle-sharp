@@ -47,7 +47,10 @@ public partial class ConnectorBindingsRevit
     var settings = new Dictionary<string, string>();
     CurrentSettings = state.Settings;
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     converter.SetConverterSettings(settings);
 
     var streamId = state.StreamId;
@@ -64,9 +67,12 @@ public partial class ConnectorBindingsRevit
     state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).Distinct().ToList();
 
     if (!selectedObjects.Any())
+    {
       throw new InvalidOperationException(
         "There are zero objects to send. Please use a filter, or set some via selection."
       );
+    }
+
     converter.SetContextDocument(revitDocumentAggregateCache);
     converter.SetContextObjects(
       selectedObjects
@@ -104,7 +110,9 @@ public partial class ConnectorBindingsRevit
         foreach (var revitElement in selectedObjects)
         {
           if (progress.CancellationToken.IsCancellationRequested)
+          {
             break;
+          }
 
           bool isAlreadyConverted = GetOrCreateApplicationObject(
             revitElement,
@@ -112,7 +120,9 @@ public partial class ConnectorBindingsRevit
             out ApplicationObject reportObj
           );
           if (isAlreadyConverted)
+          {
             continue;
+          }
 
           progress.Report.Log(reportObj);
 
@@ -257,9 +267,11 @@ public partial class ConnectorBindingsRevit
     Base conversionResult = converter.ConvertToSpeckle(revitElement);
 
     if (conversionResult == null)
+    {
       throw new SpeckleException(
         $"Conversion of {revitElement.GetType().Name} with id {revitElement.Id} (ToSpeckle) returned null"
       );
+    }
 
     return conversionResult;
   }

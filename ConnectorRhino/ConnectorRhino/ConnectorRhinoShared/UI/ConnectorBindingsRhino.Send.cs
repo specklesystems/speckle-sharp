@@ -38,9 +38,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var commitObject = converter.ConvertToSpeckle(Doc) as Collection; // create a collection base obj
 
     if (state.SelectedObjectIds.Count == 0)
+    {
       throw new InvalidOperationException(
         "Zero objects selected: Please select some objects, or check that your filter can actually select something."
       );
+    }
 
     progress.Report = new ProgressReport();
     var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -86,11 +88,18 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             {
               var objectLayer = Doc.Layers[o.Attributes.LayerIndex];
               if (commitLayerObjects.ContainsKey(objectLayer.FullPath))
+              {
                 commitLayerObjects[objectLayer.FullPath].Add(converted);
+              }
               else
+              {
                 commitLayerObjects.Add(objectLayer.FullPath, new List<Base> { converted });
+              }
+
               if (!commitLayers.ContainsKey(objectLayer.FullPath))
+              {
                 commitLayers.Add(objectLayer.FullPath, objectLayer);
+              }
             }
             break;
           case Layer o:
@@ -105,7 +114,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           case ViewInfo o:
             converted = converter.ConvertToSpeckle(o);
             if (converted != null)
+            {
               commitObject.elements.Add(converted);
+            }
+
             break;
         }
       }
@@ -144,6 +156,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     #region layer handling
     // convert layers as collections and attach all layer objects
     foreach (var layerPath in commitLayerObjects.Keys)
+    {
       if (commitCollections.ContainsKey(layerPath))
       {
         commitCollections[layerPath].elements = commitLayerObjects[layerPath];
@@ -157,13 +170,17 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           commitCollections.Add(layerPath, collection);
         }
       }
+    }
 
     // generate all parent paths of commit collections and create ordered list by depth descending
     var allPaths = new HashSet<string>();
     foreach (var key in commitLayers.Keys)
     {
       if (!allPaths.Contains(key))
+      {
         allPaths.Add(key);
+      }
+
       AddParent(commitLayers[key]);
 
       void AddParent(Layer childLayer)
@@ -209,7 +226,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     progress.Report.Merge(converter.Report);
 
     if (objCount == 0)
+    {
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
+    }
 
     progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -238,7 +257,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     };
 
     if (state.PreviousCommitId != null)
+    {
       actualCommit.parents = new List<string> { state.PreviousCommitId };
+    }
 
     var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
     return commitId;

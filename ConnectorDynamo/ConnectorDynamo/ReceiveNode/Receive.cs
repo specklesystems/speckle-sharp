@@ -202,7 +202,9 @@ public class Receive : NodeModel
     }
 
     if (!outPorts.Any())
+    {
       AddOutputs();
+    }
 
     ArgumentLacing = LacingStrategy.Disabled;
 
@@ -257,7 +259,9 @@ public class Receive : NodeModel
 
     //if already receiving, stop and start again
     if (Transmitting)
+    {
       CancelReceive();
+    }
 
     Transmitting = true;
     Message = "Receiving...";
@@ -266,7 +270,9 @@ public class Receive : NodeModel
     try
     {
       if (Stream == null)
+      {
         throw new SpeckleException("The stream provided is invalid");
+      }
 
       void ProgressAction(ConcurrentDictionary<string, int> dict)
       {
@@ -353,7 +359,10 @@ public class Receive : NodeModel
     if (_errors.Count > 0)
     {
       foreach (var error in _errors)
+      {
         Warning(error.ToFormattedString());
+      }
+
       Message = "Conversion error";
       _errors = new List<Exception>();
     }
@@ -406,7 +415,9 @@ public class Receive : NodeModel
 
     //no need to re-subscribe. it's the same stream
     if (oldStream != null && newStream.ToString() == oldStream.ToString())
+    {
       return;
+    }
 
     ResetNode(true);
     Stream = newStream;
@@ -437,7 +448,10 @@ public class Receive : NodeModel
   {
     ClearErrorsAndWarnings();
     if (Stream == null)
+    {
       return;
+    }
+
     try
     {
       var account = Stream.GetAccount().Result;
@@ -466,7 +480,9 @@ public class Receive : NodeModel
     var inputMirror = engine.GetMirror(astId);
 
     if (inputMirror?.GetData() == null)
+    {
       return default(T);
+    }
 
     var data = inputMirror.GetData();
 
@@ -476,7 +492,10 @@ public class Receive : NodeModel
   private void CheckIfBehind()
   {
     if (Stream == null)
+    {
       return;
+    }
+
     try
     {
       var branches = Client.StreamGetBranches(Stream.StreamId).Result;
@@ -515,7 +534,10 @@ public class Receive : NodeModel
   private void GetExpiredObjectCount(string objectId)
   {
     if (Stream == null)
+    {
       return;
+    }
+
     try
     {
       var @object = Client.ObjectGet(Stream.StreamId, objectId).Result;
@@ -578,17 +600,23 @@ public class Receive : NodeModel
   private void OnCommitChange(object sender, CommitInfo e)
   {
     if (e.branchName != (Stream.BranchName ?? "main"))
+    {
       return;
+    }
 
     Task.Run(async () => GetExpiredObjectCount(e.objectId));
     if (AutoUpdate)
+    {
       OnNewDataAvail?.Invoke();
+    }
   }
 
   void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
   {
     if (e.PropertyName != "CachedValue")
+    {
       return;
+    }
 
     if (!InPorts[0].IsConnected)
     {

@@ -27,7 +27,9 @@ public class HostTypeContainer : IHostTypeContainer
   public void AddCategoryWithTypesIfCategoryIsNew(string category, IEnumerable<ISingleHostType> types)
   {
     if (categoryToTypes.ContainsKey(category))
+    {
       return;
+    }
 
     categoryToTypes[category] = types.ToHashSet();
   }

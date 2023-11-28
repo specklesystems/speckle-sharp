@@ -17,7 +17,9 @@ public class State<T> : IDisposable
     {
       current = (T)this;
       if (root == null)
+      {
         root = (T)this;
+      }
     }
   }
 
@@ -26,10 +28,14 @@ public class State<T> : IDisposable
     lock (StateChangeLock)
     {
       if (previous == null)
+      {
         return; // Already disposed or root
+      }
 
       if (current == this)
+      {
         current = previous;
+      }
       else
       {
         // If this state is still in the stack is safe to pop it

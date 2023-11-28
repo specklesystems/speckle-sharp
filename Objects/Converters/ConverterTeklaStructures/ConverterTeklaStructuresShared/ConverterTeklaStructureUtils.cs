@@ -166,7 +166,9 @@ public partial class ConverterTeklaStructures
     }
 
     if (paramBase.GetDynamicMembers().Any())
+    {
       speckleElement["parameters"] = paramBase;
+    }
     //speckleElement["elementId"] = revitElement.Id.ToString();
     speckleElement.applicationId = teklaObject.Identifier.GUID.ToString();
     speckleElement["units"] = GetUnitsFromModel();
@@ -377,6 +379,7 @@ public partial class ConverterTeklaStructures
 
     Channel speckleProfile;
     if (tf.HasValue && tw.HasValue)
+    {
       speckleProfile = new Channel(
         name,
         depth.GetValueOrDefault(),
@@ -384,7 +387,9 @@ public partial class ConverterTeklaStructures
         tw.GetValueOrDefault(),
         tf.GetValueOrDefault()
       );
+    }
     else
+    {
       speckleProfile = new Channel(
         name,
         depth.GetValueOrDefault(),
@@ -392,6 +397,7 @@ public partial class ConverterTeklaStructures
         wallThk.GetValueOrDefault(),
         wallThk.GetValueOrDefault()
       );
+    }
 
     return speckleProfile;
   }
@@ -601,18 +607,26 @@ public partial class ConverterTeklaStructures
   public bool IsProfileValid(string profileName)
   {
     if (string.IsNullOrEmpty(profileName))
+    {
       return false;
+    }
 
     LibraryProfileItem lpi = new();
     if (lpi.Select(profileName))
+    {
       return true;
+    }
     else
     {
       ParametricProfileItem ppi = new();
       if (ppi.Select(profileName))
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
   }
   //public static bool IsElementSupported(this ModelObject e)

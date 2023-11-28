@@ -24,7 +24,10 @@ public partial class ConnectorBindingsNavisworks
   {
     var streams = new List<StreamState>();
     if (_doc != null)
+    {
       streams = SpeckleStreamManager.ReadState(_doc);
+    }
+
     return streams;
   }
 
@@ -42,9 +45,13 @@ public partial class ConnectorBindingsNavisworks
   private static void IsFileAndModelsPresent()
   {
     if (_doc == null)
+    {
       throw (new FileNotFoundException("No active document found. Cannot Send."));
+    }
 
     if (_doc.Models.Count == 0)
+    {
       throw (new FileNotFoundException("No models are appended. Nothing to Send."));
+    }
   }
 }

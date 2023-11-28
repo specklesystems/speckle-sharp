@@ -162,8 +162,12 @@ public partial class ConverterRevit
     {
       var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
       if (material != null)
+      {
         foreach (var mesh in speckleDuct.displayValue)
+        {
           mesh["renderMaterial"] = material;
+        }
+      }
 
       var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;
@@ -220,8 +224,12 @@ public partial class ConverterRevit
     {
       var material = ConverterRevit.GetMEPSystemMaterial(revitDuct);
       if (material != null)
+      {
         foreach (var mesh in speckleDuct.displayValue)
+        {
           mesh["renderMaterial"] = material;
+        }
+      }
 
       var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
       speckleDuct.systemName = typeElem.Name;

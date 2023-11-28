@@ -117,13 +117,17 @@ public static class ModelConverter
 
           var n = mesh.faces[i];
           if (n < 3)
+          {
             n += 3;
+          }
 
           for (var vertexIdx = i + 1; vertexIdx <= i + n; vertexIdx++)
           {
             var pointId = ToMergedVertexIndex(mesh.faces[vertexIdx]);
             if (polygon.pointIds.Count == 0 || pointId != polygon.pointIds[^1])
+            {
               polygon.pointIds.Add(pointId);
+            }
           }
 
           if (polygon.pointIds[0] == polygon.pointIds[^1])
@@ -219,7 +223,10 @@ public static class ModelConverter
     {
       var n = polygon[i];
       if (n < 3)
+      {
         n += 3;
+      }
+
       result.Add(new MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, n) });
       i += n;
     }
@@ -283,7 +290,9 @@ public static class ModelConverter
           neigbourPolygonIdxs.Add(meshModel.polygons.Count);
 
           if (neigbourPolygonIdxs.Count > 2)
+          {
             meshModel.edges[edge] = new EdgeData(EdgeStatus.HiddenEdge);
+          }
           else if (IsHiddenEdge(edge, meshModel.polygons[neigbourPolygonIdxs[0]], polygon, polygonNormals, meshModel))
           {
             meshModel.edges[edge] = new EdgeData(EdgeStatus.HiddenEdge);
@@ -307,7 +316,10 @@ public static class ModelConverter
   )
   {
     if (neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIndices))
+    {
       return true;
+    }
+
     edge = new EdgeId(edge.vertexId2, edge.vertexId1);
     return neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIndices);
   }
@@ -319,7 +331,9 @@ public static class ModelConverter
   )
   {
     if (polygonNormals.TryGetValue(polygon, out System.Numerics.Vector3 normal))
+    {
       return normal;
+    }
 
     normal = new System.Numerics.Vector3();
     System.Numerics.Vector3 vertex0,
@@ -347,9 +361,14 @@ public static class ModelConverter
     for (int first = count - 1, second = 0; second < count; first = second++)
     {
       if (polygon.pointIds[first] == edge.vertexId1 && polygon.pointIds[second] == edge.vertexId2)
+      {
         return 1;
+      }
+
       if (polygon.pointIds[first] == edge.vertexId2 && polygon.pointIds[second] == edge.vertexId1)
+      {
         return -1;
+      }
     }
     return 0;
   }

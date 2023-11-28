@@ -21,7 +21,9 @@ public partial class ConverterCSI
   public string ModelUnits()
   {
     if (_modelUnits != null)
+    {
       return _modelUnits;
+    }
 
     var units = Model.GetPresentUnits();
     if (units != 0)
@@ -189,10 +191,14 @@ public partial class ConverterCSI
     {
       var success = Model.FrameObj.GetGUID(name, ref guid);
       if (success != 0)
+      {
         continue;
+      }
 
       if (!guids.ContainsKey(guid))
+      {
         guids.Add(guid, name);
+      }
     }
 
     names = GetAllAreaNames(model);
@@ -200,10 +206,14 @@ public partial class ConverterCSI
     {
       var success = Model.AreaObj.GetGUID(name, ref guid);
       if (success != 0)
+      {
         continue;
+      }
 
       if (!guids.ContainsKey(guid))
+      {
         guids.Add(guid, name);
+      }
     }
 
     //names = GetAllPointNames(model);
@@ -225,17 +235,21 @@ public partial class ConverterCSI
   {
     name = "";
     if (string.IsNullOrEmpty(applicationId) || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+    {
       return false;
+    }
 
     var projectIds = PreviousContextObjects.Where(o => o.applicationId == applicationId).FirstOrDefault()?.CreatedIds;
     projectIds = projectIds ?? new List<string> { applicationId };
 
     foreach (var guid in projectIds)
+    {
       if (ExistingObjectGuids.Keys.Contains(guid))
       {
         name = ExistingObjectGuids[guid];
         return true;
       }
+    }
 
     return false;
   }
@@ -243,7 +257,9 @@ public partial class ConverterCSI
   public string GetOriginalApplicationId(string csiAppId)
   {
     if (string.IsNullOrEmpty(csiAppId))
+    {
       return csiAppId;
+    }
 
     var originalAppId = PreviousContextObjects
       .Where(o => o.CreatedIds.Contains(csiAppId))
@@ -315,7 +331,9 @@ public partial class ConverterCSI
       for (int i = 0; i < releases.Length; i++)
       {
         if (releases[i])
+        {
           code[i] = "F";
+        }
       }
     }
 

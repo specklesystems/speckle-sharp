@@ -20,9 +20,13 @@ public static class DefinitionExtensions
     }
 #else
     if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
+    {
       return true;
+    }
     else
+    {
       return false;
+    }
 #endif
   }
 }

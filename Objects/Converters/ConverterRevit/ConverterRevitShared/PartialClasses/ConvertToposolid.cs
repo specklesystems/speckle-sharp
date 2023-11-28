@@ -29,7 +29,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     // get the curves and the points
     var curveLoops = new List<CurveLoop>();
@@ -99,7 +101,9 @@ public partial class ConverterRevit
 
     GetHostedElements(toSpeckle, topoSolid, out List<string> hostedNotes);
     if (hostedNotes.Any())
+    {
       notes.AddRange(hostedNotes);
+    }
 
     return toSpeckle;
   }

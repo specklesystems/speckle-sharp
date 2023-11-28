@@ -50,7 +50,10 @@ public partial class ConnectorBindingsRevit
     var settings = new Dictionary<string, string>();
     CurrentSettings = state.Settings;
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     converter.SetConverterSettings(settings);
 
     Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
@@ -68,7 +71,9 @@ public partial class ConnectorBindingsRevit
 
     Preview = FlattenCommitObject(commitObject, converter);
     foreach (var previewObj in Preview)
+    {
       progress.Report.Log(previewObj);
+    }
 
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work
@@ -124,7 +129,9 @@ public partial class ConnectorBindingsRevit
           var convertedObjects = ConvertReceivedObjects(converter, progress, transactionManager);
 
           if (state.ReceiveMode == ReceiveMode.Update)
+          {
             DeleteObjects(previousObjects, convertedObjects);
+          }
 
           previousObjects.AddConvertedElements(convertedObjects);
           transactionManager.Finish();
@@ -136,7 +143,10 @@ public partial class ConnectorBindingsRevit
 
           string message = $"Fatal Error: {ex.Message}";
           if (ex is OperationCanceledException)
+          {
             message = "Receive cancelled";
+          }
+
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
           transactionManager.RollbackAll();
@@ -174,7 +184,9 @@ public partial class ConnectorBindingsRevit
     {
       var appId = previousAppIds[i];
       if (string.IsNullOrEmpty(appId) || convertedObjects.HasConvertedObjectWithId(appId))
+      {
         continue;
+      }
 
       var elementIdToDelete = previousObjects.GetCreatedIdsFromConvertedId(appId);
 
@@ -209,12 +221,16 @@ public partial class ConnectorBindingsRevit
     void ConvertNestedElements(Base @base, ApplicationObject appObj, bool receiveDirectMesh)
     {
       if (@base == null)
+      {
         return;
+      }
 
       var nestedElements = @base["elements"] ?? @base["@elements"];
 
       if (nestedElements == null)
+      {
         return;
+      }
 
       // set host in converter state.
       // assumes host is the first converted object of the appObject
@@ -245,8 +261,10 @@ public partial class ConnectorBindingsRevit
         if (
           receiveDirectMesh || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
         )
+        {
           // recurse and convert nested elements
           ConvertNestedElements(obj, nestedAppObj, receiveDirectMesh);
+        }
       }
     }
 
@@ -295,7 +313,9 @@ public partial class ConnectorBindingsRevit
 
       // skip if this object has already been converted from a nested elements loop
       if (obj.Status != ApplicationObject.State.Unknown)
+      {
         continue;
+      }
 
       conversionProgressDict["Conversion"]++;
       progress.Update(conversionProgressDict);
@@ -306,7 +326,9 @@ public partial class ConnectorBindingsRevit
         && @base["isRevitLinkedModel"] != null
         && bool.Parse(@base["isRevitLinkedModel"].ToString())
       )
+      {
         continue;
+      }
 
       var converted = ConvertObject(obj, @base, receiveDirectMesh, converter, progress, transactionManager);
       // Determine if we should use the fallback DirectShape conversion
@@ -318,12 +340,16 @@ public partial class ConnectorBindingsRevit
         obj.Log.Add("Conversion to native Revit object failed. Retrying conversion with displayable geometry.");
         converted = ConvertObject(obj, @base, true, converter, progress, transactionManager);
         if (converted == null)
+        {
           obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null.");
+        }
       }
 
       RefreshView();
       if (index % 50 == 0)
+      {
         transactionManager.Commit();
+      }
 
       // Check if parent conversion succeeded or fallback is enabled before attempting the children
       if (
@@ -331,9 +357,11 @@ public partial class ConnectorBindingsRevit
         || receiveDirectMesh
         || converted?.Status is ApplicationObject.State.Created or ApplicationObject.State.Updated
       )
+      {
         // continue traversing for hosted elements
         // use DirectShape conversion if the parent was converted using fallback or if the global setting is active.
         ConvertNestedElements(@base, converted, usingFallback || receiveDirectMesh);
+      }
     }
 
     return convertedObjectsCache;
@@ -351,7 +379,9 @@ public partial class ConnectorBindingsRevit
     progress.CancellationToken.ThrowIfCancellationRequested();
 
     if (obj == null || @base == null)
+    {
       return obj;
+    }
 
     using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
     transactionManager.StartSubtransaction();
@@ -487,9 +517,14 @@ public partial class ConnectorBindingsRevit
 
       // skip if this object was already stored, if it's not convertible and has no displayables
       if (StoredObjects.ContainsKey(current.id))
+      {
         return null;
+      }
+
       if (!converter.CanConvertToNative(current) && !isDisplayable)
+      {
         return null;
+      }
 
       // create application object and store
       var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type))

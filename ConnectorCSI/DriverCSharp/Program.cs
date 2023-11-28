@@ -53,17 +53,27 @@ class Program
       {
         string arg = arguments[1];
         if (string.Compare(arg, "SAP2000", true) == 0)
+        {
           progID = ProgID_SAP2000;
+        }
         else if (string.Compare(arg, "ETABS", true) == 0)
+        {
           progID = ProgID_ETABS;
+        }
         else if (string.Compare(arg, "SAFE", true) == 0)
+        {
           progID = ProgID_SAFE;
+        }
         else if (string.Compare(arg, "CSiBridge", true) == 0)
+        {
           progID = ProgID_CSiBridge;
+        }
       }
 
       if (progID != null)
+      {
         mySapObject = myHelper.GetObject(progID);
+      }
       else
       {
         // missing/unknown program type, try one by one

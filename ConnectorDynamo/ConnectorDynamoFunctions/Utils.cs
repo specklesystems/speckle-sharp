@@ -54,7 +54,9 @@ public static class Utils
   internal static string GetAppName()
   {
     if (Globals.RevitDocument == null)
+    {
       return HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox);
+    }
     else
     {
       try
@@ -66,15 +68,28 @@ public static class Utils
         var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
 
         if (version.Contains("2024"))
+        {
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2024);
+        }
+
         if (version.Contains("2023"))
+        {
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
+        }
+
         if (version.Contains("2022"))
+        {
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);
+        }
+
         if (version.Contains("2021"))
+        {
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2021);
+        }
         else
+        {
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
+        }
       }
       catch (Exception e)
       {

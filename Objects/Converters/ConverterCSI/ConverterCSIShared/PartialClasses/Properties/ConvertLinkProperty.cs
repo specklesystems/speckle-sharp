@@ -25,9 +25,14 @@ public partial class ConverterCSI
     );
 
     if (success1 != 0)
+    {
       throw new ConversionException($"Failed to assign P-delta value to link property {linkProperty.name}");
+    }
+
     if (success2 != 0)
+    {
       throw new ConversionException($"Failed to assign Weight and Mass value to link property {linkProperty.name}");
+    }
 
     return linkProperty.name;
   }

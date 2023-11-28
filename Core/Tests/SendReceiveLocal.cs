@@ -23,7 +23,9 @@ public class SendReceiveLocal
     myObject["@items"] = new List<Base>();
 
     for (int i = 0; i < numObjects; i++)
+    {
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+    }
 
     objId_01 = Operations.Send(myObject).Result;
 
@@ -49,7 +51,9 @@ public class SendReceiveLocal
     var rand = new Random();
 
     for (int i = 0; i < numObjects; i++)
+    {
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+    }
 
     objId_01 = Operations.Send(myObject).Result;
 
@@ -68,7 +72,9 @@ public class SendReceiveLocal
     var rand = new Random();
 
     for (int i = 0; i < 30; i++)
+    {
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
+    }
 
     objId_01 = await Operations.Send(myObject).ConfigureAwait(false);
 
@@ -115,13 +121,19 @@ public class SendReceiveLocal
     var rand = new Random();
 
     for (int i = 0; i < 30; i++)
+    {
       ((List<Base>)((dynamic)obj).LayerA).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "foo" });
+    }
 
     for (int i = 0; i < 30; i++)
+    {
       ((List<Base>)((dynamic)obj).LayerB).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "bar" });
+    }
 
     for (int i = 0; i < 30; i++)
+    {
       ((List<Base>)((dynamic)obj)["@LayerC"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" });
+    }
 
     objId_01 = await Operations.Send(obj).ConfigureAwait(false);
 
@@ -155,7 +167,9 @@ public class SendReceiveLocal
     var rand = new Random();
 
     for (int i = 0; i < 30; i++)
+    {
       ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
+    }
 
     ConcurrentDictionary<string, int> progress = null;
     commitId_02 = await Operations

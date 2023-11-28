@@ -25,7 +25,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     var wiringType =
       speckleRevitWire?.wiringType == "Chamfer" ? DB.Electrical.WiringType.Chamfer : DB.Electrical.WiringType.Arc;
@@ -39,7 +41,9 @@ public partial class ConverterRevit
     // get construction points (if wire is from Revit, these are not the same as the geometry points)
     var points = new List<XYZ>();
     if (speckleRevitWire != null)
+    {
       points = PointListToNative(speckleRevitWire.constructionPoints, speckleRevitWire.units);
+    }
     else
     {
       foreach (var segment in speckleWire.segments)
@@ -65,23 +69,33 @@ public partial class ConverterRevit
       wire = (DB.Electrical.Wire)docObj;
       // if the number of vertices doesn't match, we need to create a new wire
       if (wire.NumberOfVertices != points.Count)
+      {
         wire = null;
+      }
     }
 
     // update points if we can
     if (wire != null)
+    {
       for (var i = 0; i < wire.NumberOfVertices; i++)
       {
         if (points[i].IsAlmostEqualTo(wire.GetVertex(i)))
+        {
           continue; // borks if we set the same point
+        }
+
         wire.SetVertex(i, points[i]);
       }
+    }
+
     var isUpdate = wire != null;
     // create a new one if there isn't one to update
     wire ??= DB.Electrical.Wire.Create(Doc, wireType.Id, Doc.ActiveView.Id, wiringType, points, null, null);
 
     if (speckleRevitWire != null)
+    {
       SetInstanceParameters(wire, speckleRevitWire);
+    }
     else
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: "Creation returned null");
@@ -108,7 +122,10 @@ public partial class ConverterRevit
     // construction geometry for creating the wire on receive (doesn't match geometry points 🙃)
     var points = new List<double>();
     for (var i = 0; i < revitWire.NumberOfVertices; i++)
+    {
       points.AddRange(PointToSpeckle(revitWire.GetVertex(i), revitWire.Document).ToList());
+    }
+
     speckleWire.constructionPoints = points;
 
     // geometry
@@ -117,6 +134,7 @@ public partial class ConverterRevit
     var view = (View)revitWire.Document.GetElement(revitWire.OwnerViewId);
     var segmentList = revitWire.get_Geometry(new Options { View = view }).ToList();
     foreach (var segment in segmentList)
+    {
       // transform and convert the geometry segments
       switch (segment)
       {
@@ -137,6 +155,7 @@ public partial class ConverterRevit
           speckleWire.segments.Add(curve);
           break;
       }
+    }
 
     GetAllRevitParamsAndIds(speckleWire, revitWire, new List<string>());
     foreach (var connector in revitWire.GetConnectorSet())

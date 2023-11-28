@@ -57,7 +57,10 @@ public class GH_SpeckleBase : GH_Goo<Base>
         foreach (DictionaryEntry kvp in dict)
         {
           if (kvp.Key is not string s)
+          {
             return false;
+          }
+
           @base[s] = kvp.Value;
         }
         break;
@@ -94,14 +97,20 @@ public class GH_SpeckleBase : GH_Goo<Base>
   public override string ToString()
   {
     if (Value == null)
+    {
       return "";
+    }
+
     var name = Value["Name"] ?? Value["name"];
 
     if (Value.GetType().IsSubclassOf(typeof(Base)))
     {
       var baseString = $"Speckle {Value.GetType().Name}";
       if (name != null)
+      {
         baseString += $" [{name}]";
+      }
+
       return baseString;
     }
     return "Speckle Object";

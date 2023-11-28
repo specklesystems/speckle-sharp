@@ -65,7 +65,9 @@ public class Accounts : NodeModel
     : base(inPorts, outPorts)
   {
     if (outPorts.Count() == 0)
+    {
       AddOutputs();
+    }
 
     ArgumentLacing = LacingStrategy.Disabled;
   }

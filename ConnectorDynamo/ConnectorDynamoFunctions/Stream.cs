@@ -41,9 +41,13 @@ public static class Stream
         //lets ppl override the account for the specified stream
         Core.Credentials.Account accountToUse = null;
         if (account != null)
+        {
           accountToUse = account;
+        }
         else
+        {
           accountToUse = Task.Run(async () => await s.GetAccount()).Result;
+        }
 
         var client = new Client(accountToUse);
 
@@ -64,7 +68,9 @@ public static class Stream
     }
 
     if (streams.Count() == 1)
+    {
       return streams[0];
+    }
 
     return streams;
   }
@@ -97,7 +103,9 @@ public static class Stream
     }
 
     if (name == null && description == null && isPublic == null)
+    {
       return null;
+    }
 
     Core.Credentials.Account account = null;
     try
@@ -114,13 +122,19 @@ public static class Stream
     var input = new StreamUpdateInput { id = wrapper.StreamId };
 
     if (name != null)
+    {
       input.name = name;
+    }
 
     if (description != null)
+    {
       input.description = description;
+    }
 
     if (isPublic != null)
+    {
       input.isPublic = (bool)isPublic;
+    }
 
     Analytics.TrackEvent(
       account,
@@ -133,7 +147,9 @@ public static class Stream
       var res = Task.Run(async () => await client.StreamUpdate(input)).Result;
 
       if (res)
+      {
         return wrapper;
+      }
     }
     catch (Exception ex)
     {
@@ -156,10 +172,14 @@ public static class Stream
     var streams = Utils.InputToStream(stream);
 
     if (!streams.Any())
+    {
       throw new SpeckleException("Please provide one or more Streams.");
+    }
 
     if (streams.Count > 20)
+    {
       throw new SpeckleException("Please provide less than 20 Streams.");
+    }
 
     var details = new List<Dictionary<string, object>>();
 
@@ -209,7 +229,9 @@ public static class Stream
     }
 
     if (details.Count() == 1)
+    {
       return details[0];
+    }
 
     return details;
   }
@@ -227,7 +249,9 @@ public static class Stream
   )
   {
     if (account == null)
+    {
       account = AccountManager.GetDefaultAccount();
+    }
 
     if (account == null)
     {

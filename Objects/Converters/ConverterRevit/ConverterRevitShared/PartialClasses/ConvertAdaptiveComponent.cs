@@ -21,7 +21,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
 
@@ -49,14 +51,18 @@ public partial class ConverterRevit
 
         // if family changed, tough luck. delete and let us create a new one.
         if (familyName != revitType.FamilyName)
+        {
           Doc.Delete(docObj.Id);
+        }
         else
         {
           revitAc = (DB.FamilyInstance)docObj;
 
           // check for a type change
           if (speckleAc.type != null && speckleAc.type != revitType.Name)
+          {
             revitAc.ChangeTypeId(familySymbol.Id);
+          }
         }
 
         isUpdate = true;
@@ -69,7 +75,9 @@ public partial class ConverterRevit
 
     //create family instance
     if (revitAc == null)
+    {
       revitAc = AdaptiveComponentInstanceUtils.CreateAdaptiveComponentInstance(Doc, familySymbol);
+    }
 
     SetAdaptivePoints(revitAc, speckleAc.basePoints, out List<string> notes);
     AdaptiveComponentInstanceUtils.SetInstanceFlipped(revitAc, speckleAc.flipped);

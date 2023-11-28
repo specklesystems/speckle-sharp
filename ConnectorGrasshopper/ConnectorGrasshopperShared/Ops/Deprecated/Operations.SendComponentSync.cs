@@ -90,9 +90,14 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
   public void SetConverterFromKit(string kitName)
   {
     if (Kit == null)
+    {
       return;
+    }
+
     if (kitName == Kit.Name)
+    {
       return;
+    }
 
     Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
     Converter = Kit.LoadConverter(Utilities.GetVersionedAppName());
@@ -112,6 +117,7 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
     var kits = KitManager.GetKitsWithConvertersForApp(Utilities.GetVersionedAppName());
 
     foreach (var kit in kits)
+    {
       Menu_AppendItem(
         menu,
         $"{kit.Name} ({kit.Description})",
@@ -122,20 +128,26 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
         true,
         kit.Name == Kit.Name
       );
+    }
 
     Menu_AppendSeparator(menu);
 
     if (OutputWrappers != null)
+    {
       if (OutputWrappers.Count != 0)
       {
         Menu_AppendSeparator(menu);
         foreach (var ow in OutputWrappers)
+        {
           Menu_AppendItem(
             menu,
             $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
             (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
           );
+        }
       }
+    }
+
     Menu_AppendSeparator(menu);
 
     base.AppendAdditionalComponentMenuItems(menu);
@@ -157,6 +169,7 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
     var wrappersRaw = reader.GetString("OutputWrappers");
     var wrapperLines = wrappersRaw.Split('\n');
     if (wrapperLines != null && wrapperLines.Length != 0 && wrappersRaw != "")
+    {
       foreach (var line in wrapperLines)
       {
         var pieces = line.Split('\t');
@@ -169,11 +182,13 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
           }
         );
       }
+    }
 
     var kitName = "";
     reader.TryGetString("KitName", ref kitName);
 
     if (kitName != "")
+    {
       try
       {
         SetConverterFromKit(kitName);
@@ -186,8 +201,11 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
         );
         SetDefaultKitAndConverter();
       }
+    }
     else
+    {
       SetDefaultKitAndConverter();
+    }
 
     return base.Read(reader);
   }
@@ -303,6 +321,7 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
             var transport = data.GetType().GetProperty("Value").GetValue(data);
 
             if (transport is string s)
+            {
               try
               {
                 transport = new StreamWrapper(s);
@@ -312,6 +331,7 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
                 // TODO: Check this with team.
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
               }
+            }
 
             if (transport is StreamWrapper sw)
             {
@@ -389,7 +409,9 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
 
           var message = messageInput; //.get_FirstItem(true).Value;
           if (message == "")
+          {
             message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
+          }
 
           var prevCommits = new List<StreamWrapper>();
 
@@ -402,7 +424,9 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
             }
 
             if (!(transport is ServerTransport))
+            {
               continue; // skip non-server transports (for now)
+            }
 
             try
             {
@@ -423,7 +447,9 @@ public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapp
                 c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
+              {
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
+              }
 
               var commitId = await client.CommitCreate(commitCreateInput, source.Token);
 

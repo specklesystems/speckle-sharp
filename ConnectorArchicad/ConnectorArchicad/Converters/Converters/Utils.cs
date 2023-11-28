@@ -145,7 +145,9 @@ public static class Utils
   {
     var shape = new ElementShape(CurveToNative(outline));
     if (voids?.Count > 0)
+    {
       shape.holePolylines = new List<ElementShape.Polyline>(voids.Select(CurveToNative));
+    }
 
     return shape;
   }

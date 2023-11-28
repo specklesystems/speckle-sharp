@@ -51,14 +51,21 @@ public partial class ConverterCSI
       int[] pointNums = null;
       Model.PointObj.GetConnectivity(pt1, ref numItems, ref objTypes, ref objNames, ref pointNums);
       if (numItems == 0)
+      {
         Model.PointObj.DeleteSpecialPoint(pt1);
+      }
+
       Model.PointObj.GetConnectivity(pt2, ref numItems, ref objTypes, ref objNames, ref pointNums);
       if (numItems == 0)
+      {
         Model.PointObj.DeleteSpecialPoint(pt2);
+      }
     }
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to change frame connectivity");
+    }
 
     string guid = null;
     Model.FrameObj.GetGUID(name, ref guid);
@@ -85,7 +92,9 @@ public partial class ConverterCSI
     int number = 0;
     int success = Model.PropFrame.GetNameList(ref number, ref properties);
     if (success != 0)
+    {
       appObj.Update(logItem: "Failed to retrieve frame section properties");
+    }
 
     if (!properties.Contains(element1D.property.name))
     {
@@ -143,7 +152,9 @@ public partial class ConverterCSI
     }
 
     if (success != 0)
+    {
       throw new ConversionException("Failed to add new frame object at the specified coordinates");
+    }
 
     appObj.Update(
       status: ApplicationObject.State.Created,
@@ -338,7 +349,9 @@ public partial class ConverterCSI
 
     var propertyName = TryConvertProperty1DToNative(element1D.property, log);
     if (propertyName != null)
+    {
       Model.FrameObj.SetSection(newFrame, propertyName);
+    }
 
     if (element1D.orientationAngle != null)
     {

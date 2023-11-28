@@ -88,10 +88,14 @@ public class StreamDetailsComponent : GH_SpeckleComponent
       }
 
       if (ghStreamTree.DataCount >= 20)
+      {
         tooManyItems = true;
+      }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       Task.Run(async () =>
       {
@@ -105,7 +109,10 @@ public class StreamDetailsComponent : GH_SpeckleComponent
             .ForEach(path =>
             {
               if (count >= 20)
+              {
                 return;
+              }
+
               var branch = ghStreamTree[path];
               var itemCount = 0;
               branch.ForEach(item =>

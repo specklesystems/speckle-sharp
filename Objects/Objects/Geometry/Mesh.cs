@@ -150,13 +150,18 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public List<Point> GetPoints()
   {
     if (vertices.Count % 3 != 0)
+    {
       throw new SpeckleException(
         $"{nameof(Mesh)}.{nameof(vertices)} list is malformed: expected length to be multiple of 3"
       );
+    }
 
     var pts = new List<Point>(vertices.Count / 3);
     for (int i = 2; i < vertices.Count; i += 3)
+    {
       pts.Add(new Point(vertices[i - 2], vertices[i - 1], vertices[i], units));
+    }
+
     return pts;
   }
 
@@ -187,9 +192,14 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public void AlignVerticesWithTexCoordsByIndex()
   {
     if (textureCoordinates.Count == 0)
+    {
       return;
+    }
+
     if (TextureCoordinatesCount == VerticesCount)
+    {
       return; //Tex-coords already aligned as expected
+    }
 
     var facesUnique = new List<int>(faces.Count);
     var verticesUnique = new List<double>(TextureCoordinatesCount * 3);
@@ -201,10 +211,14 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     {
       int n = faces[nIndex];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4
+      }
 
       if (nIndex + n >= faces.Count)
+      {
         break; //Malformed face list
+      }
 
       facesUnique.Add(n);
       for (int i = 1; i <= n; i++)

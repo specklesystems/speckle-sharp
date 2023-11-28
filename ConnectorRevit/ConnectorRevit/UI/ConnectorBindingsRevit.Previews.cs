@@ -42,7 +42,9 @@ public partial class ConnectorBindingsRevit
         var settings = new Dictionary<string, string>();
         CurrentSettings = state.Settings;
         foreach (var setting in state.Settings)
+        {
           settings.Add(setting.Slug, setting.Selection);
+        }
 
         settings["preview"] = "true";
         converter.SetConverterSettings(settings);
@@ -54,7 +56,9 @@ public partial class ConnectorBindingsRevit
 
         Preview = FlattenCommitObject(commitObject, converter);
         foreach (var previewObj in Preview)
+        {
           progress.Report.Log(previewObj);
+        }
 
         IConvertedObjectsCache<Base, Element> convertedObjects = null;
         await APIContext
@@ -74,7 +78,9 @@ public partial class ConnectorBindingsRevit
       else // just generate the log
       {
         foreach (var previewObj in Preview)
+        {
           progress.Report.Log(previewObj);
+        }
       }
     }
     catch (Exception ex)
@@ -101,7 +107,9 @@ public partial class ConnectorBindingsRevit
     foreach (var obj in convertedObjects.GetConvertedObjects())
     {
       if (obj is not IDirectContext3DServer server)
+      {
         continue;
+      }
 
       directContext3DService.AddServer(server);
       m_servers.Add(server);
@@ -120,13 +128,17 @@ public partial class ConnectorBindingsRevit
     ExternalServiceId externalDrawerServiceId = ExternalServices.BuiltInExternalServices.DirectContext3DService;
     var externalDrawerService = ExternalServiceRegistry.GetService(externalDrawerServiceId) as MultiServerService;
     if (externalDrawerService == null)
+    {
       return;
+    }
 
     foreach (var registeredServerId in externalDrawerService.GetRegisteredServerIds())
     {
       var externalDrawServer = externalDrawerService.GetServer(registeredServerId) as IDirectContext3DServer;
       if (externalDrawServer == null)
+      {
         continue;
+      }
       //if (document != null && !document.Equals(externalDrawServer.Document))
       //  continue;
       externalDrawerService.RemoveServer(registeredServerId);
@@ -149,12 +161,17 @@ public partial class ConnectorBindingsRevit
         var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
         var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
         if (!converter.CanConvertToSpeckle(filterObj))
+        {
           reportObj.Update(
             status: ApplicationObject.State.Skipped,
             logItem: $"Sending this object type is not supported in Revit"
           );
+        }
         else
+        {
           reportObj.Update(status: ApplicationObject.State.Created);
+        }
+
         progress.Report.Log(reportObj);
       }
 

@@ -27,7 +27,9 @@ public partial class ConverterCSI
   public string? TryConvertProperty1DToNative(Property1D? property1D, IList<string>? parentLog)
   {
     if (property1D is null)
+    {
       return null;
+    }
 
     try
     {
@@ -48,7 +50,9 @@ public partial class ConverterCSI
   public string Property1DToNative(Property1D property1D)
   {
     if (property1D is null)
+    {
       throw new ArgumentNullException(nameof(property1D));
+    }
 
     if (Property1DExists(property1D.name))
     {
@@ -68,7 +72,9 @@ public partial class ConverterCSI
     )
     {
       if (sectionProfile.catalogueName == "CA")
+      {
         sectionProfile.catalogueName = "CISC10";
+      }
 
       success = Model.PropFrame.ImportProp(
         property1D.name,
@@ -78,7 +84,9 @@ public partial class ConverterCSI
       );
 
       if (success != 0)
+      {
         throw new ConversionException($"Failed to import a frame section property {property1D.name}");
+      }
 
       return property1D.name;
     }
@@ -153,7 +161,9 @@ public partial class ConverterCSI
     };
 
     if (success != 0)
+    {
       throw new ConversionException($"Failed to create section with profile named {property1D.name}");
+    }
 
     return property1D.name;
   }

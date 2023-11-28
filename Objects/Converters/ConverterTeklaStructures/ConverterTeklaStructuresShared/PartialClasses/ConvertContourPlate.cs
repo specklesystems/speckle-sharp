@@ -103,7 +103,9 @@ public partial class ConverterTeklaStructures
     Polygon teklaPolygon = null;
     plate.Contour.CalculatePolygon(out teklaPolygon);
     if (teklaPolygon != null)
+    {
       specklePlate.outline = ToSpecklePolyline(teklaPolygon);
+    }
 
     // Get contour for ToNative Tekla conversion
     specklePlate.contour = new List<TeklaContourPoint>();

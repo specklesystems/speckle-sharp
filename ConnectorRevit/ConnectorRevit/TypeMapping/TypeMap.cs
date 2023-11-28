@@ -30,7 +30,10 @@ public class TypeMap : ITypeMap
   )
   {
     if (baseIds.Contains(@base.id))
+    {
       return;
+    }
+
     baseIds.Add(@base.id);
 
     // add empty category if it isn't already present

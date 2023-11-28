@@ -27,7 +27,9 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate"))
+      {
         return new Vector2D(0, 0);
+      }
 
       var x = Settings["x-coordinate"];
       var y = Settings["y-coordinate"];
@@ -44,7 +46,10 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("reference-point"))
+      {
         return Transforms.Default;
+      }
+
       var value = Settings["reference-point"];
 
       return value switch
@@ -62,7 +67,10 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("units"))
+      {
         return Units.Meters;
+      }
+
       var value = Settings["units"];
 
       return (Units)Enum.Parse(typeof(Units), value, true);
@@ -74,7 +82,9 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("internal-property-names"))
+      {
         return false;
+      }
 
       var value = Settings["internal-property-names"];
 

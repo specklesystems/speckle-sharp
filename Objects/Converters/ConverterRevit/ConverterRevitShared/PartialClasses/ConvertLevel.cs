@@ -30,7 +30,9 @@ public partial class ConverterRevit
     DB.Level level = docLevels.LastOrDefault(l => (l.Elevation < elevation + TOLERANCE)) ?? docLevels.FirstOrDefault();
 
     if (level != null)
+    {
       elevationOffset = level.Elevation - elevation;
+    }
 
     return level;
   }
@@ -73,7 +75,9 @@ public partial class ConverterRevit
     state = ApplicationObject.State.Unknown;
     elevationOffset = 0.0;
     if (speckleLevel == null)
+    {
       return null;
+    }
 
     var docLevels = new FilteredElementCollector(Doc).OfClass(typeof(DB.Level)).ToElements().Cast<DB.Level>();
 
@@ -84,7 +88,9 @@ public partial class ConverterRevit
       //see: https://speckle.community/t/revit-connector-levels-and-spaces/2824/5
       elevationMatch = false;
       if (GetExistingLevelByName(docLevels, speckleLevel.name) is DB.Level existingLevelWithSameName)
+      {
         return existingLevelWithSameName;
+      }
     }
 
     DB.Level revitLevel = null;
@@ -98,7 +104,9 @@ public partial class ConverterRevit
 
       revitLevel.Name = speckleLevel.name;
       if (Math.Abs(revitLevel.Elevation - (double)speckleLevelElevation) >= TOLERANCE)
+      {
         revitLevel.Elevation = speckleLevelElevation;
+      }
 
       state = ApplicationObject.State.Updated;
     }
@@ -133,7 +141,9 @@ public partial class ConverterRevit
 
       var rl = speckleLevel as RevitLevel;
       if (rl != null && rl.createView)
+      {
         CreateViewPlan(speckleLevel.name, revitLevel.Id);
+      }
 
       state = ApplicationObject.State.Created;
     }
@@ -191,12 +201,16 @@ public partial class ConverterRevit
     //match by name
     var revitLevel = collector.FirstOrDefault(x => x.Name == name);
     if (revitLevel != null)
+    {
       return revitLevel;
+    }
 
     //match by id?
     revitLevel = collector.FirstOrDefault(x => x.Id.ToString() == name);
     if (revitLevel != null)
+    {
       return revitLevel;
+    }
 
     Report.LogConversionError(new Exception($"Could not find level `{name}`, a default level will be used."));
 
@@ -208,7 +222,9 @@ public partial class ConverterRevit
     var param = elem.get_Parameter(bip);
 
     if (param == null || param.StorageType != StorageType.ElementId)
+    {
       return null;
+    }
 
     return ConvertAndCacheLevel(param.AsElementId(), elem.Document);
   }
@@ -218,9 +234,14 @@ public partial class ConverterRevit
     var level = doc.GetElement(id) as DB.Level;
 
     if (level == null)
+    {
       return null;
+    }
+
     if (!Levels.ContainsKey(level.Name))
+    {
       Levels[level.Name] = LevelToSpeckle(level);
+    }
 
     return Levels[level.Name] as RevitLevel;
   }

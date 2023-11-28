@@ -88,7 +88,9 @@ public class CreateStream : NodeModel
     : base(inPorts, outPorts)
   {
     if (outPorts.Count() == 0)
+    {
       AddOutputs();
+    }
 
     ArgumentLacing = LacingStrategy.Disabled;
   }
@@ -158,11 +160,18 @@ public class CreateStream : NodeModel
     {
       //someone improve this pls :)
       if (ex.InnerException != null && ex.InnerException.InnerException != null)
+      {
         Error(ex.InnerException.InnerException.Message);
+      }
+
       if (ex.InnerException != null)
+      {
         Error(ex.InnerException.Message);
+      }
       else
+      {
         Error(ex.Message);
+      }
     }
   }
 
@@ -177,9 +186,11 @@ public class CreateStream : NodeModel
   public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
   {
     if (Stream == null)
+    {
       return OutPorts
         .Enumerate()
         .Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+    }
 
     var sw = AstFactory.BuildStringNode(Stream.ToString());
 

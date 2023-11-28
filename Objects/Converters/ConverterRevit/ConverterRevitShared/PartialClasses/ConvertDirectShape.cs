@@ -120,7 +120,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(existingObj, appObj))
+    {
       return appObj;
+    }
 
     var converted = new List<GeometryObject>();
 
@@ -139,10 +141,13 @@ public partial class ConverterRevit
             catch (Exception e)
             {
               if (fallback != ToNativeMeshSettingEnum.Default)
+              {
                 throw new FallbackToDxfException(
                   "Failed to convert BREP to Solid. Falling back to DXF import as per settings.",
                   e
                 );
+              }
+
               var mesh = brep.displayValue.SelectMany(
                 m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial)
               );
@@ -152,16 +157,22 @@ public partial class ConverterRevit
             break;
           case Mesh mesh:
             if (fallback != ToNativeMeshSettingEnum.Default)
+            {
               throw new FallbackToDxfException(
                 "DirectShape contains Mesh. Falling back to DXF import as per Settings."
               );
+            }
+
             var rMesh = MeshToNative(mesh);
             converted.AddRange(rMesh);
             break;
           case ICurve curve:
             var rCurves = CurveToNative(curve, true);
             for (var i = 0; i < rCurves.Size; i++)
+            {
               converted.Add(rCurves.get_Item(i));
+            }
+
             break;
           default:
             appObj.Update(
@@ -197,7 +208,10 @@ public partial class ConverterRevit
     {
       var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
       if (speckleDs.applicationId != null)
+      {
         revitDs.ApplicationId = speckleDs.applicationId;
+      }
+
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
       revitDs.Name = speckleDs.name;

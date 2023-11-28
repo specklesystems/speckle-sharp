@@ -23,7 +23,9 @@ public static class Transport
   public static object DiskTransport(string basePath = "")
   {
     if (string.IsNullOrEmpty(basePath))
+    {
       basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
+    }
 
     Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
 
@@ -70,7 +72,9 @@ public static class Transport
     }
 
     if (error != null)
+    {
       throw error;
+    }
 
     Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
 
@@ -92,11 +96,19 @@ public static class Transport
   )
   {
     if (string.IsNullOrEmpty(basePath))
+    {
       basePath = null;
+    }
+
     if (string.IsNullOrEmpty(applicationName))
+    {
       applicationName = "Speckle";
+    }
+
     if (string.IsNullOrEmpty(scope))
+    {
       scope = "UserLocalDefaultDb";
+    }
 
     Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
 

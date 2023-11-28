@@ -16,7 +16,9 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
   {
     var streams = GetStreamsInFile();
     if (UpdateSavedStreams != null)
+    {
       UpdateSavedStreams(streams);
+    }
   }
 
   public static Model Model { get; set; }

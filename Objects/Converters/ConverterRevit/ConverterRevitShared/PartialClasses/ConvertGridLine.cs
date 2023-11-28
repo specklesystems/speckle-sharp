@@ -20,7 +20,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitGrid, appObj))
+    {
       return appObj;
+    }
 
     var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);
 
@@ -29,7 +31,9 @@ public partial class ConverterRevit
     if (revitGrid != null)
     {
       if (revitGrid.IsCurved)
+      {
         Doc.Delete(revitGrid.Id); //not sure how to modify arc grids
+      }
       else
       {
         //dim's magic from 1.0
@@ -85,9 +89,13 @@ public partial class ConverterRevit
     if (revitGrid == null)
     {
       if (curve is Arc a)
+      {
         revitGrid = Grid.Create(Doc, a);
+      }
       else if (curve is Line l)
+      {
         revitGrid = Grid.Create(Doc, l);
+      }
       else
       {
         appObj.Update(
@@ -108,7 +116,9 @@ public partial class ConverterRevit
         .ToList()
         .Select(x => x.Name);
       if (!names.Contains(speckleGridline.label))
+      {
         revitGrid.Name = speckleGridline.label;
+      }
     }
 
     var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;

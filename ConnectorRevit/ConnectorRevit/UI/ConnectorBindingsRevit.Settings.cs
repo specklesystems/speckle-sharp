@@ -45,13 +45,18 @@ public partial class ConnectorBindingsRevit
       .Cast<BasePoint>()
       .FirstOrDefault(o => !o.IsShared);
     if (basePoint != null)
+    {
       referencePoints.Add(ProjectBase);
+    }
+
     var surveyPoint = new FilteredElementCollector(CurrentDoc.Document)
       .OfClass(typeof(BasePoint))
       .Cast<BasePoint>()
       .FirstOrDefault(o => o.IsShared);
     if (surveyPoint != null)
+    {
       referencePoints.Add(Survey);
+    }
 
     return new List<ISetting>
     {

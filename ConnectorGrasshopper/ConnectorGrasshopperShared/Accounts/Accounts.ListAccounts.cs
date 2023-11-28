@@ -73,7 +73,9 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
     foreach (var account in accounts)
     {
       if (defaultAccount != null && account.userInfo.id == defaultAccount.userInfo.id)
+      {
         defaultAccountIndex = index + 1;
+      }
 
       ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.userInfo.id}\""));
       index++;
@@ -166,7 +168,9 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
     m_data.ClearData();
 
     if (FirstSelectedItem.Value != null)
+    {
       m_data.Append(FirstSelectedItem.Value, new GH_Path(0));
+    }
   }
 
   public override void AddedToDocument(GH_Document document)
@@ -175,6 +179,8 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
     SetAccountList();
     // If the node is new (i.e. GH has not called Read(...) ) we log the node creation event.
     if (IsNew)
+    {
       Tracker.TrackNodeCreation("Accounts list");
+    }
   }
 }

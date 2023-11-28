@@ -43,7 +43,9 @@ public class PolygonMesher
   {
     // if there are less than 3 coordinates, we cannot create a mesh
     if (coords.Count() < 9)
+    {
       return false;
+    }
 
     ExternalLoop.Init(coords, ref CoordinateTranslation, tolerance);
 
@@ -108,7 +110,9 @@ public class PolygonMesher
               var indexPair = new IndexPair(i, ptIndex);
               var line = GetLine(indexPair);
               if (!ValidNewInternalLine(indexPair, line))
+              {
                 continue;
+              }
 
               //Calculate distance - if currShortestDistance is either -1 or shorter than the shortest, replace the shortest
               var distance = line.Length;
@@ -269,19 +273,27 @@ public class PolygonMesher
   private bool ValidNewInternalLine(IndexPair indexPair, Line2D line)
   {
     if (indexPair == null)
+    {
       return false;
+    }
 
     //Check if this line is already in the collection - if so, ignore it
     if (ExistingLinesContains(indexPair))
+    {
       return false;
+    }
 
     //Check if this line would intersect any external lines in this collection - if so, ignore it
     if (IntersectsBoundaryLines(line))
+    {
       return false;
+    }
 
     //Check if this line would intersect any already in this collection - if so, ignore it
     if (IntersectsInternalLines(line))
+    {
       return false;
+    }
 
     return true;
   }
@@ -391,7 +403,9 @@ public class PolygonMesher
     for (var i = 0; i < allPts.Count(); i++)
     {
       if (i == ptIndex || i == nextPtIndex || i == prevPtIndex)
+      {
         continue;
+      }
 
       var vItem = allPts[ptIndex].VectorTo(allPts[i]).Normalize();
 

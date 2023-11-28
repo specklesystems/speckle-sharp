@@ -64,7 +64,10 @@ public class StreamUpdateComponent : GH_SpeckleComponent
     bool isPublic = false;
 
     if (!DA.GetData(0, ref ghSpeckleStream))
+    {
       return;
+    }
+
     DA.GetData(1, ref name);
     DA.GetData(2, ref description);
     DA.GetData(3, ref isPublic);
@@ -85,7 +88,10 @@ public class StreamUpdateComponent : GH_SpeckleComponent
         return;
       }
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
+
       Message = "Fetching";
       Task.Run(async () =>
       {
@@ -101,7 +107,9 @@ public class StreamUpdateComponent : GH_SpeckleComponent
           input.description = description ?? stream.description;
 
           if (stream.isPublic != isPublic)
+          {
             input.isPublic = isPublic;
+          }
 
           await client.StreamUpdate(input);
         }

@@ -22,7 +22,9 @@ public partial class ConverterRevit
     var docObj = GetExistingElementByApplicationId(speckleRevitFitting.applicationId);
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return null;
+    }
 
     var connectorInfo = ValidateConnectorsAndPopulateList(speckleRevitFitting);
 

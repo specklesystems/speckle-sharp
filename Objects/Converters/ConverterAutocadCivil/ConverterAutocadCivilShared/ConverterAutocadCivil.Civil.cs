@@ -42,7 +42,10 @@ public partial class ConverterAutocadCivil
     BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
     doc = CivilApplication.ActiveDocument;
     if (doc is null)
+    {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+    }
+
     return doc is null ? false : true;
   }
 
@@ -67,20 +70,34 @@ public partial class ConverterAutocadCivil
     _alignment.type = alignment.AlignmentType.ToString();
     _alignment.offset = alignment.IsOffsetAlignment ? alignment.OffsetAlignmentInfo.NominalOffset : 0;
     if (alignment.SiteName != null)
+    {
       _alignment.site = alignment.SiteName;
+    }
+
     if (alignment.StyleName != null)
+    {
       _alignment.style = alignment.StyleName;
+    }
+
     if (alignment.Description != null)
+    {
       _alignment["description"] = alignment.Description;
+    }
+
     if (alignment.Name != null)
+    {
       _alignment.name = alignment.Name;
+    }
 
     // get alignment stations
     _alignment.startStation = alignment.StartingStation;
     _alignment.endStation = alignment.EndingStation;
     var stations = alignment.GetStationSet(CivilDB.StationTypes.All).ToList();
     List<Station> _stations = stations.Select(o => StationToSpeckle(o)).ToList();
-    if (_stations.Count > 0) _alignment["@stations"] = _stations;
+    if (_stations.Count > 0)
+    {
+      _alignment["@stations"] = _stations;
+    }
 
     // handle station equations
     var equations = new List<double>();
@@ -166,7 +183,9 @@ public partial class ConverterAutocadCivil
       {
         var parent = Trans.GetObject(alignment.OffsetAlignmentInfo.ParentAlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
         if (parent != null && parent.Name != null)
+        {
           _alignment.parent = parent.Name;
+        }
       }
       catch { }
     }
@@ -181,7 +200,9 @@ public partial class ConverterAutocadCivil
 
     // get civil doc
     if (!GetCivilDocument(appObj, out CivilDocument civilDoc))
-      return appObj;  
+    {
+      return appObj;
+    }
 
     // create or retrieve alignment, and parent if it exists
     CivilDB.Alignment _alignment = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Alignment : null;
@@ -199,8 +220,12 @@ public partial class ConverterAutocadCivil
       // type
       var type = CivilDB.AlignmentType.Centerline;
       if (civilAlignment != null)
+      {
         if (Enum.TryParse(civilAlignment.type, out CivilDB.AlignmentType civilType))
+        {
           type = civilType;
+        }
+      }
 
       // site
       var site = civilAlignment != null ? 
@@ -208,13 +233,21 @@ public partial class ConverterAutocadCivil
 
       // style
       var docStyles = new ObjectIdCollection();
-      foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles) docStyles.Add(styleId);
+      foreach (ObjectId styleId in civilDoc.Styles.AlignmentStyles)
+      {
+        docStyles.Add(styleId);
+      }
+
       var style = civilAlignment != null ? 
         GetFromObjectIdCollection(civilAlignment.style, docStyles, true) :  civilDoc.Styles.AlignmentStyles.First();
 
       // label set style
       var labelStyles = new ObjectIdCollection();
-      foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles) labelStyles.Add(styleId);
+      foreach (ObjectId styleId in civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles)
+      {
+        labelStyles.Add(styleId);
+      }
+
       var label = civilAlignment != null ?
         GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles, true) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
@@ -228,7 +261,11 @@ public partial class ConverterAutocadCivil
         {
           case CivilDB.AlignmentType.Offset:
             // create only if parent exists in doc
-            if (parent == ObjectId.Null) goto default;
+            if (parent == ObjectId.Null)
+            {
+              goto default;
+            }
+
             try
             {
               id = CivilDB.Alignment.CreateOffsetAlignment(name, parent, civilAlignment.offset, style);
@@ -269,7 +306,10 @@ public partial class ConverterAutocadCivil
       return appObj;
     }
 
-    if (isUpdate) appObj.Container = _alignment.Layer; // set the appobj container to be the same layer as the existing alignment
+    if (isUpdate)
+    {
+      appObj.Container = _alignment.Layer; // set the appobj container to be the same layer as the existing alignment
+    }
 
     if (parent != ObjectId.Null)
     {
@@ -279,9 +319,15 @@ public partial class ConverterAutocadCivil
     {
       // create alignment entity curves
       var entities = _alignment.Entities;
-      if (isUpdate) _alignment.Entities.Clear(); // remove existing curves
+      if (isUpdate)
+      {
+        _alignment.Entities.Clear(); // remove existing curves
+      }
+
       foreach (var curve in alignment.curves)
+      {
         AddAlignmentEntity(curve, ref entities);
+      }
     }
 
     // set start station
@@ -347,14 +393,20 @@ public partial class ConverterAutocadCivil
         var end = PointToNative(o.endPoint);
         var intersectionPoints = o.displayValue.GetPoints(); // display poly points should be points of intersection for the spiral
         if (intersectionPoints.Count == 0 )
+        {
           break;
+        }
+
         var intersectionPoint = PointToNative(intersectionPoints[intersectionPoints.Count / 2]); 
         entities.AddFixedSpiral(entities.LastEntity, start, intersectionPoint , end, SpiralTypeToNative(o.spiralType));
         break;
 
       case Polycurve o:
         foreach (var segment in o.segments)
+        {
           AddAlignmentEntity(segment, ref entities);
+        }
+
         break;
 
       default:
@@ -385,7 +437,9 @@ public partial class ConverterAutocadCivil
     try
     {
       if (arc.GreaterThan180) // sometimes this prop throws an exception??
+      {
         midPoint = chordMid.Add(unitMidVector.Negate().MultiplyBy(2 * arc.Radius - sagitta));
+      }
     }
     catch { }
 
@@ -457,11 +511,19 @@ public partial class ConverterAutocadCivil
     _profile.type = profile.ProfileType.ToString();
     _profile.offset = profile.Offset;
     if (profile.StyleName != null)
+    {
       _profile.style = profile.StyleName;
+    }
+
     if (profile.Description != null)
+    {
       _profile["description"] = profile.Description;
+    }
+
     if (profile.Name != null)
+    {
       _profile.name = profile.Name;
+    }
 
     // get profile stations
     _profile.startStation = profile.StartingStation;
@@ -476,17 +538,29 @@ public partial class ConverterAutocadCivil
       {
         case CivilDB.ProfileEntityType.Circular:
           var circular = ProfileArcToSpeckle(entity as CivilDB.ProfileCircular);
-          if (circular != null) curves.Add(circular);
+          if (circular != null)
+          {
+            curves.Add(circular);
+          }
+
           break;
         case CivilDB.ProfileEntityType.Tangent:
           var tangent = ProfileLineToSpeckle(entity as CivilDB.ProfileTangent);
-          if (tangent != null) curves.Add(tangent);
+          if (tangent != null)
+          {
+            curves.Add(tangent);
+          }
+
           break;
         case CivilDB.ProfileEntityType.ParabolaSymmetric:
         case CivilDB.ProfileEntityType.ParabolaAsymmetric:
         default:
           var segment = ProfileGenericToSpeckle(entity.StartStation, entity.StartElevation, entity.EndStation, entity.EndElevation);
-          if (segment != null) curves.Add(segment);
+          if (segment != null)
+          {
+            curves.Add(segment);
+          }
+
           break;
       }
     }
@@ -500,8 +574,9 @@ public partial class ConverterAutocadCivil
       {
         var parent = Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) as CivilDB.Profile;
         if (parent != null && parent.Name != null)
+        {
           _profile.parent = parent.Name;
-      
+        }
       }
     }
     catch { }
@@ -517,7 +592,11 @@ public partial class ConverterAutocadCivil
     _profile.pvis = pvisConverted;
 
 
-    if (pvisConverted.Count > 1) _profile.displayValue = PolylineToSpeckle(pvis, profile.Closed);
+    if (pvisConverted.Count > 1)
+    {
+      _profile.displayValue = PolylineToSpeckle(pvis, profile.Closed);
+    }
+
     _profile.units = ModelUnits;
 
     return _profile;
@@ -639,17 +718,26 @@ public partial class ConverterAutocadCivil
     // get all points
     var points = new List<Point>();
     var _points = featureline.GetPoints(Civil.FeatureLinePointType.AllPoints);
-    foreach (Point3d point in _points) points.Add(PointToSpeckle(point));
+    foreach (Point3d point in _points)
+    {
+      points.Add(PointToSpeckle(point));
+    }
 
     // get elevation points
     var ePoints = new List<int>();
     var _ePoints = featureline.GetPoints(Civil.FeatureLinePointType.ElevationPoint);
-    foreach (Point3d ePoint in _ePoints) ePoints.Add(_points.IndexOf(ePoint));
+    foreach (Point3d ePoint in _ePoints)
+    {
+      ePoints.Add(_points.IndexOf(ePoint));
+    }
 
     // get pi points
     var piPoints = new List<int>();
     var _piPoints = featureline.GetPoints(Civil.FeatureLinePointType.PIPoint);
-    foreach (Point3d piPoint in _piPoints) piPoints.Add(_points.IndexOf(piPoint));
+    foreach (Point3d piPoint in _piPoints)
+    {
+      piPoints.Add(_points.IndexOf(piPoint));
+    }
 
     /*
     // get bulges at pi point indices
@@ -819,7 +907,10 @@ public partial class ConverterAutocadCivil
   public object CivilSurfaceToNative(Mesh mesh)
   {
     var props = mesh[CivilPropName] as Base;
-    if (props == null) return null;
+    if (props == null)
+    {
+      return null;
+    }
 
     switch (props["class"] as string)
     {
@@ -836,7 +927,9 @@ public partial class ConverterAutocadCivil
 
     // get civil doc
     if (!GetCivilDocument(appObj, out CivilDocument civilDoc))
+    {
       return appObj;
+    }
 
     // create or retrieve tin surface
     CivilDB.TinSurface _surface = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.TinSurface : null;
@@ -849,7 +942,11 @@ public partial class ConverterAutocadCivil
       var name = string.IsNullOrEmpty(props["Name"] as string) ? mesh.applicationId : props["Name"] as string;
       var layer = Doc.Database.LayerZero;
       var docStyles = new ObjectIdCollection();
-      foreach (ObjectId styleId in civilDoc.Styles.SurfaceStyles) docStyles.Add(styleId);
+      foreach (ObjectId styleId in civilDoc.Styles.SurfaceStyles)
+      {
+        docStyles.Add(styleId);
+      }
+
       var style = props["style"] as string != null ?
         GetFromObjectIdCollection(props["style"] as string, docStyles) : civilDoc.Styles.SurfaceStyles.First();
 
@@ -895,8 +992,10 @@ public partial class ConverterAutocadCivil
     int i = 0;
     var edges = new Dictionary<Point3d, List<Point3d>>();
     foreach (var vertex in meshVertices)
+    {
       edges.Add(vertex, new List<Point3d>());
-      
+    }
+
     while (i < mesh.faces.Count)
     {
       if (mesh.faces[i] == 3) // triangle
@@ -925,14 +1024,21 @@ public partial class ConverterAutocadCivil
       foreach (CivilDB.TinSurfaceEdge currentEdge in vertex.Edges)
       {
         if (edges[edgeStart].Contains(currentEdge.Vertex2.Location))
+        {
           correctEdges.Add(currentEdge.Vertex2.Location);
+        }
+
         currentEdge.Dispose();
       }
       vertex.Dispose();
 
       foreach (var vertexToAdd in edges[edgeStart]) 
       {
-        if (correctEdges.Contains(vertexToAdd)) continue;
+        if (correctEdges.Contains(vertexToAdd))
+        {
+          continue;
+        }
+
         var a1 = _surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
         var a2 = _surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
         _surface.AddLine(a1, a2);
@@ -946,9 +1052,16 @@ public partial class ConverterAutocadCivil
     foreach(CivilDB.TinSurfaceVertex vertex in _surface.Vertices)
     {
       if (vertex.Edges.Count > edges[vertex.Location].Count)
+      {
         foreach (CivilDB.TinSurfaceEdge modifiedEdge in vertex.Edges)
+        {
           if (!edges[vertex.Location].Contains(modifiedEdge.Vertex2.Location) && !edges[modifiedEdge.Vertex2.Location].Contains(vertex.Location))
+          {
             edgesToDelete.Add(modifiedEdge);
+          }
+        }
+      }
+
       vertex.Dispose();
     }
     if (edgesToDelete.Count > 0)
@@ -969,7 +1082,9 @@ public partial class ConverterAutocadCivil
     // get ids pipes that are connected to this structure
     var pipeIds = new List<string>();
     for (int i = 0; i < structure.ConnectedPipesCount; i++)
+    {
       pipeIds.Add(structure.get_ConnectedPipe(i).ToString());
+    }
 
     var _structure = new Structure();
 
@@ -1013,8 +1128,16 @@ public partial class ConverterAutocadCivil
     _pipe.units = ModelUnits;
 
     // assign additional pipe props
-    if (pipe.Name != null) _pipe["name"] = pipe.Name;
-    if (pipe.Description != null) _pipe["description"] = pipe.Description;
+    if (pipe.Name != null)
+    {
+      _pipe["name"] = pipe.Name;
+    }
+
+    if (pipe.Description != null)
+    {
+      _pipe["description"] = pipe.Description;
+    }
+
     try { _pipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch { }
     try { _pipe["slope"] = pipe.Slope; } catch { }
     try { _pipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch { }
@@ -1052,7 +1175,11 @@ public partial class ConverterAutocadCivil
     _pipe.units = ModelUnits;
 
     // assign additional pipe props
-    if (pipe.Name != null) _pipe["name"] = pipe.Name;
+    if (pipe.Name != null)
+    {
+      _pipe["name"] = pipe.Name;
+    }
+
     _pipe["description"] = (pipe.Description != null) ? pipe.Description : "";
     _pipe["isPressurePipe"] = true;
     try { _pipe["partType"] = pipe.PartType.ToString(); } catch { }
@@ -1080,19 +1207,33 @@ public partial class ConverterAutocadCivil
 
       // get the collection of featurelines for this baseline
       foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
+      {
         foreach (var featureline in mainFeaturelineCollection)
+        {
           featurelines.Add(FeaturelineToSpeckle(featureline));
+        }
+      }
+
       foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
+      {
         foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
+        {
           foreach (var featureline in featurelineCollection)
+          {
             featurelines.Add(FeaturelineToSpeckle(featureline));
+          }
+        }
+      }
 
       // get alignment
       try
       {
         var alignmentId = baseline.AlignmentId;
         var alignment = AlignmentToSpeckle(Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment);
-        if (alignment != null) alignments.Add(alignment);
+        if (alignment != null)
+        {
+          alignments.Add(alignment);
+        }
       }
       catch { }
 
@@ -1101,7 +1242,10 @@ public partial class ConverterAutocadCivil
       {
         var profileId = baseline.ProfileId;
         var profile = ProfileToSpeckle(Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile);
-        if (profile != null) profiles.Add(profile);
+        if (profile != null)
+        {
+          profiles.Add(profile);
+        }
       }
       catch { }
     }
@@ -1114,7 +1258,10 @@ public partial class ConverterAutocadCivil
       {
         var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
         var mesh = ConvertToSpeckle(surface) as Mesh;
-        if (mesh != null) surfaces.Add(mesh);
+        if (mesh != null)
+        {
+          surfaces.Add(mesh);
+        }
       }
       catch (Exception e) 
       { }
@@ -1123,10 +1270,21 @@ public partial class ConverterAutocadCivil
     _corridor["@alignments"] = alignments;
     _corridor["@profiles"] = profiles;
     _corridor["@featurelines"] = featurelines;
-    if (corridor.Name != null) _corridor["name"] = corridor.Name;
-    if (corridor.Description != null) _corridor["description"] = corridor.Description;
+    if (corridor.Name != null)
+    {
+      _corridor["name"] = corridor.Name;
+    }
+
+    if (corridor.Description != null)
+    {
+      _corridor["description"] = corridor.Description;
+    }
+
     _corridor["units"] = ModelUnits;
-    if (surfaces.Count> 0) _corridor["@surfaces"] = surfaces;
+    if (surfaces.Count> 0)
+    {
+      _corridor["@surfaces"] = surfaces;
+    }
 
     return _corridor;
   }

@@ -66,6 +66,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
     var success = true;
     var transformed = new List<ICurve>();
     foreach (var curve in segments)
+    {
       if (curve is ITransformable c)
       {
         c.TransformTo(transform, out ITransformable tc);
@@ -75,6 +76,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
       {
         success = false;
       }
+    }
 
     polycurve = new Polycurve
     {

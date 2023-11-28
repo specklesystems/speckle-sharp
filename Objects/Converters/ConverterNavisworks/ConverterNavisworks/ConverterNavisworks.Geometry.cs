@@ -60,7 +60,9 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
   {
     if (v1 == null || v2 == null)
+    {
       return;
+    }
 
 #pragma warning disable CA2000
     var vD1 = SetElevationModeVector(
@@ -91,7 +93,10 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   public void Point(InwSimpleVertex v1)
   {
     if (v1 == null)
+    {
       return;
+    }
+
     var vD1 = SetElevationModeVector(
       ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
       ElevationMode
@@ -108,7 +113,9 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   public void Triangle(InwSimpleVertex v1, InwSimpleVertex v2, InwSimpleVertex v3)
   {
     if (v1 == null || v2 == null || v3 == null)
+    {
       return;
+    }
 
     var vD1 = SetElevationModeVector(
       ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
@@ -244,7 +251,9 @@ public class NavisworksGeometry
         if (
           !IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(), ((Array)path.ArrayData).ToArray<int>())
         )
+        {
           continue;
+        }
 
         var localToWorldTransform = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
 
@@ -267,11 +276,15 @@ public class NavisworksGeometry
   private static double[] ConvertArrayToDouble(Array arr)
   {
     if (arr.Rank != 1)
+    {
       throw new ArgumentException("The input array must have a rank of 1.");
+    }
 
     var doubleArray = new double[arr.GetLength(0)];
     for (var ix = arr.GetLowerBound(0); ix <= arr.GetUpperBound(0); ++ix)
+    {
       doubleArray[ix - arr.GetLowerBound(0)] = (double)arr.GetValue(ix);
+    }
 
     return doubleArray;
   }
@@ -419,7 +432,9 @@ public partial class ConverterNavisworks
         var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
 
         if (isSame)
+        {
           geometry.ModelFragmentStack.Push(fragment);
+        }
 
         GC.KeepAlive(fragments);
       }
@@ -475,11 +490,15 @@ public partial class ConverterNavisworks
       }
 
       if (lines == null)
+      {
         continue;
+      }
 
       var lineCount = lines.Count;
       if (lineCount <= 0)
+      {
         continue;
+      }
 
       baseGeometries.AddRange(
         from lineD in lines

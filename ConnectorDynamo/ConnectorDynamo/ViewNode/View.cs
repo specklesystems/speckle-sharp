@@ -149,7 +149,9 @@ public class View : NodeModel
     var inputMirror = engine.GetMirror(astId);
 
     if (inputMirror == null || inputMirror.GetData() == null)
+    {
       return null;
+    }
 
     var data = inputMirror.GetData().Data?.ToString();
 
@@ -168,10 +170,14 @@ public class View : NodeModel
   void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)
   {
     if (e.PropertyName != "CachedValue")
+    {
       return;
+    }
 
     if (!InPorts[0].IsConnected)
+    {
       return;
+    }
 
     RequestUpdates();
   }

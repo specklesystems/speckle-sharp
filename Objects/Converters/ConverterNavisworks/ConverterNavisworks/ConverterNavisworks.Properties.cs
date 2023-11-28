@@ -19,7 +19,9 @@ public partial class ConverterNavisworks
     PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
     foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)
+    {
       ProcessPropertyCategory(propertiesBase, propertyCategory);
+    }
 
     return propertiesBase;
   }
@@ -27,7 +29,9 @@ public partial class ConverterNavisworks
   private static void ProcessPropertyCategory(DynamicBase propertiesBase, PropertyCategory propertyCategory)
   {
     if (IsCategoryToBeSkipped(propertyCategory))
+    {
       return;
+    }
 
     DataPropertyCollection properties = propertyCategory.Properties;
     Base propertyCategoryBase = new();
@@ -35,7 +39,9 @@ public partial class ConverterNavisworks
     properties.ToList().ForEach(property => BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
 
     if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null)
+    {
       return;
+    }
 
     string propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
     string internalName = GetSanitizedPropertyName(propertyCategory.CombinedName.ToString()).Replace("LcOa", "");
@@ -67,7 +73,9 @@ public partial class ConverterNavisworks
     string internalName = GetSanitizedPropertyName(property.CombinedName.BaseName).Replace("LcOa", "");
 
     if (propertyName == null)
+    {
       return;
+    }
 
     dynamic propertyValue = ConvertPropertyValue(property.Value);
 
@@ -152,7 +160,9 @@ public partial class ConverterNavisworks
   private static void UpdatePropertyCategoryBase(Base propertyCategoryBase, string propertyName, dynamic propertyValue)
   {
     if (propertyValue == null)
+    {
       return;
+    }
 
     object keyPropValue = propertyCategoryBase[propertyName];
 
@@ -166,7 +176,9 @@ public partial class ConverterNavisworks
         List<dynamic> arrayPropValue = list;
 
         if (!arrayPropValue.Contains(propertyValue))
+        {
           arrayPropValue.Add(propertyValue);
+        }
 
         propertyCategoryBase[propertyName] = arrayPropValue;
         break;
@@ -198,7 +210,9 @@ public partial class ConverterNavisworks
 
     // If the node is a Model
     if (element.HasModel)
+    {
       ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
+    }
 
     // Internal Properties
     AddInternalProperties(element, (Base)@base["properties"]);
@@ -247,13 +261,24 @@ public partial class ConverterNavisworks
       };
 
     if (elementModel.HasFrontVector)
+    {
       model["Front Vector"] = elementModel.FrontVector.ToString();
+    }
+
     if (elementModel.HasNorthVector)
+    {
       model["North Vector"] = elementModel.NorthVector.ToString();
+    }
+
     if (elementModel.HasRightVector)
+    {
       model["Right Vector"] = elementModel.RightVector.ToString();
+    }
+
     if (elementModel.HasUpVector)
+    {
       model["Up Vector"] = elementModel.UpVector.ToString();
+    }
 
     return model;
   }

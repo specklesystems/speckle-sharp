@@ -80,7 +80,10 @@ public class Closures
 
     // Primitives should not be counted!
     for (int i = 0; i < 10; i++)
+    {
       myList.Add(i);
+    }
+
     myList.Add("Hello");
     myList.Add(new { hai = "bai" });
 

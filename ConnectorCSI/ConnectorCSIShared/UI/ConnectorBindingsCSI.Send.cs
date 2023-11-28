@@ -37,7 +37,10 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     // for csi, these must go before the SetContextDocument method.
     var settings = new Dictionary<string, string>();
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     settings.Add("operation", "send");
     converter.SetConverterSettings(settings);
 
@@ -48,7 +51,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     int objCount = 0;
 
     if (state.Filter != null)
+    {
       state.SelectedObjectIds = GetSelectionFilterObjects(state.Filter);
+    }
 
     var totalObjectCount = state.SelectedObjectIds.Count;
 
@@ -115,7 +120,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
       {
         converted = converter.ConvertToSpeckle(typeAndName);
         if (converted == null)
+        {
           throw new ConversionException("Conversion Returned Null");
+        }
 
         reportObj.Update(
           status: ApplicationObject.State.Created,
@@ -226,10 +233,14 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
       };
       var branch = await client.BranchGet(streamId, branchName);
       if (branch == null)
+      {
         await client.BranchCreate(branchInput);
+      }
     }
     else
+    {
       branchName = state.BranchName;
+    }
 
     var actualCommit = new CommitCreateInput
     {

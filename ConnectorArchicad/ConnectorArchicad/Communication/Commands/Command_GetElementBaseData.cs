@@ -41,7 +41,9 @@ sealed internal class GetElementBaseData : ICommand<IEnumerable<DirectShape>>
       new Parameters(ApplicationIds)
     );
     foreach (var directShape in result.Datas)
+    {
       directShape.units = Units.Meters;
+    }
 
     return result.Datas;
   }

@@ -32,7 +32,9 @@ public class AllRevitCategories : IAllRevitCategories
   {
     var elementType = GetRevitCategoryInfo(@base);
     if (elementType != SHC.Undefined)
+    {
       return elementType;
+    }
 
     var matchingType = revitDocumentAggregateCache
       .GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>()
@@ -98,15 +100,22 @@ public class AllRevitCategories : IAllRevitCategories
     var instanceCategory = @base["builtInCategory"] as string;
     //pre 2.16 we used the inconsistent, display value "category"
     if (string.IsNullOrEmpty(instanceCategory))
+    {
       instanceCategory = @base["category"] as string;
+    }
 
     if (string.IsNullOrEmpty(instanceCategory))
+    {
       return categoryInfo;
+    }
 
     var newCategoryInfo = GetRevitCategoryInfo(instanceCategory);
 
     if (newCategoryInfo != SHC.Undefined)
+    {
       return newCategoryInfo;
+    }
+
     return categoryInfo;
   }
 
@@ -114,14 +123,18 @@ public class AllRevitCategories : IAllRevitCategories
   {
     var categoryInfo = GetCategoryInfoForObjectWithExactName(categoryName);
     if (categoryInfo != null)
+    {
       return categoryInfo;
+    }
 
     categoryName = CategoryNameFormatted(categoryName);
     var revitCategoryInfoCache = revitDocumentAggregateCache.GetOrInitializeWithDefaultFactory<IRevitCategoryInfo>();
 
     categoryInfo = revitCategoryInfoCache.TryGet(categoryName);
     if (categoryInfo != null)
+    {
       return categoryInfo;
+    }
 
     foreach (var info in revitCategoryInfoCache.GetAllObjects())
     {
@@ -165,7 +178,9 @@ public class AllRevitCategories : IAllRevitCategories
         .TryGet(unformattedCatName);
 
       if (revitCat == null)
+      {
         return null;
+      }
 
       bic = Categories.GetBuiltInCategory(revitCat);
       formattedName = CategoryNameFormatted(unformattedCatName);

@@ -64,7 +64,9 @@ public class ConnectionPair : IComparable<ConnectionPair>, IEquatable<Connection
         {
           var refConnector = refsIterator.Current as Connector;
           if (refConnector != null && !refConnector.Owner.Id.Equals(element.Id) && !(refConnector.Owner is MEPSystem))
+          {
             connectionPairs.Add(new ConnectionPair(element, connector, refConnector));
+          }
         }
       }
       else

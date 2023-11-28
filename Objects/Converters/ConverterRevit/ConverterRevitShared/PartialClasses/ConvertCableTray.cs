@@ -24,7 +24,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     var cableTrayType = GetElementType<CableTrayType>(speckleCableTray, appObj, out bool _);
     if (cableTrayType == null)
@@ -57,7 +59,9 @@ public partial class ConverterRevit
 
     // deleting instead of updating for now!
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     if (speckleRevitCableTray != null)
     {
@@ -92,7 +96,9 @@ public partial class ConverterRevit
   {
     var baseGeometry = LocationToSpeckle(revitCableTray);
     if (!(baseGeometry is Line baseLine))
+    {
       throw new Speckle.Core.Logging.SpeckleException("Only line based CableTrays are currently supported.");
+    }
 
     var cableTrayType = revitCableTray.Document.GetElement(revitCableTray.GetTypeId()) as CableTrayType;
 
