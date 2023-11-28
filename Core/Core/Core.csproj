@@ -46,7 +46,7 @@
   </ItemGroup>
 
 <!--  Ensure-->
-  <Target Name="husky" BeforeTargets="Restore;CollectPackageReferences" Condition="$(IsDesktopBuild) == 'true'">
+  <Target Name="husky" BeforeTargets="Restore" Condition="$(IsDesktopBuild) == 'true'">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
     <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="$(RepositoryRoot)" />
   </Target>
