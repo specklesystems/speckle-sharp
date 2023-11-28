@@ -65,7 +65,7 @@
       CA5376; CA5377; CA5378; CA5379; CA5380; CA5381; CA5382; CA5383;
       CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
       CA5392; CA5393; CA5395; CA5396; CA5397; CA5398;
-      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405
+      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405;
       <!-- The following security analysers are ommited as errors for the listed reasons -->
       <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
       <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
@@ -81,7 +81,7 @@
   <PropertyGroup Condition="$(IsDesktopBuild) == 'false'">
     <WarningsAsErrors>
       $(WarningsAsErrors);
-      IDE0011;IDE0090;IDE0161;
+      IDE0011;IDE0090;IDE0161;IDE0005;
     </WarningsAsErrors>
   </PropertyGroup>
 
