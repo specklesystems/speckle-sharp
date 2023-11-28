@@ -130,6 +130,7 @@ public partial class ConverterCSI
       string name = element.name ?? element.id;
 
       if (loadBeam.loadType == BeamLoadType.Point)
+      {
         success = Model.FrameObj.SetLoadDistributed(
           name,
           loadBeam.loadCase.name,
@@ -140,7 +141,9 @@ public partial class ConverterCSI
           loadBeam.values[0],
           loadBeam.values[1]
         );
+      }
       else
+      {
         success = Model.FrameObj.SetLoadPoint(
           name,
           loadBeam.loadCase.name,
@@ -149,13 +152,18 @@ public partial class ConverterCSI
           loadBeam.positions[0],
           loadBeam.values[0]
         );
+      }
 
       if (success != 0)
+      {
         notes?.Add($"Failed to convert sub-element {element.name}");
+      }
     }
 
     if (!createdElements.Any())
+    {
       throw new ConversionException($"Zero out of {loadBeam.elements.Count} elements converted successfully");
+    }
 
     return createdElements;
   }
@@ -214,7 +222,10 @@ public partial class ConverterCSI
           element1DList = new List<Base> { };
         }
         if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId))
+        {
           element1DList.Add(element);
+        }
+
         _frameStoring[loadID] = element1DList;
 
         switch (dir[index])
@@ -328,7 +339,10 @@ public partial class ConverterCSI
           element1DList = new List<Base> { };
         }
         if (!element1DList.Select(el => el.applicationId).Contains(element.applicationId))
+        {
           element1DList.Add(element);
+        }
+
         _frameStoring[loadID] = element1DList;
 
         switch (dir[index])

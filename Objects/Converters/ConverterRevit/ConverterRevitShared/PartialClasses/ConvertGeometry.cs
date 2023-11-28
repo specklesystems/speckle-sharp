@@ -92,13 +92,17 @@ public partial class ConverterRevit
   public List<XYZ> PointListToNative(IList<double> arr, string units = null)
   {
     if (arr.Count % 3 != 0)
+    {
       throw new SpeckleException("Array malformed: length%3 != 0.");
+    }
 
     var u = units ?? ModelUnits;
 
     var points = new List<XYZ>(arr.Count / 3);
     for (int i = 2; i < arr.Count; i += 3)
+    {
       points.Add(new XYZ(ScaleToNative(arr[i - 2], u), ScaleToNative(arr[i - 1], u), ScaleToNative(arr[i], u)));
+    }
 
     return points;
   }
@@ -382,7 +386,10 @@ public partial class ConverterRevit
     catch (Exception e)
     {
       if (e is Autodesk.Revit.Exceptions.ArgumentException)
+      {
         throw; // prob a closed, periodic curve
+      }
+
       return null;
     }
   }
@@ -394,7 +401,9 @@ public partial class ConverterRevit
     {
       var crvEnumerator = CurveToNative(crv).GetEnumerator();
       while (crvEnumerator.MoveNext() && crvEnumerator.Current != null)
+      {
         crvsArray.Append(crvEnumerator.Current as DB.Curve);
+      }
     }
     return crvsArray;
   }
@@ -452,7 +461,9 @@ public partial class ConverterRevit
           // Enumerate all curves in the array to ensure polylines get fully converted.
           var crvEnumerator = CurveToNative(seg).GetEnumerator();
           while (crvEnumerator.MoveNext() && crvEnumerator.Current != null)
+          {
             curveArray.Append(crvEnumerator.Current as DB.Curve);
+          }
         }
         return curveArray;
       default:
@@ -466,7 +477,10 @@ public partial class ConverterRevit
     var loop = new CurveLoop();
     UnboundCurveIfSingle(array);
     foreach (var item in array.Cast<DB.Curve>())
+    {
       loop.Append(item);
+    }
+
     return loop;
   }
 
@@ -548,7 +562,9 @@ public partial class ConverterRevit
       {
         var success = TryAppendLineSafely(curveArray, new Line(lastPt, pts[i], polyline.units), appObj);
         if (success)
+        {
           lastPt = pts[i];
+        }
       }
 
       if (polyline.closed)
@@ -605,7 +621,9 @@ public partial class ConverterRevit
   {
     var vertices = new List<double>(mesh.Vertices.Count * 3);
     foreach (var vert in mesh.Vertices)
+    {
       vertices.AddRange(PointToSpeckle(vert, d).ToList());
+    }
 
     var faces = new List<int>(mesh.NumTriangles * 4);
     for (int i = 0; i < mesh.NumTriangles; i++)
@@ -655,7 +673,9 @@ public partial class ConverterRevit
     {
       int n = mesh.faces[i];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+      }
 
       var points = mesh.faces.GetRange(i + 1, n).Select(x => vertices[x]).ToArray();
 
@@ -697,7 +717,9 @@ public partial class ConverterRevit
     static bool IsNonPlanarQuad(IList<XYZ> points)
     {
       if (points.Count != 4)
+      {
         return false;
+      }
 
       var matrix = new Matrix4x4(
         points[0].X,
@@ -724,7 +746,9 @@ public partial class ConverterRevit
   public XYZ[] ArrayToPoints(IList<double> arr, string units = null)
   {
     if (arr.Count % 3 != 0)
+    {
       throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
+    }
 
     XYZ[] points = new XYZ[arr.Count / 3];
 
@@ -841,14 +865,24 @@ public partial class ConverterRevit
       var nativeCurve = nativeCurveArray.get_Item(0);
 
       if (edge.ProxyCurveIsReversed)
+      {
         nativeCurve = nativeCurve.CreateReversed();
+      }
 
       if (nativeCurve == null)
+      {
         return new List<BRepBuilderEdgeGeometry>();
+      }
+
       if (isTrimmed)
+      {
         nativeCurve.MakeBound(edge.Domain.start ?? 0, edge.Domain.end ?? 1);
+      }
+
       if (!nativeCurve.IsBound)
+      {
         nativeCurve.MakeBound(0, nativeCurve.Period);
+      }
 
       if (IsCurveClosed(nativeCurve))
       {
@@ -877,7 +911,10 @@ public partial class ConverterRevit
     {
       var crv = iterator.Current as DB.Curve;
       if (edge.ProxyCurveIsReversed)
+      {
         crv = crv.CreateReversed();
+      }
+
       result.Add(BRepBuilderEdgeGeometry.Create(crv));
     }
 
@@ -925,7 +962,9 @@ public partial class ConverterRevit
     int j = 0,
       k = 0;
     while (j < count)
+    {
       knots[++k] = list[j++];
+    }
 
     knots[0] = knots[1];
     knots[count + 1] = knots[count];
@@ -1011,7 +1050,9 @@ public partial class ConverterRevit
           {
             var loopId = builder.AddLoop(faceId);
             if (face.OrientationReversed)
+            {
               loop.TrimIndices.Reverse();
+            }
 
             foreach (var trim in loop.Trims)
             {
@@ -1022,9 +1063,14 @@ public partial class ConverterRevit
                   && trim.TrimType != BrepTrimType.Mated
                   && trim.TrimType != BrepTrimType.Seam
                 )
+                {
                   continue;
+                }
+
                 if (trim.Edge == null)
+                {
                   continue;
+                }
 
                 var edgeIds = brepEdges[trim.EdgeIndex];
                 if (edgeIds == null)
@@ -1039,14 +1085,22 @@ public partial class ConverterRevit
                 if (trimReversed)
                 {
                   for (int e = edgeIds.Count - 1; e >= 0; --e)
+                  {
                     if (builder.IsValidEdgeId(edgeIds[e]))
+                    {
                       builder.AddCoEdge(loopId, edgeIds[e], true);
+                    }
+                  }
                 }
                 else
                 {
                   for (int e = 0; e < edgeIds.Count; ++e)
+                  {
                     if (builder.IsValidEdgeId(edgeIds[e]))
+                    {
                       builder.AddCoEdge(loopId, edgeIds[e], false);
+                    }
+                  }
                 }
               }
               catch (Exception e)
@@ -1065,7 +1119,10 @@ public partial class ConverterRevit
           {
             notes.Add(e.Message);
             if (e is SpeckleException)
+            {
               throw;
+            }
+
             throw new SpeckleException(
               $"Failed to create loop {face.Loops.IndexOf(loop)} on face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}"
             );
@@ -1078,7 +1135,10 @@ public partial class ConverterRevit
         builder.Dispose();
         notes.Add(e.Message);
         if (e is SpeckleException)
+        {
           throw;
+        }
+
         throw new SpeckleException(
           $"Failed to create face {brep.Faces.IndexOf(face)} on brep with id {brep.id}\n   Reason: {e.Message}"
         );
@@ -1087,11 +1147,16 @@ public partial class ConverterRevit
 
     var bRepBuilderOutcome = builder.Finish();
     if (bRepBuilderOutcome == BRepBuilderOutcome.Failure)
+    {
       return null;
+    }
 
     var isResultAvailable = builder.IsResultAvailable();
     if (!isResultAvailable)
+    {
       return null;
+    }
+
     var result = builder.GetResult();
     builder.Dispose();
     return result;
@@ -1109,7 +1174,9 @@ public partial class ConverterRevit
     brep.units = u;
 
     if (solid is null || solid.Faces.IsEmpty)
+    {
       return null;
+    }
 
     var faceIndex = 0;
     var edgeIndex = 0;
@@ -1241,7 +1308,9 @@ public partial class ConverterRevit
   {
     var u = units ?? ModelUnits;
     using (var surface = face.GetSurface())
+    {
       parametricOrientation = surface.OrientationMatchesParametricOrientation;
+    }
 
     switch (face)
     {
@@ -1316,7 +1385,9 @@ public partial class ConverterRevit
           var brepEdge = loop.edges[e];
           var orientation = loop.orientation[e];
           if (orientation == 0)
+          {
             continue;
+          }
 
           if (loop.trims.segments[e] is Curve trim)
           {

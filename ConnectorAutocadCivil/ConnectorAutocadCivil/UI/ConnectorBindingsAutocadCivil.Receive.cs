@@ -28,7 +28,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
   {
     if (Doc == null)
+    {
       throw new InvalidOperationException("No Document is open");
+    }
 
     var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
 
@@ -44,6 +46,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     try
     {
       if (Control.InvokeRequired)
+      {
         Control.Invoke(
           new ReceivingDelegate(ConvertReceiveCommit),
           commitObject,
@@ -53,8 +56,11 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           stream,
           commit.id
         );
+      }
       else
+      {
         ConvertReceiveCommit(commitObject, converter, state, progress, stream, commit.id);
+      }
     }
     catch (Exception ex)
     {
@@ -94,7 +100,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         var settings = new Dictionary<string, string>();
         CurrentSettings = state.Settings;
         foreach (var setting in state.Settings)
+        {
           settings.Add(setting.Slug, setting.Selection);
+        }
+
         converter.SetConverterSettings(settings);
 
         // keep track of conversion progress here
@@ -107,9 +116,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
         // give converter a way to access the commit info
         if (Doc.UserData.ContainsKey("commit"))
+        {
           Doc.UserData["commit"] = commitPrefix;
+        }
         else
+        {
           Doc.UserData.Add("commit", commitPrefix);
+        }
 
         // delete existing commit layers
         try
@@ -201,7 +214,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         {
           // handle user cancellation
           if (progress.CancellationToken.IsCancellationRequested)
+          {
             return;
+          }
 
           // convert base (or base fallback values) and store in appobj converted prop
           if (commitObj.Convertible)
@@ -217,6 +232,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             }
           }
           else
+          {
             foreach (var fallback in commitObj.Fallback)
             {
               try
@@ -229,18 +245,23 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
               }
               commitObj.Log.AddRange(fallback.Log);
             }
+          }
 
           // if the object wasnt converted, log fallback status
           if (commitObj.Converted == null || commitObj.Converted.Count == 0)
           {
             var convertedFallback = commitObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
             if (convertedFallback != null && convertedFallback.Count() > 0)
+            {
               commitObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+            }
             else
+            {
               commitObj.Update(
                 status: ApplicationObject.State.Failed,
                 logItem: $"Couldn't convert object or any fallback values"
               );
+            }
           }
 
           // add to progress report
@@ -257,7 +278,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
         // handle operation errors
         if (progress.Report.OperationErrorsCount != 0)
+        {
           return;
+        }
 
         // bake
         var fileNameHash = GetDocumentId();
@@ -265,7 +288,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         {
           // handle user cancellation
           if (progress.CancellationToken.IsCancellationRequested)
+          {
             return;
+          }
 
           // find existing doc objects if they exist
           var existingObjs = new List<ObjectId>();
@@ -293,7 +318,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           else
           {
             foreach (var fallback in commitObj.Fallback)
+            {
               BakeObject(fallback, converter, tr, layer, existingObjs, commitObj);
+            }
+
             commitObj.Status =
               commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count()
               == commitObj.Fallback.Count
@@ -324,9 +352,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     void StoreObject(Base @base, ApplicationObject appObj)
     {
       if (StoredObjects.ContainsKey(@base.id))
+      {
         appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
+      }
       else
+      {
         StoredObjects.Add(@base.id, @base);
+      }
     }
 
     ApplicationObject CreateApplicationObject(Base current, string containerId)
@@ -345,7 +377,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
       // skip if it is the base commit collection
       if (current is Collection && string.IsNullOrEmpty(containerId))
+      {
         return null;
+      }
 
       //Handle convertable objects
       if (converter.CanConvertToNative(current))
@@ -377,16 +411,26 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
       if (context.propName == null)
+      {
         return stringBuilder;
+      }
 
       string objectLayerName = string.Empty;
       if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+      {
         objectLayerName = coll.name;
+      }
       else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
+      {
         objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+      }
+
       LayerIdRecurse(context.parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
+      {
         stringBuilder.Append('$');
+      }
+
       stringBuilder.Append(objectLayerName);
 
       return stringBuilder;
@@ -411,16 +455,24 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
     var converted = converter.ConvertToNative(obj);
     if (converted == null)
+    {
       return convertedList;
+    }
 
     //Iteratively flatten any lists
     void FlattenConvertedObject(object item)
     {
       if (item is IList list)
+      {
         foreach (object child in list)
+        {
           FlattenConvertedObject(child);
+        }
+      }
       else
+      {
         convertedList.Add(item);
+      }
     }
     FlattenConvertedObject(converted);
 
@@ -452,7 +504,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         case Entity o:
 
           if (o == null)
+          {
             continue;
+          }
 
           var res = o.Append(layer);
           if (res.IsValid)
@@ -460,9 +514,14 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             // handle display - fallback to rendermaterial if no displaystyle exists
             Base display = obj[@"displayStyle"] as Base;
             if (display == null)
+            {
               display = obj[@"renderMaterial"] as Base;
+            }
+
             if (display != null)
+            {
               Utils.SetStyle(display, o, LineTypeDictionary);
+            }
 
             // add property sets if this is Civil3D
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
@@ -472,7 +531,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
                 {
                   var propertySets = new List<Dictionary<string, object>>();
                   foreach (var listObj in list)
+                  {
                     propertySets.Add(listObj as Dictionary<string, object>);
+                  }
+
                   o.SetPropertySets(Doc, propertySets);
                 }
               }
@@ -493,9 +555,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             tr.TransactionManager.QueueForGraphicsFlush();
 
             if (parent != null)
+            {
               parent.Update(createdId: res.Handle.ToString());
+            }
             else
+            {
               appObj.Update(createdId: res.Handle.ToString());
+            }
 
             bakedCount++;
           }
@@ -503,9 +569,14 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           {
             var bakeMessage = $"Could not bake to document.";
             if (parent != null)
+            {
               parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
+            }
             else
+            {
               appObj.Update(logItem: bakeMessage);
+            }
+
             continue;
           }
           break;
@@ -517,9 +588,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     if (bakedCount == 0)
     {
       if (parent != null)
+      {
         parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
+      }
       else
+      {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+      }
     }
     else
     {
@@ -538,9 +613,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             if (!e.Message.Contains("eWasErased")) // this couldve been previously received and deleted
             {
               if (parent != null)
+              {
                 parent.Log.Add(e.Message);
+              }
               else
+              {
                 appObj.Log.Add(e.Message);
+              }
             }
           }
         }

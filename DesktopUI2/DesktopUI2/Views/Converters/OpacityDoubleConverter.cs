@@ -11,7 +11,10 @@ public class OpacityDoubleConverter : IValueConverter
     double result = 0;
     double.TryParse(value.ToString(), out result);
     if (result > 0)
+    {
       return true;
+    }
+
     return false;
   }
 

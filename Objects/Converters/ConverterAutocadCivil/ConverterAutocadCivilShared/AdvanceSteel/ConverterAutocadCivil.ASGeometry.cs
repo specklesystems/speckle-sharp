@@ -239,22 +239,32 @@ public partial class ConverterAutocadCivil
     else if (IsValueGenericList(@object))
     {
       IList list = @object as IList;
-      if (list.Count == 0) return null;
+      if (list.Count == 0)
+      {
+        return null;
+      }
 
       List<object> listReturn = new();
       foreach (var item in list)
+      {
         listReturn.Add(ConvertValueToSpeckle(item, unitType, out _));
+      }
 
       return listReturn;
     }
     else if (IsValueGenericDictionary(@object))
     {
       IDictionary dictionary = @object as IDictionary;
-      if (dictionary.Count == 0) return null;
+      if (dictionary.Count == 0)
+      {
+        return null;
+      }
 
       Dictionary<object, object> dictionaryReturn = new();
       foreach (var key in dictionary.Keys)
+      {
         dictionaryReturn.Add(key, ConvertValueToSpeckle(dictionary[key], unitType, out _));
+      }
 
       return dictionaryReturn;
     }

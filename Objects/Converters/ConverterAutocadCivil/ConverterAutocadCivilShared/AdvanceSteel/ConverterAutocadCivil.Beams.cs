@@ -153,7 +153,9 @@ public partial class ConverterAutocadCivil
     AsteelSectionProfileDB sectionProfileDB = new();
 
     if (string.IsNullOrEmpty(typeNameText) || string.IsNullOrEmpty(sectionName))
+    {
       return sectionProfileDB;
+    }
 
     AstorProfiles astorProfiles = AstorProfiles.Instance;
     System.Data.DataTable table = astorProfiles.getProfileMasterTable();
@@ -161,25 +163,33 @@ public partial class ConverterAutocadCivil
     var rowSectionType = table.Select(string.Format("TypeNameText='{0}'", typeNameText)).FirstOrDefault();
 
     if (rowSectionType == null)
+    {
       return sectionProfileDB;
+    }
 
     var tableName = rowSectionType["TableName"].ToString();
     var tableProfiles = astorProfiles.getSectionsTable(tableName);
 
     if (tableProfiles == null)
+    {
       return sectionProfileDB;
+    }
 
     var rowSection = tableProfiles.Select(string.Format("SectionName='{0}'", sectionName)).FirstOrDefault();
 
     if (rowSection == null)
+    {
       return sectionProfileDB;
+    }
 
     foreach (var column in tableProfiles.Columns.Cast<System.Data.DataColumn>())
     {
       var rowObject = rowSection[column];
 
       if (!(rowObject is System.DBNull))
+      {
         sectionProfileDB[column.ColumnName] = rowObject;
+      }
     }
 
     return sectionProfileDB;

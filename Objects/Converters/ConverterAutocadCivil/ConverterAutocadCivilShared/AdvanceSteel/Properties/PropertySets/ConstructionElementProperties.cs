@@ -32,9 +32,13 @@ public class ConstructionElementProperties : ASBaseProperties<ConstructionElemen
   private static double GetNumberOfDrivenConObj(ConstructionElement constructionElement)
   {
     if (constructionElement is ActiveConstructionElement activeConstructionElement)
+    {
       return activeConstructionElement.NumberOfDrivenConObj;
+    }
     else
+    {
       return 0;
+    }
   }
 }
 #endif

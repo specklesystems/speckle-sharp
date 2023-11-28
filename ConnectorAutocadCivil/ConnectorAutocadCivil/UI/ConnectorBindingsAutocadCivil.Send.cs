@@ -32,15 +32,25 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     progress.Report = new ProgressReport();
 
     if (state.Filter != null)
+    {
       state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter);
+    }
 
     // remove deleted object ids
     var deletedElements = new List<string>();
     foreach (var selectedId in state.SelectedObjectIds)
+    {
       if (Utils.GetHandle(selectedId, out Handle handle))
+      {
         if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+        {
           if (id.IsErased || id.IsNull)
+          {
             deletedElements.Add(selectedId);
+          }
+        }
+      }
+    }
 
     state.SelectedObjectIds = state.SelectedObjectIds.Where(o => !deletedElements.Contains(o)).ToList();
 
@@ -61,12 +71,17 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     try
     {
       if (Control.InvokeRequired)
+      {
         Control.Invoke(
           new Action(() => ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount)),
           new object[] { }
         );
+      }
       else
+      {
         ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount);
+      }
+
       progress.Report.Merge(converter.Report);
     }
     catch (Exception e)
@@ -139,7 +154,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         var settings = new Dictionary<string, string>();
         CurrentSettings = state.Settings;
         foreach (var setting in state.Settings)
+        {
           settings.Add(setting.Slug, setting.Selection);
+        }
+
         converter.SetConverterSettings(settings);
 
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -222,13 +240,19 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             // add property sets if this is Civil3D
             var propertySets = obj.GetPropertySets(tr);
             if (propertySets.Count > 0)
+            {
               converted["propertySets"] = propertySets;
+            }
 #endif
             // handle converted object layer
             if (commitLayerObjects.ContainsKey(layer))
+            {
               commitLayerObjects[layer].Add(converted);
+            }
             else
+            {
               commitLayerObjects.Add(layer, new List<Base> { converted });
+            }
 
             // set application id
             #region backwards compatibility
@@ -236,7 +260,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             bool isOldApplicationId(string appId)
             {
               if (string.IsNullOrEmpty(appId))
+              {
                 return false;
+              }
+
               return appId.Length == 5 ? true : false;
             }
             if (isOldApplicationId(applicationId))
@@ -291,6 +318,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
         // convert layers as collections and attach all layer objects
         foreach (var layerPath in commitLayerObjects.Keys)
+        {
           if (commitCollections.ContainsKey(layerPath))
           {
             commitCollections[layerPath].elements = commitLayerObjects[layerPath];
@@ -305,6 +333,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
               commitCollections.Add(layerPath, collection);
             }
           }
+        }
 
         // attach collections to the base commit
         foreach (var collection in commitCollections)
@@ -323,7 +352,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
   {
     if (!CheckAdvanceSteelObject(obj))
+    {
       return;
+    }
 
     ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
     if (filerObject != null)

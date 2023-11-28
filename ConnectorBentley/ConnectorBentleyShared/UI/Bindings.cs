@@ -86,7 +86,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
   {
     var streams = new List<StreamState>();
     if (File != null)
+    {
       streams = StreamStateManager.ReadState(File);
+    }
+
     return streams;
   }
   #endregion
@@ -114,7 +117,9 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
   public override List<string> GetObjectsInView()
   {
     if (Model == null)
+    {
       return new List<string>();
+    }
 
     var graphicElements = Model.GetGraphicElements();
 
@@ -155,7 +160,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     var levels = new List<string>();
     FileLevelCache levelCache = Model.GetFileLevelCache();
     foreach (var level in levelCache.GetHandles())
+    {
       levels.Add(level.Name);
+    }
+
     levels.Sort();
 
     var elementTypes = new List<string>
@@ -247,9 +255,13 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     var previouslyReceivedObjects = state.ReceivedObjects;
 
     if (Control.InvokeRequired)
+    {
       Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+    }
     else
+    {
       converter.SetContextDocument(Session.Instance);
+    }
 
     progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -271,14 +283,18 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
     List<ApplicationObject> newPlaceholderObjects;
     if (Control.InvokeRequired)
+    {
       newPlaceholderObjects =
         (List<ApplicationObject>)
           Control.Invoke(
             new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects),
             new object[] { flattenedObjects, converter, state, progress }
           );
+    }
     else
+    {
       newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state, progress);
+    }
 
     DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects);
 
@@ -287,7 +303,9 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     progress.Report.Merge(converter.Report);
 
     if (progress.Report.OperationErrorsCount != 0)
+    {
       return null; // the commit is being rolled back
+    }
 
     try
     {
@@ -335,9 +353,13 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         var convRes = converter.ConvertToNative(@base);
 
         if (convRes is ApplicationObject placeholder)
+        {
           placeholders.Add(placeholder);
+        }
         else if (convRes is List<ApplicationObject> placeholderList)
+        {
           placeholders.AddRange(placeholderList);
+        }
 
         // creating new elements, not updating existing!
         var convertedElement = convRes as Element;
@@ -345,9 +367,11 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         {
           var status = convertedElement.AddToModel();
           if (status == StatusInt.Error)
+          {
             converter.Report.LogConversionError(
               new Exception($"Failed to bake object {@base.id} of type {@base.speckle_type}.")
             );
+          }
         }
         else
         {
@@ -393,9 +417,15 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
       {
         List<string> props = @base.GetDynamicMembers().ToList();
         if (@base.GetMembers().ContainsKey("displayValue"))
+        {
           props.Add("displayValue");
+        }
+
         if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
+        {
           props.Add("elements");
+        }
+
         int totalMembers = props.Count;
 
         foreach (var prop in props)
@@ -411,7 +441,9 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         }
 
         if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
+        {
           converter.Report.Log($"Skipped not supported type: {@base.speckle_type}. Object {@base.id} not baked.");
+        }
 
         return objects;
       }
@@ -421,7 +453,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     {
       count = 0;
       foreach (var listObj in list)
+      {
         objects.AddRange(FlattenCommitObject(listObj, converter, ref count));
+      }
+
       return objects;
     }
 
@@ -429,7 +464,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     {
       count = 0;
       foreach (DictionaryEntry kvp in dict)
+      {
         objects.AddRange(FlattenCommitObject(kvp.Value, converter, ref count));
+      }
+
       return objects;
     }
 
@@ -445,13 +483,17 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     foreach (var obj in previouslyReceiveObjects)
     {
       if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+      {
         continue;
+      }
 
       // get the model object from id
       ulong id = Convert.ToUInt64(obj.CreatedIds.FirstOrDefault());
       var element = Model.FindElementById((ElementId)id);
       if (element != null)
+      {
         element.DeleteFromModel();
+      }
     }
   }
   #endregion
@@ -472,23 +514,31 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     var client = state.Client;
 
     if (Control.InvokeRequired)
+    {
       Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
+    }
     else
+    {
       converter.SetContextDocument(Session.Instance);
+    }
 
     var selectedObjects = new List<Object>();
 
     if (state.Filter != null)
     {
       if (Control.InvokeRequired)
+      {
         state.SelectedObjectIds =
           (List<string>)
             Control.Invoke(
               new GetObjectsFromFilterDelegate(GetObjectsFromFilter),
               new object[] { state.Filter, converter, progress }
             );
+      }
       else
+      {
         state.SelectedObjectIds = GetObjectsFromFilter(state.Filter, converter, progress);
+      }
     }
 
     if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
@@ -517,9 +567,13 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
     if (civilElementKeys.Count(x => state.SelectedObjectIds.Contains(x)) > 0)
     {
       if (Control.InvokeRequired)
+      {
         civObjs = (List<NamedModelEntity>)Control.Invoke(new GetCivilObjectsDelegate(GetCivilObjects), new object[] { state });
+      }
       else
+      {
         civObjs = GetCivilObjects(state);
+      }
 
       objs = civObjs.Select(x => x.Element).ToList();
       convertCivilObject = true;
@@ -546,7 +600,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         var containerName = "Grid Systems";
 
         if (commitObj[$"@{containerName}"] == null)
+        {
           commitObj[$"@{containerName}"] = new List<Base>();
+        }
+
         ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
 
         // not sure this makes much sense here
@@ -586,7 +643,9 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         var objLevel = levelCache.GetLevel(obj.LevelId);
         var layerName = "Unknown";
         if (objLevel != null)
+        {
           layerName = objLevel.Name;
+        }
 
 #if (OPENROADS || OPENRAIL)
         if (convertCivilObject)
@@ -606,17 +665,26 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
         else
         {
           if (Control.InvokeRequired)
+          {
             converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+          }
           else
+          {
             converted = converter.ConvertToSpeckle(obj);
+          }
+
           containerName = layerName;
         }
 #else
         if (Control.InvokeRequired)
+        {
           converted = (Base)
             Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { obj });
+        }
         else
+        {
           converted = converter.ConvertToSpeckle(obj);
+        }
 
         containerName = layerName;
 #endif
@@ -640,7 +708,10 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
       */
 
       if (commitObj[$"@{containerName}"] == null)
+      {
         commitObj[$"@{containerName}"] = new List<Base>();
+      }
+
       ((List<Base>)commitObj[$"@{containerName}"]).Add(converted);
 
       conversionProgressDict["Conversion"]++;
@@ -728,9 +799,13 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
 
       ITFDrawingGrid drawingGrid = null;
       if (Control.InvokeRequired)
+      {
         Control.Invoke((Action)(() => { proj.GetDrawingGrid(false, 0, out drawingGrid); }));
+      }
       else
+      {
         proj.GetDrawingGrid(false, 0, out drawingGrid);
+      }
 
       if (null == drawingGrid)
       {
@@ -739,9 +814,13 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
       }
 
       if (Control.InvokeRequired)
+      {
         converted = (Base)Control.Invoke(new SpeckleConversionDelegate(converter.ConvertToSpeckle), new object[] { drawingGrid });
+      }
       else
+      {
         converted = converter.ConvertToSpeckle(drawingGrid);
+      }
     }
     return converted;
   }
@@ -828,14 +907,24 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
             case "Alignment":
               var alignments = GeomModel.Alignments;
               if (alignments != null)
+              {
                 if (alignments.Count() > 0)
+                {
                   selection.Add("Alignment");
+                }
+              }
+
               break;
             case "Corridor":
               var corridors = GeomModel.Corridors;
               if (corridors != null)
+              {
                 if (corridors.Count() > 0)
+                {
                   selection.Add("Corridor");
+                }
+              }
+
               break;
             default:
               break;
@@ -863,12 +952,16 @@ public partial class ConnectorBindingsBentley : ConnectorBindings
   private void WriteStateToFile()
   {
     if (Control.InvokeRequired)
+    {
       Control.Invoke(
         new WriteStateDelegate(StreamStateManager.WriteStreamStateList),
         new object[] { File, DocumentStreams }
       );
+    }
     else
+    {
       StreamStateManager.WriteStreamStateList(File, DocumentStreams);
+    }
   }
 
   public override void ResetDocument()

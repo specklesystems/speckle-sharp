@@ -184,7 +184,10 @@ public partial class ConverterRevit : ISpeckleConverter
     {
       var key = ao.applicationId ?? ao.OriginalId;
       if (ContextObjects.ContainsKey(key))
+      {
         continue;
+      }
+
       ContextObjects.Add(key, ao);
     }
   }
@@ -247,11 +250,18 @@ public partial class ConverterRevit : ISpeckleConverter
         break;
       case DB.ModelCurve o:
         if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_RoomSeparationLines)
+        {
           returnObject = RoomBoundaryLineToSpeckle(o);
+        }
         else if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_MEPSpaceSeparationLines)
+        {
           returnObject = SpaceSeparationLineToSpeckle(o);
+        }
         else
+        {
           returnObject = ModelCurveToSpeckle(o);
+        }
+
         break;
       case DB.Opening o:
         returnObject = OpeningToSpeckle(o);
@@ -340,7 +350,10 @@ public partial class ConverterRevit : ISpeckleConverter
         break;
       case DB.ReferencePoint o:
         if ((BuiltInCategory)o.Category.Id.IntegerValue == BuiltInCategory.OST_AnalyticalNodes)
+        {
           returnObject = AnalyticalNodeToSpeckle(o);
+        }
+
         break;
       case DB.Structure.BoundaryConditions o:
         returnObject = BoundaryConditionsToSpeckle(o);
@@ -406,7 +419,9 @@ public partial class ConverterRevit : ISpeckleConverter
 
     // log
     if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
+    {
       reportObj.Update(log: notes);
+    }
 
     return returnObject;
   }
@@ -414,7 +429,9 @@ public partial class ConverterRevit : ISpeckleConverter
   private string GetElemInfo(object o)
   {
     if (o is Element e)
+    {
       return $", name: {e.Name}, id: {e.UniqueId}";
+    }
 
     return "";
   }
@@ -424,7 +441,9 @@ public partial class ConverterRevit : ISpeckleConverter
     // schema check
     var speckleSchema = @object["@SpeckleSchema"] as Base;
     if (speckleSchema == null || !CanConvertToNative(speckleSchema))
+    {
       return @object; // Skip if no schema, or schema is non-convertible.
+    }
 
     // Invert the "Geometry->SpeckleSchema" to be the logical "SpeckleSchema -> Geometry" order.
     // This is caused by RhinoBIM, the MappingTool in rhino, and any Grasshopper Schema node with the option active.
@@ -439,7 +458,9 @@ public partial class ConverterRevit : ISpeckleConverter
     else if (speckleSchema is MappedBlockWrapper mbw)
     {
       if (@object is not BlockInstance bi)
+      {
         throw new Exception($"{nameof(MappedBlockWrapper)} can only be used with {nameof(BlockInstance)} objects.");
+      }
 
       mbw.instance = bi;
     }
@@ -453,7 +474,9 @@ public partial class ConverterRevit : ISpeckleConverter
         .Where(o => speckleSchema[o.Name] == null)
         .FirstOrDefault(o => o.PropertyType.IsInstanceOfType(@object));
       if (prop != null)
+      {
         speckleSchema[prop.Name] = @object;
+      }
     }
     return speckleSchema;
   }
@@ -483,15 +506,23 @@ public partial class ConverterRevit : ISpeckleConverter
     // Get setting for if the user is only trying to preview the geometry
     Settings.TryGetValue("preview", out string isPreview);
     if (bool.Parse(isPreview ?? "false") == true)
+    {
       return PreviewGeometry(@object);
+    }
 
     // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
     Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
     if (bool.Parse(recieveModelMesh ?? "false"))
+    {
       if ((@object is Other.Instance || @object.IsDisplayableObject()) && @object is not BE.Room)
+      {
         return DisplayableObjectToNative(@object);
+      }
       else
+      {
         return null;
+      }
+    }
 
     //Family Document
     if (Doc.IsFamilyDocument)
@@ -535,7 +566,9 @@ public partial class ConverterRevit : ISpeckleConverter
       // non revit built elems
       case BE.Alignment o:
         if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+        {
           return ModelCurveToNative(o.baseCurve);
+        }
 
         return AlignmentToNative(o);
 
@@ -715,7 +748,10 @@ public partial class ConverterRevit : ISpeckleConverter
         //used only from DUI and not for normal geometry conversion
         var boo = b["isHackySpeckleCamera"] as bool?;
         if (boo == true)
+        {
           return ViewOrientation3DToNative(b);
+        }
+
         return null;
 
       default:
@@ -814,7 +850,9 @@ public partial class ConverterRevit : ISpeckleConverter
     //Project Document
     var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
     if (schema != null)
+    {
       return CanConvertToNative(schema);
+    }
 
     var objRes = @object switch
     {
@@ -877,7 +915,9 @@ public partial class ConverterRevit : ISpeckleConverter
       _ => false,
     };
     if (objRes)
+    {
       return true;
+    }
 
     return false;
   }
@@ -887,7 +927,9 @@ public partial class ConverterRevit : ISpeckleConverter
     // check for schema
     var schema = @object["@SpeckleSchema"] as Base; // check for contained schema
     if (schema != null)
+    {
       return CanConvertToNativeDisplayable(schema);
+    }
 
     return @object.IsDisplayableObject();
   }

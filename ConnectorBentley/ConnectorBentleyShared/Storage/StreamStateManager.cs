@@ -36,7 +36,9 @@ public static class StreamStateManager
       var schema = (ECSchema)DgnECManager.Manager.LocateSchemaInScope(scope, schemaName, 1, 0, SchemaMatchType.Latest);
 
       if (schema == null)
+      {
         return states;
+      }
 
       ECQuery readWidget = new(schema.GetClass(className));
       readWidget.SelectClause.SelectAllProperties = true;
@@ -77,7 +79,9 @@ public static class StreamStateManager
     using (DgnECInstanceCollection instances = Manager.FindInstances(scope, readWidget))
     {
       foreach (IDgnECInstance instance in instances)
+      {
         instance.Delete();
+      }
     }
 
     DgnECInstanceEnabler instanceEnabler = Manager.ObtainInstanceEnabler(File, ecClass);
@@ -99,7 +103,9 @@ public static class StreamStateManager
     var status = DgnECManager.Manager.ImportSchema(newSchema, File, new ImportSchemaOptions());
 
     if (status != SchemaImportStatus.Success)
+    {
       return null;
+    }
 
     return newSchema;
   }

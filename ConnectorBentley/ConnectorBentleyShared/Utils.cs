@@ -52,7 +52,9 @@ public static class Utils
     foreach (var element in elements)
     {
       if (converter.CanConvertToSpeckle(element) && !element.IsInvisible)
+      {
         objs.Add(element.ElementId.ToString());
+      }
     }
 
     objs = graphicElements.Where(el => !el.IsInvisible).Select(el => el.ElementId.ToString()).ToList();

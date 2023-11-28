@@ -46,16 +46,20 @@ public partial class ConverterBentley
   {
     var enumerable = arr.ToList();
     if (enumerable.Count % 3 != 0)
+    {
       throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
+    }
 
     DPoint3d[] points = new DPoint3d[enumerable.Count / 3];
     var asArray = enumerable.ToArray();
     for (int i = 2, k = 0; i < enumerable.Count; i += 3)
+    {
       points[k++] = new DPoint3d(
         ScaleToNative(asArray[i - 2], units, UoR),
         ScaleToNative(asArray[i - 1], units, UoR),
         ScaleToNative(asArray[i], units, UoR)
       );
+    }
 
     return points;
   }
@@ -239,7 +243,9 @@ public partial class ConverterBentley
       {
         vec.GetStartEnd(out DPoint3d startPoint, out DPoint3d endPoint);
         if (startPoint == endPoint)
+        {
           return Point3dToSpeckle(startPoint, units);
+        }
 
         double length = vec.SumOfLengths() / UoR;
 
@@ -713,7 +719,10 @@ public partial class ConverterBentley
       totalLength += length;
 
       if (i == 0)
+      {
         firstPoint = startPoint;
+      }
+
       if (i == segments.Count() - 1)
       {
         DPoint3d endPoint = (DPoint3d)segmentValues["End"].NativeValue;
@@ -773,7 +782,9 @@ public partial class ConverterBentley
   {
     var points = PointListToNative(polyline.value, polyline.units).ToList();
     if (polyline.closed)
+    {
       points.Add(points[0]);
+    }
 
     LineStringElement _lineString = new(Model, null, points.ToArray());
     return _lineString;
@@ -953,11 +964,16 @@ public partial class ConverterBentley
       var length = _spline.Length();
       var points = _spline.Poles;
       if (closed)
+      {
         points.Add(points[0]);
+      }
+
       var knots = (List<double>)_spline.Knots;
       var weights = (List<double>)_spline.Weights;
       if (weights == null)
+      {
         weights = Enumerable.Repeat((double)1, points.Count()).ToList();
+      }
 
       var options = new FacetOptions();
       options.SetCurveDefaultsDefaults();
@@ -968,7 +984,9 @@ public partial class ConverterBentley
 
       var polyPoints = new List<DPoint3d>();
       foreach (var v in stroked)
+      {
         v.TryGetLineString(polyPoints);
+      }
 
       var _points = new List<DPoint3d>();
 
@@ -1015,7 +1033,9 @@ public partial class ConverterBentley
       {
         var _polyPoints = new List<DPoint3d>();
         foreach (var pt in polyPoints)
+        {
           _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
+        }
 
         var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
         _curve.displayValue = poly;
@@ -1041,11 +1061,16 @@ public partial class ConverterBentley
     var length = curve.Length();
     var points = curve.Poles;
     if (closed)
+    {
       points.Add(points[0]);
+    }
+
     var knots = (List<double>)curve.Knots;
     var weights = (List<double>)curve.Weights;
     if (weights == null)
+    {
       weights = Enumerable.Repeat((double)1, points.Count()).ToList();
+    }
 
     var polyPoints = new List<DPoint3d>();
     for (int i = 0; i <= 100; i++)
@@ -1073,7 +1098,9 @@ public partial class ConverterBentley
     {
       var _polyPoints = new List<DPoint3d>();
       foreach (var pt in polyPoints)
+      {
         _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
+      }
 
       var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
       _curve.displayValue = poly;
@@ -1094,11 +1121,16 @@ public partial class ConverterBentley
     var length = _spline.Length();
     var points = _spline.Poles;
     if (closed)
+    {
       points.Add(points[0]);
+    }
+
     var knots = (List<double>)_spline.Knots;
     var weights = (List<double>)_spline.Weights;
     if (weights == null)
+    {
       weights = Enumerable.Repeat((double)1, points.Count()).ToList();
+    }
 
     var polyPoints = new List<DPoint3d>();
     for (int i = 0; i <= 100; i++)
@@ -1125,7 +1157,9 @@ public partial class ConverterBentley
     {
       var _polyPoints = new List<DPoint3d>();
       foreach (var pt in polyPoints)
+      {
         _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
+      }
 
       var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
       _curve.displayValue = poly;
@@ -1144,11 +1178,16 @@ public partial class ConverterBentley
     var length = _spline.Length();
     var points = _spline.Poles;
     if (closed)
+    {
       points.Add(points[0]);
+    }
+
     var knots = (List<double>)_spline.Knots;
     var weights = (List<double>)_spline.Weights;
     if (weights == null)
+    {
       weights = Enumerable.Repeat((double)1, points.Count()).ToList();
+    }
 
     var polyPoints = new List<DPoint3d>();
     for (int i = 0; i <= 100; i++)
@@ -1175,7 +1214,9 @@ public partial class ConverterBentley
     {
       var _polyPoints = new List<DPoint3d>();
       foreach (var pt in polyPoints)
+      {
         _polyPoints.Add(new DPoint3d(pt.X * UoR, pt.Y * UoR, pt.Z * UoR));
+      }
 
       var poly = new Polyline(PointsToFlatList(polyPoints), ModelUnits);
       _curve.displayValue = poly;
@@ -1217,7 +1258,9 @@ public partial class ConverterBentley
     var _spline = MSBsplineCurve.CreateFromPoles(points, weights, knots, order, closed, false);
 
     if (curve.closed)
+    {
       _spline.MakeClosed();
+    }
 
     var _curve = new BSplineCurveElement(Model, null, _spline);
     return _curve;
@@ -1453,7 +1496,9 @@ public partial class ConverterBentley
     for (int i = 0; i < _pointIndex.Count(); i++)
     {
       if (_pointIndex[i] != 0) // index of 0 is face loop pad/terminator
+      {
         _faceIndices.Add(_pointIndex[i] - 1);
+      }
       else
       {
         _faceIndices.Insert(0, _faceIndices.Count);
@@ -1502,12 +1547,16 @@ public partial class ConverterBentley
     {
       int n = mesh.faces[j];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4 to preserve backwards compatibility
+      }
 
       List<DPoint3d> faceVertices = mesh.faces.GetRange(j + 1, n).Select(x => vertices[x]).ToList();
 
       if (faceVertices.Count > 0)
+      {
         meshData.AddPolygon(faceVertices, new List<DVector3d>(), new List<DPoint2d>());
+      }
 
       j += n + 1;
     }
@@ -1766,17 +1815,25 @@ public partial class ConverterBentley
     public override bool ProcessAsBody(bool isCurved)
     {
       if (isCurved)
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
 
     public override bool ProcessAsFacets(bool isPolyface)
     {
       if (isPolyface)
+      {
         return true;
+      }
       else
+      {
         return false;
+      }
     }
 
     public override BentleyStatus ProcessSurface(MSBsplineSurface surface)

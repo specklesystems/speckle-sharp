@@ -78,16 +78,20 @@ public partial class ConverterBentley
 
     drawingGrid.GetGridSystems(0, out ITFGridSystemList gridSystems);
     if (gridSystems == null)
+    {
       return null;
+    }
 
     for (ITFGridSystem gridSystem = gridSystems.AsTFGridSystem;
-        gridSystem != null;
-        gridSystems.GetNext("", out gridSystems), gridSystem = (gridSystems != null) ? gridSystems.AsTFGridSystem : null)
+         gridSystem != null;
+         gridSystems.GetNext("", out gridSystems), gridSystem = (gridSystems != null) ? gridSystems.AsTFGridSystem : null)
     {
       gridSystem.GetGridCurves(0, out ITFGridCurveList curves);
 
       if (curves == null)
+      {
         continue;
+      }
 
       gridSystem.GetLCS(out DPoint3d origin, 0, out double angle);
 
@@ -113,32 +117,56 @@ public partial class ConverterBentley
         {
           case (TFdGridCurveType.TFdGridCurveType_OrthogonalX):
             if (gridValue < minimumValueX)
+            {
               minimumValueX = gridValue;
+            }
+
             // grid lines pick up the minimum value of their neighbors
             if (minimumValue < minimumValueY)
+            {
               minimumValueY = minimumValue;
+            }
+
             if (gridValue > maximumValueX)
+            {
               maximumValueX = gridValue;
+            }
+
             break;
 
           case (TFdGridCurveType.TFdGridCurveType_OrthogonalY):
             if (gridValue < minimumValueY)
+            {
               minimumValueY = gridValue;
+            }
+
             // grid lines pick up the minimum value of their neighbors
             if (minimumValue < minimumValueX)
+            {
               minimumValueX = minimumValue;
+            }
+
             if (gridValue > maximumValueY)
+            {
               maximumValueY = gridValue;
+            }
+
             break;
 
           case (TFdGridCurveType.TFdGridCurveType_Circular):
             if (gridValue > maximumRadius)
+            {
               maximumRadius = gridValue;
+            }
+
             break;
 
           case (TFdGridCurveType.TFdGridCurveType_Radial):
             if (gridValue > maximumCircularAngle)
+            {
               maximumCircularAngle = gridValue;
+            }
+
             break;
 
           default:
@@ -278,9 +306,14 @@ public partial class ConverterBentley
     {
       case (TFdGridCurveType.TFdGridCurveType_OrthogonalX):
         if (minimumValue == 0)
+        {
           minimumValue = minimumValueY;
+        }
+
         if (maximumValue == 0)
+        {
           maximumValue = maximumValueY;
+        }
 
         startPoint = Translate(Rotate(new Point(gridValue, minimumValue, 0, units), angle), origin.X, origin.Y);
         endPoint = Translate(Rotate(new Point(gridValue, maximumValue, 0, units), angle), origin.X, origin.Y);
@@ -289,9 +322,14 @@ public partial class ConverterBentley
 
       case (TFdGridCurveType.TFdGridCurveType_OrthogonalY):
         if (minimumValue == 0)
+        {
           minimumValue = minimumValueX;
+        }
+
         if (maximumValue == 0)
+        {
           maximumValue = maximumValueX;
+        }
 
         startPoint = Translate(Rotate(new Point(minimumValue, gridValue, 0, units), angle), origin.X, origin.Y);
         endPoint = Translate(Rotate(new Point(maximumValue, gridValue, 0, units), angle), origin.X, origin.Y);

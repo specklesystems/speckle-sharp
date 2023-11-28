@@ -28,7 +28,9 @@ internal static class StructureUtils
       string name = buildStructManListObject.GetStructureName(currBSO);
 
       if (dictionary.ContainsKey(name))
+      {
         continue;
+      }
 
       dictionary.Add(name, currBSO);
     }
@@ -45,7 +47,9 @@ internal static class StructureUtils
     foreach (BuildingStructureItem currentItem in groupsTreeObject.StructureItems)
     {
       if (!(currentItem is ObjectsGroup objectsGroup))
+      {
         continue;
+      }
 
       BuildingStructureTreeObject parent = objectsGroup.Parent;
       string nameGroup = parent.GetStructureItemName(objectsGroup);

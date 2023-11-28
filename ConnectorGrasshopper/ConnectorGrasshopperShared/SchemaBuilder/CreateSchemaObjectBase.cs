@@ -154,7 +154,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
 
       SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
       if (SelectedConstructor == null)
+      {
         readFailed = true;
+      }
     }
     catch
     {
@@ -197,10 +199,14 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
   public override void AddedToDocument(GH_Document document)
   {
     if (readFailed)
+    {
       return;
+    }
 
     if (!UserSetSchemaTag)
+    {
       UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
+    }
 
     if (SelectedConstructor != null)
     {
@@ -214,11 +220,13 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         foreach (var comp in otherSchemaBuilders)
         {
           if (comp is CreateSchemaObject scb)
+          {
             if (scb.Seed == Seed)
             {
               Seed = GenerateSeed();
               break;
             }
+          }
 
           var baseType = comp.GetType().BaseType;
           if (typeof(CreateSchemaObjectBase) == baseType)
@@ -235,11 +243,16 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     }
 
     if (Params.Input.Count == 0)
+    {
       SetupComponent(SelectedConstructor);
+    }
+
     ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
 #if RHINO7
     if (!Instances.RunningHeadless)
+    {
       (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
+    }
 #else
     (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 #endif
@@ -247,7 +260,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     Params.ParameterChanged += (sender, args) =>
     {
       if (args.ParameterSide != GH_ParameterSide.Input)
+      {
         return;
+      }
+
       switch (args.OriginalArguments.Type)
       {
         case GH_ObjectEventType.NickName:
@@ -273,7 +289,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     var props = constructor.GetParameters();
 
     foreach (var p in props)
+    {
       RegisterPropertyAsInputParameter(p, k++);
+    }
 
     UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
 
@@ -294,7 +312,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     // get property name and value
     Type propType = param.ParameterType;
     if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
+    {
       propType = Nullable.GetUnderlyingType(propType);
+    }
 
     string propName = param.Name;
     object propValue = param;
@@ -304,7 +324,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     if (param.IsOptional)
     {
       if (!string.IsNullOrEmpty(d))
+      {
         d += ", ";
+      }
+
       var def = param.DefaultValue == null ? "null" : param.DefaultValue.ToString();
       d += "default = " + def;
     }
@@ -319,7 +342,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     newInputParam.Description = $"({propType.Name}) {d}";
     newInputParam.Optional = param.IsOptional;
     if (param.IsOptional)
+    {
       newInputParam.SetPersistentData(param.DefaultValue);
+    }
 
     // check if input needs to be a list or item access
     bool isCollection =
@@ -327,9 +352,13 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       && propType != typeof(string)
       && !propType.Name.ToLower().Contains("dictionary");
     if (isCollection)
+    {
       newInputParam.Access = GH_ParamAccess.list;
+    }
     else
+    {
       newInputParam.Access = GH_ParamAccess.item;
+    }
 
     Params.RegisterInputParam(newInputParam, index);
   }
@@ -352,7 +381,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     }
 
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun("Create Schema Object", Name);
+    }
 
     var units = Units.GetUnitsFromString(Loader.GetCurrentDocument().ModelUnitSystem.ToString());
 
@@ -400,7 +431,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
           ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
           ?.Count() > 0
       )
+      {
         mainSchemaObj = objectProp;
+      }
     }
 
     object schemaObject = null;
@@ -409,7 +442,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       schemaObject = SelectedConstructor.Invoke(cParamsValues.ToArray());
       ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       if (((Base)schemaObject)["units"] == null || ((Base)schemaObject)["units"] == "")
+      {
         ((Base)schemaObject)["units"] = units;
+      }
     }
     catch (Exception e)
     {
@@ -434,7 +469,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         commitObj = ((Base)mainSchemaObj).ShallowCopy();
         commitObj["@SpeckleSchema"] = schemaObject;
         if (commitObj["units"] == null || commitObj["units"] == "")
+        {
           commitObj["units"] = units;
+        }
       }
       catch (Exception e)
       {
@@ -468,7 +505,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
   private object ExtractRealInputValue(object inputValue)
   {
     if (inputValue == null)
+    {
       return null;
+    }
 
     if (inputValue is IGH_Goo)
     {
@@ -485,12 +524,16 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
   private object GetObjectListProp(IGH_Param param, List<object> values, Type t)
   {
     if (!values.Any())
+    {
       return null;
+    }
 
     var list = (IList)Activator.CreateInstance(t);
     var listElementType = list.GetType().GetGenericArguments().Single();
     foreach (var value in values)
+    {
       list.Add(ConvertType(listElementType, value, param.Name));
+    }
 
     return list;
   }
@@ -504,22 +547,29 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
   private object ConvertType(Type type, object value, string name)
   {
     if (value == null)
+    {
       return null;
+    }
 
     var typeOfValue = value.GetType();
     if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
+    {
       return value;
+    }
 
     //needs to be before IsSimpleType
     if (type.IsEnum)
+    {
       try
       {
         return Enum.Parse(type, value.ToString());
       }
       catch { }
+    }
 
     // int, doubles, etc
     if (value.GetType().IsSimpleType())
+    {
       try
       {
         return Convert.ChangeType(value, type);
@@ -528,6 +578,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       {
         throw new Exception($"Cannot convert {value.GetType()} to {type}");
       }
+    }
 
     if (Converter.CanConvertToSpeckle(value))
     {
@@ -537,6 +588,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       //to convert the boxed type, it seems the only valid solution is to use Convert.ChangeType
       //currently, this is to support conversion of Polyline to Polycurve in Objects
       if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
+      {
         try
         {
           return Convert.ChangeType(converted, type);
@@ -545,6 +597,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         {
           throw new Exception($"Cannot convert {converted.GetType()} to {type}");
         }
+      }
 
       return converted;
     }

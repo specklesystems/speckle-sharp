@@ -43,7 +43,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (speckleStick.baseLine == null)
     {
@@ -77,9 +79,13 @@ public partial class ConverterRevit
       var p0 = currentCurve.GetEndPoint(0);
 
       if (p0.DistanceTo(baseLine.GetEndPoint(0)) > p0.DistanceTo(baseLine.GetEndPoint(1)))
+      {
         analyticalMember.SetCurve(baseLine.CreateReversed());
+      }
       else
+      {
         analyticalMember.SetCurve(baseLine);
+      }
 
       if (isExactMatch)
       {
@@ -99,7 +105,9 @@ public partial class ConverterRevit
           var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
           physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
           if (physicalMember.Symbol != familySymbol)
+          {
             physicalMember.Symbol = familySymbol;
+          }
         }
       }
     }
@@ -147,7 +155,9 @@ public partial class ConverterRevit
 
     //This only works for CSIC sections now for sure. Need to test on other sections
     if (!string.IsNullOrEmpty(propertyName))
+    {
       propertyName = propertyName.Replace('X', 'x');
+    }
 
     switch (speckleStick.type)
     {
@@ -233,7 +243,9 @@ public partial class ConverterRevit
   private Element1D AnalyticalStickToSpeckle(AnalyticalModelStick revitStick)
   {
     if (!revitStick.IsEnabled())
+    {
       return new Element1D();
+    }
 
     var speckleElement1D = new Element1D();
     switch (revitStick.Category.Name)
@@ -257,14 +269,20 @@ public partial class ConverterRevit
     curves.AddRange(revitStick.GetCurves(AnalyticalCurveType.RigidLinkTail));
 
     if (curves.Count > 1)
+    {
       speckleElement1D.baseLine = null;
+    }
     else
+    {
       speckleElement1D.baseLine = CurveToSpeckle(curves[0], revitStick.Document) as Objects.Geometry.Line;
+    }
 
 
     var coordinateSystem = revitStick.GetLocalCoordinateSystem();
     if (coordinateSystem != null)
+    {
       speckleElement1D.localAxis = new Geometry.Plane(PointToSpeckle(coordinateSystem.Origin, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document));
+    }
 
     var startOffset = revitStick.GetOffset(AnalyticalElementSelector.StartOrBase);
     var endOffset = revitStick.GetOffset(AnalyticalElementSelector.EndOrTop);
@@ -281,7 +299,9 @@ public partial class ConverterRevit
 
     var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
     if (structMat == null)
+    {
       structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
+    }
 
 
     prop.profile = speckleSection;
@@ -298,9 +318,13 @@ public partial class ConverterRevit
       //prop.memberType = MemberType.Column;
       var locationMark = GetParamValue<string>(structuralElement, BuiltInParameter.COLUMN_LOCATION_MARK);
       if (locationMark == null)
+      {
         speckleElement1D.name = mark;
+      }
       else
+      {
         speckleElement1D.name = locationMark;
+      }
     }
     else
     {
@@ -347,10 +371,12 @@ public partial class ConverterRevit
 
     var structMat = (DB.Material)stickFamily.Document.GetElement(revitStick.MaterialId);
     if (structMat == null)
+    {
       structMat = (DB.Material)
         stickFamily.Document.GetElement(
           stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId()
         );
+    }
 
     prop.profile = speckleSection;
     prop.material = GetStructuralMaterial(structMat);
@@ -399,7 +425,9 @@ public partial class ConverterRevit
     var startRelease = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_START_RELEASE_TYPE);
     var endRelease = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_END_RELEASE_TYPE);
     if (startRelease == 0)
+    {
       speckleElement1D.end1Releases = new Restraint(RestraintType.Fixed);
+    }
     else
     {
       var botReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_BOTTOM_RELEASE_FX) == 1 ? "R" : "F";
@@ -414,7 +442,9 @@ public partial class ConverterRevit
     }
 
     if (endRelease == 0)
+    {
       speckleElement1D.end2Releases = new Restraint(RestraintType.Fixed);
+    }
     else
     {
       var topReleaseX = GetParamValue<int>(revitStick, BuiltInParameter.STRUCTURAL_TOP_RELEASE_FX) == 1 ? "R" : "F";
@@ -433,11 +463,15 @@ public partial class ConverterRevit
   {
     var revitSection = familySymbol.GetStructuralSection();
     if (revitSection == null)
+    {
       return null;
+    }
 
     // check section profile cache
     if (SectionProfiles.Keys.Contains(familySymbol.Name))
+    {
       return SectionProfiles[familySymbol.Name];
+    }
 
     var speckleSection = new SectionProfile();
 
@@ -599,7 +633,9 @@ public partial class ConverterRevit
   private StructuralMaterial GetStructuralMaterial(Material material)
   {
     if (material == null)
+    {
       return null;
+    }
 
     StructuralAsset materialAsset = null;
     string name = null;
@@ -629,7 +665,9 @@ public partial class ConverterRevit
     Structural.Materials.StructuralMaterial speckleMaterial = null;
 
     if (materialType == StructuralMaterialType.Undefined && materialAsset != null)
+    {
       materialType = GetMaterialType(materialAsset);
+    }
 
     name ??= materialType.ToString();
     switch (materialType)

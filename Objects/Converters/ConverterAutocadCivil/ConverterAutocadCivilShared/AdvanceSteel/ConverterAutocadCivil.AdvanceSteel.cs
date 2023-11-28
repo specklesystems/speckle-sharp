@@ -104,7 +104,9 @@ public partial class ConverterAutocadCivil
         foreach (var propItem in typeData.PropertiesSpecific)
         {
           if (CheckProperty(propItem.Value, filerObject, out object propValue))
+          {
             propsSpecific[propItem.Key] = propValue;
+          }
         }
       }
 
@@ -121,7 +123,10 @@ public partial class ConverterAutocadCivil
   private bool CheckProperty(ASProperty propInfo, object @object, out object value)
   {
     value = propInfo.EvaluateValue(@object);
-    if (value is null) return false;
+    if (value is null)
+    {
+      return false;
+    }
 
     if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal))
     {
@@ -180,7 +185,9 @@ public partial class ConverterAutocadCivil
       var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
 
       if (outerList.Count() < 3)
+      {
         continue;
+      }
 
       CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
@@ -192,7 +199,9 @@ public partial class ConverterAutocadCivil
         {
           var innerList = listInnerContours.Select(x => vertices.ElementAt(x));
           if (innerList.Count() < 3)
+          {
             continue;
+          }
 
           input.Add(CreateContour(innerList, coordinateSystemAligned), true);
         }
@@ -263,7 +272,9 @@ public partial class ConverterAutocadCivil
     ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = DatabaseManager.GetFilerObjectId(idCadEntity, false);
     if (idFilerObject.IsNull())
+    {
       return null;
+    }
 
     return DatabaseManager.Open(idFilerObject) as T;
   }

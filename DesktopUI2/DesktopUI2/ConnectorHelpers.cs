@@ -50,7 +50,9 @@ public static class ConnectorHelpers
         {
           //Don't wrap cancellation exceptions!
           if (ex is OperationCanceledException)
+          {
             throw ex;
+          }
 
           //HACK: Sometimes, the task was cancelled, and Operations.Receive doesn't fail in a reliable way. In this case, the exception is often simply a symptom of a cancel.
           if (progress.CancellationToken.IsCancellationRequested)
@@ -68,9 +70,11 @@ public static class ConnectorHelpers
       .ConfigureAwait(false);
 
     if (commitObject == null)
+    {
       throw new SpeckleException(
         $"Failed to receive commit: {commit.id} objects from server: {nameof(Operations.Receive)} returned null"
       );
+    }
 
     return commitObject;
   }
@@ -193,7 +197,9 @@ public static class ConnectorHelpers
   {
     //Don't wrap cancellation exceptions!
     if (ex is OperationCanceledException cex)
+    {
       throw cex;
+    }
 
     //Treat all operation errors as fatal
     throw new SpeckleException($"Failed to send objects to server - {error}", ex);
@@ -217,7 +223,9 @@ public static class ConnectorHelpers
   public static ApplicationObject.State GetAppObjectFailureState(Exception ex)
   {
     if (ex is null)
+    {
       throw new ArgumentNullException(nameof(ex));
+    }
 
     return ex switch
     {

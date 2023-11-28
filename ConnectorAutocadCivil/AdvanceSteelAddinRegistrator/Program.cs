@@ -43,15 +43,21 @@ internal class Program
     try
     {
       if (File.Exists(manifest))
+      {
         addonsData = ParseManifestFile();
+      }
 
       if (!Directory.Exists(manifestBasePath))
+      {
         Directory.CreateDirectory(manifestBasePath);
+      }
 
       addonsData = UpdateManifestFile(addonsData);
 
       if (addonsData != null && addonsData.Addons.Any(x => x.Name == addinName))
+      {
         WriteManifestFile(addonsData);
+      }
     }
     catch (Exception ex)
     {

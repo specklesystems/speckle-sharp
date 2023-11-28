@@ -143,9 +143,14 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             break;
           case AcadDB.Polyline o:
             if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
+            {
               @base = PolylineToSpeckle(o);
+            }
             else
+            {
               @base = PolycurveToSpeckle(o);
+            }
+
             break;
           case AcadDB.Polyline3d o:
             @base = PolylineToSpeckle(o);
@@ -170,9 +175,14 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             break;
           case Solid3d o:
             if (o.IsNull)
+            {
               notes.Add($"Solid was null");
+            }
             else
+            {
               @base = SolidToSpeckle(o, out notes);
+            }
+
             break;
           case AcadDB.Dimension o:
             @base = DimensionToSpeckle(o);
@@ -267,13 +277,19 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     }
 
     if (@base is null)
+    {
       return @base;
+    }
 
     if (style != null)
+    {
       @base["displayStyle"] = style;
+    }
 
     if (extensionDictionary != null)
+    {
       @base["extensionDictionary"] = extensionDictionary;
+    }
 
     if (reportObj != null)
     {
@@ -340,9 +356,14 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
       case Polycurve o:
         bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
         if (convertAsSpline || !IsPolycurvePlanar(o))
+        {
           acadObj = PolycurveSplineToNativeDB(o);
+        }
         else
+        {
           acadObj = PolycurveToNativeDB(o);
+        }
+
         break;
 
       case Curve o:
@@ -411,6 +432,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
         acadObj = o.Converted.Any() ? o.Converted : null;
         if (reportObj != null)
+        {
           reportObj.Update(
             status: o.Status,
             createdIds: o.CreatedIds,
@@ -418,14 +440,22 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             container: o.Container,
             log: o.Log
           );
+        }
+
         break;
       default:
         if (reportObj != null)
+        {
           reportObj.Update(log: notes);
+        }
+
         break;
     }
     if (reportObj != null)
+    {
       Report.UpdateReportObject(reportObj);
+    }
+
     return acadObj;
   }
 

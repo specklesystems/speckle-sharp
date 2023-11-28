@@ -46,7 +46,10 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     // for csi, these must go before the SetContextDocument method.
     var settings = new Dictionary<string, string>();
     foreach (var setting in state.Settings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     settings.Add("operation", "receive");
     converter.SetConverterSettings(settings);
 
@@ -70,7 +73,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
 
     Preview = FlattenCommitObject(commitObject, converter);
     foreach (var previewObj in Preview)
+    {
       progress.Report.Log(previewObj);
+    }
 
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work
@@ -94,7 +99,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     // I've only experienced this bug in ETABS so far
 #if ETABS
     if (newPlaceholderObjects.Any(o => o.Status == ApplicationObject.State.Updated))
+    {
       RefreshDatabaseTable("Beam Object Connectivity");
+    }
 #endif
 
     Model.View.RefreshWindow();
@@ -114,7 +121,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     foreach (var obj in Preview)
     {
       if (!StoredObjects.ContainsKey(obj.OriginalId))
+      {
         continue;
+      }
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -172,7 +181,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     void StoreObject(Base b)
     {
       if (!StoredObjects.ContainsKey(b.id))
+      {
         StoredObjects.Add(b.id, b);
+      }
     }
 
     ApplicationObject CreateApplicationObject(Base current)
@@ -254,7 +265,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     // this is a workaround for a CSI bug. The applyEditedTables is looking for "Unique Name", not "UniqueName"
     // this bug is patched in version 20.0.0
     if (programVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
+    {
       fieldsKeysIncluded[0] = "Unique Name";
+    }
 
     Model.DatabaseTables.SetTableForEditingArray(
       floorTableKey,
@@ -283,18 +296,27 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     foreach (var obj in previouslyReceiveObjects)
     {
       if (obj.Converted.Count == 0)
+      {
         continue;
+      }
+
       if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+      {
         continue;
+      }
 
       foreach (var o in obj.Converted)
       {
         if (o is not string s)
+        {
           continue;
+        }
 
         string[] typeAndName = s.Split(new[] { ConnectorCSIUtils.Delimiter }, StringSplitOptions.None);
         if (typeAndName.Length != 2)
+        {
           continue;
+        }
 
         switch (typeAndName[0])
         {

@@ -25,9 +25,14 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
     this.allSymbols = allSymbols;
 
     foreach (var symbol in allSymbols.Keys)
+    {
       LoadedFamilies.Add(symbol);
+    }
+
     if (LoadedFamilies.Count > 0)
+    {
       SelectedFamily = LoadedFamilies[0];
+    }
   }
 
   // this constructor is only for xaml design purposes
@@ -69,9 +74,14 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
     };
 
     foreach (var symbol in allSymbols.Keys)
+    {
       LoadedFamilies.Add(symbol);
+    }
+
     if (LoadedFamilies.Count > 0)
+    {
       SelectedFamily = LoadedFamilies[0];
+    }
   }
 
   public static ImportFamiliesDialogViewModel Instance { get; private set; }
@@ -108,13 +118,19 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
       if (value)
       {
         foreach (var type in FamilyTypes)
+        {
           if (!type.isChecked && !type.isImported)
+          {
             type.isChecked = true;
+          }
+        }
       }
       else
       {
         foreach (var type in FamilyTypes)
+        {
           type.isChecked = false;
+        }
       }
     }
   }
@@ -154,11 +170,13 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
   {
     var allChecked = true;
     foreach (var type in FamilyTypes)
+    {
       if (!type.isChecked && !type.isImported)
       {
         allChecked = false;
         break;
       }
+    }
 
     _isTopBoxChecked = allChecked;
     this.RaisePropertyChanged(nameof(IsTopBoxChecked));
@@ -187,9 +205,13 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
         this.RaiseAndSetIfChanged(ref _isChecked, value);
         Instance.SetTopBox();
         if (value)
+        {
           Instance.selectedFamilySymbols.Add(this);
+        }
         else if (value == false && Instance.selectedFamilySymbols.Contains(this))
+        {
           Instance.selectedFamilySymbols.Remove(this);
+        }
       }
     }
   }

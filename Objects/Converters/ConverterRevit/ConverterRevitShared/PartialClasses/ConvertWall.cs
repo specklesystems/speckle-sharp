@@ -29,7 +29,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(revitWall, appObj))
+    {
       return appObj;
+    }
 
     if (speckleWall.baseLine == null)
     {
@@ -49,7 +51,9 @@ public partial class ConverterRevit
     List<string> joinSettings = new();
 
     if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
+    {
       joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+    }
 
     var levelState = ApplicationObject.State.Unknown;
     double baseOffset = 0.0;
@@ -113,7 +117,9 @@ public partial class ConverterRevit
       var offset = level.Elevation - newz;
       var newCurve = baseCurve;
       if (Math.Abs(offset) > TOLERANCE) // level and curve are not at the same height
+      {
         newCurve = baseCurve.CreateTransformed(Transform.CreateTranslation(new XYZ(0, 0, offset)));
+      }
 
       ((LocationCurve)revitWall.Location).Curve = newCurve;
 
@@ -135,7 +141,9 @@ public partial class ConverterRevit
     if (speckleWall is RevitWall spklRevitWall)
     {
       if (spklRevitWall.flipped != revitWall.Flipped)
+      {
         revitWall.Flip();
+      }
 
       if (spklRevitWall.topLevel != null)
       {
@@ -173,7 +181,9 @@ public partial class ConverterRevit
     notes = new List<string>();
     var baseGeometry = LocationToSpeckle(revitWall);
     if (baseGeometry is Geometry.Point)
+    {
       return RevitElementToSpeckle(revitWall, out notes);
+    }
 
     RevitWall speckleWall = new();
     speckleWall.family = revitWall.WallType.FamilyName.ToString();
@@ -196,7 +206,9 @@ public partial class ConverterRevit
         var wallMembers = revitWall.GetStackedWallMemberIds().Select(id => (Wall)revitWall.Document.GetElement(id));
         speckleWall.elements = new List<Base>();
         foreach (var wall in wallMembers)
+        {
           speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
+        }
       }
 
       speckleWall.displayValue = GetElementDisplayValue(revitWall);
@@ -233,7 +245,10 @@ public partial class ConverterRevit
     GetWallVoids(speckleWall, revitWall);
     GetHostedElements(speckleWall, revitWall, out List<string> hostedNotes);
     if (hostedNotes.Any())
+    {
       notes.AddRange(hostedNotes);
+    }
+
     return speckleWall;
   }
 
@@ -272,17 +287,23 @@ public partial class ConverterRevit
     var profile = ((Sketch)Doc.GetElement(wall.SketchId))?.Profile;
 
     if (profile == null)
+    {
       return;
+    }
 
     var voidsList = new List<OG.Polycurve>();
     for (var i = 1; i < profile.Size; i++)
     {
       var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList(), wall.Document);
       if (segments.segments.Count() > 2)
+      {
         voidsList.Add(segments);
+      }
     }
     if (voidsList.Count > 0)
+    {
       speckleElement["voids"] = voidsList;
+    }
 #endif
   }
 
@@ -290,7 +311,9 @@ public partial class ConverterRevit
   {
 #if !REVIT2020 && !REVIT2021
     if (speckleElement["voids"] == null || !(speckleElement["voids"] is IList voidCurves))
+    {
       return;
+    }
 
     if (wall.SketchId.IntegerValue == -1)
     {
@@ -316,13 +339,17 @@ public partial class ConverterRevit
     foreach (var obj in voidCurves)
     {
       if (!(obj is ICurve @void))
+      {
         continue;
+      }
 
       var curveArray = CurveToNative(@void, true);
       Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
     }
     if (transactionManager.Commit() != TransactionStatus.Committed)
+    {
       sketchEditScope.Cancel();
+    }
 
     try
     {

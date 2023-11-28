@@ -121,7 +121,9 @@ public static class Utils
           {
             ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
             if (filerObject is FeatureObject || filerObject is PlateFoldRelation) //Don't select features objects, they are going with Advance Steel objects
+            {
               continue;
+            }
           }
 #endif
 
@@ -765,7 +767,9 @@ public static class Utils
     ASObjectId idCadEntity = new(@object.ObjectId.OldIdPtr);
     ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
     if (idFilerObject.IsNull())
+    {
       return null;
+    }
 
     return Autodesk.AdvanceSteel.CADAccess.DatabaseManager.Open(idFilerObject) as T;
   }

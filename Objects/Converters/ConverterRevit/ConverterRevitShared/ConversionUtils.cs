@@ -32,7 +32,9 @@ public partial class ConverterRevit
   {
     //doesn't have a host, go ahead and convert
     if (host == null)
+    {
       return true;
+    }
 
     // has been converted before (from a parent host), skip it
     if (ConvertedObjects.Contains(element.UniqueId))
@@ -52,11 +54,15 @@ public partial class ConverterRevit
   {
     // doesn't have a host that will convert the element, go ahead and do it now
     if (host == null || host is DB.Level)
+    {
       return true;
+    }
 
     // has been converted before (from a parent host), skip it
     if (ConvertedObjects.Contains(element.UniqueId))
+    {
       return false;
+    }
 
     // the parent is in our selection list,skip it, as this element will be converted by the host element
     if (ContextObjects.ContainsKey(host.UniqueId))
@@ -75,7 +81,9 @@ public partial class ConverterRevit
         };
       }
       else
+      {
         return false;
+      }
     }
     return true;
   }
@@ -91,7 +99,9 @@ public partial class ConverterRevit
     var hostedElementIds = GetHostedElementIds(host);
 
     if (!hostedElementIds.Any())
+    {
       return;
+    }
 
     if (ContextObjects.ContainsKey(host.UniqueId))
     {
@@ -239,7 +249,10 @@ public partial class ConverterRevit
     }
 
     if (paramBase.GetDynamicMembers().Any())
+    {
       speckleElement["parameters"] = paramBase;
+    }
+
     speckleElement["elementId"] = revitElement.Id.ToString();
     speckleElement.applicationId = revitElement.UniqueId;
     speckleElement["units"] = ModelUnits;
@@ -248,11 +261,15 @@ public partial class ConverterRevit
 
     Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
     if (phaseCreated != null)
+    {
       speckleElement["phaseCreated"] = phaseCreated.Name;
+    }
 
     Phase phaseDemolished = Doc.GetElement(revitElement.DemolishedPhaseId) as Phase;
     if (phaseDemolished != null)
+    {
       speckleElement["phaseDemolished"] = phaseDemolished.Name;
+    }
 
     speckleElement["worksetId"] = revitElement.WorksetId.ToString();
 
@@ -298,7 +315,9 @@ public partial class ConverterRevit
   )
   {
     if (element == null)
+    {
       return;
+    }
 
     exclusions ??= new();
     using var parameters = element.Parameters;
@@ -328,11 +347,15 @@ public partial class ConverterRevit
     var rp = elem.get_Parameter(bip);
 
     if (rp == null || !rp.HasValue)
+    {
       return default;
+    }
 
     var value = rp.GetValue(rp.Definition, unitsOverride);
     if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
+    {
       return (T)Convert.ChangeType(value, typeof(int));
+    }
 
     return (T)value;
   }
@@ -428,33 +451,46 @@ public partial class ConverterRevit
   public void SetInstanceParameters(Element revitElement, Base speckleElement, List<string> exclusions = null)
   {
     if (revitElement == null)
+    {
       return;
+    }
 
     var speckleParameters = speckleElement["parameters"] as Base;
     if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
+    {
       return;
+    }
 
     // Set the phaseCreated parameter
     if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
+    {
       TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+    }
+
     //Set the phaseDemolished parameter
     if (speckleElement["phaseDemolished"] is string phaseDemolished && !string.IsNullOrEmpty(phaseDemolished))
+    {
       TrySetParam(
         revitElement,
         BuiltInParameter.PHASE_DEMOLISHED,
         GetRevitPhase(revitElement.Document, phaseDemolished)
       );
+    }
 
     // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and
     // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
     // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
     IEnumerable<DB.Parameter> revitParameters = null;
     if (exclusions == null)
+    {
       revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+    }
     else
+    {
       revitParameters = revitElement.ParametersMap
         .Cast<DB.Parameter>()
         .Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
+    }
 
     // Here we are creating two  dictionaries for faster lookup
     // one uses the BuiltInName / GUID the other the name as Key
@@ -474,7 +510,9 @@ public partial class ConverterRevit
     foreach (var spk in filteredSpeckleParameters)
     {
       if (!(spk.Value is Parameter sp) || sp.isReadOnly || sp.value == null)
+      {
         continue;
+      }
 
       var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
 
@@ -559,12 +597,17 @@ public partial class ConverterRevit
   private static string GetParamInternalName(DB.Parameter rp)
   {
     if (rp.IsShared)
+    {
       return rp.GUID.ToString();
+    }
     else
     {
       var def = rp.Definition as InternalDefinition;
       if (def.BuiltInParameter == BuiltInParameter.INVALID)
+      {
         return def.Name;
+      }
+
       return def.BuiltInParameter.ToString();
     }
   }
@@ -616,7 +659,9 @@ public partial class ConverterRevit
       }
     }
     if (Phases.ContainsKey(phaseName))
+    {
       return Phases[phaseName];
+    }
 
     return null;
   }
@@ -634,7 +679,9 @@ public partial class ConverterRevit
   public DB.Element? GetExistingElementByApplicationId(string applicationId)
   {
     if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+    {
       return null;
+    }
 
     var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
     // TODO: we may not want just the first one
@@ -644,13 +691,20 @@ public partial class ConverterRevit
   public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
   {
     if (applicationId == null || ReceiveMode == ReceiveMode.Create)
+    {
       yield break;
+    }
 
     var cachedIds = PreviouslyReceivedObjectIds?.GetCreatedIdsFromConvertedId(applicationId);
     if (cachedIds == null)
+    {
       yield break;
+    }
+
     foreach (var id in cachedIds)
+    {
       yield return Doc.GetElement(id);
+    }
   }
 
   /// <summary>
@@ -703,11 +757,13 @@ public partial class ConverterRevit
     get
     {
       if (_revitLinkInstances == null)
+      {
         _revitLinkInstances = new FilteredElementCollector(Doc)
           .OfClass(typeof(RevitLinkInstance))
           .ToElements()
           .Cast<RevitLinkInstance>()
           .ToList();
+      }
 
       return _revitLinkInstances;
     }
@@ -809,7 +865,9 @@ public partial class ConverterRevit
   private void CreateVoids(DB.Element host, Base speckleElement)
   {
     if (speckleElement["voids"] == null || !(speckleElement["voids"] is List<ICurve>))
+    {
       return;
+    }
 
     //list of openings hosted in this speckle element
     var openings = new List<RevitOpening>();
@@ -817,7 +875,9 @@ public partial class ConverterRevit
     //this extra check is for backwards compatibility
     var nestedElements = @speckleElement["elements"] ?? @speckleElement["@elements"];
     if (nestedElements is List<Base> elements)
+    {
       openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
+    }
 
     //list of shafts part of this conversion set
     var shafts = ContextObjects.Values
@@ -829,7 +889,9 @@ public partial class ConverterRevit
     foreach (var @void in speckleElement["voids"] as List<ICurve>)
     {
       if (HasOverlappingOpening(@void, openings))
+      {
         continue;
+      }
 
       var curveArray = CurveToNative(@void, true);
       UnboundCurveIfSingle(curveArray);
@@ -840,8 +902,12 @@ public partial class ConverterRevit
   private bool HasOverlappingOpening(ICurve @void, List<RevitOpening> openings)
   {
     foreach (RevitOpening opening in openings)
+    {
       if (CurvesOverlap(@void, opening.outline))
+      {
         return true;
+      }
+    }
 
     return false;
   }
@@ -869,7 +935,9 @@ public partial class ConverterRevit
 
         var result = cA.Intersect(cB);
         if (result != SetComparisonResult.BothEmpty && result != SetComparisonResult.Disjoint)
+        {
           return true;
+        }
       }
     }
 
@@ -935,7 +1003,9 @@ public partial class ConverterRevit
       var newRevitConnector = revitEl.GetConnectorSet().Where(c => c.Origin.DistanceTo(origin) < .01).FirstOrDefault();
 
       if (newRevitConnector == null)
+      {
         continue;
+      }
 
       foreach (
         var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
@@ -982,7 +1052,9 @@ public partial class ConverterRevit
         var c = segment.GetCurve();
 
         if (c == null)
+        {
           continue;
+        }
 
         var curve = CurveToSpeckle(c, room.Document);
 
@@ -1028,7 +1100,10 @@ public partial class ConverterRevit
   public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
   {
     if (revitMaterial == null)
+    {
       return null;
+    }
+
     RenderMaterial material =
       new()
       {
@@ -1047,7 +1122,9 @@ public partial class ConverterRevit
   public ElementId RenderMaterialToNative(RenderMaterial speckleMaterial)
   {
     if (speckleMaterial == null)
+    {
       return ElementId.InvalidElementId;
+    }
 
     string matName = RemoveProhibitedCharacters(speckleMaterial.name);
 
@@ -1058,7 +1135,9 @@ public partial class ConverterRevit
       .FirstOrDefault(m => string.Equals(m.Name, matName, StringComparison.CurrentCultureIgnoreCase));
 
     if (existing != null)
+    {
       return existing.Id;
+    }
 
     // Create new material
     ElementId materialId = DB.Material.Create(Doc, matName ?? Guid.NewGuid().ToString());
@@ -1114,7 +1193,9 @@ public partial class ConverterRevit
     }
 
     if (idType == ElementId.InvalidElementId)
+    {
       return null;
+    }
 
     if (e.Document.GetElement(idType) is MEPSystemType mechType)
     {
@@ -1171,10 +1252,16 @@ public partial class ConverterRevit
   public bool UnboundCurveIfSingle(DB.CurveArray array)
   {
     if (array.Size != 1)
+    {
       return false;
+    }
+
     var item = array.get_Item(0);
     if (!item.IsBound)
+    {
       return false;
+    }
+
     item.MakeUnbound();
     return true;
   }
@@ -1223,11 +1310,15 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     // otherwise just create new one
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     return null;
   }
@@ -1235,7 +1326,10 @@ public partial class ConverterRevit
   private string RemoveProhibitedCharacters(string s)
   {
     if (string.IsNullOrEmpty(s))
+    {
       return s;
+    }
+
     return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
   }
 
@@ -1257,7 +1351,9 @@ public partial class ConverterRevit
     foreach (var elementId in elementIds)
     {
       if (element.Document.GetElement(elementId) is not ModelLine line)
+      {
         continue;
+      }
 
       var offsetAtTailParameter = line.get_Parameter(BuiltInParameter.SLOPE_START_HEIGHT);
       if (offsetAtTailParameter != null)
@@ -1271,14 +1367,20 @@ public partial class ConverterRevit
   private Point GetSlopeArrowHead(ModelLine slopeArrow, Document doc)
   {
     if (slopeArrow == null)
+    {
       return null;
+    }
+
     return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(1), doc);
   }
 
   private Point GetSlopeArrowTail(ModelLine slopeArrow, Document doc)
   {
     if (slopeArrow == null)
+    {
       return null;
+    }
+
     return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
   }
 

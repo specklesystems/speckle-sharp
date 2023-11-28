@@ -24,7 +24,9 @@ public partial class ConverterRevit
 
     // skip if element already exists in doc & receive mode is set to ignore
     if (IsIgnore(docObj, appObj))
+    {
       return appObj;
+    }
 
     if (speckleFloor.outline == null)
     {
@@ -34,7 +36,9 @@ public partial class ConverterRevit
 
     bool structural = false;
     if (speckleFloor["structural"] is bool isStructural)
+    {
       structural = isStructural;
+    }
 
     var levelState = ApplicationObject.State.Unknown;
     double baseOffset = 0.0;
@@ -74,7 +78,9 @@ public partial class ConverterRevit
 
 
     if (docObj != null)
+    {
       Doc.Delete(docObj.Id);
+    }
 
     DB.Floor revitFloor = null;
 
@@ -82,21 +88,33 @@ public partial class ConverterRevit
     if (floorType == null)
     {
       if (slope != 0 && slopeDirection != null)
+      {
         revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
+      }
+
       if (revitFloor == null)
+      {
         revitFloor = Doc.Create.NewFloor(outline, structural);
+      }
     }
     else
     {
       if (slope != 0 && slopeDirection != null)
+      {
         revitFloor = Doc.Create.NewSlab(outline, level, slopeDirection, slope, structural);
+      }
+
       if (revitFloor == null)
+      {
         revitFloor = Doc.Create.NewFloor(outline, floorType, level, structural);
+      }
     }
 
 #else
     if (floorType == null)
+    {
       throw new SpeckleException("Floor needs a floor type");
+    }
     else
     {
       //from revit 2022 we can create openings in the floors!
@@ -111,13 +129,20 @@ public partial class ConverterRevit
       }
 
       if (slope != 0 && slopeDirection != null)
+      {
         revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, slopeDirection, slope);
+      }
+
       if (revitFloor == null)
+      {
         revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, null, 0);
+      }
     }
 #endif
     if (speckleFloor is not RevitFloor)
+    {
       TrySetParam(revitFloor, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, -baseOffset);
+    }
 
     Doc.Regenerate();
 
@@ -196,7 +221,10 @@ public partial class ConverterRevit
 
     GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
     if (hostedNotes.Any())
+    {
       notes.AddRange(hostedNotes);
+    }
+
     return speckleFloor;
   }
 
@@ -215,7 +243,9 @@ public partial class ConverterRevit
       {
         var c = curve;
         if (c == null)
+        {
           continue;
+        }
 
         poly.segments.Add(CurveToSpeckle(c, floor.Document));
       }
@@ -345,9 +375,13 @@ public partial class ConverterRevit
         for (var i = 0; i < nurbs.points.Count; i++)
         {
           if (i % 3 == 2)
+          {
             curvePoints.Add(z * nurbsConversionFactor);
+          }
           else
+          {
             curvePoints.Add(nurbs.points[i]);
+          }
         }
         var newCurve = new OG.Curve
         {
@@ -439,7 +473,10 @@ public partial class ConverterRevit
       case OG.Polycurve plc:
         var newPolycurve = new Polycurve(plc.units);
         foreach (var seg in plc.segments)
+        {
           newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
+        }
+
         return newPolycurve;
 
       //case OG.Spiral spiral:

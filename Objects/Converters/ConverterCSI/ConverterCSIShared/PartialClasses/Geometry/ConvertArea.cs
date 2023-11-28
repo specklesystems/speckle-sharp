@@ -33,7 +33,9 @@ public partial class ConverterCSI
     var points = Array.Empty<string>();
     int success = Model.AreaObj.GetPoints(name, ref numPoints, ref points);
     if (success != 0)
+    {
       throw new ConversionException($"Failed to retrieve the names of the point object that define area: {name}");
+    }
 
     bool connectivityChanged = points.Length != area.topology.Count;
 
@@ -49,7 +51,9 @@ public partial class ConverterCSI
 
       pointsUpdated.Add(UpdatePoint(points[i], area.topology[i]));
       if (!connectivityChanged && pointsUpdated[i] != points[i])
+      {
         connectivityChanged = true;
+      }
     }
 
     int numErrorMsgs = 0;
@@ -60,9 +64,11 @@ public partial class ConverterCSI
       var refArray = pointsUpdated.ToArray();
       success = Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
       if (success != 0)
+      {
         throw new ConversionException(
           $"Failed to modify the connectivity of the area: {name}"
         );
+      }
 #else
       int tableVersion = 0;
       int numberRecords = 0;
@@ -78,7 +84,9 @@ public partial class ConverterCSI
         ref tableData
       );
       if (success != 0)
+      {
         throw new ConversionException($"Failed to retrieve database table for editing table key: {floorTableKey}");
+      }
 
       // if the floor object now has more points than it previously had
       // and it has more points that any other floor object, then updating would involve adding a new column to this array
@@ -88,7 +96,9 @@ public partial class ConverterCSI
         string GUID = "";
         success = Model.AreaObj.GetGUID(name, ref GUID);
         if (success != 0)
+        {
           throw new ConversionException($"Failed to retrieve the GUID for area: {name}");
+        }
 
         var updatedArea = AreaToSpeckle(name);
 
@@ -100,24 +110,33 @@ public partial class ConverterCSI
         var dummyAppObj = new ApplicationObject(null, null);
         AreaToNative(updatedArea, dummyAppObj);
         if (dummyAppObj.Status != ApplicationObject.State.Created)
+        {
           throw new SpeckleException("Area failed!"); //This should never happen, AreaToNative should throw
+        }
       }
       else
       {
         for (int record = 0; record < numberRecords; record++)
         {
           if (tableData[record * fieldsKeysIncluded.Length] != name)
+          {
             continue;
+          }
 
           for (int i = 0; i < pointsUpdated.Count; i++)
+          {
             tableData[record * fieldsKeysIncluded.Length + (i + 1)] = pointsUpdated[i];
+          }
+
           break;
         }
 
         // this is a workaround for a CSI bug. The applyEditedTables is looking for "Unique Name", not "UniqueName"
         // this bug is patched in version 20.0.0
         if (ProgramVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
+        {
           fieldsKeysIncluded[0] = "Unique Name";
+        }
 
         Model.DatabaseTables.SetTableForEditingArray(
           floorTableKey,
@@ -169,6 +188,7 @@ public partial class ConverterCSI
     appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Area{Delimiter}{name}");
 
     if (numErrorMsgs != 0)
+    {
       appObj.Update(
         log: new List<string>()
         {
@@ -176,6 +196,7 @@ public partial class ConverterCSI
           importLog
         }
       );
+    }
   }
 
   public void AreaToNative(Element2D area, ApplicationObject appObj)
@@ -225,7 +246,9 @@ public partial class ConverterCSI
     }
 
     if (!string.IsNullOrEmpty(area.applicationId))
+    {
       Model.AreaObj.SetGUID(name, area.applicationId);
+    }
 
     var guid = "";
     Model.AreaObj.GetGUID(name, ref guid);
@@ -267,7 +290,9 @@ public partial class ConverterCSI
     int success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propName);
 
     if (success != 0)
+    {
       throw new ConversionException($"Failed to add new area object for area {name} at coords {x} {y} {z}");
+    }
 
     return name;
   }
@@ -279,7 +304,9 @@ public partial class ConverterCSI
 
     int success = Model.PropArea.GetNameList(ref numberNames, ref propNames);
     if (success != 0)
+    {
       throw new ConversionException("Failed to retrieve the names of all defined area properties");
+    }
 
     isExactMatch = true;
 
@@ -317,7 +344,10 @@ public partial class ConverterCSI
     if (!string.IsNullOrEmpty(area.name))
     {
       if (GetAllAreaNames(Model).Contains(area.name))
+      {
         area.name = area.id;
+      }
+
       Model.AreaObj.ChangeName(name, area.name);
       name = area.name;
     }

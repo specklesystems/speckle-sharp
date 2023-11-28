@@ -32,13 +32,17 @@ public partial class ConverterRhinoGh
   public List<RH.Point3d> PointListToNative(IList<double> arr, string units)
   {
     if (arr.Count % 3 != 0)
+    {
       throw new SpeckleException("Array malformed: length%3 != 0.");
+    }
 
     var points = new List<RH.Point3d>(arr.Count / 3);
 
     var sf = Units.GetConversionFactor(units, ModelUnits);
     for (int i = 2; i < arr.Count; i += 3)
+    {
       points.Add(new RH.Point3d(arr[i - 2] * sf, arr[i - 1] * sf, arr[i] * sf));
+    }
 
     return points;
   }
@@ -189,7 +193,9 @@ public partial class ConverterRhinoGh
 
     var myCircle = new RH.ArcCurve(circle);
     if (circ.domain != null)
+    {
       myCircle.Domain = IntervalToNative(circ.domain);
+    }
 
     return myCircle;
   }
@@ -243,7 +249,9 @@ public partial class ConverterRhinoGh
 
     var arcCurve = new RH.ArcCurve(_arc);
     if (arc.domain != null)
+    {
       arcCurve.Domain = IntervalToNative(arc.domain);
+    }
 
     return arcCurve;
   }
@@ -272,10 +280,14 @@ public partial class ConverterRhinoGh
     var myEllp = elp.ToNurbsCurve();
 
     if (e.domain != null)
+    {
       myEllp.Domain = IntervalToNative(e.domain);
+    }
 
     if (e.trimDomain != null)
+    {
       myEllp = myEllp.Trim(IntervalToNative(e.trimDomain)).ToNurbsCurve();
+    }
 
     return myEllp;
   }
@@ -316,7 +328,10 @@ public partial class ConverterRhinoGh
     {
       var l = LineToSpeckle(new RH.Line(poly[0], poly[1]), u);
       if (domain != null)
+      {
         l.domain = domain;
+      }
+
       return l;
     }
 
@@ -324,7 +339,9 @@ public partial class ConverterRhinoGh
     myPoly.closed = poly.IsClosed;
 
     if (myPoly.closed)
+    {
       myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
+    }
 
     myPoly.domain = domain;
     myPoly.bbox = BoxToSpeckle(new RH.Box(poly.BoundingBox), u);
@@ -356,7 +373,9 @@ public partial class ConverterRhinoGh
       myPoly.closed = polyline.IsClosed;
 
       if (myPoly.closed)
+      {
         myPoly.value.RemoveRange(myPoly.value.Count - 3, 3);
+      }
 
       myPoly.domain = intervalToSpeckle;
       myPoly.bbox = BoxToSpeckle(new RH.Box(poly.GetBoundingBox(true)), u);
@@ -373,11 +392,15 @@ public partial class ConverterRhinoGh
     List<RH.Point3d> points = PointListToNative(poly.value, poly.units);
 
     if (poly.closed)
+    {
       points.Add(points[0]);
+    }
 
     var myPoly = new RH.PolylineCurve(points);
     if (poly.domain != null)
+    {
       myPoly.Domain = IntervalToNative(poly.domain);
+    }
 
     return myPoly;
   }
@@ -408,6 +431,7 @@ public partial class ConverterRhinoGh
     var notes = new List<string>();
 
     foreach (var segment in p.segments)
+    {
       try
       {
         //let the converter pick the best type of curve
@@ -417,9 +441,12 @@ public partial class ConverterRhinoGh
       {
         notes.Add($"Could not append curve {segment.GetType()} to PolyCurve");
       }
+    }
 
     if (p.domain != null)
+    {
       myPolyc.Domain = IntervalToNative(p.domain);
+    }
 
     return myPolyc;
   }
@@ -466,7 +493,9 @@ public partial class ConverterRhinoGh
     curve.TryGetPlane(out pln, tolerance);
 
     if (curve is RH.PolyCurve polyCurve)
+    {
       return PolycurveToSpeckle(polyCurve, u);
+    }
 
     if (curve.IsCircle(tolerance) && curve.IsClosed)
     {
@@ -561,19 +590,29 @@ public partial class ConverterRhinoGh
 
     var nurbsCurve = RH.NurbsCurve.Create(false, curve.degree, ptsList);
     if (nurbsCurve == null)
+    {
       return null;
+    }
 
     for (int j = 0; j < nurbsCurve.Points.Count; j++)
+    {
       nurbsCurve.Points.SetPoint(j, ptsList[j], curve.weights[j]);
+    }
 
     // check knot multiplicity to match Rhino's standard of (# control points + degree - 1)
     // skip extra knots at start & end if knot multiplicity is (# control points + degree + 1)
     int extraKnots = curve.knots.Count - nurbsCurve.Knots.Count;
     for (int j = 0; j < nurbsCurve.Knots.Count; j++)
+    {
       if (extraKnots == 2)
+      {
         nurbsCurve.Knots[j] = curve.knots[j + 1];
+      }
       else
+      {
         nurbsCurve.Knots[j] = curve.knots[j];
+      }
+    }
 
     nurbsCurve.Domain = IntervalToNative(curve.domain ?? new Interval(0, 1));
     return nurbsCurve;
@@ -660,7 +699,11 @@ public partial class ConverterRhinoGh
 
       var Faces = mesh.Faces.SelectMany(face =>
       {
-        if (face.VertexCount == 4) return new[] { 4, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        if (face.VertexCount == 4)
+        {
+          return new[] { 4, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)), subDVertices.IndexOf(face.VertexAt(3)) };
+        }
+
         return new[] { 3, subDVertices.IndexOf(face.VertexAt(0)), subDVertices.IndexOf(face.VertexAt(1)), subDVertices.IndexOf(face.VertexAt(2)) };
       }).ToList();
 
@@ -692,7 +735,9 @@ public partial class ConverterRhinoGh
     {
       int n = mesh.faces[i];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4
+      }
 
       if (n == 3)
       {
@@ -763,17 +808,23 @@ public partial class ConverterRhinoGh
     double scaleFactor = ScaleToNative(1, pointcloud.units);
 
     for (int i = 0; i < numPoints; i++)
+    {
       rhPoints[i] = new RH.Point3d(
         sPoints[3 * i] * scaleFactor,
         sPoints[3 * i + 1] * scaleFactor,
         sPoints[3 * i + 2] * scaleFactor
       );
+    }
 
     var _pointcloud = new RH.PointCloud(rhPoints);
 
     if (pointcloud.colors.Count == rhPoints.Length)
+    {
       for (int i = 0; i < rhPoints.Length; i++)
+      {
         _pointcloud[i].Color = Color.FromArgb(pointcloud.colors[i]);
+      }
+    }
 
     return _pointcloud;
   }
@@ -793,8 +844,12 @@ public partial class ConverterRhinoGh
     // normals
     var normals = specklePointcloud["normals"] as List<Vector>;
     if (normals != null && normals.Count == pointcloud.Count)
+    {
       for (int i = 0; i < pointcloud.Count; i++)
+      {
         pointcloud[i].Normal = VectorToNative(normals[i]);
+      }
+    }
 
     return pointcloud;
   }
@@ -812,13 +867,17 @@ public partial class ConverterRhinoGh
     brep.Repair(tol);
 
     if (PreprocessGeometry)
+    {
       brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
+    }
 
     // get display mesh and attach render material to it if it exists
     var displayMesh = previewMesh ?? GetBrepDisplayMesh(brep);
     var displayValue = MeshToSpeckle(displayMesh, u);
     if (displayValue != null && mat != null)
+    {
       displayValue["renderMaterial"] = mat;
+    }
 
     var spcklBrep = new Brep(displayValue: displayValue, provenance: RhinoAppName, units: u);
 
@@ -961,9 +1020,13 @@ public partial class ConverterRhinoGh
           edge.Domain == null
           || edge.Domain.start == edge.Curve.domain.start && edge.Domain.end == edge.Curve.domain.end
         )
+        {
           newBrep.Edges.Add(edge.Curve3dIndex);
+        }
         else
+        {
           newBrep.Edges.Add(edge.StartIndex, edge.EndIndex, edge.Curve3dIndex, IntervalToNative(edge.Domain), tol);
+        }
       });
       brep.Faces.ForEach(face =>
       {
@@ -981,21 +1044,27 @@ public partial class ConverterRhinoGh
           {
             RH.BrepTrim rhTrim;
             if (trim.EdgeIndex != -1)
+            {
               rhTrim = newBrep.Trims.Add(
                 newBrep.Edges[trim.EdgeIndex],
                 trim.IsReversed,
                 newBrep.Loops[trim.LoopIndex],
                 trim.CurveIndex
               );
+            }
             else if (trim.TrimType == BrepTrimType.Singular)
+            {
               rhTrim = newBrep.Trims.AddSingularTrim(
                 newBrep.Vertices[trim.EndIndex],
                 newBrep.Loops[trim.LoopIndex],
                 (RH.IsoStatus)trim.IsoStatus,
                 trim.CurveIndex
               );
+            }
             else
+            {
               rhTrim = newBrep.Trims.Add(trim.IsReversed, newBrep.Loops[trim.LoopIndex], trim.CurveIndex);
+            }
 
             rhTrim.IsoStatus = (RH.IsoStatus)trim.IsoStatus;
             rhTrim.TrimType = (RH.BrepTrimType)trim.TrimType;
@@ -1020,13 +1089,17 @@ public partial class ConverterRhinoGh
     RH.Curve outerProfile = CurveToNative((Curve)extrusion.profile);
     RH.Curve innerProfile = null;
     if (extrusion.profiles.Count == 2)
+    {
       innerProfile = CurveToNative((Curve)extrusion.profiles[1]);
+    }
 
     try
     {
       var IsClosed = extrusion.profile.GetType().GetProperty("IsClosed").GetValue(extrusion.profile, null) as bool?;
       if (IsClosed != true)
+      {
         outerProfile.Reverse();
+      }
     }
     catch { }
 
@@ -1036,7 +1109,9 @@ public partial class ConverterRhinoGh
       (bool)extrusion.capped
     );
     if (innerProfile != null)
+    {
       myExtrusion.AddInnerProfile(innerProfile);
+    }
 
     return myExtrusion;
   }
@@ -1046,29 +1121,45 @@ public partial class ConverterRhinoGh
   public bool CurveSegments(List<RH.Curve> L, RH.Curve crv, bool recursive)
   {
     if (crv == null)
+    {
       return false;
+    }
 
     RH.PolyCurve polycurve = crv as RH.PolyCurve;
 
     if (polycurve != null)
     {
       if (recursive)
+      {
         polycurve.RemoveNesting();
+      }
 
       RH.Curve[] segments = polycurve.Explode();
 
       if (segments == null)
+      {
         return false;
+      }
 
       if (segments.Length == 0)
+      {
         return false;
+      }
 
       if (recursive)
+      {
         foreach (RH.Curve S in segments)
+        {
           CurveSegments(L, S, recursive);
+        }
+      }
       else
+      {
         foreach (RH.Curve S in segments)
+        {
           L.Add(S.DuplicateShallow() as RH.Curve);
+        }
+      }
 
       return true;
     }
@@ -1076,7 +1167,9 @@ public partial class ConverterRhinoGh
     //Nothing else worked, lets assume it's a nurbs curve and go from there...
     var nurbs = crv.ToNurbsCurve();
     if (nurbs == null)
+    {
       return false;
+    }
 
     double t0 = nurbs.Domain.Min;
     double t1 = nurbs.Domain.Max;
@@ -1087,7 +1180,9 @@ public partial class ConverterRhinoGh
     do
     {
       if (!nurbs.GetNextDiscontinuity(RH.Continuity.C1_locus_continuous, t0, t1, out t))
+      {
         break;
+      }
 
       var trim = new RH.Interval(t0, t);
       if (trim.Length < 1e-10)
@@ -1099,13 +1194,17 @@ public partial class ConverterRhinoGh
       var M = nurbs.DuplicateCurve();
       M = M.Trim(trim);
       if (M.IsValid)
+      {
         L.Add(M);
+      }
 
       t0 = t;
     } while (true);
 
     if (L.Count == LN)
+    {
       L.Add(nurbs);
+    }
 
     return true;
   }
@@ -1143,10 +1242,15 @@ public partial class ConverterRhinoGh
     // Set knot vectors
     var correctUKnots = GetCorrectKnots(surface.knotsU, surface.countU, surface.degreeU);
     for (int i = 0; i < correctUKnots.Count; i++)
+    {
       result.KnotsU[i] = correctUKnots[i];
+    }
+
     var correctVKnots = GetCorrectKnots(surface.knotsV, surface.countV, surface.degreeV);
     for (int i = 0; i < correctVKnots.Count; i++)
+    {
       result.KnotsV[i] = correctVKnots[i];
+    }
 
     // Set control points
     for (var i = 0; i < points.Count; i++)

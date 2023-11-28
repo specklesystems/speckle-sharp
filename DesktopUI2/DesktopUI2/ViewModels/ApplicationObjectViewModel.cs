@@ -33,7 +33,9 @@ public class ApplicationObjectViewModel : ReactiveObject
     SearchText = $"{Id} {Name} {Status} {logString} {createdIdsString}";
 
     if (ApplicationIds.Count == 0)
+    {
       PreviewEnabled = false;
+    }
 
     switch (item.Status)
     {
@@ -93,8 +95,13 @@ public class ApplicationObjectViewModel : ReactiveObject
     if (PreviewOn)
     {
       foreach (var applicationId in ApplicationIds)
+      {
         if (!_Progress.SelectedReportObjects.Contains(applicationId))
+        {
           _Progress.SelectedReportObjects.Add(applicationId);
+        }
+      }
+
       Bindings.SelectClientObjects(_Progress.SelectedReportObjects);
       Analytics.TrackEvent(
         Analytics.Events.DUIAction,
@@ -104,7 +111,10 @@ public class ApplicationObjectViewModel : ReactiveObject
     else
     {
       foreach (var applicationId in ApplicationIds)
+      {
         _Progress.SelectedReportObjects.Remove(applicationId);
+      }
+
       Bindings.SelectClientObjects(ApplicationIds, true);
     }
   }

@@ -37,7 +37,9 @@ public class StreamSelectorViewModel : ReactiveObject
   private async Task GetStreams()
   {
     if (!Accounts.Any())
+    {
       return;
+    }
 
     ShowProgress = true;
 
@@ -50,7 +52,9 @@ public class StreamSelectorViewModel : ReactiveObject
     foreach (var account in Accounts)
     {
       if (StreamGetCancelTokenSource.IsCancellationRequested)
+      {
         return;
+      }
 
       try
       {
@@ -58,15 +62,21 @@ public class StreamSelectorViewModel : ReactiveObject
 
         //NO SEARCH
         if (string.IsNullOrEmpty(SearchQuery))
+        {
           result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
+        }
         //SEARCH
         else
+        {
           result = await account.Client
             .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
             .ConfigureAwait(true);
+        }
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
+        {
           return;
+        }
 
         streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
       }
@@ -78,7 +88,9 @@ public class StreamSelectorViewModel : ReactiveObject
       }
     }
     if (StreamGetCancelTokenSource.IsCancellationRequested)
+    {
       return;
+    }
 
     try
     {
@@ -103,7 +115,9 @@ public class StreamSelectorViewModel : ReactiveObject
       .ToList();
 
     if (Branches.Any())
+    {
       SelectedBranch = Branches.FirstOrDefault();
+    }
   }
 
   private void ClearSearchCommand()
@@ -159,9 +173,14 @@ public class StreamSelectorViewModel : ReactiveObject
     {
       this.RaiseAndSetIfChanged(ref _searchQuery, value);
       if (_noSearch)
+      {
         return;
+      }
+
       if (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2)
+      {
         return;
+      }
 
       streamSearchDebouncer();
     }

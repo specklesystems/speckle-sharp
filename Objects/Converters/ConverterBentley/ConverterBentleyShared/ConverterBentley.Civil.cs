@@ -75,13 +75,19 @@ public partial class ConverterBentley
     }
 
     if (alignment.Name != null)
+    {
       _alignment.name = alignment.Name;
+    }
 
     if (alignment.FeatureName is string featureName)
+    {
       _alignment[nameof(featureName)] = alignment.FeatureName;
+    }
 
     if (alignment.FeatureDefinition?.Name is string featureDefinitionName)
+    {
       _alignment[nameof(featureDefinitionName)] = featureDefinitionName;
+    }
 
     var stationing = alignment.Stationing;
     if (stationing != null)
@@ -150,7 +156,9 @@ public partial class ConverterBentley
     con.StartTransientMode();
     AlignmentEdit alignmentEdit = (CifGM.Alignment.CreateFromElement(con, nativeCurve)) as AlignmentEdit;
     if (alignmentEdit.DomainObject == null)
+    {
       return null;
+    }
 
     alignmentEdit.AddStationing(0, alignment.startStation, true);
 
@@ -212,10 +220,14 @@ public partial class ConverterBentley
     };
 
     if (profile.FeatureName is string featureName)
+    {
       outProfile[nameof(featureName)] = featureName;
+    }
 
     if (profile.FeatureDefinition?.Name is string featureDefinitionName)
+    {
       outProfile[nameof(featureDefinitionName)] = featureDefinitionName;
+    }
 
     return outProfile;
   }
@@ -238,7 +250,9 @@ public partial class ConverterBentley
     var surfaces = corridor.CorridorSurfaces;
 
     if (corridor.Name != null)
+    {
       _corridor["name"] = corridor.Name;
+    }
 
     _corridor["units"] = ModelUnits;
 

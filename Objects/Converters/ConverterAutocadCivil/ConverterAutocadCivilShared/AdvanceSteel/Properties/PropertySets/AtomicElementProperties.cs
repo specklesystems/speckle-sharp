@@ -128,7 +128,9 @@ public class AtomicElementProperties : ASBaseProperties<AtomicElement>, IASPrope
     List<ConnectionHoleFeature> holes = new();
 
     if (pAtomicElement == null)
+    {
       return holes;
+    }
 
     var features = pAtomicElement.GetFeatures(true);
 
