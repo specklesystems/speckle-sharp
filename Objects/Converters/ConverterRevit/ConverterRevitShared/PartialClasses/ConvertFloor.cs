@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
 using OO = Objects.Other;
-#if !REVIT2020
+#if !REVIT2020 && !REVIT2021
 using Speckle.Core.Logging;
 #endif
 
