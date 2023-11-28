@@ -25,8 +25,7 @@
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-
-
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     
     <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
