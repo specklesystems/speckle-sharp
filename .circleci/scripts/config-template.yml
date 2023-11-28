@@ -78,6 +78,7 @@ commands:
           name: << parameters.title >>
           command: $HOME/.dotnet/dotnet test << parameters.project >>
             -c Release
+            -p:IsDesktopBuild=false
             --logger:"junit;LogFileName={assembly}.results.xml"
             --results-directory=TestResults
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
