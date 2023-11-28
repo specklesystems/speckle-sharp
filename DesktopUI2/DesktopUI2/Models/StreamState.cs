@@ -43,7 +43,9 @@ public class StreamState
       {
         var account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault(x => x.userInfo.id == UserId);
         if (account != null)
+        {
           _client = new Client(account);
+        }
       }
       return _client;
     }

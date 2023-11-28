@@ -1,4 +1,4 @@
-﻿using Speckle.ConnectorTeklaStructures.UI;
+using Speckle.ConnectorTeklaStructures.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -8,54 +8,53 @@ using System.Linq;
 using System.Text;
 using Tekla.Structures.Model;
 
-namespace Speckle.ConnectorTeklaStructures.Util
+namespace Speckle.ConnectorTeklaStructures.Util;
+
+class ConnectorTeklaStructuresUtils
 {
-  class ConnectorTeklaStructuresUtils
-  {
 #if TeklaStructures2020
-    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
+  public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
 #elif TeklaStructures2021
-    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
+  public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
 #elif TeklaStructures2022
-    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2022);
+  public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2022);
 #elif TeklaStructures2023
-    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2023);
+  public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2023);
 #endif
 
-    public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
+  public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
 
-    public List<SpeckleException> ConversionErrors { get; set; }
+  public List<SpeckleException> ConversionErrors { get; set; }
 
-    private static Dictionary<string, ModelObject.ModelObjectEnum> _categories { get; set; }
+  private static Dictionary<string, ModelObject.ModelObjectEnum> _categories { get; set; }
 
-    public static Dictionary<string, ModelObject.ModelObjectEnum> GetCategories(Model model)
+  public static Dictionary<string, ModelObject.ModelObjectEnum> GetCategories(Model model)
+  {
+    if (_categories == null)
     {
-      if (_categories == null)
+      _categories = new Dictionary<string, ModelObject.ModelObjectEnum>();
+      foreach (var bic in SupportedBuiltInCategories)
       {
-        _categories = new Dictionary<string, ModelObject.ModelObjectEnum>();
-        foreach (var bic in SupportedBuiltInCategories)
+        var category = model.GetModelObjectSelector().GetAllObjectsWithType(bic);
+        if (category == null)
         {
-          var category = model.GetModelObjectSelector().GetAllObjectsWithType(bic);
-          if (category == null)
-            continue;
-          _categories.Add(bic.ToString(), bic);
+          continue;
         }
+
+        _categories.Add(bic.ToString(), bic);
       }
-      return _categories;
     }
-
-
-    #region Get List Names
-
-    public static List<string> GetCategoryNames(Model model)
-    {
-      return GetCategories(model).Keys.OrderBy(x => x).ToList();
-    }
-    #endregion
-
-    private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>
-    {
-      ModelObject.ModelObjectEnum.BEAM
-    };
+    return _categories;
   }
+
+  #region Get List Names
+
+  public static List<string> GetCategoryNames(Model model)
+  {
+    return GetCategories(model).Keys.OrderBy(x => x).ToList();
+  }
+  #endregion
+
+  private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories =
+    new() { ModelObject.ModelObjectEnum.BEAM };
 }

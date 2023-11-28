@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -65,7 +65,9 @@ public class Element
   private string GetPseudoId(ModelItem modelItem)
   {
     if (PseudoId != null)
+    {
       return PseudoId;
+    }
 
     var arrayData = ((Array)ComApiBridge.ToInwOaPath(modelItem).ArrayData).ToArray<int>();
     PseudoId =
@@ -82,10 +84,14 @@ public class Element
   private ModelItem Resolve()
   {
     if (_modelItem != null)
+    {
       return _modelItem;
+    }
 
     if (PseudoId == Constants.RootNodePseudoId)
+    {
       return Application.ActiveDocument.Models.RootItems.First;
+    }
 
     if (PseudoId != null)
     {
@@ -122,7 +128,9 @@ public class Element
       .Select(x =>
       {
         if (int.TryParse(x, out var value))
+        {
           return value;
+        }
 
         throw new ArgumentException("malformed path pseudoId");
       })
@@ -210,14 +218,18 @@ public class Element
       var type = baseNode?.GetType().Name;
 
       if (baseNode == null)
+      {
         continue;
+      }
 
       // Geometry Nodes can add all the properties to the FirstObject classification - this will help with the selection logic
       if (
         streamState.Settings.Find(x => x.Slug == "coalesce-data") is CheckBoxSetting { IsChecked: true }
         && type == "GeometryNode"
       )
+      {
         AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
+      }
 
       string[] parts = pseudoId.Split('-');
       string parentKey = string.Join("-", parts.Take(parts.Length - 1));
@@ -225,7 +237,9 @@ public class Element
       lookupDictionary.Add(pseudoId, baseNode);
 
       if (!lookupDictionary.ContainsKey(parentKey))
+      {
         potentialRootNodes.Add(pseudoId, baseNode);
+      }
     }
 
     // Second pass: Attach child nodes to their parents, and confirm root nodes
@@ -238,12 +252,17 @@ public class Element
       string parentKey = string.Join("-", parts.Take(parts.Length - 1));
 
       if (!lookupDictionary.TryGetValue(parentKey, out Base value1))
+      {
         continue;
+      }
+
       if (value1 is Collection parent)
       {
         parent.elements ??= new List<Base>();
         if (value != null)
+        {
           parent.elements.Add(value);
+        }
       }
 
       // This node has a parent, so it's not a root node
@@ -253,7 +272,9 @@ public class Element
     List<Base> rootNodes = potentialRootNodes.Values.ToList();
 
     foreach (var rootNode in rootNodes.Where(rootNode => rootNode != null))
+    {
       PruneEmptyCollections(rootNode);
+    }
 
     rootNodes.RemoveAll(node => node is Collection { elements: null });
 
@@ -369,9 +390,14 @@ public class Element
   private static void PruneEmptyCollections(IDynamicMetaObjectProvider node)
   {
     if (node is not Collection collection)
+    {
       return;
+    }
+
     if (collection.elements == null)
+    {
       return;
+    }
 
     for (int i = collection.elements.Count - 1; i >= 0; i--)
     {
@@ -381,10 +407,14 @@ public class Element
         collection.elements[i] is Collection childCollection
         && (childCollection.elements == null || childCollection.elements.Count == 0)
       )
+      {
         collection.elements.RemoveAt(i);
+      }
     }
 
     if (collection.elements.Count == 0)
+    {
       collection.elements = null;
+    }
   }
 }

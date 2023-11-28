@@ -54,7 +54,6 @@ public class TraversalTests
     //Flatten
     int counter = 0;
     var ret = rootObject.Flatten(_ => ++counter >= flattenDepth).ToList();
-    
 
     //Test
     Assert.That(ret, Has.Count.EqualTo(Math.Min(flattenDepth, nestDepth)));
@@ -94,7 +93,6 @@ public class TraversalTests
 
     //Flatten
     var ret = objectA.Flatten().ToList();
-    
 
     //Test
     Assert.That(ret, Is.Unique);

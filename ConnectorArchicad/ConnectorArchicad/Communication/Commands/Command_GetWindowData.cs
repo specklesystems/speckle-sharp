@@ -4,46 +4,45 @@ using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
 
-namespace Archicad.Communication.Commands
+namespace Archicad.Communication.Commands;
+
+sealed internal class GetWindowData : ICommand<IEnumerable<ArchicadWindow>>
 {
-  sealed internal class GetWindowData : ICommand<IEnumerable<ArchicadWindow>>
+  [JsonObject(MemberSerialization.OptIn)]
+  public sealed class Parameters
   {
-    [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Parameters
-    {
-      [JsonProperty("applicationIds")]
-      private IEnumerable<string> ApplicationIds { get; }
-
-      public Parameters(IEnumerable<string> applicationIds)
-      {
-        ApplicationIds = applicationIds;
-      }
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    private sealed class Result
-    {
-      [JsonProperty("windows")]
-      public IEnumerable<ArchicadWindow> Datas { get; private set; }
-    }
-
+    [JsonProperty("applicationIds")]
     private IEnumerable<string> ApplicationIds { get; }
 
-    public GetWindowData(IEnumerable<string> applicationIds)
+    public Parameters(IEnumerable<string> applicationIds)
     {
       ApplicationIds = applicationIds;
     }
+  }
 
-    public async Task<IEnumerable<ArchicadWindow>> Execute()
-    {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
-        "GetWindowData",
-        new Parameters(ApplicationIds)
-      );
-      //foreach (var subelement in result.Datas)
-      //subelement.units = Units.Meters;
+  [JsonObject(MemberSerialization.OptIn)]
+  private sealed class Result
+  {
+    [JsonProperty("windows")]
+    public IEnumerable<ArchicadWindow> Datas { get; private set; }
+  }
 
-      return result.Datas;
-    }
+  private IEnumerable<string> ApplicationIds { get; }
+
+  public GetWindowData(IEnumerable<string> applicationIds)
+  {
+    ApplicationIds = applicationIds;
+  }
+
+  public async Task<IEnumerable<ArchicadWindow>> Execute()
+  {
+    Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+      "GetWindowData",
+      new Parameters(ApplicationIds)
+    );
+    //foreach (var subelement in result.Datas)
+    //subelement.units = Units.Meters;
+
+    return result.Datas;
   }
 }

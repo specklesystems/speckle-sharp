@@ -15,8 +15,5 @@ public class AsteelGrating : Base, IAsteelObject
   public Base asteelProperties { get; set; }
 
   //[SchemaInfo("AsteelGrating", "Creates a Advance Steel grating.", "Advance Steel", "Structure")]
-  public AsteelGrating()
-  {
-
-  }
+  public AsteelGrating() { }
 }

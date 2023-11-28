@@ -2,37 +2,36 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
 
-namespace Archicad.Communication.Commands
+namespace Archicad.Communication.Commands;
+
+internal sealed class GetShellData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
-  internal sealed class GetShellData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
+  [JsonObject(MemberSerialization.OptIn)]
+  public sealed class Parameters
   {
-    [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Parameters
-    {
-      [JsonProperty("applicationIds")]
-      private IEnumerable<string> ApplicationIds { get; }
-
-      public Parameters(IEnumerable<string> applicationIds)
-      {
-        ApplicationIds = applicationIds;
-      }
-    }
-
+    [JsonProperty("applicationIds")]
     private IEnumerable<string> ApplicationIds { get; }
 
-    public GetShellData(IEnumerable<string> applicationIds)
+    public Parameters(IEnumerable<string> applicationIds)
     {
       ApplicationIds = applicationIds;
     }
+  }
 
-    public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
-    {
-      dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
-        "GetShellData",
-        new Parameters(ApplicationIds)
-      );
+  private IEnumerable<string> ApplicationIds { get; }
 
-      return (Speckle.Newtonsoft.Json.Linq.JArray)result["shells"];
-    }
+  public GetShellData(IEnumerable<string> applicationIds)
+  {
+    ApplicationIds = applicationIds;
+  }
+
+  public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
+  {
+    dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
+      "GetShellData",
+      new Parameters(ApplicationIds)
+    );
+
+    return (Speckle.Newtonsoft.Json.Linq.JArray)result["shells"];
   }
 }

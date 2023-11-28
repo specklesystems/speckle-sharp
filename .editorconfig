@@ -81,7 +81,7 @@ csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
 
 # Prefer method-like constructs to have a block body
-csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_methods = true:suggestion
 csharp_style_expression_bodied_constructors = false:suggestion
 csharp_style_expression_bodied_operators = true:suggestion
 
@@ -212,6 +212,7 @@ dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0058.severity = suggestion # Remove unnecessary expression value: Subjective
+dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance

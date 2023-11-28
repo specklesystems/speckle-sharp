@@ -134,16 +134,24 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     foreach (var instruction in instructions)
     {
       if (instruction.ParentApplicationId is null)
+      {
         continue;
+      }
 
       Base? parent;
       if (instruction.ParentApplicationId == Root)
+      {
         parent = rootCommitObject;
+      }
       else
+      {
         converted.TryGetValue(instruction.ParentApplicationId, out parent);
+      }
 
       if (parent is null)
+      {
         continue;
+      }
 
       try
       {
@@ -166,6 +174,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     NestUnderProperty(parent, child, Elements);
   }
+
   protected static void NestUnderProperty(Base parent, Base child, string property)
   {
     if (parent.GetDetachedProp(property) is not IList elements)

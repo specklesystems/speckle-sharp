@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -54,7 +54,10 @@ public class StreamCreateComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrap
   public override bool Write(GH_IWriter writer)
   {
     if (stream != null)
+    {
       writer.SetString("stream", $"{stream.StreamId} {stream.ServerUrl} {stream.UserId}");
+    }
+
     return base.Write(writer);
   }
 
@@ -66,7 +69,10 @@ public class StreamCreateComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrap
       {
         Account account = null;
         if (!DA.GetData(0, ref account))
+        {
           return;
+        }
+
         if (account == null)
         {
           // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.

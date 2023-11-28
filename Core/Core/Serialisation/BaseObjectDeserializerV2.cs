@@ -53,9 +53,11 @@ public sealed class BaseObjectDeserializerV2
   public Base Deserialize(string rootObjectJson)
   {
     if (_busy)
+    {
       throw new InvalidOperationException(
         "A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances"
       );
+    }
 
     try
     {
@@ -76,7 +78,9 @@ public sealed class BaseObjectDeserializerV2
         stopwatch.Start();
         object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
         lock (_deserializedObjects)
+        {
           _deserializedObjects[objId] = deserializedOrPromise;
+        }
       }
 
       object ret = DeserializeTransportObject(rootObjectJson);
@@ -84,11 +88,15 @@ public sealed class BaseObjectDeserializerV2
       stopwatch.Stop();
       Elapsed += stopwatch.Elapsed;
       if (ret is Base b)
+      {
         return b;
+      }
       else
+      {
         throw new Exception(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
+      }
     }
     finally
     {
@@ -107,7 +115,10 @@ public sealed class BaseObjectDeserializerV2
       JObject doc1 = JObject.Parse(rootObjectJson);
 
       if (!doc1.ContainsKey("__closure"))
+      {
         return new List<(string, int)>();
+      }
+
       foreach (JToken prop in doc1["__closure"])
       {
         string childId = ((JProperty)prop).Name;
@@ -127,7 +138,9 @@ public sealed class BaseObjectDeserializerV2
     // Try background work
     Task<object?> bgResult = _workerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
     if (bgResult != null)
+    {
       return bgResult;
+    }
 
     // SyncS
     return DeserializeTransportObject(objectJson);
@@ -136,7 +149,9 @@ public sealed class BaseObjectDeserializerV2
   public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
+    {
       throw new ArgumentNullException(nameof(objectJson), $"Cannot deserialize {nameof(objectJson)}, value was null");
+    }
     // Apparently this automatically parses DateTimes in strings if it matches the format:
     // JObject doc1 = JObject.Parse(objectJson);
 
@@ -151,7 +166,10 @@ public sealed class BaseObjectDeserializerV2
     object? converted = ConvertJsonElement(doc1);
 
     lock (_callbackLock)
+    {
       OnProgressAction?.Invoke("DS", 1);
+    }
+
     return converted;
   }
 
@@ -204,10 +222,16 @@ public sealed class BaseObjectDeserializerV2
 
         List<object?> retList = new(retListCount);
         foreach (object jsonObj in jsonList)
+        {
           if (jsonObj is DataChunk chunk)
+          {
             retList.AddRange(chunk.data);
+          }
           else
+          {
             retList.Add(jsonObj);
+          }
+        }
 
         return retList;
       case JTokenType.Object:
@@ -218,12 +242,17 @@ public sealed class BaseObjectDeserializerV2
         {
           JProperty prop = (JProperty)propJToken;
           if (prop.Name == "__closure")
+          {
             continue;
+          }
+
           dict[prop.Name] = ConvertJsonElement(prop.Value);
         }
 
         if (!dict.ContainsKey(TypeDiscriminator))
+        {
           return dict;
+        }
 
         if (
           dict[TypeDiscriminator] as string == "reference" && dict.TryGetValue("referencedId", out object? referencedId)
@@ -232,8 +261,13 @@ public sealed class BaseObjectDeserializerV2
           var objId = (string)referencedId!;
           object deserialized = null;
           lock (_deserializedObjects)
+          {
             if (_deserializedObjects.TryGetValue(objId, out object? o))
+            {
               deserialized = o;
+            }
+          }
+
           if (deserialized is Task<object> task)
           {
             try
@@ -245,20 +279,30 @@ public sealed class BaseObjectDeserializerV2
               throw new Exception("Failed to deserialize reference object", ex);
             }
             lock (_deserializedObjects)
+            {
               _deserializedObjects[objId] = deserialized;
+            }
           }
 
           if (deserialized != null)
+          {
             return deserialized;
+          }
 
           // This reference was not already deserialized. Do it now in sync mode
           string objectJson = ReadTransport.GetObject(objId);
           if (objectJson is null)
+          {
             throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
+          }
+
           deserialized = DeserializeTransportObject(objectJson);
 
           lock (_deserializedObjects)
+          {
             _deserializedObjects[objId] = deserialized;
+          }
+
           return deserialized;
         }
 
@@ -291,16 +335,22 @@ public sealed class BaseObjectDeserializerV2
           // Check for JsonProperty(NullValueHandling = NullValueHandling.Ignore) attribute
           JsonPropertyAttribute attr = property.GetCustomAttribute<JsonPropertyAttribute>(true);
           if (attr != null && attr.NullValueHandling == NullValueHandling.Ignore)
+          {
             continue;
+          }
         }
 
         Type targetValueType = property.PropertyType;
         bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out object? convertedValue);
         if (conversionOk)
+        {
           property.SetValue(baseObj, convertedValue);
+        }
         else
+        {
           // Cannot convert the value in the json to the static property type
           throw new Exception($"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}");
+        }
       }
       else
       {
@@ -310,10 +360,14 @@ public sealed class BaseObjectDeserializerV2
     }
 
     if (baseObj is Blob bb && BlobStorageFolder != null)
+    {
       bb.filePath = bb.getLocalDestinationPath(BlobStorageFolder);
+    }
 
     foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
+    {
       onDeserialized.Invoke(baseObj, new object?[] { null });
+    }
 
     return baseObj;
   }

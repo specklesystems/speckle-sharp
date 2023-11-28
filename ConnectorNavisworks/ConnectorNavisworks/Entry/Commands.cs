@@ -1,4 +1,4 @@
-﻿namespace Speckle.ConnectorNavisworks.Entry;
+namespace Speckle.ConnectorNavisworks.Entry;
 
 public abstract class LaunchSpeckleConnector
 {

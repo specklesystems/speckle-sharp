@@ -8,66 +8,75 @@ using Speckle.ConnectorAutocadCivil.Entry;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
-namespace Speckle.ConnectorAutocadCivil.UI
+namespace Speckle.ConnectorAutocadCivil.UI;
+
+public partial class ConnectorBindingsAutocad : ConnectorBindings
 {
-  public partial class ConnectorBindingsAutocad : ConnectorBindings
+  public void RegisterAppEvents()
   {
-    public void RegisterAppEvents()
-    {
-      //// GLOBAL EVENT HANDLERS
-      Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
-      Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
+    //// GLOBAL EVENT HANDLERS
+    Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
+    Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
 
-      var layers = Application.UIBindings.Collections.Layers;
-      layers.CollectionChanged += Application_LayerChanged;
+    var layers = Application.UIBindings.Collections.Layers;
+    layers.CollectionChanged += Application_LayerChanged;
+  }
+
+  public void Application_LayerChanged(object sender, EventArgs e)
+  {
+    if (UpdateSelectedStream != null)
+    {
+      UpdateSelectedStream();
     }
+  }
 
-    public void Application_LayerChanged(object sender, EventArgs e)
+  //checks whether to refresh the stream list in case the user changes active view and selects a different document
+  private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
+  {
+    try
     {
-      if (UpdateSelectedStream != null)
-        UpdateSelectedStream();
-    }
-
-    //checks whether to refresh the stream list in case the user changes active view and selects a different document
-    private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
-    {
-      try
+      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
       {
-        if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
-          return;
-
-        var streams = GetStreamsInFile();
-        UpdateSavedStreams(streams);
-
-        MainViewModel.GoHome();
+        return;
       }
-      catch { }
+
+      var streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
+
+      MainViewModel.GoHome();
     }
+    catch { }
+  }
 
-    private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
+  private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
+  {
+    try
     {
-      try
+      // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+      if (e.Document == null)
       {
-        // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
-        if (e.Document == null)
+        if (SpeckleAutocadCommand.MainWindow != null)
         {
-          if (SpeckleAutocadCommand.MainWindow != null)
-            SpeckleAutocadCommand.MainWindow.Hide();
-
-          MainViewModel.GoHome();
-          return;
+          SpeckleAutocadCommand.MainWindow.Hide();
         }
 
-        var streams = GetStreamsInFile();
-        if (streams.Count > 0)
-          SpeckleAutocadCommand.CreateOrFocusSpeckle();
-
-        if (UpdateSavedStreams != null)
-          UpdateSavedStreams(streams);
-
         MainViewModel.GoHome();
+        return;
       }
-      catch { }
+
+      var streams = GetStreamsInFile();
+      if (streams.Count > 0)
+      {
+        SpeckleAutocadCommand.CreateOrFocusSpeckle();
+      }
+
+      if (UpdateSavedStreams != null)
+      {
+        UpdateSavedStreams(streams);
+      }
+
+      MainViewModel.GoHome();
     }
+    catch { }
   }
 }

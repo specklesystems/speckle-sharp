@@ -74,9 +74,12 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage rootHttpResponse = null;
     while (ShouldRetry(rootHttpResponse))
+    {
       rootHttpResponse = await _client
         .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
         .ConfigureAwait(false);
+    }
+
     rootHttpResponse.EnsureSuccessStatusCode();
 
     string rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -90,7 +93,10 @@ public sealed class ServerApi : IDisposable, IServerApi
   )
   {
     if (objectIds.Count == 0)
+    {
       return;
+    }
+
     if (objectIds.Count < BatchSizeGetObjects)
     {
       await DownloadObjectsImpl(streamId, objectIds, onObjectCallback).ConfigureAwait(false);
@@ -113,7 +119,9 @@ public sealed class ServerApi : IDisposable, IServerApi
   public async Task<Dictionary<string, bool>> HasObjects(string streamId, IReadOnlyList<string> objectIds)
   {
     if (objectIds.Count <= BatchSizeHasObjects)
+    {
       return await HasObjectsImpl(streamId, objectIds).ConfigureAwait(false);
+    }
 
     Dictionary<string, bool> ret = new();
     List<string> crtBatch = new(BatchSizeHasObjects);
@@ -124,7 +132,10 @@ public sealed class ServerApi : IDisposable, IServerApi
       {
         Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch).ConfigureAwait(false);
         foreach (KeyValuePair<string, bool> kv in batchResult)
+        {
           ret[kv.Key] = kv.Value;
+        }
+
         crtBatch = new List<string>(BatchSizeHasObjects);
       }
     }
@@ -132,7 +143,9 @@ public sealed class ServerApi : IDisposable, IServerApi
     {
       Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch).ConfigureAwait(false);
       foreach (KeyValuePair<string, bool> kv in batchResult)
+      {
         ret[kv.Key] = kv.Value;
+      }
     }
     return ret;
   }
@@ -140,7 +153,9 @@ public sealed class ServerApi : IDisposable, IServerApi
   public async Task UploadObjects(string streamId, IReadOnlyList<(string, string)> objects)
   {
     if (objects.Count == 0)
+    {
       return;
+    }
 
     // 1. Split into parts of MAX_MULTIPART_SIZE size (can be exceptions until a max of MAX_OBJECT_SIZE if a single obj is larger than MAX_MULTIPART_SIZE)
     List<List<(string, string)>> multipartedObjects = new();
@@ -153,10 +168,12 @@ public sealed class ServerApi : IDisposable, IServerApi
     {
       int objSize = Encoding.UTF8.GetByteCount(json);
       if (objSize > MaxObjectSize)
+      {
         throw new ArgumentException(
           $"Object {id} too large (size {objSize}, max size {MaxObjectSize}). Consider using detached/chunked properties",
           nameof(objects)
         );
+      }
 
       if (crtMultipartSize + objSize <= MaxMultipartSize)
       {
@@ -209,7 +226,9 @@ public sealed class ServerApi : IDisposable, IServerApi
   {
     CancellationToken.ThrowIfCancellationRequested();
     if (objects.Count == 0)
+    {
       return;
+    }
 
     var multipartFormDataContent = new MultipartFormDataContent();
     var streams = new List<Stream>();
@@ -235,16 +254,23 @@ public sealed class ServerApi : IDisposable, IServerApi
     {
       HttpResponseMessage response = null;
       while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
+      {
         response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
+      }
+
       response.EnsureSuccessStatusCode();
 
       foreach (var stream in streams)
+      {
         stream.Dispose();
+      }
     }
     finally
     {
       foreach (var stream in streams)
+      {
         stream.Dispose();
+      }
     }
   }
 
@@ -271,7 +297,9 @@ public sealed class ServerApi : IDisposable, IServerApi
           $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}"
         );
         using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
+        {
           await response.Content.CopyToAsync(fs).ConfigureAwait(false);
+        }
 
         response.Dispose();
         onBlobCallback();
@@ -307,9 +335,12 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage childrenHttpResponse = null;
     while (ShouldRetry(childrenHttpResponse))
+    {
       childrenHttpResponse = await _client
         .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
         .ConfigureAwait(false);
+    }
+
     childrenHttpResponse.EnsureSuccessStatusCode();
 
     Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -342,7 +373,10 @@ public sealed class ServerApi : IDisposable, IServerApi
     HttpResponseMessage response = null;
     using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
     while (ShouldRetry(response))
+    {
       response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+    }
+
     response.EnsureSuccessStatusCode();
 
     var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -350,7 +384,9 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     JObject doc = JObject.Parse(hasObjectsJson);
     foreach (KeyValuePair<string, JToken?> prop in doc)
+    {
       hasObjects[prop.Key] = (bool)prop!.Value!;
+    }
 
     // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
 
@@ -380,7 +416,10 @@ public sealed class ServerApi : IDisposable, IServerApi
       for (int i = 0; i < mpData.Count; i++)
       {
         if (i > 0)
+        {
           ctBuilder.Append(',');
+        }
+
         ctBuilder.Append(mpData[i].Item2);
       }
       ctBuilder.Append(']');
@@ -400,7 +439,10 @@ public sealed class ServerApi : IDisposable, IServerApi
     message.Content = multipart;
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
+    {
       response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
+    }
+
     response.EnsureSuccessStatusCode();
 
     // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
@@ -417,14 +459,19 @@ public sealed class ServerApi : IDisposable, IServerApi
     using StringContent stringContent = new(payload, Encoding.UTF8, "application/json");
     //TODO: can we get rid of this now we have polly?
     while (ShouldRetry(response))
+    {
       response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+    }
 
     response.EnsureSuccessStatusCode();
 
     var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
     if (parsed is null)
+    {
       throw new Exception($"Failed to deserialize successful response {response.Content}");
+    }
+
     return parsed;
   }
 
@@ -432,11 +479,20 @@ public sealed class ServerApi : IDisposable, IServerApi
   private bool ShouldRetry(HttpResponseMessage? serverResponse)
   {
     if (serverResponse == null)
+    {
       return true;
+    }
+
     if (!_retryCodes.Contains((int)serverResponse.StatusCode))
+    {
       return false;
+    }
+
     if (RetriedCount >= RetryCount)
+    {
       return false;
+    }
+
     RetriedCount += 1;
     return true;
   }

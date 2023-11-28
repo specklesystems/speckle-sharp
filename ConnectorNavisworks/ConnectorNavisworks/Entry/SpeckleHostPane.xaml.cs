@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Views;
 
@@ -30,7 +30,10 @@ public partial class SpeckleHostPane
   private static IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
   {
     if (msg != WmGetDlgCode)
+    {
       return IntPtr.Zero;
+    }
+
     handled = true;
     return new IntPtr(DlgcWantChars | DlgcWantarrows | DlgcHasSetSel);
   }

@@ -30,7 +30,9 @@ public static class BlockSelection
   private static void IsSelectionBlockedChanged(ListBoxItem item, AvaloniaPropertyChangedEventArgs e)
   {
     if (!(e.OldValue is bool oldValue) || !(e.NewValue is bool newValue) || oldValue == newValue)
+    {
       return;
+    }
 
     if (newValue)
     {

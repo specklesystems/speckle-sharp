@@ -5,31 +5,32 @@ using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using ReactiveUI;
 
-namespace ConnectorRevit.TypeMapping
-{
-  [DataContract]
-  public class RevitMappingValue : MappingValue
-  {
-    public RevitMappingValue(string inType, ISingleHostType inGuess, string inFamily = null, bool inNewType = false) : base(inType, inGuess, inNewType)
-    {
-      IncomingFamily = inFamily;
-    }
-    [DataMember]
-    public string IncomingFamily { get; set; }
+namespace ConnectorRevit.TypeMapping;
 
-    public override string IncomingTypeDisplayName
+[DataContract]
+public class RevitMappingValue : MappingValue
+{
+  public RevitMappingValue(string inType, ISingleHostType inGuess, string inFamily = null, bool inNewType = false)
+    : base(inType, inGuess, inNewType)
+  {
+    IncomingFamily = inFamily;
+  }
+
+  [DataMember]
+  public string IncomingFamily { get; set; }
+
+  public override string IncomingTypeDisplayName
+  {
+    get
     {
-      get
+      var sb = new StringBuilder();
+      if (!string.IsNullOrEmpty(IncomingFamily))
       {
-        var sb = new StringBuilder();
-        if (!string.IsNullOrEmpty(IncomingFamily))
-        {
-          sb.Append(IncomingFamily);
-          sb.Append(' ');
-        }
-        sb.Append(IncomingType);
-        return sb.ToString();
+        sb.Append(IncomingFamily);
+        sb.Append(' ');
       }
+      sb.Append(IncomingType);
+      return sb.ToString();
     }
   }
 }

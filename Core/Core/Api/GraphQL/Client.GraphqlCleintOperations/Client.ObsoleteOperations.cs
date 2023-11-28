@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -25,7 +25,10 @@ public partial class Client
   {
     var version = ServerVersion ?? await GetServerVersion(cancellationToken).ConfigureAwait(false);
     if (version < new System.Version("2.6.4"))
+    {
       throw new SpeckleException("Stream invites are only supported as of Speckle Server v2.6.4.");
+    }
+
     return true;
   }
   #endregion

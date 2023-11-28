@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using ConnectorGrasshopper.Properties;
@@ -15,11 +15,16 @@ public class MemoryTransportComponent : GH_SpeckleComponent
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -67,7 +72,9 @@ public class MemoryTransportComponent : GH_SpeckleComponent
     }
 
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun();
+    }
 
     string name = null;
     DA.GetData(0, ref name);

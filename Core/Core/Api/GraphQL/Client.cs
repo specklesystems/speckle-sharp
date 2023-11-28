@@ -31,7 +31,9 @@ public partial class Client : IDisposable
   public Client(Account account)
   {
     if (account == null)
+    {
       throw new SpeckleException("Provided account is null.");
+    }
 
     Account = account;
 
@@ -63,11 +65,15 @@ public partial class Client : IDisposable
     GQLClient.WebSocketReceiveErrors.Subscribe(e =>
     {
       if (e is WebSocketException we)
+      {
         Console.WriteLine(
           $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
         );
+      }
       else
+      {
         Console.WriteLine($"Exception in websocket receive stream: {e}");
+      }
     });
   }
 
@@ -155,7 +161,9 @@ public partial class Client : IDisposable
     {
       var result = await ExecuteWithResiliencePolicies(async () =>
         {
-          GraphQLResponse<T> result = await GQLClient.SendMutationAsync<T>(request, cancellationToken).ConfigureAwait(false);
+          GraphQLResponse<T> result = await GQLClient
+            .SendMutationAsync<T>(request, cancellationToken)
+            .ConfigureAwait(false);
           MaybeThrowFromGraphQLErrors(request, result);
           return result.Data;
         })
@@ -235,7 +243,9 @@ public partial class Client : IDisposable
             )
         )
       )
+      {
         throw new SpeckleGraphQLForbiddenException<T>(request, response);
+      }
 
       if (
         errors.Any(
@@ -244,7 +254,9 @@ public partial class Client : IDisposable
             && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
         )
       )
+      {
         throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
+      }
 
       if (
         errors.Any(
@@ -253,7 +265,9 @@ public partial class Client : IDisposable
             && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
         )
       )
+      {
         throw new SpeckleGraphQLInternalErrorException<T>(request, response);
+      }
 
       throw new SpeckleGraphQLException<T>("Request failed with errors", request, response);
     }
@@ -266,9 +280,14 @@ public partial class Client : IDisposable
     {
       object value;
       if (kvp.Value is ExpandoObject ex)
+      {
         value = _convertExpandoToDict(ex);
+      }
       else
+      {
         value = kvp.Value;
+      }
+
       variables[kvp.Key] = value;
     }
     return variables;
@@ -292,6 +311,7 @@ public partial class Client : IDisposable
   internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
     using (LogContext.Push(_createEnrichers<T>(request)))
+    {
       try
       {
         var res = GQLClient.CreateSubscriptionStream<T>(request);
@@ -303,11 +323,15 @@ public partial class Client : IDisposable
               MaybeThrowFromGraphQLErrors(request, response);
 
               if (response.Data != null)
+              {
                 callback(this, response.Data);
+              }
               else
+              {
                 SpeckleLog.Logger
                   .ForContext("graphqlResponse", response)
                   .Error("Cannot execute graphql callback for {resultType}, the response has no data.", typeof(T).Name);
+              }
             }
             // we catch forbidden to rethrow, making sure its not logged.
             catch (SpeckleGraphQLForbiddenException<T>)
@@ -365,5 +389,6 @@ public partial class Client : IDisposable
           null
         );
       }
+    }
   }
 }

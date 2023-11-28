@@ -1,4 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;

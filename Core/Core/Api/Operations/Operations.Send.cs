@@ -76,10 +76,12 @@ public static partial class Operations
     using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
 
     if (transports.Count == 0 && useDefaultCache == false)
+    {
       throw new ArgumentException(
         "You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
         nameof(transports)
       );
+    }
 
     if (useDefaultCache)
     {
@@ -99,9 +101,13 @@ public static partial class Operations
       JsonSerializerSettings? settings = null;
       BaseObjectSerializerV2? serializerV2 = null;
       if (serializerVersion == SerializerVersion.V1)
+      {
         (serializer, settings) = GetSerializerInstance();
+      }
       else
+      {
         serializerV2 = new BaseObjectSerializerV2();
+      }
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -127,9 +133,13 @@ public static partial class Operations
         t.BeginWrite();
 
         if (serializerVersion == SerializerVersion.V1)
+        {
           serializer!.WriteTransports.Add(t);
+        }
         else
+        {
           serializerV2!.WriteTransports.Add(t);
+        }
       }
 
       string obj;
@@ -165,7 +175,9 @@ public static partial class Operations
           continue;
         }
         if (disposeTransports && t is IDisposable disp)
+        {
           disp.Dispose();
+        }
       }
 
       if (cancellationToken.IsCancellationRequested)
@@ -176,7 +188,10 @@ public static partial class Operations
 
       var idToken = JObject.Parse(obj).GetValue("id");
       if (idToken == null)
+      {
         throw new SpeckleException("Failed to get id of serialized object");
+      }
+
       var hash = idToken.ToString();
 
       sendTimer.Stop();

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
@@ -86,6 +86,7 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
   public override bool CastFrom(object source)
   {
     if (source is GH_String ghStr)
+    {
       try
       {
         Value = new StreamWrapper(ghStr.Value);
@@ -95,8 +96,10 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
       {
         return false;
       }
+    }
 
     if (source is string str) // Not sure this is needed?
+    {
       try
       {
         Value = new StreamWrapper(str);
@@ -106,6 +109,7 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
       {
         return false;
       }
+    }
 
     if (source is StreamWrapper strWrapper)
     {
@@ -115,7 +119,10 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
 
     var stream = (source as GH_SpeckleStream)?.Value;
     if (stream == null)
+    {
       return false;
+    }
+
     Value = stream;
     return true;
   }

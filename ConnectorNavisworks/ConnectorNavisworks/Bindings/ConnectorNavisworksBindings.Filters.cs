@@ -24,7 +24,9 @@ public partial class ConnectorBindingsNavisworks
     var manualFilter = new ManualSelectionFilter();
 
     if (_doc == null)
+    {
       return filters;
+    }
 
     filters.Add(manualFilter);
 
@@ -76,7 +78,7 @@ public partial class ConnectorBindingsNavisworks
       //
       // if (groupedClashResults.Count >= 0)
       // {
-      //   
+      //
       //
       //   var clashReportFilter = new TreeSelectionFilter
       //   {
@@ -104,11 +106,15 @@ public partial class ConnectorBindingsNavisworks
     };
 
     if (!savedItem.IsGroup)
+    {
       return treeNode;
+    }
 
     //iterate the children and output
     foreach (var childItem in ((GroupItem)savedItem).Children)
+    {
       treeNode.Elements.Add(GetSets(childItem));
+    }
 
     return treeNode.Elements.Count > 0 ? treeNode : null;
   }
@@ -150,15 +156,21 @@ public partial class ConnectorBindingsNavisworks
   private static TreeNode RemoveNullNodes(TreeNode node)
   {
     if (node == null)
+    {
       return null;
+    }
 
     if (!node.Elements.Any())
+    {
       return node;
+    }
 
     var elements = node.Elements.Select(RemoveNullNodes).Where(childNode => childNode != null).ToList();
 
     if (!elements.Any())
+    {
       return null;
+    }
 
     node.Elements = elements;
     return node;
@@ -177,7 +189,9 @@ public partial class ConnectorBindingsNavisworks
 
     //iterate the children and output only grouped clashes
     foreach (var result in clashTest.Children)
+    {
       if (result.IsGroup)
+      {
         treeNode.Elements.Add(
           new TreeNode
           {
@@ -186,6 +200,8 @@ public partial class ConnectorBindingsNavisworks
             IndexWith = nameof(TreeNode.Guid)
           }
         );
+      }
+    }
 
     return treeNode.Elements.Count > 0 ? treeNode : null;
   }

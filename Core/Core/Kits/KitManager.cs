@@ -96,8 +96,12 @@ public static class KitManager
   public static IEnumerable<ISpeckleKit> GetKitsWithConvertersForApp(string app)
   {
     foreach (var kit in Kits)
+    {
       if (kit.Converters.Contains(app))
+      {
         yield return kit;
+      }
+    }
   }
 
   /// <summary>
@@ -157,18 +161,27 @@ public static class KitManager
       var assemblyToCheck = assembliesToCheck.Dequeue();
 
       if (assemblyToCheck == null)
+      {
         continue;
+      }
 
       foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
       {
         // filtering out system dlls
         if (reference.FullName.StartsWith("System."))
+        {
           continue;
+        }
+
         if (reference.FullName.StartsWith("Microsoft."))
+        {
           continue;
+        }
 
         if (loadedAssemblies.Contains(reference.FullName))
+        {
           continue;
+        }
 
         Assembly assembly;
         try
@@ -197,25 +210,39 @@ public static class KitManager
     foreach (var assembly in assemblies)
     {
       if (assembly.IsDynamic || assembly.ReflectionOnly)
+      {
         continue;
+      }
+
       if (!assembly.IsReferencing(SpeckleAssemblyName))
+      {
         continue;
+      }
+
       if (_SpeckleKits.ContainsKey(assembly.FullName))
+      {
         continue;
+      }
 
       var kitClass = GetKitClass(assembly);
       if (kitClass == null)
+      {
         continue;
+      }
 
       if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
+      {
         _SpeckleKits.Add(assembly.FullName, speckleKit);
+      }
     }
   }
 
   private static void LoadSpeckleReferencingAssemblies()
   {
     if (!Directory.Exists(KitsFolder))
+    {
       return;
+    }
 
     var directories = Directory.GetDirectories(KitsFolder);
 
@@ -226,16 +253,24 @@ public static class KitManager
         var unloadedAssemblyName = SafeGetAssemblyName(assemblyPath);
 
         if (unloadedAssemblyName == null)
+        {
           continue;
+        }
 
         try
         {
           var assembly = Assembly.LoadFrom(assemblyPath);
           var kitClass = GetKitClass(assembly);
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          {
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
+            {
               if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
+              {
                 _SpeckleKits.Add(assembly.FullName, speckleKit);
+              }
+            }
+          }
         }
         catch (FileLoadException) { }
         catch (BadImageFormatException) { }
@@ -301,11 +336,17 @@ public static class AssemblyExtensions
   public static bool IsReferencing(this Assembly assembly, AssemblyName referenceName)
   {
     if (AssemblyName.ReferenceMatchesDefinition(assembly.GetName(), referenceName))
+    {
       return true;
+    }
 
     foreach (var referencedAssemblyName in assembly.GetReferencedAssemblies())
+    {
       if (AssemblyName.ReferenceMatchesDefinition(referencedAssemblyName, referenceName))
+      {
         return true;
+      }
+    }
 
     return false;
   }

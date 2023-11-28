@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Serialisation.Deprecated;

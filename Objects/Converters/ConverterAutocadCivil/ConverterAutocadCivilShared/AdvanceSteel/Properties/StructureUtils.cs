@@ -14,7 +14,7 @@ internal static class StructureUtils
 {
   private static Dictionary<string, BuildingStructureObject> GetStructures()
   {
-    Dictionary<string, BuildingStructureObject> dictionary = new Dictionary<string, BuildingStructureObject>();
+    Dictionary<string, BuildingStructureObject> dictionary = new();
 
     BuildingStructureManager buildStructMan = BuildingStructureManager.getBuildingStructureManager();
     // get the list objects from the manager
@@ -28,7 +28,9 @@ internal static class StructureUtils
       string name = buildStructManListObject.GetStructureName(currBSO);
 
       if (dictionary.ContainsKey(name))
+      {
         continue;
+      }
 
       dictionary.Add(name, currBSO);
     }
@@ -38,14 +40,16 @@ internal static class StructureUtils
 
   private static Dictionary<string, ObjectsGroup> GetObjectsGroup(BuildingStructureObject structure)
   {
-    Dictionary<string, ObjectsGroup> dictionaryGroup = new Dictionary<string, ObjectsGroup>();
+    Dictionary<string, ObjectsGroup> dictionaryGroup = new();
 
     BuildingStructureTreeObject groupsTreeObject = structure.GroupsTreeObject;
 
     foreach (BuildingStructureItem currentItem in groupsTreeObject.StructureItems)
     {
       if (!(currentItem is ObjectsGroup objectsGroup))
+      {
         continue;
+      }
 
       BuildingStructureTreeObject parent = objectsGroup.Parent;
       string nameGroup = parent.GetStructureItemName(objectsGroup);
@@ -70,7 +74,7 @@ internal static class StructureUtils
 
   private static Dictionary<string, Dictionary<string, List<string>>> GetObjectHandleHierarchyIntern()
   {
-    Dictionary<string, Dictionary<string, List<string>>> dictionaryHierarchy = new Dictionary<string, Dictionary<string, List<string>>>();
+    Dictionary<string, Dictionary<string, List<string>>> dictionaryHierarchy = new();
 
     var structures = GetStructures();
 

@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Objects.BuiltElements.Revit.Interfaces
+namespace Objects.BuiltElements.Revit.Interfaces;
+
+public interface IHasMEPConnectors
 {
-  public interface IHasMEPConnectors
-  {
-    List<RevitMEPConnector> Connectors { get; set; }
-  }
+  List<RevitMEPConnector> Connectors { get; set; }
 }

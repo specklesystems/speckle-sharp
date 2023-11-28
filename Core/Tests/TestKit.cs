@@ -160,7 +160,9 @@ public class Mesh : Base
     set
     {
       for (int i = 0; i < value.Count; i += 3)
+      {
         Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+      }
     }
   }
 }
@@ -184,7 +186,9 @@ public class Polyline : Base, ICurve
     set
     {
       for (int i = 0; i < value.Count; i += 3)
+      {
         Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+      }
     }
   }
 }

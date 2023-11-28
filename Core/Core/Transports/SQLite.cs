@@ -139,7 +139,9 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
     foreach (string objectId in objectIds)
+    {
       ret[objectId] = false;
+    }
 
     using var c = new SqliteConnection(_connectionString);
     c.Open();
@@ -179,7 +181,9 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
             ) WITHOUT ROWID;
           ";
       using (var command = new SqliteCommand(commandText, c))
+      {
         command.ExecuteNonQuery();
+      }
 
       // Insert Optimisations
 
@@ -300,7 +304,9 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
 
     if (!_isWriting && !_queue.IsEmpty)
+    {
       ConsumeQueue();
+    }
   }
 
   private void ConsumeQueue()
@@ -341,7 +347,9 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       CancellationToken.ThrowIfCancellationRequested();
 
       if (!_queue.IsEmpty)
+      {
         ConsumeQueue();
+      }
     }
     catch (OperationCanceledException)
     {
@@ -375,10 +383,12 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     var serializedObject = sourceTransport.GetObject(id);
 
     if (serializedObject is null)
+    {
       throw new TransportException(
         this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
+    }
 
     //Should this just call SaveObject... do we not want the write timers?
     _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
@@ -421,10 +431,12 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       {
         command.Parameters.AddWithValue("@hash", id);
         using (var reader = command.ExecuteReader())
+        {
           while (reader.Read())
           {
             return reader.GetString(1);
           }
+        }
       }
       Elapsed += LoggingHelpers.GetElapsedTime(startTime, Stopwatch.GetTimestamp());
     }

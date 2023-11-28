@@ -27,7 +27,10 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
   public override void Dispose()
   {
     lock (_lockFreeThreads)
+    {
       _freeThreadCount -= NumThreads;
+    }
+
     base.Dispose();
   }
 
@@ -37,10 +40,15 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
     while (true)
     {
       lock (_lockFreeThreads)
+      {
         _freeThreadCount++;
+      }
+
       var (taskType, inputValue, tcs) = Tasks.Take();
       if (taskType == WorkerThreadTaskType.NoOp || tcs == null)
+      {
         return;
+      }
 
       try
       {
@@ -86,7 +94,9 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
     }
 
     if (!canStartTask)
+    {
       return null;
+    }
 
     TaskCompletionSource<object?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
     Tasks.Add(new(taskType, inputValue, tcs));

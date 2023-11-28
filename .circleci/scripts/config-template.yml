@@ -78,6 +78,7 @@ commands:
           name: << parameters.title >>
           command: $HOME/.dotnet/dotnet test << parameters.project >>
             -c Release
+            -p:IsDesktopBuild=false
             --logger:"junit;LogFileName={assembly}.results.xml"
             --results-directory=TestResults
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
@@ -93,6 +94,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
             $HOME/.dotnet/dotnet --version
+      - run: 
+          name: Enforce formatting
+          command: |
+            $HOME/.dotnet/dotnet tool restore
+            $HOME/.dotnet/dotnet csharpier --check .
       - run:
           name: Build SDK Projects
           command: |

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -28,7 +28,9 @@ public class Invoker
   private static object InvokeOnUIThreadWithException(Control control, Delegate method, object[] args)
   {
     if (control == null)
+    {
       return null;
+    }
 
     object result = null;
 
@@ -88,7 +90,7 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   internal void EndSubOperation()
   {
-    Update(1.0);    
+    Update(1.0);
     Invoke(new Action(_progressBar.EndSubOperation));
   }
 
@@ -123,7 +125,9 @@ public sealed class ProgressInvoker : Invoker
   public void Cancel()
   {
     if (!_progressBar.IsDisposed)
+    {
       Invoke(new Action(_progressBar.Cancel), null);
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
@@ -65,7 +65,9 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
   public override void DestroyControlPane(Control pane)
   {
     if (pane is UserControl control)
+    {
       control.Dispose();
+    }
   }
 
   private static AppBuilder BuildAvaloniaApp()
@@ -102,7 +104,9 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     var assemblyFile = Path.Combine(path ?? string.Empty, name + ".dll");
 
     if (File.Exists(assemblyFile))
+    {
       a = Assembly.LoadFrom(assemblyFile);
+    }
 
     return a;
   }

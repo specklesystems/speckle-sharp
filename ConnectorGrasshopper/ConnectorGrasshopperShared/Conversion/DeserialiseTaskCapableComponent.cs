@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -22,11 +22,16 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -63,7 +68,9 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
     if (InPreSolve)
     {
       if (RunCount == 1)
+      {
         source = new CancellationTokenSource();
+      }
 
       string item = null;
       DA.GetData(0, ref item);
@@ -84,7 +91,9 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
   private Base DoWork(string item, IGH_DataAccess DA)
   {
     if (string.IsNullOrEmpty(item))
+    {
       return null;
+    }
 
     try
     {

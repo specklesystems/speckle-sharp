@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Navisworks.Api;
 using Objects.Other;
 using Color = System.Drawing.Color;
@@ -50,7 +50,9 @@ public partial class ConverterNavisworks
       var itemProperties = itemCategory.Properties;
       var itemMaterial = itemProperties.FindPropertyByDisplayName("Material");
       if (itemMaterial != null && !string.IsNullOrEmpty(itemMaterial.DisplayName))
+      {
         materialName = itemMaterial.Value.ToDisplayString();
+      }
     }
 
     var materialPropertyCategory = geom.PropertyCategories.FindCategoryByDisplayName("Material");
@@ -59,7 +61,9 @@ public partial class ConverterNavisworks
       var material = materialPropertyCategory.Properties;
       var name = material.FindPropertyByDisplayName("Name");
       if (name != null && !string.IsNullOrEmpty(name.DisplayName))
+      {
         materialName = name.Value.ToDisplayString();
+      }
     }
 
     var r = new RenderMaterial(1 - geom.Geometry.OriginalTransparency, 0, 1, renderColor, black)

@@ -70,7 +70,10 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   public object ToType(Type conversionType, IFormatProvider provider)
   {
     if (conversionType == typeof(Polycurve))
+    {
       return (Polycurve)this;
+    }
+
     throw new InvalidCastException();
   }
 
@@ -212,13 +215,18 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   public List<Point> GetPoints()
   {
     if (value.Count % 3 != 0)
+    {
       throw new SpeckleException(
         $"{nameof(Polyline)}.{nameof(value)} list is malformed: expected length to be multiple of 3"
       );
+    }
 
     var pts = new List<Point>(value.Count / 3);
     for (int i = 2; i < value.Count; i += 3)
+    {
       pts.Add(new Point(value[i - 2], value[i - 1], value[i], units));
+    }
+
     return pts;
   }
 

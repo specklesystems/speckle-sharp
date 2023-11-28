@@ -48,7 +48,10 @@ namespace Objects.BuiltElements.Revit
     public RevitWallOpening(ICurve outline, RevitWall? host = null)
     {
       if (outline is not Polyline)
+      {
         throw new SpeckleException("Outline should be a rectangular-shaped polyline", false);
+      }
+
       this.outline = outline;
       this.host = host;
     }
@@ -57,9 +60,15 @@ namespace Objects.BuiltElements.Revit
     public RevitWallOpening(Polyline outline, RevitWall? host = null)
     {
       if (outline == null)
+      {
         throw new SpeckleException("Outline cannot be null");
+      }
+
       if (outline.GetPoints().Count != 4)
+      {
         throw new SpeckleException("Outline should be a rectangular-shaped polyline");
+      }
+
       this.outline = outline;
       this.host = host;
     }
