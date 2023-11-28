@@ -69,15 +69,9 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
   public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
   public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
-    ContextObjects = objects;
-  }
+  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    PreviousContextObjects = objects;
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
   private ResultsConverter? resultsConverter;
 
@@ -442,10 +436,7 @@ public partial class ConverterCSI : ISpeckleConverter, IFinalizable
     return objects.Select(x => ConvertToSpeckle(x)).ToList();
   }
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { CSIAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
 
   public void FinalizeConversion()
   {

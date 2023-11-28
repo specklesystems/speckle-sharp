@@ -53,9 +53,8 @@ class Program
     MainWindow.Activate();
   }
 
-  public static AppBuilder BuildAvaloniaApp()
-  {
-    return AppBuilder
+  public static AppBuilder BuildAvaloniaApp() =>
+    AppBuilder
       .Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new X11PlatformOptions { UseGpu = false })
@@ -72,7 +71,6 @@ class Program
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .LogToTrace()
       .UseReactiveUI();
-  }
 
   private static void AppMain(Application app, string[] args)
   {

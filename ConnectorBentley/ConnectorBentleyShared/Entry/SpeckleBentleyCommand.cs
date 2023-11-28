@@ -22,16 +22,14 @@ public class SpeckleBentleyCommand
   public static ConnectorBindingsBentley Bindings { get; set; }
   private static Avalonia.Application AvaloniaApp { get; set; }
 
-  public static AppBuilder BuildAvaloniaApp()
-  {
-    return AppBuilder
+  public static AppBuilder BuildAvaloniaApp() =>
+    AppBuilder
       .Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .LogToTrace()
       .UseReactiveUI();
-  }
 
   public static void InitAvalonia()
   {

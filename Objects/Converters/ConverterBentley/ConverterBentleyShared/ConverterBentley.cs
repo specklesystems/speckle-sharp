@@ -63,10 +63,7 @@ public partial class ConverterBentley : ISpeckleConverter
   public string Author => "Arup";
   public string WebsiteOrEmail => "https://www.arup.com";
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { BentleyAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { BentleyAppName };
 
   public ProgressReport Report { get; private set; } = new ProgressReport();
   public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -80,15 +77,9 @@ public partial class ConverterBentley : ISpeckleConverter
   public double UoR { get; private set; }
   public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
-    ContextObjects = objects;
-  }
+  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
 
   public void SetConverterSettings(object settings)
   {

@@ -4,10 +4,7 @@ namespace Objects.Converters.DxfConverter;
 
 public partial class SpeckleDxfConverter
 {
-  public void SetConverterSettings(object settings)
-  {
-    SetConverterSettings((ConverterDxfSettings)settings);
-  }
+  public void SetConverterSettings(object settings) => SetConverterSettings((ConverterDxfSettings)settings);
 
   private void SetConverterSettings(ConverterDxfSettings settings)
   {

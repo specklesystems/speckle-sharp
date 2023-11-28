@@ -146,10 +146,8 @@ public partial class ConverterRevit
   /// </summary>
   /// <param name="connectorInfo"></param>
   /// <returns></returns>
-  private Connector GetConnector((Element, int) connectorInfo)
-  {
-    return connectorInfo.Item1.GetConnectorSet().First(c => c.Id == connectorInfo.Item2);
-  }
+  private Connector GetConnector((Element, int) connectorInfo) =>
+    connectorInfo.Item1.GetConnectorSet().First(c => c.Id == connectorInfo.Item2);
 
   private List<(Element, int)> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
   {

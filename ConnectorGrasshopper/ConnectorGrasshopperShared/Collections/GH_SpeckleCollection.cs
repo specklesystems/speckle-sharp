@@ -6,15 +6,9 @@ namespace ConnectorGrasshopper.Collections;
 
 public class GH_SpeckleCollection : GH_Goo<Collection>
 {
-  public override IGH_Goo Duplicate()
-  {
-    return new GH_SpeckleCollection { m_value = m_value.ShallowCopy() as Collection };
-  }
+  public override IGH_Goo Duplicate() => new GH_SpeckleCollection { m_value = m_value.ShallowCopy() as Collection };
 
-  public override string ToString()
-  {
-    return $"Speckle Collection [{m_value?.name ?? "No name"}]";
-  }
+  public override string ToString() => $"Speckle Collection [{m_value?.name ?? "No name"}]";
 
   public override bool IsValid => m_value != null;
   public override string TypeName => "Speckle Collection";

@@ -281,9 +281,6 @@ public class App : IExtensionApplication
         }
     }
 
-    public bool CanExecute(object parameter)
-    {
-      return true;
-    }
+    public bool CanExecute(object parameter) => true;
   }
 }

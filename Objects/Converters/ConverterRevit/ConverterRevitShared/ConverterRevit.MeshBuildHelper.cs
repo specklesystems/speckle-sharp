@@ -34,10 +34,8 @@ public partial class ConverterRevit
       return material;
     }
 
-    private static int Hash(DB.Material mat)
-    {
-      return mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
-    }
+    private static int Hash(DB.Material mat) =>
+      mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
 
     //Mesh to use for null materials (because dictionary keys can't be null)
     private Mesh nullMesh;
@@ -67,9 +65,6 @@ public partial class ConverterRevit
       return meshes;
     }
 
-    public List<Mesh> GetAllValidMeshes()
-    {
-      return GetAllMeshes().FindAll(m => m.vertices.Count > 0 && m.faces.Count > 0);
-    }
+    public List<Mesh> GetAllValidMeshes() => GetAllMeshes().FindAll(m => m.vertices.Count > 0 && m.faces.Count > 0);
   }
 }

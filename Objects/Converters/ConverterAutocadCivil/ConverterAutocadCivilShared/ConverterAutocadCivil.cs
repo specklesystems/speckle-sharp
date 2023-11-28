@@ -70,10 +70,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public string WebsiteOrEmail => "https://speckle.systems";
   public ProgressReport Report { get; private set; } = new ProgressReport();
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { AutocadAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
 
   public Document Doc { get; private set; }
   public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
@@ -84,15 +81,9 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
   public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
-    ContextObjects = objects;
-  }
+  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
 
   public void SetConverterSettings(object settings)
   {

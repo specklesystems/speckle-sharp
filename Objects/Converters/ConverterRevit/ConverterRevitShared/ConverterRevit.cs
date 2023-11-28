@@ -49,10 +49,7 @@ public partial class ConverterRevit : ISpeckleConverter
   public string Author => "Speckle";
   public string WebsiteOrEmail => "https://speckle.systems";
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { RevitAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { RevitAppName };
 
   #endregion ISpeckleConverter props
 
@@ -736,15 +733,9 @@ public partial class ConverterRevit : ISpeckleConverter
     return nativeObject;
   }
 
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    return objects.Select(ConvertToSpeckle).ToList();
-  }
+  public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
-  public List<object> ConvertToNative(List<Base> objects)
-  {
-    return objects.Select(ConvertToNative).ToList();
-  }
+  public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
   public bool CanConvertToSpeckle(object @object)
   {

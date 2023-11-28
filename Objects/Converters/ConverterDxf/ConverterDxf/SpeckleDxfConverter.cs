@@ -24,20 +24,11 @@ public partial class SpeckleDxfConverter
   public ReceiveMode ReceiveMode { get; set; } = ReceiveMode.Create;
 
   // TODO: Convert to Speckle is currently not supported.
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public List<Base> ConvertToSpeckle(List<object> objects) => throw new NotImplementedException();
 
-  public bool CanConvertToSpeckle(object @object)
-  {
-    throw new NotImplementedException();
-  }
+  public bool CanConvertToSpeckle(object @object) => throw new NotImplementedException();
 
-  public Base ConvertToSpeckle(object @object)
-  {
-    throw new NotImplementedException();
-  }
+  public Base ConvertToSpeckle(object @object) => throw new NotImplementedException();
 
   public bool CanConvertToNative(Base @base)
   {
@@ -75,13 +66,7 @@ public partial class SpeckleDxfConverter
     }
   }
 
-  public List<object> ConvertToNative(List<Base> objects)
-  {
-    return objects.Select(ConvertToNative).ToList();
-  }
+  public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new[] { HostApplications.Dxf.Slug };
-  }
+  public IEnumerable<string> GetServicedApplications() => new[] { HostApplications.Dxf.Slug };
 }

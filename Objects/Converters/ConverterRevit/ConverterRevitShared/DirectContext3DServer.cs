@@ -51,10 +51,7 @@ public partial class ConverterRevit
       return doc.Equals(otherDoc);
     }
 
-    public string GetApplicationId()
-    {
-      return " ";
-    }
+    public string GetApplicationId() => " ";
 
     public Outline GetBoundingBox(View dBView)
     {
@@ -66,35 +63,17 @@ public partial class ConverterRevit
       );
     }
 
-    public string GetDescription()
-    {
-      return "Implements preview functionality for a Speckle Object";
-    }
+    public string GetDescription() => "Implements preview functionality for a Speckle Object";
 
-    public string GetName()
-    {
-      return "Speckle Object Drawing Server";
-    }
+    public string GetName() => "Speckle Object Drawing Server";
 
-    public Guid GetServerId()
-    {
-      return m_guid;
-    }
+    public Guid GetServerId() => m_guid;
 
-    public ExternalServiceId GetServiceId()
-    {
-      return ExternalServices.BuiltInExternalServices.DirectContext3DService;
-    }
+    public ExternalServiceId GetServiceId() => ExternalServices.BuiltInExternalServices.DirectContext3DService;
 
-    public string GetSourceId()
-    {
-      return " ";
-    }
+    public string GetSourceId() => " ";
 
-    public string GetVendorId()
-    {
-      return "Speckle";
-    }
+    public string GetVendorId() => "Speckle";
 
     public void RenderScene(View dBView, DisplayStyle displayStyle)
     {
@@ -160,15 +139,9 @@ public partial class ConverterRevit
       }
     }
 
-    public bool UseInTransparentPass(View dBView)
-    {
-      return true;
-    }
+    public bool UseInTransparentPass(View dBView) => true;
 
-    public bool UsesHandles()
-    {
-      return false;
-    }
+    public bool UsesHandles() => false;
 
     private void CreateBufferStorageForMeshes(DisplayStyle displayStyle)
     {

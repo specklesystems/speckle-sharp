@@ -39,35 +39,18 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
     throw new NotImplementedException();
   }
 
-  public override string GetDocumentId()
-  {
-    return GetDocHash();
-  }
+  public override string GetDocumentId() => GetDocHash();
 
-  private string GetDocHash()
-  {
-    return Utilities.HashString(Model.GetInfo().ModelPath + Model.GetInfo().ModelName, Utilities.HashingFunctions.MD5);
-  }
+  private string GetDocHash() =>
+    Utilities.HashString(Model.GetInfo().ModelPath + Model.GetInfo().ModelName, Utilities.HashingFunctions.MD5);
 
-  public override string GetDocumentLocation()
-  {
-    return Model.GetInfo().ModelPath;
-  }
+  public override string GetDocumentLocation() => Model.GetInfo().ModelPath;
 
-  public override string GetFileName()
-  {
-    return Model.GetInfo().ModelName;
-  }
+  public override string GetFileName() => Model.GetInfo().ModelName;
 
-  public override string GetHostAppNameVersion()
-  {
-    return ConnectorTeklaStructuresUtils.TeklaStructuresAppName;
-  }
+  public override string GetHostAppNameVersion() => ConnectorTeklaStructuresUtils.TeklaStructuresAppName;
 
-  public override string GetHostAppName()
-  {
-    return HostApplications.TeklaStructures.Slug;
-  }
+  public override string GetHostAppName() => HostApplications.TeklaStructures.Slug;
 
   public override List<string> GetObjectsInView()
   {

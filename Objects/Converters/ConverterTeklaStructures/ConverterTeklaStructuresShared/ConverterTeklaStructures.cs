@@ -192,10 +192,7 @@ public partial class ConverterTeklaStructures : ISpeckleConverter
     throw new NotImplementedException();
   }
 
-  public List<object> ConvertToNative(List<Base> objects)
-  {
-    return objects.Select(ConvertToNative).ToList();
-  }
+  public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
   public Base ConvertToSpeckle(object @object)
   {
@@ -258,25 +255,13 @@ public partial class ConverterTeklaStructures : ISpeckleConverter
     return "";
   }
 
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    return objects.Select(ConvertToSpeckle).ToList();
-  }
+  public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { TeklaStructuresAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { TeklaStructuresAppName };
 
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
-    ContextObjects = objects;
-  }
+  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    PreviousContextObjects = objects;
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
   public void SetConverterSettings(object settings)
   {

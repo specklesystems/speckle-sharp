@@ -83,33 +83,18 @@ internal class ClosedLoop
     return true;
   }
 
-  public int NextIndex(int currIndex)
-  {
-    return currIndex == Vertices.Last().Index ? Vertices.First().Index : currIndex + 1;
-  }
+  public int NextIndex(int currIndex) => currIndex == Vertices.Last().Index ? Vertices.First().Index : currIndex + 1;
 
-  public int PrevIndex(int currIndex)
-  {
-    return currIndex == Vertices.First().Index ? Vertices.Last().Index : currIndex - 1;
-  }
+  public int PrevIndex(int currIndex) => currIndex == Vertices.First().Index ? Vertices.Last().Index : currIndex - 1;
 
-  public int FirstIndex()
-  {
-    return Vertices.First().Index;
-  }
+  public int FirstIndex() => Vertices.First().Index;
 
-  public int LastIndex()
-  {
-    return Vertices.Last().Index;
-  }
+  public int LastIndex() => Vertices.Last().Index;
 
   public void ReverseDirection()
   {
     WindingDirection *= -1;
   }
 
-  private Vertex MeshPointByIndex(int index)
-  {
-    return Vertices.FirstOrDefault(mp => mp.Index == index);
-  }
+  private Vertex MeshPointByIndex(int index) => Vertices.FirstOrDefault(mp => mp.Index == index);
 }

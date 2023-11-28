@@ -129,20 +129,11 @@ public sealed class MeshModel
 
     public double z { get; set; }
 
-    public bool Equals(Vertex vertex)
-    {
-      return vertex.x.Equals(x) && vertex.y.Equals(y) && vertex.z.Equals(z);
-    }
+    public bool Equals(Vertex vertex) => vertex.x.Equals(x) && vertex.y.Equals(y) && vertex.z.Equals(z);
 
-    public override bool Equals(object o)
-    {
-      return Equals(o as Vertex);
-    }
+    public override bool Equals(object o) => Equals(o as Vertex);
 
-    public override int GetHashCode()
-    {
-      return x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
-    }
+    public override int GetHashCode() => x.GetHashCode() ^ y.GetHashCode() ^ z.GetHashCode();
 
     #endregion
   }
@@ -165,20 +156,11 @@ public sealed class MeshModel
       this.vertexId2 = vertexId2;
     }
 
-    public bool Equals(EdgeId edge)
-    {
-      return edge.vertexId1.Equals(vertexId1) && edge.vertexId2.Equals(vertexId2);
-    }
+    public bool Equals(EdgeId edge) => edge.vertexId1.Equals(vertexId1) && edge.vertexId2.Equals(vertexId2);
 
-    public override bool Equals(object o)
-    {
-      return Equals(o as EdgeId);
-    }
+    public override bool Equals(object o) => Equals(o as EdgeId);
 
-    public override int GetHashCode()
-    {
-      return vertexId1.GetHashCode() ^ vertexId2.GetHashCode();
-    }
+    public override int GetHashCode() => vertexId1.GetHashCode() ^ vertexId2.GetHashCode();
 
     #endregion
   }

@@ -125,8 +125,5 @@ internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
     }
   }
 
-  public string GetName()
-  {
-    return "SpeckleRevitContextEventHandler";
-  }
+  public string GetName() => "SpeckleRevitContextEventHandler";
 }

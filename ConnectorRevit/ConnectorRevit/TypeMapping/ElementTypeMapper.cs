@@ -421,18 +421,10 @@ internal sealed class ElementTypeMapper
 public class AbstractConverter<TReal, TAbstract> : JsonConverter
   where TReal : TAbstract
 {
-  public override bool CanConvert(Type objectType)
-  {
-    return objectType == typeof(TAbstract);
-  }
+  public override bool CanConvert(Type objectType) => objectType == typeof(TAbstract);
 
-  public override object ReadJson(JsonReader reader, Type type, Object value, JsonSerializer jser)
-  {
-    return jser.Deserialize<TReal>(reader);
-  }
+  public override object ReadJson(JsonReader reader, Type type, Object value, JsonSerializer jser) =>
+    jser.Deserialize<TReal>(reader);
 
-  public override void WriteJson(JsonWriter writer, Object value, JsonSerializer jser)
-  {
-    jser.Serialize(writer, value);
-  }
+  public override void WriteJson(JsonWriter writer, Object value, JsonSerializer jser) => jser.Serialize(writer, value);
 }

@@ -17,10 +17,7 @@ public partial class ConverterArchicad : ISpeckleConverter
   public string Author => "Speckle";
   public string WebsiteOrEmail => "https://speckle.systems";
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new string[] { "Archicad" };
-  }
+  public IEnumerable<string> GetServicedApplications() => new string[] { "Archicad" };
 
   public ConversionOptions ConversionOptions { get; set; }
 
@@ -40,10 +37,7 @@ public partial class ConverterArchicad : ISpeckleConverter
     return null;
   }
 
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    return objects.Select(ConvertToSpeckle).ToList();
-  }
+  public List<Base> ConvertToSpeckle(List<object> objects) => objects.Select(ConvertToSpeckle).ToList();
 
   public bool CanConvertToSpeckle(object @object)
   {
@@ -61,10 +55,7 @@ public partial class ConverterArchicad : ISpeckleConverter
     throw new NotImplementedException();
   }
 
-  public List<object> ConvertToNative(List<Base> objects)
-  {
-    return objects.Select(ConvertToNative).ToList();
-  }
+  public List<object> ConvertToNative(List<Base> objects) => objects.Select(ConvertToNative).ToList();
 
   public bool CanConvertToNativeImplemented(Base @object)
   {
@@ -136,10 +127,7 @@ public partial class ConverterArchicad : ISpeckleConverter
 
   public void SetContextDocument(object doc) { }
 
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
-    ContextObjects = objects;
-  }
+  public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
   /// <summary>
   /// Removes all inherited classes from speckle type string
@@ -167,10 +155,7 @@ public partial class ConverterArchicad : ISpeckleConverter
     }
   }
 
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    PreviousContextObjects = objects;
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
   public void SetConverterSettings(object settings) { }
 

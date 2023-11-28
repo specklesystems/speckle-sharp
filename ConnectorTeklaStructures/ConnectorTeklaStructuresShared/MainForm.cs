@@ -80,16 +80,14 @@ public partial class MainForm : PluginFormBase
     return a;
   }
 
-  public static AppBuilder BuildAvaloniaApp()
-  {
-    return AppBuilder
+  public static AppBuilder BuildAvaloniaApp() =>
+    AppBuilder
       .Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .LogToTrace()
       .UseReactiveUI();
-  }
 
   private static void AppMain(Application app, string[] args)
   {
