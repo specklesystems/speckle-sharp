@@ -11,7 +11,6 @@ using Mesh = Objects.Geometry.Mesh;
 using OG = Objects.Geometry;
 using RevitSharedResources.Models;
 using System.Collections;
-#elif !REVIT2020
 #endif
 
 namespace Objects.Converter.Revit;
