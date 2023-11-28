@@ -26,9 +26,13 @@ public class StreamWrapper
     OriginalInput = streamUrlOrId;
 
     if (!Uri.TryCreate(streamUrlOrId, UriKind.Absolute, out _))
+    {
       StreamWrapperFromId(streamUrlOrId);
+    }
     else
+    {
       StreamWrapperFromUrl(streamUrlOrId);
+    }
   }
 
   /// <summary>
@@ -67,13 +71,19 @@ public class StreamWrapper
     get
     {
       if (!string.IsNullOrEmpty(ObjectId))
+      {
         return StreamWrapperType.Object;
+      }
 
       if (!string.IsNullOrEmpty(CommitId))
+      {
         return StreamWrapperType.Commit;
+      }
 
       if (!string.IsNullOrEmpty(BranchName))
+      {
         return StreamWrapperType.Branch;
+      }
 
       // If we reach here and there is no stream id, it means that the stream is invalid for some reason.
       return !string.IsNullOrEmpty(StreamId) ? StreamWrapperType.Stream : StreamWrapperType.Undefined;
@@ -85,7 +95,9 @@ public class StreamWrapper
     Account account = AccountManager.GetDefaultAccount();
 
     if (account == null)
+    {
       throw new SpeckleException("You do not have any account. Please create one or add it to the Speckle Manager.");
+    }
 
     ServerUrl = account.serverInfo.url;
     UserId = account.userInfo.id;
@@ -114,11 +126,19 @@ public class StreamWrapper
     var additionalModels = match.Groups["additionalModels"];
 
     if (!projectId.Success)
+    {
       throw new SpeckleException("The provided url is not a valid Speckle url");
+    }
+
     if (!model.Success)
+    {
       throw new SpeckleException("The provided url is not pointing to any model in the project.");
+    }
+
     if (additionalModels.Success || model.Value == "all")
+    {
       throw new NotSupportedException("Multi-model urls are not supported yet");
+    }
 
     var modelRes = ParseFe2ModelValue(model.Value);
 
@@ -141,9 +161,15 @@ public class StreamWrapper
   private static (string? branchId, string? commitId, string? objectId) ParseFe2ModelValue(string modelValue)
   {
     if (modelValue.Length == 32)
+    {
       return (null, null, modelValue); // Model value is an ObjectID
+    }
+
     if (!modelValue.Contains('@'))
+    {
       return (modelValue, null, null); // Model has no version attached
+    }
+
     var res = modelValue.Split('@');
     return (res[0], res[1], null); // Model has version attached
   }
@@ -182,9 +208,13 @@ public class StreamWrapper
       {
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
           if (uri.Segments[1].ToLowerInvariant() == "streams/")
+          {
             StreamId = uri.Segments[2].Replace("/", "");
+          }
           else
+          {
             throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+          }
 
           break;
         case 4: // ie https://speckle.server/streams/0c6ad366c4/globals/
@@ -246,7 +276,9 @@ public class StreamWrapper
     Exception err = null;
 
     if (_account != null)
+    {
       return _account;
+    }
 
     // Step 1: check if direct account id (?u=)
     if (OriginalInput != null && OriginalInput.Contains("?u="))
@@ -277,9 +309,12 @@ public class StreamWrapper
     // Step 3: all the rest
     var accs = AccountManager.GetAccounts(ServerUrl).ToList();
     if (accs.Count == 0)
+    {
       throw new SpeckleException($"You don't have any accounts for {ServerUrl}.");
+    }
 
     foreach (var acc in accs)
+    {
       try
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
@@ -290,6 +325,7 @@ public class StreamWrapper
       {
         err = e;
       }
+    }
 
     throw err;
   }
@@ -303,9 +339,15 @@ public class StreamWrapper
   public bool Equals(StreamWrapper? wrapper)
   {
     if (wrapper == null)
+    {
       return false;
+    }
+
     if (Type != wrapper.Type)
+    {
       return false;
+    }
+
     return Type == wrapper.Type
         && ServerUrl == wrapper.ServerUrl
         && UserId == wrapper.UserId
@@ -319,11 +361,15 @@ public class StreamWrapper
   public async Task ValidateWithAccount(Account acc)
   {
     if (ServerUrl != acc.serverInfo.url)
+    {
       throw new SpeckleException($"Account is not from server {ServerUrl}");
+    }
 
     var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
     if (!hasInternet)
+    {
       throw new Exception("You are not connected to the internet.");
+    }
 
     using var client = new Client(acc);
     // First check if the stream exists
@@ -343,9 +389,11 @@ public class StreamWrapper
     {
       var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
       if (branch == null)
+      {
         throw new SpeckleException(
           $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
+      }
     }
   }
 

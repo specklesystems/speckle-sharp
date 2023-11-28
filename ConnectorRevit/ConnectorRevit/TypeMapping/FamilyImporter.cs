@@ -16,33 +16,39 @@ using Speckle.Core.Logging;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 using SHC = RevitSharedResources.Helpers.Categories;
 
-namespace ConnectorRevit.TypeMapping
+namespace ConnectorRevit.TypeMapping;
+
+internal sealed class FamilyImporter
 {
-  internal sealed class FamilyImporter
+  private readonly Document document;
+  private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
+  private readonly IRevitElementTypeRetriever typeRetriever;
+  private readonly IRevitDocumentAggregateCache revitDocumentAggregateCache;
+
+  public FamilyImporter(
+    Document document,
+    IAllRevitCategoriesExposer revitCategoriesExposer,
+    IRevitElementTypeRetriever typeRetriever,
+    IRevitDocumentAggregateCache revitDocumentAggregateCache
+  )
   {
-    private readonly Document document;
-    private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
-    private readonly IRevitElementTypeRetriever typeRetriever;
-    private readonly IRevitDocumentAggregateCache revitDocumentAggregateCache;
+    this.document = document;
+    this.revitCategoriesExposer = revitCategoriesExposer;
+    this.typeRetriever = typeRetriever;
+    this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+  }
 
-    public FamilyImporter(Document document, IAllRevitCategoriesExposer revitCategoriesExposer, IRevitElementTypeRetriever typeRetriever, IRevitDocumentAggregateCache revitDocumentAggregateCache)
-    {
-      this.document = document;
-      this.revitCategoriesExposer = revitCategoriesExposer;
-      this.typeRetriever = typeRetriever;
-      this.revitDocumentAggregateCache = revitDocumentAggregateCache;
-    }
-
-    /// <summary>
-    /// Imports new family types into Revit
-    /// </summary>
-    /// <param name="hostTypesDict"></param>
-    /// <returns>
-    /// New host types dictionary with newly imported types added (if applicable)
-    /// </returns>
-    public async Task ImportFamilyTypes(HostTypeContainer hostTypesContainer)
-    {
-      var familyPaths = await Dispatcher.UIThread.InvokeAsync<string[]>(() =>
+  /// <summary>
+  /// Imports new family types into Revit
+  /// </summary>
+  /// <param name="hostTypesDict"></param>
+  /// <returns>
+  /// New host types dictionary with newly imported types added (if applicable)
+  /// </returns>
+  public async Task ImportFamilyTypes(HostTypeContainer hostTypesContainer)
+  {
+    var familyPaths = await Dispatcher.UIThread
+      .InvokeAsync<string[]>(() =>
       {
         using var windowsDialog = new OpenFileDialog
         {
@@ -52,39 +58,47 @@ namespace ConnectorRevit.TypeMapping
         };
         var _ = windowsDialog.ShowDialog();
         return windowsDialog.FileNames;
-      }).ConfigureAwait(false);
+      })
+      .ConfigureAwait(false);
 
-      if (familyPaths.Length == 0) return;
-
-      var allSymbols = new Dictionary<string, List<Symbol>>();
-      var familyInfo = new Dictionary<string, FamilyInfo>();
-      await PopulateSymbolAndFamilyInfo(familyPaths, allSymbols, familyInfo).ConfigureAwait(false);
-
-      var vm = new ImportFamiliesDialogViewModel(allSymbols);
-      await Dispatcher.UIThread.InvokeAsync(async () =>
-      {
-        var importFamilies = new ImportFamiliesDialog
-        {
-          DataContext = vm
-        };
-        await importFamilies.ShowDialog().ConfigureAwait(true);
-      }).ConfigureAwait(false);
-
-      if (vm.selectedFamilySymbols.Count == 0)
-      {
-        //close current dialog body
-        MainViewModel.CloseDialog();
-        return;
-      }
-
-      await ImportTypesIntoDocument(hostTypesContainer, familyInfo, vm).ConfigureAwait(false);
-
+    if (familyPaths.Length == 0)
+    {
       return;
     }
 
-    private async Task ImportTypesIntoDocument(HostTypeContainer hostTypesContainer, Dictionary<string, FamilyInfo> familyInfo, ImportFamiliesDialogViewModel vm)
+    var allSymbols = new Dictionary<string, List<Symbol>>();
+    var familyInfo = new Dictionary<string, FamilyInfo>();
+    await PopulateSymbolAndFamilyInfo(familyPaths, allSymbols, familyInfo).ConfigureAwait(false);
+
+    var vm = new ImportFamiliesDialogViewModel(allSymbols);
+    await Dispatcher.UIThread
+      .InvokeAsync(async () =>
+      {
+        var importFamilies = new ImportFamiliesDialog { DataContext = vm };
+        await importFamilies.ShowDialog().ConfigureAwait(true);
+      })
+      .ConfigureAwait(false);
+
+    if (vm.selectedFamilySymbols.Count == 0)
     {
-      await APIContext.Run(_ =>
+      //close current dialog body
+      MainViewModel.CloseDialog();
+      return;
+    }
+
+    await ImportTypesIntoDocument(hostTypesContainer, familyInfo, vm).ConfigureAwait(false);
+
+    return;
+  }
+
+  private async Task ImportTypesIntoDocument(
+    HostTypeContainer hostTypesContainer,
+    Dictionary<string, FamilyInfo> familyInfo,
+    ImportFamiliesDialogViewModel vm
+  )
+  {
+    await APIContext
+      .Run(_ =>
       {
         using var t = new Transaction(document, $"Import family types");
 
@@ -93,9 +107,16 @@ namespace ConnectorRevit.TypeMapping
         var familyNameToCategoryMap = new Dictionary<string, IEnumerable<IRevitCategoryInfo>>();
         foreach (var symbol in vm.selectedFamilySymbols)
         {
-          bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name, out var importedSymbol);
+          bool successfullyImported = document.LoadFamilySymbol(
+            familyInfo[symbol.FamilyName].Path,
+            symbol.Name,
+            out var importedSymbol
+          );
 
-          if (!successfullyImported) continue;
+          if (!successfullyImported)
+          {
+            continue;
+          }
 
           // get all possible speckle-defined mapping categories that the newly imported symbol may belong to.
           // cache the values per each family that is imported
@@ -124,157 +145,182 @@ namespace ConnectorRevit.TypeMapping
           foreach (var kvp in symbolsToLoad)
           {
             hostTypesContainer.AddTypesToCategory(kvp.Key, kvp.Value);
-            revitDocumentAggregateCache
-              .TryGetCacheOfType<List<ElementType>>()?
-              .Remove(kvp.Key);
+            revitDocumentAggregateCache.TryGetCacheOfType<List<ElementType>>()?.Remove(kvp.Key);
           }
           t.Commit();
-          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
-            { "name", "Type Map" },
-            { "method", "Import Types" },
-            { "count", vm.selectedFamilySymbols.Count }});
+          Analytics.TrackEvent(
+            Analytics.Events.DUIAction,
+            new Dictionary<string, object>()
+            {
+              { "name", "Type Map" },
+              { "method", "Import Types" },
+              { "count", vm.selectedFamilySymbols.Count }
+            }
+          );
         }
         else
         {
           t.RollBack();
         }
-      }).ConfigureAwait(false);
+      })
+      .ConfigureAwait(false);
 
-      //close current dialog body
-      MainViewModel.CloseDialog();
-    }
+    //close current dialog body
+    MainViewModel.CloseDialog();
+  }
 
-    private async Task PopulateSymbolAndFamilyInfo(string[] familyPaths, Dictionary<string, List<Symbol>> allSymbols, Dictionary<string, FamilyInfo> familyInfo)
+  private async Task PopulateSymbolAndFamilyInfo(
+    string[] familyPaths,
+    Dictionary<string, List<Symbol>> allSymbols,
+    Dictionary<string, FamilyInfo> familyInfo
+  )
+  {
+    foreach (var path in familyPaths)
     {
-      foreach (var path in familyPaths)
-      {
-        var xmlPath = path.Replace(".rfa", ".xml");
-        string pathClone = string.Copy(path);
+      var xmlPath = path.Replace(".rfa", ".xml");
+      string pathClone = string.Copy(path);
 
-        //open family file as xml to extract all family symbols without loading all of them into the project
-        await APIContext.Run(() => document.Application.ExtractPartAtomFromFamilyFile(path, xmlPath))
-          .ConfigureAwait(false);
-        var xmlDoc = new XmlDocument(); // Create an XML document object
-        xmlDoc.Load(xmlPath);
+      //open family file as xml to extract all family symbols without loading all of them into the project
+      await APIContext
+        .Run(() => document.Application.ExtractPartAtomFromFamilyFile(path, xmlPath))
+        .ConfigureAwait(false);
+      var xmlDoc = new XmlDocument(); // Create an XML document object
+      xmlDoc.Load(xmlPath);
 
-        var nsman = new XmlNamespaceManager(xmlDoc.NameTable);
-        nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
-
-        string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
-        if (string.IsNullOrEmpty(familyName))
-          continue;
-
-        var typeInfo = GetTypeInfo(xmlDoc, nsman);
-        familyInfo.Add(familyName, new FamilyInfo(path));
-
-        var elementTypes = revitDocumentAggregateCache
-          .GetOrInitializeWithDefaultFactory<List<ElementType>>()
-          .GetOrAddGroupOfTypes(typeInfo);
-        AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
-
-        // delete the newly created xml file
-        try
-        {
-          System.IO.File.Delete(xmlPath);
-        }
-        catch (Exception ex)
-        { }
-      }
-
-      //close current dialog body
-      MainViewModel.CloseDialog();
-    }
-
-    private static void AddSymbolToAllSymbols(Dictionary<string, List<Symbol>> allSymbols, XmlDocument xmlDoc, XmlNamespaceManager nsman, string familyName, IEnumerable<ElementType> elementTypes)
-    {
-      var familyRoot = xmlDoc.GetElementsByTagName("A:family");
-      if (familyRoot.Count != 1)
-      {
-        throw new SpeckleException($"Incorrect assumption of how the partAtom family format works for family named {familyName}");
-      }
-
-      nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
+      var nsman = new XmlNamespaceManager(xmlDoc.NameTable);
       nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
-      var familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
 
-      if (familySymbols.Count == 0) return;
-
-      if (!allSymbols.TryGetValue(familyName, out var symbols))
+      string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
+      if (string.IsNullOrEmpty(familyName))
       {
-        symbols = new List<Symbol>();
-        allSymbols[familyName] = symbols;
+        continue;
       }
 
-      var loadedSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-      foreach (var elementType in elementTypes)
+      var typeInfo = GetTypeInfo(xmlDoc, nsman);
+      familyInfo.Add(familyName, new FamilyInfo(path));
+
+      var elementTypes = revitDocumentAggregateCache
+        .GetOrInitializeWithDefaultFactory<List<ElementType>>()
+        .GetOrAddGroupOfTypes(typeInfo);
+      AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
+
+      // delete the newly created xml file
+      try
       {
-        if (elementType.FamilyName == familyName)
-        {
-          loadedSymbols.Add(elementType.Name);
-        }
+        System.IO.File.Delete(xmlPath);
       }
+      catch (Exception ex) { }
+    }
 
-      foreach (var symbol in familySymbols)
+    //close current dialog body
+    MainViewModel.CloseDialog();
+  }
+
+  private static void AddSymbolToAllSymbols(
+    Dictionary<string, List<Symbol>> allSymbols,
+    XmlDocument xmlDoc,
+    XmlNamespaceManager nsman,
+    string familyName,
+    IEnumerable<ElementType> elementTypes
+  )
+  {
+    var familyRoot = xmlDoc.GetElementsByTagName("A:family");
+    if (familyRoot.Count != 1)
+    {
+      throw new SpeckleException(
+        $"Incorrect assumption of how the partAtom family format works for family named {familyName}"
+      );
+    }
+
+    nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
+    nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+    var familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
+
+    if (familySymbols.Count == 0)
+    {
+      return;
+    }
+
+    if (!allSymbols.TryGetValue(familyName, out var symbols))
+    {
+      symbols = new List<Symbol>();
+      allSymbols[familyName] = symbols;
+    }
+
+    var loadedSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    foreach (var elementType in elementTypes)
+    {
+      if (elementType.FamilyName == familyName)
       {
-        if (symbol is not XmlElement el)
-        {
-          continue;
-        }
-
-        var isAlreadyLoaded = loadedSymbols.Contains(el.InnerText);
-        symbols.Add(new Symbol(el.InnerText, familyName, isAlreadyLoaded));
+        loadedSymbols.Add(elementType.Name);
       }
     }
 
-    private IRevitCategoryInfo GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
+    foreach (var symbol in familySymbols)
     {
-      var catRoot = xmlDoc.GetElementsByTagName("category");
-      IRevitCategoryInfo category = SHC.Undefined;
-      foreach (var node in catRoot)
+      if (symbol is not XmlElement el)
       {
-        if (node is not XmlElement xmlNode) continue;
-
-        var term = xmlNode.SelectSingleNode("ab:term", nsman);
-        if (term == null) continue;
-
-        category = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(term.InnerText);
-
-        if (category != SHC.Undefined)
-          break;
+        continue;
       }
 
-      return category;
+      var isAlreadyLoaded = loadedSymbols.Contains(el.InnerText);
+      symbols.Add(new Symbol(el.InnerText, familyName, isAlreadyLoaded));
     }
+  }
 
-    public IEnumerable<IRevitCategoryInfo> GetRevitCategoryInfoOfFamilySymbol(FamilySymbol familySymbol)
+  private IRevitCategoryInfo GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
+  {
+    var catRoot = xmlDoc.GetElementsByTagName("category");
+    IRevitCategoryInfo category = SHC.Undefined;
+    foreach (var node in catRoot)
     {
-      var allPotentialMatches = SHC.All.Values
-        .Where(info => info.ElementTypeType == typeof(FamilySymbol))
-        .ToList();
-
-      var narrowerMatches = allPotentialMatches
-        .Where(info => info.ContainsRevitCategory(familySymbol.Category));
-
-      if (narrowerMatches.Any())
+      if (node is not XmlElement xmlNode)
       {
-        return narrowerMatches;
+        continue;
       }
-      else
+
+      var term = xmlNode.SelectSingleNode("ab:term", nsman);
+      if (term == null)
       {
-        // because we know that none of the categories contain the revit category that we're looking for
-        // then filter out every match that has any defined category
-        return allPotentialMatches
-          .Where(info => info.BuiltInCategories.Count == 0);
+        continue;
+      }
+
+      category = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(term.InnerText);
+
+      if (category != SHC.Undefined)
+      {
+        break;
       }
     }
 
-    public class FamilyInfo
+    return category;
+  }
+
+  public IEnumerable<IRevitCategoryInfo> GetRevitCategoryInfoOfFamilySymbol(FamilySymbol familySymbol)
+  {
+    var allPotentialMatches = SHC.All.Values.Where(info => info.ElementTypeType == typeof(FamilySymbol)).ToList();
+
+    var narrowerMatches = allPotentialMatches.Where(info => info.ContainsRevitCategory(familySymbol.Category));
+
+    if (narrowerMatches.Any())
     {
-      public string Path { get; set; }
-      public FamilyInfo(string path)
-      {
-        Path = path;
-      }
+      return narrowerMatches;
+    }
+    else
+    {
+      // because we know that none of the categories contain the revit category that we're looking for
+      // then filter out every match that has any defined category
+      return allPotentialMatches.Where(info => info.BuiltInCategories.Count == 0);
+    }
+  }
+
+  public class FamilyInfo
+  {
+    public string Path { get; set; }
+
+    public FamilyInfo(string path)
+    {
+      Path = path;
     }
   }
 }

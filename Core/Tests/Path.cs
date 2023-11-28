@@ -16,7 +16,10 @@ public class SpecklePathTests
     string pattern;
 
     if (string.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
+    {
       pattern = @"\/root";
+    }
+
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     {
       pattern = @"C:\\Users\\.*\\AppData\\Roaming";
@@ -29,9 +32,13 @@ public class SpecklePathTests
     {
       // if running under root user, the .config folder is in another location...
       if (userPath.StartsWith("/root"))
+      {
         pattern = @"\/root/\.config";
+      }
       else
+      {
         pattern = @"\/home/.*/\.config";
+      }
     }
     else
     {
@@ -74,9 +81,13 @@ public class SpecklePathTests
     {
       // if running under root user, the .config folder is in another location...
       if (installPath.StartsWith("/root"))
+      {
         pattern = @"\/root/\.config";
+      }
       else
+      {
         pattern = @"\/home/.*/\.config";
+      }
     }
     else
     {

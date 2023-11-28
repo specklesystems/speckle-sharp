@@ -87,7 +87,9 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
   public async void Show(object content)
   {
     if (_items == null)
+    {
       return;
+    }
 
     var notification = content as INotification;
 
@@ -98,17 +100,21 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
     };
 
     if (notification != null)
+    {
       notificationControl.NotificationClosed += (sender, args) =>
       {
         notification.OnClose?.Invoke();
 
         _items.Remove(sender);
       };
+    }
 
     notificationControl.PointerPressed += (sender, args) =>
     {
       if (notification != null && notification.OnClick != null)
+      {
         notification.OnClick.Invoke();
+      }
 
       (sender as NotificationCard)?.Close();
     };
@@ -116,10 +122,14 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
     _items.Add(notificationControl);
 
     if (_items.OfType<NotificationCard>().Count(i => !i.IsClosing) > MaxItems)
+    {
       _items.OfType<NotificationCard>().First(i => !i.IsClosing).Close();
+    }
 
     if (notification != null && notification.Expiration == TimeSpan.Zero)
+    {
       return;
+    }
 
     await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7)).ConfigureAwait(true);
 
@@ -138,7 +148,9 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
     base.OnPropertyChanged(change);
 
     if (change.Property == PositionProperty)
+    {
       UpdatePseudoClasses(change.NewValue.GetValueOrDefault<NotificationPosition>());
+    }
   }
 
   private void UpdatePseudoClasses(NotificationPosition position)

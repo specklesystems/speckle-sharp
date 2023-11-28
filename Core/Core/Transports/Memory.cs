@@ -14,7 +14,8 @@ public sealed class MemoryTransport : ITransport, ICloneable
 {
   public IDictionary<string, string> Objects { get; }
 
-  public MemoryTransport() : this(new Dictionary<string, string>()) { }
+  public MemoryTransport()
+    : this(new Dictionary<string, string>()) { }
 
   public MemoryTransport(IDictionary<string, string> objects)
   {
@@ -60,7 +61,9 @@ public sealed class MemoryTransport : ITransport, ICloneable
   {
     var stopwatch = Stopwatch.StartNew();
     if (CancellationToken.IsCancellationRequested)
+    {
       return; // Check for cancellation
+    }
 
     Objects[id] = serializedObject;
 
@@ -77,10 +80,12 @@ public sealed class MemoryTransport : ITransport, ICloneable
     var serializedObject = sourceTransport.GetObject(id);
 
     if (serializedObject is null)
+    {
       throw new TransportException(
         this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
+    }
 
     SaveObject(id, serializedObject);
   }
@@ -112,7 +117,9 @@ public sealed class MemoryTransport : ITransport, ICloneable
   {
     Dictionary<string, bool> ret = new();
     foreach (string objectId in objectIds)
+    {
       ret[objectId] = Objects.ContainsKey(objectId);
+    }
 
     return ret;
   }

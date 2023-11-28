@@ -8,6 +8,13 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Authors>Pedro Henrique Liberato</Authors>
   </PropertyGroup>
+
+  <PropertyGroup Label="Community Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+    <WarningLevel>0</WarningLevel>
+    <EnableNetAnalyzers>false</EnableNetAnalyzers>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />

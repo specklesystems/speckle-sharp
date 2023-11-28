@@ -11,114 +11,130 @@ using Speckle.Core.Kits;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
-namespace Speckle.ConnectorAutocadCivil.UI
+namespace Speckle.ConnectorAutocadCivil.UI;
+
+public partial class ConnectorBindingsAutocad : ConnectorBindings
 {
-  public partial class ConnectorBindingsAutocad : ConnectorBindings
+  public override List<string> GetObjectsInView() // this returns all visible doc objects.
   {
-    public override List<string> GetObjectsInView() // this returns all visible doc objects.
+    var objs = new List<string>();
+    using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
     {
-      var objs = new List<string>();
-      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      BlockTableRecord modelSpace = Doc.Database.GetModelSpace();
+      foreach (ObjectId id in modelSpace)
       {
-        BlockTableRecord modelSpace = Doc.Database.GetModelSpace();
-        foreach (ObjectId id in modelSpace)
+        var dbObj = tr.GetObject(id, OpenMode.ForRead);
+        if (dbObj.Visible())
         {
-          var dbObj = tr.GetObject(id, OpenMode.ForRead);
-          if (dbObj.Visible())
-            objs.Add(dbObj.Handle.ToString());
+          objs.Add(dbObj.Handle.ToString());
         }
-        tr.Commit();
       }
-      return objs;
+      tr.Commit();
     }
+    return objs;
+  }
 
-    public override List<string> GetSelectedObjects()
+  public override List<string> GetSelectedObjects()
+  {
+    var objs = new List<string>();
+    if (Doc != null)
     {
-      var objs = new List<string>();
-      if (Doc != null)
+      PromptSelectionResult selection = Doc.Editor.SelectImplied();
+      if (selection.Status == PromptStatus.OK)
       {
-        PromptSelectionResult selection = Doc.Editor.SelectImplied();
-        if (selection.Status == PromptStatus.OK)
-          objs = selection.Value.GetHandles();
+        objs = selection.Value.GetHandles();
       }
-      return objs;
     }
+    return objs;
+  }
 
-    public override List<ISelectionFilter> GetSelectionFilters()
+  public override List<ISelectionFilter> GetSelectionFilters()
+  {
+    return new List<ISelectionFilter>()
     {
-      return new List<ISelectionFilter>()
+      new ManualSelectionFilter(),
+      new ListSelectionFilter
       {
-        new ManualSelectionFilter(),
-        new ListSelectionFilter
-        {
-          Slug = "layer",
-          Name = "Layers",
-          Icon = "LayersTriple",
-          Description = "Selects objects based on their layers.",
-          Values = GetLayers()
-        },
-        new AllSelectionFilter
-        {
-          Slug = "all",
-          Name = "Everything",
-          Icon = "CubeScan",
-          Description = "Selects all document objects."
-        }
-      };
-    }
+        Slug = "layer",
+        Name = "Layers",
+        Icon = "LayersTriple",
+        Description = "Selects objects based on their layers.",
+        Values = GetLayers()
+      },
+      new AllSelectionFilter
+      {
+        Slug = "all",
+        Name = "Everything",
+        Icon = "CubeScan",
+        Description = "Selects all document objects."
+      }
+    };
+  }
 
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
+  public override void SelectClientObjects(List<string> args, bool deselect = false)
+  {
+    var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+    var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+    foreach (var arg in args)
     {
-      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-      var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
-      foreach (var arg in args)
+      try
       {
-        try
+        if (Utils.GetHandle(arg, out Handle handle))
         {
-          if (Utils.GetHandle(arg, out Handle handle))
-            if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+          if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
+          {
+            if (deselect)
             {
-              if (deselect)
+              if (currentSelection.Contains(id))
               {
-                if (currentSelection.Contains(id))
-                  currentSelection.Remove(id);
-              }
-              else
-              {
-                if (!currentSelection.Contains(id))
-                  currentSelection.Add(id);
+                currentSelection.Remove(id);
               }
             }
+            else
+            {
+              if (!currentSelection.Contains(id))
+              {
+                currentSelection.Add(id);
+              }
+            }
+          }
         }
-        catch { }
       }
-      if (currentSelection.Count == 0)
-        editor.SetImpliedSelection(new ObjectId[0]);
-      else
-        Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
-      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+      catch { }
+    }
+    if (currentSelection.Count == 0)
+    {
+      editor.SetImpliedSelection(new ObjectId[0]);
+    }
+    else
+    {
+      Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
     }
 
-    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
+    Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+  }
+
+  private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
+  {
+    var selection = new List<string>();
+    switch (filter.Slug)
     {
-      var selection = new List<string>();
-      switch (filter.Slug)
-      {
-        case "manual":
-          return filter.Selection;
-        case "all":
-          return Doc.ConvertibleObjects(converter);
-        case "layer":
-          foreach (var layerName in filter.Selection)
+      case "manual":
+        return filter.Selection;
+      case "all":
+        return Doc.ConvertibleObjects(converter);
+      case "layer":
+        foreach (var layerName in filter.Selection)
+        {
+          TypedValue[] layerType = new TypedValue[1] { new((int)DxfCode.LayerName, layerName) };
+          PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
+          if (prompt.Status == PromptStatus.OK)
           {
-            TypedValue[] layerType = new TypedValue[1] { new TypedValue((int)DxfCode.LayerName, layerName) };
-            PromptSelectionResult prompt = Doc.Editor.SelectAll(new SelectionFilter(layerType));
-            if (prompt.Status == PromptStatus.OK)
-              selection.AddRange(prompt.Value.GetHandles());
+            selection.AddRange(prompt.Value.GetHandles());
           }
-          return selection;
-      }
-      return selection;
+        }
+        return selection;
     }
+    return selection;
   }
 }

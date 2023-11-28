@@ -119,13 +119,18 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   public List<Point> GetPoints()
   {
     if (points.Count % 3 != 0)
+    {
       throw new SpeckleException(
         $"{nameof(Curve)}.{nameof(points)} list is malformed: expected length to be multiple of 3"
       );
+    }
 
     var pts = new List<Point>(points.Count / 3);
     for (int i = 2; i < points.Count; i += 3)
+    {
       pts.Add(new Point(points[i - 2], points[i - 1], points[i], units));
+    }
+
     return pts;
   }
 
@@ -166,9 +171,14 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   public static Curve FromList(List<double> list)
   {
     if (list[0] != list.Count - 1)
+    {
       throw new Exception($"Incorrect length. Expected {list[0]}, got {list.Count}.");
+    }
+
     if (list[1] != CurveTypeEncoding.Curve)
+    {
       throw new Exception($"Wrong curve type. Expected {CurveTypeEncoding.Curve}, got {list[1]}.");
+    }
 
     var curve = new Curve();
     curve.degree = (int)list[2];

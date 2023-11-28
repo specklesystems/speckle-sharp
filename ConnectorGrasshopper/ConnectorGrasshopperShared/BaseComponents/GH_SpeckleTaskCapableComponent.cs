@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
@@ -58,6 +58,8 @@ public abstract class GH_SpeckleTaskCapableComponent<T> : GH_TaskCapableComponen
     using (LogContext.PushProperty("hostApplication", Utilities.GetVersionedAppName()))
     using (LogContext.PushProperty("grasshopperComponent", GetType().Name))
     using (LogContext.PushProperty("traceId", guid))
+    {
       SolveInstanceWithLogContext(DA);
+    }
   }
 }

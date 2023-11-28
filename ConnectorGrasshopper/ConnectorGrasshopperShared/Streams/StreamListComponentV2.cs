@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -44,7 +44,9 @@ public class StreamListComponentV2 : GH_SpeckleTaskCapableComponent<List<StreamW
     if (InPreSolve)
     {
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       Account account = null;
       var limit = 10;
@@ -81,7 +83,9 @@ public class StreamListComponentV2 : GH_SpeckleTaskCapableComponent<List<StreamW
     }
 
     if (!GetSolveResults(DA, out var data))
+    {
       return;
+    }
 
     DA.SetDataList(0, data.Select(item => new GH_SpeckleStream(item)));
   }

@@ -14,10 +14,16 @@ public class AdaptiveComponentSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -60,10 +66,16 @@ public class AdvanceSteelBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -106,10 +118,16 @@ public class AdvanceSteelCircularBoltSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -152,10 +170,16 @@ public class AdvanceSteelPlateSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -198,10 +222,16 @@ public class AdvanceSteelRectangularBoltSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -244,10 +274,16 @@ public class AdvanceSteelSpecialPartSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -290,10 +326,16 @@ public class AngleSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -336,10 +378,16 @@ public class ArchicadBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -376,10 +424,16 @@ public class ArchicadColumnSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -422,10 +476,16 @@ public class AreaSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -462,10 +522,16 @@ public class AxisSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -508,10 +574,16 @@ public class BeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -548,10 +620,16 @@ public class BlockDefinitionSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -588,10 +666,16 @@ public class BlockInstanceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -628,10 +712,16 @@ public class BraceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -668,10 +758,16 @@ public class CatalogueSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -714,10 +810,16 @@ public class Catalogue1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -760,10 +862,16 @@ public class CeilingSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -800,10 +908,16 @@ public class ChannelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -846,10 +960,16 @@ public class CircularSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -892,10 +1012,16 @@ public class ColumnSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -932,10 +1058,16 @@ public class ConcreteSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -978,10 +1110,16 @@ public class CSIAreaSpringSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1018,10 +1156,16 @@ public class CSIDiaphragmSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1058,10 +1202,16 @@ public class CSIElement1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1104,10 +1254,16 @@ public class CSIElement1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1150,10 +1306,16 @@ public class CSIElement2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1196,10 +1358,16 @@ public class CSILinearSpringSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1236,10 +1404,16 @@ public class CSILinkPropertySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1276,10 +1450,16 @@ public class CSINodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1322,10 +1502,16 @@ public class CSIOpeningSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1362,10 +1548,16 @@ public class CSISpringPropertySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1408,10 +1600,16 @@ public class CSISpringProperty1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1454,10 +1652,16 @@ public class DeckFilledSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1494,10 +1698,16 @@ public class DeckSlabSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1534,10 +1744,16 @@ public class DeckUnFilledSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1574,10 +1790,16 @@ public class DetailCurveSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1614,10 +1836,16 @@ public class DirectShapeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1660,10 +1888,16 @@ public class DuctSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1699,10 +1933,16 @@ public class Duct1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1739,10 +1979,16 @@ public class Element1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1785,10 +2031,16 @@ public class Element1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1831,10 +2083,16 @@ public class Element2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1877,10 +2135,16 @@ public class Element3DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1917,10 +2181,16 @@ public class ExplicitSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -1963,10 +2233,16 @@ public class FamilyInstanceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2003,10 +2279,16 @@ public class FloorSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2043,10 +2325,16 @@ public class FreeformElementSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2089,10 +2377,16 @@ public class FreeformElement1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2134,10 +2428,16 @@ public class FreeformElement2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2179,10 +2479,16 @@ public class GridLineSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2218,10 +2524,16 @@ public class GridLine1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2258,10 +2570,16 @@ public class GSAAlignmentSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2304,10 +2622,16 @@ public class GSAAnalysisCaseSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2350,10 +2674,16 @@ public class GSAAssemblySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2396,10 +2726,16 @@ public class GSAConcreteSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2442,10 +2778,16 @@ public class GSAElement1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2488,10 +2830,16 @@ public class GSAElement1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2534,10 +2882,16 @@ public class GSAElement2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2580,10 +2934,16 @@ public class GSAElement3DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2626,10 +2986,16 @@ public class GSAGeneralisedRestraintSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2672,10 +3038,16 @@ public class GSAGridLineSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2713,10 +3085,16 @@ public class GSAGridPlaneSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2759,10 +3137,16 @@ public class GSAGridSurfaceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2805,10 +3189,16 @@ public class GSAInfluenceBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2851,10 +3241,16 @@ public class GSAInfluenceNodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2897,10 +3293,16 @@ public class GSALoadBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2943,10 +3345,16 @@ public class GSALoadBeam1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -2989,10 +3397,16 @@ public class GSALoadCaseSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3030,10 +3444,16 @@ public class GSALoadCombinationSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3076,10 +3496,16 @@ public class GSALoadFaceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3122,10 +3548,16 @@ public class GSALoadGravitySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3168,10 +3600,16 @@ public class GSALoadGravity1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3214,10 +3652,16 @@ public class GSALoadGravity2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3260,10 +3704,16 @@ public class GSALoadNodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3300,10 +3750,16 @@ public class GSALoadNode1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3346,10 +3802,16 @@ public class GSAMaterialSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3387,10 +3849,16 @@ public class GSAMember1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3433,10 +3901,16 @@ public class GSAMember1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3479,10 +3953,16 @@ public class GSAMember2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3520,10 +4000,16 @@ public class GSANodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3560,10 +4046,16 @@ public class GSAPathSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3606,10 +4098,16 @@ public class GSAPolylineSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3647,10 +4145,16 @@ public class GSAProperty1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3693,10 +4197,16 @@ public class GSAProperty2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3739,10 +4249,16 @@ public class GSARigidConstraintSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3785,10 +4301,16 @@ public class GSAStageSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3826,10 +4348,16 @@ public class GSASteelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3872,10 +4400,16 @@ public class GSAStoreySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3918,10 +4452,16 @@ public class GSATaskSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -3964,10 +4504,16 @@ public class GSAUserVehicleSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4010,10 +4556,16 @@ public class ISectionSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4056,10 +4608,16 @@ public class LevelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4096,10 +4654,16 @@ public class LoadBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4142,10 +4706,16 @@ public class LoadBeam1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4188,10 +4758,16 @@ public class LoadCaseSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4228,10 +4804,16 @@ public class LoadCombinationSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4274,10 +4856,16 @@ public class LoadFaceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4320,10 +4908,16 @@ public class LoadFace1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4366,10 +4960,16 @@ public class LoadGravitySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4412,10 +5012,16 @@ public class LoadGravity1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4458,10 +5064,16 @@ public class LoadGravity2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4504,10 +5116,16 @@ public class LoadNodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4544,10 +5162,16 @@ public class LoadNode1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4590,10 +5214,16 @@ public class MaterialSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4630,10 +5260,16 @@ public class MaterialQuantitySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4676,10 +5312,16 @@ public class ModelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4716,10 +5358,16 @@ public class ModelCurveSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4756,10 +5404,16 @@ public class ModelInfoSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4802,10 +5456,16 @@ public class ModelSettingsSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4848,10 +5508,16 @@ public class ModelUnitsSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4894,10 +5560,16 @@ public class ModelUnits1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4940,10 +5612,16 @@ public class NodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -4986,10 +5664,16 @@ public class OpeningSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5026,10 +5710,16 @@ public class ParameterSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5067,10 +5757,16 @@ public class ParameterUpdaterSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5113,10 +5809,16 @@ public class PerimeterSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5159,10 +5861,16 @@ public class PipeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5199,10 +5907,16 @@ public class PointcloudSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5239,10 +5953,16 @@ public class PropertySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5279,10 +5999,16 @@ public class Property1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5325,10 +6051,16 @@ public class Property1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5371,10 +6103,16 @@ public class Property2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5417,10 +6155,16 @@ public class Property2D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5463,10 +6207,16 @@ public class Property3DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5509,10 +6259,16 @@ public class Property3D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5555,10 +6311,16 @@ public class PropertyDamperSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5601,10 +6363,16 @@ public class PropertyDamper1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5647,10 +6415,16 @@ public class PropertyMassSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5693,10 +6467,16 @@ public class PropertyMass1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5739,10 +6519,16 @@ public class PropertySpringSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5785,10 +6571,16 @@ public class PropertySpring1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5831,10 +6623,16 @@ public class PropertySpring2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5877,10 +6675,16 @@ public class RectangularSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5923,10 +6727,16 @@ public class RenderMaterialSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -5963,10 +6773,16 @@ public class RestraintSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6009,10 +6825,16 @@ public class Restraint1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6055,10 +6877,16 @@ public class Restraint2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6101,10 +6929,16 @@ public class Result1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6147,10 +6981,16 @@ public class Result1D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6193,10 +7033,16 @@ public class Result2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6239,10 +7085,16 @@ public class Result2D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6285,10 +7137,16 @@ public class Result3DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6331,10 +7189,16 @@ public class Result3D1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6377,10 +7241,16 @@ public class ResultGlobalSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6423,10 +7293,16 @@ public class ResultGlobal1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6469,10 +7345,16 @@ public class ResultNodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6515,10 +7397,16 @@ public class ResultNode1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6561,10 +7449,16 @@ public class ResultSet1DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6607,10 +7501,16 @@ public class ResultSet2DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6653,10 +7553,16 @@ public class ResultSet3DSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6699,10 +7605,16 @@ public class ResultSetAllSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6745,10 +7657,16 @@ public class ResultSetNodeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6791,10 +7709,16 @@ public class RevitBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6832,10 +7756,16 @@ public class RevitBraceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6873,10 +7803,16 @@ public class RevitCeilingSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6912,10 +7848,16 @@ public class RevitCeiling1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6952,10 +7894,16 @@ public class RevitColumnSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -6998,10 +7946,16 @@ public class RevitColumn1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7043,10 +7997,16 @@ public class RevitColumn2SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7089,10 +8049,16 @@ public class RevitDuctSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7128,10 +8094,16 @@ public class RevitDuct1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7168,10 +8140,16 @@ public class RevitExtrusionRoofSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7214,10 +8192,16 @@ public class RevitFaceWallSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7260,10 +8244,16 @@ public class RevitFlexDuctSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7300,10 +8290,16 @@ public class RevitFlexPipeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7340,10 +8336,16 @@ public class RevitFloorSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7381,10 +8383,16 @@ public class RevitFootprintRoofSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7427,10 +8435,16 @@ public class RevitLevelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7473,10 +8487,16 @@ public class RevitLevel1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7519,10 +8539,16 @@ public class RevitMaterialSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7559,10 +8585,16 @@ public class RevitPipeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7599,10 +8631,16 @@ public class RevitProfileWallSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7645,10 +8683,16 @@ public class RevitRailingSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7685,10 +8729,16 @@ public class RevitShaftSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7731,10 +8781,16 @@ public class RevitTopographySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7771,10 +8827,16 @@ public class RevitWallSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7817,10 +8879,16 @@ public class RevitWall1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7863,10 +8931,16 @@ public class RevitWallOpeningSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7908,10 +8982,16 @@ public class RevitWallOpening1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7954,10 +9034,16 @@ public class RevitWireSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -7994,10 +9080,16 @@ public class RibbedSlabSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8034,10 +9126,16 @@ public class RoofSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8073,10 +9171,16 @@ public class RoomSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8113,10 +9217,16 @@ public class Room1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8153,10 +9263,16 @@ public class RoomBoundaryLineSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8194,10 +9310,16 @@ public class SlabSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8234,10 +9356,16 @@ public class SpaceSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8274,10 +9402,16 @@ public class Space1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8320,10 +9454,16 @@ public class SpaceSeparationLineSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8366,10 +9506,16 @@ public class SteelSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8412,10 +9558,16 @@ public class StoreySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8458,10 +9610,16 @@ public class StructuralMaterialSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8504,10 +9662,16 @@ public class StructuralMaterial1SchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8550,10 +9714,16 @@ public class TeeSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8591,10 +9761,16 @@ public class TeklaBeamSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8631,10 +9807,16 @@ public class TeklaContourPlateSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8672,10 +9854,16 @@ public class TimberSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8718,10 +9906,16 @@ public class TopographySchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8758,10 +9952,16 @@ public class WaffleSlabSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8798,10 +9998,16 @@ public class WallSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -8838,10 +10044,16 @@ public class WireSchemaComponent : CreateSchemaObjectBase
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (!args.Key.StartsWith("Speckle2:tabs."))
+      {
         return;
+      }
+
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }

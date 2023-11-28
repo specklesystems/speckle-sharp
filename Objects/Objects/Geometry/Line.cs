@@ -34,7 +34,10 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   public Line(IList<double> coordinates, string units = Units.Meters, string applicationId = null)
   {
     if (coordinates.Count < 6)
+    {
       throw new SpeckleException("Line from coordinate array requires 6 coordinates.");
+    }
+
     start = new Point(coordinates[0], coordinates[1], coordinates[2], units, applicationId);
     end = new Point(coordinates[3], coordinates[4], coordinates[5], units, applicationId);
     length = Point.Distance(start, end);
@@ -58,7 +61,10 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
     set
     {
       if (value == null)
+      {
         return;
+      }
+
       start = new Point(value[0], value[1], value[2]);
       end = new Point(value[3], value[4], value[5]);
     }

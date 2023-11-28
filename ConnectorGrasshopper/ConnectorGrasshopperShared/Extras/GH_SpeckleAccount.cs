@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using ConnectorGrasshopper.Properties;
@@ -39,6 +39,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
   public override bool CastFrom(object source)
   {
     if (source is GH_String ghString)
+    {
       try
       {
         Value = AccountManager.GetAccounts().First(acc => acc.userInfo.id == ghString.Value);
@@ -46,8 +47,10 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
       }
       catch (Exception e) // TODO: Handle this exception instead of ignoring it
       { }
+    }
 
     if (source is string userId)
+    {
       try
       {
         Value = AccountManager.GetAccounts().First(acc => acc.id == userId);
@@ -55,6 +58,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
       }
       catch (Exception e) // TODO: Handle this exception instead of ignoring it
       { }
+    }
 
     if (source is Account account)
     {

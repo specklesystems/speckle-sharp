@@ -38,7 +38,9 @@ public class Hashing
     var polyline = new Polyline();
 
     for (int i = 0; i < 1000; i++)
+    {
       polyline.Points.Add(new Point { X = i * 2, Y = i % 2 });
+    }
 
     var stopWatch = new Stopwatch();
     stopWatch.Start();

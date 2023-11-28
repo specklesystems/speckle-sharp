@@ -25,7 +25,10 @@ public class AvaloniaHwndHost : HwndHost
     get
     {
       if (_root == null || _root.Renderer == null)
+      {
         _root = new EmbeddableControlRoot(); // TODO: this crashes rhino periodically!
+      }
+
       return _root;
     }
   }
@@ -37,14 +40,18 @@ public class AvaloniaHwndHost : HwndHost
     {
       root.Content = value;
       if (value != null)
+      {
         value.DataContext = DataContext;
+      }
     }
   }
 
   private void AvaloniaHwndHost_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
   {
     if (Content != null)
+    {
       Content.DataContext = e.NewValue;
+    }
   }
 
   protected override HandleRef BuildWindowCore(HandleRef hwndParent)
@@ -59,8 +66,10 @@ public class AvaloniaHwndHost : HwndHost
     _ = UnmanagedMethods.SetParent(handle, hwndParent.Handle);
 
     if (IsFocused)
+    {
       // Focus Avalonia, if host was focused before handle was created.
       FocusManager.Instance.Focus(null);
+    }
 
     return new HandleRef(root, handle);
   }

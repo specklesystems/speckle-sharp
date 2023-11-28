@@ -237,7 +237,10 @@ public static class Units
   public static string GetUnitsFromString(string unit)
   {
     if (unit == null)
+    {
       return null;
+    }
+
     switch (unit.ToLower())
     {
       case "mm":

@@ -54,7 +54,9 @@ public static class AccountManager
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
+    {
       return null;
+    }
 
     response.Data.serverInfo.url = server;
 
@@ -83,7 +85,9 @@ public static class AccountManager
     var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
+    {
       return null;
+    }
 
     return response.Data.activeUser;
   }
@@ -116,7 +120,9 @@ public static class AccountManager
       var res = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
       if (res.Errors != null && res.Errors.Any())
+      {
         throw new SpeckleException(res.Errors[0].Message, res.Errors);
+      }
 
       return res.Data;
     }
@@ -137,19 +143,25 @@ public static class AccountManager
     // first mechanism, check for local file
     var customServerFile = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "server");
     if (File.Exists(customServerFile))
+    {
       customServerUrl = File.ReadAllText(customServerFile);
+    }
 
     // second mechanism, check ENV VAR
     var customServerEnvVar = Environment.GetEnvironmentVariable("SPECKLE_SERVER");
     if (!string.IsNullOrEmpty(customServerEnvVar))
+    {
       customServerUrl = customServerEnvVar;
+    }
 
     if (!string.IsNullOrEmpty(customServerUrl))
     {
       Uri url = null;
       Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
       if (url != null)
+      {
         serverUrl = customServerUrl.TrimEnd('/');
+      }
     }
 
     return serverUrl;
@@ -176,7 +188,10 @@ public static class AccountManager
     {
       var firstAccount = GetAccounts().FirstOrDefault();
       if (firstAccount == null)
+      {
         SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
+      }
+
       return firstAccount;
     }
     return defaultAccount;
@@ -197,9 +212,13 @@ public static class AccountManager
     foreach (var acc in sqlAccounts)
     {
       if (IsInvalid(acc))
+      {
         RemoveAccount(acc.id);
+      }
       else
+      {
         yield return acc;
+      }
     }
 
     foreach (var acc in localAccounts)
@@ -218,10 +237,13 @@ public static class AccountManager
     var accounts = new List<Account>();
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
     if (!Directory.Exists(accountsDir))
+    {
       return accounts;
+    }
 
     var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
+    {
       try
       {
         var json = File.ReadAllText(file);
@@ -236,12 +258,15 @@ public static class AccountManager
           && !string.IsNullOrEmpty(account.serverInfo.url)
           && !string.IsNullOrEmpty(account.serverInfo.name)
         )
+        {
           accounts.Add(account);
+        }
       }
       catch
       {
         //ignore it
       }
+    }
 
     return accounts;
   }
@@ -268,7 +293,9 @@ public static class AccountManager
           userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
           if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
+          {
             throw new SpeckleException("Could not refresh token");
+          }
 
           account.token = tokenResponse.token;
           account.refreshToken = tokenResponse.refreshToken;
@@ -301,7 +328,9 @@ public static class AccountManager
     var accounts = GetAccounts();
 
     if (accounts.Any() && !accounts.Any(x => x.isDefault))
+    {
       ChangeDefaultAccount(accounts.First().id);
+    }
   }
 
   /// <summary>
@@ -313,9 +342,13 @@ public static class AccountManager
     foreach (var account in GetAccounts())
     {
       if (account.id != id)
+      {
         account.isDefault = false;
+      }
       else
+      {
         account.isDefault = true;
+      }
 
       AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
     }
@@ -370,9 +403,13 @@ public static class AccountManager
       SpeckleLog.Logger.Debug("Got access code {accessCode}", accessCode);
       var message = "";
       if (accessCode != null)
+      {
         message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
+      }
       else
+      {
         message = "Oups, something went wrong...!";
+      }
 
       var responseString =
         $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
@@ -447,8 +484,10 @@ public static class AccountManager
     // use a static variable to quickly
     // prevent launching this flow multiple times
     if (_isAddingAccount)
+    {
       // this should probably throw with an error message
       throw new SpeckleAccountFlowLockedException("The account add flow is already launched.");
+    }
 
     // this uses the SQLite transport to store locks
     var lockIds = AccountAddLockStorage.GetAllObjects().OrderByDescending(d => d).ToList();
@@ -484,7 +523,9 @@ public static class AccountManager
     _isAddingAccount = false;
     // make sure all old locks are removed
     foreach (var id in AccountAddLockStorage.GetAllObjects())
+    {
       AccountAddLockStorage.DeleteObject(id);
+    }
   }
 
   /// <summary>
@@ -511,7 +552,9 @@ public static class AccountManager
     {
       accessCode = await _getAccessCode(server, challenge, timeout).ConfigureAwait(false);
       if (string.IsNullOrEmpty(accessCode))
+      {
         throw new SpeckleAccountManagerException("Access code is invalid");
+      }
 
       var account = await _createAccount(accessCode, challenge, server).ConfigureAwait(false);
 

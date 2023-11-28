@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
@@ -75,12 +75,15 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
       {
         // Will execute every time a document becomes active (from background or opening file.).
         if (StreamWrapper != null)
+        {
           Task.Run(async () =>
           {
             // Ensure fresh instance of client.
             await ResetApiClient(StreamWrapper);
             if (source == null)
+            {
               CreateCancelationToken();
+            }
 
             // Get last commit from the branch
             var b = ApiClient
@@ -89,8 +92,12 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
             if (b.commits.items[0].id != ReceivedCommitId)
+            {
               HandleNewCommit();
+            }
           });
+        }
+
         break;
       }
       case GH_DocumentContext.Unloaded:
@@ -113,9 +120,13 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
         delegate
         {
           if (AutoReceive)
+          {
             ExpireSolution(true);
+          }
           else
+          {
             OnDisplayExpired(true);
+          }
         }
     );
   }
@@ -138,7 +149,10 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
   {
     // Break if wrapper is branch type and branch name is not equal.
     if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    {
       return;
+    }
+
     HandleNewCommit();
   }
 
@@ -155,6 +169,7 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
     var kits = KitManager.GetKitsWithConvertersForApp(Utilities.GetVersionedAppName());
 
     foreach (var kit in kits)
+    {
       Menu_AppendItem(
         menu,
         $"{kit.Name} ({kit.Description})",
@@ -165,6 +180,7 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
         true,
         Kit != null ? kit.Name == Kit.Name : false
       );
+    }
 
     Menu_AppendSeparator(menu);
 
@@ -229,7 +245,9 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
 
     var swString = reader.GetString("StreamWrapper");
     if (!string.IsNullOrEmpty(swString))
+    {
       StreamWrapper = new StreamWrapper(swString);
+    }
 
     JustPastedIn = true;
 
@@ -237,6 +255,7 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
     reader.TryGetString("KitName", ref kitName);
 
     if (kitName != "")
+    {
       try
       {
         SetConverterFromKit(kitName);
@@ -249,8 +268,11 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
         );
         SetDefaultKitAndConverter();
       }
+    }
     else
+    {
       SetDefaultKitAndConverter();
+    }
 
     //ConvertToNative = reader.GetBoolean(nameof(ConvertToNative));
 
@@ -309,7 +331,9 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
       CreateCancelationToken();
       ParseInput(DA);
       if (InputType == "Invalid")
+      {
         return;
+      }
     }
 
     if (InPreSolve)
@@ -401,7 +425,10 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
     else
     {
       if (@base == null)
+      {
         return;
+      }
+
       ReceivedObjectId = @base.id;
 
       //the active document may have changed
@@ -424,7 +451,9 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
 
     var ghGoo = DataInput;
     if (ghGoo == null)
+    {
       return;
+    }
 
     var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -484,7 +513,10 @@ public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
     }
 
     if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn)
+    {
       return;
+    }
+
     StreamWrapper = wrapper;
 
     //ResetApiClient(wrapper);

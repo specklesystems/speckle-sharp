@@ -1,4 +1,4 @@
-﻿#if GRASSHOPPER
+#if GRASSHOPPER
 #endif
 using Objects.Structural.Geometry;
 using RH = Rhino.Geometry;

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Autodesk.Revit.DB;
 using Speckle.Core.Helpers;
 

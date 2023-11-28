@@ -26,7 +26,9 @@ public class DialogUserControl : UserControl, ICloseable
     _host = host;
 
     if (_host == null && MainViewModel.Instance != null)
+    {
       _host = MainViewModel.Instance;
+    }
 
     _host.DialogBody = this;
 

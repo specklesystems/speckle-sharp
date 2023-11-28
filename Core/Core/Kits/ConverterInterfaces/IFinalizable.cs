@@ -1,7 +1,6 @@
-namespace Speckle.Core.Kits.ConverterInterfaces
+namespace Speckle.Core.Kits.ConverterInterfaces;
+
+public interface IFinalizable
 {
-  public interface IFinalizable
-  {
-    void FinalizeConversion();
-  }
+  void FinalizeConversion();
 }

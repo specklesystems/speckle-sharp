@@ -14,7 +14,10 @@ public static class Parameters
   public static Base ToBase(this List<Parameter> parameters)
   {
     if (parameters == null)
+    {
       return null;
+    }
+
     var @base = new Base();
 
     foreach (Parameter p in parameters)
@@ -22,7 +25,9 @@ public static class Parameters
       //if an applicationId is defined (BuiltInName) use that as key, otherwise use the display name
       var key = string.IsNullOrEmpty(p.applicationInternalName) ? p.name : p.applicationInternalName;
       if (string.IsNullOrEmpty(key) || @base[key] != null)
+      {
         continue;
+      }
 
       @base[key] = p;
     }

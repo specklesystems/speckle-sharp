@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -51,6 +51,7 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
       {
         // Will execute every time a document becomes active (from background or opening file.).
         if (StreamWrapper != null)
+        {
           Task.Run(async () =>
           {
             // Ensure fresh instance of client.
@@ -63,8 +64,12 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
             if (b.commits.items[0].id != ReceivedCommitId)
+            {
               HandleNewCommit();
+            }
           });
+        }
+
         break;
       }
       case GH_DocumentContext.Unloaded:
@@ -87,9 +92,13 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
         delegate
         {
           if (AutoReceive)
+          {
             ExpireSolution(true);
+          }
           else
+          {
             OnDisplayExpired(true);
+          }
         }
     );
   }
@@ -112,7 +121,10 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   {
     // Break if wrapper is branch type and branch name is not equal.
     if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    {
       return;
+    }
+
     HandleNewCommit();
   }
 
@@ -181,7 +193,9 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
 
     var swString = reader.GetString("StreamWrapper");
     if (!string.IsNullOrEmpty(swString))
+    {
       StreamWrapper = new StreamWrapper(swString);
+    }
 
     JustPastedIn = true;
     return base.Read(reader);
@@ -209,7 +223,9 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     {
       ParseInput(DA);
       if (InputType == "Invalid")
+      {
         return;
+      }
     }
 
     if (InPreSolve)
@@ -301,7 +317,10 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     else
     {
       if (@base == null)
+      {
         return;
+      }
+
       ReceivedObjectId = @base.id;
 
       //the active document may have changed
@@ -317,7 +336,9 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
   {
     IGH_Goo ghGoo = null;
     if (!DA.GetData(0, ref ghGoo))
+    {
       return;
+    }
 
     var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -335,7 +356,9 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     }
 
     if (newWrapper != null)
+    {
       inputType = GetStreamTypeMessage(newWrapper);
+    }
 
     InputType = inputType;
     HandleInputType(newWrapper);
@@ -371,7 +394,10 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
     }
 
     if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn)
+    {
       return;
+    }
+
     StreamWrapper = wrapper;
 
     Task.Run(async () =>

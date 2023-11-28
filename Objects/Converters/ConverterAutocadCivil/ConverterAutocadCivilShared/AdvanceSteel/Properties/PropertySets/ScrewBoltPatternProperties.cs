@@ -16,7 +16,7 @@ public class ScrewBoltPatternProperties : ASBaseProperties<ScrewBoltPattern>, IA
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "top tool diameter", nameof(ScrewBoltPattern.TopToolDiameter), eUnitType.kDistance);
     InsertProperty(dictionary, "bottom tool diameter", nameof(ScrewBoltPattern.BottomToolDiameter), eUnitType.kDistance);

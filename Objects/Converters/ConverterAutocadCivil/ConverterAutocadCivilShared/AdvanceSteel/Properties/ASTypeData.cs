@@ -5,43 +5,44 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Objects.Converter.AutocadCivil
+namespace Objects.Converter.AutocadCivil;
+
+public class ASTypeData
 {
-  public class ASTypeData
+  internal string Description { get; private set; }
+
+  internal Dictionary<string, ASProperty> PropertiesSpecific { get; private set; }
+
+  internal Dictionary<string, ASProperty> PropertiesAll { get; private set; }
+
+  internal ASTypeData(string description)
   {
-    internal string Description { get; private set; }
+    Description = description;
 
-    internal Dictionary<string, ASProperty> PropertiesSpecific { get; private set; }
+    PropertiesAll = new Dictionary<string, ASProperty>();
+  }
 
-    internal Dictionary<string, ASProperty> PropertiesAll { get; private set; }
+  internal void SetPropertiesSpecific(Dictionary<string, ASProperty> properties)
+  {
+    PropertiesSpecific = properties;
+  }
 
-    internal ASTypeData(string description)
+  internal void AddPropertiesAll(Dictionary<string, ASProperty> properties)
+  {
+    foreach (var item in properties)
     {
-      Description = description;
-
-      PropertiesAll = new Dictionary<string, ASProperty>();
-    }
-
-    internal void SetPropertiesSpecific(Dictionary<string, ASProperty> properties)
-    {
-      PropertiesSpecific = properties;
-    }
-
-    internal void AddPropertiesAll(Dictionary<string, ASProperty> properties)
-    {
-      foreach (var item in properties)
+      if (PropertiesAll.ContainsKey(item.Key))
       {
-        if (PropertiesAll.ContainsKey(item.Key))
-          throw new Exception($"Property '{item.Key}' already added");
-        
-        PropertiesAll.Add(item.Key, new ASProperty(item.Value));
+        throw new Exception($"Property '{item.Key}' already added");
       }
-    }
 
-    internal void OrderDictionaryPropertiesAll()
-    {
-      PropertiesAll = (from entry in PropertiesAll orderby entry.Key ascending select entry).ToDictionary(x => x.Key, y => y.Value);
+      PropertiesAll.Add(item.Key, new ASProperty(item.Value));
     }
+  }
+
+  internal void OrderDictionaryPropertiesAll()
+  {
+    PropertiesAll = (from entry in PropertiesAll orderby entry.Key ascending select entry).ToDictionary(x => x.Key, y => y.Value);
   }
 }
 #endif

@@ -10,6 +10,13 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Authors>Pedro Henrique Liberato</Authors>
   </PropertyGroup>
+
+  <PropertyGroup Label="Community Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+    <WarningLevel>0</WarningLevel>
+    <EnableNetAnalyzers>false</EnableNetAnalyzers>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+  
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <GenerateManifest InputFilename="$(ProjectDir)\MyAddons.xml" OutputFilename="C:\Program Files\Autodesk\AutoCAD 2023\ADVS\Addons\MyAddons.xml" MatchExpression="\$PATH\$" ReplacementText="$(TargetPath)" />

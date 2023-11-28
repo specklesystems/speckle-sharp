@@ -80,7 +80,9 @@ public partial class ConverterNavisworks
   public bool CanConvertToSpeckle(object @object)
   {
     if (@object is ModelItem modelItem)
+    {
       return CanConvertToSpeckle(modelItem);
+    }
 
     return false;
   }
@@ -97,9 +99,7 @@ public partial class ConverterNavisworks
     {
       var parts = referenceOrGuid.Split(':');
       using var savedItemReference = new SavedItemReference(parts[0], parts[1]);
-      savedViewpoint = parts.Length != 2
-        ? null
-        : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
+      savedViewpoint = parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
     }
 
     return savedViewpoint;
@@ -235,7 +235,9 @@ public partial class ConverterNavisworks
   private static Base ModelItemToSpeckle(ModelItem element)
   {
     if (IsElementHidden(element))
+    {
       return null;
+    }
 
     var @base = ConvertModelItemToSpeckle(element);
 
@@ -265,17 +267,23 @@ public partial class ConverterNavisworks
 
     // This really shouldn't exist, but is included for the what if arising from arbitrary IFCs
     if (!element.Children.Any())
+    {
       return null;
+    }
 
     // Lookup ahead of time for wasted effort, collection is
     // invalid if it has no children, or no children through hiding
     if (element.Descendants.All(x => x.IsHidden))
+    {
       return null;
+    }
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
     if (!element.Children.Any(CanConvertToSpeckle))
+    {
       return null;
+    }
 
     // ((Collection)@base).elements = elements;
 
@@ -331,9 +339,7 @@ public partial class ConverterNavisworks
   /// <returns>A Speckle object.</returns>
   private static Base CreateSpeckleObject(ModelItem element, string categoryType)
   {
-    return element.HasGeometry
-      ? new GeometryNode()
-      : new Collection { collectionType = categoryType };
+    return element.HasGeometry ? new GeometryNode() : new Collection { collectionType = categoryType };
   }
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
@@ -344,14 +350,18 @@ public partial class ConverterNavisworks
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
     if (fragmentGeometry != null && fragmentGeometry.Any())
+    {
       @base["@displayValue"] = fragmentGeometry;
+    }
   }
 
   private static bool CanConvertToSpeckle(ModelItem item)
   {
     // Only Geometry no children
     if (!item.HasGeometry || item.Children.Any())
+    {
       return true;
+    }
 
     const PrimitiveTypes allowedTypes =
       PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
@@ -371,10 +381,7 @@ public partial class ConverterNavisworks
       pathArray = @string
         .ToString()
         .Split('-')
-        .Select(
-          x => int.TryParse(x, out var value)
-            ? value
-            : throw new FormatException("malformed path pseudoId"))
+        .Select(x => int.TryParse(x, out var value) ? value : throw new FormatException("malformed path pseudoId"))
         .ToArray();
     }
     catch (FormatException)

@@ -23,7 +23,9 @@ internal sealed class GzipContent : HttpContent
     if (content is not null)
     {
       foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
+      {
         Headers.TryAddWithoutValidation(header.Key, header.Value);
+      }
     }
 
     // ... and let the server know we've Gzip-compressed the body of this request.
@@ -36,7 +38,9 @@ internal sealed class GzipContent : HttpContent
     using GZipStream gzip = new(stream, CompressionMode.Compress, true);
     // Copy all the input content to the GZip stream.
     if (_content != null)
+    {
       await _content.CopyToAsync(gzip).ConfigureAwait(false);
+    }
     else
     {
       using var emptyContent = new StringContent(string.Empty);

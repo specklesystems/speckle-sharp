@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Speckle.ConnectorDynamo.CreateStreamNode
+namespace Speckle.ConnectorDynamo.CreateStreamNode;
+
+/// <summary>
+/// Interaction logic for AccountsUi.xaml
+/// </summary>
+public partial class CreateStreamUi : UserControl
 {
-  /// <summary>
-  /// Interaction logic for AccountsUi.xaml
-  /// </summary>
-  public partial class CreateStreamUi : UserControl
+  public CreateStreamUi()
   {
-    public CreateStreamUi()
-    {
-      InitializeComponent();
-    }
+    InitializeComponent();
   }
 }

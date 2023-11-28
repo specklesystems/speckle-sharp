@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
@@ -46,11 +46,19 @@ public class SpeckleBaseParam : GH_Param<GH_SpeckleBase>
     {
       var tags = base.StateTags;
       if (Kind != GH_ParamKind.output)
+      {
         return tags;
+      }
+
       if (!IsSchemaBuilderOutput)
+      {
         return tags;
+      }
+
       if (UseSchemaTag)
+      {
         tags.Add(new SchemaTagStateTag());
+      }
 
       return tags;
     }

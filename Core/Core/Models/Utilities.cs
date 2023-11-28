@@ -44,9 +44,13 @@ public static class Utilities
   {
     HashAlgorithm hashAlgorithm;
     if (func == HashingFunctions.MD5)
+    {
       hashAlgorithm = MD5.Create();
+    }
     else
+    {
       hashAlgorithm = SHA256.Create();
+    }
 
     using (var stream = File.OpenRead(filePath))
     {
@@ -59,18 +63,20 @@ public static class Utilities
   private static string Sha256(string input)
   {
     using MemoryStream ms = new();
-    
+
     new BinaryFormatter().Serialize(ms, input);
     using SHA256 sha = SHA256.Create();
-    
+
     var hash = sha.ComputeHash(ms.ToArray());
     StringBuilder sb = new();
     foreach (byte b in hash)
+    {
       sb.Append(b.ToString("X2"));
+    }
 
     return sb.ToString().ToLower();
   }
-  
+
   private static string Md5(string input)
   {
     using MD5 md5 = MD5.Create();
@@ -79,7 +85,10 @@ public static class Utilities
 
     StringBuilder sb = new();
     for (int i = 0; i < hashBytes.Length; i++)
+    {
       sb.Append(hashBytes[i].ToString("X2"));
+    }
+
     return sb.ToString().ToLower();
   }
 
@@ -106,7 +115,12 @@ public static class Utilities
   /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
   /// <param name="ignore">Names of props to ignore</param>
   /// <returns></returns>
-  public static Base GetApplicationProps(object o, Type t, bool getParentProps = false, IReadOnlyList<string> ignore = null)
+  public static Base GetApplicationProps(
+    object o,
+    Type t,
+    bool getParentProps = false,
+    IReadOnlyList<string> ignore = null
+  )
   {
     var appProps = new Base();
     appProps["class"] = t.Name;
@@ -117,12 +131,18 @@ public static class Utilities
       foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
       {
         if (ignore != null && ignore.Contains(propInfo.Name))
+        {
           continue;
+        }
+
         if (IsMeaningfulProp(propInfo, o, out object propValue))
+        {
           appProps[propInfo.Name] = propValue;
+        }
       }
 
       if (getParentProps)
+      {
         foreach (
           var propInfo in t.BaseType.GetProperties(
             BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public
@@ -130,10 +150,16 @@ public static class Utilities
         )
         {
           if (ignore != null && ignore.Contains(propInfo.Name))
+          {
             continue;
+          }
+
           if (IsMeaningfulProp(propInfo, o, out object propValue))
+          {
             appProps[propInfo.Name] = propValue;
+          }
         }
+      }
     }
     catch (Exception ex)
     {
@@ -149,9 +175,15 @@ public static class Utilities
     if (propInfo.GetSetMethod() != null && value != null)
     {
       if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal))
+      {
         return true;
+      }
+
       if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value))
+      {
         return true;
+      }
+
       if (propInfo.PropertyType.BaseType.Name == "Enum") // for some reason "IsEnum" prop returns false
       {
         value = value.ToString();
@@ -172,17 +204,24 @@ public static class Utilities
     var propNames = props.GetDynamicMembers();
     IEnumerable<string> names = propNames.ToList();
     if (o == null || names.Any())
+    {
       return;
+    }
 
     var typeProperties = t.GetProperties().ToList();
     typeProperties.AddRange(t.BaseType.GetProperties().ToList());
     foreach (var propInfo in typeProperties)
+    {
       if (propInfo.CanWrite && names.Contains(propInfo.Name))
       {
         var value = props[propInfo.Name];
         if (propInfo.PropertyType.BaseType.Name == "Enum")
+        {
           value = Enum.Parse(propInfo.PropertyType, (string)value);
+        }
+
         if (value != null)
+        {
           try
           {
             t.InvokeMember(
@@ -194,7 +233,9 @@ public static class Utilities
             );
           }
           catch { }
+        }
       }
+    }
   }
 
   /// <summary>
@@ -207,7 +248,9 @@ public static class Utilities
   public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
   {
     for (int i = 0; i < list.Count; i += chunkSize)
+    {
       yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
+    }
   }
 
   #region Deprecated Members

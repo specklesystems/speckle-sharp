@@ -99,9 +99,13 @@ public static partial class Operations
       JsonSerializerSettings? settings = null;
       BaseObjectDeserializerV2? serializerV2 = null;
       if (serializerVersion == SerializerVersion.V1)
+      {
         (serializer, settings) = GetSerializerInstance();
+      }
       else
+      {
         serializerV2 = new BaseObjectDeserializerV2();
+      }
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
@@ -124,7 +128,9 @@ public static partial class Operations
         serializerV2.OnErrorAction = onErrorAction;
         serializerV2.CancellationToken = cancellationToken;
         if (remoteTransport is IBlobCapableTransport t)
+        {
           serializerV2.BlobStorageFolder = t.BlobStorageFolder;
+        }
       }
 
       // First we try and get the object from the local transport. If it's there, we assume all its children are there, and proceed with deserialisation.
@@ -136,18 +142,28 @@ public static partial class Operations
         // Shoot out the total children count
         var partial = JsonConvert.DeserializeObject<Placeholder>(objString);
         if (partial == null)
+        {
           throw new SpeckleDeserializeException(
             $"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}"
           );
+        }
+
         if (partial.__closure != null)
+        {
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
+        }
 
         Base? localRes = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
 
         if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal)
+        {
           dispLocal.Dispose();
+        }
+
         if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote)
+        {
           dispRemote.Dispose();
+        }
 
         timer.Stop();
         SpeckleLog.Logger
@@ -198,9 +214,14 @@ public static partial class Operations
 
       Base? res = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
       if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl)
+      {
         dl.Dispose();
+      }
+
       if (disposeTransports && remoteTransport is IDisposable dr)
+      {
         dr.Dispose();
+      }
 
       SpeckleLog.Logger
         .ForContext("deserializerElapsed", serializerV2.Elapsed)
@@ -235,8 +256,11 @@ public static partial class Operations
   {
     Base? localRes;
     if (serializerVersion == SerializerVersion.V1)
+    {
       localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+    }
     else
+    {
       try
       {
         localRes = serializerV2!.Deserialize(objString);
@@ -249,13 +273,17 @@ public static partial class Operations
       {
         SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
         if (serializerV2.OnErrorAction == null)
+        {
           throw;
+        }
+
         serializerV2.OnErrorAction.Invoke(
           $"A deserialization error has occurred: {ex.Message}",
           new SpeckleDeserializeException("A deserialization error has occurred", ex)
         );
         localRes = null;
       }
+    }
 
     return localRes;
   }
@@ -269,8 +297,10 @@ public static partial class Operations
   {
     public SpeckleDeserializeException() { }
 
-    public SpeckleDeserializeException(string message, Exception? inner = null) : base(message, inner) { }
+    public SpeckleDeserializeException(string message, Exception? inner = null)
+      : base(message, inner) { }
 
-    public SpeckleDeserializeException(string message) : base(message) { }
+    public SpeckleDeserializeException(string message)
+      : base(message) { }
   }
 }

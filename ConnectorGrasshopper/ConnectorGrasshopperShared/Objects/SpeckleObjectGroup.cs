@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -62,7 +62,9 @@ public class SpeckleObjectGroupComponent : SelectKitComponentBase
   {
     var values = new List<object>();
     if (!DA.GetDataList(0, values))
+    {
       return;
+    }
 
     var hasGroups = values.Any(item => item is SpeckleObjectGroup);
     if (hasGroups)

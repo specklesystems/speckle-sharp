@@ -106,12 +106,16 @@ public static class ApiUtils
   private static async Task<UserBase> GetUser(string userId, Client client)
   {
     if (CachedUsers.ContainsKey(userId))
+    {
       return CachedUsers[userId];
+    }
 
     var user = await client.OtherUserGet(userId).ConfigureAwait(true);
 
     if (user != null)
+    {
       CachedUsers[userId] = user;
+    }
 
     return user;
   }
@@ -119,12 +123,16 @@ public static class ApiUtils
   public static async Task<AccountViewModel> GetAccount(string userId, Client client)
   {
     if (CachedAccounts.ContainsKey(userId))
+    {
       return CachedAccounts[userId];
+    }
 
     var user = await GetUser(userId, client).ConfigureAwait(true);
 
     if (user == null)
+    {
       return null;
+    }
 
     var avm = new AccountViewModel(user);
     CachedAccounts[userId] = avm;
@@ -139,8 +147,13 @@ public static class Utils
     string expression = "\\w+([-+.']\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*";
 
     if (Regex.IsMatch(email, expression))
+    {
       if (Regex.Replace(email, expression, string.Empty).Length == 0)
+      {
         return true;
+      }
+    }
+
     return false;
   }
 
@@ -158,7 +171,9 @@ public static class Utils
           t =>
           {
             if (t.IsCompleted)
+            {
               func();
+            }
           },
           TaskScheduler.Default
         );
@@ -179,7 +194,9 @@ public static class Utils
           t =>
           {
             if (t.IsCompleted)
+            {
               func(arg);
+            }
           },
           TaskScheduler.Default
         );
@@ -194,20 +211,28 @@ public static class Utils
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Launch Manager" } });
 
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+      {
         path = @"/Applications/Manager for Speckle.app";
+      }
 
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      {
         path = Path.Combine(
           Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
           "Speckle",
           "Manager",
           "Manager.exe"
         );
+      }
 
       if (File.Exists(path) || Directory.Exists(path))
+      {
         Process.Start(path);
+      }
       else
+      {
         Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
+      }
     }
     catch (Exception ex)
     {

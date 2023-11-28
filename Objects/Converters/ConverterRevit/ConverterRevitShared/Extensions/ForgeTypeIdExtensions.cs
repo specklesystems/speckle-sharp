@@ -4,28 +4,28 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 
-namespace ConverterRevitShared.Extensions
+namespace ConverterRevitShared.Extensions;
+
+public static class ForgeTypeIdExtensions
 {
-  public static class ForgeTypeIdExtensions
+  public static string? GetSymbol(this ForgeTypeId forgeTypeId)
   {
-    public static string? GetSymbol(this ForgeTypeId forgeTypeId)
+    if (!FormatOptions.CanHaveSymbol(forgeTypeId))
     {
-      if (!FormatOptions.CanHaveSymbol(forgeTypeId))
-      {
-        return null;
-      }
-      var validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
-      var typeId = validSymbols?.Where(x => !x.Empty());
-      foreach (DB.ForgeTypeId symbolId in typeId)
-      {
-        return LabelUtils.GetLabelForSymbol(symbolId);
-      }
       return null;
     }
-    public static string ToUniqueString(this ForgeTypeId forgeTypeId)
+    var validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
+    var typeId = validSymbols?.Where(x => !x.Empty());
+    foreach (DB.ForgeTypeId symbolId in typeId)
     {
-      return forgeTypeId.TypeId;
+      return LabelUtils.GetLabelForSymbol(symbolId);
     }
+    return null;
+  }
+
+  public static string ToUniqueString(this ForgeTypeId forgeTypeId)
+  {
+    return forgeTypeId.TypeId;
   }
 }
 #endif

@@ -40,7 +40,9 @@ public class Loader : GH_AssemblyPriority
   {
     var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
     if (RhinoApp.Version.Major == 7)
+    {
       version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+    }
 
     var logConfig = new SpeckleLogConfiguration(logToSentry: false);
 #if MAC
@@ -113,18 +115,24 @@ public class Loader : GH_AssemblyPriority
     Instances.DocumentEditor.Load += OnDocumentEditorLoad;
 
     if (canvas == null)
+    {
       return;
+    }
 
     canvas.KeyDown += (s, e) =>
     {
       if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
+      {
         KeyWatcher.TabPressed = true;
+      }
     };
 
     canvas.KeyUp += (s, e) =>
     {
       if (KeyWatcher.TabPressed && e.KeyCode == Keys.Tab)
+      {
         KeyWatcher.TabPressed = false;
+      }
     };
   }
 
@@ -166,19 +174,27 @@ public class Loader : GH_AssemblyPriority
 
     // Update the check status of all
     foreach (var item in kitMenuItems)
+    {
       if (item is ToolStripMenuItem menuItem)
+      {
         menuItem.CheckState = clickedItem.Text.Trim() == selectedKit.Name ? CheckState.Checked : CheckState.Unchecked;
+      }
+    }
   }
 
   private void AddSpeckleMenu(MenuStrip mainMenu)
   {
     if (MenuHasBeenAdded)
+    {
       return;
+    }
     // Double check that the menu does not exist.
 
     var menuName = "Speckle 2";
     if (mainMenu.Items.ContainsKey(menuName))
+    {
       mainMenu.Items.RemoveByKey(menuName);
+    }
 
     speckleMenu = new ToolStripMenuItem(menuName);
 
@@ -242,9 +258,13 @@ public class Loader : GH_AssemblyPriority
 #endif
 
           if (File.Exists(path) || Directory.Exists(path))
+          {
             Process.Start(path);
+          }
           else
+          {
             Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
+          }
         }
         catch (Exception ex)
         {
@@ -259,7 +279,9 @@ public class Loader : GH_AssemblyPriority
     );
 
     if (!MenuHasBeenAdded)
+    {
       mainMenu.Items.Add(speckleMenu);
+    }
 
     MenuHasBeenAdded = true;
   }
@@ -290,7 +312,9 @@ public class Loader : GH_AssemblyPriority
         var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
 
         if (!Directory.Exists(path))
+        {
           Directory.CreateDirectory(path);
+        }
 #if MAC
           Process.Start("file://" + path);
 #else
@@ -351,7 +375,10 @@ public class Loader : GH_AssemblyPriority
               var current = 1;
               menu.DropDown.Items.Remove(loading);
               foreach (var item in kitMenuItems)
+              {
                 menu.DropDown.Items.Insert(current++, item);
+              }
+
               HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
               Instances.DocumentEditor.Refresh();
             }

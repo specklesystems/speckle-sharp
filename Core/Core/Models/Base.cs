@@ -65,7 +65,10 @@ public class Base : DynamicBase
         while (myType.Name != nameof(Base))
         {
           if (!myType.IsAbstract)
+          {
             bases.Add(myType.FullName);
+          }
+
           myType = myType.BaseType;
         }
 
@@ -96,7 +99,10 @@ public class Base : DynamicBase
     {
       var (s, t) = Operations.GetSerializerInstance();
       if (decompose)
+      {
         s.WriteTransports = new List<ITransport> { new MemoryTransport() };
+      }
+
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -104,7 +110,10 @@ public class Base : DynamicBase
     {
       var s = new BaseObjectSerializerV2();
       if (decompose)
+      {
         s.WriteTransports = new List<ITransport> { new MemoryTransport() };
+      }
+
       var obj = s.Serialize(this);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -123,7 +132,9 @@ public class Base : DynamicBase
   private static long CountDescendants(Base @base, HashSet<int> parsed)
   {
     if (parsed.Contains(@base.GetHashCode()))
+    {
       return 0;
+    }
 
     parsed.Add(@base.GetHashCode());
 
@@ -134,7 +145,9 @@ public class Base : DynamicBase
       bool isIgnored =
         prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
       if (isIgnored)
+      {
         continue;
+      }
 
       var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
       var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
@@ -150,7 +163,9 @@ public class Base : DynamicBase
         // Simplified chunking count handling.
         var asList = value as IList;
         if (asList != null)
+        {
           count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
+        }
       }
     }
 
@@ -158,7 +173,9 @@ public class Base : DynamicBase
     foreach (var propName in dynamicProps)
     {
       if (!propName.StartsWith("@"))
+      {
         continue;
+      }
 
       // Simplfied dynamic prop chunking handling
       if (ChunkSyntax.IsMatch(propName))
@@ -192,6 +209,7 @@ public class Base : DynamicBase
       case IDictionary d:
       {
         foreach (DictionaryEntry kvp in d)
+        {
           if (kvp.Value is Base)
           {
             count++;
@@ -201,12 +219,14 @@ public class Base : DynamicBase
           {
             count += HandleObjectCount(kvp.Value, parsed);
           }
+        }
 
         return count;
       }
       case IEnumerable e when !(value is string):
       {
         foreach (var arrValue in e)
+        {
           if (arrValue is Base)
           {
             count++;
@@ -216,6 +236,7 @@ public class Base : DynamicBase
           {
             count += HandleObjectCount(arrValue, parsed);
           }
+        }
 
         return count;
       }
@@ -244,7 +265,9 @@ public class Base : DynamicBase
     {
       var p = GetType().GetProperty(kvp.Key);
       if (p != null && !p.CanWrite)
+      {
         continue;
+      }
 
       try
       {
@@ -282,7 +305,10 @@ public class Blob : Base
     set
     {
       if (originalPath is null)
+      {
         originalPath = value;
+      }
+
       _filePath = value;
       hashExpired = true;
     }
@@ -302,7 +328,9 @@ public class Blob : Base
   public string GetFileHash()
   {
     if ((hashExpired || _hash == null) && filePath != null)
+    {
       _hash = Utilities.HashFile(filePath);
+    }
 
     return _hash;
   }

@@ -18,11 +18,19 @@ internal abstract class SpeckleStreamManager
   {
     var streams = new List<StreamState>();
     if (doc == null)
+    {
       return streams;
+    }
+
     if (doc.Database == null)
+    {
       return streams;
+    }
+
     if (doc.ActiveSheet == null)
+    {
       return streams;
+    }
 
     var database = doc.Database;
 
@@ -33,6 +41,7 @@ internal abstract class SpeckleStreamManager
         database.Value
       )
     )
+    {
       try
       {
         dataAdapter.Fill(table);
@@ -41,6 +50,7 @@ internal abstract class SpeckleStreamManager
       {
         WarnLog("We didn't find the speckle data store. That's ok - we'll make one later");
       }
+    }
 
     if (table.Rows.Count <= 0)
     {
@@ -73,7 +83,9 @@ internal abstract class SpeckleStreamManager
 
         int inserted = command.ExecuteNonQuery();
         if (inserted > 0)
+        {
           ConsoleLog("Stream state stored.");
+        }
 
         transaction.Commit();
       }
@@ -88,19 +100,26 @@ internal abstract class SpeckleStreamManager
     var speckleStreamsStore = row["value"];
 
     if (speckleStreamsStore == null)
+    {
       return streams;
+    }
+
     try
     {
       streams = JsonConvert.DeserializeObject<List<StreamState>>((string)speckleStreamsStore);
 
       if (streams == null || streams.Count <= 0)
+      {
         ErrorLog(
           "Something isn't right. "
             + $"{KeyName} was found but didn't deserialize into any streams:"
             + $"\n {speckleStreamsStore}"
         );
+      }
       else
+      {
         ConsoleLog($"{streams.Count} saved streams found in file.");
+      }
     }
     catch (JsonException ex)
     {
@@ -115,9 +134,14 @@ internal abstract class SpeckleStreamManager
     var documentDatabase = doc?.Database;
 
     if (documentDatabase == null)
+    {
       return;
+    }
+
     if (doc.ActiveSheet == null)
+    {
       return;
+    }
 
     string streamStatesStore = JsonConvert.SerializeObject(streamStates);
 
@@ -151,7 +175,10 @@ internal abstract class SpeckleStreamManager
         int inserted = command.ExecuteNonQuery();
 
         if (inserted > 0)
+        {
           ConsoleLog($"{streamStates.Count} stream states stored.");
+        }
+
         transaction.Commit();
       }
       catch (SqlException ex)

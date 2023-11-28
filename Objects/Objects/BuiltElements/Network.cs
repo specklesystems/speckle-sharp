@@ -15,8 +15,11 @@ namespace Objects.BuiltElements
   /// </remarks>
   public class Network : Base
   {
-    [Obsolete("The Network was previously used to assemble MEP systems, but now MEP systems are assembled by the RevitCommitObjectBuilder as MEP elements are converted.")]
+    [Obsolete(
+      "The Network was previously used to assemble MEP systems, but now MEP systems are assembled by the RevitCommitObjectBuilder as MEP elements are converted."
+    )]
     public Network() { }
+
     public string name { get; set; }
 
     /// <summary>
@@ -34,6 +37,7 @@ namespace Objects.BuiltElements
   {
     [Obsolete("The NetworkElement class is obsolete because the Network class is now obsolete")]
     public NetworkElement() { }
+
     public string name { get; set; }
 
     [DetachProperty]
@@ -64,6 +68,7 @@ namespace Objects.BuiltElements
   {
     [Obsolete("The NetworkLink class is obsolete because the Network class is now obsolete")]
     public NetworkLink() { }
+
     public string name { get; set; }
 
     /// <summary>
@@ -88,6 +93,7 @@ namespace Objects.BuiltElements.Revit
   {
     [Obsolete("The RevitNetworkElement class is obsolete because the Network class is now obsolete")]
     public RevitNetworkElement() { }
+
     /// <summary>
     /// Indicates if this element was constructed from an MEP curve
     /// </summary>

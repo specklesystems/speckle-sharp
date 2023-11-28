@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
@@ -67,7 +67,9 @@ public class AccountDetailsComponentV2 : GH_SpeckleComponent
     }
 
     if (DA.Iteration == 0) // Only report on first iteration of the component.
+    {
       Tracker.TrackNodeRun();
+    }
 
     //Params.Input[0].AddVolatileData(new GH_Path(0), 0, account);
 

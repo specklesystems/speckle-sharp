@@ -2,16 +2,22 @@ using System.Collections.Generic;
 using System.Linq;
 using DesktopUI2.Models.Settings;
 
-namespace Archicad.Launcher
+namespace Archicad.Launcher;
+
+public partial class ArchicadBinding
 {
-  public partial class ArchicadBinding
+  public override List<ISetting> GetSettings()
   {
-    public override List<ISetting> GetSettings()
+    return new List<ISetting>
     {
-      return new List<ISetting>
+      new CheckBoxSetting
       {
-        new CheckBoxSetting {Slug = "receive - parametric", Name = "Receive parametric elements", Icon = "Link", IsChecked = false, Description = "Receive parametric elements where applicable"},
-      };
-    }
+        Slug = "receive - parametric",
+        Name = "Receive parametric elements",
+        Icon = "Link",
+        IsChecked = false,
+        Description = "Receive parametric elements where applicable"
+      },
+    };
   }
 }
