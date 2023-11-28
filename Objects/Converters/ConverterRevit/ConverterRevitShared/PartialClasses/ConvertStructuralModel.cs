@@ -1,15 +1,5 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
-using Vector = Objects.Geometry.Vector;
-using Plane = Objects.Geometry.Plane;
 using Speckle.Core.Models;
-using DB = Autodesk.Revit.DB;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Geometry;
 

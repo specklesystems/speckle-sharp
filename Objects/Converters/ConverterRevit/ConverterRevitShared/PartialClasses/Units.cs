@@ -1,5 +1,4 @@
 using Autodesk.Revit.DB;
-using ConverterRevitShared.Extensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
 

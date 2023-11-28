@@ -4,7 +4,6 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
