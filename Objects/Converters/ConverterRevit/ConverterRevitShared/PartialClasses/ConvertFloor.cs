@@ -4,11 +4,13 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
 using OO = Objects.Other;
+#if !REVIT2020
+using Speckle.Core.Logging;
+#endif
 
 namespace Objects.Converter.Revit;
 

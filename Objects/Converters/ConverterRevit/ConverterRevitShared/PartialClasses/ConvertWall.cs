@@ -1,15 +1,18 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using RevitSharedResources.Models;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
+#if !REVIT2020 && !REVIT2021
 using OG = Objects.Geometry;
+using RevitSharedResources.Models;
+using System.Collections;
+#elif !REVIT2020
+#endif
 
 namespace Objects.Converter.Revit;
 

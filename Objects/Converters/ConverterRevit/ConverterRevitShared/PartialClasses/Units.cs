@@ -1,6 +1,8 @@
 using Autodesk.Revit.DB;
-using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
+#if REVIT2020
+using RevitSharedResources.Interfaces;
+#endif
 
 namespace Objects.Converter.Revit;
 
