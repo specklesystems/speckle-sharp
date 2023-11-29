@@ -46,12 +46,12 @@ public partial class ConnectorBindingsNavisworks
   {
     if (s_doc == null)
     {
-      throw (new FileNotFoundException("No active document found. Cannot Send."));
+      throw new FileNotFoundException("No active document found. Cannot Send.");
     }
 
     if (s_doc.Models.Count == 0)
     {
-      throw (new FileNotFoundException("No models are appended. Nothing to Send."));
+      throw new FileNotFoundException("No models are appended. Nothing to Send.");
     }
   }
 }
