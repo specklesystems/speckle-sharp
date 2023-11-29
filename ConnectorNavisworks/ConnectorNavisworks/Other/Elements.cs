@@ -37,6 +37,9 @@ public class Element
 
   public string PseudoId { get; private set; }
 
+  private static readonly int[] s_lowerBounds = new[] { 1 };
+  private static readonly string[] s_separator = new[] { "." };
+
   /// <summary>
   /// Creates a new Element instance using a given pseudoId.
   /// </summary>
@@ -144,7 +147,7 @@ public class Element
   /// <returns>A one-based array with the same elements as the input array.</returns>
   private Array ConvertTo1BasedArray(int[] pathArray)
   {
-    var oneBasedArray = Array.CreateInstance(typeof(int), new[] { pathArray.Length }, new[] { 1 });
+    var oneBasedArray = Array.CreateInstance(typeof(int), new[] { pathArray.Length }, s_lowerBounds);
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
     return oneBasedArray;
   }
@@ -172,7 +175,7 @@ public class Element
     var simpleType = modelItem
       .GetType()
       .ToString()
-      .Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries)
+      .Split(s_separator, StringSplitOptions.RemoveEmptyEntries)
       .LastOrDefault();
     return string.IsNullOrEmpty(modelItem.ClassDisplayName)
       ? $"{simpleType}"

@@ -72,6 +72,8 @@ public partial class ConverterNavisworks
     }
   }
 
+  private static readonly int[] s_lowerBounds = new int[1] { 1 };
+
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
     throw new NotImplementedException();
@@ -396,7 +398,7 @@ public partial class ConverterNavisworks
       typeof(int),
       new int[1] { pathArray.Length },
       // ReSharper disable once RedundantExplicitArraySize
-      new int[1] { 1 }
+      s_lowerBounds
     );
 
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
