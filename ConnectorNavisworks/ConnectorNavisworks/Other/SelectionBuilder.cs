@@ -118,21 +118,17 @@ public class SelectionHandler
 
     var success = false;
 
-    new Invoker().Invoke(
-      (Action)(
-        () =>
-        {
-          var savedViewpoint = ResolveSavedViewpoint(selection);
-          if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
-          {
-            return;
-          }
+    new Invoker().Invoke(() =>
+    {
+      var savedViewpoint = ResolveSavedViewpoint(selection);
+      if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+      {
+        return;
+      }
 
-          Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
-          success = true;
-        }
-      )
-    );
+      Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
+      success = true;
+    });
 
     if (!success)
     {
