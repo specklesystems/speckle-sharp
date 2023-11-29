@@ -331,7 +331,16 @@ public partial class ConverterRevit : ISpeckleConverter
       case DB.Architecture.HandRail _:
         throw new ConversionSkippedException($"{nameof(HandRail)} are handled by the {nameof(Railing)} conversion");
       case DB.Structure.Rebar o:
-        returnObject = RebarToSpeckle(o);
+        if (o.IsRebarShapeDriven())
+        {
+          returnObject = RebarToSpeckle(o);
+        }
+        else
+        {
+          throw new ConversionSkippedException(
+            $"Non shape-driven {nameof(DB.Structure.Rebar)} are currently not supported."
+          );
+        }
         break;
       case DB.Ceiling o:
         returnObject = CeilingToSpeckle(o, out notes);
