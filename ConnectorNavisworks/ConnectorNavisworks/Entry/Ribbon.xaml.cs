@@ -61,7 +61,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
 ]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
-  private readonly static Dictionary<Plugin, bool> s_loadedPlugins = new();
+  private static readonly Dictionary<Plugin, bool> s_loadedPlugins = new();
 
   /// <summary>
   /// Determines the state of a command in Navisworks.
