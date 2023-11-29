@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
@@ -30,6 +31,11 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
   internal ConnectorBindingsNavisworks Bindings;
 
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Instance of InitAvalonia has unknown Exceptions."
+  )]
   public override Control CreateControlPane()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
