@@ -1,6 +1,5 @@
 #if REVIT
 using Autodesk.Revit.DB;
-using Objects.Converter.Revit;
 #endif
 
 namespace Objects.Converter.Dynamo;
@@ -36,7 +35,7 @@ public partial class ConverterDynamo
     return Speckle.Core.Kits.Units.Meters;
   }
 
-#if (REVIT2020 || REVIT2021 )
+#if REVIT2020 || REVIT2021
 
   private DisplayUnitType _revitUnitsTypeId = DisplayUnitType.DUT_UNDEFINED;
   public DisplayUnitType RevitLengthTypeId
