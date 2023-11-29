@@ -900,6 +900,7 @@ public partial class ConverterRevit : ISpeckleConverter
       Other.Revit.RevitInstance _ => true,
       BER.ParameterUpdater _ => true,
       BE.View3D _ => true,
+      BER.RevitRebarGroup _ => true,
       BE.Room _ => true,
       BE.GridLine _ => true,
       BE.Space _ => true,

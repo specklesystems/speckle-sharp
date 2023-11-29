@@ -204,6 +204,9 @@ namespace Objects.BuiltElements.TeklaStructures
 
 namespace Objects.BuiltElements.Revit
 {
+  /// <summary>
+  /// The Revit rebar class for shape-driven rebar
+  /// </summary>
   public class RevitRebarGroup : RebarGroup<RevitRebarShape>
   {
     public RevitRebarGroup() { }
@@ -247,7 +250,6 @@ namespace Objects.BuiltElements.Revit
 
     public string family { get; set; }
     public string type { get; set; }
-    bool isShapeDriven { get; set; }
     public string layoutRule { get; set; }
     public bool barsOnNormalSide { get; set; }
     public double arrayLength { get; set; }
