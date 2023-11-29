@@ -18,7 +18,7 @@ public class SelectionHandler
   private readonly HashSet<ModelItem> _uniqueModelItems;
   private int _descendantProgress;
   private HashSet<ModelItem> _visited;
-  public ProgressInvoker ProgressBar;
+  internal ProgressInvoker ProgressBar;
   private readonly bool _coalesceData;
 
   /// <summary>
