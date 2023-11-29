@@ -21,16 +21,13 @@ public partial class ConverterNavisworks
   {
     // Already there anticipating other options becoming possible
     var materialSettings = new { Mode = "original" };
-
-    Color renderColor;
-
-    switch (materialSettings.Mode)
+    var renderColor = materialSettings.Mode switch
     {
-      case "original":
-        renderColor = NavisworksColorToColor(geom.Geometry.OriginalColor);
-        break;
-      case "active":
-        renderColor = NavisworksColorToColor(geom.Geometry.ActiveColor);
+      "active" => NavisworksColorToColor(geom.Geometry.ActiveColor),
+      "permanent" => NavisworksColorToColor(geom.Geometry.PermanentColor),
+      "original" => NavisworksColorToColor(geom.Geometry.OriginalColor),
+      _ => new Color(),
+    };
         break;
       case "permanent":
         renderColor = NavisworksColorToColor(geom.Geometry.PermanentColor);
