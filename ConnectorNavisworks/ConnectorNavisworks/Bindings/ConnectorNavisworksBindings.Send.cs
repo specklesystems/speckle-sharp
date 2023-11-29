@@ -117,7 +117,7 @@ public partial class ConnectorBindingsNavisworks
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
-      if (_progressViewModel.Report.OperationErrors.Any())
+      if (_progressViewModel.Report.OperationErrors.Count != 0)
       {
         ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
       }
@@ -483,7 +483,7 @@ public partial class ConnectorBindingsNavisworks
 
     modelItemsToConvert.AddRange(selectionBuilder.ModelItems);
 
-    if (!modelItemsToConvert.Any())
+    if (modelItemsToConvert.Count == 0)
     {
       throw new InvalidOperationException(
         "Zero objects visible for conversion; send stopped. Please select some objects, or check that your filter can actually select something."
@@ -537,7 +537,7 @@ public partial class ConnectorBindingsNavisworks
       }
     }
 
-    if (views.Any())
+    if (views.Count != 0)
     {
       commitObject["views"] = views;
     }

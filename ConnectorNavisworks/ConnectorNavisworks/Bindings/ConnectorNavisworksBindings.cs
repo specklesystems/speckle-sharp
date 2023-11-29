@@ -56,7 +56,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
   public static bool CachedConversion =>
-    CachedConvertedElements != null && CachedConvertedElements.Any() && s_cachedCommit != null;
+    CachedConvertedElements != null && CachedConvertedElements.Count != 0 && s_cachedCommit != null;
 
   public override string GetActiveViewName()
   {
@@ -142,7 +142,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
-      if (_progressViewModel.Report.OperationErrors.Any())
+      if (_progressViewModel.Report.OperationErrors.Count != 0)
       {
         ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
       }

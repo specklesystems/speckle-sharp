@@ -305,7 +305,7 @@ public class SelectionHandler
   /// </summary>
   public void PopulateHierarchyAndOmitHidden()
   {
-    if (_uniqueModelItems == null || !_uniqueModelItems.Any())
+    if (_uniqueModelItems == null || _uniqueModelItems.Count == 0)
     {
       return;
     }

@@ -349,7 +349,7 @@ public partial class ConverterNavisworks
     PopulateModelFragments(geometry);
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
-    if (fragmentGeometry != null && fragmentGeometry.Any())
+    if (fragmentGeometry != null && fragmentGeometry.Count != 0)
     {
       @base["@displayValue"] = fragmentGeometry;
     }

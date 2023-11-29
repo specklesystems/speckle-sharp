@@ -160,14 +160,14 @@ public partial class ConnectorBindingsNavisworks
       return null;
     }
 
-    if (!node.Elements.Any())
+    if (node.Elements.Count == 0)
     {
       return node;
     }
 
     var elements = node.Elements.Select(RemoveNullNodes).Where(childNode => childNode != null).ToList();
 
-    if (!elements.Any())
+    if (elements.Count == 0)
     {
       return null;
     }
