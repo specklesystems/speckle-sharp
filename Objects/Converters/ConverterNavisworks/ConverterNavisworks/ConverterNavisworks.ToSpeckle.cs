@@ -115,7 +115,7 @@ public partial class ConverterNavisworks
     return new Vector(v.data1, v.data2, v.data3);
   }
 
-  private static Base ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
+  private static View3D ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
   {
     var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
 
@@ -225,7 +225,7 @@ public partial class ConverterNavisworks
     );
   }
 
-  private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
+  private static View3D ViewpointToBase(SavedViewpoint savedViewpoint)
   {
     var view = ViewpointToBase(savedViewpoint.Viewpoint, savedViewpoint.DisplayName);
 

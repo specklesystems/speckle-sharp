@@ -65,7 +65,7 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the selection.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSelection()
+  private HashSet<ModelItem> GetObjectsFromSelection()
   {
     _uniqueModelItems.Clear();
 
@@ -276,7 +276,7 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the saved sets.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSavedSets()
+  private HashSet<ModelItem> GetObjectsFromSavedSets()
   {
     _uniqueModelItems.Clear();
 
