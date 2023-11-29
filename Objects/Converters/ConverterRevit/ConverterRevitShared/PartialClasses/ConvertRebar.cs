@@ -307,8 +307,8 @@ public partial class ConverterRevit
         type = type?.Name,
         layoutRule = revitRebar.LayoutRule.ToString(),
         normal = VectorToSpeckle(accessor.Normal, revitRebar.Document),
-        barsOnNormalSide = accessor.BarsOnNormalSide,
-        arrayLength = accessor.ArrayLength,
+        barsOnNormalSide = isSingleLayout || accessor.BarsOnNormalSide,
+        arrayLength = isSingleLayout ? 0 : accessor.ArrayLength,
         barPositions = revitRebar.NumberOfBarPositions,
         spacing = GetParamValue<double>(revitRebar, BuiltInParameter.REBAR_ELEM_BAR_SPACING),
         displayValue = centerlines
