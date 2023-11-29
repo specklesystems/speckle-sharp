@@ -214,7 +214,7 @@ public class Element
     // First pass: Create lookup dictionary and identify potential root nodes
     foreach (var pair in convertedDictionary)
     {
-      var element = pair.Value.Item2;
+      var element = pair.Value.Key;
       var pseudoId = element.PseudoId;
       var baseNode = pair.Value.Item1;
       var modelItem = element.ModelItem;
