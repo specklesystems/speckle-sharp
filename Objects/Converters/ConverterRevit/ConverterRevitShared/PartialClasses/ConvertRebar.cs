@@ -121,13 +121,63 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    SetInstanceParameters(rebar, speckleRebar);
-
-    // set additional params
-    if (speckleRebar.barPositions > 0)
+    // set layout rule after creation
+    RebarShapeDrivenAccessor accessor = rebar.GetShapeDrivenAccessor();
+    double arrayLength = ScaleToNative(speckleRebar.arrayLength, speckleRebar.units);
+    double spacing = ScaleToNative(speckleRebar.spacing, speckleRebar.units);
+    try
     {
-      rebar.NumberOfBarPositions = speckleRebar.barPositions;
+      switch (speckleRebar.layoutRule)
+      {
+        case "FixedNumber":
+          accessor.SetLayoutAsFixedNumber(
+            speckleRebar.barPositions,
+            arrayLength,
+            speckleRebar.barsOnNormalSide,
+            speckleRebar.hasFirstBar,
+            speckleRebar.hasLastBar
+          );
+          break;
+        case "MaximumSpacing":
+          accessor.SetLayoutAsMaximumSpacing(
+            spacing,
+            arrayLength,
+            speckleRebar.barsOnNormalSide,
+            speckleRebar.hasFirstBar,
+            speckleRebar.hasLastBar
+          );
+          break;
+        case "MinimumClearSpacing":
+          accessor.SetLayoutAsMinimumClearSpacing(
+            spacing,
+            arrayLength,
+            speckleRebar.barsOnNormalSide,
+            speckleRebar.hasFirstBar,
+            speckleRebar.hasLastBar
+          );
+          break;
+        case "NumberWithSpacing":
+          accessor.SetLayoutAsNumberWithSpacing(
+            speckleRebar.barPositions,
+            spacing,
+            speckleRebar.barsOnNormalSide,
+            speckleRebar.hasFirstBar,
+            speckleRebar.hasLastBar
+          );
+          break;
+        case "Single":
+          accessor.SetLayoutAsSingle();
+          break;
+        default:
+          break;
+      }
     }
+    catch (Exception e)
+    {
+      appObj.Update(logItem: $"Could not set layout: {e.Message}");
+    }
+
+    SetInstanceParameters(rebar, speckleRebar);
 
     // deleting instead of updating for now!
     if (docObj != null)
@@ -246,14 +296,11 @@ public partial class ConverterRevit
       }
     }
 
-    // get plane normal of rebar group
-    // the normal prop was deprecated in revit 2018, and the accessor normal is suggested as a replacement
-    // unclear how non-shape-driven rebar set normals are retrieved or computed.
-    Vector normal = null;
-    if (accessor != null)
-    {
-      normal = VectorToSpeckle(accessor.Normal, revitRebar.Document);
-    }
+    // get the normal, normal side, and array length
+    // these only apply to shape-driven rebar
+    Vector normal = accessor is null ? null : VectorToSpeckle(accessor.Normal, revitRebar.Document);
+    bool normalSide = accessor is null || accessor.BarsOnNormalSide;
+    double arrayLength = accessor is null ? 0 : accessor.ArrayLength;
 
     // create speckle rebar
     RevitRebarGroup speckleRebar =
@@ -263,19 +310,23 @@ public partial class ConverterRevit
         number = revitRebar.Quantity,
         startHook = speckleStartHook,
         endHook = speckleEndHook,
-        hasFirstBar = isSingleLayout ? true : revitRebar.IncludeFirstBar,
-        hasLastBar = isSingleLayout ? true : revitRebar.IncludeLastBar,
+        hasFirstBar = isSingleLayout || revitRebar.IncludeFirstBar,
+        hasLastBar = isSingleLayout || revitRebar.IncludeLastBar,
         volume = revitRebar.Volume,
         family = type?.FamilyName,
         type = type?.Name,
+        layoutRule = revitRebar.LayoutRule.ToString(),
         normal = normal,
+        barsOnNormalSide = normalSide,
+        arrayLength = arrayLength,
         barPositions = revitRebar.NumberOfBarPositions,
+        spacing = isSingleLayout ? 0 : revitRebar.MaxSpacing,
         displayValue = centerlines
       };
 
     // skip display value as meshes for now
     // GetElementDisplayValue(revitRebar, SolidDisplayValueOptions);
-    GetAllRevitParamsAndIds(speckleRebar, revitRebar);
+    GetAllRevitParamsAndIds(speckleRebar, revitRebar, new List<string> { "REBAR_ELEM_BAR_SPACING" });
 
     return speckleRebar;
   }
@@ -292,6 +343,8 @@ public partial class ConverterRevit
         break;
       case RebarStyle.StirrupTie:
         rebarType = RebarType.StirrupPolygonal;
+        break;
+      default:
         break;
     }
 
@@ -317,8 +370,7 @@ public partial class ConverterRevit
   // rebar hook
   private RebarHookType RebarHookToNative(RevitRebarHook speckleRebarHook)
   {
-    double multiplier =
-      speckleRebarHook.multiplier != null && speckleRebarHook.multiplier > 0 ? speckleRebarHook.multiplier : 10; // default to 10 if invalid multiplier
+    double multiplier = speckleRebarHook.multiplier > 0 ? speckleRebarHook.multiplier : 10; // default to 10 if invalid multiplier
     var revitRebarHook = RebarHookType.Create(Doc, speckleRebarHook.angle, multiplier);
 
     SetInstanceParameters(revitRebarHook, speckleRebarHook);
