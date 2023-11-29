@@ -207,12 +207,16 @@ dotnet_analyzer_diagnostic.category-Style.severity = warning # All rules will us
 dotnet_diagnostic.ide0055.severity = none # Formatting rule: Incompatible with CSharpier
 dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type: Preference
 dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Preference
+dotnet_diagnostic.ide0200.severity = none # Remove unnecessary lambda expression: may be performance reasons not to
+dotnet_diagnostic.ide0058.severity = none # Remove unnecessary expression value: Subjective
 dotnet_diagnostic.ide0001.severity = suggestion # Name can be simplified: Non enforceable in build
 dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Preference
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
-dotnet_diagnostic.ide0058.severity = suggestion # Remove unnecessary expression value: Subjective
 dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
+dotnet_diagnostic.ide0029.severity = suggestion # Null check can be simplified: Subjective
+dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: Subjective
+dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance
@@ -234,6 +238,9 @@ dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
 dotnet_diagnostic.ca2227.severity = suggestion # Collection props should be read-only
 
 dotnet_code_quality.ca1051.exclude_structs = true # CA1051 is excluded in structs
+dotnet_code_quality.dispose_ownership_transfer_at_constructor = true # CA2000 has a lot of false positives without this
+dotnet_code_quality.dispose_ownership_transfer_at_method_call = true # CA2000 has a lot of false positives without this
+dotnet_code_quality.dispose_analysis_kind = NonExceptionPathsOnlyNotDisposed # CA2000 has a lot of false positives without this
 
 [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
 indent_style = space
