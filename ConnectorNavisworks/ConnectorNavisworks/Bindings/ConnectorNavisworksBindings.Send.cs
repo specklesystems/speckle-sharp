@@ -15,7 +15,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using static Speckle.ConnectorNavisworks.Other.Utilities;
+using static Speckle.ConnectorNavisworks.Other.SpeckleNavisworksUtilities;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 

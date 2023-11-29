@@ -13,10 +13,10 @@ using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using static Speckle.ConnectorNavisworks.Other.SpeckleNavisworksUtilities;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 using MenuItem = DesktopUI2.Models.MenuItem;
-using Utilities = Speckle.ConnectorNavisworks.Other.Utilities;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
@@ -47,13 +47,13 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     Control.CreateControl();
 
     _defaultKit = KitManager.GetDefaultKit();
-    _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
+    _navisworksConverter = _defaultKit?.LoadConverter(VersionedAppName);
     _settingsHandler = new NavisworksOptionsManager();
   }
 
   public static string HostAppName => HostApplications.Navisworks.Slug;
 
-  public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
+  public static string HostAppNameVersion => VersionedAppName.Replace("Navisworks", "Navisworks ");
 
   public static bool CachedConversion =>
     CachedConvertedElements != null && CachedConvertedElements.Count != 0 && s_cachedCommit != null;

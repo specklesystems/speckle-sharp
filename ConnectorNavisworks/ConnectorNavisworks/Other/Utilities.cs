@@ -17,7 +17,7 @@ internal static class ArrayExtension
   }
 }
 
-public static class Utilities
+public static class SpeckleNavisworksUtilities
 {
 #if NAVMAN21
     public static readonly string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
