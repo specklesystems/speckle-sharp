@@ -23,7 +23,13 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2024\\ConverterRevit2024.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Tests.csproj",
+      "ConnectorRevit\\RevitSharedResources2020\\RevitSharedResources2020.csproj",
+      "ConnectorRevit\\RevitSharedResources2021\\RevitSharedResources2021.csproj",
+      "ConnectorRevit\\RevitSharedResources2022\\RevitSharedResources2022.csproj",
+      "ConnectorRevit\\RevitSharedResources2023\\RevitSharedResources2023.csproj",
+      "ConnectorRevit\\RevitSharedResources2024\\RevitSharedResources2024.csproj",
+      "ConnectorRevit\\RevitSharedResources\\RevitSharedResources.shproj"
     ]
   }
 }

@@ -1,11 +1,13 @@
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ceiling = Objects.BuiltElements.Ceiling;
 using DB = Autodesk.Revit.DB;
+#if !REVIT2020 && !REVIT2021
+using Ceiling = Objects.BuiltElements.Ceiling;
+using Speckle.Core.Models;
+using System;
+#endif
 
 namespace Objects.Converter.Revit;
 

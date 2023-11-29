@@ -1,14 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
 using Speckle.ConnectorTeklaStructures.UI;
 using Speckle.Core.Logging;
 using Tekla.Structures.Dialog;

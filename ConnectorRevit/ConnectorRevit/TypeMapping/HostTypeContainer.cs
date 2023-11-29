@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 
