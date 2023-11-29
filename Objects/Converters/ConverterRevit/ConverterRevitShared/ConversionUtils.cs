@@ -15,7 +15,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;

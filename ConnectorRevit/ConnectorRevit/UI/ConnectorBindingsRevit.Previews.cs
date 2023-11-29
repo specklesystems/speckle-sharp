@@ -15,7 +15,6 @@ using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Autodesk.Revit.DB.DirectContext3D;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
-using ConnectorRevit.Revit;
 
 namespace Speckle.ConnectorRevit.UI;
 

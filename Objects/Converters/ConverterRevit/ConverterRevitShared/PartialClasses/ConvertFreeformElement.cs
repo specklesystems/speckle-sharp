@@ -6,7 +6,6 @@ using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Objects.Other;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;

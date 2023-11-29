@@ -1,12 +1,8 @@
-using ConverterRevitShared;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit;

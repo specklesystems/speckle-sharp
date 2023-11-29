@@ -4,17 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.DoubleNumerics;
 using ConverterRevitShared.Revit;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Objects.Other;
-using Serilog.Core;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.netDxf.Blocks;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit;

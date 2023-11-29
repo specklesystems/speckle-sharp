@@ -5,11 +5,8 @@ using System.Linq;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using System.Text.RegularExpressions;
-using Autodesk.Revit.DB.Plumbing;
 using Objects.Converter.Revit;
-using Autodesk.Revit.DB.Mechanical;
 using RevitSharedResources.Interfaces;
-using Autodesk.Revit.DB.Electrical;
 
 namespace ConverterRevitShared;
 

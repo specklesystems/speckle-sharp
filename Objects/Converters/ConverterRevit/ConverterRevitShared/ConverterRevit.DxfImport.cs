@@ -6,13 +6,11 @@ using DB = Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Converters.DxfConverter;
 using Objects.Geometry;
-using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.netDxf.Entities;
-using FamilyInstance = Objects.BuiltElements.Revit.FamilyInstance;
 using Mesh = Objects.Geometry.Mesh;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 
