@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
@@ -59,6 +60,11 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Cache"
   ),
 ]
+[SuppressMessage(
+  "design",
+  "CA1812:Avoid uninstantiated internal classes",
+  Justification = "Instantiated by Navisworks"
+)]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
   private static readonly Dictionary<Plugin, bool> s_loadedPlugins = new();

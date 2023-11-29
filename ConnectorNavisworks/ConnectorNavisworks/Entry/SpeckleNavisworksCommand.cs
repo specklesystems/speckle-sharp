@@ -26,7 +26,11 @@ namespace Speckle.ConnectorNavisworks.Entry;
     ExtendedToolTip = "Speckle Connector for Navisworks"
   )
 ]
-// ReSharper disable once ClassNeverInstantiated.Global - This is because of the mechanism Navisworks uses to load plugins.
+[SuppressMessage(
+  "design",
+  "CA1812:Avoid uninstantiated internal classes",
+  Justification = "Instantiated by Navisworks"
+)]
 internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
   internal ConnectorBindingsNavisworks Bindings;
