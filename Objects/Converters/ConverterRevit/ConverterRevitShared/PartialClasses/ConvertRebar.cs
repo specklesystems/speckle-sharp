@@ -7,7 +7,6 @@ using Autodesk.Revit.Exceptions;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json.Linq;
 using DB = Autodesk.Revit.DB;
 using Vector = Objects.Geometry.Vector;
 
