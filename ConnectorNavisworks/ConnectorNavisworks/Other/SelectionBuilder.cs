@@ -48,15 +48,15 @@ public class SelectionHandler
   {
     switch (_filter.Slug)
     {
-      case FilterTypes.Manual:
+      case FilterTypes.MANUAL:
         _uniqueModelItems.AddRange(GetObjectsFromSelection());
         break;
 
-      case FilterTypes.Sets:
+      case FilterTypes.SETS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedSets());
         break;
 
-      case FilterTypes.Views:
+      case FilterTypes.VIEWS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedViewpoint());
         break;
     }

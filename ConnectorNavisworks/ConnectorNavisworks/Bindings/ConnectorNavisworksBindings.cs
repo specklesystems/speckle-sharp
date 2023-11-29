@@ -23,12 +23,12 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
   // Much of the interaction in Navisworks is through the ActiveDocument API
-  private static Document _doc;
+  private static Document s_doc;
   internal static Control Control;
-  private static object _cachedCommit;
+  private static object s_cachedCommit;
 
   internal static List<Base> CachedConvertedElements;
-  private static StreamState _cachedState;
+  private static StreamState s_cachedState;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
 
@@ -39,8 +39,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
-    _doc = navisworksActiveDocument;
-    _doc.SelectionSets.ToSavedItemCollection();
+    s_doc = navisworksActiveDocument;
+    s_doc.SelectionSets.ToSavedItemCollection();
 
     // Sets the Main Thread Control to Invoke commands on.
     Control = new Control();
@@ -56,7 +56,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
   public static bool CachedConversion =>
-    CachedConvertedElements != null && CachedConvertedElements.Any() && _cachedCommit != null;
+    CachedConvertedElements != null && CachedConvertedElements.Any() && s_cachedCommit != null;
 
   public override string GetActiveViewName()
   {
@@ -102,7 +102,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   {
     // TODO!
     // An unsaved document has no path or filename
-    var fileName = _doc.CurrentFileName;
+    var fileName = s_doc.CurrentFileName;
     var hash = Core.Models.Utilities.HashString(fileName, Core.Models.Utilities.HashingFunctions.MD5);
     return hash;
   }
@@ -115,17 +115,17 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public async Task RetryLastConversionSend()
   {
-    if (_doc == null)
+    if (s_doc == null)
     {
       return;
     }
 
-    if (CachedConvertedElements == null || _cachedCommit == null)
+    if (CachedConvertedElements == null || s_cachedCommit == null)
     {
       throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");
     }
 
-    if (_cachedCommit is Collection commitObject)
+    if (s_cachedCommit is Collection commitObject)
     {
       // _isRetrying = true;
 
@@ -135,7 +135,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
       commitObject.elements = CachedConvertedElements;
 
-      var state = _cachedState;
+      var state = s_cachedState;
 
       _progressBar.BeginSubOperation(0.7, "Retrying cached conversion.");
       _progressBar.EndSubOperation();
@@ -172,7 +172,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     }
 
     // nullify the cached conversion and commit on success.
-    _cachedCommit = null;
+    s_cachedCommit = null;
 
     CachedConvertedElements = null;
     // _isRetrying = false;

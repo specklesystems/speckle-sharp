@@ -33,7 +33,7 @@ public partial class ConverterNavisworks
         {
           case string pseudoId:
             element =
-              pseudoId == RootNodePseudoId
+              pseudoId == ROOT_NODE_PSEUDO_ID
                 ? Application.ActiveDocument.Models.RootItems.First
                 : PointerToModelItem(pseudoId);
             break;
@@ -363,11 +363,11 @@ public partial class ConverterNavisworks
       return true;
     }
 
-    const PrimitiveTypes allowedTypes =
+    const PrimitiveTypes ALLOWED_TYPES =
       PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
 
     var primitives = item.Geometry.PrimitiveTypes;
-    var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
+    var primitiveTypeSupported = (primitives & ALLOWED_TYPES) == primitives;
 
     return primitiveTypeSupported;
   }

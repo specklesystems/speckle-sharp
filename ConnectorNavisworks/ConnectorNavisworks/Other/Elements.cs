@@ -72,7 +72,7 @@ public class Element
     var arrayData = ((Array)ComApiBridge.ToInwOaPath(modelItem).ArrayData).ToArray<int>();
     PseudoId =
       arrayData.Length == 0
-        ? Constants.RootNodePseudoId
+        ? Constants.ROOT_NODE_PSEUDO_ID
         : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
     return PseudoId;
   }
@@ -88,7 +88,7 @@ public class Element
       return _modelItem;
     }
 
-    if (PseudoId == Constants.RootNodePseudoId)
+    if (PseudoId == Constants.ROOT_NODE_PSEUDO_ID)
     {
       return Application.ActiveDocument.Models.RootItems.First;
     }

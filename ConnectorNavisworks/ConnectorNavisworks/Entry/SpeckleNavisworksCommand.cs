@@ -17,7 +17,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
 [
   DockPanePlugin(450, 750, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
   Plugin(
-    LaunchSpeckleConnector.Plugin,
+    LaunchSpeckleConnector.PLUGIN,
     "Speckle",
     DisplayName = "Speckle",
     Options = PluginOptions.None,

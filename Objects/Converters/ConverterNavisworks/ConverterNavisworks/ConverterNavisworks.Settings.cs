@@ -16,9 +16,9 @@ public partial class ConverterNavisworks
   }
 
   // CAUTION: these strings need to have the same values as in the converter
-  private const string InternalOrigin = "Model Origin (default)";
-  private const string ProxyOrigin = "Project Base Origin";
-  private const string BBoxOrigin = "Boundingbox Origin";
+  private const string INTERNAL_ORIGIN = "Model Origin (default)";
+  private const string PROXY_ORIGIN = "Project Base Origin";
+  private const string BBOX_ORIGIN = "Boundingbox Origin";
 
   private static Dictionary<string, string> Settings { get; } = new();
 
@@ -54,9 +54,9 @@ public partial class ConverterNavisworks
 
       return value switch
       {
-        ProxyOrigin => Transforms.ProjectBasePoint,
-        BBoxOrigin => Transforms.BoundingBox,
-        InternalOrigin => Transforms.Default,
+        PROXY_ORIGIN => Transforms.ProjectBasePoint,
+        BBOX_ORIGIN => Transforms.BoundingBox,
+        INTERNAL_ORIGIN => Transforms.Default,
         _ => Transforms.Default
       };
     }

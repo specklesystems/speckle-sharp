@@ -37,9 +37,9 @@ public partial class ConnectorBindingsNavisworks
   private static Collection CommitObject =>
     new()
     {
-      ["units"] = GetUnits(_doc),
+      ["units"] = GetUnits(s_doc),
       collectionType = "Navisworks Model",
-      name = _doc.Title,
+      name = s_doc.Title,
       applicationId = "Root"
     };
 
@@ -81,8 +81,8 @@ public partial class ConnectorBindingsNavisworks
 
         // Reset the cached conversion and commit objects
         CachedConvertedElements = null;
-        _cachedState = state;
-        _cachedCommit = commitObject;
+        s_cachedState = state;
+        s_cachedCommit = commitObject;
 
         Cursor.Current = Cursors.WaitCursor;
 
@@ -108,7 +108,7 @@ public partial class ConnectorBindingsNavisworks
       }
       else
       {
-        commitObject = _cachedCommit as Collection;
+        commitObject = s_cachedCommit as Collection;
         if (commitObject != null)
         {
           commitObject.elements = CachedConvertedElements;
@@ -129,7 +129,7 @@ public partial class ConnectorBindingsNavisworks
       if (PersistCache == false)
       {
         // On success, cancel the conversion and commit object cache
-        _cachedCommit = null;
+        s_cachedCommit = null;
         CachedConvertedElements = null;
       }
     }
@@ -184,7 +184,7 @@ public partial class ConnectorBindingsNavisworks
       throw new ArgumentException("No ProgressViewModel provided.");
     }
 
-    if (_doc.ActiveSheet == null)
+    if (s_doc.ActiveSheet == null)
     {
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
     }
@@ -277,7 +277,7 @@ public partial class ConnectorBindingsNavisworks
     CurrentSettings = state.Settings;
     var settings = state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
 
-    _navisworksConverter.SetContextDocument(_doc);
+    _navisworksConverter.SetContextDocument(s_doc);
     _navisworksConverter.SetConverterSettings(settings);
     _navisworksConverter.Report.ReportObjects.Clear();
   }
@@ -521,8 +521,8 @@ public partial class ConnectorBindingsNavisworks
     // Only send current view if we aren't sending other views.
     else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
     {
-      var currentView = _conversionInvoker.Convert(_doc.CurrentViewpoint.ToViewpoint());
-      var homeView = _conversionInvoker.Convert(_doc.HomeView);
+      var currentView = _conversionInvoker.Convert(s_doc.CurrentViewpoint.ToViewpoint());
+      var homeView = _conversionInvoker.Convert(s_doc.HomeView);
 
       if (currentView != null)
       {
