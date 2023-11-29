@@ -18,7 +18,7 @@ public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
   {
-    var unused = Settings.TryGetValue("_Mode", out var mode);
+    var _ = Settings.TryGetValue("_Mode", out var mode);
 
     Base @base;
 
