@@ -59,6 +59,8 @@ public class SelectionHandler
       case FilterTypes.VIEWS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedViewpoint());
         break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(_filter.Slug), _filter.Slug, "Unrecognized filter type");
     }
   }
 
@@ -258,7 +260,7 @@ public class SelectionHandler
     switch (savedItem)
     {
       case SavedViewpoint { ContainsVisibilityOverrides: false }:
-        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility
+        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility. This is another don't send everything safeguard.
         return null;
       case GroupItem groupItem:
         foreach (var childItem in groupItem.Children)
@@ -266,6 +268,10 @@ public class SelectionHandler
           treeNode.IsEnabled = false;
           treeNode.Elements.Add(GetViews(childItem));
         }
+        break;
+      default:
+        // This case is intentionally left empty as all SDK object scenarios are covered above.
+        // and will fall throw with the treeNode for a SavedViewpoint that is not a group and has visibility overrides.
         break;
     }
 

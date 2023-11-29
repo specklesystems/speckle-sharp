@@ -142,6 +142,8 @@ public partial class ConnectorBindingsNavisworks
         return null;
       case false:
         return treeNode;
+      default:
+        break; // handles savedItem.IsGroup == true, somewhat redundant
     }
 
     foreach (var childItem in ((GroupItem)savedItem).Children)
