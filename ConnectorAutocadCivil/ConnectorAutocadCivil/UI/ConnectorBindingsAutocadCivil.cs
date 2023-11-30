@@ -94,9 +94,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       path = GetDocPath(Doc);
     }
     catch { }
-    var docString = $"{(path != null ? path : "")}{(Doc != null ? Doc.Name : "")}";
+    var docString = $"{path ?? ""}{(Doc != null ? Doc.Name : "")}";
     var hash = !string.IsNullOrEmpty(docString)
-      ? Core.Models.Utilities.HashString(docString, Core.Models.Utilities.HashingFunctions.MD5)
+      ? Utilities.HashString(docString, Utilities.HashingFunctions.MD5)
       : null;
     return hash;
   }
@@ -162,7 +162,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
   public override void ResetDocument()
   {
-    Doc.Editor.SetImpliedSelection(new ObjectId[0]);
+    Doc.Editor.SetImpliedSelection(System.Array.Empty<ObjectId>());
     Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
   }
 }

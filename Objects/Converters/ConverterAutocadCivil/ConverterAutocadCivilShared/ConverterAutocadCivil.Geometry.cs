@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.DoubleNumerics;
 using System.Linq;
 using System.Drawing;
 
@@ -15,12 +14,6 @@ using Speckle.Core.Models;
 using Objects.Utils;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
-using Brep = Objects.Geometry.Brep;
-using BrepEdge = Objects.Geometry.BrepEdge;
-using BrepFace = Objects.Geometry.BrepFace;
-using BrepLoop = Objects.Geometry.BrepLoop;
-using BrepLoopType = Objects.Geometry.BrepLoopType;
-using BrepTrim = Objects.Geometry.BrepTrim;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -33,11 +26,8 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-using Surface = Objects.Geometry.Surface;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
-using Speckle.Core.Kits;
-using Objects.Geometry;
-using Objects.Other;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -226,9 +216,11 @@ public partial class ConverterAutocadCivil
   // Line
   public Line LineToSpeckle(LineSegment2d line)
   {
-    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
-    _line.length = line.Length;
-    _line.domain = IntervalToSpeckle(line.GetInterval());
+    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits)
+    {
+      length = line.Length,
+      domain = IntervalToSpeckle(line.GetInterval())
+    };
     return _line;
   }
 
@@ -238,20 +230,24 @@ public partial class ConverterAutocadCivil
 
     var startParam = line.GetParameterOf(line.StartPoint);
     var endParam = line.GetParameterOf(line.EndPoint);
-    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), u);
-    _line.length = line.GetLength(startParam, endParam, tolerance);
-    _line.domain = IntervalToSpeckle(line.GetInterval());
-    _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), u)
+    {
+      length = line.GetLength(startParam, endParam, tolerance),
+      domain = IntervalToSpeckle(line.GetInterval()),
+      bbox = BoxToSpeckle(line.OrthoBoundBlock)
+    };
 
     return _line;
   }
 
   public Line LineToSpeckle(LineSegment3d line)
   {
-    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits);
-    _line.length = line.Length;
-    _line.domain = IntervalToSpeckle(line.GetInterval());
-    _line.bbox = BoxToSpeckle(line.OrthoBoundBlock);
+    var _line = new Line(PointToSpeckle(line.StartPoint), PointToSpeckle(line.EndPoint), ModelUnits)
+    {
+      length = line.Length,
+      domain = IntervalToSpeckle(line.GetInterval()),
+      bbox = BoxToSpeckle(line.OrthoBoundBlock)
+    };
     return _line;
   }
 
@@ -274,10 +270,12 @@ public partial class ConverterAutocadCivil
   {
     var u = units ?? ModelUnits;
 
-    var _line = new Line(PointToSpeckle(line.StartPoint, u), PointToSpeckle(line.EndPoint, u), u);
-    _line.domain = new Interval(line.StartParam, line.EndParam);
-    _line.length = line.Length;
-    _line.bbox = BoxToSpeckle(line.GeometricExtents);
+    var _line = new Line(PointToSpeckle(line.StartPoint, u), PointToSpeckle(line.EndPoint, u), u)
+    {
+      domain = new Interval(line.StartParam, line.EndParam),
+      length = line.Length,
+      bbox = BoxToSpeckle(line.GeometricExtents)
+    };
     return _line;
   }
 
@@ -307,23 +305,25 @@ public partial class ConverterAutocadCivil
 
     // find arc plane (normal is in clockwise dir)
     var center3 = new Point3d(arc.Center.X, arc.Center.Y, 0);
-    AcadGeo.Plane plane =
-      (arc.IsClockWise)
-        ? new AcadGeo.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1))
-        : new AcadGeo.Plane(center3, Vector3d.ZAxis);
+    AcadGeo.Plane plane = arc.IsClockWise
+      ? new AcadGeo.Plane(center3, Vector3d.ZAxis.MultiplyBy(-1))
+      : new AcadGeo.Plane(center3, Vector3d.ZAxis);
 
     // calculate total angle. TODO: This needs to be validated across all possible arc orientations
-    var totalAngle =
-      (arc.IsClockWise) ? Math.Abs(arc.EndAngle - arc.StartAngle) : Math.Abs(arc.EndAngle - arc.StartAngle);
+    var totalAngle = arc.IsClockWise
+      ? Math.Abs(arc.EndAngle - arc.StartAngle)
+      : Math.Abs(arc.EndAngle - arc.StartAngle);
 
     // create arc
-    var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, arc.StartAngle, arc.EndAngle, totalAngle, ModelUnits);
-    _arc.startPoint = PointToSpeckle(arc.StartPoint);
-    _arc.endPoint = PointToSpeckle(arc.EndPoint);
-    _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
-    _arc.domain = IntervalToSpeckle(interval);
-    _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint));
-    _arc.bbox = BoxToSpeckle(arc.BoundBlock);
+    var _arc = new Arc(PlaneToSpeckle(plane), arc.Radius, arc.StartAngle, arc.EndAngle, totalAngle, ModelUnits)
+    {
+      startPoint = PointToSpeckle(arc.StartPoint),
+      endPoint = PointToSpeckle(arc.EndPoint),
+      midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2)),
+      domain = IntervalToSpeckle(interval),
+      length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint)),
+      bbox = BoxToSpeckle(arc.BoundBlock)
+    };
     return _arc;
   }
 
@@ -337,13 +337,15 @@ public partial class ConverterAutocadCivil
       arc.EndAngle,
       Math.Abs(arc.EndAngle - arc.StartAngle),
       ModelUnits
-    );
-    _arc.startPoint = PointToSpeckle(arc.StartPoint);
-    _arc.endPoint = PointToSpeckle(arc.EndPoint);
-    _arc.midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2));
-    _arc.domain = IntervalToSpeckle(arc.GetInterval());
-    _arc.length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance);
-    _arc.bbox = BoxToSpeckle(arc.OrthoBoundBlock);
+    )
+    {
+      startPoint = PointToSpeckle(arc.StartPoint),
+      endPoint = PointToSpeckle(arc.EndPoint),
+      midPoint = PointToSpeckle(arc.EvaluatePoint((interval.UpperBound - interval.LowerBound) / 2)),
+      domain = IntervalToSpeckle(arc.GetInterval()),
+      length = arc.GetLength(arc.GetParameterOf(arc.StartPoint), arc.GetParameterOf(arc.EndPoint), tolerance),
+      bbox = BoxToSpeckle(arc.OrthoBoundBlock)
+    };
     return _arc;
   }
 
@@ -370,13 +372,15 @@ public partial class ConverterAutocadCivil
       arc.EndAngle,
       arc.TotalAngle,
       ModelUnits
-    );
-    _arc.startPoint = PointToSpeckle(arc.StartPoint);
-    _arc.endPoint = PointToSpeckle(arc.EndPoint);
-    _arc.midPoint = PointToSpeckle(arc.GetPointAtDist(arc.Length / 2));
-    _arc.domain = new Interval(arc.StartParam, arc.EndParam);
-    _arc.length = arc.Length;
-    _arc.bbox = BoxToSpeckle(arc.GeometricExtents);
+    )
+    {
+      startPoint = PointToSpeckle(arc.StartPoint),
+      endPoint = PointToSpeckle(arc.EndPoint),
+      midPoint = PointToSpeckle(arc.GetPointAtDist(arc.Length / 2)),
+      domain = new Interval(arc.StartParam, arc.EndParam),
+      length = arc.Length,
+      bbox = BoxToSpeckle(arc.GeometricExtents)
+    };
     return _arc;
   }
 
@@ -404,9 +408,11 @@ public partial class ConverterAutocadCivil
   // Circle
   public Circle CircleToSpeckle(AcadDB.Circle circle)
   {
-    var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits);
-    _circle.length = circle.Circumference;
-    _circle.bbox = BoxToSpeckle(circle.GeometricExtents);
+    var _circle = new Circle(PlaneToSpeckle(circle.GetPlane()), circle.Radius, ModelUnits)
+    {
+      length = circle.Circumference,
+      bbox = BoxToSpeckle(circle.GeometricExtents)
+    };
     return _circle;
   }
 
@@ -421,10 +427,12 @@ public partial class ConverterAutocadCivil
   public Ellipse EllipseToSpeckle(AcadDB.Ellipse ellipse)
   {
     var plane = new AcadGeo.Plane(ellipse.Center, ellipse.MajorAxis, ellipse.MinorAxis);
-    var _ellipse = new Ellipse(PlaneToSpeckle(plane), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits);
-    _ellipse.domain = new Interval(ellipse.StartParam, ellipse.EndParam);
-    _ellipse.length = ellipse.GetDistanceAtParameter(ellipse.EndParam);
-    _ellipse.bbox = BoxToSpeckle(ellipse.GeometricExtents);
+    var _ellipse = new Ellipse(PlaneToSpeckle(plane), ellipse.MajorRadius, ellipse.MinorRadius, ModelUnits)
+    {
+      domain = new Interval(ellipse.StartParam, ellipse.EndParam),
+      length = ellipse.GetDistanceAtParameter(ellipse.EndParam),
+      bbox = BoxToSpeckle(ellipse.GeometricExtents)
+    };
     return _ellipse;
   }
 
@@ -455,9 +463,11 @@ public partial class ConverterAutocadCivil
     }
     var _points = vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
 
-    var _polyline = new Polyline(_points, ModelUnits);
-    _polyline.closed = closed || vertices.First().IsEqualTo(vertices.Last()) ? true : false;
-    _polyline.length = length;
+    var _polyline = new Polyline(_points, ModelUnits)
+    {
+      closed = closed || vertices.First().IsEqualTo(vertices.Last()),
+      length = length
+    };
 
     return _polyline;
   }
@@ -470,10 +480,12 @@ public partial class ConverterAutocadCivil
       points.AddRange(PointToSpeckle(polyline.GetPoint3dAt(i)).ToList());
     }
 
-    var _polyline = new Polyline(points, ModelUnits);
-    _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false; // hatch boundary polylines are not closed, cannot rely on .Closed prop
-    _polyline.length = polyline.Length;
-    _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    var _polyline = new Polyline(points, ModelUnits)
+    {
+      closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint), // hatch boundary polylines are not closed, cannot rely on .Closed prop
+      length = polyline.Length,
+      bbox = BoxToSpeckle(polyline.GeometricExtents)
+    };
 
     return _polyline;
   }
@@ -500,10 +512,12 @@ public partial class ConverterAutocadCivil
       }
     }
 
-    var _polyline = new Polyline(points, ModelUnits);
-    _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false;
-    _polyline.length = polyline.Length;
-    _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    var _polyline = new Polyline(points, ModelUnits)
+    {
+      closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint),
+      length = polyline.Length,
+      bbox = BoxToSpeckle(polyline.GeometricExtents)
+    };
 
     return _polyline;
   }
@@ -538,14 +552,10 @@ public partial class ConverterAutocadCivil
         // get the connection point to the next segment - this is necessary since imported polycurves might have segments in different directions
         var connectionPoint = new Point3d();
         var nextSegment = exploded[i + 1] as AcadDB.Curve;
-        if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
-        {
-          connectionPoint = nextSegment.StartPoint;
-        }
-        else
-        {
-          connectionPoint = nextSegment.EndPoint;
-        }
+        connectionPoint =
+          nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
+            ? nextSegment.StartPoint
+            : nextSegment.EndPoint;
 
         previousPoint = connectionPoint;
         segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
@@ -557,7 +567,7 @@ public partial class ConverterAutocadCivil
       segments.Add(CurveToSpeckle(segment));
     }
 
-    if (segments.Count() == 0)
+    if (segments.Count == 0)
     {
       throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
     }
@@ -603,16 +613,10 @@ public partial class ConverterAutocadCivil
         }
         else
         {
-          if (
+          connectionPoint =
             nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
-          )
-          {
-            connectionPoint = nextSegment.StartPoint;
-          }
-          else
-          {
-            connectionPoint = nextSegment.EndPoint;
-          }
+              ? nextSegment.StartPoint
+              : nextSegment.EndPoint;
         }
 
         previousPoint = connectionPoint;
@@ -625,7 +629,7 @@ public partial class ConverterAutocadCivil
       segments.Add(CurveToSpeckle(segment));
     }
 
-    if (segments.Count() == 0)
+    if (segments.Count == 0)
     {
       throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
     }
@@ -669,7 +673,7 @@ public partial class ConverterAutocadCivil
     bool reverseDirection = false;
     if (isFirstSegment)
     {
-      reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
+      reverseDirection = segment.StartPoint.IsEqualTo(connectionPoint);
       if (reverseDirection)
       {
         nextPoint = segment.StartPoint;
@@ -677,7 +681,7 @@ public partial class ConverterAutocadCivil
     }
     else
     {
-      reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
+      reverseDirection = !segment.StartPoint.IsEqualTo(connectionPoint);
       if (reverseDirection)
       {
         nextPoint = segment.StartPoint;
@@ -709,7 +713,7 @@ public partial class ConverterAutocadCivil
     bool reverseDirection = false;
     if (isFirstSegment)
     {
-      reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? true : false;
+      reverseDirection = segment.StartPoint.IsEqualTo(connectionPoint);
       if (reverseDirection)
       {
         nextPoint = segment.StartPoint;
@@ -717,14 +721,14 @@ public partial class ConverterAutocadCivil
     }
     else
     {
-      reverseDirection = (segment.StartPoint.IsEqualTo(connectionPoint)) ? false : true;
+      reverseDirection = !segment.StartPoint.IsEqualTo(connectionPoint);
       if (reverseDirection)
       {
         nextPoint = segment.StartPoint;
       }
     }
 
-    return (reverseDirection) ? segment.GetReverseParameterCurve() : segment;
+    return reverseDirection ? segment.GetReverseParameterCurve() : segment;
   }
 
   private bool IsPolycurvePlanar(Polycurve polycurve)
@@ -735,10 +739,7 @@ public partial class ConverterAutocadCivil
       switch (segment)
       {
         case Line o:
-          if (z == null)
-          {
-            z = o.start.z;
-          }
+          z ??= o.start.z;
 
           if (o.start.z != z || o.end.z != z)
           {
@@ -747,10 +748,7 @@ public partial class ConverterAutocadCivil
 
           break;
         case Arc o:
-          if (z == null)
-          {
-            z = o.startPoint.z;
-          }
+          z ??= o.startPoint.z;
 
           if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z)
           {
@@ -759,10 +757,7 @@ public partial class ConverterAutocadCivil
 
           break;
         case Curve o:
-          if (z == null)
-          {
-            z = o.points[2];
-          }
+          z ??= o.points[2];
 
           for (int i = 2; i < o.points.Count; i += 3)
           {
@@ -774,10 +769,7 @@ public partial class ConverterAutocadCivil
 
           break;
         case Spiral o:
-          if (z == null)
-          {
-            z = o.startPoint.z;
-          }
+          z ??= o.startPoint.z;
 
           if (o.startPoint.z != z || o.endPoint.z != z)
           {
@@ -827,7 +819,7 @@ public partial class ConverterAutocadCivil
           count++;
           break;
         case Spiral o:
-          var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
+          var vertices = o.displayValue.GetPoints().Select(PointToNative).ToList();
           foreach (var vertex in vertices)
           {
             polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
@@ -945,7 +937,7 @@ public partial class ConverterAutocadCivil
     curve.degree = spline.Degree;
     curve.periodic = spline.IsPeriodic;
     curve.rational = spline.IsRational;
-    curve.closed = (periodicClosed) ? true : spline.Closed;
+    curve.closed = periodicClosed || spline.Closed;
     curve.length = _spline.GetLength(_spline.StartParameter, _spline.EndParameter, tolerance);
     curve.domain = IntervalToSpeckle(_spline.GetInterval());
     curve.bbox = BoxToSpeckle(spline.GeometricExtents);
@@ -1048,7 +1040,7 @@ public partial class ConverterAutocadCivil
 
   public Curve NurbsToSpeckle(NurbCurve2d curve)
   {
-    var _curve = new Curve();
+    Curve _curve = new();
 
     // get control points
     var points = new List<double>();
@@ -1088,7 +1080,7 @@ public partial class ConverterAutocadCivil
 
   public Curve NurbsToSpeckle(NurbCurve3d curve)
   {
-    var _curve = new Curve();
+    Curve _curve = new();
 
     // get control points
     var points = new List<double>();
@@ -1132,7 +1124,7 @@ public partial class ConverterAutocadCivil
   {
     // process control points
     // NOTE: for **closed periodic** curves that have "n" control pts, curves sent from rhino will have n+degree points. Remove extra pts for autocad.
-    var _points = curve.GetPoints().Select(o => PointToNative(o)).ToList();
+    var _points = curve.GetPoints().Select(PointToNative).ToList();
     if (curve.closed && curve.periodic)
     {
       _points = _points.GetRange(0, _points.Count - curve.degree);
@@ -1144,7 +1136,7 @@ public partial class ConverterAutocadCivil
     // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
     // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
     // NOTE: for **closed periodic** curves that have "n" control pts, # of knots should be n + 1. Remove degree = 3 knots from start and end.
-    var _knots = curve.knots;
+    List<double> _knots = curve.knots;
     if (curve.knots.Count == _points.Count + curve.degree - 1) // handles rhino format curves
     {
       _knots.Insert(0, _knots[0]);
@@ -1253,7 +1245,7 @@ public partial class ConverterAutocadCivil
         converted = EllipseToNativeDB(ellipse);
         break;
       case Polycurve polycurve:
-        if (polycurve.segments.Where(o => o is Curve).Count() > 0)
+        if (polycurve.segments.Any(o => o is Curve))
         {
           var convertedPolycurve = PolycurveSplineToNativeDB(polycurve);
           convertedList = convertedPolycurve.Converted.Cast<AcadDB.Curve>().ToList();
@@ -1436,9 +1428,9 @@ public partial class ConverterAutocadCivil
   {
     var u = units ?? ModelUnits;
 
-    var _vertices = new List<Point3d>();
-    var faces = new List<int>();
-    var colors = new List<int>();
+    List<Point3d> _vertices = new();
+    List<int> faces = new();
+    List<int> colors = new();
     using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
     {
       foreach (ObjectId id in mesh)
@@ -1485,8 +1477,7 @@ public partial class ConverterAutocadCivil
       vertices.AddRange(PointToSpeckle(vert).ToList());
     }
 
-    var speckleMesh = new Mesh(vertices, faces, colors, null, u);
-    speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents);
+    var speckleMesh = new Mesh(vertices, faces, colors, null, u) { bbox = BoxToSpeckle(mesh.GeometricExtents) };
 
     return speckleMesh;
   }
@@ -1528,8 +1519,10 @@ public partial class ConverterAutocadCivil
       .Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb())
       .ToList();
 
-    var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits);
-    speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents);
+    var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits)
+    {
+      bbox = BoxToSpeckle(mesh.GeometricExtents)
+    };
 
     return speckleMesh;
   }
@@ -1541,7 +1534,7 @@ public partial class ConverterAutocadCivil
 
     // get vertex points
     var vertices = new Point3dCollection();
-    var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
+    var points = mesh.GetPoints().Select(PointToNative).ToList();
     foreach (var point in points)
     {
       vertices.Add(point);
@@ -1707,11 +1700,13 @@ public partial class ConverterAutocadCivil
 
           // create speckle mesh
           var vertices = _vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
-          mesh = new Mesh(vertices, faces);
-          mesh.units = ModelUnits;
-          mesh.bbox = bbox;
-          mesh.area = area;
-          mesh.volume = volume;
+          mesh = new Mesh(vertices, faces)
+          {
+            units = ModelUnits,
+            bbox = bbox,
+            area = area,
+            volume = volume
+          };
         }
       }
       catch (Exception e)
