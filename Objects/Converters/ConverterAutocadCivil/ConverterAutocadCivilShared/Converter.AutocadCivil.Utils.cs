@@ -114,6 +114,7 @@ public partial class ConverterAutocadCivil
     {
       @base["name"] = name;
     }
+
     if (!string.IsNullOrEmpty(description))
     {
       @base["description"] = description;
