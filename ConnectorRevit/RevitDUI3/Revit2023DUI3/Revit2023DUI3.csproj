@@ -48,6 +48,5 @@
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
-  
   <Import Project="..\RevitDUI3Shared\RevitDUI3Shared.projitems" Label="Shared" />
 </Project>

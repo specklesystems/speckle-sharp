@@ -93,8 +93,12 @@ public class App : IExternalApplication
       // NOTE: To run the ui from a build, follow these steps: 
       // - run `yarn build` in the DUI3 folder
       // - run ` PORT=3003  node .output/server/index.mjs` after the build
-      browser.Load("http://localhost:3003");
-      Panel.ShowDevTools();
+      
+      // NOTE: It was as before before aligning dev
+      // browser.Load("http://localhost:3003");
+      // Panel.ShowDevTools();
+      CefSharpPanel.Browser.Load("http://localhost:8082");
+      CefSharpPanel.Browser.ShowDevTools();
 #endif
 #if REVIT2023
       CefSharpPanel.Browser.Load("http://localhost:8082");
