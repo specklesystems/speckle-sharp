@@ -476,42 +476,42 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
       case DBObject o:
         switch (o)
         {
-          case DBPoint _:
-          case AcadDB.Line _:
-          case AcadDB.Arc _:
-          case AcadDB.Circle _:
-          case AcadDB.Dimension _:
-          case AcadDB.Ellipse _:
-          case AcadDB.Hatch _:
-          case AcadDB.Spline _:
-          case AcadDB.Polyline _:
-          case AcadDB.Polyline2d _:
-          case AcadDB.Polyline3d _:
-          case AcadDB.Surface _:
-          case AcadDB.PolyFaceMesh _:
-          case AcadDB.ProxyEntity _:
-          case AcadDB.Region _:
-          case SubDMesh _:
-          case Solid3d _:
+          case DBPoint:
+          case AcadDB.Line:
+          case AcadDB.Arc:
+          case AcadDB.Circle:
+          case AcadDB.Dimension:
+          case AcadDB.Ellipse:
+          case AcadDB.Hatch:
+          case AcadDB.Spline:
+          case AcadDB.Polyline:
+          case AcadDB.Polyline2d:
+          case AcadDB.Polyline3d:
+          case AcadDB.Surface:
+          case AcadDB.PolyFaceMesh:
+          case AcadDB.ProxyEntity:
+          case AcadDB.Region:
+          case SubDMesh:
+          case Solid3d:
             return true;
 
-          case BlockReference _:
-          case BlockTableRecord _:
-          case AcadDB.DBText _:
-          case AcadDB.MText _:
-          case LayerTableRecord _:
+          case BlockReference:
+          case BlockTableRecord:
+          case AcadDB.DBText:
+          case AcadDB.MText:
+          case LayerTableRecord:
             return true;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           // NOTE: C3D pressure pipes and pressure fittings API under development
-          case CivilDB.FeatureLine _:
-          case CivilDB.Corridor _:
-          case CivilDB.Structure _:
-          case CivilDB.Alignment _:
-          case CivilDB.Pipe _:
-          case CivilDB.PressurePipe _:
-          case CivilDB.Profile _:
-          case CivilDB.TinSurface _:
+          case CivilDB.FeatureLine:
+          case CivilDB.Corridor:
+          case CivilDB.Structure:
+          case CivilDB.Alignment:
+          case CivilDB.Pipe:
+          case CivilDB.PressurePipe:
+          case CivilDB.Profile:
+          case CivilDB.TinSurface:
             return true;
 #endif
 
@@ -525,13 +525,13 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           }
         }
 
-      case Acad.Geometry.Point3d _:
-      case Acad.Geometry.Vector3d _:
-      case Acad.Geometry.Plane _:
-      case Acad.Geometry.Line3d _:
-      case Acad.Geometry.LineSegment3d _:
-      case Acad.Geometry.CircularArc3d _:
-      case Acad.Geometry.Curve3d _:
+      case Acad.Geometry.Point3d:
+      case Acad.Geometry.Vector3d:
+      case Acad.Geometry.Plane:
+      case Acad.Geometry.Line3d:
+      case Acad.Geometry.LineSegment3d:
+      case Acad.Geometry.CircularArc3d:
+      case Acad.Geometry.Curve3d:
         return true;
 
       default:
@@ -543,27 +543,27 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   {
     switch (@object)
     {
-      case Point _:
-      case Line _:
-      case Arc _:
-      case Circle _:
-      case Ellipse _:
-      case Spiral _:
-      case Hatch _:
-      case Polyline _:
-      case Polycurve _:
-      case Curve _:
-      case Mesh _:
+      case Point:
+      case Line:
+      case Arc:
+      case Circle:
+      case Ellipse:
+      case Spiral:
+      case Hatch:
+      case Polyline:
+      case Polycurve:
+      case Curve:
+      case Mesh:
 
-      case Dimension _:
-      case BlockDefinition _:
-      case Instance _:
-      case Text _:
-      case Collection _:
+      case Dimension:
+      case BlockDefinition:
+      case Instance:
+      case Text:
+      case Collection:
 
-      case Alignment _:
-      case ModelCurve _:
-      case GridLine _:
+      case Alignment:
+      case ModelCurve:
+      case GridLine:
         return true;
 
       default:

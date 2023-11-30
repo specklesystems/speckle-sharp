@@ -108,6 +108,18 @@ public partial class ConverterAutocadCivil
     return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
   }
 
+  public static void AddNameAndDescriptionProperty(string name, string description, Base @base)
+  {
+    if (!string.IsNullOrEmpty(name))
+    {
+      @base["name"] = name;
+    }
+    if (!string.IsNullOrEmpty(description))
+    {
+      @base["description"] = description;
+    }
+  }
+
   /// <summary>
   /// Retrieves the handle from an input string
   /// </summary>
