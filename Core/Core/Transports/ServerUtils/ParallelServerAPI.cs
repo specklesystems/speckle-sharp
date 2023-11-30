@@ -272,7 +272,6 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
         var (dbStreamId, blobIds, cb) = ((string, IReadOnlyList<string>, CbBlobdDownloaded))inputValue;
         await serialApi.DownloadBlobs(dbStreamId, blobIds, cb).ConfigureAwait(false);
         return null;
-      case ServerApiOperation.NoOp:
       default:
         throw new ArgumentOutOfRangeException(nameof(operation), operation, null);
     }
