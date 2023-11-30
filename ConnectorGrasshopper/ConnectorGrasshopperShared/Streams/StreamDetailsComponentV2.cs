@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -68,7 +68,9 @@ public class StreamDetailsComponentV2 : GH_SpeckleTaskCapableComponent<Stream>
 
       StreamWrapper sw = null;
       if (!DA.GetData(0, ref sw))
+      {
         return;
+      }
 
       TaskList.Add(
         Task.Run(() =>
@@ -83,7 +85,9 @@ public class StreamDetailsComponentV2 : GH_SpeckleTaskCapableComponent<Stream>
     }
 
     if (!GetSolveResults(DA, out var stream))
+    {
       return;
+    }
 
     DA.SetData(0, stream.id);
     DA.SetData(1, stream.name);

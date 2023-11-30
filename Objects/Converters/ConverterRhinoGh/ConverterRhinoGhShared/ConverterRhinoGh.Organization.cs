@@ -27,7 +27,10 @@ public partial class ConverterRhinoGh
     {
       var index = Doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
       if (index != RhinoMath.UnsetIntIndex)
+      {
         return Doc.Layers[index];
+      }
+
       return null;
     }
     Layer MakeLayer(string name, Layer parentLayer = null)
@@ -36,10 +39,16 @@ public partial class ConverterRhinoGh
       {
         Layer newLayer = new() { Name = name };
         if (parentLayer != null)
+        {
           newLayer.ParentLayerId = parentLayer.Id;
+        }
+
         int newIndex = Doc.Layers.Add(newLayer);
         if (newIndex < 0)
+        {
           return null;
+        }
+
         return Doc.Layers.FindIndex(newIndex);
       }
       catch (Exception e)
@@ -101,7 +110,10 @@ public partial class ConverterRhinoGh
         : null;
     layer.Color = displayStyle.ObjectColor;
     if (renderMaterial != null)
+    {
       layer.RenderMaterial = renderMaterial;
+    }
+
     layer.PlotWeight = displayStyle.PlotWeight;
     layer.LinetypeIndex = displayStyle.LinetypeIndex;
 

@@ -116,7 +116,9 @@ public static class SpecklePathProvider
     // if we have an override, just return that
     var pathOverride = _path;
     if (pathOverride != null && !string.IsNullOrEmpty(pathOverride))
+    {
       return pathOverride;
+    }
 
     // on desktop linux and macos we use the appdata.
     // but we might not have write access to the disk

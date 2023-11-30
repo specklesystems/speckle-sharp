@@ -112,10 +112,16 @@ public static class Utils
       {
         Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
         if (parentLayer != null)
+        {
           newLayer.ParentLayerId = parentLayer.Id;
+        }
+
         int newIndex = doc.Layers.Add(newLayer);
         if (newIndex < 0)
+        {
           return null;
+        }
+
         return doc.Layers.FindIndex(newIndex);
       }
       catch (Exception e)
@@ -139,9 +145,15 @@ public static class Utils
         currentLayerPath = i == 0 ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
         currentLayer = doc.GetLayer(currentLayerPath);
         if (currentLayer == null)
+        {
           currentLayer = MakeLayer(layerNames[i], parent);
+        }
+
         if (currentLayer == null)
+        {
           break;
+        }
+
         parent = currentLayer;
       }
       layer = currentLayer;
@@ -216,7 +228,9 @@ public class PreviewConduit : DisplayConduit
       }
 
       if (!Preview.ContainsKey(previewObj.OriginalId))
+      {
         Preview.Add(previewObj.OriginalId, converted);
+      }
     }
   }
 
@@ -227,9 +241,13 @@ public class PreviewConduit : DisplayConduit
     if (Preview.ContainsKey(id))
     {
       if (unselect)
+      {
         Selected.Remove(id);
+      }
       else if (!Selected.Contains(id))
+      {
         Selected.Add(id);
+      }
     }
   }
 
@@ -256,6 +274,7 @@ public class PreviewConduit : DisplayConduit
       var drawMaterial = material;
       drawMaterial.Diffuse = drawColor;
       foreach (var obj in previewobj.Value)
+      {
         switch (obj)
         {
           case Brep o:
@@ -277,6 +296,7 @@ public class PreviewConduit : DisplayConduit
             display.DrawPointCloud(o, 5, drawColor);
             break;
         }
+      }
     }
   }
 }
@@ -293,14 +313,19 @@ public class MappingsDisplayConduit : DisplayConduit
   {
     base.DrawOverlay(e);
     if (!Enabled)
+    {
       return;
+    }
 
     //e.Display.ZBiasMode = ZBiasMode.TowardsCamera;
 
     foreach (var id in ObjectIds)
     {
       if (id == null)
+      {
         continue;
+      }
+
       var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
       switch (obj.ObjectType)
       {
@@ -329,7 +354,10 @@ public static class Formatting
   public static string ObjectDescriptor(RhinoObject obj)
   {
     if (obj == null)
+    {
       return string.Empty;
+    }
+
     var simpleType = obj.ObjectType.ToString();
     return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
   }
@@ -349,17 +377,34 @@ public static class Formatting
     }
 
     if (timeAgo.TotalSeconds < 60)
+    {
       return "less than a minute ago";
+    }
+
     if (timeAgo.TotalMinutes < 60)
+    {
       return $"about {timeAgo.Minutes} minute{PluralS(timeAgo.Minutes)} ago";
+    }
+
     if (timeAgo.TotalHours < 24)
+    {
       return $"about {timeAgo.Hours} hour{PluralS(timeAgo.Hours)} ago";
+    }
+
     if (timeAgo.TotalDays < 7)
+    {
       return $"about {timeAgo.Days} day{PluralS(timeAgo.Days)} ago";
+    }
+
     if (timeAgo.TotalDays < 30)
+    {
       return $"about {timeAgo.Days / 7} week{PluralS(timeAgo.Days / 7)} ago";
+    }
+
     if (timeAgo.TotalDays < 365)
+    {
       return $"about {timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
+    }
 
     return $"over {timeAgo.Days / 356} year{PluralS(timeAgo.Days / 356)} ago";
   }

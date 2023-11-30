@@ -38,11 +38,13 @@ public class App : Application
     themeBootstrap.CurrentTheme = theme;
 
     if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+    {
       //desktop.MainWindow = new MappingsWindow
       //{
       //  DataContext = new MappingsViewModel(),
       //};
       desktop.MainWindow = new MainWindow { DataContext = new MainViewModel() };
+    }
     //desktop.MainWindow = new Scheduler
     //{
     //  DataContext = new SchedulerViewModel(),

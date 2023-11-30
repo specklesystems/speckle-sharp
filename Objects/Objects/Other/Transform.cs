@@ -26,10 +26,12 @@ public class Transform : Base
   public Transform(double[] value, string units = null)
   {
     if (value.Length != 16)
+    {
       throw new ArgumentException(
         $"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16",
         nameof(value)
       );
+    }
 
     matrix = CreateMatrix(value);
     this.units = units;
@@ -44,7 +46,9 @@ public class Transform : Base
   public Transform(float[] value, string units = null)
   {
     if (value.Length != 16)
+    {
       throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
+    }
 
     matrix = CreateMatrix(value);
     this.units = units;
@@ -189,7 +193,9 @@ public class Transform : Base
   public double[] ConvertToUnits(string newUnits)
   {
     if (newUnits == null || units == null)
+    {
       return ToArray();
+    }
 
     var sf = Units.GetConversionFactor(units, newUnits);
 
@@ -335,9 +341,11 @@ public class Transform : Base
   public List<double> ApplyToPoints(List<double> points)
   {
     if (points.Count % 3 != 0)
+    {
       throw new SpeckleException(
         "Cannot apply transform as the points list is malformed: expected length to be multiple of 3"
       );
+    }
 
     var transformed = new List<double>(points.Count);
     for (var i = 0; i < points.Count; i += 3)
@@ -371,7 +379,9 @@ public class Transform : Base
   public Point ApplyToPoint(Point point)
   {
     if (point == null)
+    {
       return null;
+    }
 
     point.TransformTo(this, out Point transformedPoint);
     return transformedPoint;
@@ -408,7 +418,9 @@ public class Transform : Base
     var newPoint = new List<double>();
 
     for (var i = 0; i < 12; i += 4)
+    {
       newPoint.Add(vector[0] * value[i] + vector[1] * value[i + 1] + vector[2] * value[i + 2]);
+    }
 
     return newPoint;
   }
@@ -424,6 +436,7 @@ public class Transform : Base
     success = true;
     var transformed = new List<ICurve>();
     foreach (var curve in curves)
+    {
       if (curve is ITransformable c)
       {
         c.TransformTo(this, out ITransformable tc);
@@ -433,6 +446,7 @@ public class Transform : Base
       {
         success = false;
       }
+    }
 
     return transformed;
   }

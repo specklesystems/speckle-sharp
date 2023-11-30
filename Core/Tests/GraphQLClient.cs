@@ -108,7 +108,10 @@ public class GraphQLClientTests
       {
         counter++;
         if (counter < maxRetryCount)
+        {
           throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
+        }
+
         return expectedResult;
       })
       .ConfigureAwait(false);

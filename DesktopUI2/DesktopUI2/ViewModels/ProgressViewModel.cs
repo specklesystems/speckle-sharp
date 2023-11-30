@@ -46,7 +46,10 @@ public class ProgressViewModel : ReactiveObject
     {
       ProgressSummary = "";
       foreach (var kvp in value)
+      {
         ProgressSummary += $"{kvp.Key}: {kvp.Value} ";
+      }
+
       //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
       ProgressSummary += $"Total: {Max}";
 
@@ -96,7 +99,9 @@ public class ProgressViewModel : ReactiveObject
     {
       this.RaiseAndSetIfChanged(ref _isProgressing, value);
       if (!IsProgressing && Value != 0)
+      {
         ProgressSummary = "Done!";
+      }
     }
   }
 

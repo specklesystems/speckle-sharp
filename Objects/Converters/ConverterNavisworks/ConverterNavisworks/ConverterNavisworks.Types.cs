@@ -1,5 +1,5 @@
-﻿using Speckle.Core.Models;
+using Speckle.Core.Models;
 
 namespace Objects.Core.Models;
 
-internal sealed class GeometryNode : Base {}
+internal sealed class GeometryNode : Base { }

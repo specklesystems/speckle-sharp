@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rhino.Geometry;
@@ -31,11 +31,15 @@ internal static class BrepEncoder
   )
   {
     if (scaleFactor != 1.0 && !brep.Scale(scaleFactor))
+    {
       return default;
+    }
 
     var bbox = brep.GetBoundingBox(false);
     if (!bbox.IsValid || bbox.Diagonal.Length < modelAngleToleranceRadians)
+    {
       return default;
+    }
 
     // Split and Shrink faces
     {
@@ -64,8 +68,12 @@ internal static class BrepEncoder
     // Edges
     {
       foreach (var edge in brep.Edges)
+      {
         if (edge.Tolerance > modelRelativeTolerance)
+        {
           options |= BrepIssues.OutOfToleranceEdges;
+        }
+      }
       //GeometryEncoder.Context.Peek.RuntimeMessage(10, $"Geometry contains out of tolerance edges, it will be rebuilt.", edge);
     }
 
@@ -104,7 +112,9 @@ internal static class BrepEncoder
       var edgesToUnjoin = brep.Edges.Select(x => x.EdgeIndex);
       var shells = brep.UnjoinEdges(edgesToUnjoin);
       if (shells.Length == 0)
+      {
         shells = new[] { brep };
+      }
 
       var kinkyEdges = 0;
       var microEdges = 0;
@@ -118,7 +128,9 @@ internal static class BrepEncoder
 
           int edgeCount = edges.Count;
           for (int ei = 0; ei < edgeCount; ++ei)
+          {
             edges.SplitKinkyEdge(ei, modelAngleToleranceRadians);
+          }
 
           kinkyEdges += edges.Count - edgeCount;
 #if RHINO7
@@ -138,12 +150,16 @@ internal static class BrepEncoder
               face.SetDomain(0, new Interval(0.0, width));
               var deltaU = KnotListEncoder.MinDelta(face.GetSpanVector(0));
               if (deltaU < 1e-6)
+              {
                 face.SetDomain(0, new Interval(0.0, width * (1e-6 / deltaU)));
+              }
 
               face.SetDomain(1, new Interval(0.0, height));
               var deltaV = KnotListEncoder.MinDelta(face.GetSpanVector(1));
               if (deltaV < 1e-6)
+              {
                 face.SetDomain(1, new Interval(0.0, height * (1e-6 / deltaV)));
+              }
             }
 
             face.RebuildEdges(1e-6, false, true);
@@ -163,7 +179,9 @@ internal static class BrepEncoder
       {
         var merge = new Brep();
         foreach (var shell in join)
+        {
           merge.Append(shell);
+        }
 
         brep = merge;
       }
@@ -171,7 +189,9 @@ internal static class BrepEncoder
 
     var res = new List<Brep>();
     for (int i = 0; i < brep.Faces.Count; i++)
+    {
       res.Add(brep.Faces.ExtractFace(i));
+    }
 
     brep = Brep.JoinBreps(res, 0.001)[0];
 

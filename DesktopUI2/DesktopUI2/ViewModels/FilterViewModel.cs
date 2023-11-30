@@ -30,7 +30,9 @@ public class FilterViewModel : ReactiveObject
       //TODO should clean up this logic a bit
       //maybe have a model, view and viewmodel for each filter
       if (filter is ListSelectionFilter l)
+      {
         _valuesList = SearchResults = new List<string>(l.Values);
+      }
 
       //TODO:
       //FilterView.DataContext = this;
@@ -71,18 +73,26 @@ public class FilterViewModel : ReactiveObject
   public bool IsReady()
   {
     if (Filter is ManualSelectionFilter && !Filter.Selection.Any())
+    {
       return false;
+    }
 
     if (Filter is ListSelectionFilter && !Filter.Selection.Any())
+    {
       return false;
+    }
 
     if (Filter is PropertySelectionFilter p)
+    {
       if (
         string.IsNullOrEmpty(p.PropertyName)
         || string.IsNullOrEmpty(p.PropertyOperator)
         || string.IsNullOrEmpty(p.PropertyValue)
       )
+      {
         return false;
+      }
+    }
 
     return true;
   }
@@ -96,10 +106,17 @@ public class FilterViewModel : ReactiveObject
       if (!isSearching)
       {
         foreach (var a in e.SelectedItems)
+        {
           if (!Filter.Selection.Contains(a))
+          {
             Filter.Selection.Add(a as string);
+          }
+        }
+
         foreach (var r in e.DeselectedItems)
+        {
           Filter.Selection.Remove(r as string);
+        }
 
         this.RaisePropertyChanged(nameof(Summary));
       }
@@ -146,13 +163,20 @@ public class FilterViewModel : ReactiveObject
         foreach (var item in Filter.Selection)
         {
           if (!_valuesList.Contains(item))
+          {
             itemsToRemove.Add(item);
+          }
+
           if (!SelectionModel.SelectedItems.Contains(item))
+          {
             SelectionModel.Select(SearchResults.IndexOf(item));
+          }
         }
 
         foreach (var itemToRemove in itemsToRemove)
+        {
           Filter.Selection.Remove(itemToRemove);
+        }
       }
 
       this.RaisePropertyChanged(nameof(PropertyName));
@@ -183,8 +207,10 @@ public class FilterViewModel : ReactiveObject
     {
       var objIds = Bindings.GetSelectedObjects();
       if (objIds == null || objIds.Count == 0)
-        //Globals.Notify("Could not get object selection.");
+      //Globals.Notify("Could not get object selection.");
+      {
         return;
+      }
 
       Filter.Selection = objIds;
       this.RaisePropertyChanged(nameof(Summary));
@@ -199,13 +225,17 @@ public class FilterViewModel : ReactiveObject
     {
       var objIds = Bindings.GetSelectedObjects();
       if (objIds == null || objIds.Count == 0)
-        //Globals.Notify("Could not get object selection.");
+      //Globals.Notify("Could not get object selection.");
+      {
         return;
+      }
 
       objIds.ForEach(id =>
       {
         if (Filter.Selection.FirstOrDefault(x => x == id) == null)
+        {
           Filter.Selection.Add(id);
+        }
       });
       this.RaisePropertyChanged(nameof(Summary));
       //Globals.Notify("Object added.");
@@ -219,14 +249,18 @@ public class FilterViewModel : ReactiveObject
     {
       var objIds = Bindings.GetSelectedObjects();
       if (objIds == null || objIds.Count == 0)
-        //Globals.Notify("Could not get object selection.");
+      //Globals.Notify("Could not get object selection.");
+      {
         return;
+      }
 
       var filtered = Filter.Selection.Where(o => objIds.IndexOf(o) == -1).ToList();
 
       if (filtered.Count == Filter.Selection.Count)
-        //Globals.Notify("No objects removed.");
+      //Globals.Notify("No objects removed.");
+      {
         return;
+      }
 
       //Globals.Notify($"{Filter.Selection.Count - filtered.Count} objects removed.");
       Filter.Selection = filtered;

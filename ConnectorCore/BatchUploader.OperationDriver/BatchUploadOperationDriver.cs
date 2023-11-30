@@ -96,7 +96,9 @@ public sealed class BatchUploadOperationDriver
     viewModel.PropertyChanged += (_, p) =>
     {
       if (p.PropertyName is not (nameof(ProgressViewModel.Value) or nameof(ProgressViewModel.Max)))
+      {
         return;
+      }
 
       Task.Run(() => OnProgressUpdate(jobId, viewModel));
     };
@@ -107,7 +109,9 @@ public sealed class BatchUploadOperationDriver
     //Check for cancel
     var status = await _client.GetJobStatus(jobId).ConfigureAwait(false);
     if (status is JobStatus.Cancelled or JobStatus.Failed)
+    {
       viewModel.CancellationTokenSource.Cancel();
+    }
 
     //Update Progress
     JobProgress newProgress = new((long)viewModel.Value, (long)viewModel.Max);

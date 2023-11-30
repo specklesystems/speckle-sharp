@@ -93,7 +93,9 @@ public static class Helpers
     catch (SpeckleException e)
     {
       if (string.IsNullOrEmpty(sw.StreamId))
+      {
         throw;
+      }
 
       //Fallback to a non authed account
       account = new Account
@@ -128,7 +130,9 @@ public static class Helpers
 
       var branch = await client.BranchGet(sw.StreamId, branchName, 1).ConfigureAwait(false);
       if (!branch.commits.items.Any())
+      {
         throw new SpeckleException("The selected branch has no commits.");
+      }
 
       commit = branch.commits.items[0];
       objectId = branch.commits.items[0].referencedObject;
@@ -235,7 +239,9 @@ public static class Helpers
   {
 #if DEBUG
     if (slug == "dui2")
+    {
       slug = "revit";
+    }
     //when debugging the version is not correct, so don't bother
     return false;
 #endif
@@ -248,19 +254,25 @@ public static class Helpers
 
       var os = Os.Win;
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+      {
         os = Os.OSX;
+      }
 
       var versions = connector.Versions.Where(x => x.Os == os).OrderByDescending(x => x.Date).ToList();
       var stables = versions.Where(x => !x.Prerelease);
       if (!stables.Any())
+      {
         return false;
+      }
 
       var latestVersion = new System.Version(stables.First().Number);
 
       var currentVersion = Assembly.GetAssembly(typeof(Helpers)).GetName().Version;
 
       if (latestVersion > currentVersion)
+      {
         return true;
+      }
     }
     catch (Exception ex)
     {
@@ -297,17 +309,34 @@ public static class Helpers
     timeAgo = DateTime.UtcNow.Subtract(timestamp);
 
     if (timeAgo.TotalSeconds < 60)
+    {
       return "just now";
+    }
+
     if (timeAgo.TotalMinutes < 60)
+    {
       return $"{timeAgo.Minutes} minute{PluralS(timeAgo.Minutes)} ago";
+    }
+
     if (timeAgo.TotalHours < 24)
+    {
       return $"{timeAgo.Hours} hour{PluralS(timeAgo.Hours)} ago";
+    }
+
     if (timeAgo.TotalDays < 7)
+    {
       return $"{timeAgo.Days} day{PluralS(timeAgo.Days)} ago";
+    }
+
     if (timeAgo.TotalDays < 30)
+    {
       return $"{timeAgo.Days / 7} week{PluralS(timeAgo.Days / 7)} ago";
+    }
+
     if (timeAgo.TotalDays < 365)
+    {
       return $"{timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
+    }
 
     if (timestamp <= new DateTime(1800, 1, 1))
     {

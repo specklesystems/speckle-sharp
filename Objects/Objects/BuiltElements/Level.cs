@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

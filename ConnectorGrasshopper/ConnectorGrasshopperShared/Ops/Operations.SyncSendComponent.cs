@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -81,11 +81,13 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
     {
       Menu_AppendSeparator(menu);
       foreach (var ow in OutputWrappers)
+      {
         Menu_AppendItem(
           menu,
           $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
           (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
         );
+      }
     }
   }
 
@@ -103,6 +105,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
     var wrappersRaw = reader.GetString("OutputWrappers");
     var wrapperLines = wrappersRaw.Split('\n');
     if (wrapperLines.Length != 0 && wrappersRaw != "")
+    {
       foreach (var line in wrapperLines)
       {
         var pieces = line.Split('\t');
@@ -115,6 +118,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
           }
         );
       }
+    }
 
     return base.Read(reader);
   }
@@ -173,6 +177,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
             var transport = data.GetType().GetProperty("Value").GetValue(data);
 
             if (transport is string s)
+            {
               try
               {
                 transport = new StreamWrapper(s);
@@ -182,6 +187,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
                 // TODO: Check this with team.
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
               }
+            }
 
             if (transport is StreamWrapper sw)
             {
@@ -254,7 +260,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
 
           var message = messageInput; //.get_FirstItem(true).Value;
           if (message == "")
+          {
             message = $"Pushed {totalObjectCount} elements from Grasshopper.";
+          }
 
           var prevCommits = new List<StreamWrapper>();
 
@@ -267,7 +275,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
             }
 
             if (!(transport is ServerTransport))
+            {
               continue; // skip non-server transports (for now)
+            }
 
             try
             {
@@ -288,7 +298,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
                 c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
+              {
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
+              }
 
               var commitId = await client.CommitCreate(commitCreateInput, CancelToken);
 

@@ -1,17 +1,15 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 
-namespace ConnectorRevit
+namespace ConnectorRevit;
+
+public static class RevitVersionHelper
 {
-  public static class RevitVersionHelper
+  public static double ConvertFromInternalUnits(double val, Parameter parameter)
   {
-
-    public static double ConvertFromInternalUnits(double val, Parameter parameter)
-    {
 #if REVIT2020
-      return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
+    return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
 #else
-      return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());
+    return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());
 #endif
-    }
   }
 }

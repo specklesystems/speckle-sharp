@@ -45,6 +45,7 @@ public class CSIElement2D : Element2D
   public string? SpandrelAssignment { get; set; }
   public double[]? modifiers { get; set; }
   public bool Opening { get; set; }
+
   [DetachProperty]
   public AnalyticalResults? AnalysisResults { get; set; }
 }

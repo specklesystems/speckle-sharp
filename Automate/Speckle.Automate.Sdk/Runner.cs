@@ -27,9 +27,11 @@ public static class AutomationRunner
     {
       await automateFunction(automationContext, inputs).ConfigureAwait(false);
       if (automationContext.RunStatus is not ("FAILED" or "SUCCEEDED"))
+      {
         automationContext.MarkRunSuccess(
           "WARNING: Automate assumed a success status, but it was not marked as so by the function."
         );
+      }
     }
     catch (Exception ex)
     {
@@ -39,8 +41,10 @@ public static class AutomationRunner
     finally
     {
       if (automationContext.ContextView is null)
+      {
         automationContext.SetContextView();
-      
+      }
+
       await automationContext.ReportRunStatus().ConfigureAwait(false);
     }
     return automationContext;
@@ -116,7 +120,9 @@ public static class AutomationRunner
           .ConfigureAwait(false);
 
         if (context.RunStatus != AutomationStatusMapping.Get(AutomationStatus.Succeeded))
+        {
           returnCode = 1; // Flag run as failed.
+        }
       },
       speckleProjectDataArg,
       functionInputsArg,

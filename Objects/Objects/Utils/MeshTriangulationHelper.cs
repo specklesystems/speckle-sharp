@@ -23,7 +23,9 @@ public static class MeshTriangulationHelper
     {
       int n = mesh.faces[i];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4
+      }
 
       if (n == 3)
       {
@@ -81,7 +83,9 @@ public static class MeshTriangulationHelper
   {
     int n = faces[faceIndex];
     if (n < 3)
+    {
       n += 3; // 0 -> 3, 1 -> 4
+    }
     #region Local Funcitions
     //Converts from relative to absolute index (returns index in mesh.vertices list)
     int AsIndex(int v) => faceIndex + v + 1;
@@ -162,7 +166,10 @@ public static class MeshTriangulationHelper
         int c = faces[AsIndex(prev[i])];
 
         if (includeIndicators)
+        {
           triangleFaces.Add(3);
+        }
+
         triangleFaces.Add(a);
         triangleFaces.Add(b);
         triangleFaces.Add(c);

@@ -57,7 +57,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       //default to receive mode if no permission to send
       if (Stream.role == null || Stream.role == "stream:reviewer")
+      {
         IsReceiver = true;
+      }
 
       HostScreen = hostScreen;
       RemoveSavedStreamCommand = removeSavedStreamCommand;
@@ -101,15 +103,22 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         if (!IsReceiver)
         {
           if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
+          {
             return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+          }
         }
         //receiver
         else
         {
           if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
+          {
             return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}@{SelectedCommit.id}";
+          }
+
           if (SelectedBranch != null)
+          {
             return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+          }
         }
 
         return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}";
@@ -119,15 +128,22 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (!IsReceiver)
       {
         if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
+        {
           return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+        }
       }
       //receiver
       else
       {
         if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
+        {
           return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
+        }
+
         if (SelectedBranch != null)
+        {
           return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+        }
       }
 
       return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
@@ -186,7 +202,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       };
       var customMenues = Bindings.GetCustomStreamMenuItems();
       if (customMenues != null)
+      {
         menu.Items.AddRange(customMenues.Select(x => new MenuItemViewModel(x, StreamState)).ToList());
+      }
       //remove is added last
       //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
       MenuItems.Add(menu);
@@ -233,7 +251,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         ReceiveModes = Bindings.GetReceiveModes();
 
         if (!ReceiveModes.Any())
+        {
           throw new InvalidOperationException("No Receive Mode is available.");
+        }
 
         //by default the first available receive mode is selected
         SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode)
@@ -276,7 +296,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       {
         SelectedFilter = AvailableFilters.FirstOrDefault(x => x.Filter.Slug == StreamState.Filter.Slug);
         if (SelectedFilter != null)
+        {
           SelectedFilter.Filter = StreamState.Filter;
+        }
       }
       else
       {
@@ -291,13 +313,19 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         }
       }
 
-      if (StreamState.Settings != null)
-        foreach (var setting in Settings)
+      if (StreamState.Settings == null)
+      {
+        return;
+      }
+
+      foreach (var setting in Settings)
+      {
+        var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
+        if (savedSetting != null)
         {
-          var savedSetting = StreamState.Settings.FirstOrDefault(o => o.Slug == setting.Slug);
-          if (savedSetting != null)
-            setting.Selection = savedSetting.Selection;
+          setting.Selection = savedSetting.Selection;
         }
+      }
     }
     catch (Exception ex)
     {
@@ -387,7 +415,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         {
           var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
           if (scroller != null)
+          {
             scroller.ScrollToEnd();
+          }
         });
       }
     }
@@ -415,9 +445,15 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       StreamState.ReceiveMode = SelectedReceiveMode;
 
       if (IsReceiver)
+      {
         StreamState.CommitId = SelectedCommit.id;
+      }
+
       if (!IsReceiver)
+      {
         StreamState.Filter = SelectedFilter.Filter;
+      }
+
       StreamState.Settings = Settings.Select(o => o).ToList();
     }
     catch (Exception ex)
@@ -435,9 +471,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       var index = Branches.FindIndex(x => x.name == prevBranchName);
       if (index != -1)
+      {
         SelectedBranch = BranchesViewModel[index];
+      }
       else
+      {
         SelectedBranch = BranchesViewModel[0];
+      }
     }
     catch (Exception ex)
     {
@@ -465,9 +505,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
         var commit = Commits.FirstOrDefault(x => x.id == prevCommitId);
         if (commit != null)
+        {
           SelectedCommit = commit;
+        }
         else
+        {
           SelectedCommit = Commits[0];
+        }
       }
       else
       {
@@ -529,7 +573,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       //the default 360 image width is 34300
       //this is a quick hack to see if the returned image is not an error image like "you do not have access" etc
       if (_previewImage360.Size.Width > 30000)
+      {
         PreviewImage360Loaded = true;
+      }
     }
     catch (Exception ex)
     {
@@ -559,7 +605,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (value == false && value != _previewOn)
       {
         if (Progress.IsPreviewProgressing)
+        {
           Progress.IsPreviewProgressing = false;
+        }
+
         Bindings.ResetDocument();
       }
 
@@ -601,7 +650,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       var verb = StreamState.IsReceiver ? "Received" : "Sent";
       if (StreamState.LastUsed == null)
+      {
         return $"Never {verb.ToLower()}";
+      }
+
       return $"{verb} {Formatting.TimeAgo(StreamState.LastUsed)}";
     }
   }
@@ -662,7 +714,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     Bindings.ResetDocument();
     //if not a saved stream dispose client and subs
     if (!HomeViewModel.Instance.SavedStreams.Any(x => x._guid == _guid))
+    {
       Client.Dispose();
+    }
+
     MainViewModel.GoHome();
   }
 
@@ -677,7 +732,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     set
     {
       if (value != _isReceiver)
+      {
         PreviewOn = false;
+      }
+
       this.RaiseAndSetIfChanged(ref _isReceiver, value);
       this.RaisePropertyChanged(nameof(BranchesViewModel));
     }
@@ -709,12 +767,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       this.RaiseAndSetIfChanged(ref _selectedBranch, value);
 
       if (value == null)
+      {
         return;
+      }
 
       if (value.Branch.id == null)
+      {
         AddNewBranch();
+      }
       else
+      {
         GetCommits();
+      }
     }
   }
 
@@ -738,17 +802,25 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     get
     {
       if (Branches == null)
+      {
         return new List<BranchViewModel>();
+      }
 
       if (_branchesViewModel == null)
+      {
         _branchesViewModel = Branches.Select(x => new BranchViewModel(x)).ToList();
+      }
 
       //start fresh, just in case
       if (_branchesViewModel.Last().Branch.id == null)
+      {
         _branchesViewModel.Remove(_branchesViewModel.Last());
+      }
 
       if (!IsReceiver)
+      {
         _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
+      }
 
       return _branchesViewModel;
     }
@@ -766,11 +838,16 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (_selectedCommit != null)
       {
         if (_selectedCommit.id == ConnectorHelpers.LatestCommitString)
+        {
           PreviewImageUrl =
             Client.Account.serverInfo.url
             + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+        }
         else
+        {
           PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
+        }
+
         PreviewImageUrl360 = $"{PreviewImageUrl}/all";
       }
     }
@@ -814,7 +891,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     get
     {
       if (string.IsNullOrEmpty(SearchQuery) && !_reportSelectedFilterItems.Any())
+      {
         return Report;
+      }
 
       var filterItems = _reportSelectedFilterItems.Any()
         ? Report.Where(o => _reportSelectedFilterItems.Any(a => o.Status == a)).ToList()
@@ -857,11 +936,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       this.RaiseAndSetIfChanged(ref _searchQuery, value);
       if (string.IsNullOrEmpty(SearchQuery))
+      {
         _searchQueryItems.Clear();
+      }
       else if (!SearchQuery.Replace(" ", "").Any())
+      {
         ClearSearchCommand();
+      }
       else
+      {
         _searchQueryItems = _searchQuery.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+      }
+
       this.RaisePropertyChanged(nameof(FilteredReport));
     }
   }
@@ -883,11 +969,20 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       foreach (var a in e.SelectedItems)
+      {
         if (!_reportSelectedFilterItems.Contains(a as string))
+        {
           _reportSelectedFilterItems.Add(a as string);
+        }
+      }
+
       foreach (var r in e.DeselectedItems)
+      {
         if (_reportSelectedFilterItems.Contains(r as string))
+        {
           _reportSelectedFilterItems.Remove(r as string);
+        }
+      }
 
       this.RaisePropertyChanged(nameof(FilteredReport));
     }
@@ -916,10 +1011,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       //trigger change when any property in the child model view changes
       //used for the CanSave etc button bindings
       if (value != null)
+      {
         value.PropertyChanged += (s, eo) =>
         {
           this.RaisePropertyChanged();
         };
+      }
+
       this.RaiseAndSetIfChanged(ref _selectedFilter, value);
     }
   }
@@ -1044,15 +1142,21 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       {
         var author = await Client.OtherUserGet(e.authorId).ConfigureAwait(true);
         if (author == null)
+        {
           authorName = "Unknown";
+        }
         else
+        {
           authorName = author.name;
+        }
       }
 
       bool openStream = true;
       var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
       if (svm != null && svm.Stream.id == Stream.id)
+      {
         openStream = false;
+      }
 
       Dispatcher.UIThread.Post(() =>
       {
@@ -1064,7 +1168,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
             OnClick = () =>
             {
               if (openStream)
+              {
                 MainViewModel.RouterInstance.Navigate.Execute(this);
+              }
 
               SelectedTab = 3;
             },
@@ -1083,13 +1189,17 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   private async void Client_OnBranchChange(object sender, BranchInfo info)
   {
     if (!_isAddingBranches)
+    {
       await GetBranches().ConfigureAwait(true);
+    }
   }
 
   private async void Client_OnCommitChange(object sender, CommitInfo info)
   {
     if (info.branchName == SelectedBranch.Branch.name)
+    {
       await GetCommits().ConfigureAwait(true);
+    }
   }
 
   private async void Client_OnCommitCreated(object sender, CommitInfo info)
@@ -1097,10 +1207,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       if (info.branchName == SelectedBranch.Branch.name)
+      {
         await GetCommits().ConfigureAwait(true);
+      }
 
       if (!IsReceiver)
+      {
         return;
+      }
 
       var authorName = "You";
       if (info.authorId != Client.Account.userInfo.id)
@@ -1114,7 +1228,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       //if in stream edit open online
       var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
       if (svm != null && svm.Stream.id == Stream.id)
+      {
         openOnline = true;
+      }
 
       Dispatcher.UIThread.Post(() =>
       {
@@ -1127,10 +1243,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
             {
               //if in stream edit open online
               if (openOnline)
+              {
                 ViewOnlineSavedStreamCommand();
+              }
               //if on home, open stream
               else
+              {
                 MainViewModel.RouterInstance.Navigate.Execute(this);
+              }
             },
             Type = NotificationType.Success,
             Expiration = TimeSpan.FromSeconds(10)
@@ -1141,7 +1261,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       ScrollToBottom();
 
       if (AutoReceive)
+      {
         ReceiveCommand();
+      }
     }
     catch (Exception ex)
     {
@@ -1176,6 +1298,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     var result = await dialog.ShowDialog<bool>().ConfigureAwait(true);
 
     if (result)
+    {
       try
       {
         _isAddingBranches = true;
@@ -1193,7 +1316,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
         var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
         if (index != -1)
+        {
           SelectedBranch = BranchesViewModel[index];
+        }
 
         Analytics.TrackEvent(
           Analytics.Events.DUIAction,
@@ -1209,9 +1334,12 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       {
         _isAddingBranches = false;
       }
+    }
     else
+    {
       //make sure the a branch is selected if canceled
       SelectedBranch = BranchesViewModel[0];
+    }
   }
 
   public async void CopyReportCommand()
@@ -1273,7 +1401,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Progress.IsProgressing = true;
 
       if (!await Http.UserHasInternet().ConfigureAwait(true))
+      {
         throw new InvalidOperationException("Could not reach the internet, are you connected?");
+      }
 
       Progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1286,7 +1416,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         // This is a last ditch effort to display a semi-useful error to the user.
         string message = Progress?.Report?.OperationErrorsString;
         if (string.IsNullOrEmpty(message))
+        {
           message = "Something went very wrong";
+        }
+
         throw new Exception(message);
       }
 
@@ -1317,7 +1450,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           {
             var url = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
             if (Client.Account.serverInfo.frontend2)
+            {
               url = $"{StreamState.ServerUrl}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+            }
+
             OpenUrl(url);
           },
           Type = NotificationType.Success,
@@ -1367,10 +1503,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", previewName } });
 
       if (IsReceiver)
+      {
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
+      }
       else
+      {
         //NOTE: do not wrap in a Task or it will crash Revit
         Bindings.PreviewSend(StreamState, Progress);
+      }
 
       GetReport();
       SpeckleLog.Logger
@@ -1399,7 +1539,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Progress.IsProgressing = true;
 
       if (!await Http.UserHasInternet().ConfigureAwait(true))
+      {
         throw new InvalidOperationException("Could not reach the internet, are you connected?");
+      }
 
       Progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -1412,7 +1554,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         // This is a last ditch effort to display a semi-useful error to the user.
         string message = Progress?.Report?.OperationErrorsString;
         if (string.IsNullOrEmpty(message))
+        {
           message = "Something went very wrong";
+        }
+
         throw new Exception(message);
       }
 
@@ -1451,10 +1596,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       var warningsCount = Progress.Report.OperationErrors.Count + Progress.Report.ConversionErrors.Count;
       if (warningsCount > 0)
+      {
         successMessage = $"There were {warningsCount} warning(s)";
+      }
       else if (Progress.CancellationToken.IsCancellationRequested)
-        // User requested a cancel, but it was too late!
+      // User requested a cancel, but it was too late!
+      {
         successMessage = "It was too late to cancel";
+      }
 
       DisplayPopupNotification(
         new PopUpNotificationViewModel
@@ -1610,17 +1759,21 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       HomeViewModel.Instance.AddSavedStream(this);
 
       if (IsReceiver)
+      {
         Analytics.TrackEvent(
           Client.Account,
           Analytics.Events.DUIAction,
           new Dictionary<string, object> { { "name", "Stream Receiver Add" } }
         );
+      }
       else
+      {
         Analytics.TrackEvent(
           Client.Account,
           Analytics.Events.DUIAction,
           new Dictionary<string, object> { { "name", "Stream Sender Add" } }
         );
+      }
 
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
@@ -1712,28 +1865,43 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     bool previewImplemented = IsReceiver ? Bindings.CanPreviewReceive : Bindings.CanPreviewSend;
     if (previewImplemented)
+    {
       return IsReady();
+    }
+
     return false;
   }
 
   private bool IsReady()
   {
     if (NoAccess)
+    {
       return false;
+    }
+
     if (SelectedBranch == null)
+    {
       return false;
+    }
 
     if (!IsReceiver)
     {
       if (SelectedFilter == null)
+      {
         return false;
+      }
+
       if (!SelectedFilter.IsReady())
+      {
         return false;
+      }
     }
     else
     {
       if (SelectedCommit == null)
+      {
         return false;
+      }
     }
 
     return true;

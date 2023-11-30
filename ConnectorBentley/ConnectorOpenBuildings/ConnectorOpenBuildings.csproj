@@ -12,6 +12,13 @@
         <DefineConstants>$(DefineConstants);OPENBUILDINGS</DefineConstants>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
+
+    <PropertyGroup Label="Community Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+      <WarningLevel>0</WarningLevel>
+      <EnableNetAnalyzers>false</EnableNetAnalyzers>
+      <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+  
     <Import Project="..\ConnectorBentleyShared\ConnectorBentleyShared.projitems" Label="Shared" />
 
     <Target Name="Clean">

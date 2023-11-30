@@ -70,6 +70,8 @@ public static class Setup
     SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
 
     foreach (var account in AccountManager.GetAccounts())
+    {
       Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
+    }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
@@ -31,6 +31,7 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
       foreach (var kit in kits)
+      {
         Menu_AppendItem(
           menu,
           $"{kit.Name} ({kit.Description})",
@@ -41,6 +42,7 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
           true,
           kit.Name == Kit.Name
         );
+      }
 
       Menu_AppendSeparator(menu);
     }
@@ -54,7 +56,9 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
   public void SetConverterFromKit(string kitName)
   {
     if (kitName == Kit.Name)
+    {
       return;
+    }
 
     try
     {

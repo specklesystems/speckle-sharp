@@ -29,11 +29,15 @@ public class GenericAccessParamAttributes : GH_LinkedParamAttributes
   public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
   {
     if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+    {
       switch (Owner.Kind)
       {
         case GH_ParamKind.input:
           if (Owner.MutableNickName)
+          {
             (Owner as SpeckleStatefulParam)?.InheritNickname();
+          }
+
           return GH_ObjectResponse.Handled;
         case GH_ParamKind.output:
           Clipboard.SetText(DocObject.NickName);
@@ -43,6 +47,7 @@ public class GenericAccessParamAttributes : GH_LinkedParamAttributes
         default:
           return base.RespondToMouseDoubleClick(sender, e);
       }
+    }
 
     return base.RespondToMouseDoubleClick(sender, e);
   }

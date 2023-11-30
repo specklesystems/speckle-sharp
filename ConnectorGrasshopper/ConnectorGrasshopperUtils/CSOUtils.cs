@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -29,7 +29,9 @@ public static class CSOUtils
   {
     var type = KitManager.Types.FirstOrDefault(x => x.FullName == TypeName);
     if (type == null)
+    {
       return null;
+    }
 
     var constructors = GetValidConstr(type);
     var constructor = constructors.FirstOrDefault(x => MethodFullName(x) == ConstructorName);
@@ -40,10 +42,13 @@ public static class CSOUtils
   {
     var s = m.ReflectedType.FullName;
     if (!m.IsConstructor)
+    {
       s += ".";
+    }
 
     s += m.Name;
     if (m.GetParameters().Any())
+    {
       //jamie rainfall bug, had to replace + with .
       s +=
         "("
@@ -52,6 +57,8 @@ public static class CSOUtils
           m.GetParameters().Select(o => string.Format("{0}", o.ParameterType).Replace("+", ".")).ToArray()
         )
         + ")";
+    }
+
     return s;
   }
 }

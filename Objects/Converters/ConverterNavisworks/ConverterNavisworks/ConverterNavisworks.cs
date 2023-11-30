@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
@@ -47,13 +47,19 @@ public partial class ConverterNavisworks : ISpeckleConverter
   public void SetContextDocument(object doc)
   {
     if (doc != null && doc is not Document)
+    {
       throw new ArgumentException("Only Navisworks Document types are supported.");
+    }
 
     if (Doc == null && doc != null)
+    {
       Doc = (Document)doc;
+    }
 
     if (Doc == null && doc == null)
+    {
       Doc = Application.ActiveDocument;
+    }
 
     // This sets or resets the correct ElevationMode flag for model orientation.
     // Needs to be called every time a Send is initiated to reflect the options
@@ -82,12 +88,20 @@ public partial class ConverterNavisworks : ISpeckleConverter
   public void SetConverterSettings(object settings)
   {
     if (settings is not Dictionary<string, string> newSettings)
+    {
       return;
+    }
 
     foreach (var key in newSettings.Keys)
+    {
       if (Settings.TryGetValue(key, out string _))
+      {
         Settings[key] = newSettings[key];
+      }
       else
+      {
         Settings.Add(key, newSettings[key]);
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using Grasshopper.Kernel;
 
@@ -9,7 +9,7 @@ public class SpeckleCollectionParam : GH_Param<GH_SpeckleCollection>
   public SpeckleCollectionParam()
     : base("Speckle Collection", "SC", "A Speckle collection object", "Params", "Primitive", GH_ParamAccess.item) { }
 
-  public override Guid ComponentGuid => new Guid("96F52497-6E5B-4941-9350-D6C87F0EA1E3");
+  public override Guid ComponentGuid => new("96F52497-6E5B-4941-9350-D6C87F0EA1E3");
 
   protected override Bitmap Icon => Properties.Resources.SpeckleCollection;
 

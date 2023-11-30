@@ -148,9 +148,13 @@ public static class Analytics
   )
   {
     if (account == null)
+    {
       TrackEvent(eventName, customProperties, isAction);
+    }
     else
+    {
       TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
+    }
   }
 
   /// <summary>
@@ -189,15 +193,23 @@ public static class Analytics
           { "token", MixpanelToken },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
-          { "core_version", FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion ?? executingAssembly.GetName().Version.ToString()},
+          {
+            "core_version",
+            FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion
+              ?? executingAssembly.GetName().Version.ToString()
+          },
           { "$os", GetOs() }
         };
 
         if (isAction)
+        {
           properties.Add("type", "action");
+        }
 
         if (customProperties != null)
+        {
           properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
 
         string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
@@ -260,11 +272,20 @@ public static class Analytics
   private static string GetOs()
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+    {
       return "Windows";
+    }
+
     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+    {
       return "Mac OS X";
+    }
+
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    {
       return "Linux";
+    }
+
     return "Unknown";
   }
 }

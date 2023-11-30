@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -70,7 +70,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// <returns>The state of the command.</returns>
   public override CommandState CanExecuteCommand(string commandId)
   {
-
     return commandId switch
     {
       TurnPersistCacheOn.Command
@@ -109,13 +108,20 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   private static void LoadPlugin(string plugin, bool notAutomatedCheck = true, string command = "")
   {
     if (ShouldSkipLoad(notAutomatedCheck))
+    {
       return;
+    }
+
     if (ShouldSkipPluginLoad(plugin, command))
+    {
       return;
+    }
 
     var pluginRecord = NavisworksApp.Plugins.FindPlugin(plugin + ".Speckle");
     if (pluginRecord is null)
+    {
       return;
+    }
 
     var loadedPlugin = pluginRecord.LoadedPlugin ?? pluginRecord.LoadPlugin();
 
@@ -229,6 +235,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
         LoadedPlugins.TryGetValue(retryPlugin, out var loaded);
 
         if (loaded)
+        {
           try
           {
             var speckleCommand = retryPlugin as SpeckleNavisworksCommandPlugin;
@@ -243,6 +250,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
           {
             MessageBox.Show(ex.Message);
           }
+        }
 
         break;
       }
@@ -259,7 +267,9 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
         ConnectorBindingsNavisworks.PersistCache = !ConnectorBindingsNavisworks.PersistCache;
 
         if (ConnectorBindingsNavisworks.PersistCache == false)
+        {
           ConnectorBindingsNavisworks.CachedConvertedElements = null;
+        }
 
         break;
       }
@@ -282,7 +292,9 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   {
     var sb = new StringBuilder();
     foreach (var pr in NavisworksApp.Plugins.PluginRecords)
+    {
       sb.AppendLine(pr.Name + ": " + pr.DisplayName + ", " + pr.Id);
+    }
 
     MessageBox.Show(sb.ToString());
   }

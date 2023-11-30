@@ -4,7 +4,5 @@ using System.Text;
 
 namespace ConverterRevitTestsShared
 {
-  internal class xUnitRevitUtils
-  {
-  }
+  internal class xUnitRevitUtils { }
 }

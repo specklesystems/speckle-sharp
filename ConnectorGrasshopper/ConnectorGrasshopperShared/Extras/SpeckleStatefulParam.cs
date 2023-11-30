@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -28,16 +28,26 @@ public class SpeckleStatefulParam : Param_GenericObject
       if (Kind == GH_ParamKind.input)
       {
         if (Optional)
+        {
           tags.Add(new OptionalStateTag());
+        }
+
         if (Detachable)
+        {
           tags.Add(new DetachedStateTag());
+        }
+
         if (Access == GH_ParamAccess.list)
+        {
           tags.Add(new ListAccesStateTag());
+        }
       }
       else if (Kind == GH_ParamKind.output)
       {
         if (Detachable)
+        {
           tags.Add(new DetachedStateTag());
+        }
       }
       return tags;
     }
@@ -86,7 +96,9 @@ public class SpeckleStatefulParam : Param_GenericObject
   {
     base.AddSource(source, index);
     if (MutableNickName && KeyWatcher.TabPressed)
+    {
       InheritNickname();
+    }
   }
 
   public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -96,7 +108,10 @@ public class SpeckleStatefulParam : Param_GenericObject
       // Append graft,flatten,etc... options to outputs.
       base.AppendAdditionalMenuItems(menu);
       if (Kind == GH_ParamKind.output)
+      {
         Menu_AppendExtractParameter(menu);
+      }
+
       return;
     }
 
@@ -134,12 +149,16 @@ public class SpeckleStatefulParam : Param_GenericObject
     Name = fullname;
     NickName = fullname;
     if (Kind == GH_ParamKind.input || Kind == GH_ParamKind.output)
+    {
       // If it belongs to a component, expire the component solution
       // This will force a CSO component to update the object with it's new prop name.
       Attributes.Parent.DocObject.ExpireSolution(true);
+    }
     else
+    {
       // It could also be a standalone component, in which case just expire the preview.
       ExpirePreview(true);
+    }
   }
 
   protected new void Menu_AppendExtractParameter(ToolStripDropDown menu)
@@ -207,7 +226,10 @@ public class SpeckleStatefulParam : Param_GenericObject
     {
       var ghDocumentObject = Instances.ComponentServer.EmitObject(ComponentGuid);
       if (ghDocumentObject == null)
+      {
         return;
+      }
+
       var ghParam = (IGH_Param)ghDocumentObject;
       ghParam.CreateAttributes();
       if (!ghArchive.ExtractObject(ghParam, "Parameter"))
@@ -225,7 +247,10 @@ public class SpeckleStatefulParam : Param_GenericObject
         );
         ghParam.MutableNickName = true;
         if (ghParam.Attributes is GH_FloatingParamAttributes floating)
+        {
           floating.PerformLayout();
+        }
+
         var ghDocument = OnPingDocument();
         if (ghDocument == null)
         {

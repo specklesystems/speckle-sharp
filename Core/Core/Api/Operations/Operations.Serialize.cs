@@ -145,7 +145,10 @@ public static partial class Operations
     List<object> deserialized = deserializer.DeserializeTransportObject(objectArr) as List<object>;
     List<Base> ret = new();
     foreach (object obj in deserialized)
+    {
       ret.Add((Base)obj);
+    }
+
     return ret;
   }
 

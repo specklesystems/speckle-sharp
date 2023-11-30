@@ -81,7 +81,7 @@ csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
 
 # Prefer method-like constructs to have a block body
-csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_methods = true:suggestion
 csharp_style_expression_bodied_constructors = false:suggestion
 csharp_style_expression_bodied_operators = true:suggestion
 
@@ -142,9 +142,9 @@ dotnet_naming_symbols.non_private_readonly_fields.applicable_accessibilities = p
 dotnet_naming_style.non_private_readonly_field_style.capitalization = pascal_case
 
 # Constants are ALL_UPPER
-dotnet_naming_rule.constants_should_be_pascal_case.severity = warning
-dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
-dotnet_naming_rule.constants_should_be_pascal_case.style = constant_style
+dotnet_naming_rule.constants_should_be_all_upper.severity = warning
+dotnet_naming_rule.constants_should_be_all_upper.symbols = constants
+dotnet_naming_rule.constants_should_be_all_upper.style = constant_style
 
 dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
@@ -207,10 +207,12 @@ dotnet_analyzer_diagnostic.category-Style.severity = warning # All rules will us
 dotnet_diagnostic.ide0055.severity = none # Formatting rule: Incompatible with CSharpier
 dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type: Preference
 dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Preference
+dotnet_diagnostic.ide0001.severity = suggestion # Name can be simplified: Non enforceable in build
 dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Preference
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0058.severity = suggestion # Remove unnecessary expression value: Subjective
+dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance
@@ -230,6 +232,8 @@ dotnet_diagnostic.ca1062.severity = none # Public method must check all paramete
 dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
 dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
 dotnet_diagnostic.ca2227.severity = suggestion # Collection props should be read-only
+
+dotnet_code_quality.ca1051.exclude_structs = true # CA1051 is excluded in structs
 
 [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
 indent_style = space

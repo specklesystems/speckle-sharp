@@ -46,9 +46,14 @@ public static partial class Operations
     return (name, processed) =>
     {
       if (localProgressDict.ContainsKey(name))
+      {
         localProgressDict[name] += processed;
+      }
       else
+      {
         localProgressDict[name] = processed;
+      }
+
       onProgressAction?.Invoke(localProgressDict);
     };
   }

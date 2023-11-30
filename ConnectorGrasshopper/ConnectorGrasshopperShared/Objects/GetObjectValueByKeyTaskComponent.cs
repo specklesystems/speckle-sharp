@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Drawing;
 using System.Linq;
@@ -51,25 +51,35 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
       DA.GetData(1, ref key);
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Object Value by Key");
+      }
 
       var @base = speckleObj?.Value;
       if (@base == null)
+      {
         return;
+      }
+
       var task = Task.Run(() => DoWork(@base, key, CancelToken));
       TaskList.Add(task);
       return;
     }
 
     if (!GetSolveResults(DA, out object value))
+    {
       // No result could be obtained.
       return;
+    }
 
     // Report all conversion errors as warnings
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
@@ -96,7 +106,9 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
     try
     {
       if (token.IsCancellationRequested)
+      {
         return null;
+      }
 
       var obj = @base[key] ?? @base["@" + key];
       if (obj == null)
@@ -104,7 +116,9 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
         // Try check if it's a computed value
         var members = @base.GetMembers(DynamicBaseMemberType.SchemaComputed);
         if (members.TryGetValue(key, out object member))
+        {
           obj = member;
+        }
       }
 
       switch (obj)

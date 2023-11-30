@@ -47,7 +47,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var strings = Doc?.Strings.GetEntryNames(SpeckleKey);
 
     if (strings == null)
+    {
       return new List<StreamState>();
+    }
 
     var states = strings
       .Select(s => JsonConvert.DeserializeObject<StreamState>(Doc.Strings.GetValue(SpeckleKey, s)))
@@ -59,7 +61,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     Doc.Strings.Delete(SpeckleKey);
     foreach (var s in streams)
+    {
       Doc.Strings.SetString(SpeckleKey, s.StreamId, JsonConvert.SerializeObject(s));
+    }
   }
 
   #endregion
@@ -110,21 +114,31 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     {
       var type = obj.ObjectType.ToString();
       if (reportLog.ContainsKey(type))
+      {
         reportLog[type] = reportLog[type]++;
+      }
       else
+      {
         reportLog.Add(type, 1);
+      }
     }
     RhinoApp.WriteLine("Deselected unsupported objects:");
     foreach (var entry in reportLog)
+    {
       RhinoApp.WriteLine($"{entry.Value} of type {entry.Key}");
+    }
   }
 
   public override void ResetDocument()
   {
     if (PreviewConduit != null)
+    {
       PreviewConduit.Enabled = false;
+    }
     else
+    {
       Doc.Objects.UnselectAll(false);
+    }
 
     Doc.Views.Redraw();
   }

@@ -76,10 +76,12 @@ public static partial class Operations
     using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
 
     if (transports.Count == 0 && useDefaultCache == false)
+    {
       throw new ArgumentException(
         "You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
         nameof(transports)
       );
+    }
 
     if (useDefaultCache)
     {
@@ -154,7 +156,9 @@ public static partial class Operations
           continue;
         }
         if (disposeTransports && t is IDisposable disp)
+        {
           disp.Dispose();
+        }
       }
 
       if (cancellationToken.IsCancellationRequested)
@@ -165,7 +169,10 @@ public static partial class Operations
 
       var idToken = JObject.Parse(obj).GetValue("id");
       if (idToken == null)
+      {
         throw new SpeckleException("Failed to get id of serialized object");
+      }
+
       var hash = idToken.ToString();
 
       sendTimer.Stop();
