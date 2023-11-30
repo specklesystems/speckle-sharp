@@ -129,7 +129,6 @@ public static partial class Operations
       {
         t.OnProgressAction = internalProgressAction;
         t.CancellationToken = cancellationToken;
-        t.OnErrorAction = onErrorAction;
         t.BeginWrite();
 
         if (serializerVersion == SerializerVersion.V1)

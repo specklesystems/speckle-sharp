@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
-/// <summary>
+/// <remarks>
 /// https://cymbeline.ch/2014/03/16/gzip-encoding-an-http-post-request-body/
-/// </summary>
+/// </remarks>
 internal sealed class GzipContent : HttpContent
 {
   private readonly HttpContent? _content;
@@ -53,5 +53,11 @@ internal sealed class GzipContent : HttpContent
   {
     length = -1;
     return false;
+  }
+
+  protected override void Dispose(bool disposing)
+  {
+    _content?.Dispose();
+    base.Dispose();
   }
 }

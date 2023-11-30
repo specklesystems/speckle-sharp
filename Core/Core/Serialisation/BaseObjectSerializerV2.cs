@@ -13,7 +13,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
-using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Speckle.Core.Serialisation;
 
@@ -387,7 +386,7 @@ public class BaseObjectSerializerV2
   private static string ComputeId(Dictionary<string, object> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
-    string hash = Utilities.HashString(serialized);
+    string hash = Crypt.Sha256(serialized);
     return hash;
   }
 

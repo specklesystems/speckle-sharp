@@ -92,7 +92,7 @@ public class StreamWrapper
 
   private void StreamWrapperFromId(string streamId)
   {
-    Account account = AccountManager.GetDefaultAccount();
+    Account? account = AccountManager.GetDefaultAccount();
 
     if (account == null)
     {
@@ -108,7 +108,7 @@ public class StreamWrapper
   /// The ReGex pattern to determine if a URL's AbsolutePath is a Frontend2 URL or not.
   /// This is used in conjunction with <see cref="ParseFe2ModelValue"/> to extract the correct values into the instance.
   /// </summary>
-  private static readonly Regex Fe2UrlRegex =
+  private static readonly Regex s_fe2UrlRegex =
     new(
       @"/projects/(?<projectId>[\w\d]+)(?:/models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
     );
@@ -116,7 +116,7 @@ public class StreamWrapper
   /// <summary>
   /// Parses a FrontEnd2 URL Regex match and assigns it's data to this StreamWrapper instance.
   /// </summary>
-  /// <param name="match">A regex match coming from <see cref="Fe2UrlRegex"/></param>
+  /// <param name="match">A regex match coming from <see cref="s_fe2UrlRegex"/></param>
   /// <exception cref="SpeckleException">Will throw when the URL is not properly formatted.</exception>
   /// <exception cref="NotSupportedException">Will throw when the URL is correct, but is not currently supported by the StreamWrapper class.</exception>
   private void ParseFe2RegexMatch(Match match)
@@ -179,7 +179,7 @@ public class StreamWrapper
     Uri uri = new(streamUrl, true);
     ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-    var fe2Match = Fe2UrlRegex.Match(uri.AbsolutePath);
+    var fe2Match = s_fe2UrlRegex.Match(uri.AbsolutePath);
     if (fe2Match.Success)
     {
       //NEW FRONTEND URL!
@@ -207,13 +207,13 @@ public class StreamWrapper
       switch (uri.Segments.Length)
       {
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
-          if (uri.Segments[1].ToLowerInvariant() == "streams/")
+          if (uri.Segments[1].ToLowerInvariant() != "streams/")
           {
-            StreamId = uri.Segments[2].Replace("/", "");
+            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
           }
           else
           {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+            StreamId = uri.Segments[2].Replace("/", "");
           }
 
           break;
@@ -273,8 +273,6 @@ public class StreamWrapper
   /// <returns>The valid account object for this stream.</returns>
   public async Task<Account> GetAccount()
   {
-    Exception err = null;
-
     if (_account != null)
     {
       return _account;
@@ -295,6 +293,7 @@ public class StreamWrapper
 
     // Step 2: check the default
     var defAcc = AccountManager.GetDefaultAccount();
+    Exception err;
     try
     {
       await ValidateWithAccount(defAcc).ConfigureAwait(false);

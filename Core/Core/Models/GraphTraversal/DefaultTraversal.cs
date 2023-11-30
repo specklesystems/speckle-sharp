@@ -136,7 +136,7 @@ public static class DefaultTraversal
     return Enumerable.Empty<string>();
   }
 
-  internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
+  internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DEFAULT_INCLUDE_MEMBERS)
   {
     return x => x.GetMembers(includeMembers).Keys;
   }

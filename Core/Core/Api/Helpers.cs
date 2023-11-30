@@ -2,69 +2,25 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
-using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using System.Net.Http;
+using System.Runtime.InteropServices;
+using Speckle.Core.Helpers;
+using System.Text.Json;
 
 namespace Speckle.Core.Api;
 
 public static class Helpers
 {
-  public const string ReleasesUrl = "https://releases.speckle.dev";
-  private static string _feedsEndpoint = ReleasesUrl + "/manager2/feeds";
-
-  /// <summary>
-  /// Envirenment Variable that allows to overwrite the <see cref="UserApplicationDataPath"/>
-  /// /// </summary>
-  private static string _speckleUserDataEnvVar = "SPECKLE_USERDATA_PATH";
-
-  /// <summary>
-  /// Returns the correct location of the Speckle installation folder. Usually this would be the user's %appdata%/Speckle folder, unless the install was made for all users.
-  /// </summary>
-  /// <returns>The location of the Speckle installation folder</returns>
-  [Obsolete("Please use Helpers/SpecklePathProvider.InstallSpeckleFolderPath", true)]
-  public static string InstallSpeckleFolderPath => Path.Combine(InstallApplicationDataPath, "Speckle");
-
-  /// <summary>
-  /// Returns the correct location of the Speckle folder for the current user. Usually this would be the user's %appdata%/Speckle folder.
-  /// </summary>
-  /// <returns>The location of the Speckle installation folder</returns>
-  [Obsolete("Please use Helpers/SpecklePathProvider.UserSpeckleFolderPath()", true)]
-  public static string UserSpeckleFolderPath => Path.Combine(UserApplicationDataPath, "Speckle");
-
-  /// <summary>
-  /// Returns the correct location of the AppData folder where Speckle is installed. Usually this would be the user's %appdata% folder, unless the install was made for all users.
-  /// This folder contains Kits and othe data that can be shared among users of the same machine.
-  /// </summary>
-  /// <returns>The location of the AppData folder where Speckle is installed</returns>
-  [Obsolete("Please use Helpers/SpecklePathProvider.InstallApplicationDataPath ", true)]
-  public static string InstallApplicationDataPath =>
-    Assembly.GetAssembly(typeof(Helpers)).Location.Contains("ProgramData")
-      ? Environment.GetFolderPath(
-        Environment.SpecialFolder.CommonApplicationData,
-        Environment.SpecialFolderOption.Create
-      )
-      : UserApplicationDataPath;
-
-  /// <summary>
-  /// Returns the location of the User Application Data folder for the current roaming user, which contains user specific data such as accounts and cache.
-  /// </summary>
-  /// <returns>The location of the user's `%appdata%` folder.</returns>
-  [Obsolete("Please use Helpers/SpecklePathProvider.UserApplicationDataPath", true)]
-  public static string UserApplicationDataPath =>
-    !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(_speckleUserDataEnvVar))
-      ? Environment.GetEnvironmentVariable(_speckleUserDataEnvVar)
-      : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
+  public const string RELEASES_URL = "https://releases.speckle.dev";
+  private const string FEEDS_ENDPOINT = RELEASES_URL + "/manager2/feeds";
 
   /// <summary>
   /// Helper method to Receive from a Speckle Server.
@@ -89,7 +45,7 @@ public static class Helpers
     {
       account ??= await sw.GetAccount().ConfigureAwait(false);
     }
-    catch (SpeckleException e)
+    catch (SpeckleException)
     {
       if (string.IsNullOrEmpty(sw.StreamId))
       {
@@ -128,7 +84,7 @@ public static class Helpers
       var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
 
       var branch = await client.BranchGet(sw.StreamId, branchName, 1).ConfigureAwait(false);
-      if (!branch.commits.items.Any())
+      if (branch.commits.items.Count == 0)
       {
         throw new SpeckleException("The selected branch has no commits.");
       }
@@ -236,30 +192,27 @@ public static class Helpers
   /// <returns></returns>
   public static async Task<bool> IsConnectorUpdateAvailable(string slug)
   {
-#if DEBUG
-    if (slug == "dui2")
-    {
-      slug = "revit";
-    }
     //when debugging the version is not correct, so don't bother
-    return false;
-#endif
+    if (!Analytics.IsReleaseMode)
+    {
+      return false;
+    }
 
     try
     {
-      HttpClient client = Http.GetHttpProxyClient();
-      var response = await client.GetStringAsync($"{_feedsEndpoint}/{slug}.json").ConfigureAwait(false);
+      using HttpClient client = Http.GetHttpProxyClient();
+      var response = await client.GetStringAsync($"{FEEDS_ENDPOINT}/{slug}.json").ConfigureAwait(false);
       var connector = JsonSerializer.Deserialize<Connector>(response);
 
-      var os = Os.Win;
+      var os = Os.Win; //TODO: This won't work for linux
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
       {
         os = Os.OSX;
       }
 
       var versions = connector.Versions.Where(x => x.Os == os).OrderByDescending(x => x.Date).ToList();
-      var stables = versions.Where(x => !x.Prerelease);
-      if (!stables.Any())
+      var stables = versions.Where(x => !x.Prerelease).ToArray();
+      if (stables.Length == 0)
       {
         return false;
       }
@@ -353,8 +306,8 @@ public static class Helpers
   }
 
   [Pure]
-  public static string PluralS(int num)
-  {
-    return num != 1 ? "s" : "";
-  }
+  public static string PluralS(int num) => num != 1 ? "s" : "";
+
+  [Obsolete("Renamed to " + nameof(RELEASES_URL))]
+  public const string ReleasesUrl = RELEASES_URL;
 }

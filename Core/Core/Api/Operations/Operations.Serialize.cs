@@ -12,21 +12,6 @@ public static partial class Operations
 {
   /// <summary>
   /// Serializes a given object.
-  /// <remarks>
-  /// if you want to save and persist an object to a Speckle Transport or Server,
-  /// please use any of the "Send" methods.
-  /// See <see cref="Send(Speckle.Core.Models.Base,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
-  /// </remarks>
-  /// </summary>
-  /// <param name="object"></param>
-  /// <returns>A json string representation of the object.</returns>
-  public static string Serialize(Base @object)
-  {
-    return Serialize(@object, CancellationToken.None);
-  }
-
-  /// <summary>
-  /// Serializes a given object.
   /// </summary>
   /// <remarks>
   /// If you want to save and persist an object to Speckle Transport or Server,
@@ -38,7 +23,7 @@ public static partial class Operations
   /// <returns>A json string representation of the object.</returns>
   public static string Serialize(
     Base @object,
-    CancellationToken cancellationToken,
+    CancellationToken cancellationToken = default,
     SerializerVersion serializerVersion = SerializerVersion.V2
   )
   {

@@ -145,16 +145,11 @@ public class BaseObjectSerializer : JsonConverter
     if (discriminator == "reference")
     {
       var id = jObject.GetValue("referencedId").Value<string>();
-      string str = "";
 
-      if (ReadTransport != null)
-      {
-        str = ReadTransport.GetObject(id);
-      }
-      else
-      {
-        throw new SpeckleException("Cannot resolve reference, no transport is defined.");
-      }
+      string str =
+        ReadTransport != null
+          ? ReadTransport.GetObject(id)
+          : throw new SpeckleException("Cannot resolve reference, no transport is defined.");
 
       if (str != null && !string.IsNullOrEmpty(str))
       {
@@ -420,9 +415,8 @@ public class BaseObjectSerializer : JsonConverter
 
           if (chunkSyntax.IsMatch(prop))
           {
-            int chunkSize;
             var match = chunkSyntax.Match(prop);
-            int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+            _ = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out int chunkSize);
             serializer.Context = new StreamingContext(
               StreamingContextStates.Other,
               chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable()
@@ -485,7 +479,7 @@ public class BaseObjectSerializer : JsonConverter
         jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
       }
 
-      var hash = Utilities.HashString(jo.ToString());
+      var hash = Crypt.Sha256(jo.ToString());
       if (!jo.ContainsKey("id"))
       {
         jo.Add("id", JToken.FromObject(hash));
