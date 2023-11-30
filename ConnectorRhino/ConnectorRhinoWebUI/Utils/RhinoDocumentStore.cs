@@ -6,9 +6,9 @@ namespace ConnectorRhinoWebUI.Utils;
 
 public class RhinoDocumentStore : DocumentModelStore
 {
-  private const string SpeckleKey = "Speckle_DUI3";
+  private const string SPECKLE_KEY = "Speckle_DUI3";
   public override bool IsDocumentInit { get; set; } = true; // Note: because of rhino implementation details regarding expiry checking of sender cards.
-  
+
   public RhinoDocumentStore()
   {
     RhinoDoc.BeginSaveDocument += (_, _) => WriteToFile();
@@ -16,9 +16,16 @@ public class RhinoDocumentStore : DocumentModelStore
     RhinoDoc.BeginOpenDocument += (_, _) => IsDocumentInit = false;
     RhinoDoc.EndOpenDocument += (_, e) =>
     {
-      if (e.Merge) return;
-      if (e.Document == null) return;
-      
+      if (e.Merge)
+      {
+        return;
+      }
+
+      if (e.Document == null)
+      {
+        return;
+      }
+
       IsDocumentInit = true;
       ReadFromFile();
       OnDocumentChanged();
@@ -27,17 +34,20 @@ public class RhinoDocumentStore : DocumentModelStore
 
   public override void WriteToFile()
   {
-    if (RhinoDoc.ActiveDoc == null) return; // Should throw
-    
-    RhinoDoc.ActiveDoc?.Strings.Delete(SpeckleKey);
-    
-    var serializedState = Serialize();
-    RhinoDoc.ActiveDoc?.Strings.SetString(SpeckleKey, SpeckleKey, serializedState);
+    if (RhinoDoc.ActiveDoc == null)
+    {
+      return; // Should throw
+    }
+
+    RhinoDoc.ActiveDoc?.Strings.Delete(SPECKLE_KEY);
+
+    string serializedState = Serialize();
+    RhinoDoc.ActiveDoc?.Strings.SetString(SPECKLE_KEY, SPECKLE_KEY, serializedState);
   }
 
   public override void ReadFromFile()
   {
-    var stateString = RhinoDoc.ActiveDoc.Strings.GetValue(SpeckleKey, SpeckleKey);
+    string stateString = RhinoDoc.ActiveDoc.Strings.GetValue(SPECKLE_KEY, SPECKLE_KEY);
     if (stateString == null)
     {
       Models = new List<ModelCard>();

@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="Speckle.ConnectorAutocadDUI3.DUI3PanelWebView"
+﻿<UserControl x:Class="Speckle.ConnectorAutocadDUI3.Dui3PanelWebView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"

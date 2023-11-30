@@ -1,5 +1,4 @@
 using DUI3.Bindings;
-using DUI3.Models;
 using DUI3.Models.Card;
 
 namespace DUI3.Utils;
@@ -16,7 +15,7 @@ public static class Progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
   }
-  
+
   public static void CancelReceive(IBridge bridge, string modelCardId, double? progress = null)
   {
     var args = new ModelCardProgress()
@@ -27,7 +26,7 @@ public static class Progress
     };
     bridge.SendToBrowser(ReceiveBindingEvents.ReceiverProgress, args);
   }
-  
+
   /// <summary>
   /// Send deserializer progress info to browser
   /// </summary>
@@ -59,7 +58,7 @@ public static class Progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
   }
-  
+
   /// <summary>
   /// Send sender progress info to browser
   /// </summary>

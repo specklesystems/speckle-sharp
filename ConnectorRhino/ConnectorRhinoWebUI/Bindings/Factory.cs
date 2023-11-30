@@ -11,40 +11,44 @@ namespace ConnectorRhinoWebUI.Bindings;
 /// </summary>
 public static class Factory
 {
-  private static readonly RhinoDocumentStore Store = new RhinoDocumentStore();
+  private static readonly RhinoDocumentStore s_store = new();
+
   public static List<IBinding> CreateBindings()
   {
-    var baseBindings = new BasicConnectorBinding(Store);
-    var sendBindings = new SendBinding(Store);
-    var receiveBindings = new ReceiveBinding(Store);
-    var selectionBindings = new SelectionBinding();
+    BasicConnectorBinding baseBindings = new(s_store);
+    SendBinding sendBindings = new(s_store);
+    ReceiveBinding receiveBindings = new(s_store);
+    SelectionBinding selectionBindings = new();
 
     // Where we pass connector specific onboardings to config binding.
     // Below code is just a sample for now!
-    Dictionary<string, OnboardingData> sampleOnboardingsData = new()
-    {
-      {"mapper", new OnboardingData()
+    Dictionary<string, OnboardingData> sampleOnboardingsData =
+      new()
       {
-        Title = "Mapper",
-        Blurb = "Map your objects for Revit!",
-        Completed = false,
-        Page = "/onboarding/rhino/mapper"
-      }}
-    };
+        {
+          "mapper",
+          new OnboardingData()
+          {
+            Title = "Mapper",
+            Blurb = "Map your objects for Revit!",
+            Completed = false,
+            Page = "/onboarding/rhino/mapper"
+          }
+        }
+      };
 
-    var bindingsList = new List<IBinding>
-    {
-      new ConfigBinding(Utils.Utils.AppName, sampleOnboardingsData),
-      new AccountBinding(),
-      new TestBinding(),
-      baseBindings,
-      sendBindings,
-      receiveBindings,
-      selectionBindings
-    };
-      
+    List<IBinding> bindingsList =
+      new()
+      {
+        new ConfigBinding(Utils.Utils.AppName, sampleOnboardingsData),
+        new AccountBinding(),
+        new TestBinding(),
+        baseBindings,
+        sendBindings,
+        receiveBindings,
+        selectionBindings
+      };
+
     return bindingsList;
   }
 }
-
-

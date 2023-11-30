@@ -1,4 +1,5 @@
-﻿using Rhino;
+﻿using System;
+using Rhino;
 using Rhino.Commands;
 using Rhino.Input.Custom;
 using Rhino.UI;
@@ -13,7 +14,7 @@ namespace ConnectorRhinoWebUI;
 public class SpeckleWebUiWebView2Command : Command
 {
   public override string EnglishName => "SpeckleWebUIWebView2";
-  
+
   public SpeckleWebUiWebView2Command()
   {
     Panels.RegisterPanel(
@@ -24,10 +25,10 @@ public class SpeckleWebUiWebView2Command : Command
       PanelType.System
     );
   }
-  
+
   protected override Result RunCommand(RhinoDoc doc, RunMode mode)
   {
-    var panelId = typeof(SpeckleWebUiWebView2PanelHost).GUID;
+    Guid panelId = typeof(SpeckleWebUiWebView2PanelHost).GUID;
 
     if (mode == RunMode.Interactive)
     {
@@ -35,43 +36,56 @@ public class SpeckleWebUiWebView2Command : Command
       return Result.Success;
     }
 
-    var panelVisible = Panels.IsPanelVisible(panelId);
+    bool panelVisible = Panels.IsPanelVisible(panelId);
 
-    var prompt = (panelVisible)
+    string prompt = panelVisible
       ? "SpeckleWebUIWebView2 panel is visible. New value"
       : "SpeckleWebUIWebView2 panel is hidden. New value";
 
-    using var go = new GetOption();
+    using GetOption go = new();
     go.SetCommandPrompt(prompt);
-    var hideIndex = go.AddOption("Hide");
-    var showIndex = go.AddOption("Show");
-    var toggleIndex = go.AddOption("Toggle");
+    int hideIndex = go.AddOption("Hide");
+    int showIndex = go.AddOption("Show");
+    int toggleIndex = go.AddOption("Toggle");
     go.Get();
 
     if (go.CommandResult() != Result.Success)
+    {
       return go.CommandResult();
+    }
 
-    var option = go.Option();
+    CommandLineOption option = go.Option();
     if (null == option)
+    {
       return Result.Failure;
+    }
 
-    var index = option.Index;
+    int index = option.Index;
     if (index == hideIndex)
     {
       if (panelVisible)
+      {
         Panels.ClosePanel(panelId);
+      }
     }
     else if (index == showIndex)
     {
       if (!panelVisible)
+      {
         Panels.OpenPanel(panelId);
+      }
     }
     else if (index == toggleIndex)
     {
-      if (panelVisible)
-        Panels.ClosePanel(panelId);
-      else
-        Panels.OpenPanel(panelId);
+      switch (panelVisible)
+      {
+        case true:
+          Panels.ClosePanel(panelId);
+          break;
+        default:
+          Panels.OpenPanel(panelId);
+          break;
+      }
     }
     return Result.Success;
   }
@@ -94,11 +108,10 @@ public class SpeckleRhinoWebUiCefCommand : Command
       PanelType.System
     );
   }
-  
 
   protected override Result RunCommand(RhinoDoc doc, RunMode mode)
   {
-    var panelId = typeof(SpeckleWebUiCefPanelHost).GUID;
+    Guid panelId = typeof(SpeckleWebUiCefPanelHost).GUID;
 
     if (mode == RunMode.Interactive)
     {
@@ -106,43 +119,55 @@ public class SpeckleRhinoWebUiCefCommand : Command
       return Result.Success;
     }
 
-    var panelVisible = Panels.IsPanelVisible(panelId);
+    bool panelVisible = Panels.IsPanelVisible(panelId);
 
-    var prompt = (panelVisible)
+    string prompt = panelVisible
       ? "SpeckleRhinoWebUICef panel is visible. New value"
       : "SpeckleRhinoWebUICef panel is hidden. New value";
 
-    using var go = new GetOption();
+    using GetOption go = new();
     go.SetCommandPrompt(prompt);
-    var hideIndex = go.AddOption("Hide");
-    var showIndex = go.AddOption("Show");
-    var toggleIndex = go.AddOption("Toggle");
+    int hideIndex = go.AddOption("Hide");
+    int showIndex = go.AddOption("Show");
+    int toggleIndex = go.AddOption("Toggle");
     go.Get();
 
     if (go.CommandResult() != Result.Success)
+    {
       return go.CommandResult();
+    }
 
-    var option = go.Option();
+    CommandLineOption option = go.Option();
     if (null == option)
+    {
       return Result.Failure;
+    }
 
-    var index = option.Index;
+    int index = option.Index;
     if (index == hideIndex)
     {
       if (panelVisible)
+      {
         Panels.ClosePanel(panelId);
+      }
     }
     else if (index == showIndex)
     {
       if (!panelVisible)
+      {
         Panels.OpenPanel(panelId);
+      }
     }
     else if (index == toggleIndex)
     {
       if (panelVisible)
+      {
         Panels.ClosePanel(panelId);
+      }
       else
+      {
         Panels.OpenPanel(panelId);
+      }
     }
     return Result.Success;
   }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Windows.Documents;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -42,7 +41,10 @@ public class SendBinding : ISendBinding, ICancelable
     RhinoDoc.AddRhinoObject += (_, e) =>
     {
       if (!_store.IsDocumentInit)
+      {
         return;
+      }
+
       ChangedObjectIds.Add(e.ObjectId.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
     };
@@ -50,7 +52,10 @@ public class SendBinding : ISendBinding, ICancelable
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
       if (!_store.IsDocumentInit)
+      {
         return;
+      }
+
       ChangedObjectIds.Add(e.ObjectId.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
     };
@@ -58,7 +63,10 @@ public class SendBinding : ISendBinding, ICancelable
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
     {
       if (!_store.IsDocumentInit)
+      {
         return;
+      }
+
       ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
       ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
@@ -89,7 +97,7 @@ public class SendBinding : ISendBinding, ICancelable
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
       SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
@@ -107,18 +115,22 @@ public class SendBinding : ISendBinding, ICancelable
       Base commitObject = ConvertObjects(rhinoObjects, converter, modelCardId, cts);
 
       if (cts.IsCancellationRequested)
+      {
         return;
+      }
 
       // 6 - Get transports
-      var transports = new List<ITransport> { new ServerTransport(account, model.ProjectId) };
+      List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
       string objectId = await Operations
-        .Send(Parent, modelCardId, commitObject, cts.Token, transports)
+        .Send(Parent, modelCardId, commitObject, transports, cts.Token)
         .ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
+      {
         return;
+      }
 
       // 8 - Create Version
       Operations.CreateVersion(Parent, model, objectId, "Rhino");
@@ -135,20 +147,17 @@ public class SendBinding : ISendBinding, ICancelable
     }
   }
 
-  public void CancelSend(string modelCardId)
-  {
-    CancellationManager.CancelOperation(modelCardId);
-  }
+  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
   private void RunExpirationChecks()
   {
-    var senders = _store.GetSenders();
-    var objectIdsList = ChangedObjectIds.ToArray();
-    var expiredSenderIds = new List<string>();
+    List<SenderModelCard> senders = _store.GetSenders();
+    string[] objectIdsList = ChangedObjectIds.ToArray();
+    List<string> expiredSenderIds = new();
 
-    foreach (var sender in senders)
+    foreach (SenderModelCard sender in senders)
     {
-      var isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
+      bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
       if (isExpired)
       {
         expiredSenderIds.Add(sender.Id);
@@ -165,9 +174,9 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    var commitObject = new Base();
+    Base commitObject = new();
 
-    var convertedObjects = new List<Base>();
+    List<Base> convertedObjects = new();
     int count = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {

@@ -9,12 +9,12 @@ public class PropertyValidator : DiscriminatedObject
 {
   [JsonIgnore]
   public List<string> JsonPropertyNames { get; set; }
-  
+
   public bool InitializeNewProperties()
   {
     bool isUpdated = false;
     var properties = this.GetType().GetProperties();
-        
+
     // Create a new instance of the current type to get default values
     var defaultInstance = Activator.CreateInstance(this.GetType());
 
@@ -33,7 +33,7 @@ public class PropertyValidator : DiscriminatedObject
 
     return isUpdated; // Return true if any property was updated
   }
-  
+
   public bool CheckRemovedProperties()
   {
     bool removedPropertiesExist = false;

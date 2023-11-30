@@ -8,7 +8,12 @@ namespace DUI3.Utils;
 
 public static class Notification
 {
-  public static void ReportReceive(IBridge bridge, IReadOnlyCollection<string> errors, string modelCardId, int numberOfObject)
+  public static void ReportReceive(
+    IBridge bridge,
+    IReadOnlyCollection<string> errors,
+    string modelCardId,
+    int numberOfObject
+  )
   {
     if (errors.Any())
     {
@@ -21,7 +26,8 @@ public static class Notification
           Text = $"Speckle objects ({errors.Count}) are not received successfully.",
           Level = "warning",
           Timeout = 5000
-        });
+        }
+      );
     }
     bridge.SendToBrowser(
       ReceiveBindingEvents.Notify,
@@ -32,6 +38,7 @@ public static class Notification
         Text = $"Speckle objects ({numberOfObject - errors.Count}) are received successfully.",
         Level = "success",
         Timeout = 5000
-      });
+      }
+    );
   }
 }

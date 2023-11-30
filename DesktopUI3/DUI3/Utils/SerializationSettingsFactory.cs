@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using DUI3.Bindings;
+﻿using DUI3.Bindings;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -13,17 +12,13 @@ public static class SerializationSettingsFactory
   /// <returns></returns>
   public static JsonSerializerSettings GetSerializerSettings()
   {
-    var serializerOptions = new JsonSerializerSettings 
+    var serializerOptions = new JsonSerializerSettings
     {
       ContractResolver = new CamelCasePropertyNamesContractResolver(),
       NullValueHandling = NullValueHandling.Ignore,
       ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
       DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-      Converters =
-      {
-        new DiscriminatedObjectConverter(),
-        new AbstractConverter<DiscriminatedObject, ISendFilter>()
-      }
+      Converters = { new DiscriminatedObjectConverter(), new AbstractConverter<DiscriminatedObject, ISendFilter>() }
     };
 
     return serializerOptions;

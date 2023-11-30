@@ -13,6 +13,6 @@ public abstract class SpeckleHostObject<T> : ISpeckleHostObject
   public string ApplicationId { get; }
   public string SpeckleId { get; }
   public bool IsExpired { get; }
-  
+
   public abstract SpeckleHostObject<T> WithExpiredStatus(bool status = true);
 }

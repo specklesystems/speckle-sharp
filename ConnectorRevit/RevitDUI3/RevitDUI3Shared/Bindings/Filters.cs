@@ -9,7 +9,7 @@ public class RevitEverythingFilter : EverythingSendFilter
   public override List<string> GetObjectIds()
   {
     // TODO
-    return new List<string>(); 
+    return new List<string>();
   }
 
   public override bool CheckExpiry(string[] changedObjectIds)

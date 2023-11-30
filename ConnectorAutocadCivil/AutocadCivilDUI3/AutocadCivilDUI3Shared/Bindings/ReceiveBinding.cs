@@ -13,142 +13,151 @@ using System.Threading;
 using DUI3.Operations;
 using DUI3.Utils;
 
-namespace ConnectorAutocadDUI3.Bindings
+namespace ConnectorAutocadDUI3.Bindings;
+
+public class ReceiveBinding : IReceiveBinding, ICancelable
 {
-  public class ReceiveBinding : IReceiveBinding, ICancelable
+  public string Name { get; set; } = "receiveBinding";
+  public IBridge Parent { get; set; }
+
+  private readonly DocumentModelStore _store;
+
+  public CancellationManager CancellationManager { get; } = new();
+
+  private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+
+  public ReceiveBinding(DocumentModelStore store)
   {
-    public string Name { get; set; } = "receiveBinding";
-    public IBridge Parent { get; set; }
-    
-    private DocumentModelStore _store;
-    
-    public CancellationManager CancellationManager { get; } = new();
-    
-    private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+    _store = store;
+  }
 
-    public ReceiveBinding(DocumentModelStore store)
+  public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+
+  public async void Receive(string modelCardId, string versionId)
+  {
+    try
     {
-      _store = store;
-    }
-    
-    public void CancelReceive(string modelCardId)
-    {
-      CancellationManager.CancelOperation(modelCardId);
-    }
-    
-    public async void Receive(string modelCardId, string versionId)
-    {
-      try
+      // 0 - Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+
+      // 1 - Get receiver card
+      ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+
+      // 2 - Get commit object from server
+      Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+
+      if (cts.IsCancellationRequested)
       {
-        // 0 - Init cancellation token source -> Manager also cancel it if exist before
-        var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
-
-        // 1 - Get receiver card
-        ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
-      
-        // 2 - Get commit object from server
-        Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
-      
-        if (cts.IsCancellationRequested) return;
-      
-        // 3 - Get converter
-        ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.VersionedAppName);
-      
-        // 4 - Traverse commit object
-        List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
-
-        // 5 - Convert and Bake objects
-        ConvertObjects(objectsToConvert, converter, modelCardId, cts);
+        return;
       }
-      catch (Exception e)
-      {
-        if (e is OperationCanceledException)
-        {
-          Progress.CancelReceive(Parent, modelCardId);
-          return;
-        }
-        // throw;
-      }
+
+      // 3 - Get converter
+      ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.VersionedAppName);
+
+      // 4 - Traverse commit object
+      List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
+
+      // 5 - Convert and Bake objects
+      ConvertObjects(objectsToConvert, converter, modelCardId, cts);
     }
-
-    private void ConvertObjects(List<Base> objectsToConvert, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+    catch (Exception e)
     {
-      using DocumentLock l = Doc.LockDocument();
-      using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
-      var objectsToBake = new List<object>();
-
-      int count = 0;
-      foreach (var objectToConvert in objectsToConvert)
+      if (e is OperationCanceledException)
       {
-        if (cts.IsCancellationRequested)
-        {
-          Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
-          tr.Commit();
-          return;
-        }
-        count++;
-        double progress = (double)count / objectsToConvert.Count;
-        Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
-
-        var objectsToAddBakeList = ConvertObject(objectToConvert, converter);
-        objectsToBake.AddRange(objectsToAddBakeList);
+        Progress.CancelReceive(Parent, modelCardId);
+        return;
       }
-      BakeObjects(objectsToBake, tr);
-
-      Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-
-      tr.Commit();
+      // throw;
     }
+  }
 
-    private void BakeObjects(
-      List<object> convertedItems,
-      Transaction tr
-    )
+  private void ConvertObjects(
+    List<Base> objectsToConvert,
+    ISpeckleConverter converter,
+    string modelCardId,
+    CancellationTokenSource cts
+  )
+  {
+    using DocumentLock l = Doc.LockDocument();
+    using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
+    List<object> objectsToBake = new();
+
+    int count = 0;
+    foreach (Base objectToConvert in objectsToConvert)
     {
-      // int bakedCount = 0;
-      foreach (var convertedItem in convertedItems)
+      if (cts.IsCancellationRequested)
       {
-        switch (convertedItem)
-        {
-          case Entity o:
-            var res = o.Append();
-            if (res.IsValid)
-            {
-              tr.TransactionManager.QueueForGraphicsFlush();
-              // bakedCount++;
-            }
-            else
-            {
-              continue;
-            }
-            break;
-          default:
-            break;
-        }
+        Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
+        tr.Commit();
+        return;
+      }
+      count++;
+      double progress = (double)count / objectsToConvert.Count;
+      Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+
+      List<object> objectsToAddBakeList = ConvertObject(objectToConvert, converter);
+      objectsToBake.AddRange(objectsToAddBakeList);
+    }
+    BakeObjects(objectsToBake, tr);
+
+    Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
+
+    tr.Commit();
+  }
+
+  private void BakeObjects(List<object> convertedItems, Transaction tr)
+  {
+    // int bakedCount = 0;
+    foreach (object convertedItem in convertedItems)
+    {
+      switch (convertedItem)
+      {
+        case Entity o:
+          ObjectId res = o.Append();
+          if (res.IsValid)
+          {
+            tr.TransactionManager.QueueForGraphicsFlush();
+            // bakedCount++;
+          }
+          else
+          {
+            continue;
+          }
+          break;
+        default:
+          break;
       }
     }
+  }
 
-    // conversion and bake
-    private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
+  // conversion and bake
+  private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
+  {
+    List<object> convertedList = new();
+
+    object converted = converter.ConvertToNative(obj);
+    if (converted == null)
     {
-      var convertedList = new List<object>();
-
-      var converted = converter.ConvertToNative(obj);
-      if (converted == null)
-        return convertedList;
-
-      //Iteratively flatten any lists
-      void FlattenConvertedObject(object item)
-      {
-        if (item is IList list)
-          foreach (object child in list)
-            FlattenConvertedObject(child);
-        else
-          convertedList.Add(item);
-      }
-      FlattenConvertedObject(converted);
-
       return convertedList;
     }
+
+    // Iteratively flatten any lists
+    void FlattenConvertedObject(object item)
+    {
+      if (item is IList list)
+      {
+        foreach (object child in list)
+        {
+          FlattenConvertedObject(child);
+        }
+      }
+      else
+      {
+        convertedList.Add(item);
+      }
+    }
+    FlattenConvertedObject(converted);
+
+    return convertedList;
   }
 }

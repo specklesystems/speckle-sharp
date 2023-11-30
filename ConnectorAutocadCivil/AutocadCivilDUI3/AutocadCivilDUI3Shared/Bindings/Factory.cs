@@ -1,26 +1,25 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using AutocadCivilDUI3Shared.Utils;
 using ConnectorAutocadDUI3.Bindings;
 using DUI3;
 using DUI3.Bindings;
 using Speckle.ConnectorAutocadDUI3.Bindings;
 
-namespace AutocadCivilDUI3Shared.Bindings
+namespace AutocadCivilDUI3Shared.Bindings;
+
+public static class Factory
 {
-  public static class Factory
+  private static readonly AutocadDocumentModelStore s_store = new();
+
+  public static List<IBinding> CreateBindings()
   {
-    private static readonly AutocadDocumentModelStore Store = new AutocadDocumentModelStore();
+    BasicConnectorBindingAutocad baseBindings = new(s_store);
+    SendBinding sendBindings = new(s_store);
+    ReceiveBinding receiveBindings = new(s_store);
+    SelectionBinding selectionBinding = new();
 
-    public static List<IBinding> CreateBindings()
-    {
-      BasicConnectorBindingAutocad baseBindings = new BasicConnectorBindingAutocad(Store);
-      SendBinding sendBindings = new SendBinding(Store);
-      ReceiveBinding receiveBindings = new ReceiveBinding(Store);
-      SelectionBinding selectionBinding = new SelectionBinding();
-
-      var bindingsList = new List<IBinding>
+    List<IBinding> bindingsList =
+      new()
       {
         new ConfigBinding("Autocad"),
         new AccountBinding(),
@@ -31,7 +30,6 @@ namespace AutocadCivilDUI3Shared.Bindings
         selectionBinding
       };
 
-      return bindingsList;
-    }
+    return bindingsList;
   }
 }

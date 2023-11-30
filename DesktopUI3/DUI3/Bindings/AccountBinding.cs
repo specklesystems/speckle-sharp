@@ -13,7 +13,7 @@ public class AccountBinding : IBinding
   public Account[] GetAccounts()
   {
     return AccountManager.GetAccounts().ToArray();
-    // NOTE: removing the avatars is no longer needed as we've resolved the issue described below via the bridge implementation.  
+    // NOTE: removing the avatars is no longer needed as we've resolved the issue described below via the bridge implementation.
     // .Select(
     // a =>
     // {

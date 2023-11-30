@@ -1,5 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 using Autodesk.Revit.UI;
 using CefSharp;
 using System.Windows.Threading;
@@ -13,22 +12,18 @@ public partial class CefSharpPanel : Page, Autodesk.Revit.UI.IDockablePaneProvid
     InitializeComponent();
   }
 
-  public void ExecuteScriptAsync(string script)
-  {
+  public void ExecuteScriptAsync(string script) =>
     Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
-  }
 
-  public void ShowDevTools()
-  {
-    Browser.ShowDevTools();
-  }
-  
+  public void ShowDevTools() => Browser.ShowDevTools();
+
   public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
   {
-    data.FrameworkElement = this as FrameworkElement;
-    data.InitialState = new Autodesk.Revit.UI.DockablePaneState();
-    data.InitialState.DockPosition = DockPosition.Tabbed;
-    data.InitialState.TabBehind = Autodesk.Revit.UI.DockablePanes.BuiltInDockablePanes.ProjectBrowser;
+    data.FrameworkElement = this;
+    data.InitialState = new Autodesk.Revit.UI.DockablePaneState
+    {
+      DockPosition = DockPosition.Tabbed,
+      TabBehind = Autodesk.Revit.UI.DockablePanes.BuiltInDockablePanes.ProjectBrowser
+    };
   }
 }
-

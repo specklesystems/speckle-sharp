@@ -20,9 +20,13 @@ public static class BoundingBoxExtensions
       if (objBoundingBox.IsValid)
       {
         if (boundingBox.IsValid)
+        {
           boundingBox.Union(objBoundingBox);
+        }
         else
+        {
           boundingBox = objBoundingBox;
+        }
       }
     }
 

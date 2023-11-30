@@ -28,10 +28,6 @@ public static class Factory
 
   public static Dictionary<string, OnboardingData> CreateDefaults()
   {
-    return new Dictionary<string, OnboardingData>()
-    {
-      { "send", CreateSend() },
-      { "receive", CreateReceive() }
-    };
+    return new Dictionary<string, OnboardingData>() { { "send", CreateSend() }, { "receive", CreateReceive() } };
   }
 }

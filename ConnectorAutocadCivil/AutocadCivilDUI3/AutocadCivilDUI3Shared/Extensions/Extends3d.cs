@@ -1,17 +1,16 @@
-﻿using System.Collections.Generic;
-using Autodesk.AutoCAD.DatabaseServices;
+﻿using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 
 namespace AutocadCivilDUI3Shared.Extensions;
 
 public static class Extends3dExtensions
 {
-  public static Extents3d FromObjectIds(Editor editor, IReadOnlyCollection<ObjectId> objectIds)
+  public static Extents3d FromObjectIds(Editor editor)
   {
     Transaction tr = editor.Document.Database.TransactionManager.StartTransaction();
-    
+
     PromptSelectionResult selectionResult = editor.SelectImplied();
-    
+
     if (selectionResult.Status == PromptStatus.OK)
     {
       SelectionSet selectionSet = selectionResult.Value;
@@ -33,7 +32,7 @@ public static class Extends3dExtensions
         return selectedExtents;
       }
     }
-    
+
     tr.Commit();
     return new Extents3d();
   }

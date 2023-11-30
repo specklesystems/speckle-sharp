@@ -23,9 +23,9 @@ public class SendBinding : ISendBinding, ICancelable
 
   private readonly RevitDocumentStore _store;
 
-  private static UIApplication _revitApp;
+  private static UIApplication s_revitApp;
 
-  private static Document Doc => _revitApp.ActiveUIDocument.Document;
+  private static Document Doc => s_revitApp.ActiveUIDocument.Document;
 
   public CancellationManager CancellationManager { get; } = new();
 
@@ -33,21 +33,17 @@ public class SendBinding : ISendBinding, ICancelable
 
   public SendBinding(RevitDocumentStore store)
   {
-    _revitApp = RevitAppProvider.RevitApp;
+    s_revitApp = RevitAppProvider.RevitApp;
     _store = store;
 
     // TODO expiry events
     // TODO filters need refresh events
-    _revitApp.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    s_revitApp.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
   }
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter>
-    {
-      new RevitEverythingFilter(),
-      new RevitSelectionFilter()
-    };
+    return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
   }
 
   private Base ConvertElements(
@@ -58,7 +54,7 @@ public class SendBinding : ISendBinding, ICancelable
   )
   {
     var commitObject = new Base();
-    
+
     var convertedObjects = new List<Base>();
     int count = 0;
     foreach (var revitElement in elements)
@@ -75,7 +71,7 @@ public class SendBinding : ISendBinding, ICancelable
       double progress = (double)count / elements.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
     }
-    
+
     commitObject["@elements"] = convertedObjects;
 
     return commitObject;
@@ -86,32 +82,40 @@ public class SendBinding : ISendBinding, ICancelable
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
       SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-      
+
       // 2 - Check account exist
       Account account = Accounts.GetAccount(model.AccountId);
-      
+
       // 3 - Get elements to convert
-      List<Element> elements = Utils.Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
+      List<Element> elements = Utils.Elements.GetElementsFromDocument(Doc, model.SendFilter.GetObjectIds());
 
       // 4 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
 
       // 5 - Convert objects
       Base commitObject = ConvertElements(elements, converter, modelCardId, cts);
-      
-      if (cts.IsCancellationRequested) return;
+
+      if (cts.IsCancellationRequested)
+      {
+        return;
+      }
 
       // 6 - Get transports
-      var transports = new List<ITransport> { new ServerTransport(account, model.ProjectId) };
+      List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      string objectId = await Operations.Send(Parent, modelCardId, commitObject, cts.Token, transports).ConfigureAwait(true);
-      
-      if (cts.IsCancellationRequested) return;
+      string objectId = await Operations
+        .Send(Parent, modelCardId, commitObject, transports, cts.Token)
+        .ConfigureAwait(true);
+
+      if (cts.IsCancellationRequested)
+      {
+        return;
+      }
 
       // 8 - Create Version
       Operations.CreateVersion(Parent, model, objectId, "Revit");
@@ -135,14 +139,14 @@ public class SendBinding : ISendBinding, ICancelable
 
   /// <summary>
   /// Keeps track of the changed element ids as well as checks if any of them need to trigger
-  /// a filter refresh (e.g., views being added). 
+  /// a filter refresh (e.g., views being added).
   /// </summary>
   /// <param name="e"></param>
   private void DocChangeHandler(Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
   {
-    var addedElementIds = e.GetAddedElementIds();
-    var deletedElementIds = e.GetDeletedElementIds();
-    var modifiedElementIds = e.GetModifiedElementIds();
+    ICollection<ElementId> addedElementIds = e.GetAddedElementIds();
+    ICollection<ElementId> deletedElementIds = e.GetDeletedElementIds();
+    ICollection<ElementId> modifiedElementIds = e.GetModifiedElementIds();
 
     foreach (ElementId elementId in addedElementIds)
     {
@@ -166,12 +170,12 @@ public class SendBinding : ISendBinding, ICancelable
 
   private void RunExpirationChecks()
   {
-    var senders = _store.GetSenders();
-    var expiredSenderIds = new List<string>();
+    List<SenderModelCard> senders = _store.GetSenders();
+    List<string> expiredSenderIds = new();
 
     foreach (var sender in senders)
     {
-      var isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
         expiredSenderIds.Add(sender.Id);

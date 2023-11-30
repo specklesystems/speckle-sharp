@@ -19,7 +19,7 @@ public class CancellationManager
   /// <summary>
   /// Dictionary to relate <see cref="CancellationTokenSource"/> with registered id.
   /// </summary>
-  private Dictionary<string, CancellationTokenSource> operationsInProgress = new();
+  private readonly Dictionary<string, CancellationTokenSource> _operationsInProgress = new();
 
   /// <summary>
   /// Get token with registered id.
@@ -28,7 +28,7 @@ public class CancellationManager
   /// <returns> CancellationToken that belongs to operation.</returns>
   public CancellationToken GetToken(string id)
   {
-    return operationsInProgress[id].Token;
+    return _operationsInProgress[id].Token;
   }
 
   /// <summary>
@@ -38,7 +38,7 @@ public class CancellationManager
   /// <returns> Whether given id registered or not.</returns>
   public bool IsExist(string id)
   {
-    return operationsInProgress.ContainsKey(id);
+    return _operationsInProgress.ContainsKey(id);
   }
 
   /// <summary>
@@ -52,23 +52,23 @@ public class CancellationManager
     {
       CancelOperation(id);
     }
-    
+
     var cts = new CancellationTokenSource();
-    operationsInProgress[id] = cts;
+    _operationsInProgress[id] = cts;
     return cts;
   }
-  
+
   /// <summary>
   /// Cancel operation.
   /// </summary>
   /// <param name="id">Id to cancel operation.</param>
   public void CancelOperation(string id)
   {
-    if (operationsInProgress.TryGetValue(id, out CancellationTokenSource cts))
+    if (_operationsInProgress.TryGetValue(id, out CancellationTokenSource cts))
     {
       cts.Cancel();
       cts.Dispose();
-      operationsInProgress.Remove(id);
+      _operationsInProgress.Remove(id);
     }
   }
 
@@ -79,6 +79,6 @@ public class CancellationManager
   /// <returns></returns>
   public bool IsCancellationRequested(string id)
   {
-    return operationsInProgress[id].IsCancellationRequested;
+    return _operationsInProgress[id].IsCancellationRequested;
   }
 }
