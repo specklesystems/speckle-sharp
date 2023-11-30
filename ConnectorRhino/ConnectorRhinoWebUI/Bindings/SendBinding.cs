@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows.Documents;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
 using DUI3.Operations;
+using DUI3.Settings;
 using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Credentials;
@@ -21,52 +23,64 @@ public class SendBinding : ISendBinding, ICancelable
 {
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
-  
+
   private readonly DocumentModelStore _store;
 
   public CancellationManager CancellationManager { get; } = new();
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
-  
+
   public SendBinding(DocumentModelStore store)
   {
     _store = store;
-    
+
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       Parent?.SendToBrowser(SendBindingEvents.FiltersNeedRefresh);
     };
-    
+
     RhinoDoc.AddRhinoObject += (_, e) =>
     {
-      if (!_store.IsDocumentInit) return;
+      if (!_store.IsDocumentInit)
+        return;
       ChangedObjectIds.Add(e.ObjectId.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
     };
-    
+
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
-      if (!_store.IsDocumentInit) return;
+      if (!_store.IsDocumentInit)
+        return;
       ChangedObjectIds.Add(e.ObjectId.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
     };
-    
+
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
     {
-      if (!_store.IsDocumentInit) return;
+      if (!_store.IsDocumentInit)
+        return;
       ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
       ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
-    }; 
+    };
   }
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter>()
+    return new List<ISendFilter>() { new RhinoEverythingFilter(), new RhinoSelectionFilter(), new RhinoLayerFilter() };
+  }
+
+  public List<CardSetting> GetSendSettings()
+  {
+    return new List<CardSetting>()
     {
-      new RhinoEverythingFilter(),
-      new RhinoSelectionFilter(),
-      new RhinoLayerFilter()
+      new()
+      {
+        Id = "includeAttributes",
+        Title = "Include Attributes",
+        Value = true,
+        Type = "boolean"
+      },
     };
   }
 
@@ -79,10 +93,10 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 1 - Get model
       SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-      
+
       // 2 - Check account exist
       Account account = Accounts.GetAccount(model.AccountId);
-      
+
       // 3 - Get elements to convert
       List<RhinoObject> rhinoObjects = GetObjectsFromDocument(model);
 
@@ -91,16 +105,20 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 5 - Convert objects
       Base commitObject = ConvertObjects(rhinoObjects, converter, modelCardId, cts);
-      
-      if (cts.IsCancellationRequested) return;
+
+      if (cts.IsCancellationRequested)
+        return;
 
       // 6 - Get transports
       var transports = new List<ITransport> { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      string objectId = await Operations.Send(Parent, modelCardId, commitObject, cts.Token, transports).ConfigureAwait(true);
-      
-      if (cts.IsCancellationRequested) return;
+      string objectId = await Operations
+        .Send(Parent, modelCardId, commitObject, cts.Token, transports)
+        .ConfigureAwait(true);
+
+      if (cts.IsCancellationRequested)
+        return;
 
       // 8 - Create Version
       Operations.CreateVersion(Parent, model, objectId, "Rhino");
@@ -121,13 +139,13 @@ public class SendBinding : ISendBinding, ICancelable
   {
     CancellationManager.CancelOperation(modelCardId);
   }
-  
+
   private void RunExpirationChecks()
   {
     var senders = _store.GetSenders();
     var objectIdsList = ChangedObjectIds.ToArray();
     var expiredSenderIds = new List<string>();
-    
+
     foreach (var sender in senders)
     {
       var isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
@@ -140,10 +158,15 @@ public class SendBinding : ISendBinding, ICancelable
     ChangedObjectIds = new HashSet<string>();
   }
 
-  private Base ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts)
+  private Base ConvertObjects(
+    List<RhinoObject> rhinoObjects,
+    ISpeckleConverter converter,
+    string modelCardId,
+    CancellationTokenSource cts
+  )
   {
     var commitObject = new Base();
-    
+
     var convertedObjects = new List<Base>();
     int count = 0;
     foreach (RhinoObject rhinoObject in rhinoObjects)
@@ -153,13 +176,13 @@ public class SendBinding : ISendBinding, ICancelable
         Progress.CancelSend(Parent, modelCardId, (double)count / rhinoObjects.Count);
         break;
       }
-      
+
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
       double progress = (double)count / rhinoObjects.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
     }
-    
+
     commitObject["@elements"] = convertedObjects;
 
     return commitObject;

@@ -1,4 +1,5 @@
-﻿using DUI3.Bindings;
+﻿using System.Collections.Generic;
+using DUI3.Settings;
 using DUI3.Utils;
 
 namespace DUI3.Models;
@@ -10,10 +11,12 @@ public class ModelCard : DiscriminatedObject
   /// It's not the actual model (branch) id.
   /// </summary>
   public string Id { get; set; }
+
   /// <summary>
   /// Model id. FKA branch id.
   /// </summary>
   public string ModelId { get; set; }
+
   /// <summary>
   /// Project id. FKA stream id.
   /// </summary>
@@ -21,4 +24,5 @@ public class ModelCard : DiscriminatedObject
   public string AccountId { get; set; }
   public string LastLocalUpdate { get; set; }
   public bool Expired { get; set; }
+  public List<CardSetting> Settings { get; set; }
 }
