@@ -241,7 +241,7 @@ public sealed class ServerApi : IDisposable, IServerApi
       var fileName = Path.GetFileName(filePath);
       var stream = File.OpenRead(filePath);
       streams.Add(stream);
-      using StreamContent fsc = new(stream);
+      StreamContent fsc = new(stream);
       var hash = id.Split(':')[1];
 
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
