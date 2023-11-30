@@ -2,19 +2,16 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.BuiltElements;
 using Objects.Other;
-using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
-using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;
@@ -306,7 +303,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
-    return objects.Select(x => ConvertToSpeckle(x)).ToList();
+    return objects.Select(ConvertToSpeckle).ToList();
   }
 
   public object ConvertToNative(Base @object)
@@ -466,7 +463,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
   public List<object> ConvertToNative(List<Base> objects)
   {
-    return objects.Select(x => ConvertToNative(x)).ToList();
+    return objects.Select(ConvertToNative).ToList();
   }
 
   public bool CanConvertToSpeckle(object @object)

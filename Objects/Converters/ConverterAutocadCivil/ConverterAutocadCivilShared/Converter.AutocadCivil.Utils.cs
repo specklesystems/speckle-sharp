@@ -1,14 +1,11 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
