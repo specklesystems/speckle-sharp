@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -9,19 +8,16 @@ using Objects.GIS;
 using Objects.Organization;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
-using GE = Objects.Geometry;
 using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit;

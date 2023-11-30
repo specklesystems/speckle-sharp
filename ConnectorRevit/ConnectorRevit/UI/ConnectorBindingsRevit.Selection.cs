@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using ConnectorRevit;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using RevitSharedResources.Extensions.SpeckleExtensions;

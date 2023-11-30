@@ -1,10 +1,6 @@
 using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
 using System.Collections.Generic;
-using System.Text;
 using DesktopUI2.Models.Settings;
-using System.Linq;
 
 namespace Speckle.ConnectorTeklaStructures.UI;
 

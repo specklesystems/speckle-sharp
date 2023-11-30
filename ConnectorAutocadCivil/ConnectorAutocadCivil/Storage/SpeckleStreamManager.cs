@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -23,8 +22,8 @@ namespace Speckle.ConnectorAutocadCivil.Storage;
 /// </remarks>
 public static class SpeckleStreamManager
 {
-  readonly static string SpeckleExtensionDictionary = "Speckle";
-  readonly static string SpeckleStreamStates = "StreamStates";
+  static readonly string SpeckleExtensionDictionary = "Speckle";
+  static readonly string SpeckleStreamStates = "StreamStates";
 
   /// <summary>
   /// Returns all the speckle stream states present in the current document.
@@ -105,8 +104,8 @@ public static class SpeckleStreamManager
         NOD.SetAt(SpeckleExtensionDictionary, speckleDict);
         tr.AddNewlyCreatedDBObject(speckleDict, true);
       }
-      var xRec = new Xrecord();
-      var value = JsonConvert.SerializeObject(streamStates) as string;
+      Xrecord xRec = new();
+      string value = JsonConvert.SerializeObject(streamStates);
       xRec.Data = CreateResultBuffer(value);
       speckleDict.SetAt(SpeckleStreamStates, xRec);
       tr.AddNewlyCreatedDBObject(xRec, true);
@@ -145,14 +144,14 @@ public static class SpeckleStreamManager
 
   private static string Base64Encode(string plainText)
   {
-    var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-    return System.Convert.ToBase64String(plainTextBytes);
+    var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+    return Convert.ToBase64String(plainTextBytes);
   }
 
   private static string Base64Decode(string base64EncodedData)
   {
-    var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-    return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+    var base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
+    return Encoding.UTF8.GetString(base64EncodedBytes);
   }
 
   private static IEnumerable<string> SplitString(string text, int chunkSize)

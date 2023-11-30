@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.DoubleNumerics;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -21,38 +21,39 @@ namespace Speckle.Core.Serialisation;
 public class BaseObjectSerializerV2
 {
   private readonly Stopwatch _stopwatch = new();
-  private bool _busy;
+  private volatile bool _isBusy;
+  private List<Dictionary<string, int>> _parentClosures = new();
+  private HashSet<object> _parentObjects = new();
+  private readonly Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> _typedPropertiesCache = new();
+  private readonly Action<string, int>? _onProgressAction;
 
-  private List<Dictionary<string, int>> ParentClosures = new();
-
-  private HashSet<object> ParentObjects = new();
-
-  /// <summary>
-  /// Property that describes the type of the object.
-  /// </summary>
-  public string TypeDiscriminator = "speckle_type";
-
-  private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache = new();
+  /// <summary>The sync transport. This transport will be used synchronously.</summary>
+  public IReadOnlyCollection<ITransport> WriteTransports { get; }
 
   public CancellationToken CancellationToken { get; set; }
 
-  /// <summary>
-  /// The sync transport. This transport will be used synchronously.
-  /// </summary>
-  public List<ITransport> WriteTransports { get; set; } = new();
-
-  public Action<string, int> OnProgressAction { get; set; }
-
-  public Action<string, Exception> OnErrorAction { get; set; }
-
-  // duration diagnostic stuff
+  /// <summary>The current total elapsed time spent serializing</summary>
   public TimeSpan Elapsed => _stopwatch.Elapsed;
+
+  public BaseObjectSerializerV2()
+    : this(Array.Empty<ITransport>()) { }
+
+  public BaseObjectSerializerV2(
+    IReadOnlyCollection<ITransport> writeTransports,
+    Action<string, int>? onProgressAction = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    WriteTransports = writeTransports;
+    _onProgressAction = onProgressAction;
+    CancellationToken = cancellationToken;
+  }
 
   public string Serialize(Base baseObj)
   {
-    if (_busy)
+    if (_isBusy)
     {
-      throw new Exception(
+      throw new InvalidOperationException(
         "A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances"
       );
     }
@@ -60,25 +61,25 @@ public class BaseObjectSerializerV2
     try
     {
       _stopwatch.Start();
-      _busy = true;
-      Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
+      _isBusy = true;
+      IDictionary<string, object?> converted = PreserializeBase(baseObj, true)!;
       string serialized = Dict2Json(converted);
-      StoreObject(converted["id"] as string, serialized);
+      StoreObject((string)converted["id"]!, serialized);
       return serialized;
     }
     finally
     {
-      ParentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
-      ParentObjects = new HashSet<object>();
-      _busy = false;
+      _parentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
+      _parentObjects = new HashSet<object>();
+      _isBusy = false;
       _stopwatch.Stop();
     }
   }
 
   // `Preserialize` means transforming all objects into the final form that will appear in json, with basic .net objects
   // (primitives, lists and dictionaries with string keys)
-  public object PreserializeObject(
-    object obj,
+  public object? PreserializeObject(
+    object? obj,
     bool computeClosures = false,
     PropertyAttributeInfo inheritedDetachInfo = default
   )
@@ -90,155 +91,126 @@ public class BaseObjectSerializerV2
       return null;
     }
 
-    Type type = obj.GetType();
-
-    if (type.IsPrimitive || obj is string)
+    if (obj.GetType().IsPrimitive || obj is string)
     {
       return obj;
     }
 
-    if (obj is Base b)
+    switch (obj)
     {
       // Complex enough to deserve its own function
-      return PreserializeBase(b, computeClosures, inheritedDetachInfo);
-    }
-
-    if (obj is IDictionary d)
-    {
-      Dictionary<string, object> ret = new(d.Count);
-      foreach (DictionaryEntry kvp in d)
+      case Base b:
+        return PreserializeBase(b, computeClosures, inheritedDetachInfo);
+      case IDictionary d:
       {
-        object converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
-        if (converted != null)
+        Dictionary<string, object> ret = new(d.Count);
+        foreach (DictionaryEntry kvp in d)
         {
-          ret[kvp.Key.ToString()] = converted;
+          object? converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
+          if (converted != null)
+          {
+            ret[kvp.Key.ToString()] = converted;
+          }
         }
+        return ret;
       }
-      return ret;
-    }
-    //TODO: handle IReadonlyDictionary
-
-    if (obj is IEnumerable e)
-    {
-      List<object> ret;
-      if (e is IList list)
+      case IEnumerable e:
       {
-        ret = new List<object>(list.Count);
+        //TODO: handle IReadonlyDictionary
+        int preSize = (e is IList list) ? list.Count : 0;
+
+        List<object?> ret = new(preSize);
+
+        foreach (object? element in e)
+        {
+          ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
+        }
+
+        return ret;
       }
-      else
+      case ObjectReference r:
       {
-        ret = new List<object>();
+        Dictionary<string, object> ret = new() { ["speckle_type"] = r.speckle_type, ["referencedId"] = r.referencedId };
+        return ret;
       }
-
-      foreach (object element in e)
-      {
-        ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
-      }
-
-      return ret;
+      case Enum:
+        return (int)obj;
+      // Support for simple types
+      case Guid g:
+        return g.ToString();
+      case Color c:
+        return c.ToArgb();
+      case DateTime t:
+        return t.ToString("o", CultureInfo.InvariantCulture);
+      case Matrix4x4 md:
+        return new List<double>
+        {
+          md.M11,
+          md.M12,
+          md.M13,
+          md.M14,
+          md.M21,
+          md.M22,
+          md.M23,
+          md.M24,
+          md.M31,
+          md.M32,
+          md.M33,
+          md.M34,
+          md.M41,
+          md.M42,
+          md.M43,
+          md.M44
+        };
+      //BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
+      case System.Numerics.Matrix4x4 ms:
+        SpeckleLog.Logger.Warning(
+          "This kept for backwards compatibility, no one should be using {this}",
+          "BaseObjectSerializerV2 serialize System.Numerics.Matrix4x4"
+        );
+        return new List<double>
+        {
+          ms.M11,
+          ms.M12,
+          ms.M13,
+          ms.M14,
+          ms.M21,
+          ms.M22,
+          ms.M23,
+          ms.M24,
+          ms.M31,
+          ms.M32,
+          ms.M33,
+          ms.M34,
+          ms.M41,
+          ms.M42,
+          ms.M43,
+          ms.M44
+        };
+      default:
+        throw new ArgumentException($"Unsupported value in serialization: {obj.GetType()}");
     }
-
-    if (obj is ObjectReference r)
-    {
-      Dictionary<string, object> ret = new();
-      ret["speckle_type"] = r.speckle_type;
-      ret["referencedId"] = r.referencedId;
-      return ret;
-    }
-
-    if (obj is Enum)
-    {
-      return (int)obj;
-    }
-
-    // Support for simple types
-    if (obj is Guid g)
-    {
-      return g.ToString();
-    }
-
-    if (obj is Color c)
-    {
-      return c.ToArgb();
-    }
-
-    if (obj is DateTime t)
-    {
-      return t.ToString("o", CultureInfo.InvariantCulture);
-    }
-
-    if (obj is Matrix4x4 md)
-    {
-      return new List<double>
-      {
-        md.M11,
-        md.M12,
-        md.M13,
-        md.M14,
-        md.M21,
-        md.M22,
-        md.M23,
-        md.M24,
-        md.M31,
-        md.M32,
-        md.M33,
-        md.M34,
-        md.M41,
-        md.M42,
-        md.M43,
-        md.M44
-      };
-    }
-
-    if (obj is System.Numerics.Matrix4x4 ms) //BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
-    {
-      SpeckleLog.Logger.Warning(
-        "This kept for backwards compatibility, no one should be using {this}",
-        "BaseObjectSerializerV2 serialize System.Numerics.Matrix4x4"
-      );
-      return new List<double>
-      {
-        ms.M11,
-        ms.M12,
-        ms.M13,
-        ms.M14,
-        ms.M21,
-        ms.M22,
-        ms.M23,
-        ms.M24,
-        ms.M31,
-        ms.M32,
-        ms.M33,
-        ms.M34,
-        ms.M41,
-        ms.M42,
-        ms.M43,
-        ms.M44
-      };
-    }
-
-    throw new Exception("Unsupported value in serialization: " + type);
   }
 
-  public object PreserializeBase(
+  public IDictionary<string, object?>? PreserializeBase(
     Base baseObj,
     bool computeClosures = false,
     PropertyAttributeInfo inheritedDetachInfo = default
   )
   {
     // handle circular references
-    if (ParentObjects.Contains(baseObj))
+    if (_parentObjects.Contains(baseObj))
     {
       return null;
     }
 
-    ParentObjects.Add(baseObj);
+    _parentObjects.Add(baseObj);
 
-    Dictionary<string, object> convertedBase = new();
+    Dictionary<string, object?> convertedBase = new();
     Dictionary<string, int> closure = new();
     if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
     {
-      ParentClosures.Add(closure);
+      _parentClosures.Add(closure);
     }
 
     List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
@@ -278,12 +250,10 @@ public class BaseObjectSerializerV2
     // Convert all properties
     foreach (var prop in allProperties)
     {
-      object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
+      object? convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
 
       if (
-        convertedValue == null
-        && prop.Value.Item2.JsonPropertyInfo != null
-        && prop.Value.Item2.JsonPropertyInfo.NullValueHandling == NullValueHandling.Ignore
+        convertedValue == null && prop.Value.Item2.JsonPropertyInfo is { NullValueHandling: NullValueHandling.Ignore }
       )
       {
         continue;
@@ -292,14 +262,7 @@ public class BaseObjectSerializerV2
       convertedBase[prop.Key] = convertedValue;
     }
 
-    if (baseObj is Blob blob)
-    {
-      convertedBase["id"] = blob.id;
-    }
-    else
-    {
-      convertedBase["id"] = ComputeId(convertedBase);
-    }
+    convertedBase["id"] = baseObj is Blob blob ? blob.id : ComputeId(convertedBase);
 
     if (closure.Count > 0)
     {
@@ -308,10 +271,10 @@ public class BaseObjectSerializerV2
 
     if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
     {
-      ParentClosures.RemoveAt(ParentClosures.Count - 1);
+      _parentClosures.RemoveAt(_parentClosures.Count - 1);
     }
 
-    ParentObjects.Remove(baseObj);
+    _parentObjects.Remove(baseObj);
 
     if (baseObj is Blob myBlob)
     {
@@ -320,46 +283,44 @@ public class BaseObjectSerializerV2
       return convertedBase;
     }
 
-    if (inheritedDetachInfo.IsDetachable && WriteTransports != null && WriteTransports.Count > 0)
+    if (inheritedDetachInfo.IsDetachable && WriteTransports.Count > 0)
     {
       string json = Dict2Json(convertedBase);
-      StoreObject(convertedBase["id"] as string, json);
-      ObjectReference objRef = new() { referencedId = convertedBase["id"] as string };
-      object objRefConverted = PreserializeObject(objRef);
-      UpdateParentClosures(convertedBase["id"] as string);
-      OnProgressAction?.Invoke("S", 1);
+      string id = (string)convertedBase["id"]!;
+      StoreObject(id, json);
+      ObjectReference objRef = new() { referencedId = id };
+      var objRefConverted = (IDictionary<string, object?>?)PreserializeObject(objRef);
+      UpdateParentClosures(id);
+      _onProgressAction?.Invoke("S", 1);
       return objRefConverted;
     }
 
     return convertedBase;
   }
 
-  private object PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
+  private object? PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
   {
-    bool computeClosuresForChild =
-      (detachInfo.IsDetachable || detachInfo.IsChunkable) && WriteTransports != null && WriteTransports.Count > 0;
-
     // If there are no WriteTransports, keep everything attached.
-    if (WriteTransports == null || WriteTransports.Count == 0)
+    if (WriteTransports.Count == 0)
     {
       return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
     }
 
-    if (baseValue is IEnumerable && detachInfo.IsChunkable)
+    if (baseValue is IEnumerable chunkableCollection && detachInfo.IsChunkable)
     {
       List<object> chunks = new();
-      DataChunk crtChunk = new();
-      crtChunk.data = new List<object>(detachInfo.ChunkSize);
-      foreach (object element in (IEnumerable)baseValue)
+      DataChunk crtChunk = new() { data = new List<object>(detachInfo.ChunkSize) };
+
+      foreach (object element in chunkableCollection)
       {
         crtChunk.data.Add(element);
         if (crtChunk.data.Count >= detachInfo.ChunkSize)
         {
           chunks.Add(crtChunk);
-          crtChunk = new DataChunk();
-          crtChunk.data = new List<object>(detachInfo.ChunkSize);
+          crtChunk = new DataChunk { data = new List<object>(detachInfo.ChunkSize) };
         }
       }
+
       if (crtChunk.data.Count > 0)
       {
         chunks.Add(crtChunk);
@@ -373,26 +334,26 @@ public class BaseObjectSerializerV2
 
   private void UpdateParentClosures(string objectId)
   {
-    for (int parentLevel = 0; parentLevel < ParentClosures.Count; parentLevel++)
+    for (int parentLevel = 0; parentLevel < _parentClosures.Count; parentLevel++)
     {
-      int childDepth = ParentClosures.Count - parentLevel;
-      if (!ParentClosures[parentLevel].ContainsKey(objectId))
+      int childDepth = _parentClosures.Count - parentLevel;
+      if (!_parentClosures[parentLevel].TryGetValue(objectId, out int currentValue))
       {
-        ParentClosures[parentLevel][objectId] = childDepth;
+        currentValue = childDepth;
       }
 
-      ParentClosures[parentLevel][objectId] = Math.Min(ParentClosures[parentLevel][objectId], childDepth);
+      _parentClosures[parentLevel][objectId] = Math.Min(currentValue, childDepth);
     }
   }
 
-  private static string ComputeId(Dictionary<string, object> obj)
+  private static string ComputeId(IDictionary<string, object?> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
     string hash = Utilities.HashString(serialized);
     return hash;
   }
 
-  private static string Dict2Json(Dictionary<string, object> obj)
+  private static string Dict2Json(IDictionary<string, object?>? obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
     return serialized;
@@ -400,11 +361,6 @@ public class BaseObjectSerializerV2
 
   private void StoreObject(string objectId, string objectJson)
   {
-    if (WriteTransports == null)
-    {
-      return;
-    }
-
     _stopwatch.Stop();
     foreach (var transport in WriteTransports)
     {
@@ -416,11 +372,6 @@ public class BaseObjectSerializerV2
 
   private void StoreBlob(Blob obj)
   {
-    if (WriteTransports == null)
-    {
-      return;
-    }
-
     bool hasBlobTransport = false;
 
     _stopwatch.Stop();
@@ -438,7 +389,7 @@ public class BaseObjectSerializerV2
     if (!hasBlobTransport)
     {
       throw new InvalidOperationException(
-        "Object tree contains a Blob (file), but the serialiser has no blob saving capable transports."
+        "Object tree contains a Blob (file), but the serializer has no blob saving capable transports."
       );
     }
   }
@@ -449,9 +400,9 @@ public class BaseObjectSerializerV2
     Type type = baseObj.GetType();
     IEnumerable<PropertyInfo> typedProperties = baseObj.GetInstanceMembers();
 
-    if (TypedPropertiesCache.ContainsKey(type.FullName))
+    if (_typedPropertiesCache.TryGetValue(type.FullName, out List<(PropertyInfo, PropertyAttributeInfo)>? cached))
     {
-      return TypedPropertiesCache[type.FullName];
+      return cached;
     }
 
     List<(PropertyInfo, PropertyAttributeInfo)> ret = new();
@@ -474,34 +425,33 @@ public class BaseObjectSerializerV2
           break;
         }
       }
-
       if (jsonIgnore)
       {
         continue;
       }
 
-      object baseValue = typedProperty.GetValue(baseObj);
+      _ = typedProperty.GetValue(baseObj);
 
       List<DetachProperty> detachableAttributes = typedProperty.GetCustomAttributes<DetachProperty>(true).ToList();
       List<Chunkable> chunkableAttributes = typedProperty.GetCustomAttributes<Chunkable>(true).ToList();
       bool isDetachable = detachableAttributes.Count > 0 && detachableAttributes[0].Detachable;
       bool isChunkable = chunkableAttributes.Count > 0;
       int chunkSize = isChunkable ? chunkableAttributes[0].MaxObjCountPerChunk : 1000;
-      JsonPropertyAttribute jsonPropertyAttribute = typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
+      JsonPropertyAttribute? jsonPropertyAttribute = typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
       ret.Add((typedProperty, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, jsonPropertyAttribute)));
     }
 
-    TypedPropertiesCache[type.FullName] = ret;
+    _typedPropertiesCache[type.FullName] = ret;
     return ret;
   }
 
-  public struct PropertyAttributeInfo
+  public readonly struct PropertyAttributeInfo
   {
     public PropertyAttributeInfo(
       bool isDetachable,
       bool isChunkable,
       int chunkSize,
-      JsonPropertyAttribute jsonPropertyAttribute
+      JsonPropertyAttribute? jsonPropertyAttribute
     )
     {
       IsDetachable = isDetachable || isChunkable;
@@ -510,9 +460,19 @@ public class BaseObjectSerializerV2
       JsonPropertyInfo = jsonPropertyAttribute;
     }
 
-    public bool IsDetachable;
-    public bool IsChunkable;
-    public int ChunkSize;
-    public JsonPropertyAttribute JsonPropertyInfo;
+    public readonly bool IsDetachable;
+    public readonly bool IsChunkable;
+    public readonly int ChunkSize;
+    public readonly JsonPropertyAttribute? JsonPropertyInfo;
+  }
+
+  [Obsolete("OnErrorAction unused, serializer will throw exceptions instead")]
+  public Action<string, Exception>? OnErrorAction { get; set; }
+
+  [Obsolete("Set via constructor instead", true)]
+  public Action<string, int>? OnProgressAction
+  {
+    get => _onProgressAction;
+    set => _ = value;
   }
 }

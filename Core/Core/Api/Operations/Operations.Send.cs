@@ -97,49 +97,30 @@ public static partial class Operations
       var sendTimer = Stopwatch.StartNew();
       SpeckleLog.Logger.Information("Starting send operation");
 
+      var localProgressDict = new ConcurrentDictionary<string, int>();
+      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+
       BaseObjectSerializer? serializer = null;
       JsonSerializerSettings? settings = null;
       BaseObjectSerializerV2? serializerV2 = null;
       if (serializerVersion == SerializerVersion.V1)
       {
         (serializer, settings) = GetSerializerInstance();
-      }
-      else
-      {
-        serializerV2 = new BaseObjectSerializerV2();
-      }
-
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
-
-      if (serializerVersion == SerializerVersion.V1)
-      {
+        serializer.WriteTransports = transports;
         serializer!.OnProgressAction = internalProgressAction;
         serializer.CancellationToken = cancellationToken;
         serializer.OnErrorAction = onErrorAction;
       }
       else
       {
-        serializerV2!.OnProgressAction = internalProgressAction;
-        serializerV2.CancellationToken = cancellationToken;
-        serializerV2.OnErrorAction = onErrorAction;
+        serializerV2 = new BaseObjectSerializerV2(transports, internalProgressAction, cancellationToken);
       }
 
       foreach (var t in transports)
       {
         t.OnProgressAction = internalProgressAction;
         t.CancellationToken = cancellationToken;
-        t.OnErrorAction = onErrorAction;
         t.BeginWrite();
-
-        if (serializerVersion == SerializerVersion.V1)
-        {
-          serializer!.WriteTransports.Add(t);
-        }
-        else
-        {
-          serializerV2!.WriteTransports.Add(t);
-        }
       }
 
       string obj;

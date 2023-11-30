@@ -12,7 +12,6 @@ using ConnectorGrasshopperUtils;
 using GH_IO.Serialization;
 using Grasshopper;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;

@@ -1,6 +1,5 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
-using Autodesk.Revit.DB.Mechanical;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
