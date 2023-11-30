@@ -25,7 +25,6 @@ using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
-using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
 

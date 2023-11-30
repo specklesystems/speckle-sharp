@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">false</IsDesktopBuild>
     
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
