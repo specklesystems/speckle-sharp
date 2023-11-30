@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ConverterCSIShared.Extensions;
 using CSiAPIv1;
 using Objects.Structural.Loading;
 using Objects.Structural.Results;

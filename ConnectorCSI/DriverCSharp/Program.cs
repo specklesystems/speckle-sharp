@@ -1,9 +1,12 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using CSiAPIv1;
 using SpeckleConnectorCSI;
+
+#if DEBUG
+using System.Diagnostics;
+#endif
 
 namespace DriverCSharp;
 
