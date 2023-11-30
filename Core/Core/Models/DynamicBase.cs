@@ -30,9 +30,11 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   private readonly Dictionary<string, object?> _properties = new();
 
   /// <summary>
-  /// Sets and gets properties using the key accessor pattern. E.g.:
-  /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
+  /// Sets and gets properties using the key accessor pattern.
   /// </summary>
+  /// <example>
+  /// <c>myObject["superProperty"] = 42;</c>
+  /// </example>
   /// <param name="key"></param>
   /// <returns></returns>
   [IgnoreTheItem]

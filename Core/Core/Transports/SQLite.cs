@@ -443,7 +443,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     return null; // pass on the duty of null checks to consumers
   }
 
-  public async Task<string> CopyObjectAndChildren(
+  public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
     Action<int>? onTotalChildrenCountKnown = null

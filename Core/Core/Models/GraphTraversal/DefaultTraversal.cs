@@ -23,9 +23,9 @@ public static class DefaultTraversal
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
-      .ContinueTraversing(_ => elementsPropAliases);
+      .ContinueTraversing(_ => ElementsPropAliases);
 
-    return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
   }
 
   /// <summary>
@@ -46,7 +46,7 @@ public static class DefaultTraversal
       .When(HasDisplayValue)
       .ContinueTraversing(None);
 
-    return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
   }
 
   /// <summary>
@@ -61,14 +61,14 @@ public static class DefaultTraversal
       .When(converter.CanConvertToNative)
       .ContinueTraversing(ElementsAliases);
 
-    return new GraphTraversal(bimElementRule, IgnoreResultsRule, DefaultRule);
+    return new GraphTraversal(bimElementRule, s_ignoreResultsRule, DefaultRule);
   }
 
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
   #region Helper Functions
 
   //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
-  private static readonly ITraversalRule IgnoreResultsRule = TraversalRule
+  private static readonly ITraversalRule s_ignoreResultsRule = TraversalRule
     .NewTraversalRule()
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
     .ContinueTraversing(None);
@@ -78,56 +78,56 @@ public static class DefaultTraversal
     .When(_ => true)
     .ContinueTraversing(Members());
 
-  public static readonly IReadOnlyList<string> elementsPropAliases = new[] { "elements", "@elements" };
+  public static readonly IReadOnlyList<string> ElementsPropAliases = new[] { "elements", "@elements" };
 
   [Pure]
   public static IEnumerable<string> ElementsAliases(Base _)
   {
-    return elementsPropAliases;
+    return ElementsPropAliases;
   }
 
   public static bool HasElements(Base x)
   {
-    return elementsPropAliases.Any(m => x[m] != null);
+    return ElementsPropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly IReadOnlyList<string> definitionPropAliases = new[] { "definition", "@definition" };
+  public static readonly IReadOnlyList<string> DefinitionPropAliases = new[] { "definition", "@definition" };
 
   [Pure]
   public static IEnumerable<string> DefinitionAliases(Base _)
   {
-    return definitionPropAliases;
+    return DefinitionPropAliases;
   }
 
   public static bool HasDefinition(Base x)
   {
-    return definitionPropAliases.Any(m => x[m] != null);
+    return DefinitionPropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly IReadOnlyList<string> displayValuePropAliases = new[] { "displayValue", "@displayValue" };
+  public static readonly IReadOnlyList<string> DisplayValuePropAliases = new[] { "displayValue", "@displayValue" };
 
   [Pure]
   public static IEnumerable<string> DisplayValueAliases(Base _)
   {
-    return displayValuePropAliases;
+    return DisplayValuePropAliases;
   }
 
   public static bool HasDisplayValue(Base x)
   {
-    return displayValuePropAliases.Any(m => x[m] != null);
+    return DisplayValuePropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly IReadOnlyList<string> geometryPropAliases = new[] { "geometry", "@geometry" };
+  public static readonly IReadOnlyList<string> GeometryPropAliases = new[] { "geometry", "@geometry" };
 
   [Pure]
   public static IEnumerable<string> GeometryAliases(Base _)
   {
-    return geometryPropAliases;
+    return GeometryPropAliases;
   }
 
   public static bool HasGeometry(Base x)
   {
-    return geometryPropAliases.Any(m => x[m] != null);
+    return GeometryPropAliases.Any(m => x[m] != null);
   }
 
   [Pure]
@@ -141,7 +141,7 @@ public static class DefaultTraversal
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  public static readonly string[] displayValueAndElementsPropAliases = displayValuePropAliases
+  public static readonly string[] DisplayValueAndElementsPropAliases = displayValuePropAliases
     .Concat(elementsPropAliases)
     .ToArray();
 
@@ -152,4 +152,19 @@ public static class DefaultTraversal
   }
 
   #endregion
+
+  [Obsolete("Renamed to " + nameof(ElementsPropAliases))]
+  public static IReadOnlyList<string> elementsPropAliases => ElementsPropAliases;
+
+  [Obsolete("Renamed to " + nameof(DisplayValuePropAliases))]
+  public static IReadOnlyList<string> displayValuePropAliases => DisplayValuePropAliases;
+
+  [Obsolete("Renamed to " + nameof(DefinitionPropAliases))]
+  public static IReadOnlyList<string> definitionPropAliases => DefinitionPropAliases;
+
+  [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
+  public static IReadOnlyList<string> geometryPropAliases => GeometryPropAliases;
+
+  [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
+  public static string[] displayValueAndElementsPropAliases => DisplayValueAndElementsPropAliases;
 }

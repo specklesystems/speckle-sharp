@@ -28,7 +28,8 @@ public sealed class ServerApi : IDisposable, IServerApi
   private const int MAX_REQUEST_SIZE = 100_000_000;
 
   private const int RETRY_COUNT = 3;
-  private readonly HashSet<int> _retryCodes = new() { 408, 502, 503, 504 };
+  private static readonly HashSet<int> s_retryCodes = new() { 408, 502, 503, 504 };
+  private static readonly char[] s_separator = { '\t' };
 
   private readonly HttpClient _client;
 
@@ -75,13 +76,13 @@ public sealed class ServerApi : IDisposable, IServerApi
       Method = HttpMethod.Get
     };
 
-    HttpResponseMessage rootHttpResponse = null;
-    while (ShouldRetry(rootHttpResponse))
+    HttpResponseMessage rootHttpResponse;
+    do
     {
       rootHttpResponse = await _client
         .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
         .ConfigureAwait(false);
-    }
+    } while (ShouldRetry(rootHttpResponse));
 
     rootHttpResponse.EnsureSuccessStatusCode();
 
@@ -191,8 +192,7 @@ public sealed class ServerApi : IDisposable, IServerApi
         multipartedObjects.Add(crtMultipart);
         multipartedObjectsSize.Add(crtMultipartSize);
       }
-      crtMultipart = new List<(string, string)>();
-      crtMultipart.Add((id, json));
+      crtMultipart = new List<(string, string)> { (id, json) };
       crtMultipartSize = objSize;
     }
     multipartedObjects.Add(crtMultipart);
@@ -255,11 +255,11 @@ public sealed class ServerApi : IDisposable, IServerApi
 
     try
     {
-      HttpResponseMessage response = null;
-      while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
+      HttpResponseMessage response;
+      do
       {
         response = await _client.SendAsync(message, CancellationToken).ConfigureAwait(false);
-      }
+      } while (ShouldRetry(response)); //TODO: can we get rid of this now we have polly?
 
       response.EnsureSuccessStatusCode();
 
@@ -330,34 +330,30 @@ public sealed class ServerApi : IDisposable, IServerApi
       Method = HttpMethod.Post
     };
 
-    Dictionary<string, string> postParameters = new();
-    postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
+    Dictionary<string, string> postParameters = new() { { "objects", JsonConvert.SerializeObject(objectIds) } };
     string serializedPayload = JsonConvert.SerializeObject(postParameters);
     childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
     childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
-    HttpResponseMessage childrenHttpResponse = null;
-    while (ShouldRetry(childrenHttpResponse))
+    HttpResponseMessage childrenHttpResponse;
+    do
     {
       childrenHttpResponse = await _client
         .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
         .ConfigureAwait(false);
-    }
+    } while (ShouldRetry(childrenHttpResponse));
 
     childrenHttpResponse.EnsureSuccessStatusCode();
 
-    Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+    using Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-    using (childrenStream)
-    using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
+    using var reader = new StreamReader(childrenStream, Encoding.UTF8);
+    while (reader.ReadLine() is { } line)
     {
-      while (reader.ReadLine() is { } line)
-      {
-        CancellationToken.ThrowIfCancellationRequested();
+      CancellationToken.ThrowIfCancellationRequested();
 
-        var pcs = line.Split(new[] { '\t' }, 2);
-        onObjectCallback(pcs[0], pcs[1]);
-      }
+      var pcs = line.Split(s_separator, 2);
+      onObjectCallback(pcs[0], pcs[1]);
     }
 
     // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
@@ -373,12 +369,13 @@ public sealed class ServerApi : IDisposable, IServerApi
     var payload = new Dictionary<string, string> { { "objects", objectsPostParameter } };
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
-    HttpResponseMessage response = null;
+
+    HttpResponseMessage response;
     using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
-    while (ShouldRetry(response))
+    do
     {
       response = await _client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
-    }
+    } while (ShouldRetry(response));
 
     response.EnsureSuccessStatusCode();
 
@@ -484,7 +481,7 @@ public sealed class ServerApi : IDisposable, IServerApi
       return true;
     }
 
-    if (!_retryCodes.Contains((int)serverResponse.StatusCode))
+    if (!s_retryCodes.Contains((int)serverResponse.StatusCode))
     {
       return false;
     }

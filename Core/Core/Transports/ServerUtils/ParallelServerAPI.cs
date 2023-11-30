@@ -88,7 +88,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     Dictionary<string, bool> ret = new();
     foreach (var task in tasks)
     {
-      Dictionary<string, bool> taskResult = await task.ConfigureAwait(false) as Dictionary<string, bool>;
+      var taskResult = (IReadOnlyDictionary<string, bool>)await task.ConfigureAwait(false)!;
       foreach (KeyValuePair<string, bool> kv in taskResult)
       {
         ret[kv.Key] = kv.Value;
@@ -191,7 +191,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   {
     EnsureStarted();
     Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
-    var res = (List<string>)await op.ConfigureAwait(false);
+    var res = (List<string>)await op.ConfigureAwait(false)!;
     Debug.Assert(res is not null);
     return res!;
   }
@@ -272,6 +272,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
         var (dbStreamId, blobIds, cb) = ((string, IReadOnlyList<string>, CbBlobdDownloaded))inputValue;
         await serialApi.DownloadBlobs(dbStreamId, blobIds, cb).ConfigureAwait(false);
         return null;
+      case ServerApiOperation.NoOp:
       default:
         throw new ArgumentOutOfRangeException(nameof(operation), operation, null);
     }

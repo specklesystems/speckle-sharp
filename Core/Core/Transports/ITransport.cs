@@ -45,7 +45,7 @@ public interface ITransport
   /// <summary>
   /// Used to report errors during the transport's longer operations.
   /// </summary>
-  [Obsolete("Transports will now throw exceptions")]
+  [Obsolete("Transports will now throw exceptions", true)]
   public Action<string, Exception>? OnErrorAction { get; set; }
 
   /// <summary>

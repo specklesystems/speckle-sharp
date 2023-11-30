@@ -232,15 +232,15 @@ public static class AccountManager
   /// These are accounts not handled by Manager and are stored in json format in a local directory
   /// </summary>
   /// <returns></returns>
-  private static List<Account> GetLocalAccounts()
+  private static IList<Account> GetLocalAccounts()
   {
-    var accounts = new List<Account>();
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
     if (!Directory.Exists(accountsDir))
     {
-      return accounts;
+      return Array.Empty<Account>();
     }
 
+    var accounts = new List<Account>();
     string[] files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
     {
