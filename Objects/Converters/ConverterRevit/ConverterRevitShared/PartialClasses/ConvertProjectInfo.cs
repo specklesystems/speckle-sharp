@@ -1,10 +1,3 @@
-using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using ProjectInfo = Objects.BuiltElements.Revit.ProjectInfo;
 

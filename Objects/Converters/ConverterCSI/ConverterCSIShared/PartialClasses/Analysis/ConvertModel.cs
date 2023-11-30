@@ -1,20 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Objects.Structural.Analysis;
-using Objects.Geometry;
-using Objects.Structural.Properties;
-using Objects.Structural.Geometry;
-using Objects.Structural.Materials;
-using Objects.Structural.CSI.Properties;
-using Objects.Structural.GSA.Properties;
-using Objects.Structural.GSA.Geometry;
-using Objects.Structural.Loading;
-using Objects.Structural.CSI.Loading;
 using Speckle.Core.Models;
-using Objects.Structural.CSI.Geometry;
-using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using CSiAPIv1;
 
 namespace Objects.Converter.CSI;
 

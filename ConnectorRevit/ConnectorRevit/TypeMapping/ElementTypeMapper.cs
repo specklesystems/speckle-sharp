@@ -18,7 +18,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Newtonsoft.Json;
 using DB = Autodesk.Revit.DB;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace ConnectorRevit.TypeMapping;
 

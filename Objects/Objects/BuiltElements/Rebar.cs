@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.TeklaStructures;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Speckle.Core.Models;

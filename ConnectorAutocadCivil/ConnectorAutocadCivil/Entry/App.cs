@@ -133,14 +133,17 @@ public class App : IExtensionApplication
     RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
 
     // help and resources buttons
-    RibbonSplitButton helpButton = new();
-    helpButton.Text = "Help & Resources";
-    helpButton.Image = LoadPngImgSource("help16.png");
-    helpButton.LargeImage = LoadPngImgSource("help32.png");
-    helpButton.ShowImage = true;
-    helpButton.ShowText = true;
-    helpButton.Size = RibbonItemSize.Large;
-    helpButton.Orientation = Orientation.Vertical;
+    RibbonSplitButton helpButton =
+      new()
+      {
+        Text = "Help & Resources",
+        Image = LoadPngImgSource("help16.png"),
+        LargeImage = LoadPngImgSource("help32.png"),
+        ShowImage = true,
+        ShowText = true,
+        Size = RibbonItemSize.Large,
+        Orientation = Orientation.Vertical
+      };
     panel.Items.Add(helpButton);
 
     RibbonToolTip communityTip = CreateToolTip(
@@ -162,14 +165,12 @@ public class App : IExtensionApplication
   private RibbonTab FindOrMakeTab(string name)
   {
     // check to see if tab exists
-    RibbonTab tab = ribbon.Tabs.Where(o => o.Title.Equals(name)).FirstOrDefault();
+    RibbonTab tab = ribbon.Tabs.FirstOrDefault(o => o.Title.Equals(name));
 
     // if not, create a new one
     if (tab == null)
     {
-      tab = new RibbonTab();
-      tab.Title = name;
-      tab.Id = name;
+      tab = new RibbonTab { Title = name, Id = name };
       ribbon.Tabs.Add(tab);
     }
 
@@ -189,12 +190,14 @@ public class App : IExtensionApplication
 
   private RibbonToolTip CreateToolTip(string title, string content)
   {
-    RibbonToolTip toolTip = new();
-
-    //toolTip.Command = "";
-    toolTip.Title = title;
-    toolTip.Content = content;
-    toolTip.IsHelpEnabled = true; // Without this "Press F1 for help" does not appear in the tooltip
+    RibbonToolTip toolTip =
+      new()
+      {
+        //toolTip.Command = "";
+        Title = title,
+        Content = content,
+        IsHelpEnabled = true // Without this "Press F1 for help" does not appear in the tooltip
+      };
 
     return toolTip;
   }
@@ -208,18 +211,19 @@ public class App : IExtensionApplication
     string imageName = ""
   )
   {
-    var button = new RibbonButton();
-
-    // ribbon panel source info assignment
-    button.Text = name;
-    button.Id = name;
-    button.ShowImage = true;
-    button.ShowText = true;
-    button.ToolTip = tooltip;
-    button.HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html");
-    button.Size = RibbonItemSize.Large;
-    button.Image = LoadPngImgSource(imageName + "16.png");
-    button.LargeImage = LoadPngImgSource(imageName + "32.png");
+    var button = new RibbonButton
+    {
+      // ribbon panel source info assignment
+      Text = name,
+      Id = name,
+      ShowImage = true,
+      ShowText = true,
+      ToolTip = tooltip,
+      HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html"),
+      Size = RibbonItemSize.Large,
+      Image = LoadPngImgSource(imageName + "16.png"),
+      LargeImage = LoadPngImgSource(imageName + "32.png")
+    };
 
     // add ribbon button pannel to the ribbon panel source
     if (sourcePanel != null)
@@ -243,8 +247,8 @@ public class App : IExtensionApplication
   {
     try
     {
-      string resource = this.GetType()
-        .Assembly.GetManifestResourceNames()
+      string resource = GetType().Assembly
+        .GetManifestResourceNames()
         .Where(o => o.EndsWith(sourceName))
         .FirstOrDefault();
       Assembly assembly = Assembly.GetExecutingAssembly();
@@ -272,8 +276,7 @@ public class App : IExtensionApplication
 
     public void Execute(object parameter)
     {
-      RibbonButton btn = parameter as RibbonButton;
-      if (btn != null)
+      if (parameter is RibbonButton)
       {
         switch (commandParameter)
         {
@@ -288,6 +291,8 @@ public class App : IExtensionApplication
             break;
           case "SpeckleDocs":
             SpeckleAutocadCommand.SpeckleDocs();
+            break;
+          default:
             break;
         }
       }

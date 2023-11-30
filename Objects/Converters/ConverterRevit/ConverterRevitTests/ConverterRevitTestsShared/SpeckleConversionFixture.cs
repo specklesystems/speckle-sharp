@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using Speckle.Newtonsoft.Json;
 using Xunit;
 using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;

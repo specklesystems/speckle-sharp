@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Storage;

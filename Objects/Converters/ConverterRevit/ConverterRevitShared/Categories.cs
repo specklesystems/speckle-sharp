@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using SCH = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit;
 

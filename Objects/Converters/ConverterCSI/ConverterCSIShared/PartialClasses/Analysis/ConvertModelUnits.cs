@@ -1,8 +1,4 @@
 using Objects.Structural.Analysis;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Objects.Structural.Analysis;
 using CSiAPIv1;
 
 namespace Objects.Converter.CSI;

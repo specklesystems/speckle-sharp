@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using Objects.Structural.Properties.Profiles;
-using CSiAPIv1;
-using System.Linq;
 using Objects.Structural.CSI.Properties;
-using Objects.Structural.Properties;
 
 namespace Objects.Converter.CSI;
 

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Interfaces;
 using SCH = RevitSharedResources.Helpers.Categories;
 
