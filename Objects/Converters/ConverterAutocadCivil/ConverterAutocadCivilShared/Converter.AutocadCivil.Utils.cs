@@ -189,7 +189,7 @@ public partial class ConverterAutocadCivil
   public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection, bool useFirstIfNull = false)
   {
     var id = ObjectId.Null;
-    if ((string.IsNullOrEmpty(name) && !useFirstIfNull) || (string.IsNullOrEmpty(name) && collection.Count == 0))
+    if (string.IsNullOrEmpty(name) && !useFirstIfNull || string.IsNullOrEmpty(name) && collection.Count == 0)
     {
       return id;
     }

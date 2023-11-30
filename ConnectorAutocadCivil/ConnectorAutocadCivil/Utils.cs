@@ -142,7 +142,7 @@ public static class Utils
   /// <param name="tr"></param>
   public static ObjectId Append(this Entity entity, string layer = null)
   {
-    var db = (entity.Database == null) ? Application.DocumentManager.MdiActiveDocument.Database : entity.Database;
+    var db = entity.Database ?? Application.DocumentManager.MdiActiveDocument.Database;
     Transaction tr = db.TransactionManager.TopTransaction;
     if (tr == null)
     {
@@ -462,7 +462,7 @@ public static class Utils
   #region application id
   public static class ApplicationIdManager
   {
-    readonly static string ApplicationIdKey = "applicationId";
+    static readonly string ApplicationIdKey = "applicationId";
 
     /// <summary>
     /// Creates the application id xdata table in the doc if it doesn't already exist
@@ -613,9 +613,9 @@ public static class Utils
 
       // if no matching xdata appids were found, loop through handles instead
       var autocadAppIdParts = appId.Split('-');
-      if (autocadAppIdParts.Count() == 2 && autocadAppIdParts.FirstOrDefault().StartsWith(fileNameHash))
+      if (autocadAppIdParts.Length == 2 && autocadAppIdParts.FirstOrDefault().StartsWith(fileNameHash))
       {
-        if (Utils.GetHandle(autocadAppIdParts.Last(), out Handle handle))
+        if (GetHandle(autocadAppIdParts.Last(), out Handle handle))
         {
           if (doc.Database.TryGetObjectId(handle, out ObjectId id))
           {
@@ -639,7 +639,7 @@ public static class Utils
   {
     if (obj == null)
     {
-      return String.Empty;
+      return string.Empty;
     }
 
     var simpleType = obj.GetType().Name;
@@ -707,15 +707,10 @@ public static class Utils
 
   public static void SetStyle(Base styleBase, Entity entity, Dictionary<string, ObjectId> lineTypeDictionary)
   {
-    var units = styleBase["units"] as string;
     var color = styleBase["color"] as int?;
-    if (color == null)
-    {
-      color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
-    }
+    color ??= styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
 
     var transparency = styleBase["opacity"] as double?;
-    var lineType = styleBase["linetype"] as string;
     var lineWidth = styleBase["lineweight"] as double?;
 
     if (color != null)
@@ -730,13 +725,15 @@ public static class Utils
     }
 
     double conversionFactor =
-      (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
+      (styleBase["units"] is string units)
+        ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters)
+        : 1;
     if (lineWidth != null)
     {
       entity.LineWeight = GetLineWeight((double)lineWidth * conversionFactor);
     }
 
-    if (lineType != null)
+    if (styleBase["linetype"] is string lineType)
     {
       if (lineTypeDictionary.ContainsKey(lineType))
       {

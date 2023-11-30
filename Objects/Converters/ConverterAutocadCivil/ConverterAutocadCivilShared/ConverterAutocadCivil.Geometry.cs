@@ -465,7 +465,7 @@ public partial class ConverterAutocadCivil
 
     var _polyline = new Polyline(_points, ModelUnits)
     {
-      closed = closed || vertices.First().IsEqualTo(vertices.Last()) ? true : false,
+      closed = closed || vertices.First().IsEqualTo(vertices.Last()),
       length = length
     };
 
@@ -480,10 +480,12 @@ public partial class ConverterAutocadCivil
       points.AddRange(PointToSpeckle(polyline.GetPoint3dAt(i)).ToList());
     }
 
-    var _polyline = new Polyline(points, ModelUnits);
-    _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false; // hatch boundary polylines are not closed, cannot rely on .Closed prop
-    _polyline.length = polyline.Length;
-    _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    var _polyline = new Polyline(points, ModelUnits)
+    {
+      closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint), // hatch boundary polylines are not closed, cannot rely on .Closed prop
+      length = polyline.Length,
+      bbox = BoxToSpeckle(polyline.GeometricExtents)
+    };
 
     return _polyline;
   }
@@ -510,10 +512,12 @@ public partial class ConverterAutocadCivil
       }
     }
 
-    var _polyline = new Polyline(points, ModelUnits);
-    _polyline.closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint) ? true : false;
-    _polyline.length = polyline.Length;
-    _polyline.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    var _polyline = new Polyline(points, ModelUnits)
+    {
+      closed = polyline.Closed || polyline.StartPoint.Equals(polyline.EndPoint),
+      length = polyline.Length,
+      bbox = BoxToSpeckle(polyline.GeometricExtents)
+    };
 
     return _polyline;
   }
@@ -548,14 +552,10 @@ public partial class ConverterAutocadCivil
         // get the connection point to the next segment - this is necessary since imported polycurves might have segments in different directions
         var connectionPoint = new Point3d();
         var nextSegment = exploded[i + 1] as AcadDB.Curve;
-        if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
-        {
-          connectionPoint = nextSegment.StartPoint;
-        }
-        else
-        {
-          connectionPoint = nextSegment.EndPoint;
-        }
+        connectionPoint =
+          nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
+            ? nextSegment.StartPoint
+            : nextSegment.EndPoint;
 
         previousPoint = connectionPoint;
         segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
@@ -567,7 +567,7 @@ public partial class ConverterAutocadCivil
       segments.Add(CurveToSpeckle(segment));
     }
 
-    if (segments.Count() == 0)
+    if (segments.Count == 0)
     {
       throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
     }
@@ -613,16 +613,10 @@ public partial class ConverterAutocadCivil
         }
         else
         {
-          if (
+          connectionPoint =
             nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint)
-          )
-          {
-            connectionPoint = nextSegment.StartPoint;
-          }
-          else
-          {
-            connectionPoint = nextSegment.EndPoint;
-          }
+              ? nextSegment.StartPoint
+              : nextSegment.EndPoint;
         }
 
         previousPoint = connectionPoint;
@@ -635,7 +629,7 @@ public partial class ConverterAutocadCivil
       segments.Add(CurveToSpeckle(segment));
     }
 
-    if (segments.Count() == 0)
+    if (segments.Count == 0)
     {
       throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
     }
@@ -754,10 +748,7 @@ public partial class ConverterAutocadCivil
 
           break;
         case Arc o:
-          if (z == null)
-          {
-            z = o.startPoint.z;
-          }
+          z ??= o.startPoint.z;
 
           if (o.startPoint.z != z || o.midPoint.z != z || o.endPoint.z != z)
           {
@@ -828,7 +819,7 @@ public partial class ConverterAutocadCivil
           count++;
           break;
         case Spiral o:
-          var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
+          var vertices = o.displayValue.GetPoints().Select(PointToNative).ToList();
           foreach (var vertex in vertices)
           {
             polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
@@ -1254,7 +1245,7 @@ public partial class ConverterAutocadCivil
         converted = EllipseToNativeDB(ellipse);
         break;
       case Polycurve polycurve:
-        if (polycurve.segments.Where(o => o is Curve).Count() > 0)
+        if (polycurve.segments.Any(o => o is Curve))
         {
           var convertedPolycurve = PolycurveSplineToNativeDB(polycurve);
           convertedList = convertedPolycurve.Converted.Cast<AcadDB.Curve>().ToList();
@@ -1528,8 +1519,10 @@ public partial class ConverterAutocadCivil
       .Select(o => Color.FromArgb(Convert.ToInt32(o.Red), Convert.ToInt32(o.Green), Convert.ToInt32(o.Blue)).ToArgb())
       .ToList();
 
-    var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits);
-    speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents);
+    var speckleMesh = new Mesh(vertices, faces, colors, null, ModelUnits)
+    {
+      bbox = BoxToSpeckle(mesh.GeometricExtents)
+    };
 
     return speckleMesh;
   }
@@ -1541,7 +1534,7 @@ public partial class ConverterAutocadCivil
 
     // get vertex points
     var vertices = new Point3dCollection();
-    var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
+    var points = mesh.GetPoints().Select(PointToNative).ToList();
     foreach (var point in points)
     {
       vertices.Add(point);

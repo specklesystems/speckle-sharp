@@ -239,14 +239,10 @@ public partial class ConverterAutocadCivil
           if (entity.LayerId.IsValid)
           {
             var layer = tr.GetObject(entity.LayerId, OpenMode.ForRead) as LayerTableRecord;
-            if (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
-            {
-              lineWeight = (int)LineWeight.LineWeight025;
-            }
-            else
-            {
-              lineWeight = (int)layer.LineWeight;
-            }
+            lineWeight =
+              layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock
+                ? (int)LineWeight.LineWeight025
+                : (int)layer.LineWeight;
           }
           tr.Commit();
         }
@@ -548,8 +544,7 @@ public partial class ConverterAutocadCivil
     // add block reference
     BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
     var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
-    BlockReference br = new(insertionPoint, definitionId);
-    br.BlockTransform = convertedTransform;
+    BlockReference br = new(insertionPoint, definitionId) { BlockTransform = convertedTransform };
 
     // add attributes if there are any
     if (instance["attributes"] is Dictionary<string, object> attributes)
@@ -702,7 +697,7 @@ public partial class ConverterAutocadCivil
 
       foreach (var convertedItem in convertedGeo)
       {
-        if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
+        if (!convertedItem.IsNewObject && convertedItem is not BlockReference)
         {
           bakedGeometry.Add(convertedItem.Id);
         }
@@ -1477,22 +1472,10 @@ public partial class ConverterAutocadCivil
           var line1End = PointToNative(o.measured[0].end);
           var line2Start = PointToNative(o.measured[1].start);
           var line2End = PointToNative(o.measured[1].end);
-          if (Math.Round(line1Start.DistanceTo(line2Start), 3) == 0)
-          {
-            _dimension = new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style);
-          }
-          else
-          {
-            _dimension = new LineAngularDimension2(
-              line1Start,
-              line1End,
-              line2Start,
-              line2End,
-              position,
-              dimension.value,
-              style
-            );
-          }
+          _dimension =
+            Math.Round(line1Start.DistanceTo(line2Start), 3) == 0
+              ? new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style)
+              : new LineAngularDimension2(line1Start, line1End, line2Start, line2End, position, dimension.value, style);
         }
         catch { }
         break;
@@ -1521,14 +1504,9 @@ public partial class ConverterAutocadCivil
           {
             var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
             var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
-            if (dir.IsParallelTo(normal, Tolerance.Global))
-            {
-              _dimension = new AlignedDimension(start, end, position, dimension.value, style);
-            }
-            else
-            {
-              _dimension = new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
-            }
+            _dimension = dir.IsParallelTo(normal, Tolerance.Global)
+              ? new AlignedDimension(start, end, position, dimension.value, style)
+              : new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
           }
         }
         catch { }

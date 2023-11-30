@@ -139,14 +139,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             @base = SplineToSpeckle(o);
             break;
           case AcadDB.Polyline o:
-            if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
-            {
-              @base = PolylineToSpeckle(o);
-            }
-            else
-            {
-              @base = PolycurveToSpeckle(o);
-            }
+            @base = o.IsOnlyLines ? PolylineToSpeckle(o) : (Base)PolycurveToSpeckle(o);
 
             break;
           case AcadDB.Polyline3d o:
@@ -309,8 +302,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   public object ConvertToNative(Base @object)
   {
     // determine if this object has autocad props
-    bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
-    bool isFromCivil = @object[CivilPropName] != null ? true : false;
+    bool isFromAutoCAD = @object[AutocadPropName] != null;
+    bool isFromCivil = @object[CivilPropName] != null;
     object acadObj = null;
     var reportObj = Report.ReportObjects.ContainsKey(@object.id)
       ? new ApplicationObject(@object.id, @object.speckle_type)
@@ -351,15 +344,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
         break;
 
       case Polycurve o:
-        bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
-        if (convertAsSpline || !IsPolycurvePlanar(o))
-        {
-          acadObj = PolycurveSplineToNativeDB(o);
-        }
-        else
-        {
-          acadObj = PolycurveToNativeDB(o);
-        }
+        bool convertAsSpline = o.segments.Any(s => s is not Line and not Arc);
+        acadObj = convertAsSpline || !IsPolycurvePlanar(o) ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
 
         break;
 
@@ -428,23 +414,17 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     {
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
         acadObj = o.Converted.Any() ? o.Converted : null;
-        if (reportObj != null)
-        {
-          reportObj.Update(
-            status: o.Status,
-            createdIds: o.CreatedIds,
-            converted: o.Converted,
-            container: o.Container,
-            log: o.Log
-          );
-        }
+        reportObj?.Update(
+          status: o.Status,
+          createdIds: o.CreatedIds,
+          converted: o.Converted,
+          container: o.Container,
+          log: o.Log
+        );
 
         break;
       default:
-        if (reportObj != null)
-        {
-          reportObj.Update(log: notes);
-        }
+        reportObj?.Update(log: notes);
 
         break;
     }
