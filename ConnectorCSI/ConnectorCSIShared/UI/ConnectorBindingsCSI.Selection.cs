@@ -1,7 +1,6 @@
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorCSI.Util;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 

@@ -1,16 +1,10 @@
 #if MAC
 using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-using DesktopUI2.ViewModels;
 using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
-using Serilog;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 

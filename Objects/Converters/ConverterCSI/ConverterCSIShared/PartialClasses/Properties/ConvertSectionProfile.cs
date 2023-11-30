@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Objects.Structural.Properties.Profiles;
 using CSiAPIv1;
 using System.Linq;

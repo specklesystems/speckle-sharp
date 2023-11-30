@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.DoubleNumerics;
 using Rhino.DocObjects;
 using RH = Rhino.Geometry;
 using Speckle.Core.Api;
@@ -12,7 +11,6 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
-using Plane = Objects.Geometry.Plane;
 
 namespace Objects.Converter.RhinoGh;
 

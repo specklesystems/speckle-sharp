@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.CSI.Properties;
 using Objects.Structural.Geometry;
