@@ -26,7 +26,10 @@ public class Account : IEquatable<Account>
       if (_id == null)
       {
         if (serverInfo == null || userInfo == null)
+        {
           throw new SpeckleException("Incomplete account info: cannot generate id.");
+        }
+
         _id = Utilities.HashString(userInfo.email + serverInfo.url, Utilities.HashingFunctions.MD5).ToUpper();
       }
       return _id;
@@ -52,7 +55,10 @@ public class Account : IEquatable<Account>
     Uri NewUri;
 
     if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+    {
       server = NewUri.Authority;
+    }
+
     return server;
   }
 

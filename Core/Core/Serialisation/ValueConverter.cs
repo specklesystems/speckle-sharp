@@ -18,7 +18,10 @@ internal static class ValueConverter
 
     convertedValue = null;
     if (value == null)
+    {
       return true;
+    }
+
     Type valueType = value.GetType();
 
     if (type.IsAssignableFrom(valueType))
@@ -41,7 +44,10 @@ internal static class ValueConverter
     if (type.IsEnum)
     {
       if (valueType != typeof(long))
+      {
         return false;
+      }
+
       convertedValue = Enum.ToObject(type, (long)value);
       return true;
     }
@@ -159,14 +165,20 @@ internal static class ValueConverter
     if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
     {
       if (!isList)
+      {
         return false;
+      }
+
       Type listElementType = type.GenericTypeArguments[0];
       IList ret = Activator.CreateInstance(type, valueList.Count) as IList;
       foreach (object inputListElement in valueList)
       {
         object convertedListElement;
         if (!ConvertValue(listElementType, inputListElement, out convertedListElement))
+        {
           return false;
+        }
+
         ret.Add(convertedListElement);
       }
       convertedValue = ret;
@@ -177,17 +189,25 @@ internal static class ValueConverter
     if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
     {
       if (value is not Dictionary<string, object> valueDict)
+      {
         return false;
+      }
 
       if (type.GenericTypeArguments[0] != typeof(string))
+      {
         throw new ArgumentException("Dictionaries with non-string keys are not supported", nameof(type));
+      }
+
       Type dictValueType = type.GenericTypeArguments[1];
       IDictionary ret = Activator.CreateInstance(type) as IDictionary;
 
       foreach (KeyValuePair<string, object> kv in valueDict)
       {
         if (!ConvertValue(dictValueType, kv.Value, out object convertedDictValue))
+        {
           return false;
+        }
+
         ret[kv.Key] = convertedDictValue;
       }
       convertedValue = ret;
@@ -198,7 +218,10 @@ internal static class ValueConverter
     if (type.IsArray)
     {
       if (!isList)
+      {
         return false;
+      }
+
       Type arrayElementType =
         type.GetElementType() ?? throw new ArgumentException("IsArray yet not valid element type", nameof(type));
 
@@ -207,7 +230,10 @@ internal static class ValueConverter
       {
         object inputListElement = valueList[i];
         if (!ConvertValue(arrayElementType, inputListElement, out object convertedListElement))
+        {
           return false;
+        }
+
         ret.SetValue(convertedListElement, i);
       }
       convertedValue = ret;
@@ -236,7 +262,10 @@ internal static class ValueConverter
     #region BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
     if (type == typeof(Numerics.Matrix4x4) && value is IReadOnlyList<object> lMatrix)
     {
-      SpeckleLog.Logger.Warning("This kept for backwards compatibility, no one should be using {this}", "ValueConverter deserialize to System.Numerics.Matrix4x4");
+      SpeckleLog.Logger.Warning(
+        "This kept for backwards compatibility, no one should be using {this}",
+        "ValueConverter deserialize to System.Numerics.Matrix4x4"
+      );
       float I(int index) => Convert.ToSingle(lMatrix[index]);
       convertedValue = new Numerics.Matrix4x4(
         I(0),

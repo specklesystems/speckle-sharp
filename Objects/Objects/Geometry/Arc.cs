@@ -92,9 +92,14 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
   {
     // don't be annoying
     if (angleRadians > Math.PI * 2)
+    {
       throw new SpeckleException("Can't create an arc with an angle greater than 2pi");
+    }
+
     if (startPoint == endPoint)
+    {
       throw new SpeckleException("Can't create an arc where the start and end points are the same");
+    }
 
     this.units = units;
     this.startPoint = startPoint;
@@ -107,9 +112,13 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     var chordLength = Point.Distance(startPoint, endPoint);
     var chordAngle = angleRadians;
     if (chordAngle > Math.PI)
+    {
       chordAngle -= Math.PI * 2;
+    }
     else if (chordAngle < -Math.PI)
+    {
       chordAngle += Math.PI * 2;
+    }
     // use the law of cosines for an isosceles triangle to get the radius
     radius = chordLength / Math.Sqrt(2 - 2 * Math.Cos(chordAngle));
 
@@ -130,11 +139,18 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     // find the start angle using trig (correcting for quadrant position) and add the arc angle to get the end angle
     startAngle = Math.Tan((startPoint.y - circleCentre.y) / (startPoint.x - circleCentre.x)) % (2 * Math.PI);
     if (startPoint.x > circleCentre.x && startPoint.y < circleCentre.y) // Q4
+    {
       startAngle *= -1;
+    }
     else if (startPoint.x < circleCentre.x && startPoint.y < circleCentre.y) // Q3
+    {
       startAngle += Math.PI;
+    }
     else if (startPoint.x < circleCentre.x && startPoint.y > circleCentre.y) // Q2
+    {
       startAngle = Math.PI - startAngle;
+    }
+
     endAngle = startAngle + angleRadians;
     // Set the plane of this arc
     this.plane = plane;

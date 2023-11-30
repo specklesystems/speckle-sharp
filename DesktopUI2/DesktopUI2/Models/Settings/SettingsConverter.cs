@@ -33,19 +33,33 @@ public class SettingsConverter : JsonConverter
       var type = jsonObject.Value<string>("Type");
 
       if (type == typeof(CheckBoxSetting).ToString())
+      {
         setting = new CheckBoxSetting();
+      }
       else if (type == typeof(ListBoxSetting).ToString())
+      {
         setting = new ListBoxSetting();
+      }
       else if (type == typeof(MappingSetting).ToString())
+      {
         setting = new MappingSetting();
+      }
       else if (type == typeof(MultiSelectBoxSetting).ToString())
+      {
         setting = new MultiSelectBoxSetting();
+      }
       else if (type == typeof(NumericSetting).ToString())
+      {
         setting = new NumericSetting();
+      }
       else if (type == typeof(TextBoxSetting).ToString())
+      {
         setting = new TextBoxSetting();
+      }
       else
+      {
         continue;
+      }
 
       serializer.Populate(jsonObject.CreateReader(), setting);
 

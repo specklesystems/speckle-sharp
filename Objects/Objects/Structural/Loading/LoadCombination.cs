@@ -25,7 +25,9 @@ public class LoadCombination : Base //combination case
   )
   {
     if (loadCases.Count != loadFactors.Count)
+    {
       throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
+    }
 
     this.name = name;
     this.loadCases = loadCases;

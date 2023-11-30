@@ -36,16 +36,22 @@ public class MappingBindingsRhino : MappingsBindings
         var schemas = GetObjectSchemas(obj);
 
         if (!result.Any())
+        {
           result = schemas;
+        }
         else
+        {
           //intersect lists
           //TODO: if some elements already have a schema and values are different
           //we should default to an empty schema, instead of potentially restoring the one with values
           result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+        }
 
         //incompatible selection
         if (!result.Any())
+        {
           return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+        }
       }
 
       return new MappingSelectionInfo(result, selection.Count);
@@ -70,7 +76,9 @@ public class MappingBindingsRhino : MappingsBindings
     {
       var existingSchema = GetExistingObjectSchema(obj);
       if (existingSchema != null)
+      {
         result.Add(existingSchema);
+      }
 
       if (obj is InstanceObject)
       {
@@ -78,18 +86,27 @@ public class MappingBindingsRhino : MappingsBindings
         result.Add(new RevitFamilyInstanceViewModel());
       }
       else
+      {
         switch (obj.Geometry)
         {
           case Mesh m:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            {
               result.Add(new DirectShapeFreeformViewModel());
+            }
+
             if (!m.IsClosed)
+            {
               result.Add(new RevitTopographyViewModel());
+            }
+
             break;
 
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            {
               result.Add(new DirectShapeFreeformViewModel());
+            }
 
             var brepSurfaceSchemas = EvaluateBrepSurfaceSchemas(b);
             result.AddRange(brepSurfaceSchemas);
@@ -99,7 +116,10 @@ public class MappingBindingsRhino : MappingsBindings
             result.Add(new DirectShapeFreeformViewModel());
 
             if (e.ProfileCount > 1)
+            {
               break;
+            }
+
             var extrusionBrp = e.ToBrep(false);
             var extrusionSurfaceSchemas = EvaluateBrepSurfaceSchemas(extrusionBrp, true);
             result.AddRange(extrusionSurfaceSchemas);
@@ -136,6 +156,7 @@ public class MappingBindingsRhino : MappingsBindings
             result.Add(new RevitFamilyInstanceViewModel());
             break;
         }
+      }
     }
     catch (Exception ex)
     {
@@ -153,7 +174,9 @@ public class MappingBindingsRhino : MappingsBindings
   {
     var schemas = new List<Schema>();
     if (b.Surfaces.Count != 1)
+    {
       return schemas;
+    }
 
     bool IsPlanar(Surface srf, out bool isHorizontal, out bool isVertical)
     {
@@ -245,7 +268,9 @@ public class MappingBindingsRhino : MappingsBindings
     var viewModel = obj.Attributes.GetUserString(SpeckleMappingViewKey);
 
     if (string.IsNullOrEmpty(viewModel))
+    {
       return null;
+    }
 
     try
     {
@@ -274,15 +299,20 @@ public class MappingBindingsRhino : MappingsBindings
   public override void ClearMappings(List<string> ids)
   {
     foreach (var id in ids)
+    {
       try
       {
         var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
         if (obj == null)
+        {
           continue;
+        }
+
         obj.Attributes.DeleteUserString(SpeckleMappingKey);
         obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
       }
       catch { }
+    }
 
     SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
   }
@@ -300,7 +330,9 @@ public class MappingBindingsRhino : MappingsBindings
 
     //add the object id to the schema so we can easily highlight/clear them
     for (var i = 0; i < schemas.Count; i++)
+    {
       schemas[i].ApplicationId = objects[i].Id.ToString();
+    }
 
     return schemas;
   }

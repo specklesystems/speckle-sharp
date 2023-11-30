@@ -28,19 +28,31 @@ public class SelectionFilterConverter : JsonConverter
     var type = jsonObject.Value<string>("Type");
 
     if (type == typeof(AllSelectionFilter).ToString())
+    {
       filter = new AllSelectionFilter();
+    }
     else if (type == typeof(ListSelectionFilter).ToString())
+    {
       filter = new ListSelectionFilter();
+    }
     else if (type == typeof(ManualSelectionFilter).ToString())
+    {
       filter = new ManualSelectionFilter();
+    }
     else if (type == typeof(PropertySelectionFilter).ToString())
+    {
       filter = new PropertySelectionFilter();
+    }
     else if (type == typeof(TreeSelectionFilter).ToString())
+    {
       filter = new TreeSelectionFilter();
+    }
     else
+    {
       throw new NotImplementedException(
         $"Unknown filter type: {type}. No case matching that type defined in {GetType().FullName}"
       );
+    }
 
     serializer.Populate(jsonObject.CreateReader(), filter);
     return filter;

@@ -69,11 +69,15 @@ public class RevitBasicViewModel : Schema
       SelectedFamily = Families?.FirstOrDefault(x => x.Name == SelectedFamily?.Name);
       //fall back on first option
       if (SelectedFamily == null)
+      {
         SelectedFamily = Families?.FirstOrDefault();
+      }
 
       SelectedType = SelectedFamily?.Types?.FirstOrDefault(x => x == SelectedType);
       if (SelectedType == null)
+      {
         SelectedType = SelectedFamily?.Types?.FirstOrDefault();
+      }
     }
   }
 
@@ -109,7 +113,9 @@ public class RevitBasicViewModel : Schema
       //force the refresh of the dropdown after these lists have been updated
       SelectedLevel = Levels?.FirstOrDefault(x => x == SelectedLevel);
       if (SelectedLevel == null)
+      {
         SelectedLevel = Levels?.FirstOrDefault();
+      }
     }
   }
 
@@ -426,7 +432,9 @@ public class DirectShapeFreeformViewModel : Schema
   {
     //TODO: look into supporting the category and name filed for freeform elements too
     if (Freeform)
+    {
       return Operations.Serialize(new FreeformElement());
+    }
 
     var cat = RevitCategory.GenericModel;
     Enum.TryParse(SelectedCategory, out cat);
@@ -479,7 +487,9 @@ public class BlockDefinitionViewModel : Schema
   {
     var res = Enum.TryParse(SelectedCategory, out RevitCategory cat);
     if (!res)
+    {
       cat = RevitCategory.GenericModel;
+    }
 
     var ds = new MappedBlockWrapper(); //don't use the constructor
     ds.category = cat.ToString();

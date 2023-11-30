@@ -1,4 +1,4 @@
-﻿namespace Speckle.ConnectorNavisworks.Other;
+namespace Speckle.ConnectorNavisworks.Other;
 
 public static class Constants
 {

@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Serialisation;
 
-internal readonly struct OperationTask<T> where T : struct
+internal readonly struct OperationTask<T>
+  where T : struct
 {
   public readonly T OperationType;
   public readonly object? InputValue;
@@ -28,7 +29,8 @@ internal readonly struct OperationTask<T> where T : struct
   }
 }
 
-internal abstract class ParallelOperationExecutor<TOperation> : IDisposable where TOperation : struct
+internal abstract class ParallelOperationExecutor<TOperation> : IDisposable
+  where TOperation : struct
 {
   protected BlockingCollection<OperationTask<TOperation>> Tasks { get; set; } = new();
 
@@ -42,18 +44,30 @@ internal abstract class ParallelOperationExecutor<TOperation> : IDisposable wher
   protected virtual void Stop()
   {
     if (!HasStarted)
+    {
       throw new InvalidOperationException($"Unable to {nameof(Stop)} {this} as it has not started!");
+    }
+
     foreach (Thread _ in Threads)
+    {
       Tasks.Add(default);
+    }
+
     foreach (Thread t in Threads)
+    {
       t.Join();
+    }
+
     Threads = new List<Thread>();
   }
 
   public virtual void Start()
   {
     if (HasStarted)
+    {
       throw new InvalidOperationException($"{this}: Threads already started");
+    }
+
     for (int i = 0; i < NumThreads; i++)
     {
       Thread t = new(ThreadMain) { Name = ToString(), IsBackground = true };
@@ -65,7 +79,10 @@ internal abstract class ParallelOperationExecutor<TOperation> : IDisposable wher
   public virtual void Dispose()
   {
     if (HasStarted)
+    {
       Stop();
+    }
+
     Tasks.Dispose();
   }
 }

@@ -62,13 +62,19 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void SaveBlob(Blob obj)
   {
     if (string.IsNullOrEmpty(StreamId))
+    {
       throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+    }
+
     var hash = obj.GetFileHash();
 
     lock (_sendBufferLock)
     {
       if (IsInErrorState)
+      {
         return;
+      }
+
       _sendBuffer.Add(($"blob:{hash}", obj.filePath));
     }
   }
@@ -118,7 +124,9 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   )
   {
     if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || targetTransport == null)
+    {
       throw new InvalidOperationException("Invalid parameters to CopyObjectAndChildren");
+    }
 
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -208,18 +216,27 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     if (string.IsNullOrEmpty(StreamId))
+    {
       throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+    }
+
     return await Api.HasObjects(StreamId, objectIds).ConfigureAwait(false);
   }
 
   public void SaveObject(string id, string serializedObject)
   {
     if (string.IsNullOrEmpty(StreamId))
+    {
       throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+    }
+
     lock (_sendBufferLock)
     {
       if (IsInErrorState)
+      {
         return;
+      }
+
       _sendBuffer.Add((id, serializedObject));
       _isWriteComplete = false;
     }
@@ -228,15 +245,19 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void SaveObject(string id, ITransport sourceTransport)
   {
     if (string.IsNullOrEmpty(StreamId))
+    {
       throw new InvalidOperationException($"Invalid StreamID {StreamId}");
+    }
 
     var objectData = sourceTransport.GetObject(id);
 
     if (objectData is null)
+    {
       throw new TransportException(
         this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
+    }
 
     SaveObject(id, objectData);
   }
@@ -244,7 +265,10 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void BeginWrite()
   {
     if (_shouldSendThreadRun || _sendingThread != null)
+    {
       throw new InvalidOperationException("ServerTransport already sending");
+    }
+
     TotalSentBytes = 0;
     SavedObjectCount = 0;
 
@@ -259,15 +283,19 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     while (true)
     {
       lock (_sendBufferLock)
+      {
         if (_isWriteComplete || IsInErrorState)
         {
           CancellationToken.ThrowIfCancellationRequested();
 
           if (_exception is not null)
+          {
             throw new TransportException(this, $"{TransportName} transport failed", _exception);
+          }
 
           return;
         }
+      }
 
       await Task.Delay(50).ConfigureAwait(false);
     }
@@ -276,7 +304,10 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void EndWrite()
   {
     if (!_shouldSendThreadRun || _sendingThread == null)
+    {
       throw new InvalidOperationException("ServerTransport not sending");
+    }
+
     _shouldSendThreadRun = false;
     _sendingThread.Join();
     _sendingThread = null;
@@ -312,7 +343,9 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     {
       JObject doc1 = JObject.Parse(json);
       foreach (JToken prop in doc1["__closure"])
+      {
         childrenIds.Add(((JProperty)prop).Name);
+      }
     }
     catch (Exception)
     {
@@ -328,9 +361,13 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     {
       var stopwatch = Stopwatch.StartNew();
       if (!_shouldSendThreadRun || CancellationToken.IsCancellationRequested)
+      {
         return;
+      }
+
       List<(string id, string data)>? buffer = null;
       lock (_sendBufferLock)
+      {
         if (_sendBuffer.Count > 0)
         {
           buffer = _sendBuffer;
@@ -340,6 +377,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         {
           _isWriteComplete = true;
         }
+      }
 
       if (buffer is null)
       {
@@ -354,14 +392,22 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         List<string> objectIds = new(bufferObjects.Count);
 
         foreach ((string id, _) in bufferObjects)
+        {
           if (id != "blob")
+          {
             objectIds.Add(id);
+          }
+        }
 
         Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds).ConfigureAwait(false);
         List<(string, string)> newObjects = new();
         foreach ((string id, object json) in bufferObjects)
+        {
           if (!hasObjects[id])
+          {
             newObjects.Add((id, (string)json));
+          }
+        }
 
         // Report the objects that are already on the server
         OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
@@ -374,7 +420,9 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
           var formattedIds = blobIdsToUpload.Select(id => $"blob:{id}").ToList();
           var newBlobs = bufferBlobs.Where(tuple => formattedIds.IndexOf(tuple.Item1) != -1).ToList();
           if (newBlobs.Count != 0)
+          {
             await Api.UploadBlobs(StreamId, newBlobs).ConfigureAwait(false);
+          }
         }
       }
       catch (Exception ex)
@@ -390,7 +438,9 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       {
         stopwatch.Stop();
         lock (_elapsedLock)
+        {
           Elapsed += stopwatch.Elapsed;
+        }
       }
     }
   }

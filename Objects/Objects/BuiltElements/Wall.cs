@@ -178,11 +178,16 @@ namespace Objects.BuiltElements.Revit
     )
     {
       if (surface.Surfaces.Count == 0)
+      {
         throw new Exception("Cannot create a RevitWall with an empty BREP");
+      }
+
       if (surface.Surfaces.Count > 1)
+      {
         throw new Exception(
           "The provided brep has more than 1 surface. Please deconstruct/explode it to create multiple instances"
         );
+      }
 
       this.family = family;
       this.type = type;

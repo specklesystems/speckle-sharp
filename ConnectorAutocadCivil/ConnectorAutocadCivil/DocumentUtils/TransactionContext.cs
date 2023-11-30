@@ -10,69 +10,68 @@ using Autodesk.AdvanceSteel.DocumentManagement;
 using Autodesk.AutoCAD.DatabaseServices;
 #endif
 
-namespace Speckle.ConnectorAutocadCivil.DocumentUtils
-{
+namespace Speckle.ConnectorAutocadCivil.DocumentUtils;
+
 #if ADVANCESTEEL
-  public class TransactionContext : IDisposable
+public class TransactionContext : IDisposable
+{
+  private bool DocumentLocked = false;
+  private Autodesk.AdvanceSteel.CADAccess.Transaction Transaction = null;
+
+  public static TransactionContext StartTransaction(Document document)
   {
-    private bool DocumentLocked = false;
-    private Autodesk.AdvanceSteel.CADAccess.Transaction Transaction = null;
+    return new TransactionContext(document);
+  }
 
-    public static TransactionContext StartTransaction(Document document)
+  private TransactionContext(Document document)
+  {
+    if (!DocumentLocked)
     {
-      return new TransactionContext(document);
+      DocumentLocked = DocumentManager.LockCurrentDocument();
     }
 
-    private TransactionContext(Document document)
+    if (Transaction == null && DocumentLocked)
     {
-      if (!DocumentLocked)
-      {
-        DocumentLocked = DocumentManager.LockCurrentDocument();
-      }
-
-      if (Transaction == null && DocumentLocked)
-      {
-        Transaction = Autodesk.AdvanceSteel.CADAccess.TransactionManager.StartTransaction();
-      }
-    }
-
-    public void Dispose()
-    {
-      Transaction?.Commit();
-      Transaction = null;
-
-      if (DocumentLocked == true)
-      {
-        DocumentManager.UnlockCurrentDocument();
-        DocumentLocked = false;
-      }
+      Transaction = Autodesk.AdvanceSteel.CADAccess.TransactionManager.StartTransaction();
     }
   }
-#else
-  public class TransactionContext : IDisposable
+
+  public void Dispose()
   {
-    private DocumentLock DocumentLock;
-    private Transaction Transaction;
+    Transaction?.Commit();
+    Transaction = null;
 
-    public static TransactionContext StartTransaction(Document document)
+    if (DocumentLocked == true)
     {
-      return new TransactionContext(document);
-    }
-
-    private TransactionContext(Document document)
-    {
-      DocumentLock = document.LockDocument();
-      Transaction = document.Database.TransactionManager.StartTransaction();
-    }
-
-    public void Dispose()
-    {
-      Transaction?.Commit();
-      Transaction = null;
-
-      DocumentLock?.Dispose();
-      DocumentLock = null;
+      DocumentManager.UnlockCurrentDocument();
+      DocumentLocked = false;
     }
   }
-#endif
 }
+#else
+public class TransactionContext : IDisposable
+{
+  private DocumentLock DocumentLock;
+  private Transaction Transaction;
+
+  public static TransactionContext StartTransaction(Document document)
+  {
+    return new TransactionContext(document);
+  }
+
+  private TransactionContext(Document document)
+  {
+    DocumentLock = document.LockDocument();
+    Transaction = document.Database.TransactionManager.StartTransaction();
+  }
+
+  public void Dispose()
+  {
+    Transaction?.Commit();
+    Transaction = null;
+
+    DocumentLock?.Dispose();
+    DocumentLock = null;
+  }
+}
+#endif

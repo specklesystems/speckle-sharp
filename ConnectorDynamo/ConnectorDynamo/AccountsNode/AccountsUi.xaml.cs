@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,16 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Speckle.ConnectorDynamo.AccountsNode
+namespace Speckle.ConnectorDynamo.AccountsNode;
+
+/// <summary>
+/// Interaction logic for AccountsUi.xaml
+/// </summary>
+public partial class AccountsUi : UserControl
 {
-  /// <summary>
-  /// Interaction logic for AccountsUi.xaml
-  /// </summary>
-  public partial class AccountsUi : UserControl
+  public AccountsUi()
   {
-    public AccountsUi()
-    {
-      InitializeComponent();
-    }
+    InitializeComponent();
   }
 }

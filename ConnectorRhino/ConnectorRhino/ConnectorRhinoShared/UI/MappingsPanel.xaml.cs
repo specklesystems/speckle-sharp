@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using DesktopUI2.ViewModels.MappingTool;

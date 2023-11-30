@@ -110,13 +110,17 @@ public partial class ConnectorBindingsNavisworks
       {
         commitObject = _cachedCommit as Collection;
         if (commitObject != null)
+        {
           commitObject.elements = CachedConvertedElements;
+        }
       }
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
       if (_progressViewModel.Report.OperationErrors.Any())
+      {
         ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -159,9 +163,14 @@ public partial class ConnectorBindingsNavisworks
     var internalPropertyNames = state.Settings.Find(x => x.Slug == "internal-property-names");
 
     if (internalPropertySettings != null && ((CheckBoxSetting)internalPropertySettings).IsChecked)
+    {
       _settingsHandler.ShowInternalProperties();
+    }
+
     if (internalPropertyNames != null && ((CheckBoxSetting)internalPropertyNames).IsChecked)
+    {
       _settingsHandler.UseInternalPropertyNames();
+    }
   }
 
   /// <summary>
@@ -171,16 +180,24 @@ public partial class ConnectorBindingsNavisworks
   private void ValidateBeforeSending(StreamState state)
   {
     if (_progressViewModel == null)
+    {
       throw new ArgumentException("No ProgressViewModel provided.");
+    }
 
     if (_doc.ActiveSheet == null)
+    {
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
+    }
 
     if (state.Filter == null)
+    {
       throw new InvalidOperationException("No filter provided. Nothing to Send.");
+    }
 
     if (state.Filter.Slug == "all" || state.CommitMessage == "Sent everything")
+    {
       throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
+    }
   }
 
   /// <summary>
@@ -226,7 +243,9 @@ public partial class ConnectorBindingsNavisworks
     for (int index = 0; index < modelItemsToConvert.Count; index++)
     {
       if (_progressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -236,7 +255,9 @@ public partial class ConnectorBindingsNavisworks
       conversions.Add(element, new Tuple<Constants.ConversionState, Base>(Constants.ConversionState.ToConvert, null));
 
       if (index % objectInterval == 0 || index == modelItemsToConvert.Count - 1)
+      {
         _progressBar.Update((index + 1) * objectIncrement);
+      }
     }
 
     _progressBar.EndSubOperation();
@@ -333,8 +354,10 @@ public partial class ConnectorBindingsNavisworks
   {
     // If the "RemoteTransport" key exists in the dictionary and has a positive value
     if (progressDict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
+    {
       // Update the progress bar proportionally to the remote conversion count
       _progressBar.Update(Math.Min((double)rc / 2 / _convertedCount, 1.0));
+    }
 
     // Update the progress view model with the progress dictionary
     _progressViewModel.Update(progressDict);
@@ -443,9 +466,11 @@ public partial class ConnectorBindingsNavisworks
 
     // Check if any items have been selected
     if (selectionBuilder.Count == 0)
+    {
       throw new InvalidOperationException(
         "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
       );
+    }
 
     try
     {
@@ -459,9 +484,11 @@ public partial class ConnectorBindingsNavisworks
     modelItemsToConvert.AddRange(selectionBuilder.ModelItems);
 
     if (!modelItemsToConvert.Any())
+    {
       throw new InvalidOperationException(
         "Zero objects visible for conversion; send stopped. Please select some objects, or check that your filter can actually select something."
       );
+    }
 
     return modelItemsToConvert;
   }
@@ -511,7 +538,9 @@ public partial class ConnectorBindingsNavisworks
     }
 
     if (views.Any())
+    {
       commitObject["views"] = views;
+    }
   }
 
   /// <summary>
@@ -534,7 +563,9 @@ public partial class ConnectorBindingsNavisworks
     for (var i = 0; i < conversions.Count; i++)
     {
       if (_progressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -595,7 +626,9 @@ public partial class ConnectorBindingsNavisworks
       _progressViewModel.Report.Log(reportObject);
 
       if (i % conversionInterval != 0 && i != conversions.Count)
+      {
         continue;
+      }
 
       double progress = (i + 1) * conversionIncrement;
       _progressBar.Update(progress);

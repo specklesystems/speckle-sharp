@@ -56,6 +56,7 @@ public class CSINode : Node
   public string? DiaphragmAssignment { get; set; }
 
   public DiaphragmOption DiaphragmOption { get; set; }
+
   [DetachProperty]
   public AnalyticalResults? AnalysisResults { get; set; }
 }

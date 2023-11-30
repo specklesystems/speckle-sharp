@@ -2,7 +2,8 @@ using System;
 
 namespace Speckle.Core.Helpers;
 
-public class State<T> : IDisposable where T : State<T>, new()
+public class State<T> : IDisposable
+  where T : State<T>, new()
 {
   static T root;
   static T current;
@@ -16,7 +17,9 @@ public class State<T> : IDisposable where T : State<T>, new()
     {
       current = (T)this;
       if (root == null)
+      {
         root = (T)this;
+      }
     }
   }
 
@@ -25,16 +28,25 @@ public class State<T> : IDisposable where T : State<T>, new()
     lock (StateChangeLock)
     {
       if (previous == null)
+      {
         return; // Already disposed or root
+      }
 
-      if (current == this) current = previous;
+      if (current == this)
+      {
+        current = previous;
+      }
       else
       {
         // If this state is still in the stack is safe to pop it
         var state = this;
         do
         {
-          if (state == root) { current = previous; break; }
+          if (state == root)
+          {
+            current = previous;
+            break;
+          }
 
           state = state.previous;
         } while (state != null);

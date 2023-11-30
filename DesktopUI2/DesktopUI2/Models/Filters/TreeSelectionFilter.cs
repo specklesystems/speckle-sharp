@@ -66,7 +66,9 @@ public class TreeSelectionFilter : ISelectionFilter
   {
     Selection.Clear();
     if (SelectedItems != null)
+    {
       Selection.AddRange(SelectedItems.Select(item => item.ToString()).ToList());
+    }
   }
 }
 
@@ -136,7 +138,10 @@ public class TreeNode : DynamicObject
   {
     var result = new List<TreeNode> { this };
     foreach (var child in Elements.Where(child => child != null))
+    {
       result.AddRange(child.Flatten());
+    }
+
     return result;
   }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Rhino.Geometry;
@@ -89,9 +89,13 @@ internal static class KnotListEncoder
     var multiplicity = i - index;
 
     if (strict)
+    {
       average = knots[index];
+    }
     else
+    {
       average /= multiplicity;
+    }
 
     return multiplicity;
   }
@@ -128,9 +132,13 @@ internal static class KnotListEncoder
     var multiplicity = i - index;
 
     if (strict)
+    {
       average = knots[index];
+    }
     else
+    {
       average /= multiplicity;
+    }
 
     return multiplicity;
   }
@@ -145,6 +153,7 @@ internal static class KnotListEncoder
     var delta = double.PositiveInfinity;
 
     using (var enumerator = knots.GetEnumerator())
+    {
       if (enumerator.MoveNext())
       {
         var previous = enumerator.Current;
@@ -153,15 +162,20 @@ internal static class KnotListEncoder
         {
           var current = enumerator.Current;
           if (previous == current)
+          {
             continue;
+          }
 
           var d = current - previous;
           if (d < delta)
+          {
             delta = d;
+          }
 
           previous = current;
         }
       }
+    }
 
     return delta;
   }
@@ -194,7 +208,10 @@ internal static class KnotListEncoder
       if (multiplicity > degree - 2)
       {
         if (spans is null)
+        {
           spans = new List<double>();
+        }
+
         spans.Add(knots[k]);
       }
 
@@ -218,7 +235,9 @@ internal static class KnotListEncoder
 
         // Remove old knots that do not overlap knots[k]
         if (excess > 0)
+        {
           knots.RemoveKnots(k + multiplicity, k + multiplicity + excess);
+        }
       }
 
       k += multiplicity;
@@ -232,11 +251,15 @@ internal static class KnotListEncoder
 
     polyCurve = new PolyCurve();
     foreach (var span in curve.Split(spans))
+    {
       polyCurve.AppendSegment(span);
+    }
 
     // Split may generate PolyCurves on seams.
     if (curve.IsClosed)
+    {
       polyCurve.RemoveNesting();
+    }
 
     return true;
   }
@@ -257,7 +280,10 @@ internal static class KnotListEncoder
       if (multiplicity > degree)
       {
         if (kinks is null)
+        {
           kinks = new List<double>();
+        }
+
         kinks.Add(knots[k]);
       }
 
@@ -273,7 +299,9 @@ internal static class KnotListEncoder
 
         // Remove old knots that do not overlap knots[k]
         if (excess > 0)
+        {
           knots.RemoveKnots(k + multiplicity, k + multiplicity + excess);
+        }
       }
 
       k += multiplicity;

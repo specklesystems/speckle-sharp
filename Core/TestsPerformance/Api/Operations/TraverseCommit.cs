@@ -1,11 +1,11 @@
-﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Attributes;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace TestsPerformance.Api.Operations;
 
 [MemoryDiagnoser]
-[RegressionTestConfig(1, 1, 20, nugetVersions:"2.15.2")]
+[RegressionTestConfig(1, 1, 20, nugetVersions: "2.15.2")]
 public class TraverseCommit
 {
   [Params(0, 4, 9, 19)]

@@ -51,7 +51,10 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     foreach (var col in _collections.Values)
     {
       if (!col.elements.Any())
+      {
         continue;
+      }
+
       rootElements.Add(col);
     }
 
@@ -150,7 +153,9 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     var mepSystemName = GetMEPSystemName(nativeElement);
 
     if (string.IsNullOrEmpty(mepSystemName))
+    {
       return;
+    }
 
     // Create overall network collection if it doesn't exist
     if (!_collections.ContainsKey(MEPNetworks))

@@ -36,7 +36,10 @@ public class Receive : UserControl
   {
     var svm = PreviewBox360.DataContext as StreamViewModel;
     if (!svm.PreviewImage360Loaded)
+    {
       return;
+    }
+
     Image360.Opacity = 1;
     ImageBasic.IsVisible = false;
   }
@@ -50,7 +53,10 @@ public class Receive : UserControl
   private void SetMargin(double mouseX)
   {
     if (mouseX == 0)
+    {
       mouseX = 1;
+    }
+
     var imageWidth = Image360.Bounds.Width == 0 ? 34300 : Image360.Bounds.Width; //34300
     var imageStepWidth = imageWidth / 24.5; //1400 - WHY 24.5??? There seems to be some f* offset at the ends
     var imageOffset = (imageWidth - imageStepWidth * 24) / 2;
@@ -60,7 +66,9 @@ public class Receive : UserControl
 
     var index = Math.Abs(Math.Round(mouseX / stepWidth));
     if (index >= 24)
+    {
       index = 24 - 1;
+    }
 
     var centerOffset = (imageStepWidth - viewboxWidth) / 2; //since the image fram is wider, let's center the model
 

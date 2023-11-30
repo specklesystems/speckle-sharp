@@ -50,9 +50,12 @@ public class BaseObjectSerializerV2
   public string Serialize(Base baseObj)
   {
     if (_busy)
+    {
       throw new Exception(
         "A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances"
       );
+    }
+
     try
     {
       _stopwatch.Start();
@@ -82,16 +85,22 @@ public class BaseObjectSerializerV2
     CancellationToken.ThrowIfCancellationRequested();
 
     if (obj == null)
+    {
       return null;
+    }
 
     Type type = obj.GetType();
 
     if (type.IsPrimitive || obj is string)
+    {
       return obj;
+    }
 
     if (obj is Base b)
+    {
       // Complex enough to deserve its own function
       return PreserializeBase(b, computeClosures, inheritedDetachInfo);
+    }
 
     if (obj is IDictionary d)
     {
@@ -100,7 +109,9 @@ public class BaseObjectSerializerV2
       {
         object converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
         if (converted != null)
+        {
           ret[kvp.Key.ToString()] = converted;
+        }
       }
       return ret;
     }
@@ -110,11 +121,19 @@ public class BaseObjectSerializerV2
     {
       List<object> ret;
       if (e is IList list)
+      {
         ret = new List<object>(list.Count);
+      }
       else
+      {
         ret = new List<object>();
+      }
+
       foreach (object element in e)
+      {
         ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
+      }
+
       return ret;
     }
 
@@ -127,16 +146,28 @@ public class BaseObjectSerializerV2
     }
 
     if (obj is Enum)
+    {
       return (int)obj;
+    }
 
     // Support for simple types
     if (obj is Guid g)
+    {
       return g.ToString();
+    }
+
     if (obj is Color c)
+    {
       return c.ToArgb();
+    }
+
     if (obj is DateTime t)
+    {
       return t.ToString("o", CultureInfo.InvariantCulture);
+    }
+
     if (obj is Matrix4x4 md)
+    {
       return new List<double>
       {
         md.M11,
@@ -156,6 +187,8 @@ public class BaseObjectSerializerV2
         md.M43,
         md.M44
       };
+    }
+
     if (obj is System.Numerics.Matrix4x4 ms) //BACKWARDS COMPATIBILITY: matrix4x4 changed from System.Numerics float to System.DoubleNumerics double in release 2.16
     {
       SpeckleLog.Logger.Warning(
@@ -194,13 +227,18 @@ public class BaseObjectSerializerV2
   {
     // handle circular references
     if (ParentObjects.Contains(baseObj))
+    {
       return null;
+    }
+
     ParentObjects.Add(baseObj);
 
     Dictionary<string, object> convertedBase = new();
     Dictionary<string, int> closure = new();
     if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
+    {
       ParentClosures.Add(closure);
+    }
 
     List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
     IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
@@ -219,7 +257,10 @@ public class BaseObjectSerializerV2
     foreach (string propName in dynamicProperties)
     {
       if (propName.StartsWith("__"))
+      {
         continue;
+      }
+
       object baseValue = baseObj[propName];
       bool isDetachable = propName.StartsWith("@");
       bool isChunkable = false;
@@ -243,20 +284,31 @@ public class BaseObjectSerializerV2
         && prop.Value.Item2.JsonPropertyInfo != null
         && prop.Value.Item2.JsonPropertyInfo.NullValueHandling == NullValueHandling.Ignore
       )
+      {
         continue;
+      }
 
       convertedBase[prop.Key] = convertedValue;
     }
 
     if (baseObj is Blob blob)
+    {
       convertedBase["id"] = blob.id;
+    }
     else
+    {
       convertedBase["id"] = ComputeId(convertedBase);
+    }
 
     if (closure.Count > 0)
+    {
       convertedBase["__closure"] = closure;
+    }
+
     if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
+    {
       ParentClosures.RemoveAt(ParentClosures.Count - 1);
+    }
 
     ParentObjects.Remove(baseObj);
 
@@ -288,7 +340,9 @@ public class BaseObjectSerializerV2
 
     // If there are no WriteTransports, keep everything attached.
     if (WriteTransports == null || WriteTransports.Count == 0)
+    {
       return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
+    }
 
     if (baseValue is IEnumerable && detachInfo.IsChunkable)
     {
@@ -306,7 +360,10 @@ public class BaseObjectSerializerV2
         }
       }
       if (crtChunk.data.Count > 0)
+      {
         chunks.Add(crtChunk);
+      }
+
       return PreserializeObject(chunks, inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null));
     }
 
@@ -319,7 +376,10 @@ public class BaseObjectSerializerV2
     {
       int childDepth = ParentClosures.Count - parentLevel;
       if (!ParentClosures[parentLevel].ContainsKey(objectId))
+      {
         ParentClosures[parentLevel][objectId] = childDepth;
+      }
+
       ParentClosures[parentLevel][objectId] = Math.Min(ParentClosures[parentLevel][objectId], childDepth);
     }
   }
@@ -340,33 +400,46 @@ public class BaseObjectSerializerV2
   private void StoreObject(string objectId, string objectJson)
   {
     if (WriteTransports == null)
+    {
       return;
+    }
+
     _stopwatch.Stop();
     foreach (var transport in WriteTransports)
+    {
       transport.SaveObject(objectId, objectJson);
+    }
+
     _stopwatch.Start();
   }
 
   private void StoreBlob(Blob obj)
   {
     if (WriteTransports == null)
+    {
       return;
+    }
+
     bool hasBlobTransport = false;
 
     _stopwatch.Stop();
 
     foreach (var transport in WriteTransports)
+    {
       if (transport is IBlobCapableTransport blobTransport)
       {
         hasBlobTransport = true;
         blobTransport.SaveBlob(obj);
       }
+    }
 
     _stopwatch.Start();
     if (!hasBlobTransport)
+    {
       throw new InvalidOperationException(
         "Object tree contains a Blob (file), but the serialiser has no blob saving capable transports."
       );
+    }
   }
 
   // (propertyInfo, isDetachable, isChunkable, chunkSize, JsonPropertyAttribute)
@@ -376,26 +449,35 @@ public class BaseObjectSerializerV2
     IEnumerable<PropertyInfo> typedProperties = baseObj.GetInstanceMembers();
 
     if (TypedPropertiesCache.ContainsKey(type.FullName))
+    {
       return TypedPropertiesCache[type.FullName];
+    }
 
     List<(PropertyInfo, PropertyAttributeInfo)> ret = new();
 
     foreach (PropertyInfo typedProperty in typedProperties)
     {
       if (typedProperty.Name.StartsWith("__") || typedProperty.Name == "id")
+      {
         continue;
+      }
 
       // Check JsonIgnore like this to cover both Newtonsoft JsonIgnore and System.Text.Json JsonIgnore
       // TODO: replace JsonIgnore from newtonsoft with JsonIgnore from Sys, and check this more properly.
       bool jsonIgnore = false;
       foreach (object attr in typedProperty.GetCustomAttributes(true))
+      {
         if (attr.GetType().Name.Contains("JsonIgnore"))
         {
           jsonIgnore = true;
           break;
         }
+      }
+
       if (jsonIgnore)
+      {
         continue;
+      }
 
       object baseValue = typedProperty.GetValue(baseObj);
 

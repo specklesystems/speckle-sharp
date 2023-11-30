@@ -14,34 +14,35 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Archicad.Converters
-{
-  public sealed class Room : IConverter
-  {
-    public Type Type => typeof(Archicad.Room);
+namespace Archicad.Converters;
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(
-      IEnumerable<TraversalContext> elements,
-      CancellationToken token
+public sealed class Room : IConverter
+{
+  public Type Type => typeof(Archicad.Room);
+
+  public async Task<List<ApplicationObject>> ConvertToArchicad(
+    IEnumerable<TraversalContext> elements,
+    CancellationToken token
+  )
+  {
+    var rooms = new List<Archicad.Room>();
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
     )
     {
-      var rooms = new List<Archicad.Room>();
-
-      var context = Archicad.Helpers.Timer.Context.Peek;
-      using (
-        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
-      )
+      foreach (var tc in elements)
       {
-        foreach (var tc in elements)
+        token.ThrowIfCancellationRequested();
+
+        switch (tc.current)
         {
-          token.ThrowIfCancellationRequested();
+          case Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom:
 
-          switch (tc.current)
-          {
-            case Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom:
-
-              {
-                Archicad.Room archicadRoom = new Archicad.Room
+            {
+              Archicad.Room archicadRoom =
+                new()
                 {
                   // convert from Speckle to Archicad data structure
                   // Speckle base properties
@@ -58,13 +59,14 @@ namespace Archicad.Converters
                   shape = speckleRoom.shape
                 };
 
-                rooms.Add(archicadRoom);
-              }
-              break;
-            case Objects.BuiltElements.Room speckleRoom:
+              rooms.Add(archicadRoom);
+            }
+            break;
+          case Objects.BuiltElements.Room speckleRoom:
 
-              {
-                Archicad.Room archicadRoom = new Archicad.Room
+            {
+              Archicad.Room archicadRoom =
+                new()
                 {
                   // Speckle base properties
                   id = speckleRoom.id,
@@ -77,36 +79,40 @@ namespace Archicad.Converters
                   shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
                 };
 
-                rooms.Add(archicadRoom);
-              }
-              break;
-          }
+              rooms.Add(archicadRoom);
+            }
+            break;
         }
       }
-
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
-
-      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(
-      IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token
+    var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
+
+    return result is null ? new List<ApplicationObject>() : result.ToList();
+  }
+
+  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  {
+    var elementModels = elements as ElementModelData[] ?? elements.ToArray();
+    IEnumerable<Archicad.Room> data = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
+      token
+    );
+
+    var rooms = new List<Base>();
+    if (data is null)
+    {
+      return rooms;
+    }
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Archicad.Room> data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
-        token
-      );
-
-      var rooms = new List<Base>();
-      if (data is null)
-        return rooms;
-
       foreach (Archicad.Room archicadRoom in data)
       {
-        Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new Objects.BuiltElements.Archicad.ArchicadRoom();
+        Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom = new();
 
         // convert from Archicad to Speckle data structure
         // Speckle base properties
@@ -134,15 +140,17 @@ namespace Archicad.Converters
         Polycurve polycurve = Utils.PolycurveToSpeckle(polyLine);
         speckleRoom.outline = polycurve;
         if (archicadRoom.shape.holePolylines?.Count > 0)
+        {
           speckleRoom.voids = new List<ICurve>(archicadRoom.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
+        }
 
         // calculate base point
         speckleRoom.basePoint = archicadRoom.basePoint;
 
         rooms.Add(speckleRoom);
       }
-
-      return rooms;
     }
+
+    return rooms;
   }
 }

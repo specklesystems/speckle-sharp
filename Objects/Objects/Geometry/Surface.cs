@@ -108,11 +108,13 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   {
     var ptMatrix = GetControlPoints();
     foreach (var ctrlPts in ptMatrix)
+    {
       for (int i = 0; i < ctrlPts.Count; i++)
       {
         ctrlPts[i].TransformTo(transform, out var tPt);
         ctrlPts[i] = tPt;
       }
+    }
 
     surface = new Surface
     {
@@ -152,7 +154,9 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   {
     var matrix = new List<List<ControlPoint>>();
     for (var i = 0; i < countU; i++)
+    {
       matrix.Add(new List<ControlPoint>());
+    }
 
     for (var i = 0; i < pointData.Count; i += 4)
     {

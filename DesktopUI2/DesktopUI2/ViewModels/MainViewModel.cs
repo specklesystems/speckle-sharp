@@ -122,11 +122,15 @@ public class MainViewModel : ViewModelBase, IScreen, IDialogHost
   public static void GoHome()
   {
     if (RouterInstance == null)
+    {
       return;
+    }
 
     var config = ConfigManager.Load();
     if (!config.OneClickMode)
+    {
       RouterInstance.Navigate.Execute(Home);
+    }
   }
 
   public static void CloseDialog()
@@ -137,15 +141,21 @@ public class MainViewModel : ViewModelBase, IScreen, IDialogHost
   internal void ChangeTheme(bool isDark)
   {
     if (Application.Current == null)
+    {
       return;
+    }
 
     var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
     var theme = materialTheme.CurrentTheme;
 
     if (isDark)
+    {
       theme.SetBaseTheme(Theme.Light);
+    }
     else
+    {
       theme.SetBaseTheme(Theme.Dark);
+    }
 
     materialTheme.CurrentTheme = theme;
   }

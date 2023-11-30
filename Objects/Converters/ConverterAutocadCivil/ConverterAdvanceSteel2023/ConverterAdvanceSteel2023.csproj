@@ -15,6 +15,12 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
+  <PropertyGroup Label="Community Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+    <WarningLevel>0</WarningLevel>
+    <EnableNetAnalyzers>false</EnableNetAnalyzers>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" IncludeAssets="compile;build"/>
     <PackageReference Include="MathNet.Spatial" Version="0.6.0" IncludeAssets="compile;build"/>

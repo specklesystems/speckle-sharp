@@ -25,7 +25,10 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     //this.category = category;
     this.subcategory = subcategory;
     if (!IsValid())
+    {
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
+    }
+
     this.parameters = parameters.ToBase();
   }
 
@@ -47,11 +50,17 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     set
     {
       if (baseGeometries == null)
+      {
         baseGeometries = new List<Base> { value };
+      }
       else if (baseGeometries.Count == 0)
+      {
         baseGeometries.Add(value);
+      }
       else
+      {
         baseGeometries[0] = value;
+      }
     }
   }
 
@@ -87,7 +96,10 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
   public FreeformElement(Base baseGeometry, List<Parameter> parameters = null)
   {
     if (!IsValidObject(baseGeometry))
+    {
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
+    }
+
     baseGeometries = new List<Base> { baseGeometry };
     this.parameters = parameters.ToBase();
   }
@@ -105,7 +117,10 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
   {
     this.baseGeometries = baseGeometries;
     if (!IsValid())
+    {
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
+    }
+
     this.parameters = parameters.ToBase();
   }
 

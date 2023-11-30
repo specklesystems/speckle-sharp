@@ -94,14 +94,18 @@ public static class Http
     //can ping cloudfare, skip further checks
     //this method should be the fastest
     if (await Ping("1.1.1.1").ConfigureAwait(false))
+    {
       return true;
+    }
 
     //lastly, try getting the default Speckle server, in case this is a sandboxed environment
     string defaultServer = AccountManager.GetDefaultServerUrl();
     bool hasInternet = await HttpPing(defaultServer).ConfigureAwait(false);
 
     if (!hasInternet)
+    {
       SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning("Failed to ping internet");
+    }
 
     return hasInternet;
   }
@@ -142,12 +146,18 @@ public static class Http
         PingOptions pingOptions = new();
         PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions).ConfigureAwait(false);
         if (reply.Status != IPStatus.Success)
+        {
           throw new Exception($"The ping operation failed with status {reply.Status}");
+        }
+
         return true;
       })
       .ConfigureAwait(false);
     if (policyResult.Outcome == OutcomeType.Successful)
+    {
       return true;
+    }
+
     SpeckleLog.Logger.Warning(
       policyResult.FinalException,
       "Failed to ping {hostnameOrAddress} cause: {exceptionMessage}",
@@ -260,11 +270,15 @@ public class SpeckleHttpClientHandler : HttpClientHandler
           retryCount ?? 0
         );
       if (policyResult.Outcome == OutcomeType.Successful)
+      {
         return policyResult.Result!;
+      }
 
       // if the policy failed due to a cancellation, AND it was our cancellation token, then don't wrap the exception, and rethrow an new cancellation
       if (policyResult.FinalException is OperationCanceledException)
+      {
         cancellationToken.ThrowIfCancellationRequested();
+      }
 
       // should we wrap this exception into something Speckle specific?
       throw new Exception("Policy Failed", policyResult.FinalException);

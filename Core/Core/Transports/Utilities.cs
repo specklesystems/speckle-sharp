@@ -19,10 +19,14 @@ public static class Utilities
     var waitTask = Task.Run(async () =>
     {
       while (!condition())
+      {
         await Task.Delay(frequency).ConfigureAwait(false);
+      }
     });
 
     if (waitTask != await Task.WhenAny(waitTask, Task.Delay(timeout)).ConfigureAwait(false))
+    {
       throw new SpeckleException("Process timed out", new TimeoutException());
+    }
   }
 }

@@ -1,4 +1,4 @@
-﻿namespace Speckle.ConnectorNavisworks.Other;
+namespace Speckle.ConnectorNavisworks.Other;
 
 internal static class FilterTypes
 {

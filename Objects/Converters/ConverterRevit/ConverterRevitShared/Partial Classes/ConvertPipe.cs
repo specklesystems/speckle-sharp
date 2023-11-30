@@ -134,8 +134,6 @@ namespace Objects.Converter.Revit
 
       TrySetParam(pipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM, specklePipe.diameter, specklePipe.units);
 
-      CreateSystemConnections(speckleRevitPipe.Connectors, pipe, receivedObjectsCache);
-
       appObj.Update(status: ApplicationObject.State.Created, createdId: pipe.UniqueId, convertedItem: pipe);
       return appObj;
     }

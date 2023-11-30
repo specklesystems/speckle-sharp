@@ -97,7 +97,9 @@ public class DummyBindings : ConnectorBindings
     var nums = rnd.Next(1000);
     var strs = new List<string>();
     for (int i = 0; i < nums; i++)
+    {
       strs.Add($"Object-{i}");
+    }
 
     return strs;
   }
@@ -334,7 +336,9 @@ public class DummyBindings : ConnectorBindings
     #endregion
 
     foreach (var stream in testStreams)
+    {
       collection.Add(new StreamState(AccountManager.GetDefaultAccount(), stream));
+    }
 
     collection[0].SelectedObjectIds.Add("random_obj");
 
@@ -357,7 +361,9 @@ public class DummyBindings : ConnectorBindings
     for (int i = 1; i < 100; i += 10)
     {
       if (progress.CancellationToken.IsCancellationRequested)
+      {
         return state;
+      }
 
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
@@ -368,9 +374,13 @@ public class DummyBindings : ConnectorBindings
       try
       {
         if (i % 7 == 0)
+        {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Something happened.");
+        }
         else
+        {
           appObj.Update(status: ApplicationObject.State.Created);
+        }
       }
       catch (Exception e)
       {
@@ -382,6 +392,7 @@ public class DummyBindings : ConnectorBindings
 
     // Mock some errors
     for (int i = 0; i < 10; i++)
+    {
       try
       {
         throw new Exception($"Number {i} fail");
@@ -390,6 +401,7 @@ public class DummyBindings : ConnectorBindings
       {
         progress.Report.LogOperationError(e);
       }
+    }
 
     return state;
   }
@@ -405,7 +417,9 @@ public class DummyBindings : ConnectorBindings
     for (int i = 1; i < 100; i += 10)
     {
       if (progress.CancellationToken.IsCancellationRequested)
+      {
         return state;
+      }
 
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
@@ -416,9 +430,13 @@ public class DummyBindings : ConnectorBindings
       try
       {
         if (i % 7 == 0)
+        {
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Something happened.");
+        }
         else
+        {
           appObj.Update(status: ApplicationObject.State.Created);
+        }
       }
       catch (Exception e)
       {
@@ -433,6 +451,7 @@ public class DummyBindings : ConnectorBindings
     {
       var r = new Random(i);
       if (r.NextDouble() > 0.5)
+      {
         try
         {
           //progress.Report.LogOperationError(new Exception($"Critical operation error!"));
@@ -442,6 +461,7 @@ public class DummyBindings : ConnectorBindings
         {
           progress.Report.LogOperationError(e);
         }
+      }
     }
 
     return state;
@@ -461,8 +481,10 @@ public class DummyBindings : ConnectorBindings
     for (int i = 1; i < 100; i += 10)
     {
       if (progress.CancellationToken.IsCancellationRequested)
+      {
         //progress.Report.Log("Fake sending was cancelled");
         return;
+      }
 
       progress.Report.Log("Done fake task " + i);
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
@@ -474,6 +496,7 @@ public class DummyBindings : ConnectorBindings
 
     // Mock "some" errors
     for (int i = 0; i < 10; i++)
+    {
       try
       {
         throw new Exception($"Number {i} failed");
@@ -484,6 +507,7 @@ public class DummyBindings : ConnectorBindings
         //TODO
         //state.Errors.Add(e);
       }
+    }
   }
 
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
@@ -500,8 +524,10 @@ public class DummyBindings : ConnectorBindings
     for (int i = 1; i < 100; i += 10)
     {
       if (progress.CancellationToken.IsCancellationRequested)
+      {
         //progress.Report.Log("Fake sending was cancelled");
         return null;
+      }
 
       var r = new Random(i);
       var status = (ApplicationObject.State)r.Next(5);
@@ -521,6 +547,7 @@ public class DummyBindings : ConnectorBindings
 
     // Mock "some" errors
     for (int i = 0; i < 10; i++)
+    {
       try
       {
         throw new Exception($"Number {i} failed");
@@ -531,6 +558,7 @@ public class DummyBindings : ConnectorBindings
         //TODO
         //state.Errors.Add(e);
       }
+    }
 
     return "";
   }

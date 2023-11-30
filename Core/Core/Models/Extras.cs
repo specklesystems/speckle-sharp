@@ -178,26 +178,52 @@ public class ApplicationObject
   )
   {
     if (createdIds != null)
+    {
       createdIds
         .Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))
         ?.ToList()
         .ForEach(o => CreatedIds.Add(o));
+    }
+
     if (createdId != null && !CreatedIds.Contains(createdId))
+    {
       CreatedIds.Add(createdId);
+    }
+
     if (status.HasValue)
+    {
       Status = status.Value;
+    }
+
     if (log != null)
+    {
       log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
+    }
+
     if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem))
+    {
       Log.Add(logItem);
+    }
+
     if (convertedItem != null && !Converted.Contains(convertedItem))
+    {
       Converted.Add(convertedItem);
+    }
+
     if (converted != null)
+    {
       converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
+    }
+
     if (!string.IsNullOrEmpty(container))
+    {
       Container = container;
+    }
+
     if (!string.IsNullOrEmpty(descriptor))
+    {
       Descriptor = descriptor;
+    }
   }
 }
 
@@ -211,7 +237,9 @@ public class ProgressReport
   {
     var _reportObject = UpdateReportObject(obj);
     if (_reportObject == null)
+    {
       ReportObjects.Add(obj.OriginalId, obj);
+    }
   }
 
   public ApplicationObject UpdateReportObject(ApplicationObject obj)
@@ -227,7 +255,10 @@ public class ProgressReport
       );
 
       if (obj.Status != ApplicationObject.State.Unknown)
+      {
         reportObject.Update(status: obj.Status);
+      }
+
       return reportObject;
     }
 
@@ -246,36 +277,62 @@ public class ProgressReport
   public void Merge(ProgressReport report)
   {
     lock (OperationErrorsLock)
+    {
       OperationErrors.AddRange(report.OperationErrors);
+    }
 
     lock (ConversionLogLock)
+    {
       ConversionLog.AddRange(report.ConversionLog);
+    }
 
     // update report object notes
     foreach (var item in ReportObjects.Values)
     {
       var ids = new List<string> { item.OriginalId };
       if (item.Fallback.Count > 0)
+      {
         ids.AddRange(item.Fallback.Select(o => o.OriginalId));
+      }
 
       if (item.Status == ApplicationObject.State.Unknown)
+      {
         if (report.ReportObjects.TryGetValue(item.OriginalId, out var reportObject))
+        {
           item.Status = reportObject.Status;
+        }
+      }
 
       foreach (var id in ids)
+      {
         //if (report.GetReportObject(id, out int index))
         if (report.ReportObjects.TryGetValue(id, out var reportObject))
         {
           foreach (var logItem in reportObject.Log)
+          {
             if (!item.Log.Contains(logItem))
+            {
               item.Log.Add(logItem);
+            }
+          }
+
           foreach (var createdId in reportObject.CreatedIds)
+          {
             if (!item.CreatedIds.Contains(createdId))
+            {
               item.CreatedIds.Add(createdId);
+            }
+          }
+
           foreach (var convertedItem in reportObject.Converted)
+          {
             if (!item.Converted.Contains(convertedItem))
+            {
               item.Converted.Add(convertedItem);
+            }
+          }
         }
+      }
     }
   }
 
@@ -317,7 +374,9 @@ public class ProgressReport
   {
     var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
     lock (ConversionLogLock)
+    {
       ConversionLog.Add(time + " " + text);
+    }
   }
 
   /// <summary>
@@ -332,7 +391,9 @@ public class ProgressReport
     get
     {
       lock (ConversionErrorsLock)
+      {
         return string.Join("\n", ConversionErrors.Select(x => x.Message).Distinct());
+      }
     }
   }
 
@@ -341,7 +402,10 @@ public class ProgressReport
   public void LogConversionError(Exception exception)
   {
     lock (ConversionErrorsLock)
+    {
       ConversionErrors.Add(exception);
+    }
+
     Log(exception.Message);
   }
 
@@ -365,7 +429,9 @@ public class ProgressReport
     get
     {
       lock (OperationErrorsLock)
+      {
         return string.Join("\n", OperationErrors.Select(x => x.ToFormattedString()).Distinct());
+      }
     }
   }
 
@@ -374,7 +440,9 @@ public class ProgressReport
   public void LogOperationError(Exception exception)
   {
     lock (OperationErrorsLock)
+    {
       OperationErrors.Add(exception);
+    }
   }
 
   #endregion

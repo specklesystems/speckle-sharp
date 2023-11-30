@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Autodesk.Navisworks.Api;
@@ -20,16 +20,16 @@ public partial class ConverterNavisworks
   private const string ProxyOrigin = "Project Base Origin";
   private const string BBoxOrigin = "Boundingbox Origin";
 
-
   private static Dictionary<string, string> Settings { get; } = new();
-
 
   private static Vector2D ProjectBasePoint
   {
     get
     {
       if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate"))
+      {
         return new Vector2D(0, 0);
+      }
 
       var x = Settings["x-coordinate"];
       var y = Settings["y-coordinate"];
@@ -46,7 +46,10 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("reference-point"))
+      {
         return Transforms.Default;
+      }
+
       var value = Settings["reference-point"];
 
       return value switch
@@ -64,7 +67,10 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("units"))
+      {
         return Units.Meters;
+      }
+
       var value = Settings["units"];
 
       return (Units)Enum.Parse(typeof(Units), value, true);
@@ -76,7 +82,9 @@ public partial class ConverterNavisworks
     get
     {
       if (!Settings.ContainsKey("internal-property-names"))
+      {
         return false;
+      }
 
       var value = Settings["internal-property-names"];
 

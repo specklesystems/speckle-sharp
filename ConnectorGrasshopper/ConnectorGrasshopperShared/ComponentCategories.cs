@@ -1,4 +1,4 @@
-﻿namespace ConnectorGrasshopper;
+namespace ConnectorGrasshopper;
 
 // NOTE:
 // The number of spaces determines the order in which they display in the ribbon (nice hack)

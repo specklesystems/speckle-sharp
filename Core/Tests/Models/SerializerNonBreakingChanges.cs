@@ -235,13 +235,15 @@ public abstract class SerializerMock : Base
 
   public override string speckle_type => _speckle_type;
 
-  public void SerializeAs<T>() where T : Base, new()
+  public void SerializeAs<T>()
+    where T : Base, new()
   {
     T target = new();
     _speckle_type = target.speckle_type;
   }
 
-  internal TTo SerializeAsTAndDeserialize<TTo>() where TTo : Base, new()
+  internal TTo SerializeAsTAndDeserialize<TTo>()
+    where TTo : Base, new()
   {
     SerializeAs<TTo>();
 

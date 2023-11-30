@@ -159,22 +159,35 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     if (Schemas.Any())
     {
       if (Schemas.Any(x => x.HasData))
+      {
         SelectedSchema = Schemas.First(x => x.HasData);
+      }
+
       SelectedSchema = Schemas.First();
 
       if (SelectedStream == null || !AvailableRevitTypes.Any() || !AvailableRevitLevels.Any())
+      {
         PromptMsg = "Try selecting a compatible mapping source for more options.";
+      }
     }
     else
     {
       if (SelectedStream == null)
+      {
         PromptMsg = "No options available for the current selection, try selecting a mapping data source.";
+      }
       else if (!AvailableRevitTypes.Any())
+      {
         PromptMsg = "The selected branch does not contain any Revit types, try changing mapping data source.";
+      }
       else if (!AvailableRevitLevels.Any())
+      {
         PromptMsg = "The selected branch does not contain any Revit levels, try changing mapping data source.";
+      }
       else
+      {
         PromptMsg = "Incompatible selection, try selecting objects of the same type or changing mapping source";
+      }
 
       SelectedSchema = null;
     }
@@ -192,7 +205,9 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       var model = await GetCommit().ConfigureAwait(true);
 
       if (model == null)
+      {
         return;
+      }
 
       GetTypesAndLevels(model);
 
@@ -200,7 +215,9 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
 
       //force an update
       if (_lastInfo != null)
+      {
         UpdateSelection(_lastInfo);
+      }
     }
     catch (Exception e) { }
     finally
@@ -216,16 +233,20 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       || StreamSelector.SelectedBranch.commits == null
       || StreamSelector.SelectedBranch.commits.items.Count == 0
     )
+    {
       return null;
+    }
 
     ShowProgress = true;
 
     using var client = new Client(StreamSelector.SelectedStream.Account);
     Commit commit = StreamSelector.SelectedBranch.commits.items.FirstOrDefault();
     if (commit == null)
+    {
       throw new Exception(
         $"Branch {StreamSelector.SelectedBranch.name} in stream {StreamSelector.SelectedStream.Stream.id} has no commits"
       );
+    }
 
     using var transport = new ServerTransport(
       StreamSelector.SelectedStream.Account,
@@ -248,7 +269,9 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         {
           var elementTypes = ((IList)baseCategory.Value).Cast<RevitElementType>().ToList();
           if (!elementTypes.Any())
+          {
             continue;
+          }
 
           revitTypes.AddRange(elementTypes);
         }
@@ -312,7 +335,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       var updatedSchemas = new List<Schema>();
 
       foreach (var schema in schemas)
-        //no need to do extra stuff
+      //no need to do extra stuff
+      {
         if (
           schema is DirectShapeFreeformViewModel
           || schema is BlockDefinitionViewModel
@@ -327,15 +351,21 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
           || schema is RevitDefaultPipeViewModel
           || schema is RevitDefaultDuctViewModel
         )
+        {
           updatedSchemas.Add(schema);
+        }
         //add revit info
         else
+        {
           switch (schema)
           {
             case RevitWallViewModel o:
               var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
               if (!wallFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var wallFamiliesViewModels = wallFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -348,7 +378,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitProfileWallViewModel o:
               var profileWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
               if (!profileWallFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var profileWallFamiliesViewModels = profileWallFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -361,7 +394,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitFaceWallViewModel o:
               var faceWallFamilies = AvailableRevitTypes.Where(x => x.family == "Basic Wall").ToList();
               if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var faceWallFamiliesViewModels = faceWallFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -374,7 +410,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitFloorViewModel o:
               var floorFamilies = AvailableRevitTypes.Where(x => x.category == "Floors").ToList();
               if (!floorFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var floorFamiliesViewModels = floorFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -387,7 +426,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitCeilingViewModel o:
               var ceilingFamilies = AvailableRevitTypes.Where(x => x.category == "Ceilings").ToList();
               if (!ceilingFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var ceilingFamiliesViewModels = ceilingFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -400,7 +442,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitFootprintRoofViewModel o:
               var roofFamilies = AvailableRevitTypes.Where(x => x.category == "Roofs").ToList();
               if (!roofFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var roofFamiliesViewModels = roofFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -413,7 +458,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitBeamViewModel o:
               var beamFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
               if (!beamFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var beamFamiliesViewModels = beamFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -426,7 +474,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitBraceViewModel o:
               var braceFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
               if (!braceFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var braceFamiliesViewModels = braceFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -439,7 +490,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             case RevitColumnViewModel o:
               var columnFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Columns").ToList();
               if (!columnFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var columnFamiliesViewModels = columnFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -455,7 +509,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
                 .Cast<RevitMepElementType>()
                 .ToList();
               if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var pipeFamiliesViewModels = pipeFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape))
@@ -471,7 +528,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
                 .Cast<RevitMepElementType>()
                 .ToList();
               if (!ductFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var ductFamiliesViewModels = ductFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape))
@@ -486,7 +546,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
                 .Where(x => x is RevitSymbolElementType symbol && symbol.placementType == "OneLevelBased")
                 .ToList();
               if (!fiFamilies.Any() || !AvailableRevitLevels.Any())
+              {
                 break;
+              }
+
               var fiFamiliesViewModels = fiFamilies
                 .GroupBy(x => x.family)
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
@@ -496,6 +559,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
               updatedSchemas.Add(o);
               break;
           }
+        }
+      }
 
       //var revitMetadata = new List<RevitMetadataViewModel>();
 
@@ -530,7 +595,9 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
   public bool CanSetMappingsCommand(object parameter)
   {
     if (SelectedSchema == null)
+    {
       return false;
+    }
     //TODO: trigger refresh as any of these changes so we can check if schema is valid
     //var vals = SelectedSchema.GetType().GetProperties()
     //                      .Select(p => p.GetValue(SelectedSchema)).ToList();
@@ -565,7 +632,9 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         .OfType<ListBox>()
         .Where(x => x.Classes.Contains("ExistingMapping"));
       foreach (var lBox in lBoxes)
+      {
         ids.AddRange(lBox.SelectedItems.Cast<Schema>().Where(x => x != null).Select(x => x.ApplicationId));
+      }
     }
     catch (Exception ex)
     {

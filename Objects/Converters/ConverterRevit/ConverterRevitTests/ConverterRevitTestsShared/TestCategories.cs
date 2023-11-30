@@ -1,65 +1,61 @@
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 
-namespace ConverterRevitTests
-{
-  internal static class TestCategories
-  {
-    public const string AdaptiveComponent = "adaptivecomponent";
-    public const string Beam = "beam";
-    public const string Brep = "brep";
-    public const string Column = "column";
-    public const string Curve = "curve";
-    public const string DirectShape = "directshape";
-    public const string Duct = "duct";
-    public const string FamilyInstance = "familyinstance";
-    public const string Floor = "floor";
-    public const string Opening = "opening";
-    public const string Pipe = "pipe";
-    public const string Roof = "roof";
-    public const string Room = "room";
-    public const string Schedule = "schedule";
-    public const string Wall = "wall";
-    public const string Wire = "wire";
+namespace ConverterRevitTests;
 
-    public static Dictionary<string, List<BuiltInCategory>> CategoriesDict = new()
+internal static class TestCategories
+{
+  public const string AdaptiveComponent = "adaptivecomponent";
+  public const string Beam = "beam";
+  public const string Brep = "brep";
+  public const string Column = "column";
+  public const string Curve = "curve";
+  public const string DirectShape = "directshape";
+  public const string Duct = "duct";
+  public const string FamilyInstance = "familyinstance";
+  public const string Floor = "floor";
+  public const string Opening = "opening";
+  public const string Pipe = "pipe";
+  public const string Roof = "roof";
+  public const string Room = "room";
+  public const string Schedule = "schedule";
+  public const string Wall = "wall";
+  public const string Wire = "wire";
+
+  public static Dictionary<string, List<BuiltInCategory>> CategoriesDict =
+    new()
     {
-      { AdaptiveComponent, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_GenericModel
-        }
+      {
+        AdaptiveComponent,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_GenericModel }
       },
-      { Beam, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_StructuralFraming
-        }
+      {
+        Beam,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_StructuralFraming }
       },
-      { Brep, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Mass
-        }
+      {
+        Brep,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Mass }
       },
-      { Column, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns
-        }
+      {
+        Column,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns }
       },
-      { Curve, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines
-        }
+      {
+        Curve,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines }
       },
-      { DirectShape, new List<BuiltInCategory>()
-        {
-            BuiltInCategory.OST_GenericModel
-        }
+      {
+        DirectShape,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_GenericModel }
       },
-      { Duct, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_DuctCurves
-        }
+      {
+        Duct,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_DuctCurves }
       },
-      { FamilyInstance, new List<BuiltInCategory>()
+      {
+        FamilyInstance,
+        new List<BuiltInCategory>()
         {
           BuiltInCategory.OST_Furniture,
           BuiltInCategory.OST_Doors,
@@ -77,12 +73,13 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Floors
         }
       },
-      { Floor, new List<BuiltInCategory>()
-        {
-            BuiltInCategory.OST_Floors
-        }
+      {
+        Floor,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Floors }
       },
-      { Opening, new List<BuiltInCategory>()
+      {
+        Opening,
+        new List<BuiltInCategory>()
         {
           BuiltInCategory.OST_CeilingOpening,
           BuiltInCategory.OST_ColumnOpening,
@@ -98,36 +95,29 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Roofs
         }
       },
-      { Pipe, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_PipeCurves
-        }
+      {
+        Pipe,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_PipeCurves }
       },
-      { Roof, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Roofs
-        }
+      {
+        Roof,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Roofs }
       },
-      { Room, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Rooms
-        }
+      {
+        Room,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Rooms }
       },
-      { Schedule, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Schedules
-        }
+      {
+        Schedule,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Schedules }
       },
-      { Wall, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Walls
-        }
+      {
+        Wall,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Walls }
       },
-      { Wire, new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Wire
-        }
+      {
+        Wire,
+        new List<BuiltInCategory>() { BuiltInCategory.OST_Wire }
       },
     };
-  }
 }

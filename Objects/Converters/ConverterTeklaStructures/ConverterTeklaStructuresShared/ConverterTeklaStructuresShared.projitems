@@ -11,19 +11,19 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterTeklaStructureUtils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectShapeMesh.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBooleanPart.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolygonWelds.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWelds.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBentPlate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertContourPlate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBolts.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertLoftedPlates.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPolyBeam.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpiralBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertDirectShapeMesh.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertFitting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertBooleanPart.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertPolygonWelds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertWelds.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertBentPlate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertContourPlate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertBolts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertLoftedPlates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertPolyBeam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertRebar.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PartialClasses\ConvertSpiralBeam.cs" />
   </ItemGroup>
 </Project>

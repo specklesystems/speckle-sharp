@@ -41,20 +41,26 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     get
     {
       if (properties.ContainsKey(key))
+      {
         return properties[key];
+      }
 
       PopulatePropInfoCache(GetType());
       var prop = propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
 
       if (prop == null)
+      {
         return null;
+      }
 
       return prop.GetValue(this);
     }
     set
     {
       if (!IsPropNameValid(key, out string reason))
+      {
         throw new InvalidPropNameException(key, reason);
+      }
 
       if (properties.ContainsKey(key))
       {
@@ -104,7 +110,10 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   {
     var valid = IsPropNameValid(binder.Name, out _);
     if (valid)
+    {
       properties[binder.Name] = value;
+    }
+
     return valid;
   }
 
@@ -140,9 +149,11 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   private static void PopulatePropInfoCache(Type type)
   {
     if (!propInfoCache.ContainsKey(type))
+    {
       propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true))
         .ToList();
+    }
   }
 
   /// <summary>
@@ -156,9 +167,14 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
     var names = new List<string>(properties.Count + pinfos.Count);
     foreach (var pinfo in pinfos)
+    {
       names.Add(pinfo.Name);
+    }
+
     foreach (var kvp in properties)
+    {
       names.Add(kvp.Key);
+    }
 
     return names;
   }
@@ -180,7 +196,9 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
     var names = new List<string>(pinfos.Count);
     foreach (var pinfo in pinfos)
+    {
       names.Add(pinfo.Name);
+    }
 
     return names;
   }
@@ -202,8 +220,12 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     var names = new List<PropertyInfo>(pinfos.Count);
 
     foreach (var pinfo in pinfos)
+    {
       if (pinfo.Name != "Item")
+      {
         names.Add(pinfo);
+      }
+    }
 
     return names;
   }
@@ -230,7 +252,9 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
     // Add dynamic members
     if (includeMembers.HasFlag(DynamicBaseMemberType.Dynamic))
+    {
       dic = new Dictionary<string, object>(properties);
+    }
 
     if (includeMembers.HasFlag(DynamicBaseMemberType.Instance))
     {
@@ -249,11 +273,16 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
         );
       });
       foreach (var pi in pinfos)
+      {
         if (!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!
+        {
           dic.Add(pi.Name, pi.GetValue(this));
+        }
+      }
     }
 
     if (includeMembers.HasFlag(DynamicBaseMemberType.SchemaComputed))
+    {
       GetType()
         .GetMethods()
         .Where(e => e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute)))
@@ -271,6 +300,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
             dic[attr.Name] = null;
           }
         });
+    }
 
     return dic;
   }

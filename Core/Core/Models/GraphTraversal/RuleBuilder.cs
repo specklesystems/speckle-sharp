@@ -34,8 +34,13 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
   bool ITraversalRule.DoesRuleHold(Base o)
   {
     foreach (var condition in _conditions)
+    {
       if (condition.Invoke(o))
+      {
         return true;
+      }
+    }
+
     return false;
   }
 

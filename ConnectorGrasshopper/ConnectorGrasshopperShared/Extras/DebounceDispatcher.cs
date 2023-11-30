@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Threading;
 
 namespace ConnectorGrasshopper.Extras;
@@ -49,7 +49,9 @@ public class DebounceDispatcher
     timer = null;
 
     if (disp == null)
+    {
       disp = Dispatcher.CurrentDispatcher;
+    }
 
     // timer is recreated for each event and effectively
     // resets the timeout. Action only fires after timeout has fully
@@ -60,7 +62,9 @@ public class DebounceDispatcher
       (s, e) =>
       {
         if (timer == null)
+        {
           return;
+        }
 
         timer?.Stop();
         timer = null;
@@ -97,14 +101,18 @@ public class DebounceDispatcher
     timer = null;
 
     if (disp == null)
+    {
       disp = Dispatcher.CurrentDispatcher;
+    }
 
     var curTime = DateTime.UtcNow;
 
     // if timeout is not up yet - adjust timeout to fire
     // with potentially new Action parameters
     if (curTime.Subtract(timerStarted).TotalMilliseconds < interval)
+    {
       interval -= (int)curTime.Subtract(timerStarted).TotalMilliseconds;
+    }
 
     timer = new DispatcherTimer(
       TimeSpan.FromMilliseconds(interval),
@@ -112,7 +120,9 @@ public class DebounceDispatcher
       (s, e) =>
       {
         if (timer == null)
+        {
           return;
+        }
 
         timer?.Stop();
         timer = null;

@@ -102,7 +102,10 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
   public void BeginWrite()
   {
     if (!GetWriteCompletionStatus())
+    {
       throw new SpeckleException("Transport is still writing.");
+    }
+
     TotalSentBytes = 0;
     SavedObjectCount = 0;
   }
@@ -221,7 +224,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     while (_queue.TryPeek(out queueElement) && payloadBufferSize < MaxBufferSize)
     {
       if (CancellationToken.IsCancellationRequested)
+      {
         return (queuedBatch.Count, null);
+      }
 
       _queue.TryDequeue(out queueElement);
       queuedBatch.Add(queueElement);
@@ -245,8 +250,12 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     List<(string, string, int)> newBatch = new();
     foreach (var queuedItem in queuedBatch)
+    {
       if (!hasObjects.ContainsKey(queuedItem.Item1) || !hasObjects[queuedItem.Item1])
+      {
         newBatch.Add(queuedItem);
+      }
+    }
 
     return (queuedBatch.Count, newBatch);
   }
@@ -261,7 +270,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
 
     if (_queue.Count == 0)
+    {
       return;
+    }
 
     _isWriting = true;
     using var message = new HttpRequestMessage
@@ -304,7 +315,10 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
       for (int i = 0; i < batch.Count; i++)
       {
         if (i > 0)
+        {
           _ctBuilder.Append(",");
+        }
+
         _ctBuilder.Append(batch[i].Item2);
         TotalSentBytes += batch[i].Item3;
       }
@@ -336,6 +350,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
 
     if (addedMpCount > 0)
+    {
       try
       {
         var response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
@@ -352,6 +367,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
         _queue = new ConcurrentQueue<(string, string, int)>();
         return;
       }
+    }
 
     _isWriting = false;
 
@@ -463,7 +479,10 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     List<string> childrenIds = new();
     var rootPartial = JsonConvert.DeserializeObject<Placeholder>(rootObjectStr);
     if (rootPartial.__closure != null)
+    {
       childrenIds = new List<string>(rootPartial.__closure.Keys);
+    }
+
     onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
     var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
@@ -481,7 +500,10 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
       {
         downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
         if (!downloadBatchResult)
+        {
           return null;
+        }
+
         childrenIdBatch = new List<string>(DownloadBatchSize);
       }
     }
@@ -489,7 +511,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
     {
       downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
       if (!downloadBatchResult)
+      {
         return null;
+      }
     }
 
     targetTransport.SaveObject(id, rootObjectStr);
@@ -573,8 +597,12 @@ internal sealed class GzipContent : HttpContent
 
     // Keep the original content's headers ...
     if (content != null)
+    {
       foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
+      {
         Headers.TryAddWithoutValidation(header.Key, header.Value);
+      }
+    }
 
     // ... and let the server know we've Gzip-compressed the body of this request.
     Headers.ContentEncoding.Add("gzip");
@@ -585,9 +613,13 @@ internal sealed class GzipContent : HttpContent
     // Open a GZipStream that writes to the specified output stream.
     using GZipStream gzip = new(stream, CompressionMode.Compress, true);
     if (_content != null)
+    {
       await _content.CopyToAsync(gzip).ConfigureAwait(false);
+    }
     else
+    {
       await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
+    }
   }
 
   protected override bool TryComputeLength(out long length)

@@ -18,7 +18,9 @@ public static class TestAutomateFunction
     if (versionRootObject.speckle_type == testFunctionInputs.ForbiddenSpeckleType)
     {
       if (versionRootObject.id is null)
+      {
         throw new InvalidOperationException("Cannot operate on objects without their ids");
+      }
 
       automateContext.AttachErrorToObjects(
         "",

@@ -93,12 +93,19 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   public void SetConverterSettings(object settings)
   {
     if (settings is Dictionary<string, string> temp)
+    {
       Settings = temp;
+    }
     // TODO: Both settings bellow are here for backwards compatibility and should be removed after consolidating settings
     else if (settings is MeshSettings meshSettings)
+    {
       SelectedMeshSettings = meshSettings;
+    }
+
     if (Settings.TryGetValue("preprocessGeometry", out string setting))
+    {
       bool.TryParse(setting, out PreprocessGeometry);
+    }
   }
 
   public void SetContextDocument(object doc)
@@ -114,16 +121,23 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   {
     ObjRef[] meshObjRefs = RhinoObject.GetRenderMeshes(new List<RhinoObject> { rhinoObj }, false, false);
     if (meshObjRefs == null || meshObjRefs.Length == 0)
+    {
       return null;
+    }
+
     if (meshObjRefs.Length == 1)
+    {
       return meshObjRefs[0]?.Mesh();
+    }
 
     var joinedMesh = new RH.Mesh();
     foreach (var t in meshObjRefs)
     {
       var mesh = t?.Mesh();
       if (mesh != null)
+      {
         joinedMesh.Append(mesh);
+      }
     }
 
     return joinedMesh;
@@ -163,22 +177,32 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
           // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
           if (ro is BrepObject || ro is ExtrusionObject)
+          {
             displayMesh = GetRhinoRenderMesh(ro);
+          }
 
           //mapping tool
           var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
           if (mappingString != null)
+          {
             schema = MappingToSpeckle(mappingString, ro, notes);
+          }
 
           if (!(@object is InstanceObject))
+          {
             @object = ro.Geometry; // block instance check
+          }
+
           break;
 
         case Layer l:
           var lId = l.GetUserString(ApplicationIdKey) ?? l.Id.ToString();
           reportObj = new ApplicationObject(l.Id.ToString(), "Layer") { applicationId = lId };
           if (l.RenderMaterial != null)
+          {
             material = RenderMaterialToSpeckle(l.RenderMaterial);
+          }
+
           style = DisplayStyleToSpeckle(new ObjectAttributes(), l);
           userDictionary = l.UserDictionary;
           userStrings = l.GetUserStrings();
@@ -186,7 +210,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       }
 
       if (schema != null)
+      {
         PreprocessGeometry = true;
+      }
 
       switch (@object)
       {
@@ -270,9 +296,14 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
+          {
             @base = BrepToSpeckle(o.ToBrep(new RH.SubDToBrepOptions()), null, displayMesh, material);
+          }
           else
+          {
             @base = MeshToSpeckle(o);
+          }
+
           break;
 #endif
         case RH.Extrusion o:
@@ -316,7 +347,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       }
 
       if (@base is null)
+      {
         return @base;
+      }
 
       GetUserInfo(@base, out List<string> attributeNotes, userDictionary, userStrings, objName);
       notes.AddRange(attributeNotes);
@@ -324,10 +357,15 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       {
         @base["renderMaterial"] = material;
         if (schema != null)
+        {
           schema["renderMaterial"] = material;
+        }
       }
       if (style != null)
+      {
         @base["displayStyle"] = style;
+      }
+
       if (schema != null)
       {
         @base["@SpeckleSchema"] = schema;
@@ -549,6 +587,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
         rhinoObj = o.Converted.Any() ? o.Converted : null;
         if (reportObj != null)
+        {
           reportObj.Update(
             status: o.Status,
             createdIds: o.CreatedIds,
@@ -556,16 +595,24 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             container: o.Container,
             log: o.Log
           );
+        }
+
         break;
 
       default:
         if (reportObj != null)
+        {
           reportObj.Update(log: notes);
+        }
+
         break;
     }
 
     if (reportObj != null)
+    {
       Report.UpdateReportObject(reportObj);
+    }
+
     return rhinoObj;
   }
 
@@ -582,7 +629,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   public bool CanConvertToSpeckle(object @object)
   {
     if (@object is RhinoObject ro && !(@object is InstanceObject))
+    {
       @object = ro.Geometry;
+    }
 
     switch (@object)
     {
@@ -612,6 +661,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case RH.Extrusion _:
       case RH.Brep _:
       case RH.NurbsSurface _:
+      case RH.TextEntity _:
         return true;
 
 #if GRASSHOPPER
@@ -625,7 +675,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case ViewInfo _:
       case InstanceDefinition _:
       case InstanceObject _:
-      case RH.TextEntity _:
       case RH.Dimension _:
       case Layer _:
         return true;
@@ -659,6 +708,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Brep _:
       case Surface _:
       case Element1D _:
+      case Text _:
         return true;
 #if GRASSHOPPER
       case Interval _:
@@ -678,7 +728,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case GridLine _:
       case Alignment _:
       case Level _:
-      case Text _:
       case Dimension _:
       case Collection c when !c.collectionType.ToLower().Contains("model"):
         return true;

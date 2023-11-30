@@ -95,8 +95,6 @@ namespace Objects.Converter.Revit
         CreateSystemConnections(speckleRevitDuct.Connectors, duct, receivedObjectsCache);
       }
 
-      CreateSystemConnections(speckleRevitDuct.Connectors, duct, receivedObjectsCache);
-
       appObj.Update(status: ApplicationObject.State.Created, createdId: duct.UniqueId, convertedItem: duct);
       return appObj;
     }

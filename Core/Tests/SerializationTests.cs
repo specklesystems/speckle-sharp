@@ -21,7 +21,9 @@ public class Serialization
 
     var polyline = new Polyline();
     for (int i = 0; i < 100; i++)
+    {
       polyline.Points.Add(new Point { X = i * 2, Y = i % 2 });
+    }
 
     var strPoly = Operations.Serialize(polyline);
     var dePoly = Operations.Deserialize(strPoly);
@@ -35,7 +37,9 @@ public class Serialization
     // TODO
     var dict = new Dictionary<string, Base>();
     for (int i = 0; i < 10; i++)
+    {
       dict[$"key{i}"] = new Point(i, i, i);
+    }
 
     var result = Operations.Serialize(dict);
     var test = Operations.DeserializeDictionary(result);
@@ -120,7 +124,9 @@ public class Serialization
     var test = new List<Base>();
 
     for (var i = 0; i < 100; i++)
+    {
       test.Add(new SuperPoint { W = i });
+    }
 
     point["test"] = test;
 
@@ -136,15 +142,21 @@ public class Serialization
   {
     var baseBasedChunk = new DataChunk();
     for (var i = 0; i < 200; i++)
+    {
       baseBasedChunk.data.Add(new SuperPoint { W = i });
+    }
 
     var stringBasedChunk = new DataChunk();
     for (var i = 0; i < 200; i++)
+    {
       stringBasedChunk.data.Add(i + "_hai");
+    }
 
     var doubleBasedChunk = new DataChunk();
     for (var i = 0; i < 200; i++)
+    {
       doubleBasedChunk.data.Add(i + 0.33);
+    }
 
     var baseChunkString = Operations.Serialize(baseBasedChunk);
     var stringChunkString = Operations.Serialize(stringBasedChunk);

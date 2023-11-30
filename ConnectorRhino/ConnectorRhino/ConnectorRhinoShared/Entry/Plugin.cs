@@ -50,7 +50,9 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   public void Init()
   {
     if (appBuilder != null)
+    {
       return;
+    }
 #if MAC
       InitAvaloniaMac();
 #else
@@ -122,8 +124,12 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
       // remove any that don't already exist in the current active doc
       foreach (var incomingStream in incomingStreams)
+      {
         if (!ExistingStreams.Contains(incomingStream))
+        {
           RhinoDoc.ActiveDoc.Strings.Delete(SpeckleKey, incomingStream);
+        }
+      }
 
       // skip binding
       return;
@@ -150,8 +156,10 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
   {
     if (e.Merge) // this is a paste or import event
+    {
       // get existing streams in doc before a paste or import operation to use for cleanup
       ExistingStreams = RhinoDoc.ActiveDoc.Strings.GetEntryNames(SpeckleKey).ToList();
+    }
   }
 
   /// <summary>
@@ -227,12 +235,16 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     var plugin_version = Settings.GetString("PlugInVersion", null);
 
     if (string.IsNullOrEmpty(plugin_version))
+    {
       return;
+    }
 
     // If the version number of the plugin that was last used does not match the
     // version number of this plugin, proceed.
     if (0 == string.Compare(Version, plugin_version, StringComparison.OrdinalIgnoreCase))
+    {
       return;
+    }
 
     // Build a path to the user's staged RUI file.
     var sb = new StringBuilder();
@@ -251,6 +263,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
       SpeckleLog.Logger.Debug("Deleting and Updating RUI settings file");
 
       if (File.Exists(path))
+      {
         try
         {
           File.Delete(path);
@@ -259,6 +272,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         {
           SpeckleLog.Logger.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
         }
+      }
     }
 
     // Save the version number of this plugin to our settings file.
@@ -269,11 +283,15 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   {
     //do not hog rhino, to be refractored a bit
     if (MappingsViewModel.Instance == null)
+    {
       return;
+    }
 
 #if !MAC
     if (!Panels.GetOpenPanelIds().Contains(typeof(MappingsPanel).GUID))
+    {
       return;
+    }
 #else
       if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
         return;

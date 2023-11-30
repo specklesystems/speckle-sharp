@@ -81,7 +81,9 @@ public abstract class GraphTraversal<T>
       var activeRule = GetActiveRuleOrDefault(current);
 
       foreach (string childProp in activeRule.MembersToTraverse(current))
+      {
         TraverseMemberToStack(stack, current[childProp], childProp, head);
+      }
     }
   }
 
@@ -101,13 +103,19 @@ public abstract class GraphTraversal<T>
       case IList list:
       {
         foreach (object? obj in list)
+        {
           TraverseMemberToStack(stack, obj, memberName, parent);
+        }
+
         break;
       }
       case IDictionary dictionary:
       {
         foreach (object? obj in dictionary.Values)
+        {
           TraverseMemberToStack(stack, obj, memberName, parent);
+        }
+
         break;
       }
     }
@@ -133,7 +141,9 @@ public abstract class GraphTraversal<T>
         foreach (object? obj in list)
         {
           foreach (Base o in TraverseMember(obj))
+          {
             yield return o;
+          }
         }
         break;
       }
@@ -142,7 +152,9 @@ public abstract class GraphTraversal<T>
         foreach (object? obj in dictionary.Values)
         {
           foreach (Base o in TraverseMember(obj))
+          {
             yield return o;
+          }
         }
         break;
       }
@@ -157,8 +169,12 @@ public abstract class GraphTraversal<T>
   private ITraversalRule? GetActiveRule(Base o)
   {
     foreach (var rule in rules)
+    {
       if (rule.DoesRuleHold(o))
+      {
         return rule;
+      }
+    }
 
     return null;
   }

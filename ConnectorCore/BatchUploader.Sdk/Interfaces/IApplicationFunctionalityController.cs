@@ -1,4 +1,4 @@
-﻿namespace Speckle.BatchUploader.Sdk.Interfaces;
+namespace Speckle.BatchUploader.Sdk.Interfaces;
 
 public interface IApplicationFunctionalityController
 {

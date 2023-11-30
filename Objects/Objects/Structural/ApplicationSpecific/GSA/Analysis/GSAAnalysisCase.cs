@@ -20,7 +20,10 @@ public class GSAAnalysisCase : Base
   )
   {
     if (loadCases.Count != loadFactors.Count)
+    {
       throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
+    }
+
     this.nativeId = nativeId;
     this.name = name;
     this.task = task;

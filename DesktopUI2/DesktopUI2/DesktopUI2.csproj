@@ -8,6 +8,13 @@
         <PackageId>Speckle.DesktopUI</PackageId>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
+  
+    <PropertyGroup Label="Legacy Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+      <WarningLevel>0</WarningLevel>
+      <EnableNetAnalyzers>false</EnableNetAnalyzers>
+      <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+  
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>

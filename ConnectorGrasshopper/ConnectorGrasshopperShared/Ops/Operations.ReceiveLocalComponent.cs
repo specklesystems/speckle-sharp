@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -57,6 +57,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
     var kits = KitManager.GetKitsWithConvertersForApp(Utilities.GetVersionedAppName());
 
     foreach (var kit in kits)
+    {
       Menu_AppendItem(
         menu,
         $"{kit.Name} ({kit.Description})",
@@ -67,6 +68,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
         true,
         kit.Name == Kit.Name
       );
+    }
 
     base.AppendAdditionalMenuItems(menu);
   }
@@ -80,7 +82,9 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
   public void SetConverterFromKit(string kitName)
   {
     if (kitName == Kit.Name)
+    {
       return;
+    }
 
     Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
     Converter = Kit.LoadConverter(Utilities.GetVersionedAppName());
@@ -120,7 +124,9 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
     }
     base.SolveInstance(DA);
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun();
+    }
   }
 }
 
@@ -174,10 +180,14 @@ public class ReceiveLocalWorker : WorkerInstance
   public override void SetData(IGH_DataAccess DA)
   {
     if (data != null)
+    {
       DA.SetDataTree(0, data);
+    }
 
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
 
     Parent.Message = "Done";
   }
