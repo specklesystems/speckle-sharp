@@ -479,7 +479,7 @@ public class BaseObjectSerializer : JsonConverter
         jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
       }
 
-      var hash = Crypt.Sha256(jo.ToString());
+      var hash = Utilities.HashString(jo.ToString());
       if (!jo.ContainsKey("id"))
       {
         jo.Add("id", JToken.FromObject(hash));

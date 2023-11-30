@@ -110,7 +110,6 @@ public static partial class Operations
       var localProgressDict = new ConcurrentDictionary<string, int>();
       var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
 
-      localTransport.OnErrorAction = onErrorAction;
       localTransport.OnProgressAction = internalProgressAction;
       localTransport.CancellationToken = cancellationToken;
 
@@ -195,7 +194,6 @@ public static partial class Operations
 
       // If we've reached this stage, it means that we didn't get a local transport hit on our object, so we will proceed to get it from the provided remote transport.
       // This is done by copying itself and all its children from the remote transport into the local one.
-      remoteTransport.OnErrorAction = onErrorAction;
       remoteTransport.OnProgressAction = internalProgressAction;
       remoteTransport.CancellationToken = cancellationToken;
 
