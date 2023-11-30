@@ -621,7 +621,7 @@ public partial class ConverterAutocadCivil
     var commitInfo = "dui3_test";
 
     // get the definition name
-    var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
+    // var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
     string definitionName = definition is BlockDefinition blockDef
       ? RemoveInvalidAutocadChars(blockDef.name)
       : definition is RevitSymbolElementType revitDef
