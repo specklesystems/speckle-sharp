@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
-using Objects.Structural.Geometry;
 using Tekla.Structures.Model;
 using System.Linq;
 using Objects.Geometry;

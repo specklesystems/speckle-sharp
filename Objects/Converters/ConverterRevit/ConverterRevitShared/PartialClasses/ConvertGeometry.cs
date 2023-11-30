@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.DoubleNumerics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
-using Objects.Converters.DxfConverter;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
@@ -23,7 +20,6 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
-using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
 

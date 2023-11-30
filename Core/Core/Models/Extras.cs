@@ -177,13 +177,7 @@ public class ApplicationObject
     string descriptor = null
   )
   {
-    if (createdIds != null)
-    {
-      createdIds
-        .Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))
-        ?.ToList()
-        .ForEach(o => CreatedIds.Add(o));
-    }
+    createdIds?.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(CreatedIds.Add);
 
     if (createdId != null && !CreatedIds.Contains(createdId))
     {
@@ -195,10 +189,7 @@ public class ApplicationObject
       Status = status.Value;
     }
 
-    if (log != null)
-    {
-      log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
-    }
+    log?.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(Log.Add);
 
     if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem))
     {
@@ -210,10 +201,7 @@ public class ApplicationObject
       Converted.Add(convertedItem);
     }
 
-    if (converted != null)
-    {
-      converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
-    }
+    converted?.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(Converted.Add);
 
     if (!string.IsNullOrEmpty(container))
     {
