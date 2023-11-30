@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Autodesk.DesignScript.Geometry;
 using Objects.Geometry;
 using Speckle.Core.Models;
@@ -16,7 +15,6 @@ using Arc = Objects.Geometry.Arc;
 using Ellipse = Objects.Geometry.Ellipse;
 using Curve = Objects.Geometry.Curve;
 using Mesh = Objects.Geometry.Mesh;
-using Objects;
 using Objects.Other;
 using Objects.Utils;
 using Spiral = Objects.Geometry.Spiral;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
 using Speckle.ConnectorNavisworks.Bindings;

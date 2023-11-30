@@ -2,11 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using Autodesk.DesignScript.Runtime;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions;
 

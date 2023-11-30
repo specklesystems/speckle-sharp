@@ -1,15 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.DoubleNumerics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using ConverterRevitShared.Extensions;
-using Objects.BuiltElements.Revit;
-using Objects.Organization;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;

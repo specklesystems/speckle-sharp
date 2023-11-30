@@ -1,14 +1,11 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
@@ -192,7 +189,7 @@ public partial class ConverterAutocadCivil
   public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection, bool useFirstIfNull = false)
   {
     var id = ObjectId.Null;
-    if ((string.IsNullOrEmpty(name) && !useFirstIfNull) || (string.IsNullOrEmpty(name) && collection.Count == 0))
+    if (string.IsNullOrEmpty(name) && !useFirstIfNull || string.IsNullOrEmpty(name) && collection.Count == 0)
     {
       return id;
     }

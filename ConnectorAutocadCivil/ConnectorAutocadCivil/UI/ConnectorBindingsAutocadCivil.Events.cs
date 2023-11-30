@@ -24,10 +24,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
   public void Application_LayerChanged(object sender, EventArgs e)
   {
-    if (UpdateSelectedStream != null)
-    {
-      UpdateSelectedStream();
-    }
+    UpdateSelectedStream?.Invoke();
   }
 
   //checks whether to refresh the stream list in case the user changes active view and selects a different document
@@ -55,10 +52,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
       if (e.Document == null)
       {
-        if (SpeckleAutocadCommand.MainWindow != null)
-        {
-          SpeckleAutocadCommand.MainWindow.Hide();
-        }
+        SpeckleAutocadCommand.MainWindow?.Hide();
 
         MainViewModel.GoHome();
         return;
@@ -70,10 +64,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         SpeckleAutocadCommand.CreateOrFocusSpeckle();
       }
 
-      if (UpdateSavedStreams != null)
-      {
-        UpdateSavedStreams(streams);
-      }
+      UpdateSavedStreams?.Invoke(streams);
 
       MainViewModel.GoHome();
     }

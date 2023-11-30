@@ -32,7 +32,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       throw new InvalidOperationException("No Document is open");
     }
 
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(VersionedAppName);
 
     var stream = await state.Client.StreamGet(state.StreamId);
 
@@ -40,7 +40,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     state.LastCommit = commit;
 
     Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-    await ConnectorHelpers.TryCommitReceived(state, commit, Utils.VersionedAppName, progress.CancellationToken);
+    await ConnectorHelpers.TryCommitReceived(state, commit, VersionedAppName, progress.CancellationToken);
 
     // invoke conversions on the main thread via control
     try
@@ -172,16 +172,18 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           string layer = null;
 
           // try to see if there's a collection object first
-          var collection = commitObjs
-            .Where(o => o.Container == container && o.Descriptor.Contains("Collection"))
-            .FirstOrDefault();
+          var collection = commitObjs.FirstOrDefault(
+            o => o.Container == container && o.Descriptor.Contains("Collection")
+          );
           if (collection != null)
           {
             var storedCollection = StoredObjects[collection.OriginalId];
             storedCollection["path"] = path; // needed by converter
             converter.Report.Log(collection); // Log object so converter can access
-            var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
-            if (convertedCollection != null && convertedCollection.Count > 0)
+            if (
+              converter.ConvertToNative(storedCollection) is List<object> convertedCollection
+              && convertedCollection.Count > 0
+            )
             {
               layer = (convertedCollection.First() as LayerTableRecord)?.Name;
               commitObjs[commitObjs.IndexOf(collection)] = converter.Report.ReportObjects[collection.OriginalId];
@@ -250,10 +252,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           // if the object wasnt converted, log fallback status
           if (commitObj.Converted == null || commitObj.Converted.Count == 0)
           {
-            var convertedFallback = commitObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
-            if (convertedFallback != null && convertedFallback.Count() > 0)
+            var convertedFallbackCount = commitObj.Fallback.Where(o => o.Converted.Any())?.Count();
+            if (convertedFallbackCount is not null)
             {
-              commitObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+              commitObj.Update(logItem: $"Creating with {convertedFallbackCount} fallback values");
             }
             else
             {
@@ -491,36 +493,28 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     var obj = StoredObjects[appObj.OriginalId];
     int bakedCount = 0;
     bool remove =
-      appObj.Status == ApplicationObject.State.Created
-      || appObj.Status == ApplicationObject.State.Updated
-      || appObj.Status == ApplicationObject.State.Failed
-        ? false
-        : true;
+      appObj.Status
+        is not ApplicationObject.State.Created
+          and not ApplicationObject.State.Updated
+          and not ApplicationObject.State.Failed;
 
     foreach (var convertedItem in appObj.Converted)
     {
       switch (convertedItem)
       {
         case Entity o:
-
-          if (o == null)
-          {
-            continue;
-          }
-
           var res = o.Append(layer);
           if (res.IsValid)
           {
             // handle display - fallback to rendermaterial if no displaystyle exists
-            Base display = obj[@"displayStyle"] as Base;
-            if (display == null)
+            if (obj[@"displayStyle"] is not Base display)
             {
               display = obj[@"renderMaterial"] as Base;
             }
 
             if (display != null)
             {
-              Utils.SetStyle(display, o, LineTypeDictionary);
+              SetStyle(display, o, LineTypeDictionary);
             }
 
             // add property sets if this is Civil3D
@@ -644,7 +638,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
   private bool GetOrMakeLayer(string layerName, Transaction tr, out string cleanName)
   {
-    cleanName = Utils.RemoveInvalidChars(layerName);
+    cleanName = RemoveInvalidChars(layerName);
     try
     {
       LayerTable layerTable = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
@@ -655,11 +649,12 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       else
       {
         layerTable.UpgradeOpen();
-        var _layer = new LayerTableRecord();
-
-        // Assign the layer properties
-        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByColor, 7); // white
-        _layer.Name = cleanName;
+        var _layer = new LayerTableRecord
+        {
+          // Assign the layer properties
+          Color = Color.FromColorIndex(ColorMethod.ByColor, 7), // white
+          Name = cleanName
+        };
 
         // Append the new layer to the layer table and the transaction
         layerTable.Add(_layer);

@@ -1,4 +1,3 @@
-using ConverterCSIShared.Extensions;
 using ConverterCSIShared.Models;
 using CSiAPIv1;
 

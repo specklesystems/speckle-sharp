@@ -1,10 +1,7 @@
-using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
-using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;

@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.ExternalService;
-using Autodesk.Revit.UI;
-using Objects.Converter.Revit;
-using Speckle.Core.Models;
 using OG = Objects.Geometry;
 
 namespace Objects.Converter.Revit;

@@ -2,7 +2,6 @@ using DB = Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Autodesk.Revit.DB;
 using System.Linq;
-using Objects.Organization;
 using System;
 using System.Collections.Generic;
 using Speckle.Core.Models;

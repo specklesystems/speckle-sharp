@@ -1,17 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
 using Objects.BuiltElements.TeklaStructures;
-using System.Linq;
 using Tekla.Structures.Model;
-using Tekla.Structures.Solid;
 using TSG = Tekla.Structures.Geometry3d;
-using System.Collections;
-using StructuralUtilities.PolygonMesher;
 
 namespace Objects.Converter.TeklaStructures;
 
