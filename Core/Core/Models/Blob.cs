@@ -14,7 +14,7 @@ public class Blob : Base
   private string _hash;
   private bool _isHashExpired = true;
 
-  internal Blob() { }
+  public Blob() { }
 
   public Blob(string filePath)
   {
