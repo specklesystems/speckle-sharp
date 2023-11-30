@@ -8,9 +8,7 @@ using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using CefSharp;
 using DUI3;
-using DUI3.Bindings;
 using Revit.Async;
-using Sentry.Protocol;
 using Speckle.ConnectorRevitDUI3.Bindings;
 using Speckle.ConnectorRevitDUI3.Utils;
 
@@ -94,10 +92,7 @@ public class App : IExternalApplication
       // - run `yarn build` in the DUI3 folder
       // - run ` PORT=3003  node .output/server/index.mjs` after the build
       
-      // NOTE: It was as before before aligning dev
-      // browser.Load("http://localhost:3003");
-      // Panel.ShowDevTools();
-      CefSharpPanel.Browser.Load("http://localhost:8082");
+      CefSharpPanel.Browser.Load("http://localhost:3003");
       CefSharpPanel.Browser.ShowDevTools();
 #endif
 #if REVIT2023
@@ -118,7 +113,7 @@ public class App : IExternalApplication
   /// <param name="sender"></param>
   /// <param name="args"></param>
   /// <returns></returns>
-  static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     Assembly assembly = null;
     var name = args.Name.Split(',')[0];
@@ -129,7 +124,9 @@ public class App : IExternalApplication
       string assemblyFile = Path.Combine(path, name + ".dll");
 
       if (File.Exists(assemblyFile))
+      {
         assembly = Assembly.LoadFrom(assemblyFile);
+      }
     }
 
     return assembly;
