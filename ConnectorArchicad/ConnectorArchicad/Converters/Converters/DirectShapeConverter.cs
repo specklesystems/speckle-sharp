@@ -41,7 +41,7 @@ public sealed class DirectShape : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.current)
+        switch (tc.Current)
         {
           case Objects.BuiltElements.Archicad.DirectShape directShape:
             // get the geometry

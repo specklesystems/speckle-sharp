@@ -132,5 +132,5 @@ public sealed class MemoryTransport : ITransport, ICloneable
   }
 
   [Obsolete("Transports will now throw exceptions", true)]
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 }

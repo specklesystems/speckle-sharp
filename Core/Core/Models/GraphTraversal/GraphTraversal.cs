@@ -4,38 +4,6 @@ using System.Collections.Generic;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
-public class TraversalContext
-{
-  public Base current { get; }
-  public virtual TraversalContext? parent { get; }
-  public string? propName { get; }
-
-  public TraversalContext(Base current, string? propName = null, TraversalContext? parent = default)
-    : this(current, propName)
-  {
-    this.parent = parent;
-  }
-
-  protected TraversalContext(Base current, string? propName = null)
-  {
-    this.current = current;
-    this.propName = propName;
-  }
-}
-
-public class TraversalContext<T> : TraversalContext
-  where T : TraversalContext
-{
-  public override TraversalContext? parent => typedParent;
-  public T? typedParent { get; }
-
-  public TraversalContext(Base current, string? propName = null, T? parent = default)
-    : base(current, propName)
-  {
-    this.typedParent = parent;
-  }
-}
-
 public class GraphTraversal : GraphTraversal<TraversalContext>
 {
   public GraphTraversal(params ITraversalRule[] traversalRule)
@@ -77,7 +45,7 @@ public abstract class GraphTraversal<T>
 
       yield return head;
 
-      Base current = head.current;
+      Base current = head.Current;
       var activeRule = GetActiveRuleOrDefault(current);
 
       foreach (string childProp in activeRule.MembersToTraverse(current))

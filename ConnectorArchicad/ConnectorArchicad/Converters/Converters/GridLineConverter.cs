@@ -32,7 +32,7 @@ public sealed class GridLineConverter : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.current)
+        switch (tc.Current)
         {
           case Objects.BuiltElements.GridLine grid:
 

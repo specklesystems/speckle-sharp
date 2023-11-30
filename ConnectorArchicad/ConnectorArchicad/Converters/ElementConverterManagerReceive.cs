@@ -46,7 +46,7 @@ public sealed partial class ElementConverterManager
     Dictionary<Type, IEnumerable<TraversalContext>> receivedObjects;
 
     receivedObjects = flattenObjects
-      .GroupBy(tc => tc.current.GetType())
+      .GroupBy(tc => tc.Current.GetType())
       .ToDictionary(group => group.Key, group => group.Cast<TraversalContext>());
     SpeckleLog.Logger.Debug("Conversion started (element types: {0})", receivedObjects.Count);
 
@@ -54,7 +54,7 @@ public sealed partial class ElementConverterManager
     {
       SpeckleLog.Logger.Debug("{0}: {1}", elementType, tc.Count<TraversalContext>());
 
-      List<Base> elements = tc.Select(tc => tc.current).ToList<Base>();
+      List<Base> elements = tc.Select(tc => tc.Current).ToList<Base>();
       var convertedElements = await ConvertOneTypeToNative(
         elementType,
         tc,
@@ -114,17 +114,17 @@ public sealed partial class ElementConverterManager
 
     TraversalContext Store(TraversalContext context, Objects.Converter.Archicad.ConverterArchicad converter)
     {
-      if (!converter.CanConvertToNativeImplemented(context.current))
+      if (!converter.CanConvertToNativeImplemented(context.Current))
       {
         return null;
       }
 
-      if (traversedObjects.Contains(context.current.id))
+      if (traversedObjects.Contains(context.Current.id))
       {
         return null;
       }
 
-      traversedObjects.Add(context.current.id);
+      traversedObjects.Add(context.Current.id);
 
       return context;
     }

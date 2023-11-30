@@ -224,7 +224,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
 
     var objectsToConvert = traverseFunction
       .Traverse(obj)
-      .Select(tc => CreateApplicationObject(tc.current))
+      .Select(tc => CreateApplicationObject(tc.Current))
       .Where(appObject => appObject != null)
       .Reverse() //just for the sake of matching the previous behaviour as close as possible
       .ToList();

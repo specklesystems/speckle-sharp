@@ -700,21 +700,21 @@ public partial class ConverterRhinoGh
     string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
-      if (context.propName == null)
+      if (context.PropName == null)
       {
         return stringBuilder;
       }
 
       // see if there's a layer property on this obj
-      var layer = context.current["layer"] as string ?? context.current["Layer"] as string;
+      var layer = context.Current["layer"] as string ?? context.Current["Layer"] as string;
       if (!string.IsNullOrEmpty(layer))
       {
         return new StringBuilder(layer);
       }
 
-      var objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+      var objectLayerName = context.PropName[0] == '@' ? context.PropName.Substring(1) : context.PropName;
 
-      LayerIdRecurse(context.parent, stringBuilder);
+      LayerIdRecurse(context.Parent, stringBuilder);
       stringBuilder.Append(RH.Layer.PathSeparator);
       stringBuilder.Append(objectLayerName);
 
@@ -723,7 +723,7 @@ public partial class ConverterRhinoGh
 
     var traverseFunction = DefaultTraversal.CreateTraverseFunc(this);
 
-    traverseFunction.Traverse(obj).ToList().ForEach(tc => StoreObject(tc.current, LayerId(tc)));
+    traverseFunction.Traverse(obj).ToList().ForEach(tc => StoreObject(tc.Current, LayerId(tc)));
 
     return StoredObjects;
   }

@@ -78,7 +78,7 @@ internal sealed class ElementTypeMapper
       speckleElements.AddRange(
         traversalFunc
           .Traverse(storedObjects[appObj.OriginalId])
-          .Select(c => c.current)
+          .Select(c => c.Current)
           .Where(converter.CanConvertToNative)
           .OfType<Base>()
       );

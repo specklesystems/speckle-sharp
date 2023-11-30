@@ -537,7 +537,7 @@ public partial class ConnectorBindingsRevit
 
     var objectsToConvert = traverseFunction
       .Traverse(obj)
-      .Select(tc => CreateApplicationObject(tc.current))
+      .Select(tc => CreateApplicationObject(tc.Current))
       .Where(appObject => appObject != null)
       .Reverse()
       .ToList();

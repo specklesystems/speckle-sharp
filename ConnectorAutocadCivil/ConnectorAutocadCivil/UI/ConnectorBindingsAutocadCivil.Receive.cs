@@ -412,22 +412,22 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
-      if (context.propName == null)
+      if (context.PropName == null)
       {
         return stringBuilder;
       }
 
       string objectLayerName = string.Empty;
-      if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+      if (context.PropName.ToLower() == "elements" && context.Current is Collection coll)
       {
         objectLayerName = coll.name;
       }
-      else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
+      else if (context.PropName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
       {
-        objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+        objectLayerName = context.PropName[0] == '@' ? context.PropName.Substring(1) : context.PropName;
       }
 
-      LayerIdRecurse(context.parent, stringBuilder);
+      LayerIdRecurse(context.Parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
       {
         stringBuilder.Append('$');
@@ -442,7 +442,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
     var objectsToConvert = traverseFunction
       .Traverse(obj)
-      .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
+      .Select(tc => CreateApplicationObject(tc.Current, LayerId(tc)))
       .Where(appObject => appObject != null)
       .Reverse() //just for the sake of matching the previous behaviour as close as possible
       .ToList();

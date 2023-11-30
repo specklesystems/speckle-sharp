@@ -30,6 +30,7 @@ public sealed class ServerApi : IDisposable, IServerApi
   private const int RETRY_COUNT = 3;
   private static readonly HashSet<int> s_retryCodes = new() { 408, 502, 503, 504 };
   private static readonly char[] s_separator = { '\t' };
+  private static readonly string[] s_filenameSeparator = { "filename=" };
 
   private readonly HttpClient _client;
 
@@ -293,7 +294,7 @@ public sealed class ServerApi : IDisposable, IServerApi
         response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string> cdHeaderValues);
 
         var cdHeader = cdHeaderValues.First();
-        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
+        var fileName = cdHeader.Split(s_filenameSeparator, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
 
         string fileLocation = Path.Combine(
           BlobStorageFolder,

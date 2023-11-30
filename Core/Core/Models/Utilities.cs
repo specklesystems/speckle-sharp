@@ -192,7 +192,7 @@ public static class Utilities
               new[] { value }
             );
           }
-          catch { }
+          catch (Exception) { }
         }
       }
     }

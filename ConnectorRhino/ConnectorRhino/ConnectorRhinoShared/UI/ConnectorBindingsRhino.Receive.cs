@@ -416,7 +416,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
     StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
     {
-      if (context.propName == null)
+      if (context.PropName == null)
       {
         return stringBuilder; // this was probably the base commit collection
       }
@@ -425,29 +425,29 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       // WARNING: THIS IS REVIT-SPECIFIC CODE!!
       // We are checking for the `Category` prop on children objects to use as the layer
       if (
-        DefaultTraversal.elementsPropAliases.Contains(context.propName)
-        && context.parent.current is not Collection
-        && !string.IsNullOrEmpty((string)context.current["category"])
+        DefaultTraversal.elementsPropAliases.Contains(context.PropName)
+        && context.Parent.Current is not Collection
+        && !string.IsNullOrEmpty((string)context.Current["category"])
       )
       {
-        stringBuilder.Append((string)context.current["category"]);
+        stringBuilder.Append((string)context.Current["category"]);
         return stringBuilder;
       }
 
       string objectLayerName = string.Empty;
 
       // handle collections case
-      if (context.current is Collection coll && DefaultTraversal.elementsPropAliases.Contains(context.propName))
+      if (context.Current is Collection coll && DefaultTraversal.elementsPropAliases.Contains(context.PropName))
       {
         objectLayerName = coll.name;
       }
       // handle default case
-      else if (!DefaultTraversal.elementsPropAliases.Contains(context.propName))
+      else if (!DefaultTraversal.elementsPropAliases.Contains(context.PropName))
       {
-        objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
+        objectLayerName = context.PropName[0] == '@' ? context.PropName.Substring(1) : context.PropName;
       }
 
-      LayerIdRecurse(context.parent, stringBuilder);
+      LayerIdRecurse(context.Parent, stringBuilder);
       if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
       {
         stringBuilder.Append(Layer.PathSeparator);
@@ -462,7 +462,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
     var objectsToConvert = traverseFunction
       .Traverse(obj)
-      .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
+      .Select(tc => CreateApplicationObject(tc.Current, LayerId(tc)))
       .Where(appObject => appObject != null)
       .Reverse() //just for the sake of matching the previous behaviour as close as possible
       .ToList();

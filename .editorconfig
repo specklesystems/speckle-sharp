@@ -209,12 +209,14 @@ dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type: Pr
 dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Preference
 dotnet_diagnostic.ide0200.severity = none # Remove unnecessary lambda expression: may be performance reasons not to
 dotnet_diagnostic.ide0058.severity = none # Remove unnecessary expression value: Subjective
+dotnet_diagnostic.ide0010.severity = none # Add missing cases to switch statement: Too verbose
 dotnet_diagnostic.ide0001.severity = suggestion # Name can be simplified: Non enforceable in build
 dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Subjective
 dotnet_diagnostic.ide0045.severity = suggestion # Use conditional expression for assignment: Subjective
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
+dotnet_diagnostic.ide0061.severity = suggestion # Use expression body for local functions: Subjective
 dotnet_diagnostic.ide0029.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
@@ -230,14 +232,21 @@ dotnet_diagnostic.ca1507.severity = warning # Use nameof in place of string
 dotnet_diagnostic.ca1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics configuration file
 
-dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists
 
-# Misc
+# Performance rules
+dotnet_diagnostic.ca1849.severity = suggestion # Call async methods when in an async method: May decrease performance
+dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+
+# Design rule
+dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists
 dotnet_diagnostic.ca1051.severity = warning # Do not declare visible instance fields
 dotnet_diagnostic.ca1056.severity = suggestion # URI properties should not be strings
 dotnet_diagnostic.ca1062.severity = none # Public method must check all parameters for null
+
+# Naming
 dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
-dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+
+# Usage
 dotnet_diagnostic.ca2227.severity = suggestion # Collection props should be read-only
 
 dotnet_code_quality.ca1051.exclude_structs = true # CA1051 is excluded in structs

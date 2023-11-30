@@ -111,26 +111,26 @@ public sealed class Object : IConverter
     Dictionary<string, Transform> transformMatrixById
   )
   {
-    if (tc.parent != null)
+    if (tc.Parent != null)
     {
-      TraversalContext root = tc.parent;
-      while (root.parent != null)
+      TraversalContext root = tc.Parent;
+      while (root.Parent != null)
       {
-        root = root.parent;
+        root = root.Parent;
       }
 
       // transform appleid only elements via the "definition" property (not via "elements" property)
       // and root elements transform is skipped, because it will be added on GDL level
       var currentTransform =
         (
-          tc.parent.current != root.current
-          && (tc.parent.current["transform"] is Transform)
-          && DefaultTraversal.definitionPropAliases.Contains(tc.propName)
+          tc.Parent.Current != root.Current
+          && (tc.Parent.Current["transform"] is Transform)
+          && DefaultTraversal.definitionPropAliases.Contains(tc.PropName)
         )
-          ? (Transform)(tc.parent.current["transform"])
+          ? (Transform)(tc.Parent.Current["transform"])
           : new Transform();
 
-      string parentCumulativeTransformId = (tc.parent as ArchicadGeometryCollectorContext).cumulativeTransformKey;
+      string parentCumulativeTransformId = (tc.Parent as ArchicadGeometryCollectorContext).cumulativeTransformKey;
       string cumulativeTransformId = Utilities.HashString(parentCumulativeTransformId + currentTransform.id);
       tc.cumulativeTransformKey = cumulativeTransformId;
       transformMatrixById.TryAdd(
@@ -152,7 +152,7 @@ public sealed class Object : IConverter
     Dictionary<string, Mesh> transformedMeshById
   )
   {
-    var meshes = GetMesh(tc.current);
+    var meshes = GetMesh(tc.Current);
 
     return meshes
       .Select(mesh =>
@@ -190,7 +190,7 @@ public sealed class Object : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        var element = tc.current;
+        var element = tc.Current;
 
         // base point
         var basePoint = new Point(0, 0, 0);

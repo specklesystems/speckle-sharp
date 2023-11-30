@@ -33,10 +33,10 @@ public sealed class Window : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.current)
+        switch (tc.Current)
         {
           case Objects.BuiltElements.Archicad.ArchicadWindow archicadWindow:
-            archicadWindow.parentApplicationId = tc.parent.current.id;
+            archicadWindow.parentApplicationId = tc.Parent.Current.id;
             windows.Add(archicadWindow);
             break;
           //case Objects.BuiltElements.Opening window:

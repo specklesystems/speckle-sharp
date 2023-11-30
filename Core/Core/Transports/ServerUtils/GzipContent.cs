@@ -58,6 +58,6 @@ internal sealed class GzipContent : HttpContent
   protected override void Dispose(bool disposing)
   {
     _content?.Dispose();
-    base.Dispose();
+    base.Dispose(disposing);
   }
 }

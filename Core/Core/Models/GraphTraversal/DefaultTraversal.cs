@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using Speckle.Core.Kits;
@@ -154,17 +155,22 @@ public static class DefaultTraversal
   #endregion
 
   [Obsolete("Renamed to " + nameof(ElementsPropAliases))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> elementsPropAliases => ElementsPropAliases;
 
   [Obsolete("Renamed to " + nameof(DisplayValuePropAliases))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> displayValuePropAliases => DisplayValuePropAliases;
 
   [Obsolete("Renamed to " + nameof(DefinitionPropAliases))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> definitionPropAliases => DefinitionPropAliases;
 
   [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> geometryPropAliases => GeometryPropAliases;
 
   [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static string[] displayValueAndElementsPropAliases => DisplayValueAndElementsPropAliases;
 }

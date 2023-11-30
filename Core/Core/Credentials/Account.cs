@@ -3,11 +3,8 @@ using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Core.Credentials;
-
-#pragma warning disable CS0659 CA1067 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
 
 public class Account : IEquatable<Account>
 {
@@ -94,4 +91,3 @@ public class Account : IEquatable<Account>
 
   #endregion
 }
-#pragma warning restore CS0659 CA1067

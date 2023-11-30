@@ -321,7 +321,7 @@ public sealed class BaseObjectDeserializerV2
     dictObj.Remove(TypeDiscriminator);
     dictObj.Remove("__closure");
 
-    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
+    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypeProperties(typeName);
     List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
     foreach (var entry in dictObj)

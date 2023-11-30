@@ -31,7 +31,7 @@ public sealed class Floor : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.current)
+        switch (tc.Current)
         {
           case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
             floors.Add(archiFloor);

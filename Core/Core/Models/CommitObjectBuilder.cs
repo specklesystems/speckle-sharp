@@ -68,7 +68,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
   protected void SetRelationship(Base conversionResult, IList<NestingInstructions> nestingInstructionsList)
   {
-    string appId = conversionResult.applicationId;
+    string? appId = conversionResult.applicationId;
     if (appId != null)
     {
       if (!Converted.ContainsKey(appId))

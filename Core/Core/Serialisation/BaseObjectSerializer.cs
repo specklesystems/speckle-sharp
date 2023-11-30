@@ -200,8 +200,7 @@ public class BaseObjectSerializer : JsonConverter
         {
           var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(
             jProperty.Value,
-            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string,
-            serializer
+            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string
           );
           property.ValueProvider.SetValue(obj, propertyValue);
         }
