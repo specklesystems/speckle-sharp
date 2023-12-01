@@ -9,7 +9,7 @@ public class ConnectorConfig : PropertyValidator
   public string HostApp { set; get; }
 
   public bool? DarkTheme { set; get; } = false;
-  
+
   public Dictionary<string, OnboardingData> Onboardings { get; set; }
 
   public ConnectorConfig() { }

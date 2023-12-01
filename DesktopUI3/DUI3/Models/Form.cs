@@ -6,17 +6,18 @@ namespace DUI3.Models;
 public class FormInputBase : DiscriminatedObject
 {
   public string Label { get; set; }
-  public bool ShowLabel { get; set; } = false;
+  public bool ShowLabel { get; set; }
 }
 
-public class FormTextInput : FormInputBase {
+public class FormTextInput : FormInputBase
+{
   public string Value { get; set; }
   public string Placeholder { get; set; }
 }
 
-public class BooleanValueInput: FormInputBase
+public class BooleanValueInput : FormInputBase
 {
-  public bool Value { get; set; } = false;
+  public bool Value { get; set; }
 }
 
 public class ListValueInput : FormInputBase

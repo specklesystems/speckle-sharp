@@ -32,35 +32,26 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }
-  
-  public string GetConnectorVersion()
-  {
-    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
-  }
 
-  public string GetSourceApplicationName()
-  {
-    return Core.Kits.HostApplications.AutoCAD.Slug;
-  }
+  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+
+  public string GetSourceApplicationName() => Core.Kits.HostApplications.AutoCAD.Slug;
 
   public string GetSourceApplicationVersion()
   {
-    #if AUTOCAD2023DUI3
+#if AUTOCAD2023DUI3
     return "2023";
-    # endif
-    #if AUTOCAD2022DUI3
+# endif
+#if AUTOCAD2022DUI3
     return "2022";
-    #endif
+#endif
   }
 
-  public Account[] GetAccounts()
-  {
-    return AccountManager.GetAccounts().ToArray();
-  }
+  public Account[] GetAccounts() => AccountManager.GetAccounts().ToArray();
 
   public DocumentInfo GetDocumentInfo()
   {
-    var name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
+    string name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
     return new DocumentInfo()
     {
       Name = name,
@@ -69,25 +60,19 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
     };
   }
 
-  public DocumentModelStore GetDocumentState()
-  {
-    return _store;
-  }
+  public DocumentModelStore GetDocumentState() => _store;
 
-  public void AddModel(ModelCard model)
-  {
-    _store.Models.Add(model);
-  }
+  public void AddModel(ModelCard model) => _store.Models.Add(model);
 
   public void UpdateModel(ModelCard model)
   {
-    var idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
     _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)
   {
-    var index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
   }
 
@@ -103,12 +88,11 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
     ObjectId[] objectIds = dbObjects.Select(dbObject => dbObject.Id).ToArray();
     editor.SetImpliedSelection(objectIds);
     editor.UpdateScreen();
-    
-    Parent.RunOnMainThread(
-      () =>
-      {
-        editor.Zoom(Extends3dExtensions.FromObjectIds(editor, objectIds));
-      });
+
+    Parent.RunOnMainThread(() =>
+    {
+      editor.Zoom(Extends3dExtensions.FromObjectIds(editor));
+    });
 
     Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     tr.Commit();

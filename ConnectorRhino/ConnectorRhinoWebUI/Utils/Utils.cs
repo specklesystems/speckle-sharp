@@ -11,7 +11,7 @@ public static class Utils
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
     public static string AppName = "Rhino";
 #else
-  public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
-  public static string AppName = "Rhino";
+  public static readonly string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
+  public static readonly string AppName = "Rhino";
 #endif
 }

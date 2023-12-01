@@ -23,53 +23,36 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public BasicConnectorBinding(RhinoDocumentStore store)
   {
     _store = store;
-    _store.DocumentChanged += (_,_) =>
+    _store.DocumentChanged += (_, _) =>
     {
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }
 
-  public string GetConnectorVersion()
-  {
-    return Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
-  }
+  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
 
-  public string GetSourceApplicationName()
-  {
-    return "Rhino";
-  }
+  public string GetSourceApplicationName() => "Rhino";
 
-  public string GetSourceApplicationVersion()
-  {
-    return "7";
-  }
+  public string GetSourceApplicationVersion() => "7";
 
-  public DocumentInfo GetDocumentInfo()
-  {
-    return new DocumentInfo
+  public DocumentInfo GetDocumentInfo() =>
+    new()
     {
       Location = RhinoDoc.ActiveDoc.Path,
       Name = RhinoDoc.ActiveDoc.Name,
       Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
     };
-  }
 
-  public DocumentModelStore GetDocumentState()
-  {
-    return _store;
-  }
+  public DocumentModelStore GetDocumentState() => _store;
 
-  public void AddModel(ModelCard model)
-  {
-    _store.Models.Add(model);
-  }
+  public void AddModel(ModelCard model) => _store.Models.Add(model);
 
   public void UpdateModel(ModelCard model)
   {
-     int idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
     _store.Models[idx] = model;
   }
-  
+
   public void RemoveModel(ModelCard model)
   {
     int index = _store.Models.FindIndex(m => m.Id == model.Id);
@@ -80,14 +63,16 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   {
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();
-    List<RhinoObject> rhinoObjects = objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).ToList();
-    
+    List<RhinoObject> rhinoObjects = objectsIds
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
+      .ToList();
+
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
-    
+
     // Calculate the bounding box of the selected objects
     BoundingBox boundingBox = BoundingBoxExtensions.UnionRhinoObjects(rhinoObjects);
-    
+
     // Zoom to the calculated bounding box
     if (boundingBox.IsValid)
     {

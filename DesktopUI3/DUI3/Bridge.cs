@@ -11,7 +11,7 @@
 // {
 //
 //   /// <summary>
-//   /// Wraps a binding class, and manages its calls from the Frontend to .NET, and sending events from .NET to the the Frontend. 
+//   /// Wraps a binding class, and manages its calls from the Frontend to .NET, and sending events from .NET to the the Frontend.
 //   /// <para>See also: https://github.com/johot/WebView2-better-bridge</para>
 //   /// </summary>
 //   [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -20,7 +20,7 @@
 //   {
 //     /// <summary>
 //     /// The name under which we expect the frontend to hoist this bindings class to the global scope.
-//     /// e.g., `receiveBindings` should be available as `window.receiveBindings`. 
+//     /// e.g., `receiveBindings` should be available as `window.receiveBindings`.
 //     /// </summary>
 //     public string FrontendBoundName { get; }
 //
@@ -46,11 +46,11 @@
 //       FrontendBoundName = binding.Name;
 //       Browser = browser;
 //       Binding = binding;
-//       
-//       BindingType = Binding.GetType(); 
+//
+//       BindingType = Binding.GetType();
 //       BindingMethodCache = new Dictionary<string, MethodInfo>();
 //       // Note: we need to filter out getter and setter methods here because they are not really nicely
-//       // supported across browsers, hence the !method.IsSpecialName. 
+//       // supported across browsers, hence the !method.IsSpecialName.
 //       foreach(var m in BindingType.GetMethods().Where(method => !method.IsSpecialName))
 //       {
 //         BindingMethodCache[m.Name] = m;
@@ -80,13 +80,13 @@
 //     /// <returns></returns>
 //     public string RunMethod(string methodName, string args)
 //     {
-//       // Note: You might be tempted to make this method async Task<string> to prevent the task.Wait() below. 
+//       // Note: You might be tempted to make this method async Task<string> to prevent the task.Wait() below.
 //       // Do not do that! Cef65 doesn't like waiting for async .NET methods.
-//       // Note: we have this pokemon catch 'em all here because throwing errors in .NET is 
+//       // Note: we have this pokemon catch 'em all here because throwing errors in .NET is
 //       // very risky, and we might crash the host application. Behaviour seems also to differ
-//       // between various browser controls (e.g.: cefsharp handles things nicely - basically 
+//       // between various browser controls (e.g.: cefsharp handles things nicely - basically
 //       // passing back the exception to the browser, but webview throws an access violation
-//       // error that kills Rhino.). 
+//       // error that kills Rhino.).
 //       try
 //       {
 //         if (!BindingMethodCache.ContainsKey(methodName))
@@ -106,9 +106,9 @@
 //           var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
 //           typedArgs[i] = ccc;
 //         }
-//         
-//         
-//         
+//
+//
+//
 //         var resultTyped = method.Invoke(Binding, typedArgs);
 //
 //         // Was it an async method (in bridgeClass?)
@@ -143,7 +143,7 @@
 //     }
 //
 //     /// <summary>
-//     /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`. 
+//     /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`.
 //     /// </summary>
 //     /// <param name="eventData"></param>
 //     public void SendToBrowser(string eventName, object data = null)
@@ -153,7 +153,7 @@
 //       {
 //         var payload = JsonConvert.SerializeObject(data, _serializerOptions);
 //         script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
-//       } 
+//       }
 //       else
 //       {
 //         script = $"{FrontendBoundName}.emit('{eventName}')";
@@ -163,7 +163,7 @@
 //
 //     /// <summary>
 //     /// Shows the dev tools. This is currently only needed for CefSharp - other browser
-//     /// controls allow for right click + inspect. 
+//     /// controls allow for right click + inspect.
 //     /// </summary>
 //     public void ShowDevTools()
 //     {
@@ -180,7 +180,7 @@
 //       {
 //         // TODO: Log. If it ever happens.
 //       }
-//       
+//
 //     }
 //   }
 //

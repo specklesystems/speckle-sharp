@@ -14,8 +14,7 @@ public static class Traversal
 
     return traverseFunction
       .Traverse(commitObject)
-      .Select(
-        tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
+      .Select(tc => tc.current) // Previously we were creating ApplicationObject, now just returning Base object.
       .Reverse()
       .ToList();
   }

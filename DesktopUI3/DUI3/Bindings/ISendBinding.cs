@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DUI3.Models;
-using DUI3.Settings;
 using DUI3.Utils;
 
 namespace DUI3.Bindings;

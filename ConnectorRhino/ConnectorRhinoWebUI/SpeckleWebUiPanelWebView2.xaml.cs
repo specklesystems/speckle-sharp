@@ -42,41 +42,45 @@ namespace ConnectorRhinoWebUI
       var documentState = new DocumentModelStore();
 
       var bindingsToProvide = new List<IBinding>();
-      
+
       // Test bindings
       bindingsToProvide.Add(new TestBinding());
       bindingsToProvide.Add(new ConfigBinding());
-      
+
       // var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
       // Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
 
       var docState = new DocumentModelStore();
-      
+
       // Base bindings
       var baseBindings = new BasicConnectorBindingRhino();
-      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+      var baseBindingsBridge = new DUI3.BrowserBridge(
+        Browser,
+        baseBindings,
+        ExecuteScriptAsyncMethod,
+        ShowDevToolsMethod
+      );
       Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
-      
-      
+
       // Config bindings
       var configBindings = new ConfigBinding();
       var configBindingsBridge = new BrowserBridge(
         Browser,
         configBindings,
         ExecuteScriptAsyncMethod,
-        ShowDevToolsMethod);
+        ShowDevToolsMethod
+      );
       Browser.CoreWebView2.AddHostObjectToScript(configBindingsBridge.FrontendBoundName, configBindingsBridge);
-      
-            
+
       // Selection bindings
       var selectionBinding = new SelectionBinding();
       var selectionBindingBridge = new BrowserBridge(
         Browser,
         selectionBinding,
         ExecuteScriptAsyncMethod,
-        ShowDevToolsMethod);
+        ShowDevToolsMethod
+      );
       Browser.CoreWebView2.AddHostObjectToScript(selectionBindingBridge.FrontendBoundName, selectionBindingBridge);
-      
     }
   }
 }

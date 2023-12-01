@@ -89,13 +89,13 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     switch (_commitCollectionStrategy)
     {
       case CommitCollectionStrategy.ByLevel:
-        {
-          Level? level = GetLevel(nativeElement);
-          collectionId = level?.UniqueId ?? Root;
-          collectionName = level?.Name;
-          collectionType = "Revit Level";
-          break;
-        }
+      {
+        Level? level = GetLevel(nativeElement);
+        collectionId = level?.UniqueId ?? Root;
+        collectionName = level?.Name;
+        collectionType = "Revit Level";
+        break;
+      }
       case CommitCollectionStrategy.ByCollection:
         collectionId = GetCategoryId(conversionResult, nativeElement);
         collectionName = collectionId;

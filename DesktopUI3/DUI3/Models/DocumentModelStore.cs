@@ -10,68 +10,52 @@ using Speckle.Newtonsoft.Json;
 namespace DUI3.Models;
 
 /// <summary>
-/// Encapsulates the state Speckle needs to persist in the host app's document. 
+/// Encapsulates the state Speckle needs to persist in the host app's document.
 /// </summary>
 public abstract class DocumentModelStore : DiscriminatedObject
 {
   public List<ISpeckleHostObject> SpeckleHostObjects { get; set; } = new List<ISpeckleHostObject>();
-  
+
   public List<ModelCard> Models { get; set; } = new List<ModelCard>();
 
-  private static readonly JsonSerializerSettings SerializerOptions = DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
-  
+  private static readonly JsonSerializerSettings s_serializerOptions =
+    DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
+
   /// <summary>
   /// This event is triggered by each specific host app implementation of the document model store.
   /// </summary>
   [PublicAPI]
   public event EventHandler DocumentChanged;
 
-  public virtual bool IsDocumentInit { get; set; } = false;
+  public virtual bool IsDocumentInit { get; set; }
+
   public ModelCard GetModelById(string id)
   {
-    var model = Models.First(model => model.Id == id);
-    if (model == null)
-    {
-      throw new ModelNotFoundException();
-    }
+    var model = Models.First(model => model.Id == id) ?? throw new ModelNotFoundException();
     return model;
   }
 
-  protected void OnDocumentChanged()
-  {
-    var handler = DocumentChanged;
-    if (handler != null)
-    {
-      handler(this, EventArgs.Empty);
-    }
-  }
-  
-  public List<SenderModelCard> GetSenders()
-  {
-    return Models.Where(model => model.TypeDiscriminator == nameof(SenderModelCard)).Cast<SenderModelCard>().ToList();
-  }
-  
-  public List<SenderModelCard> GetReceivers()
-  {
-    // return Models.Where(model => model.TypeDiscriminator == nameof(SenderModelCard)).Cast<ReceiverModel>().ToList();
-    throw new NotImplementedException();
-  }
+  protected void OnDocumentChanged() => DocumentChanged?.Invoke(this, EventArgs.Empty);
+
+  public List<SenderModelCard> GetSenders() =>
+    Models.Where(model => model.TypeDiscriminator == nameof(SenderModelCard)).Cast<SenderModelCard>().ToList();
+
+  public List<ReceiverModelCard> GetReceivers() =>
+    Models.Where(model => model.TypeDiscriminator == nameof(ReceiverModelCard)).Cast<ReceiverModelCard>().ToList();
 
   protected string Serialize()
   {
-    var serialized = JsonConvert.SerializeObject(Models, SerializerOptions);
+    var serialized = JsonConvert.SerializeObject(Models, s_serializerOptions);
     return serialized;
   }
 
   protected static List<ModelCard> Deserialize(string models)
   {
-    var deserializedModels = JsonConvert.DeserializeObject<List<ModelCard>>(models, SerializerOptions);
+    var deserializedModels = JsonConvert.DeserializeObject<List<ModelCard>>(models, s_serializerOptions);
     return deserializedModels;
   }
 
   public abstract void WriteToFile();
-  
-  public abstract void ReadFromFile(); 
+
+  public abstract void ReadFromFile();
 }
-
-

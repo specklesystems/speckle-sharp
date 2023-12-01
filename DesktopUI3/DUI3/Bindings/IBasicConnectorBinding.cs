@@ -12,7 +12,7 @@ public interface IBasicConnectorBinding : IBinding
   public void AddModel(ModelCard model);
   public void UpdateModel(ModelCard model);
   public void RemoveModel(ModelCard model);
-  
+
   /// <summary>
   /// Highlights the objects attached to this sender in the host application.
   /// </summary>
@@ -23,5 +23,5 @@ public interface IBasicConnectorBinding : IBinding
 public static class BasicConnectorBindingEvents
 {
   public static readonly string DisplayToastNotification = "DisplayToastNotification";
-  public static readonly string DocumentChanged = "documentChanged"; 
+  public static readonly string DocumentChanged = "documentChanged";
 }

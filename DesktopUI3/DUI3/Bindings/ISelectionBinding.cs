@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 
-
 namespace DUI3.Bindings;
 
 public interface ISelectionBinding : IBinding
@@ -18,4 +17,3 @@ public class SelectionInfo
   public List<string> SelectedObjectIds { get; set; }
   public string Summary { get; set; }
 }
-

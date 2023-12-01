@@ -7,12 +7,9 @@ public static class Accounts
 {
   public static Account GetAccount(string accountId)
   {
-    Account account = AccountManager.GetAccounts().Where(acc => acc.id == accountId).FirstOrDefault();
-    if (account == null)
-    {
-      throw new SpeckleAccountManagerException();
-    }
-
+    Account account =
+      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
+      ?? throw new SpeckleAccountManagerException();
     return account;
   }
 }

@@ -11,7 +11,7 @@ public static class Objects
   {
     using DocumentLock acLckDoc = doc.LockDocument();
     using Transaction tr = doc.Database.TransactionManager.StartTransaction();
-    var dbObjects = objectIds.Select(objectId => GetObjectFromDocument(tr, objectId)).ToList();
+    List<DBObject> dbObjects = objectIds.Select(objectId => GetObjectFromDocument(tr, objectId)).ToList();
     tr.Commit();
     return dbObjects;
   }

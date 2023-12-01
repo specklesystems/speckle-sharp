@@ -8,10 +8,10 @@ namespace ConnectorRhinoWebUI.Utils;
 public class SpeckleRhinoObject : SpeckleHostObject<RhinoObject>
 {
   public override RhinoObject NativeObject { get; }
-  public string ApplicationId { get; }
-  public string SpeckleId { get; }
-  public bool IsExpired { get; }
-  
+  public new string ApplicationId { get; }
+  public new string SpeckleId { get; }
+  public new bool IsExpired { get; }
+
   public SpeckleRhinoObject(RhinoObject rhinoObject, string applicationId, string speckleId, bool isExpired = false)
   {
     NativeObject = rhinoObject;
@@ -19,7 +19,7 @@ public class SpeckleRhinoObject : SpeckleHostObject<RhinoObject>
     SpeckleId = speckleId;
     IsExpired = isExpired;
   }
-  
+
   public override SpeckleHostObject<RhinoObject> WithExpiredStatus(bool status = true)
   {
     return new SpeckleRhinoObject(this.NativeObject, this.ApplicationId, this.SpeckleId, status);

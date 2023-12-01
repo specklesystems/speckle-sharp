@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using DUI3;
@@ -15,10 +15,7 @@ public partial class WebUiPanelWebView2 : UserControl
     Browser.CoreWebView2InitializationCompleted += OnInitialized;
   }
 
-  private void ShowDevToolsMethod()
-  {
-    Browser.CoreWebView2.OpenDevToolsWindow();
-  }
+  private void ShowDevToolsMethod() => Browser.CoreWebView2.OpenDevToolsWindow();
 
   private void ExecuteScriptAsyncMethod(string script)
   {
@@ -29,16 +26,15 @@ public partial class WebUiPanelWebView2 : UserControl
 
     Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
   }
-  
+
   private void OnInitialized(object sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    var bindings = Bindings.Factory.CreateBindings();
-    
-    foreach(var binding in bindings)
+    List<IBinding> bindings = Bindings.Factory.CreateBindings();
+
+    foreach (IBinding binding in bindings)
     {
-      var bridge = new BrowserBridge(Browser, binding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+      BrowserBridge bridge = new(Browser, binding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(binding.Name, bridge);
     }
   }
 }
-
