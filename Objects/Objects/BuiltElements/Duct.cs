@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
-using Objects.Organization;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

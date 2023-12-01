@@ -1,3 +1,5 @@
+#if !MAC
+
 using System;
 using Rhino;
 using Rhino.Commands;
@@ -6,7 +8,6 @@ using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino;
 
-#if !MAC
 public class SpeckleMappingsCommandWin : Command
 {
   public SpeckleMappingsCommandWin()

@@ -1,16 +1,11 @@
-#if (REVIT2024)
+#if REVIT2024
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
-
-using OG = Objects.Geometry;
-using OO = Objects.Other;
 
 namespace Objects.Converter.Revit;
 

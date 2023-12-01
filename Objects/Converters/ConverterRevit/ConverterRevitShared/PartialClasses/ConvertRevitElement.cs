@@ -2,8 +2,6 @@ using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 
-using Speckle.Core.Models;
-
 using Objects.BuiltElements.Revit;
 using RevitElementType = Objects.BuiltElements.Revit.RevitElementType;
 using System.Linq;

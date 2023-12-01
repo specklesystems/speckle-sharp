@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Grasshopper.Kernel;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 
 namespace ConnectorGrasshopper.Collections;
 

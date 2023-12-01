@@ -1,30 +1,29 @@
-#if GRASSHOPPER
-using Grasshopper.Kernel.Types;
-#endif
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.DoubleNumerics;
 using System.Reflection;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.Curve;
 using Objects.Geometry;
-using Objects.Organization;
 using Objects.Other;
 using Objects.Primitive;
 using Objects.Structural.Geometry;
 using Rhino;
 using Rhino.Collections;
-using Rhino.Display;
+
 using Rhino.DocObjects;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Plane = Objects.Geometry.Plane;
 using RH = Rhino.Geometry;
 using Vector = Objects.Geometry.Vector;
+
+#if GRASSHOPPER
+using Grasshopper.Kernel.Types;
+using Rhino.Display;
+#endif
 
 namespace Objects.Converter.RhinoGh;
 
