@@ -33,10 +33,10 @@ public sealed class Skylight : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadSkylight archicadSkylight:
-            archicadSkylight.parentApplicationId = tc.Parent.Current.id;
+            archicadSkylight.parentApplicationId = tc.parent.current.id;
             skylights.Add(archicadSkylight);
             break;
           //case Objects.BuiltElements.Opening skylight:

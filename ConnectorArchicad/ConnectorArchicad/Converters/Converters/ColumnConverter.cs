@@ -32,7 +32,7 @@ public sealed class Column : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
             columns.Add(archicadColumn);

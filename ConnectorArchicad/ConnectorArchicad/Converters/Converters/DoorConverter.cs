@@ -33,10 +33,10 @@ public sealed class Door : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
-            archicadDoor.parentApplicationId = tc.Parent.Current.id;
+            archicadDoor.parentApplicationId = tc.parent.current.id;
             doors.Add(archicadDoor);
             break;
           //case Objects.BuiltElements.Opening window:

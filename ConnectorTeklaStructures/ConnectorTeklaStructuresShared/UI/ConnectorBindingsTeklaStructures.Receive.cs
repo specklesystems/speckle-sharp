@@ -119,7 +119,7 @@ public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
     return traverseFunction
       .Traverse(obj)
-      .Select(tc => tc.Current)
+      .Select(tc => tc.current)
       .Where(b => b != null)
       .Where(converter.CanConvertToNative)
       .Reverse();

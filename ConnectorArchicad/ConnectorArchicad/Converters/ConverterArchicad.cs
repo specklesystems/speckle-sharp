@@ -145,9 +145,9 @@ public partial class ConverterArchicad : ISpeckleConverter
 
     foreach (var tc in flattenObjects)
     {
-      var applicationObject = new ApplicationObject(tc.Current.id, SimplifySpeckleType(tc.Current.speckle_type))
+      var applicationObject = new ApplicationObject(tc.current.id, SimplifySpeckleType(tc.current.speckle_type))
       {
-        applicationId = tc.Current.applicationId,
+        applicationId = tc.current.applicationId,
         Convertible = true
       };
 

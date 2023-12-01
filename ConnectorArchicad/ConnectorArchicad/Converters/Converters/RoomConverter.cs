@@ -36,7 +36,7 @@ public sealed class Room : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoom speckleRoom:
 

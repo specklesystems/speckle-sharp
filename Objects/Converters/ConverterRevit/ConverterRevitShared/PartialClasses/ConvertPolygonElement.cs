@@ -23,7 +23,7 @@ public partial class ConverterRevit
     };
 
     var traversal = new GraphTraversal(DefaultTraversal.DefaultRule);
-    var meshes = traversal.Traverse(polygonElement).Select(tc => tc.Current).Where(b => b is Mesh);
+    var meshes = traversal.Traverse(polygonElement).Select(tc => tc.current).Where(b => b is Mesh);
 
     speckleDirectShape.baseGeometries.AddRange(meshes);
 

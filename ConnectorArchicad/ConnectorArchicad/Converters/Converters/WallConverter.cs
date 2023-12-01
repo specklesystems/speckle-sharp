@@ -35,7 +35,7 @@ public sealed class Wall : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
             walls.Add(archiWall);
@@ -52,7 +52,7 @@ public sealed class Wall : IConverter
                 startPoint = Utils.ScaleToNative(baseLine.start),
                 endPoint = Utils.ScaleToNative(baseLine.end),
                 height = Utils.ScaleToNative(wall.height, wall.units),
-                flipped = (tc.Current is RevitWall revitWall) ? revitWall.flipped : false
+                flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
               };
 
             walls.Add(newWall);

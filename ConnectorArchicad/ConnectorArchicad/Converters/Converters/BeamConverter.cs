@@ -32,7 +32,7 @@ public sealed class Beam : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadBeam archiBeam:
             beams.Add(archiBeam);

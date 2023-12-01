@@ -33,7 +33,7 @@ public sealed class Roof : IConverter
       {
         token.ThrowIfCancellationRequested();
 
-        switch (tc.Current)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
             roofs.Add(archiRoof);
