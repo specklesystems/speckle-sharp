@@ -52,7 +52,7 @@ namespace Objects.Other
 
       return traversal
         .Traverse(definition)
-        .Select(tc => tc.current)
+        .Select(tc => tc.Current)
         .Where(b => b is ITransformable || b is Instance)
         .Where(b => b != null);
     }

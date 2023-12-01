@@ -223,8 +223,8 @@ public class ProgressReport
 
   public void Log(ApplicationObject obj)
   {
-    var _reportObject = UpdateReportObject(obj);
-    if (_reportObject == null)
+    var reportObject = UpdateReportObject(obj);
+    if (reportObject == null)
     {
       ReportObjects.Add(obj.OriginalId, obj);
     }
@@ -264,12 +264,12 @@ public class ProgressReport
 
   public void Merge(ProgressReport report)
   {
-    lock (OperationErrorsLock)
+    lock (_operationErrorsLock)
     {
       OperationErrors.AddRange(report.OperationErrors);
     }
 
-    lock (ConversionLogLock)
+    lock (_conversionLogLock)
     {
       ConversionLog.AddRange(report.ConversionLog);
     }
@@ -331,14 +331,14 @@ public class ProgressReport
   /// </summary>
   public List<string> ConversionLog { get; } = new();
 
-  private readonly object ConversionLogLock = new();
+  private readonly object _conversionLogLock = new();
 
   public string ConversionLogString
   {
     get
     {
       var summary = "";
-      lock (ConversionLogLock)
+      lock (_conversionLogLock)
       {
         var converted = ConversionLog.Count(x => x.ToLowerInvariant().Contains("converted"));
         var created = ConversionLog.Count(x => x.ToLowerInvariant().Contains("created"));
@@ -361,7 +361,7 @@ public class ProgressReport
   public void Log(string text)
   {
     var time = DateTime.Now.ToLocalTime().ToString("dd/MM/yy HH:mm:ss");
-    lock (ConversionLogLock)
+    lock (_conversionLogLock)
     {
       ConversionLog.Add(time + " " + text);
     }
@@ -372,13 +372,13 @@ public class ProgressReport
   /// </summary>
   public List<Exception> ConversionErrors { get; } = new();
 
-  private readonly object ConversionErrorsLock = new();
+  private readonly object _conversionErrorsLock = new();
 
   public string ConversionErrorsString
   {
     get
     {
-      lock (ConversionErrorsLock)
+      lock (_conversionErrorsLock)
       {
         return string.Join("\n", ConversionErrors.Select(x => x.Message).Distinct());
       }
@@ -389,7 +389,7 @@ public class ProgressReport
 
   public void LogConversionError(Exception exception)
   {
-    lock (ConversionErrorsLock)
+    lock (_conversionErrorsLock)
     {
       ConversionErrors.Add(exception);
     }
@@ -410,13 +410,13 @@ public class ProgressReport
   /// </remarks>
   public List<Exception> OperationErrors { get; } = new();
 
-  private readonly object OperationErrorsLock = new();
+  private readonly object _operationErrorsLock = new();
 
   public string OperationErrorsString
   {
     get
     {
-      lock (OperationErrorsLock)
+      lock (_operationErrorsLock)
       {
         return string.Join("\n", OperationErrors.Select(x => x.ToFormattedString()).Distinct());
       }
@@ -427,7 +427,7 @@ public class ProgressReport
 
   public void LogOperationError(Exception exception)
   {
-    lock (OperationErrorsLock)
+    lock (_operationErrorsLock)
     {
       OperationErrors.Add(exception);
     }

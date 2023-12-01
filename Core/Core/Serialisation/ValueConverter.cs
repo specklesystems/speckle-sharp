@@ -30,9 +30,6 @@ internal static class ValueConverter
       return true;
     }
 
-    bool isList = value is List<object>;
-    List<object> valueList = value as List<object>;
-
     //strings
     if (type == typeof(string))
     {
@@ -164,7 +161,7 @@ internal static class ValueConverter
     // Handle List<?>
     if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
     {
-      if (!isList)
+      if (value is not List<object> valueList)
       {
         return false;
       }
@@ -173,8 +170,7 @@ internal static class ValueConverter
       IList ret = Activator.CreateInstance(type, valueList.Count) as IList;
       foreach (object inputListElement in valueList)
       {
-        object convertedListElement;
-        if (!ConvertValue(listElementType, inputListElement, out convertedListElement))
+        if (!ConvertValue(listElementType, inputListElement, out object? convertedListElement))
         {
           return false;
         }
@@ -203,7 +199,7 @@ internal static class ValueConverter
 
       foreach (KeyValuePair<string, object> kv in valueDict)
       {
-        if (!ConvertValue(dictValueType, kv.Value, out object convertedDictValue))
+        if (!ConvertValue(dictValueType, kv.Value, out object? convertedDictValue))
         {
           return false;
         }
@@ -217,7 +213,7 @@ internal static class ValueConverter
     // Handle arrays
     if (type.IsArray)
     {
-      if (!isList)
+      if (value is not List<object> valueList)
       {
         return false;
       }
@@ -229,7 +225,7 @@ internal static class ValueConverter
       for (int i = 0; i < valueList.Count; i++)
       {
         object inputListElement = valueList[i];
-        if (!ConvertValue(arrayElementType, inputListElement, out object convertedListElement))
+        if (!ConvertValue(arrayElementType, inputListElement, out object? convertedListElement))
         {
           return false;
         }
@@ -266,7 +262,6 @@ internal static class ValueConverter
         "This kept for backwards compatibility, no one should be using {this}",
         "ValueConverter deserialize to System.Numerics.Matrix4x4"
       );
-      float I(int index) => Convert.ToSingle(lMatrix[index]);
       convertedValue = new Numerics.Matrix4x4(
         I(0),
         I(1),
@@ -286,6 +281,8 @@ internal static class ValueConverter
         I(15)
       );
       return true;
+
+      float I(int index) => Convert.ToSingle(lMatrix[index]);
     }
     #endregion
 
