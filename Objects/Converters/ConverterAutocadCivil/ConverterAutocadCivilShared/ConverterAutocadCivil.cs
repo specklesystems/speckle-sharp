@@ -406,7 +406,10 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
           Report.UpdateReportObject(reportObj);
         }
-        throw new NotSupportedException();
+
+        return null;
+      // TODO: DUI3! Error handling not there yet with DUI3, revert it when it is ready, and don't return null!
+      // throw new NotSupportedException();
     }
 
     switch (acadObj)

@@ -573,6 +573,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     }
     catch (Exception ex)
     {
+      if (reportObj == null)
+        return rhinoObj;
       reportObj.Update(
         status: ApplicationObject.State.Failed,
         logItem: $"{@object.GetType()} unhandled converion error: {ex.Message}\n{ex.StackTrace}"

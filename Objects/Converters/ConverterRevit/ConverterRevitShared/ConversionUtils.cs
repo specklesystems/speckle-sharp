@@ -8,6 +8,7 @@ using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit.Models;
 using Objects.Geometry;
+using Objects.Organization;
 using Objects.Other;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
