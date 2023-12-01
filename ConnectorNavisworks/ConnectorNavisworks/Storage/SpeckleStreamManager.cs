@@ -5,14 +5,14 @@ using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Data;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
-using static Speckle.ConnectorNavisworks.Other.Utilities;
+using static Speckle.ConnectorNavisworks.Other.SpeckleNavisworksUtilities;
 
 namespace Speckle.ConnectorNavisworks.Storage;
 
 internal abstract class SpeckleStreamManager
 {
-  private const string TableName = "speckle";
-  private const string KeyName = "stream_states";
+  private const string TABLE_NAME = "speckle";
+  private const string KEY_NAME = "stream_states";
 
   public static List<StreamState> ReadState(Document doc)
   {
@@ -37,7 +37,7 @@ internal abstract class SpeckleStreamManager
     using var table = new DataTable();
     using (
       var dataAdapter = new NavisworksDataAdapter(
-        $"SELECT value FROM {TableName} WHERE key = '{KeyName}'",
+        $"SELECT value FROM {TABLE_NAME} WHERE key = '{KEY_NAME}'",
         database.Value
       )
     )
@@ -64,8 +64,8 @@ internal abstract class SpeckleStreamManager
     {
       ConsoleLog($"Rebuilding Saved State DB. {table.Rows.Count} is too many.");
 
-      string deleteSql = $"DELETE FROM {TableName} WHERE key = @key";
-      string insertSql = $"INSERT INTO {TableName}(key, value) VALUES(@key, @value)";
+      string deleteSql = $"DELETE FROM {TABLE_NAME} WHERE key = @key";
+      string insertSql = $"INSERT INTO {TABLE_NAME}(key, value) VALUES(@key, @value)";
 
       using NavisworksTransaction transaction = database.BeginTransaction(DatabaseChangedAction.Edited);
       NavisworksCommand command = transaction.Connection.CreateCommand();
@@ -73,12 +73,12 @@ internal abstract class SpeckleStreamManager
       try
       {
         command.CommandText = deleteSql;
-        command.Parameters.AddWithValue("@key", KeyName);
+        command.Parameters.AddWithValue("@key", KEY_NAME);
 
         int unused = command.ExecuteNonQuery();
 
         command.CommandText = insertSql;
-        command.Parameters.AddWithValue("@key", KeyName);
+        command.Parameters.AddWithValue("@key", KEY_NAME);
         command.Parameters.AddWithValue("@value", row.ItemArray);
 
         int inserted = command.ExecuteNonQuery();
@@ -112,7 +112,7 @@ internal abstract class SpeckleStreamManager
       {
         ErrorLog(
           "Something isn't right. "
-            + $"{KeyName} was found but didn't deserialize into any streams:"
+            + $"{KEY_NAME} was found but didn't deserialize into any streams:"
             + $"\n {speckleStreamsStore}"
         );
       }
@@ -145,9 +145,9 @@ internal abstract class SpeckleStreamManager
 
     string streamStatesStore = JsonConvert.SerializeObject(streamStates);
 
-    string createSql = $"CREATE TABLE IF NOT EXISTS {TableName}(key TEXT, value TEXT)";
-    string deleteSql = $"DELETE FROM {TableName} WHERE key = @key";
-    string insertSql = $"INSERT INTO {TableName}(key, value) VALUES(@key, @value)";
+    string createSql = $"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(key TEXT, value TEXT)";
+    string deleteSql = $"DELETE FROM {TABLE_NAME} WHERE key = @key";
+    string insertSql = $"INSERT INTO {TABLE_NAME}(key, value) VALUES(@key, @value)";
 
     using (NavisworksTransaction transaction = documentDatabase.BeginTransaction(DatabaseChangedAction.Reset))
     {
@@ -166,11 +166,11 @@ internal abstract class SpeckleStreamManager
       try
       {
         command.CommandText = deleteSql;
-        command.Parameters.AddWithValue("@key", KeyName);
+        command.Parameters.AddWithValue("@key", KEY_NAME);
         int unused = command.ExecuteNonQuery();
 
         command.CommandText = insertSql;
-        command.Parameters.AddWithValue("@key", KeyName);
+        command.Parameters.AddWithValue("@key", KEY_NAME);
         command.Parameters.AddWithValue("@value", streamStatesStore);
         int inserted = command.ExecuteNonQuery();
 

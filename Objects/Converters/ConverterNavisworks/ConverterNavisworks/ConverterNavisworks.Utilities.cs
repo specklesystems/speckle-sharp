@@ -20,7 +20,7 @@ internal static class ArrayExtension
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
-  private const string RootNodePseudoId = "___";
+  private const string ROOT_NODE_PSEUDO_ID = "___";
 
   /// <summary>
   ///   Checks is the Element is hidden or if any of its ancestors is hidden

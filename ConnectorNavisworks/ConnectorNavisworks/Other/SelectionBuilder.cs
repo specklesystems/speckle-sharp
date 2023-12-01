@@ -18,7 +18,7 @@ public class SelectionHandler
   private readonly HashSet<ModelItem> _uniqueModelItems;
   private int _descendantProgress;
   private HashSet<ModelItem> _visited;
-  public ProgressInvoker ProgressBar;
+  internal ProgressInvoker ProgressBar;
   private readonly bool _coalesceData;
 
   /// <summary>
@@ -48,24 +48,26 @@ public class SelectionHandler
   {
     switch (_filter.Slug)
     {
-      case FilterTypes.Manual:
+      case FilterTypes.MANUAL:
         _uniqueModelItems.AddRange(GetObjectsFromSelection());
         break;
 
-      case FilterTypes.Sets:
+      case FilterTypes.SETS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedSets());
         break;
 
-      case FilterTypes.Views:
+      case FilterTypes.VIEWS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedViewpoint());
         break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(_filter.Slug), _filter.Slug, "Unrecognized filter type");
     }
   }
 
   /// <summary>
   /// Retrieves the model items from the selection.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSelection()
+  private HashSet<ModelItem> GetObjectsFromSelection()
   {
     _uniqueModelItems.Clear();
 
@@ -116,21 +118,17 @@ public class SelectionHandler
 
     var success = false;
 
-    new Invoker().Invoke(
-      (Action)(
-        () =>
-        {
-          var savedViewpoint = ResolveSavedViewpoint(selection);
-          if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
-          {
-            return;
-          }
+    new Invoker().Invoke(() =>
+    {
+      var savedViewpoint = ResolveSavedViewpoint(selection);
+      if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+      {
+        return;
+      }
 
-          Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
-          success = true;
-        }
-      )
-    );
+      Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
+      success = true;
+    });
 
     if (!success)
     {
@@ -258,7 +256,7 @@ public class SelectionHandler
     switch (savedItem)
     {
       case SavedViewpoint { ContainsVisibilityOverrides: false }:
-        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility
+        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility. This is another don't send everything safeguard.
         return null;
       case GroupItem groupItem:
         foreach (var childItem in groupItem.Children)
@@ -266,6 +264,10 @@ public class SelectionHandler
           treeNode.IsEnabled = false;
           treeNode.Elements.Add(GetViews(childItem));
         }
+        break;
+      default:
+        // This case is intentionally left empty as all SDK object scenarios are covered above.
+        // and will fall throw with the treeNode for a SavedViewpoint that is not a group and has visibility overrides.
         break;
     }
 
@@ -276,7 +278,7 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the saved sets.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSavedSets()
+  private HashSet<ModelItem> GetObjectsFromSavedSets()
   {
     _uniqueModelItems.Clear();
 
@@ -305,7 +307,7 @@ public class SelectionHandler
   /// </summary>
   public void PopulateHierarchyAndOmitHidden()
   {
-    if (_uniqueModelItems == null || !_uniqueModelItems.Any())
+    if (_uniqueModelItems == null || _uniqueModelItems.Count == 0)
     {
       return;
     }

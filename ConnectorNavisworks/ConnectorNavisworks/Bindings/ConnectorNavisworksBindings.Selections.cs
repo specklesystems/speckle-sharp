@@ -21,11 +21,11 @@ public partial class ConnectorBindingsNavisworks
     Cursor.Current = Cursors.WaitCursor;
 
     // Current document, models and selected elements.
-    _doc = Application.ActiveDocument;
+    s_doc = Application.ActiveDocument;
 
     IsFileAndModelsPresent();
 
-    var appSelectedItems = _doc.CurrentSelection.SelectedItems;
+    var appSelectedItems = s_doc.CurrentSelection.SelectedItems;
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.
     var selectedObjects = new HashSet<string>();
