@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api;
@@ -374,6 +375,8 @@ public class ServerInfoResponse
 }
 
 // TODO: prob remove and bring one level up and shared w Core.Credentials
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class ServerInfo
 {
   public string name { get; set; }
