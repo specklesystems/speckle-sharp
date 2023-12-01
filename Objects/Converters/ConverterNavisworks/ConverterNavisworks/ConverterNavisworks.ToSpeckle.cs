@@ -18,7 +18,7 @@ public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
   {
-    var unused = Settings.TryGetValue("_Mode", out var mode);
+    var _ = Settings.TryGetValue("_Mode", out var mode);
 
     Base @base;
 
@@ -33,7 +33,7 @@ public partial class ConverterNavisworks
         {
           case string pseudoId:
             element =
-              pseudoId == RootNodePseudoId
+              pseudoId == ROOT_NODE_PSEUDO_ID
                 ? Application.ActiveDocument.Models.RootItems.First
                 : PointerToModelItem(pseudoId);
             break;
@@ -71,6 +71,8 @@ public partial class ConverterNavisworks
         return null;
     }
   }
+
+  private static readonly int[] s_lowerBounds = new int[1] { 1 };
 
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
@@ -115,7 +117,7 @@ public partial class ConverterNavisworks
     return new Vector(v.data1, v.data2, v.data3);
   }
 
-  private static Base ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
+  private static View3D ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
   {
     var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
 
@@ -225,7 +227,7 @@ public partial class ConverterNavisworks
     );
   }
 
-  private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
+  private static View3D ViewpointToBase(SavedViewpoint savedViewpoint)
   {
     var view = ViewpointToBase(savedViewpoint.Viewpoint, savedViewpoint.DisplayName);
 
@@ -251,9 +253,7 @@ public partial class ConverterNavisworks
       : element.DisplayName;
 
     @base["name"] = string.IsNullOrEmpty(resolvedName)
-      ? (
-        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
-      ).ToString()
+      ? element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon).ToString()
       : GetSanitizedPropertyName(resolvedName);
 
     // Geometry items have no children
@@ -349,7 +349,7 @@ public partial class ConverterNavisworks
     PopulateModelFragments(geometry);
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
-    if (fragmentGeometry != null && fragmentGeometry.Any())
+    if (fragmentGeometry != null && fragmentGeometry.Count != 0)
     {
       @base["@displayValue"] = fragmentGeometry;
     }
@@ -363,11 +363,11 @@ public partial class ConverterNavisworks
       return true;
     }
 
-    const PrimitiveTypes allowedTypes =
+    const PrimitiveTypes ALLOWED_TYPES =
       PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
 
     var primitives = item.Geometry.PrimitiveTypes;
-    var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
+    var primitiveTypeSupported = (primitives & ALLOWED_TYPES) == primitives;
 
     return primitiveTypeSupported;
   }
@@ -396,7 +396,7 @@ public partial class ConverterNavisworks
       typeof(int),
       new int[1] { pathArray.Length },
       // ReSharper disable once RedundantExplicitArraySize
-      new int[1] { 1 }
+      s_lowerBounds
     );
 
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);

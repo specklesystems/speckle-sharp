@@ -443,7 +443,7 @@ public partial class ConverterNavisworks
     }
   }
 
-  private static IReadOnlyList<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
+  private static List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
   {
     var callbackListeners = navisworksGeometry.GetUniqueGeometryFragments();
 
@@ -545,7 +545,7 @@ public partial class ConverterNavisworks
     TransformVector3D = transform;
   }
 
-  private static IEnumerable<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale)
+  private static List<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale)
   {
     return new List<double>
     {
