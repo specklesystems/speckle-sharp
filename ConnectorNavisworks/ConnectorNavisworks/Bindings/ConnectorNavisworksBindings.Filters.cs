@@ -23,14 +23,14 @@ public partial class ConnectorBindingsNavisworks
 
     var manualFilter = new ManualSelectionFilter();
 
-    if (_doc == null)
+    if (s_doc == null)
     {
       return filters;
     }
 
     filters.Add(manualFilter);
 
-    var selectSetsRootItem = _doc.SelectionSets.RootItem;
+    var selectSetsRootItem = s_doc.SelectionSets.RootItem;
 
     var savedSelectionSets = selectSetsRootItem?.Children.Select(GetSets).ToList() ?? new List<TreeNode>();
 
@@ -47,7 +47,7 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(selectionSetsFilter);
     }
 
-    var savedViewsRootItem = _doc.SavedViewpoints.RootItem;
+    var savedViewsRootItem = s_doc.SavedViewpoints.RootItem;
 
     var savedViews =
       savedViewsRootItem?.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null).ToList()
@@ -68,7 +68,7 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    DocumentClash clashPlugin = _doc.GetClash();
+    DocumentClash clashPlugin = s_doc.GetClash();
 
     var clashTests = clashPlugin?.TestsData;
 
@@ -102,7 +102,7 @@ public partial class ConnectorBindingsNavisworks
       DisplayName = savedItem.DisplayName,
       Guid = savedItem.Guid,
       IndexWith = nameof(TreeNode.Guid),
-      Indices = _doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
+      Indices = s_doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
     };
 
     if (!savedItem.IsGroup)
@@ -121,7 +121,7 @@ public partial class ConnectorBindingsNavisworks
 
   private static TreeNode GetViews(SavedItem savedItem)
   {
-    var reference = _doc.SavedViewpoints.CreateReference(savedItem);
+    var reference = s_doc.SavedViewpoints.CreateReference(savedItem);
 
     var treeNode = new TreeNode
     {
@@ -142,6 +142,8 @@ public partial class ConnectorBindingsNavisworks
         return null;
       case false:
         return treeNode;
+      default:
+        break; // handles savedItem.IsGroup == true, somewhat redundant
     }
 
     foreach (var childItem in ((GroupItem)savedItem).Children)
@@ -160,14 +162,14 @@ public partial class ConnectorBindingsNavisworks
       return null;
     }
 
-    if (!node.Elements.Any())
+    if (node.Elements.Count == 0)
     {
       return node;
     }
 
     var elements = node.Elements.Select(RemoveNullNodes).Where(childNode => childNode != null).ToList();
 
-    if (!elements.Any())
+    if (elements.Count == 0)
     {
       return null;
     }

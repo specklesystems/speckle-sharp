@@ -38,7 +38,7 @@ public partial class ConverterNavisworks
 
     properties.ToList().ForEach(property => BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
 
-    if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null)
+    if (propertyCategoryBase.GetMembers().Count == 0 || propertyCategory.DisplayName == null)
     {
       return;
     }
