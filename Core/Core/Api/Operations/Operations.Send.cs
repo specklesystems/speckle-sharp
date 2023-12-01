@@ -18,17 +18,141 @@ namespace Speckle.Core.Api;
 
 public static partial class Operations
 {
-  #region Pushing objects
+  /// <summary>
+  /// Sends a Speckle Object to the provided <paramref name="transport"/> and the default local <see cref="SQLiteTransport"/>
+  /// </summary>
+  /// <param name="value">The object you want to send</param>
+  /// <param name="transports">Where you want to send them</param>
+  /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
+  /// <returns>The id (hash) of the object</returns>
+  public static async Task<string> Send(
+    Base value,
+    ITransport transport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
+    ITransport[] transports = { sqLiteTransport, transport };
+    return await SendToTransports(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
+  }
 
   /// <summary>
-  /// Sends an object via the provided transports. Defaults to the local cache.
+  /// Sends a Speckle Object to the provided <paramref name="transports"/>
   /// </summary>
-  /// <param name="object">The object you want to send.</param>
-  /// <param name="transports">Where you want to send them.</param>
-  /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
-  /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
-  /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
-  /// <returns>The id (hash) of the object.</returns>
+  /// <remarks>Only sends to the specified transports, the default local cache won't be used unless you also pass it in</remarks>
+  /// <param name="value">The object you want to send</param>
+  /// <param name="transports">Where you want to send them</param>
+  /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
+  /// <returns>The id (hash) of the object</returns>
+  /// <exception cref="ArgumentException">No transports were specified</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="value"/> was null</exception>
+  /// <exception cref="SpeckleException">A</exception> //TODO: Document and enforce lower down
+  /// <exception cref="TransportException">One of the <paramref name="transports"/> failed to send</exception>
+  /// <exception cref="TaskCanceledException"><paramref name="cancellationToken"/> requested cancellation</exception>
+  public static async Task<string> SendToTransports(
+    Base value,
+    IReadOnlyCollection<ITransport> transports,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+    CancellationToken cancellationToken = default
+  )
+  {
+    if (transports.Count == 0)
+    {
+      throw new ArgumentException("Expected at least on transport to be specified", nameof(transports));
+    }
+
+    if (value is null)
+    {
+      throw new ArgumentNullException(nameof(value));
+    }
+
+    var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
+
+    // make sure all logs in the operation have the proper context
+    using (LogContext.PushProperty("transportContext", transportContext))
+    using (LogContext.PushProperty("correlationId", Guid.NewGuid().ToString()))
+    {
+      var sendTimer = Stopwatch.StartNew();
+      SpeckleLog.Logger.Information("Starting send operation");
+
+      var localProgressDict = new ConcurrentDictionary<string, int>();
+      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+
+      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, cancellationToken);
+
+      foreach (var t in transports)
+      {
+        t.OnProgressAction = internalProgressAction;
+        t.CancellationToken = cancellationToken;
+        t.BeginWrite();
+      }
+
+      string hash;
+      try
+      {
+        hash = await SendInternal(value, serializerV2, cancellationToken).ConfigureAwait(false);
+      }
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Information(
+          ex,
+          "Send operation failed after {elapsed} seconds",
+          sendTimer.Elapsed.TotalSeconds
+        );
+        throw;
+      }
+      finally
+      {
+        foreach (var t in transports)
+        {
+          t.EndWrite();
+        }
+      }
+
+      sendTimer.Stop();
+      SpeckleLog.Logger
+        .ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
+        .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
+        .ForContext("serializerElapsed", serializerV2?.Elapsed)
+        .Information(
+          "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
+          transports.Max(t => t.SavedObjectCount),
+          sendTimer.Elapsed.TotalSeconds,
+          hash
+        );
+      return hash;
+    }
+  }
+
+  internal static async Task<string> SendInternal(
+    Base value,
+    BaseObjectSerializerV2 serializer,
+    CancellationToken cancellationToken = default
+  )
+  {
+    string obj = serializer.Serialize(value);
+    Task[] transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToArray();
+
+    cancellationToken.ThrowIfCancellationRequested();
+
+    await Task.WhenAll(transportAwaits).ConfigureAwait(false);
+
+    JToken? idToken = JObject.Parse(obj).GetValue("id");
+    if (idToken == null)
+    {
+      throw new SpeckleException("Failed to get id of serialized object");
+    }
+
+    return idToken.ToString();
+  }
+
+  #region Obsolete Overloads
+
+
+
+
+  [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
   public static Task<string> Send(
     Base @object,
     List<ITransport>? transports = null,
@@ -61,6 +185,7 @@ public static partial class Operations
   /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
   /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
   /// <returns>The id (hash) of the object.</returns>
+  [Obsolete("This overload has been deprecated along with serializer v1. Use other overloads instead.")]
   public static async Task<string> Send(
     Base @object,
     CancellationToken cancellationToken,
