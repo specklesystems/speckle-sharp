@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
