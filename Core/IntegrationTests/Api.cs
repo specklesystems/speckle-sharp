@@ -336,20 +336,11 @@ public class Api
 
     myObject["@Points"] = ptsList;
 
-    bool sendError = false;
     objectId = await Operations
-      .Send(
-        myObject,
-        new List<ITransport> { myServerTransport },
-        false,
-        disposeTransports: true,
-        onErrorAction: (s, e) =>
-        {
-          sendError = true;
-        }
-      )
+      .SendToTransports(myObject, new List<ITransport> { myServerTransport })
       .ConfigureAwait(false);
-    Assert.IsFalse(sendError);
+
+    Assert.That(objectId, Is.Not.Null);
 
     var res = await myClient
       .CommitCreate(
