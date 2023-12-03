@@ -8,6 +8,10 @@ using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;
 
+#if DEBUG
+using System.Text;
+#endif
+
 namespace Speckle.ConnectorNavisworks.Entry;
 
 [
