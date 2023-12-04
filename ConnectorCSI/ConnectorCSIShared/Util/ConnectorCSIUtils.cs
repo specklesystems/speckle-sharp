@@ -107,9 +107,7 @@ public static class ConnectorCSIUtils
       case "NodeLoading":
         return GetAllPointNames(model);
       case "Model":
-        var names = new string[] { };
-        names.Append(model.GetModelFilename());
-        return names.ToList();
+        return new List<string> { model.GetModelFilename() };
       case "ColumnResults":
         return GetColumnNames(model);
       case "BeamResults":
