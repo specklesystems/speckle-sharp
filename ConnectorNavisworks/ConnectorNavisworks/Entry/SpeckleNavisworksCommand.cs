@@ -43,6 +43,8 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
   public override Control CreateControlPane()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+    AppDomain.CurrentDomain.UnhandledException += Current_Domain_UnhandledException;
+
     Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
     try
     {
@@ -70,6 +72,21 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     speckleHost.CreateControl();
 
     return speckleHost;
+  }
+
+  private static void Current_Domain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+  {
+    {
+      var ex = (Exception)e.ExceptionObject;
+      SpeckleLog.Logger.Fatal(ex, "Unhandled Navisworks Error: {error}", ex.Message);
+      throw ex;
+    }
+  }
+
+  protected override void OnUnloading()
+  {
+    AppDomain.CurrentDomain.UnhandledException -= Current_Domain_UnhandledException;
+    base.OnUnloading();
   }
 
   public override void DestroyControlPane(Control pane)
