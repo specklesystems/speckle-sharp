@@ -79,6 +79,8 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     {
       var ex = (Exception)e.ExceptionObject;
       SpeckleLog.Logger.Fatal(ex, "Unhandled Navisworks Error: {error}", ex.Message);
+
+      // rethrow to pass to application error handler, which it would have done anyway
       throw ex;
     }
   }
