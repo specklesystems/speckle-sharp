@@ -74,6 +74,18 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     return speckleHost;
   }
 
+  /// <summary>
+  /// Handles unhandled exceptions within the application.
+  /// Specifically designed for use within the Speckle plugin for Navisworks,
+  /// this method logs the exception details before rethrowing the exception
+  /// to allow the application's default error handling to proceed.
+  /// </summary>
+  /// <param name="sender">The source of the unhandled exception event. This is typically
+  /// the object that raised the event.</param>
+  /// <param name="e">An UnhandledExceptionEventArgs object that contains the event data,
+  /// including the unhandled exception.</param>
+  /// <exception cref="Exception">The exception that was unhandled and led to the triggering
+  /// of this event handler.</exception>
   private static void Current_Domain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
   {
     {
