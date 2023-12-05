@@ -1,9 +1,7 @@
 {
   "profiles": {
-    "ConnectorRhino8": {
-      "commandName": "Executable",
-            "executablePath": "C:\Program Files\Rhino 8\System\Rhino.exe",
-            "hotReloadEnabled": true
+    "ConnectorRhino7": {
+      "commandName": "Project"
     }
   }
 }
