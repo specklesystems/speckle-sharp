@@ -228,6 +228,15 @@ public static partial class Operations
       serializerVersion
     );
 
+  ///<inheritdoc cref="Send(Speckle.Core.Models.Base,System.Threading.CancellationToken,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
+  public static Task<string> Send(
+    Base @object,
+    bool disposeTransports,
+    SerializerVersion serializerVersion = SerializerVersion.V2
+  ) => Send(@object, CancellationToken.None, null, true, null, null, disposeTransports, serializerVersion);
+
   /// <summary>
   /// Sends an object via the provided transports. Defaults to the local cache.
   /// </summary>
