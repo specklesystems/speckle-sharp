@@ -8,6 +8,7 @@
       "ConnectorGrasshopper\\ConnectorGrasshopperUtils\\ConnectorGrasshopperUtils.csproj",
       "ConnectorRhino\\ConnectorRhino6\\ConnectorRhino6.csproj",
       "ConnectorRhino\\ConnectorRhino7\\ConnectorRhino7.csproj",
+      "ConnectorRhino\\ConnectorRhino8\\ConnectorRhino8.csproj",
       "ConnectorRhino\\ConnectorRhino\\ConnectorRhinoShared\\ConnectorRhinoShared.shproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\TestsUnit.csproj",
@@ -19,6 +20,7 @@
       "Objects\\Converters\\ConverterRhinoGh\\ConverterGrasshopper7\\ConverterGrasshopper7.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino6\\ConverterRhino6.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino7\\ConverterRhino7.csproj",
+      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino8\\ConverterRhino8.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Tests.csproj"

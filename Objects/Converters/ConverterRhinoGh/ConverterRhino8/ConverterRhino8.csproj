@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Title>Objects.Converter.Rhino8</Title>
+    <Description>Converter for Rhino and Grasshopper</Description>
+    <TargetExt>.dll</TargetExt>
+    <PackageId>Speckle.Objects.Converter.Rhino8</PackageId>
+    <PackageTags>$(PackageTags) objects converter rhino</PackageTags>
+    <AssemblyName>Objects.Converter.Rhino8</AssemblyName>
+    <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+    <RhinoPluginType>none</RhinoPluginType>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj">
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="8.1.23325.13001" />
+    <PackageReference Include="RhinoCommon" Version="8.1.23325.13001" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;RHINO8</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RHINO8</DefineConstants>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
+</Project>

@@ -37,6 +37,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
 #elif RHINO7
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
+#elif RHINO8
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
 #endif
 
   [Obsolete]
@@ -292,7 +294,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           break;
 #endif
 
-#if RHINO7
+#if RHINO7 || RHINO8
         case RH.SubD o:
           if (o.HasBrepForm)
           {
@@ -652,7 +654,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case RH.NurbsCurve _:
       case RH.Box _:
       case RH.Mesh _:
-#if RHINO7
+#if RHINO7 || RHINO8
       case RH.SubD _:
 #endif
       case RH.Extrusion _:

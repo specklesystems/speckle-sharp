@@ -5,6 +5,7 @@ public enum HostAppVersion
   v,
   v6,
   v7,
+  v8,
   v2019,
   v2020,
   v2021,

@@ -683,7 +683,7 @@ public partial class ConverterRhinoGh
     return speckleMesh;
   }
 
-#if RHINO7
+#if RHINO7 || RHINO8
   public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -769,7 +769,7 @@ public partial class ConverterRhinoGh
     }
     m.Faces.CullDegenerateFaces();
 
-#if RHINO7
+#if RHINO7 || RHINO8
     // get receive mesh setting
     var meshSetting = Settings.ContainsKey("receive-mesh")
       ? Settings["receive-mesh"]
