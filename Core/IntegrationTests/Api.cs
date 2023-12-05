@@ -336,9 +336,7 @@ public class Api
 
     myObject["@Points"] = ptsList;
 
-    objectId = await Operations
-      .SendToTransports(myObject, new List<ITransport> { myServerTransport })
-      .ConfigureAwait(false);
+    objectId = await Operations.Send(myObject, new List<ITransport> { myServerTransport }).ConfigureAwait(false);
 
     Assert.That(objectId, Is.Not.Null);
 

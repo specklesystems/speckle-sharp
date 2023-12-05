@@ -27,7 +27,7 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
-    objId_01 = Operations.Send(myObject).Result;
+    objId_01 = Operations.Send(myObject, null, true).Result;
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -55,7 +55,7 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
-    objId_01 = Operations.Send(myObject).Result;
+    objId_01 = Operations.Send(myObject, null, true).Result;
 
     var commitPulled = Operations.Receive(objId_01).Result;
 
@@ -76,7 +76,7 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
     }
 
-    objId_01 = await Operations.Send(myObject).ConfigureAwait(false);
+    objId_01 = await Operations.Send(myObject, null, true).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -100,7 +100,7 @@ public class SendReceiveLocal
     myObject["@dictionary"] = myDic;
     myObject["@list"] = myList;
 
-    objId_01 = await Operations.Send(myObject).ConfigureAwait(false);
+    objId_01 = await Operations.Send(myObject, null, true).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
 
@@ -135,7 +135,7 @@ public class SendReceiveLocal
       ((List<Base>)((dynamic)obj)["@LayerC"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" });
     }
 
-    objId_01 = await Operations.Send(obj).ConfigureAwait(false);
+    objId_01 = await Operations.Send(obj, null, true).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -171,10 +171,12 @@ public class SendReceiveLocal
       ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
     }
 
-    ConcurrentDictionary<string, int> progress = null;
+    ConcurrentDictionary<string, int>? progress = null;
     commitId_02 = await Operations
       .Send(
         myObject,
+        null,
+        true,
         onProgressAction: dict =>
         {
           progress = dict;
@@ -183,7 +185,7 @@ public class SendReceiveLocal
       .ConfigureAwait(false);
 
     Assert.NotNull(progress);
-    Assert.GreaterOrEqual(progress.Keys.Count, 1);
+    Assert.GreaterOrEqual(progress!.Keys.Count, 1);
   }
 
   [Test(Description = "Should show progress!"), Order(5)]
@@ -204,6 +206,7 @@ public class SendReceiveLocal
   }
 
   [Test(Description = "Should dispose of transports after a send or receive operation if so specified.")]
+  [Obsolete("Send overloads that perform disposal are deprecated")]
   public async Task ShouldDisposeTransports()
   {
     var @base = new Base();
@@ -248,8 +251,8 @@ public class SendReceiveLocal
     @base["test"] = "the best";
 
     var myLocalTransport = new SQLiteTransport();
-    var id = await Operations.Send(@base, new List<ITransport> { myLocalTransport }, false).ConfigureAwait(false);
-    await Operations.Send(@base, new List<ITransport> { myLocalTransport }, false).ConfigureAwait(false);
+    var id = await Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
+    await Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
 
     var obj = await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
     await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);

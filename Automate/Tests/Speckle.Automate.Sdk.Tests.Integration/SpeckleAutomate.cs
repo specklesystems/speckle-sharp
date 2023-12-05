@@ -19,10 +19,8 @@ public sealed class AutomationContextTest : IDisposable
     Branch model = await client.BranchGet(projectId, branchName, 1);
     string modelId = model.id;
 
-    string rootObjId = await Operations.Send(
-      testObject,
-      new List<ITransport> { new ServerTransport(client.Account, projectId) }
-    );
+    using ServerTransport remoteTransport = new(client.Account, projectId);
+    string rootObjId = await Operations.Send(testObject, remoteTransport, false);
 
     string versionId = await client.CommitCreate(
       new()

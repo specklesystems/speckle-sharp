@@ -32,7 +32,7 @@
       <!--Dissabled by design-->
       CA5399;CA1862;
       <!--XML comment-->
-      CS1591;
+      CS1591;CS1573;
       <!--Nullability-->
       CS8618;
       <!-- Globalization rules -->

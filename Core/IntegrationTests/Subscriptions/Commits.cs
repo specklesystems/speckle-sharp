@@ -63,9 +63,7 @@ public class Commits
 
     myObject["Points"] = ptsList;
 
-    var objectId = await Operations
-      .SendToTransports(myObject, new List<ITransport> { myServerTransport })
-      .ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, myServerTransport, false).ConfigureAwait(false);
 
     var commitInput = new CommitCreateInput
     {

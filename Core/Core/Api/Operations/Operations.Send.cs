@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,76 +20,67 @@ namespace Speckle.Core.Api;
 public static partial class Operations
 {
   /// <summary>
-  /// Sends a Speckle Object to the provided <paramref name="transport"/> and the default local <see cref="SQLiteTransport"/>
+  /// Sends a Speckle Object to the provided <paramref name="transport"/> and (optionally) the default local cache
   /// </summary>
-  /// <param name="value">The object you want to send</param>
-  /// <param name="transport">Where you want to send them</param>
-  /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
-  /// <param name="cancellationToken"></param>
-  /// <returns>The id (hash) of the object sent</returns>
-  /// <exception cref="ArgumentNullException"><paramref name="value"/> or <paramref name="transport"/> was null</exception>
-  /// <exception cref="SpeckleException">Serialization or Send operation was unsuccessful</exception>
-  /// <exception cref="TransportException"><paramref name="transport"/> failed to send</exception>
-  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancellation</exception>
-  /// <example>
-  /// <code>
+  /// <remarks/>
+  /// <inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/>
+  /// <param name="useDefaultCache">When <see langword="true"/>, an additional <see cref="SQLiteTransport"/> will be included</param>
+  /// <example><code>
   /// using ServerTransport destination = new(account, streamId);
-  /// string id = await Operations.Send(mySpeckleData, destination);
-  /// </code>
-  /// </example>
+  /// string objectId = await Send(mySpeckleObject, destination, true);
+  /// </code></example>
   public static async Task<string> Send(
     Base value,
-    ITransport transport,
+    ITransport? transport,
+    bool useDefaultCache,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
     CancellationToken cancellationToken = default
   )
   {
-    if (transport is null)
+    List<ITransport> transports = new();
+    if (transport != null)
     {
-      throw new ArgumentNullException(nameof(transport));
+      transports.Add(transport);
     }
 
-    using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
-    ITransport[] transports = { sqLiteTransport, transport };
-    return await SendToTransports(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
+    using SQLiteTransport? localCache = useDefaultCache ? new SQLiteTransport { TransportName = "LC" } : null;
+    if (localCache != null)
+    {
+      transports.Add(localCache);
+    }
+
+    return await Send(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
   }
 
   /// <summary>
   /// Sends a Speckle Object to the provided <paramref name="transports"/>
   /// </summary>
   /// <remarks>Only sends to the specified transports, the default local cache won't be used unless you also pass it in</remarks>
+  /// <returns>The id (hash) of the object sent</returns>
   /// <param name="value">The object you want to send</param>
   /// <param name="transports">Where you want to send them</param>
   /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
   /// <param name="cancellationToken"></param>
-  /// <returns>The id (hash) of the object sent</returns>
   /// <exception cref="ArgumentException">No transports were specified</exception>
-  /// <exception cref="ArgumentNullException"><paramref name="value"/> was null</exception>
+  /// <exception cref="ArgumentNullException">The <paramref name="value"/> was <see langword="null"/></exception>
   /// <exception cref="SpeckleException">Serialization or Send operation was unsuccessful</exception>
   /// <exception cref="TransportException">One or more <paramref name="transports"/> failed to send</exception>
-  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancellation</exception>
-  /// <example>
-  /// <code>
-  /// using ServerTransport t1 = new(account, streamId);
-  /// MemoryTransport t2 = new();
-  /// string id = await Operations.Send(mySpeckleData, new ITransport[] {t1, t2});
-  /// </code>
-  /// </example>
-  public static async Task<string> SendToTransports(
+  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested cancellation</exception>
+  public static async Task<string> Send(
     Base value,
     IReadOnlyCollection<ITransport> transports,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
     CancellationToken cancellationToken = default
   )
   {
-    if (transports == null || transports.Count == 0)
-    {
-      throw new ArgumentException("Expected at least on transport to be specified", nameof(transports));
-    }
-
     if (value is null)
     {
       throw new ArgumentNullException(nameof(value));
+    }
+
+    if (transports.Count == 0)
+    {
+      throw new ArgumentException("Expected at least on transport to be specified", nameof(transports));
     }
 
     var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
@@ -115,7 +107,7 @@ public static partial class Operations
       string hash;
       try
       {
-        hash = await SendInternal(value, serializerV2, cancellationToken).ConfigureAwait(false);
+        hash = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
@@ -143,7 +135,7 @@ public static partial class Operations
       SpeckleLog.Logger
         .ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
         .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
-        .ForContext("serializerElapsed", serializerV2?.Elapsed)
+        .ForContext("serializerElapsed", serializerV2.Elapsed)
         .Information(
           "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
           transports.Max(t => t.SavedObjectCount),
@@ -154,14 +146,8 @@ public static partial class Operations
     }
   }
 
-  /// <summary>
-  /// Passes <paramref name="value"/> to <paramref name="serializer"/> and waits for all <see cref="BaseObjectSerializerV2.WriteTransports"/> to complete
-  /// </summary>
-  /// <param name="value"></param>
-  /// <param name="serializer"></param>
-  /// <param name="cancellationToken"></param>
-  /// <returns>The id (hash) of the object sent</returns>
-  internal static async Task<string> SendInternal(
+  /// <returns><inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/></returns>
+  internal static async Task<string> SerializerSend(
     Base value,
     BaseObjectSerializerV2 serializer,
     CancellationToken cancellationToken = default
@@ -195,17 +181,22 @@ public static partial class Operations
 
   ///<inheritdoc cref="Send(Speckle.Core.Models.Base,System.Threading.CancellationToken,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
   [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
+  public static Task<string> Send(Base @object) => Send(@object, CancellationToken.None);
+
+  ///<inheritdoc cref="Send(Speckle.Core.Models.Base,System.Threading.CancellationToken,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
   public static Task<string> Send(
     Base @object,
-    List<ITransport>? transports = null,
-    bool useDefaultCache = true,
-    Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
-    Action<string, Exception>? onErrorAction = null,
-    bool disposeTransports = false,
+    List<ITransport>? transports,
+    bool useDefaultCache,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    bool disposeTransports,
     SerializerVersion serializerVersion = SerializerVersion.V2
-  )
-  {
-    return Send(
+  ) =>
+    Send(
       @object,
       CancellationToken.None,
       transports,
@@ -215,17 +206,36 @@ public static partial class Operations
       disposeTransports,
       serializerVersion
     );
-  }
+
+  ///<inheritdoc cref="Send(Speckle.Core.Models.Base,System.Threading.CancellationToken,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
+  [Obsolete("This overload has been deprecated along with serializer v1. Use other Send overloads instead.")]
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
+  public static Task<string> Send(
+    Base @object,
+    List<ITransport>? transports,
+    bool useDefaultCache,
+    bool disposeTransports,
+    SerializerVersion serializerVersion = SerializerVersion.V2
+  ) =>
+    Send(
+      @object,
+      CancellationToken.None,
+      transports,
+      useDefaultCache,
+      null,
+      null,
+      disposeTransports,
+      serializerVersion
+    );
 
   /// <summary>
   /// Sends an object via the provided transports. Defaults to the local cache.
   /// </summary>
   /// <remarks>
   /// This overload is deprecated. You should consider using
-  /// <br/><see cref="Send(Speckle.Core.Models.Base,Speckle.Core.Transports.ITransport,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Threading.CancellationToken)"/>
+  /// <br/><see cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string,int}}?, CancellationToken)"/>
   /// <br/>or
-  /// <br/><see cref="SendToTransports"/>
-  /// <br/>
+  /// <br/><see cref="Send(Base, ITransport, bool, Action{ConcurrentDictionary{string,int}}?,CancellationToken)"/>
   /// <br/>
   /// These new overloads no longer support <paramref name="serializerVersion"/> switching as v1 is now deprecated.
   /// <br/>
@@ -241,7 +251,10 @@ public static partial class Operations
   /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
   /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
   /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
+  /// <param name="disposeTransports"></param>
+  /// <param name="serializerVersion"></param>
   /// <returns>The id (hash) of the object.</returns>
+  [SuppressMessage("Naming", "CA1720:Identifier contains type name")]
   [Obsolete(DEPRECATION_NOTICE)]
   public static async Task<string> Send(
     Base @object,
