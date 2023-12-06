@@ -299,13 +299,22 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
   {
     get
     {
-      var commit = "";
-      if (!string.IsNullOrEmpty(Id))
+      var account = AccountManager.GetDefaultAccount();
+      if (account.serverInfo.frontend2)
       {
-        commit = "commits/" + Id;
+        return $"{_fileStream.ServerUrl.TrimEnd('/')}/projects/{_fileStream.StreamId}";
+      }
+      else
+      {
+        var commit = "";
+        if (!string.IsNullOrEmpty(Id))
+        {
+          commit = "commits/" + Id;
+        }
+
+        return $"{_fileStream.ServerUrl.TrimEnd('/')}/streams/{_fileStream.StreamId}/{commit}";
       }
 
-      return $"{_fileStream.ServerUrl.TrimEnd('/')}/streams/{_fileStream.StreamId}/{commit}";
     }
   }
 
