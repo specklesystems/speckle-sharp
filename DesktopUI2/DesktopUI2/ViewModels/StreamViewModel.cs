@@ -271,17 +271,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
-      //TODO: Core's API calls and the StreamWrapper class need to be updated to properly support FE2 links
-      //this is a temporary workaround
-      var index = -1;
-      if (UseFe2)
-      {
-        index = Branches.FindIndex(x => x.id == StreamState.BranchName);
-      }
-      else
-      {
-        index = Branches.FindIndex(x => x.name == StreamState.BranchName);
-      }
+      var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
+
       if (index != -1)
       {
         SelectedBranch = BranchesViewModel[index];

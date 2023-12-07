@@ -14,6 +14,7 @@ public class StreamWrapper
 {
   private Account? _account;
 
+  [Obsolete("Use other constructor or static factory function")]
   public StreamWrapper() { }
 
   /// <summary>
@@ -25,13 +26,13 @@ public class StreamWrapper
   {
     OriginalInput = streamUrlOrId;
 
-    if (!Uri.TryCreate(streamUrlOrId, UriKind.Absolute, out _))
+    if (Uri.TryCreate(streamUrlOrId, UriKind.Absolute, out Uri url))
     {
-      StreamWrapperFromId(streamUrlOrId);
+      StreamWrapperFromUrl(url);
     }
     else
     {
-      StreamWrapperFromUrl(streamUrlOrId);
+      StreamWrapperFromId(streamUrlOrId);
     }
   }
 
@@ -50,6 +51,42 @@ public class StreamWrapper
     OriginalInput = $"{ServerUrl}/streams/{StreamId}{(UserId != null ? "?u=" + UserId : "")}";
   }
 
+  //Keep private, we want to move towards using the CreateFrom factory functions
+  private StreamWrapper(Uri streamUrl)
+  {
+    StreamWrapperFromUrl(streamUrl);
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="url"></param>
+  /// <exception cref="SpeckleException"></exception>
+  /// <returns></returns>
+  public static async Task<StreamWrapper> CreateFrom(Uri url)
+  {
+    StreamWrapper sw = new(url);
+
+    _ = await sw.GetAccount().ConfigureAwait(false);
+
+    return sw;
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="urlOrId"></param>
+  /// <exception cref="SpeckleException"></exception>
+  /// <returns></returns>
+  public static async Task<StreamWrapper> CreateFrom(string urlOrId)
+  {
+    StreamWrapper sw = new(urlOrId);
+
+    _ = await sw.GetAccount().ConfigureAwait(false);
+
+    return sw;
+  }
+
   //this needs to be public so it's serialized and stored in Dynamo
   public string? OriginalInput { get; set; }
 
@@ -59,6 +96,9 @@ public class StreamWrapper
   public string? CommitId { get; set; }
   public string? BranchName { get; set; }
   public string? ObjectId { get; set; }
+
+  //Only set for FE2 urls
+  private string? _branchId;
 
   /// <summary>
   /// Determines if the current stream wrapper contains a valid stream.
@@ -146,7 +186,7 @@ public class StreamWrapper
     // Assigning the BranchID as the BranchName is a workaround to support FE2 links in the old StreamWrapper.
     // A better solution must be redesigned taking into account all the new Frontend2 URL features.
     StreamId = projectId.Value;
-    BranchName = modelRes.branchId;
+    _branchId = modelRes.branchId;
     CommitId = modelRes.commitId;
     ObjectId = modelRes.objectId;
   }
@@ -174,37 +214,42 @@ public class StreamWrapper
     return (res[0], res[1], null); // Model has version attached
   }
 
-  private void StreamWrapperFromUrl(string streamUrl)
+  private void StreamWrapperFromUrl(Uri streamUrl)
   {
-    Uri uri = new(streamUrl, true);
-    ServerUrl = uri.GetLeftPart(UriPartial.Authority);
+    ServerUrl = streamUrl.GetLeftPart(UriPartial.Authority);
 
     var fe2Match = Fe2UrlRegex.Match(uri.AbsolutePath);
     if (fe2Match.Success)
     {
       //NEW FRONTEND URL!
       ParseFe2RegexMatch(fe2Match);
-      return;
     }
+    else
+    {
+      ParseFe1Url(streamUrl);
+    }
+  }
 
+  private void ParseFe1Url(Uri streamUrl)
+  {
     // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
     // Tests pass in Core without this hack.
-    if (uri.Segments.Length >= 4 && uri.Segments[3]?.ToLowerInvariant() == "branches/")
+    if (streamUrl.Segments.Length >= 4 && streamUrl.Segments[3]?.ToLowerInvariant() == "branches/")
     {
-      StreamId = uri.Segments[2].Replace("/", "");
-      if (uri.Segments.Length > 5)
+      StreamId = streamUrl.Segments[2].Replace("/", "");
+      if (streamUrl.Segments.Length > 5)
       {
-        var branchSegs = uri.Segments.ToList().GetRange(4, uri.Segments.Length - 4);
+        var branchSegs = streamUrl.Segments.ToList().GetRange(4, streamUrl.Segments.Length - 4);
         BranchName = Uri.UnescapeDataString(string.Concat(branchSegs));
       }
       else
       {
-        BranchName = Uri.UnescapeDataString(uri.Segments[4]);
+        BranchName = Uri.UnescapeDataString(streamUrl.Segments[4]);
       }
     }
     else
     {
-      switch (uri.Segments.Length)
+      switch (streamUrl.Segments.Length)
       {
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
           if (uri.Segments[1].ToLowerInvariant() == "streams/")
@@ -218,50 +263,50 @@ public class StreamWrapper
 
           break;
         case 4: // ie https://speckle.server/streams/0c6ad366c4/globals/
-          if (uri.Segments[3].ToLowerInvariant().StartsWith("globals"))
+          if (streamUrl.Segments[3].ToLowerInvariant().StartsWith("globals"))
           {
-            StreamId = uri.Segments[2].Replace("/", "");
-            BranchName = Uri.UnescapeDataString(uri.Segments[3].Replace("/", ""));
+            StreamId = streamUrl.Segments[2].Replace("/", "");
+            BranchName = Uri.UnescapeDataString(streamUrl.Segments[3].Replace("/", ""));
           }
           else
           {
-            throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class");
+            throw new SpeckleException($"Cannot parse {streamUrl} into a stream wrapper class");
           }
 
           break;
         case 5: // ie http://speckle.server/streams/8fecc9aa6d/commits/76a23d7179
-          switch (uri.Segments[3].ToLowerInvariant())
+          switch (streamUrl.Segments[3].ToLowerInvariant())
           {
             // NOTE: this is a good practice reminder on how it should work
             case "commits/":
-              StreamId = uri.Segments[2].Replace("/", "");
-              CommitId = uri.Segments[4].Replace("/", "");
+              StreamId = streamUrl.Segments[2].Replace("/", "");
+              CommitId = streamUrl.Segments[4].Replace("/", "");
               break;
             case "globals/":
-              StreamId = uri.Segments[2].Replace("/", "");
-              BranchName = Uri.UnescapeDataString(uri.Segments[3].Replace("/", ""));
-              CommitId = uri.Segments[4].Replace("/", "");
+              StreamId = streamUrl.Segments[2].Replace("/", "");
+              BranchName = Uri.UnescapeDataString(streamUrl.Segments[3].Replace("/", ""));
+              CommitId = streamUrl.Segments[4].Replace("/", "");
               break;
             case "branches/":
-              StreamId = uri.Segments[2].Replace("/", "");
-              BranchName = Uri.UnescapeDataString(uri.Segments[4].Replace("/", ""));
+              StreamId = streamUrl.Segments[2].Replace("/", "");
+              BranchName = Uri.UnescapeDataString(streamUrl.Segments[4].Replace("/", ""));
               break;
             case "objects/":
-              StreamId = uri.Segments[2].Replace("/", "");
-              ObjectId = uri.Segments[4].Replace("/", "");
+              StreamId = streamUrl.Segments[2].Replace("/", "");
+              ObjectId = streamUrl.Segments[4].Replace("/", "");
               break;
             default:
-              throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+              throw new SpeckleException($"Cannot parse {streamUrl} into a stream wrapper class.");
           }
 
           break;
 
         default:
-          throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+          throw new SpeckleException($"Cannot parse {streamUrl} into a stream wrapper class.");
       }
     }
 
-    var queryDictionary = HttpUtility.ParseQueryString(uri.Query);
+    var queryDictionary = HttpUtility.ParseQueryString(streamUrl.Query);
     UserId = queryDictionary["u"];
   }
 
@@ -269,7 +314,7 @@ public class StreamWrapper
   /// Gets a valid account for this stream wrapper.
   /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
   /// </summary>
-  /// <exception cref="Exception">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
+  /// <exception cref="SpeckleException">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
   /// <returns>The valid account object for this stream.</returns>
   public async Task<Account> GetAccount()
   {
@@ -327,7 +372,7 @@ public class StreamWrapper
       }
     }
 
-    throw err;
+    throw new SpeckleException("", err);
   }
 
   public void SetAccount(Account acc)
@@ -375,7 +420,7 @@ public class StreamWrapper
     // First check if the stream exists
     try
     {
-      await client.StreamGet(StreamId).ConfigureAwait(false);
+      await client.StreamGet(StreamId, 0).ConfigureAwait(false);
     }
     catch
     {
@@ -388,12 +433,26 @@ public class StreamWrapper
     if (Type == StreamWrapperType.Branch)
     {
       var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
-      if (branch == null)
+      if (branch is null)
       {
         throw new SpeckleException(
           $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
       }
+    }
+
+    //FE2 urls have a branch Id
+    if (!string.IsNullOrEmpty(_branchId))
+    {
+      var model = await client.ModelGet(StreamId, _branchId).ConfigureAwait(false);
+      if (model is null)
+      {
+        throw new SpeckleException(
+          $"The model with id '{_branchId}' doesn't exist in project {StreamId} on server {ServerUrl}"
+        );
+      }
+
+      BranchName = model.name;
     }
   }
 
