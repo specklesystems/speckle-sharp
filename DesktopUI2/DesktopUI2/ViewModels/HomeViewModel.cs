@@ -696,9 +696,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     var clipboard = await Application.Current.Clipboard.GetTextAsync().ConfigureAwait(true);
 
-    Uri uri;
     string defaultText = "";
-    if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
+    if (Uri.TryCreate(clipboard, UriKind.Absolute, out Uri uri))
     {
       defaultText = clipboard;
     }
@@ -707,42 +706,45 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
     var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
-    if (result != null)
+    if (result == null)
     {
-      try
+      return;
+    }
+
+    try
+    {
+      uri = new(result);
+      var sw = await StreamWrapper.CreateFrom(uri).ConfigureAwait(true);
+
+      Account account = await sw.GetAccount().ConfigureAwait(true);
+      using Client client = new(account);
+      Stream stream = await client.StreamGet(sw.StreamId).ConfigureAwait(true);
+      StreamState streamState = new(account, stream) { BranchName = sw.BranchName };
+
+      //it's a commit URL, let's pull the right branch name
+      if (sw.CommitId != null)
       {
-        var sw = new StreamWrapper(result);
-        var account = await sw.GetAccount().ConfigureAwait(true);
-        using var client = new Client(account);
-        var stream = await client.StreamGet(sw.StreamId).ConfigureAwait(true);
-        var streamState = new StreamState(account, stream);
-        streamState.BranchName = sw.BranchName;
+        streamState.IsReceiver = true;
+        streamState.CommitId = sw.CommitId;
 
-        //it's a commit URL, let's pull the right branch name
-        if (sw.CommitId != null)
-        {
-          streamState.IsReceiver = true;
-          streamState.CommitId = sw.CommitId;
-
-          var commit = await client.CommitGet(sw.StreamId, sw.CommitId).ConfigureAwait(true);
-          streamState.BranchName = commit.branchName;
-        }
-
-        MainViewModel.RouterInstance.Navigate.Execute(
-          new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand)
-        );
-
-        Analytics.TrackEvent(
-          account,
-          Analytics.Events.DUIAction,
-          new Dictionary<string, object> { { "name", "Stream Add From URL" } }
-        );
+        var commit = await client.CommitGet(sw.StreamId, sw.CommitId).ConfigureAwait(true);
+        streamState.BranchName = commit.branchName;
       }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Fatal(ex, "Failed to add from url {dialogResult} {exceptionMessage}", result, ex.Message);
-        Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
-      }
+
+      MainViewModel.RouterInstance.Navigate.Execute(
+        new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand)
+      );
+
+      Analytics.TrackEvent(
+        account,
+        Analytics.Events.DUIAction,
+        new Dictionary<string, object> { { "name", "Stream Add From URL" } }
+      );
+    }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to add from url {dialogResult} {exceptionMessage}", result, ex.Message);
+      Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
     }
   }
 
