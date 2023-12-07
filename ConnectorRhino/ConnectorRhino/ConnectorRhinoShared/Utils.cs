@@ -22,6 +22,9 @@ public static class Utils
 #elif RHINO7
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
     public static string AppName = "Rhino";
+#elif RHINO8
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
+    public static string AppName = "Rhino";
 #else
   public static string RhinoAppName = HostApplications.Rhino.Name;
   public static string AppName = "Rhino";
