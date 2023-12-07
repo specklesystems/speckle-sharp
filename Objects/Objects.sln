@@ -127,6 +127,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2024", "Conve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2024", "Converters\ConverterNavisworks\ConverterNavisworks2024\ConverterNavisworks2024.csproj", "{BFBD40D4-BF2A-47B2-8F35-4371149DD1B6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRhino8", "Converters\ConverterRhinoGh\ConverterRhino8\ConverterRhino8.csproj", "{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -478,6 +480,14 @@ Global
 		{BFBD40D4-BF2A-47B2-8F35-4371149DD1B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BFBD40D4-BF2A-47B2-8F35-4371149DD1B6}.Release|x64.ActiveCfg = Release|x64
 		{BFBD40D4-BF2A-47B2-8F35-4371149DD1B6}.Release|x64.Build.0 = Release|x64
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -541,6 +551,7 @@ Global
 		{D6814B75-3C4F-433E-9BE8-A9CD3A476C55} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 		{C43EEDA1-2DBB-40B5-8C52-12BCBDA34D43} = {5419488F-6509-4F16-A342-BB2BE2689E00}
 		{BFBD40D4-BF2A-47B2-8F35-4371149DD1B6} = {A2F9F9A0-0479-4FE0-83B3-AB38A9402821}
+		{DB55FC55-0FE8-4622-AA0B-66F5EF9737B9} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}
@@ -585,6 +596,7 @@ Global
 		Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{c3903b4e-7b1c-4508-adeb-023fee156d3d}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{c43eeda1-2dbb-40b5-8c52-12bcbda34d43}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d6814b75-3c4f-433e-9be8-a9cd3a476c55}*SharedItemsImports = 5
+		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{db55fc55-0fe8-4622-aa0b-66f5ef9737b9}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{dd4add16-65f9-46e0-a610-2b7908a966b3}*SharedItemsImports = 5
 		Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{df4d24c3-2be8-476c-8d40-33892be07b1d}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{e4006179-462f-4133-9481-219279138b93}*SharedItemsImports = 5
