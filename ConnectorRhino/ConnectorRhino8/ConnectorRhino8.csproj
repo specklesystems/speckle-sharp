@@ -26,6 +26,7 @@
     <UseWinForms>true</UseWinForms>
     <DefineConstants>$(DefineConstants);RHINO8</DefineConstants>
     <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
