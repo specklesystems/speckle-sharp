@@ -7,12 +7,14 @@ using Speckle.Core.Transports;
 namespace TestsUnit;
 
 [TestFixture]
-public class SendReceiveLocal
+public class SendReceiveLocal : IDisposable
 {
   private string objId_01,
     commitId_02;
 
   private int numObjects = 3001;
+
+  private readonly SQLiteTransport _sut = new();
 
   [Test(Description = "Pushing a commit locally"), Order(1)]
   public void LocalUpload()
@@ -27,7 +29,8 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
-    objId_01 = Operations.Send(myObject, null, true).Result;
+    using SQLiteTransport localTransport = new();
+    objId_01 = Operations.Send(myObject, localTransport, false).Result;
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -55,7 +58,7 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
     }
 
-    objId_01 = Operations.Send(myObject, null, true).Result;
+    objId_01 = Operations.Send(myObject, _sut, false).Result;
 
     var commitPulled = Operations.Receive(objId_01).Result;
 
@@ -76,7 +79,7 @@ public class SendReceiveLocal
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
     }
 
-    objId_01 = await Operations.Send(myObject, null, true).ConfigureAwait(false);
+    objId_01 = await Operations.Send(myObject, _sut, false).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -100,7 +103,7 @@ public class SendReceiveLocal
     myObject["@dictionary"] = myDic;
     myObject["@list"] = myList;
 
-    objId_01 = await Operations.Send(myObject, null, true).ConfigureAwait(false);
+    objId_01 = await Operations.Send(myObject, _sut, false).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
 
@@ -135,7 +138,7 @@ public class SendReceiveLocal
       ((List<Base>)((dynamic)obj)["@LayerC"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" });
     }
 
-    objId_01 = await Operations.Send(obj, null, true).ConfigureAwait(false);
+    objId_01 = await Operations.Send(obj, _sut, false).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
@@ -175,8 +178,8 @@ public class SendReceiveLocal
     commitId_02 = await Operations
       .Send(
         myObject,
-        null,
-        true,
+        _sut,
+        false,
         onProgressAction: dict =>
         {
           progress = dict;
@@ -281,4 +284,9 @@ public class SendReceiveLocal
 
   //  Assert.AreEqual(rebase.GetId(true), id);
   //}
+
+  public void Dispose()
+  {
+    _sut.Dispose();
+  }
 }

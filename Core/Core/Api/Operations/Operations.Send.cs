@@ -25,26 +25,27 @@ public static partial class Operations
   /// <remarks/>
   /// <inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/>
   /// <param name="useDefaultCache">When <see langword="true"/>, an additional <see cref="SQLiteTransport"/> will be included</param>
+  /// <exception cref="ArgumentNullException">The <paramref name="transport"/> or <paramref name="value"/> was <see langword="null"/></exception>
   /// <example><code>
   /// using ServerTransport destination = new(account, streamId);
   /// string objectId = await Send(mySpeckleObject, destination, true);
   /// </code></example>
   public static async Task<string> Send(
     Base value,
-    ITransport? transport,
+    ITransport transport,
     bool useDefaultCache,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
     CancellationToken cancellationToken = default
   )
   {
-    List<ITransport> transports = new();
-    if (transport != null)
+    if (transport is null)
     {
-      transports.Add(transport);
+      throw new ArgumentNullException(nameof(transport), "Expected a transport to be explicitly specified");
     }
 
+    List<ITransport> transports = new() { transport };
     using SQLiteTransport? localCache = useDefaultCache ? new SQLiteTransport { TransportName = "LC" } : null;
-    if (localCache != null)
+    if (localCache is not null)
     {
       transports.Add(localCache);
     }
