@@ -42,7 +42,6 @@ public partial class ConverterRevit
         "PROJECT_ORGANIZATION_NAME",
         "PROJECT_NUMBER",
         "PROJECT_STATUS",
-
         // parameters to be excluded entirely
         "ELEM_CATEGORY_PARAM_MT",
         "ELEM_CATEGORY_PARAM",
@@ -53,8 +52,8 @@ public partial class ConverterRevit
     if (parameterParent["parameters"] is Base parameters)
     {
       Dictionary<string, object> parameterDict = parameters.GetMembers(DynamicBaseMemberType.Dynamic);
-      foreach (KeyValuePair<string, object> kvp in parameterDict) 
-      { 
+      foreach (KeyValuePair<string, object> kvp in parameterDict)
+      {
         if (kvp.Value is Parameter param && param.value is not null)
         {
           speckleInfo[param.name] = param.value;
