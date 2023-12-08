@@ -5,8 +5,6 @@
 <#@ assembly name="..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System" #>
-<#@ import namespace="System.Linq" #>
-<#@ import namespace="ConnectorGrasshopperUtils" #>
 
 <#
     var allTypes = CSOUtils.ListAvailableTypes();

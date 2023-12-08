@@ -184,7 +184,7 @@ internal static class SerializationUtilities
         var dict =
           jsonProperty != null
             ? Activator.CreateInstance(jsonProperty.PropertyType) as IDictionary
-            : new Dictionary<string, object>();
+            : new Dictionary<string, object?>();
         foreach (var prop in jObject)
         {
           cancellationToken.ThrowIfCancellationRequested();
@@ -208,23 +208,23 @@ internal static class SerializationUtilities
 
   #region Getting Types
 
-  private static Dictionary<string, Type> _cachedTypes = new();
+  private static Dictionary<string, Type> s_cachedTypes = new();
 
-  private static readonly Dictionary<string, Dictionary<string, PropertyInfo>> TypeProperties = new();
+  private static readonly Dictionary<string, Dictionary<string, PropertyInfo>> s_typeProperties = new();
 
-  private static readonly Dictionary<string, List<MethodInfo>> OnDeserializedCallbacks = new();
+  private static readonly Dictionary<string, List<MethodInfo>> s_onDeserializedCallbacks = new();
 
   internal static Type GetType(string objFullType)
   {
-    lock (_cachedTypes)
+    lock (s_cachedTypes)
     {
-      if (_cachedTypes.TryGetValue(objFullType, out Type? type1))
+      if (s_cachedTypes.TryGetValue(objFullType, out Type? type1))
       {
         return type1;
       }
 
       var type = GetAtomicType(objFullType);
-      _cachedTypes[objFullType] = type;
+      s_cachedTypes[objFullType] = type;
       return type;
     }
   }
@@ -262,54 +262,61 @@ internal static class SerializationUtilities
     return typeName.Insert(lastDotIndex + 1, deprecatedSubstring);
   }
 
-  internal static Dictionary<string, PropertyInfo> GetTypePropeties(string objFullType)
+  internal static Dictionary<string, PropertyInfo> GetTypeProperties(string objFullType)
   {
-    lock (TypeProperties)
+    lock (s_typeProperties)
     {
-      if (!TypeProperties.ContainsKey(objFullType))
+      if (s_typeProperties.TryGetValue(objFullType, out Dictionary<string, PropertyInfo>? value))
       {
-        Dictionary<string, PropertyInfo> ret = new();
-        Type type = GetType(objFullType);
-        PropertyInfo[] properties = type.GetProperties();
-        foreach (PropertyInfo prop in properties)
-        {
-          ret[prop.Name.ToLower()] = prop;
-        }
-
-        TypeProperties[objFullType] = ret;
+        return value;
       }
-      return TypeProperties[objFullType];
+
+      Dictionary<string, PropertyInfo> ret = new();
+      Type type = GetType(objFullType);
+      PropertyInfo[] properties = type.GetProperties();
+      foreach (PropertyInfo prop in properties)
+      {
+        ret[prop.Name.ToLower()] = prop;
+      }
+
+      value = ret;
+      s_typeProperties[objFullType] = value;
+      return value;
     }
   }
 
   internal static List<MethodInfo> GetOnDeserializedCallbacks(string objFullType)
   {
     // return new List<MethodInfo>();
-    lock (OnDeserializedCallbacks)
+    lock (s_onDeserializedCallbacks)
     {
       // System.Runtime.Serialization.Ca
-      if (!OnDeserializedCallbacks.ContainsKey(objFullType))
+      if (s_onDeserializedCallbacks.TryGetValue(objFullType, out List<MethodInfo>? value))
       {
-        List<MethodInfo> ret = new();
-        Type type = GetType(objFullType);
-        MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        foreach (MethodInfo method in methods)
-        {
-          List<OnDeserializedAttribute> onDeserializedAttributes = method
-            .GetCustomAttributes<OnDeserializedAttribute>(true)
-            .ToList();
-          if (onDeserializedAttributes.Count > 0)
-          {
-            ret.Add(method);
-          }
-        }
-        OnDeserializedCallbacks[objFullType] = ret;
+        return value;
       }
-      return OnDeserializedCallbacks[objFullType];
+
+      List<MethodInfo> ret = new();
+      Type type = GetType(objFullType);
+      MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+      foreach (MethodInfo method in methods)
+      {
+        List<OnDeserializedAttribute> onDeserializedAttributes = method
+          .GetCustomAttributes<OnDeserializedAttribute>(true)
+          .ToList();
+        if (onDeserializedAttributes.Count > 0)
+        {
+          ret.Add(method);
+        }
+      }
+
+      value = ret;
+      s_onDeserializedCallbacks[objFullType] = value;
+      return value;
     }
   }
 
-  internal static Type GetSytemOrSpeckleType(string typeName)
+  internal static Type GetSystemOrSpeckleType(string typeName)
   {
     var systemType = Type.GetType(typeName);
     if (systemType != null)
@@ -325,9 +332,9 @@ internal static class SerializationUtilities
   /// </summary>
   public static void FlushCachedTypes()
   {
-    lock (_cachedTypes)
+    lock (s_cachedTypes)
     {
-      _cachedTypes = new Dictionary<string, Type>();
+      s_cachedTypes = new Dictionary<string, Type>();
     }
   }
 
@@ -335,15 +342,11 @@ internal static class SerializationUtilities
 
   #region Abstract Handling
 
-  private static readonly Dictionary<string, Type> CachedAbstractTypes = new();
+  private static readonly Dictionary<string, Type> s_cachedAbstractTypes = new();
 
-  internal static object? HandleAbstractOriginalValue(
-    JToken jToken,
-    string assemblyQualifiedName,
-    JsonSerializer serializer
-  )
+  internal static object? HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName)
   {
-    if (CachedAbstractTypes.TryGetValue(assemblyQualifiedName, out Type? type))
+    if (s_cachedAbstractTypes.TryGetValue(assemblyQualifiedName, out Type? type))
     {
       return jToken.ToObject(type);
     }
@@ -362,7 +365,7 @@ internal static class SerializationUtilities
       throw new SpeckleException("Could not load abstract object's assembly.");
     }
 
-    CachedAbstractTypes[assemblyQualifiedName] = myType;
+    s_cachedAbstractTypes[assemblyQualifiedName] = myType;
 
     return jToken.ToObject(myType);
   }
@@ -379,17 +382,17 @@ internal static class CallSiteCache
   // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
   // by Marc Gravell, https://github.com/mgravell
 
-  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object?, object>>> Setters = new();
+  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object?, object>>> s_setters = new();
 
   public static void SetValue(string propertyName, object target, object? value)
   {
-    lock (Setters)
+    lock (s_setters)
     {
       CallSite<Func<CallSite, object, object?, object>> site;
 
-      lock (Setters)
+      lock (s_setters)
       {
-        if (!Setters.TryGetValue(propertyName, out site))
+        if (!s_setters.TryGetValue(propertyName, out site))
         {
           var binder = Binder.SetMember(
             CSharpBinderFlags.None,
@@ -401,7 +404,7 @@ internal static class CallSiteCache
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
             }
           );
-          Setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
+          s_setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
         }
       }
 

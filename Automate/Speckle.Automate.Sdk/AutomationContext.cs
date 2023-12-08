@@ -1,7 +1,6 @@
 # nullable enable
 using System.Diagnostics;
 using GraphQL;
-using Serilog.Debugging;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;

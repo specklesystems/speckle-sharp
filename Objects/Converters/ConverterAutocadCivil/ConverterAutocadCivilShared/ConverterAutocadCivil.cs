@@ -2,19 +2,16 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.BuiltElements;
 using Objects.Other;
-using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
-using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;
@@ -28,7 +25,6 @@ using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
-using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
 
@@ -142,14 +138,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
             @base = SplineToSpeckle(o);
             break;
           case AcadDB.Polyline o:
-            if (o.IsOnlyLines) // db polylines can have arc segments, decide between polycurve or polyline conversion
-            {
-              @base = PolylineToSpeckle(o);
-            }
-            else
-            {
-              @base = PolycurveToSpeckle(o);
-            }
+            @base = o.IsOnlyLines ? PolylineToSpeckle(o) : (Base)PolycurveToSpeckle(o);
 
             break;
           case AcadDB.Polyline3d o:
@@ -306,14 +295,14 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
-    return objects.Select(x => ConvertToSpeckle(x)).ToList();
+    return objects.Select(ConvertToSpeckle).ToList();
   }
 
   public object ConvertToNative(Base @object)
   {
     // determine if this object has autocad props
-    bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
-    bool isFromCivil = @object[CivilPropName] != null ? true : false;
+    bool isFromAutoCAD = @object[AutocadPropName] != null;
+    bool isFromCivil = @object[CivilPropName] != null;
     object acadObj = null;
     var reportObj = Report.ReportObjects.ContainsKey(@object.id)
       ? new ApplicationObject(@object.id, @object.speckle_type)
@@ -354,15 +343,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
         break;
 
       case Polycurve o:
-        bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
-        if (convertAsSpline || !IsPolycurvePlanar(o))
-        {
-          acadObj = PolycurveSplineToNativeDB(o);
-        }
-        else
-        {
-          acadObj = PolycurveToNativeDB(o);
-        }
+        bool convertAsSpline = o.segments.Any(s => s is not Line and not Arc);
+        acadObj = convertAsSpline || !IsPolycurvePlanar(o) ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
 
         break;
 
@@ -431,23 +413,17 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     {
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
         acadObj = o.Converted.Any() ? o.Converted : null;
-        if (reportObj != null)
-        {
-          reportObj.Update(
-            status: o.Status,
-            createdIds: o.CreatedIds,
-            converted: o.Converted,
-            container: o.Container,
-            log: o.Log
-          );
-        }
+        reportObj?.Update(
+          status: o.Status,
+          createdIds: o.CreatedIds,
+          converted: o.Converted,
+          container: o.Container,
+          log: o.Log
+        );
 
         break;
       default:
-        if (reportObj != null)
-        {
-          reportObj.Update(log: notes);
-        }
+        reportObj?.Update(log: notes);
 
         break;
     }
@@ -466,7 +442,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
   public List<object> ConvertToNative(List<Base> objects)
   {
-    return objects.Select(x => ConvertToNative(x)).ToList();
+    return objects.Select(ConvertToNative).ToList();
   }
 
   public bool CanConvertToSpeckle(object @object)
@@ -476,42 +452,42 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
       case DBObject o:
         switch (o)
         {
-          case DBPoint _:
-          case AcadDB.Line _:
-          case AcadDB.Arc _:
-          case AcadDB.Circle _:
-          case AcadDB.Dimension _:
-          case AcadDB.Ellipse _:
-          case AcadDB.Hatch _:
-          case AcadDB.Spline _:
-          case AcadDB.Polyline _:
-          case AcadDB.Polyline2d _:
-          case AcadDB.Polyline3d _:
-          case AcadDB.Surface _:
-          case AcadDB.PolyFaceMesh _:
-          case AcadDB.ProxyEntity _:
-          case AcadDB.Region _:
-          case SubDMesh _:
-          case Solid3d _:
+          case DBPoint:
+          case AcadDB.Line:
+          case AcadDB.Arc:
+          case AcadDB.Circle:
+          case AcadDB.Dimension:
+          case AcadDB.Ellipse:
+          case AcadDB.Hatch:
+          case AcadDB.Spline:
+          case AcadDB.Polyline:
+          case AcadDB.Polyline2d:
+          case AcadDB.Polyline3d:
+          case AcadDB.Surface:
+          case AcadDB.PolyFaceMesh:
+          case AcadDB.ProxyEntity:
+          case AcadDB.Region:
+          case SubDMesh:
+          case Solid3d:
             return true;
 
-          case BlockReference _:
-          case BlockTableRecord _:
-          case AcadDB.DBText _:
-          case AcadDB.MText _:
-          case LayerTableRecord _:
+          case BlockReference:
+          case BlockTableRecord:
+          case AcadDB.DBText:
+          case AcadDB.MText:
+          case LayerTableRecord:
             return true;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           // NOTE: C3D pressure pipes and pressure fittings API under development
-          case CivilDB.FeatureLine _:
-          case CivilDB.Corridor _:
-          case CivilDB.Structure _:
-          case CivilDB.Alignment _:
-          case CivilDB.Pipe _:
-          case CivilDB.PressurePipe _:
-          case CivilDB.Profile _:
-          case CivilDB.TinSurface _:
+          case CivilDB.FeatureLine:
+          case CivilDB.Corridor:
+          case CivilDB.Structure:
+          case CivilDB.Alignment:
+          case CivilDB.Pipe:
+          case CivilDB.PressurePipe:
+          case CivilDB.Profile:
+          case CivilDB.TinSurface:
             return true;
 #endif
 
@@ -525,13 +501,13 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           }
         }
 
-      case Acad.Geometry.Point3d _:
-      case Acad.Geometry.Vector3d _:
-      case Acad.Geometry.Plane _:
-      case Acad.Geometry.Line3d _:
-      case Acad.Geometry.LineSegment3d _:
-      case Acad.Geometry.CircularArc3d _:
-      case Acad.Geometry.Curve3d _:
+      case Acad.Geometry.Point3d:
+      case Acad.Geometry.Vector3d:
+      case Acad.Geometry.Plane:
+      case Acad.Geometry.Line3d:
+      case Acad.Geometry.LineSegment3d:
+      case Acad.Geometry.CircularArc3d:
+      case Acad.Geometry.Curve3d:
         return true;
 
       default:
@@ -543,27 +519,27 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
   {
     switch (@object)
     {
-      case Point _:
-      case Line _:
-      case Arc _:
-      case Circle _:
-      case Ellipse _:
-      case Spiral _:
-      case Hatch _:
-      case Polyline _:
-      case Polycurve _:
-      case Curve _:
-      case Mesh _:
+      case Point:
+      case Line:
+      case Arc:
+      case Circle:
+      case Ellipse:
+      case Spiral:
+      case Hatch:
+      case Polyline:
+      case Polycurve:
+      case Curve:
+      case Mesh:
 
-      case Dimension _:
-      case BlockDefinition _:
-      case Instance _:
-      case Text _:
-      case Collection _:
+      case Dimension:
+      case BlockDefinition:
+      case Instance:
+      case Text:
+      case Collection:
 
-      case Alignment _:
-      case ModelCurve _:
-      case GridLine _:
+      case Alignment:
+      case ModelCurve:
+      case GridLine:
         return true;
 
       default:

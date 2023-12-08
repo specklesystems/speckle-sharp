@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models.Settings;
-using Rhino;
-using Rhino.DocObjects.Tables;
 
 namespace SpeckleRhino;
 

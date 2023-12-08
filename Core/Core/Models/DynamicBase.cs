@@ -1,9 +1,9 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -19,34 +19,36 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// <summary>
   /// Default <see cref="DynamicBaseMemberType"/> value for <see cref="GetMembers"/>
   /// </summary>
-  public const DynamicBaseMemberType DefaultIncludeMembers =
+  public const DynamicBaseMemberType DEFAULT_INCLUDE_MEMBERS =
     DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
 
-  private static Dictionary<Type, List<PropertyInfo>> propInfoCache = new();
+  private static readonly Dictionary<Type, List<PropertyInfo>> s_propInfoCache = new();
 
   /// <summary>
   /// The actual property bag, where dynamically added props are stored.
   /// </summary>
-  private Dictionary<string, object> properties = new();
+  private readonly Dictionary<string, object?> _properties = new();
 
   /// <summary>
-  /// Sets and gets properties using the key accessor pattern. E.g.:
-  /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>
+  /// Sets and gets properties using the key accessor pattern.
   /// </summary>
+  /// <example>
+  /// <c>myObject["superProperty"] = 42;</c>
+  /// </example>
   /// <param name="key"></param>
   /// <returns></returns>
   [IgnoreTheItem]
-  public object this[string key]
+  public object? this[string key]
   {
     get
     {
-      if (properties.ContainsKey(key))
+      if (_properties.TryGetValue(key, out object? value))
       {
-        return properties[key];
+        return value;
       }
 
       PopulatePropInfoCache(GetType());
-      var prop = propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
+      var prop = s_propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
 
       if (prop == null)
       {
@@ -62,18 +64,18 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
         throw new InvalidPropNameException(key, reason);
       }
 
-      if (properties.ContainsKey(key))
+      if (_properties.ContainsKey(key))
       {
-        properties[key] = value;
+        _properties[key] = value;
         return;
       }
 
       PopulatePropInfoCache(GetType());
-      var prop = propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
+      var prop = s_propInfoCache[GetType()].FirstOrDefault(p => p.Name == key);
 
       if (prop == null)
       {
-        properties[key] = value;
+        _properties[key] = value;
         return;
       }
       try
@@ -87,16 +89,15 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     }
   }
 
+  /// <inheritdoc />
   /// <summary>
   /// Gets properties via the dot syntax.
-  /// <para><pre>((dynamic)myObject).superProperty;</pre></para>
+  /// <para><c>((dynamic)myObject).superProperty;</c></para>
   /// </summary>
-  /// <param name="binder"></param>
-  /// <param name="result"></param>
   /// <returns></returns>
-  public override bool TryGetMember(GetMemberBinder binder, out object result)
+  public override bool TryGetMember(GetMemberBinder binder, out object? result)
   {
-    return properties.TryGetValue(binder.Name, out result);
+    return _properties.TryGetValue(binder.Name, out result);
   }
 
   /// <summary>
@@ -111,13 +112,13 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     var valid = IsPropNameValid(binder.Name, out _);
     if (valid)
     {
-      properties[binder.Name] = value;
+      _properties[binder.Name] = value;
     }
 
     return valid;
   }
 
-  private static readonly HashSet<char> DisallowedPropNameChars = new() { '.', '/' };
+  private static readonly HashSet<char> s_disallowedPropNameChars = new() { '.', '/' };
 
   public bool IsPropNameValid(string name, out string reason)
   {
@@ -135,7 +136,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
     foreach (char c in name)
     {
-      if (DisallowedPropNameChars.Contains(c))
+      if (s_disallowedPropNameChars.Contains(c))
       {
         reason = $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./";
         return false;
@@ -148,9 +149,9 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 
   private static void PopulatePropInfoCache(Type type)
   {
-    if (!propInfoCache.ContainsKey(type))
+    if (!s_propInfoCache.ContainsKey(type))
     {
-      propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+      s_propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
         .Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true))
         .ToList();
     }
@@ -163,15 +164,15 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   public override IEnumerable<string> GetDynamicMemberNames()
   {
     PopulatePropInfoCache(GetType());
-    var pinfos = propInfoCache[GetType()];
+    var pinfos = s_propInfoCache[GetType()];
 
-    var names = new List<string>(properties.Count + pinfos.Count);
+    var names = new List<string>(_properties.Count + pinfos.Count);
     foreach (var pinfo in pinfos)
     {
       names.Add(pinfo.Name);
     }
 
-    foreach (var kvp in properties)
+    foreach (var kvp in _properties)
     {
       names.Add(kvp.Key);
     }
@@ -192,7 +193,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   public static IEnumerable<string> GetInstanceMembersNames(Type t)
   {
     PopulatePropInfoCache(t);
-    var pinfos = propInfoCache[t];
+    var pinfos = s_propInfoCache[t];
 
     var names = new List<string>(pinfos.Count);
     foreach (var pinfo in pinfos)
@@ -215,7 +216,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   public static IEnumerable<PropertyInfo> GetInstanceMembers(Type t)
   {
     PopulatePropInfoCache(t);
-    var pinfos = propInfoCache[t];
+    var pinfos = s_propInfoCache[t];
 
     var names = new List<PropertyInfo>(pinfos.Count);
 
@@ -245,21 +246,21 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// </summary>
   /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
   /// <returns>A dictionary containing the key's and values of the object.</returns>
-  public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DefaultIncludeMembers)
+  public Dictionary<string, object?> GetMembers(DynamicBaseMemberType includeMembers = DEFAULT_INCLUDE_MEMBERS)
   {
     // Initialize an empty dict
-    var dic = new Dictionary<string, object>();
+    var dic = new Dictionary<string, object?>();
 
     // Add dynamic members
     if (includeMembers.HasFlag(DynamicBaseMemberType.Dynamic))
     {
-      dic = new Dictionary<string, object>(properties);
+      dic = new Dictionary<string, object?>(_properties);
     }
 
     if (includeMembers.HasFlag(DynamicBaseMemberType.Instance))
     {
       PopulatePropInfoCache(GetType());
-      var pinfos = propInfoCache[GetType()].Where(x =>
+      var pinfos = s_propInfoCache[GetType()].Where(x =>
       {
         var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
         var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
@@ -312,12 +313,16 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   [Obsolete("Use GetMembers(DynamicBaseMemberType.Dynamic).Keys instead")]
   public IEnumerable<string> GetDynamicMembers()
   {
-    return properties.Keys;
+    return _properties.Keys;
   }
+
+  [Obsolete("Renamed to " + nameof(DEFAULT_INCLUDE_MEMBERS))]
+  public const DynamicBaseMemberType DefaultIncludeMembers = DEFAULT_INCLUDE_MEMBERS;
 }
 
 /// <summary>
 /// This attribute is used internally to hide the this[key]{get; set;} property from inner reflection on members.
 /// For more info see this discussion: https://speckle.community/t/why-do-i-keep-forgetting-base-objects-cant-use-item-as-a-dynamic-member/3246/5
 /// </summary>
+[AttributeUsage(AttributeTargets.Property)]
 internal sealed class IgnoreTheItemAttribute : Attribute { }

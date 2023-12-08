@@ -6,10 +6,10 @@ namespace Speckle.ConnectorNavisworks.Entry;
 
 public partial class SpeckleHostPane
 {
-  private const uint DlgcWantarrows = 0x0001;
-  private const uint DlgcHasSetSel = 0x0008;
-  private const uint DlgcWantChars = 0x0080;
-  private const uint WmGetDlgCode = 0x0087;
+  private const uint DLGC_WANTARROWS = 0x0001;
+  private const uint DLGC_HAS_SET_SEL = 0x0008;
+  private const uint DLGC_WANT_CHARS = 0x0080;
+  private const uint WM_GET_DLG_CODE = 0x0087;
 
   public SpeckleHostPane()
   {
@@ -29,12 +29,12 @@ public partial class SpeckleHostPane
 
   private static IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
   {
-    if (msg != WmGetDlgCode)
+    if (msg != WM_GET_DLG_CODE)
     {
       return IntPtr.Zero;
     }
 
     handled = true;
-    return new IntPtr(DlgcWantChars | DlgcWantarrows | DlgcHasSetSel);
+    return new IntPtr(DLGC_WANT_CHARS | DLGC_WANTARROWS | DLGC_HAS_SET_SEL);
   }
 }

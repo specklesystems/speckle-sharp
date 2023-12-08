@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Autodesk.Revit.DB;
-using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
 
 namespace RevitSharedResources.Models;

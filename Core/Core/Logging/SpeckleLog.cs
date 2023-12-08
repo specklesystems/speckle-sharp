@@ -134,7 +134,7 @@ public static class SpeckleLog
     _logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
     Log.Logger = Logger;
 
-    _addUserIdToGlobalContextFromDefaultAccount();
+    AddUserIdToGlobalContextFromDefaultAccount();
     _addVersionInfoToGlobalContext();
     _addHostOsInfoToGlobalContext();
     _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
@@ -247,17 +247,17 @@ public static class SpeckleLog
     {
       Process.Start(_logFolderPath);
     }
-    catch (Exception ex)
+    catch (FileNotFoundException ex)
     {
       Logger.Error(ex, "Unable to open log file folder at the following path, {path}", _logFolderPath);
     }
   }
 
-  private static void _addUserIdToGlobalContextFromDefaultAccount()
+  private static void AddUserIdToGlobalContextFromDefaultAccount()
   {
     var machineName = Environment.MachineName;
     var userName = Environment.UserName;
-    var id = Crypt.Hash($"{machineName}:{userName}");
+    var id = Crypt.Md5($"{machineName}:{userName}", "X2");
     try
     {
       var defaultAccount = AccountManager.GetDefaultAccount();

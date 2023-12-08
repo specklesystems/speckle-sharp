@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Speckle.Core.Models;
 
 namespace Objects.GIS;
 

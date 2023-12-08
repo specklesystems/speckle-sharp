@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -20,18 +19,18 @@ namespace Speckle.Core.Models;
 public abstract class CommitObjectBuilder<TNativeObjectData>
 {
   /// <summary>Special appId symbol for the root object</summary>
-  protected const string Root = "__Root";
-  private const string Elements = nameof(Collection.elements);
+  protected const string ROOT = "__Root";
+  private const string ELEMENTS = nameof(Collection.elements);
 
   /// <summary>app id -> base</summary>
-  protected readonly IDictionary<string, Base> converted;
+  protected IDictionary<string, Base> Converted { get; }
 
   /// <summary>Base -> NestingInstructions ordered by priority</summary>
   private readonly Dictionary<Base, IList<NestingInstructions>> _nestingInstructions = new();
 
   protected CommitObjectBuilder()
   {
-    converted = new Dictionary<string, Base>();
+    Converted = new Dictionary<string, Base>();
   }
 
   /// <summary>
@@ -47,12 +46,12 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// </summary>
   /// <remarks>
   /// Can be overriden to adjust exactly which objects get automatically applied,
-  /// or to inject additional items into the <see cref="converted"/> dict that should not be automatically applied.
+  /// or to inject additional items into the <see cref="Converted"/> dict that should not be automatically applied.
   /// </remarks>
   /// <param name="rootCommitObject"></param>
   public virtual void BuildCommitObject(Base rootCommitObject)
   {
-    ApplyRelationships(converted.Values, rootCommitObject);
+    ApplyRelationships(Converted.Values, rootCommitObject);
   }
 
   protected void SetRelationship(Base conversionResult, NestingInstructions nestingInstructions)
@@ -69,16 +68,16 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
   protected void SetRelationship(Base conversionResult, IList<NestingInstructions> nestingInstructionsList)
   {
-    string appId = conversionResult.applicationId;
+    string? appId = conversionResult.applicationId;
     if (appId != null)
     {
-      if (!converted.ContainsKey(appId))
+      if (!Converted.ContainsKey(appId))
       {
-        converted[appId] = conversionResult;
+        Converted[appId] = conversionResult;
       }
       else
       {
-        converted.Add(appId, conversionResult);
+        Converted.Add(appId, conversionResult);
       }
     }
 
@@ -116,12 +115,12 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
   /// <summary>
   /// Will attempt to find and nest the <paramref name="current"/> object
-  /// under the first valid parent according to the <see cref="_parentInfos"/> <see cref="converted"/> dictionary.
+  /// under the first valid parent according to the <see cref="_parentInfos"/> <see cref="Converted"/> dictionary.
   /// </summary>
   /// <remarks>
   /// A parent is considered valid if
   /// 1. Is non null
-  /// 2. Is in the <see cref="converted"/> dictionary
+  /// 2. Is in the <see cref="Converted"/> dictionary
   /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_parentInfos"/> item
   /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
   /// </remarks>
@@ -139,13 +138,13 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       }
 
       Base? parent;
-      if (instruction.ParentApplicationId == Root)
+      if (instruction.ParentApplicationId == ROOT)
       {
         parent = rootCommitObject;
       }
       else
       {
-        converted.TryGetValue(instruction.ParentApplicationId, out parent);
+        Converted.TryGetValue(instruction.ParentApplicationId, out parent);
       }
 
       if (parent is null)
@@ -172,7 +171,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
   protected static void NestUnderElementsProperty(Base parent, Base child)
   {
-    NestUnderProperty(parent, child, Elements);
+    NestUnderProperty(parent, child, ELEMENTS);
   }
 
   protected static void NestUnderProperty(Base parent, Base child, string property)
@@ -185,4 +184,10 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
     elements.Add(child);
   }
+
+  [Obsolete("Renamed to " + nameof(ROOT))]
+  protected const string Root = ROOT;
+
+  [Obsolete("Renamed to " + nameof(Converted))]
+  protected IDictionary<string, Base> converted => Converted;
 }

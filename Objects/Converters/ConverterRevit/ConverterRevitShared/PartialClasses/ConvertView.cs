@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
-using Speckle.Core.Logging;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;

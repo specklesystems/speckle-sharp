@@ -15,8 +15,8 @@ public partial class ConnectorBindingsNavisworks
     // Navisworks is an SDI (Single Document Interface) and on launch has an initial empty document.
     // Loading a file doesn't trigger the ActiveDocumentChanged event.
     // Instead it amends it in place. We can listen to the filename changing to get the intuitive event.
-    _doc.FileNameChanged += DocumentChangedEvent;
-    _doc.SelectionSets.Changed += SetsChangedEvent;
+    s_doc.FileNameChanged += DocumentChangedEvent;
+    s_doc.SelectionSets.Changed += SetsChangedEvent;
   }
 
   private void SetsChangedEvent(object sender, EventArgs e)
@@ -46,8 +46,8 @@ public partial class ConnectorBindingsNavisworks
     _navisworksConverter.SetContextDocument(doc);
 
     // Nullify any cached commit and conversions
-    _cachedCommit = null;
+    s_cachedCommit = null;
     CachedConvertedElements = null;
-    _cachedState = null;
+    s_cachedState = null;
   }
 }

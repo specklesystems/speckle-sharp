@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +29,6 @@ public sealed class MemoryTransport : ITransport, ICloneable
     return new MemoryTransport(Objects)
     {
       TransportName = TransportName,
-      OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
       CancellationToken = CancellationToken,
       SavedObjectCount = SavedObjectCount
@@ -39,10 +39,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public string TransportName { get; set; } = "Memory";
 
-  public Action<string, int> OnProgressAction { get; set; }
-
-  [Obsolete("Transports will now throw exceptions")]
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
   public int SavedObjectCount { get; private set; }
 
@@ -90,7 +87,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
     SaveObject(id, serializedObject);
   }
 
-  public string GetObject(string id)
+  public string? GetObject(string id)
   {
     var stopwatch = Stopwatch.StartNew();
     var ret = Objects.TryGetValue(id, out string o) ? o : null;
@@ -102,7 +99,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int> onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown = null
   )
   {
     throw new NotImplementedException();
@@ -133,4 +130,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   {
     return $"Memory Transport {TransportName}";
   }
+
+  [Obsolete("Transports will now throw exceptions", true)]
+  public Action<string, Exception>? OnErrorAction { get; set; }
 }

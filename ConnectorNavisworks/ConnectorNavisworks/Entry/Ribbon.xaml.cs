@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
 using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;
+
+#if DEBUG
+using System.Text;
+#endif
 
 namespace Speckle.ConnectorNavisworks.Entry;
 
@@ -16,7 +20,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
   RibbonLayout("Ribbon.xaml"),
   RibbonTab("Speckle", DisplayName = "Speckle", LoadForCanExecute = true),
   Command(
-    LaunchSpeckleConnector.Command,
+    LaunchSpeckleConnector.COMMAND,
     LoadForCanExecute = true,
     Icon = "Resources/logo16.ico",
     LargeIcon = "Resources/logo32.ico",
@@ -25,7 +29,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Speckle\rConnector"
   ),
   Command(
-    Community.Command,
+    Community.COMMAND,
     Icon = "Resources/forum16.png",
     LargeIcon = "Resources/forum32.png",
     Shortcut = "Ctrl+Shift+C",
@@ -33,7 +37,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Speckle\rCommunity"
   ),
   Command(
-    RetryLastConversionSend.Command,
+    RetryLastConversionSend.COMMAND,
     LoadForCanExecute = true,
     Icon = "Resources/retry16.ico",
     LargeIcon = "Resources/retry32.ico",
@@ -42,7 +46,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Retry\rSend"
   ),
   Command(
-    TurnPersistCacheOn.Command,
+    TurnPersistCacheOn.COMMAND,
     LoadForCanExecute = true,
     Icon = "Resources/empty32.ico",
     LargeIcon = "Resources/empty32.ico",
@@ -50,7 +54,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Cache"
   ),
   Command(
-    TurnPersistCacheOff.Command,
+    TurnPersistCacheOff.COMMAND,
     LoadForCanExecute = true,
     Icon = "Resources/logo16.ico",
     LargeIcon = "Resources/logo32.ico",
@@ -59,9 +63,14 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Cache"
   ),
 ]
+[SuppressMessage(
+  "design",
+  "CA1812:Avoid uninstantiated internal classes",
+  Justification = "Instantiated by Navisworks"
+)]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
-  private readonly static Dictionary<Plugin, bool> LoadedPlugins = new();
+  private static readonly Dictionary<Plugin, bool> s_loadedPlugins = new();
 
   /// <summary>
   /// Determines the state of a command in Navisworks.
@@ -72,7 +81,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   {
     return commandId switch
     {
-      TurnPersistCacheOn.Command
+      TurnPersistCacheOn.COMMAND
         => new CommandState
         {
 #if DEBUG
@@ -82,7 +91,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 #endif
           IsEnabled = !ConnectorBindingsNavisworks.PersistCache
         },
-      TurnPersistCacheOff.Command
+      TurnPersistCacheOff.COMMAND
         => new CommandState
         {
 #if DEBUG
@@ -93,7 +102,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
           IsEnabled = ConnectorBindingsNavisworks.PersistCache
         },
       _
-        => commandId == RetryLastConversionSend.Command
+        => commandId == RetryLastConversionSend.COMMAND
           ? new CommandState(ConnectorBindingsNavisworks.CachedConversion)
           : new CommandState(true)
     };
@@ -162,7 +171,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
       var dockPanePlugin = (DockPanePlugin)loadedPlugin;
       dockPanePlugin.ActivatePane();
 
-      LoadedPlugins[dockPanePlugin] = true;
+      s_loadedPlugins[dockPanePlugin] = true;
     }
     else
     {
@@ -220,19 +229,19 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
     switch (commandId)
     {
-      case LaunchSpeckleConnector.Command:
+      case LaunchSpeckleConnector.COMMAND:
       {
-        LoadPlugin(LaunchSpeckleConnector.Plugin, command: commandId);
+        LoadPlugin(LaunchSpeckleConnector.PLUGIN, command: commandId);
         break;
       }
 
-      case RetryLastConversionSend.Command:
+      case RetryLastConversionSend.COMMAND:
       {
-        LoadPlugin(RetryLastConversionSend.Plugin, command: commandId);
+        LoadPlugin(RetryLastConversionSend.PLUGIN, command: commandId);
 
-        var retryPlugin = NavisworksApp.Plugins.FindPlugin(RetryLastConversionSend.Plugin + ".Speckle").LoadedPlugin;
+        var retryPlugin = NavisworksApp.Plugins.FindPlugin(RetryLastConversionSend.PLUGIN + ".Speckle").LoadedPlugin;
 
-        LoadedPlugins.TryGetValue(retryPlugin, out var loaded);
+        s_loadedPlugins.TryGetValue(retryPlugin, out var loaded);
 
         if (loaded)
         {
@@ -255,14 +264,14 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
         break;
       }
 
-      case Community.Command:
+      case Community.COMMAND:
       {
         Process.Start("https://speckle.community/tag/navisworks");
         break;
       }
 
-      case TurnPersistCacheOff.Command
-      or TurnPersistCacheOn.Command:
+      case TurnPersistCacheOff.COMMAND
+      or TurnPersistCacheOn.COMMAND:
       {
         ConnectorBindingsNavisworks.PersistCache = !ConnectorBindingsNavisworks.PersistCache;
 

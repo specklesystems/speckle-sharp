@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Autodesk.Navisworks.Api;
 using Objects.Other;
 using Color = System.Drawing.Color;
@@ -17,29 +18,22 @@ public partial class ConverterNavisworks
     );
   }
 
+  [SuppressMessage(
+    "design",
+    "CA1508:Avoid dead conditional code",
+    Justification = "Already there anticipating other options becoming possible"
+  )]
   private static RenderMaterial TranslateMaterial(ModelItem geom)
   {
     // Already there anticipating other options becoming possible
     var materialSettings = new { Mode = "original" };
-
-    Color renderColor;
-
-    switch (materialSettings.Mode)
+    var renderColor = materialSettings.Mode switch
     {
-      case "original":
-        renderColor = NavisworksColorToColor(geom.Geometry.OriginalColor);
-        break;
-      case "active":
-        renderColor = NavisworksColorToColor(geom.Geometry.ActiveColor);
-        break;
-      case "permanent":
-        renderColor = NavisworksColorToColor(geom.Geometry.PermanentColor);
-        break;
-      default:
-        renderColor = new Color();
-        break;
-    }
-
+      "active" => NavisworksColorToColor(geom.Geometry.ActiveColor),
+      "permanent" => NavisworksColorToColor(geom.Geometry.PermanentColor),
+      "original" => NavisworksColorToColor(geom.Geometry.OriginalColor),
+      _ => new Color(),
+    };
     var materialName = $"NavisworksMaterial_{Math.Abs(renderColor.ToArgb())}";
 
     var black = Color.FromArgb(Convert.ToInt32(0), Convert.ToInt32(0), Convert.ToInt32(0));

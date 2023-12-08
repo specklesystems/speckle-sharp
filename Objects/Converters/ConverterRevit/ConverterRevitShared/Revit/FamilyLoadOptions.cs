@@ -1,7 +1,4 @@
 using Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ConverterRevitShared.Revit;
 

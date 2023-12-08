@@ -104,6 +104,8 @@ public static class BaseExtensions
 
             break;
           }
+          default:
+            break;
         }
       }
     }

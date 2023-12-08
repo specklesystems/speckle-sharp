@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Numerics;
-using System.Text;
 using Objects.Geometry;
 
 namespace ConverterCSIShared.Extensions;

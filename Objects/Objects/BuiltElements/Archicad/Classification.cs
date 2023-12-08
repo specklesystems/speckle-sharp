@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
