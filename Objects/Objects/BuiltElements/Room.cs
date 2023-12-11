@@ -75,6 +75,12 @@ namespace Objects.BuiltElements.Archicad
     public string elementType { get; set; }
     public List<Classification> classifications { get; set; }
 
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public Base? elementProperties { get; set; }
+    
+    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    public Base? componentProperties { get; set; }
+
     public override Level level
     {
       get => archicadLevel;

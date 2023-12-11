@@ -247,7 +247,11 @@ public sealed class Object : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions state
+  )
   {
     // Objects not stored on the server
     return new List<Base>();

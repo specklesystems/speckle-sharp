@@ -74,11 +74,19 @@ public sealed class GridLineConverter : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
     IEnumerable<Archicad.GridElement> data = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetGridElementData(elementModels.Select(e => e.applicationId)),
+      new Communication.Commands.GetGridElementData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 

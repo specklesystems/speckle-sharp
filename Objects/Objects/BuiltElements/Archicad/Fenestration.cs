@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad;
 
@@ -12,6 +13,12 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
   // Element base
   public string? elementType { get; set; } /*APINullabe*/
   public List<Classification>? classifications { get; set; } /*APINullabe*/
+
+  [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+  public Base? elementProperties { get; set; }
+
+  [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+  public Base? componentProperties { get; set; }
 
   public double? width { get; set; } /*APINullabe*/
   public double? height { get; set; } /*APINullabe*/

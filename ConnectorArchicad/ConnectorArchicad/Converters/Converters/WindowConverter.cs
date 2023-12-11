@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using Archicad.Launcher;
 using Archicad.Model;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -56,16 +59,25 @@ public sealed class Window : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     // Get subelements
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-    IEnumerable<Objects.BuiltElements.Archicad.ArchicadWindow> data = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId))
+    Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetWindowData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
+      token
     );
 
     List<Base> openings = new();
-    if (data is null)
+    if (jArray is null)
     {
       return openings;
     }
@@ -75,12 +87,15 @@ public sealed class Window : IConverter
       context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      foreach (Objects.BuiltElements.Archicad.ArchicadWindow subelement in data)
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
-        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == subelement.applicationId).model
+        Objects.BuiltElements.Archicad.ArchicadWindow window =
+          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWindow>(jToken);
+
+        window.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == window.applicationId).model
         );
-        openings.Add(subelement);
+        openings.Add(window);
       }
     }
 

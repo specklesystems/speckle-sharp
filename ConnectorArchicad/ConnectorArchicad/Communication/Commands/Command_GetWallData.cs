@@ -1,35 +1,20 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ConnectorArchicad.Communication.Commands;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetWallData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
+sealed internal class GetWallData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
-  [JsonObject(MemberSerialization.OptIn)]
-  public sealed class Parameters
-  {
-    [JsonProperty("applicationIds")]
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public Parameters(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-  }
-
-  private IEnumerable<string> ApplicationIds { get; }
-
-  public GetWallData(IEnumerable<string> applicationIds)
-  {
-    ApplicationIds = applicationIds;
-  }
+  public GetWallData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
 
   public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
   {
     dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
       "GetWallData",
-      new Parameters(ApplicationIds)
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
     );
 
     return (Speckle.Newtonsoft.Json.Linq.JArray)result["walls"];
