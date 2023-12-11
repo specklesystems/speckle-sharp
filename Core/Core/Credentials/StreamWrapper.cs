@@ -318,8 +318,6 @@ public class StreamWrapper
   /// <returns>The valid account object for this stream.</returns>
   public async Task<Account> GetAccount()
   {
-    Exception err = null;
-
     if (_account != null)
     {
       return _account;
@@ -338,6 +336,7 @@ public class StreamWrapper
       }
     }
 
+    Exception err;
     // Step 2: check the default
     var defAcc = AccountManager.GetDefaultAccount();
     try
