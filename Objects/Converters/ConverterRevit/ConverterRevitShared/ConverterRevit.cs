@@ -407,7 +407,7 @@ public partial class ConverterRevit : ISpeckleConverter
         var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
       }

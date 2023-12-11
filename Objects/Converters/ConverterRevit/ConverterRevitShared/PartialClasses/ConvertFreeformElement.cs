@@ -6,6 +6,8 @@ using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
@@ -28,6 +30,7 @@ public partial class ConverterRevit
       switch (geom)
       {
         case Brep brep:
+#pragma warning disable CA1031 // Do not catch general exception types
           try
           {
             var solid = BrepToNative(geom as Brep, out List<string> brepNotes);
@@ -40,12 +43,15 @@ public partial class ConverterRevit
           }
           catch (Exception e)
           {
+            // TODO : check if catch block is necessary
+            SpeckleLog.Logger.LogDefaultError(e);
             appObj.Update(
               logItem: $"Could not convert brep to native, falling back to mesh representation: {e.Message}"
             );
             var brepMeshSolids = GetSolidMeshes(brep.displayValue);
             solids.AddRange(brepMeshSolids);
           }
+#pragma warning restore CA1031 // Do not catch general exception types
           break;
         case Objects.Geometry.Mesh mesh:
           var meshSolids = MeshToNative(
@@ -71,11 +77,17 @@ public partial class ConverterRevit
     Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       File.Delete(tempPath);
     }
-    catch { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     FamilyInstance freeform;
     if (Doc.IsFamilyDocument)
@@ -96,6 +108,7 @@ public partial class ConverterRevit
   {
     var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
     var solids = new List<DB.Solid>();
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var solid = BrepToNative(brep, out List<string> brepNotes);
@@ -106,11 +119,14 @@ public partial class ConverterRevit
 
       solids.Add(solid);
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       var meshes = GetSolidMeshes(brep.displayValue);
       solids.AddRange(meshes);
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     foreach (var s in solids)
     {
@@ -159,6 +175,7 @@ public partial class ConverterRevit
   {
     var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
     var solids = new List<DB.Solid>();
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var solid = BrepToNative(brep, out List<string> brepNotes);
@@ -169,10 +186,13 @@ public partial class ConverterRevit
 
       solids.Add(solid);
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       solids.AddRange(GetSolidMeshes(brep.displayValue));
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     var tempPath = CreateFreeformElementFamily(solids, brep.id, out List<string> freeformNotes);
     if (freeformNotes.Count > 0)

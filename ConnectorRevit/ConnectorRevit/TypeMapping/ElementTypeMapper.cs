@@ -348,15 +348,18 @@ internal sealed class ElementTypeMapper
           new AbstractConverter<RevitHostType, ISingleHostType>(),
         },
       };
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         previousMappingExists = true;
         return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
       }
-      catch
+      catch (Exception ex)
       {
-        // couldn't deserialize so just return null
+        // TODO : check if catch block is necessary
+        SpeckleLog.Logger.LogDefaultError(ex);
       }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
     previousMappingExists = false;
     return null;

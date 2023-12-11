@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using Speckle.Core.Models.Extensions;
 using DB = Autodesk.Revit.DB;
+using Speckle.Core.Logging;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
@@ -58,11 +60,17 @@ public partial class ConverterRevit
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
     symbol.Activate();
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       File.Delete(tempMassFamilyPath);
     }
-    catch { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     var mass = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
     // NOTE: must set a schedule level!
@@ -104,7 +112,7 @@ public partial class ConverterRevit
     {
       revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceRef);
     }
-    catch (Exception e) { }
+    catch (Autodesk.Revit.Exceptions.ApplicationException) { }
 
     if (revitWall == null)
     {
@@ -126,6 +134,7 @@ public partial class ConverterRevit
     {
       applicationId = speckleWall.applicationId
     };
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
@@ -175,17 +184,19 @@ public partial class ConverterRevit
       SetInstanceParameters(revitWall, speckleWall);
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
       //appObj = SetHostedElements(speckleWall, revitWall, appObj);
-      return appObj;
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(
         status: ApplicationObject.State.Failed,
-        logItem: $"Revit wall creation failed: {e.Message}",
-        log: new List<string> { e.ToFormattedString() }
+        logItem: $"Revit wall creation failed: {ex.Message}",
+        log: new List<string> { ex.ToFormattedString() }
       );
-      return appObj;
     }
+#pragma warning restore CA1031 // Do not catch general exception types
+    return appObj;
   }
 
   private Reference GetFaceRef(Element e)
@@ -222,6 +233,7 @@ public partial class ConverterRevit
     {
       t.Start();
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         var pointLists = surface.GetControlPoints();
@@ -244,7 +256,12 @@ public partial class ConverterRevit
 
         var loft = famDoc.FamilyCreate.NewLoftForm(true, curveArray);
       }
-      catch (Exception e) { }
+      catch (Exception ex)
+      {
+        // TODO : check if catch block is necessary
+        SpeckleLog.Logger.LogDefaultError(ex);
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       t.Commit();
     }

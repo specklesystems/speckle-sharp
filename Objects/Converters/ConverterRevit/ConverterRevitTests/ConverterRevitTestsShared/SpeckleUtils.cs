@@ -101,7 +101,7 @@ internal static class SpeckleUtils
             .Wait();
         }
         // element already deleted, don't worry about it
-        catch { }
+        catch (Autodesk.Revit.Exceptions.ArgumentException) { }
         break;
       default:
         throw new Exception("It's not an element!?!?!");
@@ -148,7 +148,7 @@ internal static class SpeckleUtils
           {
             stringAssertionMethod(param.AsValueString(), baseString);
           }
-          catch (Exception ex)
+          catch (Autodesk.Revit.Exceptions.ApplicationException)
           {
             stringAssertionMethod(param.AsString(), baseString);
           }

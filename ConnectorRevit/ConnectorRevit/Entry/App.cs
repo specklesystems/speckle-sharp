@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using ConnectorRevit;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Models;
 using Speckle.BatchUploader.Sdk;
 using Speckle.BatchUploader.OperationDriver;
@@ -122,6 +123,7 @@ public class App : IExternalApplication
     Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
   )
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       // We need to hook into the AssemblyResolve event before doing anything else
@@ -177,6 +179,7 @@ public class App : IExternalApplication
         Process.Start("https://speckle.community/");
       }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
@@ -217,6 +220,7 @@ public class App : IExternalApplication
 
   private ImageSource LoadPngImgSource(string sourceName, string path)
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var assembly = Assembly.LoadFrom(Path.Combine(path));
@@ -225,7 +229,12 @@ public class App : IExternalApplication
       ImageSource m_source = m_decoder.Frames[0];
       return (m_source);
     }
-    catch { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     return null;
   }

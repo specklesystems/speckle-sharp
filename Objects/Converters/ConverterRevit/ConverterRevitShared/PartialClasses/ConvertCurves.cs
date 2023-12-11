@@ -3,6 +3,8 @@ using System.Collections;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit.Curve;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Alignment = Objects.BuiltElements.Alignment;
 using DB = Autodesk.Revit.DB;
@@ -74,7 +76,7 @@ public partial class ConverterRevit
       {
         revitCurve = Doc.Create.NewDetailCurve(Doc.ActiveView, baseCurve);
       }
-      catch (Exception)
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         appObj.Update(logItem: $"Detail curve creation failed\nView is not valid for detail curve creation.");
         continue;
@@ -140,12 +142,15 @@ public partial class ConverterRevit
       return appObj;
     }
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine, appObj);
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
       if (speckleLine is IDisplayValue<Geometry.Polyline> d)
       {
@@ -156,10 +161,11 @@ public partial class ConverterRevit
       }
       else
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
         return appObj;
       }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public ApplicationObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)

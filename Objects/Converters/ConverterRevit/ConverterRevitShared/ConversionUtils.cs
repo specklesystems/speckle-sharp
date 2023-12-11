@@ -9,6 +9,7 @@ using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit.Models;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
@@ -133,6 +134,7 @@ public partial class ConverterRevit
 
       if (CanConvertToSpeckle(element))
       {
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
           var obj = ConvertToSpeckle(element);
@@ -153,9 +155,11 @@ public partial class ConverterRevit
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, ex.Message);
+          // TODO : check if catch block is necessary
+          SpeckleLog.Logger.LogDefaultError(ex);
           reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
         }
+#pragma warning restore CA1031 // Do not catch general exception types
       }
       else
       {
@@ -237,6 +241,7 @@ public partial class ConverterRevit
     //sort by key
     foreach (var kv in allParams.OrderBy(x => x.Key))
     {
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         paramBase[kv.Key] = kv.Value;
@@ -245,6 +250,7 @@ public partial class ConverterRevit
       {
         //ignore
       }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     if (paramBase.GetDynamicMembers().Any())

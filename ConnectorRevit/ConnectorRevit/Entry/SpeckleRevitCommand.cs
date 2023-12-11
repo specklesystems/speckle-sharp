@@ -56,16 +56,9 @@ public class SpeckleRevitCommand : IExternalCommand
   {
     if (UseDockablePanel)
     {
-      try
-      {
-        RegisterPane();
-        var panel = App.AppInstance.GetDockablePane(PanelId);
-        panel.Show();
-      }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Error(ex, "Failed to show dockable panel");
-      }
+      RegisterPane();
+      var panel = App.AppInstance.GetDockablePane(PanelId);
+      panel.Show();
     }
     else
     {
@@ -139,6 +132,7 @@ public class SpeckleRevitCommand : IExternalCommand
 
   public static void CreateOrFocusSpeckle(bool showWindow = true)
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       if (MainWindow == null)
@@ -186,6 +180,7 @@ public class SpeckleRevitCommand : IExternalCommand
         Process.Start("https://speckle.community/");
       }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   private static void AppMain(Avalonia.Application app, string[] args)

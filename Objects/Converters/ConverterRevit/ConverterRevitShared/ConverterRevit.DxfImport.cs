@@ -13,6 +13,7 @@ using Speckle.Core.Models;
 using Speckle.netDxf.Entities;
 using Mesh = Objects.Geometry.Mesh;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
@@ -239,11 +240,17 @@ public partial class ConverterRevit
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       File.Delete(tempFamilyPath);
     }
-    catch { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
   }

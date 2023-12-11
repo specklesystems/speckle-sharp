@@ -4,6 +4,8 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
@@ -149,14 +151,18 @@ public partial class ConverterRevit
     Doc.Regenerate();
 
 #if (REVIT2020 || REVIT2021)
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       CreateVoids(revitFloor, speckleFloor);
     }
     catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 #endif
 
     SetInstanceParameters(revitFloor, speckleFloor);

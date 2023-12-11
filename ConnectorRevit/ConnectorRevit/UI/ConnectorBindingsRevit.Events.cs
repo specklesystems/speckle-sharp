@@ -15,6 +15,8 @@ using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Serilog;
 
 namespace Speckle.ConnectorRevit.UI;
 
@@ -109,21 +111,9 @@ public partial class ConnectorBindingsRevit
       var dialog = new ImportExportAlert();
       dialog.LaunchAction = () =>
       {
-        try
-        {
-          SpeckleRevitCommand.RegisterPane();
-          var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand.PanelId);
-          panel.Show();
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Fatal(
-            ex,
-            "Swallowing exception in {methodName}: {exceptionMessage}",
-            nameof(ShowImportExportAlert),
-            ex.Message
-          );
-        }
+        SpeckleRevitCommand.RegisterPane();
+        var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand.PanelId);
+        panel.Show();
       };
       dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
       dialog.Show();
@@ -163,6 +153,7 @@ public partial class ConnectorBindingsRevit
 
   private async void SendScheduledStream(string slug, string message = "")
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
@@ -198,12 +189,18 @@ public partial class ConnectorBindingsRevit
         );
       }
     }
-    catch (Exception ex) { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   //checks whether to refresh the stream list in case the user changes active view and selects a different document
   private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       if (
@@ -234,11 +231,17 @@ public partial class ConnectorBindingsRevit
 
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
-    catch (Exception ex) { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
   {
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
     try
     {
       // the DocumentClosed event is triggered AFTER ViewActivated
@@ -260,7 +263,12 @@ public partial class ConnectorBindingsRevit
 
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
-    catch (Exception ex) { }
+    catch (Exception ex)
+    {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+    }
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
   }
 
   // this method is triggered when there are changes in the active document
@@ -306,92 +314,75 @@ public partial class ConnectorBindingsRevit
 
   public override async Task Open3DView(List<double> viewCoordinates, string viewName = "")
   {
-    try
+    var views = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(View3D)).ToElements().Cast<View3D>();
+    var viewtypes = new FilteredElementCollector(CurrentDoc.Document)
+      .OfClass(typeof(ViewFamilyType))
+      .ToElements()
+      .Cast<ViewFamilyType>()
+      .Where(x => x.ViewFamily == ViewFamily.ThreeDimensional);
+
+    //hacky but the current comments camera is not a Base object
+    //so it cannot be passed automatically to the converter
+    //making a dummy one here
+    var speckleCamera = new Base();
+    speckleCamera["isHackySpeckleCamera"] = true;
+    speckleCamera["coordinates"] = viewCoordinates;
+
+    //when in a perspective view, it's not possible to open any transaction (txs adsk)
+    //so we're switching to any other non perspective view here
+    if (CurrentDoc.ActiveView.ViewType == ViewType.ThreeD)
     {
-      var views = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(View3D)).ToElements().Cast<View3D>();
-      var viewtypes = new FilteredElementCollector(CurrentDoc.Document)
-        .OfClass(typeof(ViewFamilyType))
-        .ToElements()
-        .Cast<ViewFamilyType>()
-        .Where(x => x.ViewFamily == ViewFamily.ThreeDimensional);
-
-      //hacky but the current comments camera is not a Base object
-      //so it cannot be passed automatically to the converter
-      //making a dummy one here
-      var speckleCamera = new Base();
-      speckleCamera["isHackySpeckleCamera"] = true;
-      speckleCamera["coordinates"] = viewCoordinates;
-
-      //when in a perspective view, it's not possible to open any transaction (txs adsk)
-      //so we're switching to any other non perspective view here
-      if (CurrentDoc.ActiveView.ViewType == ViewType.ThreeD)
+      var activeView = CurrentDoc.ActiveView as View3D;
+      if (activeView.IsPerspective)
       {
-        var activeView = CurrentDoc.ActiveView as View3D;
-        if (activeView.IsPerspective)
+        var nonPerspectiveView = views.FirstOrDefault(x => !x.IsPerspective);
+        if (nonPerspectiveView != null)
         {
-          var nonPerspectiveView = views.FirstOrDefault(x => !x.IsPerspective);
-          if (nonPerspectiveView != null)
-          {
-            CurrentDoc.ActiveView = nonPerspectiveView;
-          }
+          CurrentDoc.ActiveView = nonPerspectiveView;
         }
       }
-
-      var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
-
-      await APIContext.Run(app =>
-      {
-        using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))
-        {
-          t.Start();
-
-          var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-          converter.SetContextDocument(CurrentDoc.Document);
-          var viewOrientation3D = converter.ConvertToNative(speckleCamera) as ViewOrientation3D;
-
-          //txs bcfier
-          if (perspView == null)
-          {
-            perspView = View3D.CreatePerspective(CurrentDoc.Document, viewtypes.First().Id);
-            perspView.Name = "SpeckleCommentView";
-          }
-          perspView.SetOrientation(viewOrientation3D);
-          perspView.CropBoxActive = false;
-          perspView.CropBoxVisible = false;
-          perspView.DisplayStyle = DisplayStyle.Shading;
-
-          // the default phase was not looking good, picking the one of the View3D
-          if (views.Any())
-          {
-            var viewPhase = views.First().get_Parameter(BuiltInParameter.VIEW_PHASE);
-            if (viewPhase != null)
-            {
-              perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
-            }
-          }
-
-          t.Commit();
-        }
-        // needs to be outside the transaction
-        CurrentDoc.ActiveView = perspView;
-        // "refresh" the active view, txs Connor
-        var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(perspView.Id));
-        uiView.Zoom(1);
-      });
-
-      //needed to force refresh the active view
     }
-    catch (Exception ex)
+
+    var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
+
+    await APIContext.Run(app =>
     {
-      SpeckleLog.Logger.Error(ex, "Failed to open view");
-      MainUserControl.NotificationManager.Show(
-        new PopUpNotificationViewModel()
+      using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))
+      {
+        t.Start();
+
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+        converter.SetContextDocument(CurrentDoc.Document);
+        var viewOrientation3D = converter.ConvertToNative(speckleCamera) as ViewOrientation3D;
+
+        //txs bcfier
+        if (perspView == null)
         {
-          Title = "📷 Open View Error",
-          Message = $"Could not open the view: {ex.Message}",
-          Type = Avalonia.Controls.Notifications.NotificationType.Error
+          perspView = View3D.CreatePerspective(CurrentDoc.Document, viewtypes.First().Id);
+          perspView.Name = "SpeckleCommentView";
         }
-      );
-    }
+        perspView.SetOrientation(viewOrientation3D);
+        perspView.CropBoxActive = false;
+        perspView.CropBoxVisible = false;
+        perspView.DisplayStyle = DisplayStyle.Shading;
+
+        // the default phase was not looking good, picking the one of the View3D
+        if (views.Any())
+        {
+          var viewPhase = views.First().get_Parameter(BuiltInParameter.VIEW_PHASE);
+          if (viewPhase != null)
+          {
+            perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+          }
+        }
+
+        t.Commit();
+      }
+      // needs to be outside the transaction
+      CurrentDoc.ActiveView = perspView;
+      // "refresh" the active view, txs Connor
+      var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(perspView.Id));
+      uiView.Zoom(1);
+    });
   }
 }

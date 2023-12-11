@@ -112,6 +112,7 @@ internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
   public void Execute(UIApplication app)
   {
     Status = HandlerStatus.Started;
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var r = func(Parameter);
@@ -123,6 +124,7 @@ internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
       Status = HandlerStatus.IsFaulted;
       Result.SetException(ex);
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public string GetName() => "SpeckleRevitContextEventHandler";

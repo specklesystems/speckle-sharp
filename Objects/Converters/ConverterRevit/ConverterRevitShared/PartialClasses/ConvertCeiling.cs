@@ -126,7 +126,7 @@ public partial class ConverterRevit
     {
       CreateVoids(revitCeiling, speckleCeiling);
     }
-    catch (Exception ex)
+    catch (Autodesk.Revit.Exceptions.ApplicationException ex)
     {
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }

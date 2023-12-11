@@ -471,14 +471,7 @@ public partial class ConverterRevit
           var vectorC = Vertices.ElementAt(indices[2]);
           var result = (vectorB - vectorA).CrossProduct(vectorC - vectorA).Normalize();
 
-          try
-          {
-            Normals.Add(result);
-          }
-          catch (Exception ex)
-          {
-            Normals.Add(new XYZ(0, 0, 1));
-          }
+          Normals.Add(result);
 
           for (var j = 0; j < indices.Length; j++)
           {

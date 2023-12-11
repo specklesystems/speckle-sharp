@@ -181,6 +181,7 @@ public class TransactionManager : IDisposable
     if (!document.IsModifiable)
     {
       using var t = new Transaction(document, "This Transaction Will Never Get Committed");
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         t.Start();
@@ -194,10 +195,12 @@ public class TransactionManager : IDisposable
       {
         t.RollBack();
       }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
     else
     {
       using var t = new SubTransaction(document);
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         t.Start();
@@ -211,6 +214,7 @@ public class TransactionManager : IDisposable
       {
         t.RollBack();
       }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     return result;

@@ -8,6 +8,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using RevitSharedResources.Models;
 using Speckle.Core.Logging;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
@@ -79,6 +80,7 @@ public partial class ConverterRevit
 
     if (Enum.TryParse<PartType>(speckleFi.RevitPartType, out var partType) && FittingPartTypes.Contains(partType))
     {
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         _ = FittingToNative(speckleFi, partType, appObj);
@@ -108,12 +110,15 @@ public partial class ConverterRevit
       }
       catch (Exception ex)
       {
+        // TODO : check if catch block is necessary
+        SpeckleLog.Logger.LogDefaultError(ex);
         appObj.Update(
           logItem: $"Could not create fitting as part of the system. Reason: {ex.Message}. Converting as independent instance instead"
         );
         _ = MEPFamilyInstanceToNative(speckleFi, appObj);
         return appObj;
       }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
     else
     {

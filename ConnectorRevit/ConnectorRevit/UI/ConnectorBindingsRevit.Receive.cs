@@ -197,7 +197,7 @@ public partial class ConnectorBindingsRevit
           {
             CurrentDoc.Document.Delete(elementToDelete.Id);
           }
-          catch
+          catch (Autodesk.Revit.Exceptions.ApplicationException)
           {
             // unable to delete previously recieved object
           }
@@ -383,6 +383,7 @@ public partial class ConnectorBindingsRevit
     using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
     transactionManager.StartSubtransaction();
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var s = new CancellationTokenSource();
@@ -477,6 +478,7 @@ public partial class ConnectorBindingsRevit
       obj.Log.Add($"{ex.Message}");
       progress.Report.UpdateReportObject(obj);
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     return obj;
   }

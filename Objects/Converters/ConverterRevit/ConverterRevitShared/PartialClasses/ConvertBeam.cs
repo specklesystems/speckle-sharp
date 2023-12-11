@@ -94,7 +94,7 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         //something went wrong, re-create it
       }

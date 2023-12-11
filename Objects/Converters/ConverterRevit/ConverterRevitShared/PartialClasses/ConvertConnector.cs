@@ -22,18 +22,18 @@ public partial class ConverterRevit
     {
       speckleMEPConnector.angle = connector.Angle;
     }
-    catch { }
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
     try
     {
       speckleMEPConnector.height = ScaleToSpeckle(connector.Height);
       speckleMEPConnector.width = ScaleToSpeckle(connector.Width);
     }
-    catch { }
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
     try
     {
       speckleMEPConnector.radius = ScaleToSpeckle(connector.Radius);
     }
-    catch { }
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
     foreach (var reference in connector.AllRefs.Cast<Connector>())
     {
       if (connector.IsConnectedTo(reference))

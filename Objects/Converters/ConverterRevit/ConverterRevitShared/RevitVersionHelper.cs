@@ -97,7 +97,7 @@ public static class RevitVersionHelper
     {
       return curve.IsClosed;
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       return true;
     }
@@ -123,7 +123,7 @@ public static class RevitVersionHelper
     {
       return curve.IsClosed;
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       return true;
     }

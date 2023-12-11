@@ -5,6 +5,8 @@ using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
@@ -202,6 +204,7 @@ public partial class ConverterRevit
 
     var cat = Doc.Settings.Categories.get_Item(bic);
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
@@ -221,7 +224,7 @@ public partial class ConverterRevit
         {
           Doc.Delete(existingObj.Id);
         }
-        catch (Exception e)
+        catch (Autodesk.Revit.Exceptions.ArgumentException e)
         {
           appObj.Log.Add($"Could not delete existing object: {e.Message}");
         }
@@ -230,8 +233,11 @@ public partial class ConverterRevit
     }
     catch (Exception ex)
     {
+      // TODO : check if catch block is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
     }
+#pragma warning restore CA1031 // Do not catch general exception types
     return appObj;
   }
 
