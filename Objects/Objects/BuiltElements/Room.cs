@@ -77,7 +77,7 @@ namespace Objects.BuiltElements.Archicad
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Base? elementProperties { get; set; }
-    
+
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Base? componentProperties { get; set; }
 

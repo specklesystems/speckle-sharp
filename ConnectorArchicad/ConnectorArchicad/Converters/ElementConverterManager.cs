@@ -241,10 +241,7 @@ public sealed partial class ElementConverterManager
     CancellationToken token
   )
   {
-    var retval = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetElementsType(applicationIds),
-      token
-    );
+    var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(applicationIds), token);
     return retval;
   }
 

@@ -307,10 +307,10 @@ namespace Objects.BuiltElements.Archicad
     // Element base
     public string? elementType { get; set; } /*APINullabe*/
     public List<Classification>? classifications { get; set; } /*APINullabe*/
-    
+
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Base? elementProperties { get; set; }
-    
+
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Base? componentProperties { get; set; }
 
