@@ -1,6 +1,9 @@
 #ifndef PROPERTY_EXPORT_MANAGER_HPP
 #define PROPERTY_EXPORT_MANAGER_HPP
 
+#include "APIEnvir.h"
+#include "ACAPinc.h"
+
 
 class PropertyExportManager {
 private:
