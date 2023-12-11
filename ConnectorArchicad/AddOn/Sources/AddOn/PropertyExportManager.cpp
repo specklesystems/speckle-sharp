@@ -305,18 +305,18 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 			if (sendProperties) {
 				err = ACAPI_Element_GetPropertyDefinitions (element.header.guid, API_PropertyDefinitionFilter_UserDefined, elementUserDefinedDefinitions);
 				if (err != NoError)
-					return false;
+					return err;
 			}
 
 			GS::Array<API_PropertyDefinition> elementUserLevelBuiltInDefinitions;
 			if (sendListingParameters) {
 				err = ACAPI_Element_GetPropertyDefinitions (element.header.guid, API_PropertyDefinitionFilter_UserLevelBuiltIn, elementUserLevelBuiltInDefinitions);
 				if (err != NoError)
-					return false;
+					return err;
 
 				err = FilterDefinitionsByDefinitionIds (elementUserLevelBuiltInDefinitions, propertyGroupFilter.elementPropertiesFilter);
 				if (err != NoError)
-					return false;
+					return err;
 			}
 
 			elementDefinitions = elementUserDefinedDefinitions;
@@ -347,18 +347,18 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 
 			err = FilterOutDefinitionsByDefinitions (componentUserDefinedDefinitions, elementUserDefinedDefinitions);
 			if (err != NoError)
-				return false;
+				continue;
 		}
 
 		GS::Array<API_PropertyDefinition> componentUserLevelBuiltInDefinitions;
 		if (sendListingParameters) {
 			err = ACAPI_ElemComponent_GetPropertyDefinitions (component, API_PropertyDefinitionFilter_UserLevelBuiltIn, componentUserLevelBuiltInDefinitions);
 			if (err != NoError)
-				return false;
+				continue;
 
 			err = FilterDefinitionsByPropertyGroup (componentUserLevelBuiltInDefinitions, propertyGroupFilter.componentPropertyGroupFilter);
 			if (err != NoError)
-				return false;
+				continue;
 		}
 
 		componentUserDefinedDefinitions.Append (componentUserLevelBuiltInDefinitions);
