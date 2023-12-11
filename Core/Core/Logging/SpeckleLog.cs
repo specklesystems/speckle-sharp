@@ -311,9 +311,20 @@ public static class SpeckleLog
   {
     var osVersion = Environment.OSVersion;
     var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-    GlobalLogContext.PushProperty("hostOs", _deterimineHostOsSlug());
+    var osSlug = _deterimineHostOsSlug();
+    var runtime = RuntimeInformation.FrameworkDescription;
+    GlobalLogContext.PushProperty("hostOs", osSlug);
     GlobalLogContext.PushProperty("hostOsVersion", osVersion);
     GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
+    GlobalLogContext.PushProperty("runtime", runtime);
+
+    Logger.Information(
+      "Executing using {runtime} on {hostOs} {hostOsVersion} {hostOsArchitecture}",
+      runtime,
+      osSlug,
+      osVersion,
+      osArchitecture
+    );
   }
 
   private static void _addHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
