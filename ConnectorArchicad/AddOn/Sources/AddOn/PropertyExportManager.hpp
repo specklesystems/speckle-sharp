@@ -4,6 +4,8 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 
+#include "Utility.hpp"
+
 
 class PropertyExportManager {
 private:
