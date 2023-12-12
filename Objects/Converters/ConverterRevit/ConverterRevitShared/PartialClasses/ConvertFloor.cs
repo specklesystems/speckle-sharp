@@ -4,14 +4,13 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using RevitSharedResources.Extensions.SpeckleExtensions;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
 using OO = Objects.Other;
-#if !REVIT2020 && !REVIT2021
-using Speckle.Core.Logging;
+#if REVIT2020 || REVIT2021
+using RevitSharedResources.Extensions.SpeckleExtensions;
 #endif
 
 namespace Objects.Converter.Revit;

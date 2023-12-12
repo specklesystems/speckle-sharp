@@ -7,7 +7,6 @@ using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.Entry;
@@ -16,7 +15,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using RevitSharedResources.Extensions.SpeckleExtensions;
-using Serilog;
 
 namespace Speckle.ConnectorRevit.UI;
 
