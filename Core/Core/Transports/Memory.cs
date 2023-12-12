@@ -57,10 +57,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   public void SaveObject(string id, string serializedObject)
   {
     var stopwatch = Stopwatch.StartNew();
-    if (CancellationToken.IsCancellationRequested)
-    {
-      return; // Check for cancellation
-    }
+    CancellationToken.ThrowIfCancellationRequested();
 
     Objects[id] = serializedObject;
 
@@ -107,18 +104,18 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public Task WriteComplete()
   {
-    return Utilities.WaitUntil(() => true);
+    return Task.CompletedTask;
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
-    Dictionary<string, bool> ret = new();
+    Dictionary<string, bool> ret = new(objectIds.Count);
     foreach (string objectId in objectIds)
     {
       ret[objectId] = Objects.ContainsKey(objectId);
     }
 
-    return ret;
+    return Task.FromResult(ret);
   }
 
   public bool GetWriteCompletionStatus()

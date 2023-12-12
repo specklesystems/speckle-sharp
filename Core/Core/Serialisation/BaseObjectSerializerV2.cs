@@ -199,12 +199,11 @@ public class BaseObjectSerializerV2
   )
   {
     // handle circular references
-    if (_parentObjects.Contains(baseObj))
+    bool alreadySerialized = !_parentObjects.Add(baseObj);
+    if (alreadySerialized)
     {
       return null;
     }
-
-    _parentObjects.Add(baseObj);
 
     Dictionary<string, object?> convertedBase = new();
     Dictionary<string, int> closure = new();
@@ -217,7 +216,7 @@ public class BaseObjectSerializerV2
     IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
 
     // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
-    Dictionary<string, (object, PropertyAttributeInfo)> allProperties = new();
+    Dictionary<string, (object?, PropertyAttributeInfo)> allProperties = new();
 
     // Construct `allProperties`: Add typed properties
     foreach ((PropertyInfo propertyInfo, PropertyAttributeInfo detachInfo) in typedProperties)
@@ -234,7 +233,7 @@ public class BaseObjectSerializerV2
         continue;
       }
 
-      object baseValue = baseObj[propName];
+      object? baseValue = baseObj[propName];
       bool isDetachable = propName.StartsWith("@");
       bool isChunkable = false;
       int chunkSize = 1000;
@@ -298,7 +297,7 @@ public class BaseObjectSerializerV2
     return convertedBase;
   }
 
-  private object? PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
+  private object? PreserializeBasePropertyValue(object? baseValue, PropertyAttributeInfo detachInfo)
   {
     // If there are no WriteTransports, keep everything attached.
     if (WriteTransports.Count == 0)

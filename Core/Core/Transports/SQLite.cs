@@ -29,6 +29,14 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// </summary>
   private readonly Timer _writeTimer;
 
+  /// <summary>
+  /// Connects to an SQLite DB at {<paramref name="basePath"/>}/{<paramref name="applicationName"/>}/{<paramref name="scope"/>}.db
+  /// Will attempt to create db + directory structure as needed
+  /// </summary>
+  /// <param name="basePath">defaults to <see cref="SpecklePathProvider.UserApplicationDataPath"/> if <see langword="null"/></param>
+  /// <param name="applicationName">defaults to <c>"Speckle"</c> if <see langword="null"/></param>
+  /// <param name="scope">defaults to <c>"Data"</c> if <see langword="null"/></param>
+  /// <exception cref="TransportException">could not create directory, db, or failed to initialize a connection to the db</exception>
   public SQLiteTransport(string? basePath = null, string? applicationName = null, string? scope = null)
   {
     _basePath = basePath ?? SpecklePathProvider.UserApplicationDataPath();
