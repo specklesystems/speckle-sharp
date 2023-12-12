@@ -46,10 +46,8 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="element"></param>
   /// <returns></returns>
-  private static bool IsElementVisible(ModelItem element)
-  {
+  private static bool IsElementVisible(ModelItem element) =>
     // Hidden status is stored at the earliest node in the hierarchy
     // All of the the tree path nodes need to not be Hidden
-    return element.AncestorsAndSelf.All(x => x.IsHidden != true);
-  }
+    element.AncestorsAndSelf.All(x => x.IsHidden != true);
 }

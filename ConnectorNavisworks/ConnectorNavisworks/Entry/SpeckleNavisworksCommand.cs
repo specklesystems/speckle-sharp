@@ -100,10 +100,7 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     return app;
   }
 
-  private static void InitAvalonia()
-  {
-    BuildAvaloniaApp().SetupWithoutStarting();
-  }
+  private static void InitAvalonia() => BuildAvaloniaApp().SetupWithoutStarting();
 
   private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
