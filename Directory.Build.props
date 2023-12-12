@@ -73,7 +73,6 @@
       <!--"CA5399: Enable HttpClient certificate revocation list check" - causes issues with corporate networks that use SSL decryption. HTTPClientHandler does check for invalid SSL certs without this property set true-->
     </WarningsAsErrors>
     
-    
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -81,6 +80,7 @@
     <WarningsAsErrors>
       $(WarningsAsErrors);
       IDE0011;IDE0090;IDE0161;IDE0005;
+      CA1806;
     </WarningsAsErrors>
   </PropertyGroup>
 
