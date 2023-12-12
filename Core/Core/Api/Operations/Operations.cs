@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,18 +41,14 @@ public static partial class Operations
   /// <returns></returns>
   private static Action<string, int> GetInternalProgressAction(
     ConcurrentDictionary<string, int> localProgressDict,
-    Action<ConcurrentDictionary<string, int>> onProgressAction = null
+    Action<ConcurrentDictionary<string, int>>? onProgressAction = null
   )
   {
     return (name, processed) =>
     {
-      if (localProgressDict.ContainsKey(name))
+      if (!localProgressDict.TryAdd(name, processed))
       {
         localProgressDict[name] += processed;
-      }
-      else
-      {
-        localProgressDict[name] = processed;
       }
 
       onProgressAction?.Invoke(localProgressDict);

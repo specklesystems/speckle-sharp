@@ -57,7 +57,7 @@ public class ServerTransportTests
   {
     var myObject = Fixtures.GenerateNestedObject();
 
-    var objectId = await Operations.Send(myObject, new List<ITransport> { transport }).ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
 
     var test = objectId;
     Assert.IsNotNull(test);
@@ -69,7 +69,7 @@ public class ServerTransportTests
     var myObject = Fixtures.GenerateSimpleObject();
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
-    var sentObjectId = await Operations.Send(myObject, new List<ITransport> { transport }).ConfigureAwait(false);
+    var sentObjectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
 
     // NOTE: used to debug diffing
     // await Operations.Send(myObject, new List<ITransport> { transport });
@@ -104,7 +104,7 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .Send(myObject, new List<ITransport> { transport, memTransport })
       .ConfigureAwait(false);
 
     var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
@@ -137,7 +137,7 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .Send(myObject, new List<ITransport> { transport, memTransport })
       .ConfigureAwait(false);
 
     memTransport = new MemoryTransport();

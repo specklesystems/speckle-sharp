@@ -93,7 +93,15 @@ public class DiskTransport : ICloneable, ITransport
       return;
     }
 
-    File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+    try
+    {
+      File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+    }
+    catch (Exception ex)
+    {
+      throw new TransportException(this, $"Failed to write object {id} to disk", ex);
+    }
+
     SavedObjectCount++;
     OnProgressAction?.Invoke(TransportName, SavedObjectCount);
     stopwatch.Stop();
