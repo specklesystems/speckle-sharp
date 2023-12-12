@@ -9,14 +9,8 @@ namespace Objects.Converter.Navisworks;
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
-  private static Color NavisworksColorToColor(Autodesk.Navisworks.Api.Color color)
-  {
-    return Color.FromArgb(
-      Convert.ToInt32(color.R * 255),
-      Convert.ToInt32(color.G * 255),
-      Convert.ToInt32(color.B * 255)
-    );
-  }
+  private static Color NavisworksColorToColor(Autodesk.Navisworks.Api.Color color) =>
+    Color.FromArgb(Convert.ToInt32(color.R * 255), Convert.ToInt32(color.G * 255), Convert.ToInt32(color.B * 255));
 
   [SuppressMessage(
     "design",
@@ -68,13 +62,8 @@ public partial class ConverterNavisworks
     return r;
   }
 
-  private static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
-  {
+  private static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue) =>
     Console.WriteLine(message, color);
-  }
 
-  private static void ErrorLog(string errorMessage)
-  {
-    ConsoleLog(errorMessage, ConsoleColor.DarkRed);
-  }
+  private static void ErrorLog(string errorMessage) => ConsoleLog(errorMessage, ConsoleColor.DarkRed);
 }
