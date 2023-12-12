@@ -545,7 +545,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       Account account;
       try
       {
-        account = wrapper?.GetAccount().Result;
+        account = await wrapper?.GetAccount();
       }
       catch (Exception e)
       {
