@@ -42,8 +42,9 @@ public class Fe2WrapperTests
     Assert.NotNull(streamWrapper);
     Assert.That(streamWrapper.Type, Is.EqualTo(expectedType));
     Assert.That(streamWrapper.StreamId, Is.EqualTo(expectedProjectId));
-    Assert.That(streamWrapper.BranchName, Is.EqualTo(expectedBranchId));
+    Assert.That(streamWrapper.BranchId, Is.EqualTo(expectedBranchId));
     Assert.That(streamWrapper.CommitId, Is.EqualTo(expectedCommitId));
+    Assert.That(streamWrapper.ObjectId, Is.EqualTo(expectedObjectId));
   }
 
   [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/all")]

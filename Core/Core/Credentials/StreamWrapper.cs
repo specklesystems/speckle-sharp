@@ -54,6 +54,7 @@ public class StreamWrapper
   //Keep private, we want to move towards using the CreateFrom factory functions
   private StreamWrapper(Uri streamUrl)
   {
+    OriginalInput = streamUrl.ToString();
     StreamWrapperFromUrl(streamUrl);
   }
 
@@ -98,7 +99,7 @@ public class StreamWrapper
   public string? ObjectId { get; set; }
 
   //Only set for FE2 urls
-  private string? _branchId;
+  internal string? BranchId { get; set; }
 
   /// <summary>
   /// Determines if the current stream wrapper contains a valid stream.
@@ -120,7 +121,7 @@ public class StreamWrapper
         return StreamWrapperType.Commit;
       }
 
-      if (!string.IsNullOrEmpty(BranchName))
+      if (!string.IsNullOrEmpty(BranchName) || !string.IsNullOrEmpty(BranchId))
       {
         return StreamWrapperType.Branch;
       }
@@ -186,7 +187,7 @@ public class StreamWrapper
     // Assigning the BranchID as the BranchName is a workaround to support FE2 links in the old StreamWrapper.
     // A better solution must be redesigned taking into account all the new Frontend2 URL features.
     StreamId = projectId.Value;
-    _branchId = modelRes.branchId;
+    BranchId = modelRes.branchId;
     CommitId = modelRes.commitId;
     ObjectId = modelRes.objectId;
   }
@@ -428,6 +429,20 @@ public class StreamWrapper
       );
     }
 
+    //FE2 urls have a branch Id
+    if (!string.IsNullOrEmpty(BranchId))
+    {
+      var model = await client.ModelGet(StreamId, BranchId).ConfigureAwait(false);
+      if (model is null)
+      {
+        throw new SpeckleException(
+          $"The model with id '{BranchId}' doesn't exist in project {StreamId} on server {ServerUrl}"
+        );
+      }
+
+      BranchName = model.name;
+    }
+
     // Check if the branch exists
     if (Type == StreamWrapperType.Branch)
     {
@@ -438,20 +453,6 @@ public class StreamWrapper
           $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
       }
-    }
-
-    //FE2 urls have a branch Id
-    if (!string.IsNullOrEmpty(_branchId))
-    {
-      var model = await client.ModelGet(StreamId, _branchId).ConfigureAwait(false);
-      if (model is null)
-      {
-        throw new SpeckleException(
-          $"The model with id '{_branchId}' doesn't exist in project {StreamId} on server {ServerUrl}"
-        );
-      }
-
-      BranchName = model.name;
     }
   }
 

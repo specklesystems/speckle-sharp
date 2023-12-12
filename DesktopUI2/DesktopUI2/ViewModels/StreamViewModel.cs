@@ -23,7 +23,6 @@ using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using DynamicData;
-using GraphQL;
 using Material.Dialog.Icons;
 using Material.Icons;
 using Material.Icons.Avalonia;
