@@ -58,35 +58,17 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   public static bool CachedConversion =>
     CachedConvertedElements != null && CachedConvertedElements.Count != 0 && s_cachedCommit != null;
 
-  public override string GetActiveViewName()
-  {
-    return "Entire Document";
-  }
+  public override string GetActiveViewName() => "Entire Document";
 
-  public override List<MenuItem> GetCustomStreamMenuItems()
-  {
-    return new List<MenuItem>();
-  }
+  public override List<MenuItem> GetCustomStreamMenuItems() => new();
 
-  public override string GetHostAppName()
-  {
-    return HostAppName;
-  }
+  public override string GetHostAppName() => HostAppName;
 
-  public override string GetHostAppNameVersion()
-  {
-    return HostAppNameVersion;
-  }
+  public override string GetHostAppNameVersion() => HostAppNameVersion;
 
-  private static string GetDocPath()
-  {
-    return "";
-  }
+  private static string GetDocPath() => "";
 
-  public override string GetDocumentLocation()
-  {
-    return GetDocPath();
-  }
+  public override string GetDocumentLocation() => GetDocPath();
 
   public override void SelectClientObjects(List<string> objs, bool deselect = false)
   {
@@ -108,10 +90,9 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   }
 
   public override List<string> GetObjectsInView() // this returns all visible doc objects.
-  // TODO!
-  {
+    // TODO!
+    =>
     throw new NotImplementedException();
-  }
 
   public async Task RetryLastConversionSend()
   {

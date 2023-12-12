@@ -143,60 +143,29 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
     _coords.AddRange(coords);
   }
 
-  private void AddCoords(IEnumerable<double> coords)
-  {
-    _coords.AddRange(coords);
-  }
+  private void AddCoords(IEnumerable<double> coords) => _coords.AddRange(coords);
 
-  private void SetFaces(List<int> faces)
-  {
-    _faces = faces ?? throw new ArgumentNullException(nameof(faces));
-  }
+  private void SetFaces(List<int> faces) => _faces = faces ?? throw new ArgumentNullException(nameof(faces));
 
-  private void AddFace(int face)
-  {
-    _faces.Add(face);
-  }
+  private void AddFace(int face) => _faces.Add(face);
 
-  private void AddFaces(IEnumerable<int> faces)
-  {
-    _faces.AddRange(faces);
-  }
+  private void AddFaces(IEnumerable<int> faces) => _faces.AddRange(faces);
 
-  private void SetTriangles(List<TriangleD> triangles)
-  {
+  private void SetTriangles(List<TriangleD> triangles) =>
     _triangles = triangles ?? throw new ArgumentNullException(nameof(triangles));
-  }
 
-  private void AddTriangle(TriangleD triangle)
-  {
-    _triangles.Add(triangle);
-  }
+  private void AddTriangle(TriangleD triangle) => _triangles.Add(triangle);
 
-  private void SetLines(List<LineD> lines)
-  {
-    _lines = lines ?? throw new ArgumentNullException(nameof(lines));
-  }
+  private void SetLines(List<LineD> lines) => _lines = lines ?? throw new ArgumentNullException(nameof(lines));
 
-  private void AddLine(LineD line)
-  {
-    _lines.Add(line);
-  }
+  private void AddLine(LineD line) => _lines.Add(line);
 
-  private void SetPoints(List<PointD> points)
-  {
-    _points = points ?? throw new ArgumentNullException(nameof(points));
-  }
+  private void SetPoints(List<PointD> points) => _points = points ?? throw new ArgumentNullException(nameof(points));
 
-  private void AddPoint(PointD point)
-  {
-    _points.Add(point);
-  }
+  private void AddPoint(PointD point) => _points.Add(point);
 
-  private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode)
-  {
-    return elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
-  }
+  private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode) =>
+    elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
 
   private static Vector3D ApplyTransformation(Vector3 vector3, IEnumerable<double> matrixStore)
   {
@@ -268,10 +237,8 @@ public class NavisworksGeometry
     return processors;
   }
 
-  private static bool IsSameFragmentPath(Array a1, Array a2)
-  {
-    return a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
-  }
+  private static bool IsSameFragmentPath(Array a1, Array a2) =>
+    a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
 
   private static double[] ConvertArrayToDouble(Array arr)
   {
@@ -411,12 +378,10 @@ public partial class ConverterNavisworks
   /// <param name="vectorB">The second comparison vector</param>
   /// <param name="tolerance">Default value of 1e-9</param>
   /// <returns>Boolean value indicating match success</returns>
-  private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
-  {
-    return Math.Abs(vectorA.X - vectorB.X) < tolerance
-      && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
-      && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
-  }
+  private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9) =>
+    Math.Abs(vectorA.X - vectorB.X) < tolerance
+    && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
+    && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
 
   private static void PopulateModelFragments(NavisworksGeometry geometry)
   {
@@ -513,10 +478,7 @@ public partial class ConverterNavisworks
     return baseGeometries;
   }
 
-  private void SetModelBoundingBox()
-  {
-    ModelBoundingBox = Doc.GetBoundingBox(false);
-  }
+  private void SetModelBoundingBox() => ModelBoundingBox = Doc.GetBoundingBox(false);
 
   private void SetTransformVector3D()
   {
@@ -545,13 +507,6 @@ public partial class ConverterNavisworks
     TransformVector3D = transform;
   }
 
-  private static List<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale)
-  {
-    return new List<double>
-    {
-      (vertex1.X + move.X) * scale,
-      (vertex1.Y + move.Y) * scale,
-      (vertex1.Z + move.Z) * scale
-    };
-  }
+  private static List<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale) =>
+    new() { (vertex1.X + move.X) * scale, (vertex1.Y + move.Y) * scale, (vertex1.Z + move.Z) * scale };
 }
