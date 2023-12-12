@@ -65,7 +65,6 @@ public partial class Client
   /// <summary>
   /// Subscribe to events of streams removed for the current user
   /// </summary>
-  /// <param name="id"></param>
   public void SubscribeUserStreamRemoved()
   {
     var request = new GraphQLRequest { Query = @"subscription { userStreamRemoved }" };

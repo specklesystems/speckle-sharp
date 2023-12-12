@@ -122,7 +122,7 @@ public sealed partial class Client : IDisposable
         delay,
         (ex, timeout, context) =>
         {
-          var graphqlEx = ex as SpeckleGraphQLException<T>;
+          var graphqlEx = (SpeckleGraphQLException<T>)ex;
           SpeckleLog.Logger
             .ForContext("graphqlExtensions", graphqlEx.Extensions)
             .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)

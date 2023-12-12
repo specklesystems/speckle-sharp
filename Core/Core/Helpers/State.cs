@@ -5,9 +5,9 @@ namespace Speckle.Core.Helpers;
 public class State<T> : IDisposable
   where T : State<T>, new()
 {
-  static T root;
-  static T current;
-  T previous = current;
+  private static T root;
+  private static T current;
+  private T previous = current;
 
   private static readonly object StateChangeLock = new();
 

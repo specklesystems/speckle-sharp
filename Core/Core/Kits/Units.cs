@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using Speckle.Core.Logging;
 
 namespace Speckle.Core.Kits;
 

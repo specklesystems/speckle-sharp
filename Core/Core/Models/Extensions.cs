@@ -175,7 +175,7 @@ public static class BaseExtensions
   /// This behaviour, and these functions may be changed in future releases.
   /// </remarks>
   /// <param name="speckleObject"></param>
-  /// <paramref name="propName">the property name to check for</param>
+  /// <param name="propName">the property name to check for</param>
   /// <returns>detached property name</returns>
   public static string GetDetachedPropName(this Base speckleObject, string propName)
   {
