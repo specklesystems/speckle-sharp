@@ -45,20 +45,14 @@ public class Element
   /// </summary>
   /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
   /// <returns>A new Element instance with its pseudoId set.</returns>
-  public static Element GetElement(string pseudoId)
-  {
-    return new Element(pseudoId);
-  }
+  public static Element GetElement(string pseudoId) => new(pseudoId);
 
   /// <summary>
   /// Creates a new Element instance using a given ModelItem.
   /// </summary>
   /// <param name="modelItem">The ModelItem used to create the Element instance.</param>
   /// <returns>A new Element instance with its PseudoId and _modelItem field set.</returns>
-  public Element GetElement(ModelItem modelItem)
-  {
-    return new Element(GetPseudoId(modelItem), modelItem);
-  }
+  public Element GetElement(ModelItem modelItem) => new(GetPseudoId(modelItem), modelItem);
 
   /// <summary>
   /// Gets the PseudoId for the given ModelItem.
@@ -124,9 +118,8 @@ public class Element
   /// <param name="pseudoId">The PseudoId to parse.</param>
   /// <returns>An array of integers representing the path.</returns>
   /// <exception cref="ArgumentException">Thrown when the PseudoId is malformed.</exception>
-  private int[] ParsePseudoIdToPathArray(string pseudoId)
-  {
-    return pseudoId
+  private int[] ParsePseudoIdToPathArray(string pseudoId) =>
+    pseudoId
       .Split('-')
       .Select(x =>
       {
@@ -138,7 +131,6 @@ public class Element
         throw new ArgumentException("malformed path pseudoId");
       })
       .ToArray();
-  }
 
   /// <summary>
   /// Converts a zero-based integer array into a one-based array.
@@ -186,10 +178,7 @@ public class Element
   /// Generates a descriptor for the current model item.
   /// </summary>
   /// <returns>A descriptor for the current model item, or null if no model item is set.</returns>
-  public string Descriptor()
-  {
-    return _modelItem == null ? null : ElementDescriptor(_modelItem);
-  }
+  public string Descriptor() => _modelItem == null ? null : ElementDescriptor(_modelItem);
 
   /// <summary>
   /// Builds a nested object hierarchy from a dictionary of flat key-value pairs.

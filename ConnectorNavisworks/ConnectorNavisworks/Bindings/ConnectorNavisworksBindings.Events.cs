@@ -19,10 +19,7 @@ public partial class ConnectorBindingsNavisworks
     s_doc.SelectionSets.Changed += SetsChangedEvent;
   }
 
-  private void SetsChangedEvent(object sender, EventArgs e)
-  {
-    UpdateSelectedStream?.Invoke();
-  }
+  private void SetsChangedEvent(object sender, EventArgs e) => UpdateSelectedStream?.Invoke();
 
   // Triggered when the active document name is changed.
   // This will happen automatically if a document is newly created or opened.

@@ -22,10 +22,7 @@ public partial class SpeckleHostPane
   }
 
   // Triggered when the active document name is changed. This will happen automatically if a document is newly created or opened.
-  private void Application_DocumentChanged(object sender, EventArgs e)
-  {
-    AvaloniaHost.Content = new MainUserControl();
-  }
+  private void Application_DocumentChanged(object sender, EventArgs e) => AvaloniaHost.Content = new MainUserControl();
 
   private static IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
   {
