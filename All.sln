@@ -139,8 +139,14 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorTeklaStructuresShared", "ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.shproj", "{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures2021", "ConnectorTeklaStructures\ConnectorTeklaStructures2021\ConnectorTeklaStructures2021.csproj", "{3AF1EF30-0906-4926-A02C-4E3AD666352A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C1D53822-B11F-4772-996E-1E6D485E0702} = {C1D53822-B11F-4772-996E-1E6D485E0702}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures2020", "ConnectorTeklaStructures\ConnectorTeklaStructures2020\ConnectorTeklaStructures2020.csproj", "{67157264-AAA5-46A8-A38B-16254B49B892}"
+	ProjectSection(ProjectDependencies) = postProject
+		{02A24DD8-E0CA-4657-BAA7-B033A4563709} = {02A24DD8-E0CA-4657-BAA7-B033A4563709}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterTeklaStructures", "ConverterTeklaStructures", "{5D988C50-8E85-402A-9020-A4AB0565F0C9}"
 EndProject
@@ -243,14 +249,26 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Navisworks", "Navisworks", "{B6887DDC-B9B9-4B00-95DC-1DD930A1E901}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2023", "ConnectorNavisworks\ConnectorNavisworks2023\ConnectorNavisworks2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EC2436DB-B7F4-4D78-807B-8D91D7D5165C} = {EC2436DB-B7F4-4D78-807B-8D91D7D5165C}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorNavisworks", "ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.shproj", "{A517A609-CAB1-4B33-B83C-1B13B34E4560}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2022", "ConnectorNavisworks\ConnectorNavisworks2022\ConnectorNavisworks2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CD334556-BA2B-4272-A1EB-628E8152204A} = {CD334556-BA2B-4272-A1EB-628E8152204A}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2021", "ConnectorNavisworks\ConnectorNavisworks2021\ConnectorNavisworks2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CAFD4EAC-75A8-4FC8-94E5-91CADC39F5B3} = {CAFD4EAC-75A8-4FC8-94E5-91CADC39F5B3}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2020", "ConnectorNavisworks\ConnectorNavisworks2020\ConnectorNavisworks2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8B467FF4-6A6C-4071-87A7-0DD7B9822251} = {8B467FF4-6A6C-4071-87A7-0DD7B9822251}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2020", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2020\ConverterNavisworks2020.csproj", "{8B467FF4-6A6C-4071-87A7-0DD7B9822251}"
 EndProject
@@ -259,8 +277,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2022", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2022\ConverterNavisworks2022.csproj", "{CD334556-BA2B-4272-A1EB-628E8152204A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper7", "ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj", "{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EA81F83C-1485-49C8-AB05-9DF2798D70EC} = {EA81F83C-1485-49C8-AB05-9DF2798D70EC}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper6", "ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj", "{86920221-416E-4A66-A601-3418207E2401}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A8607330-1B23-43CC-8B9B-25818D9C1D64} = {A8607330-1B23-43CC-8B9B-25818D9C1D64}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorGrasshopperShared", "ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.shproj", "{0F1FD0C3-875F-4689-9C4A-C56E9AB31102}"
 EndProject
@@ -291,6 +315,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorOpenRoads", "ConnectorBentley\ConnectorOpenRoads\ConnectorOpenRoads.csproj", "{57BF94A8-8F73-4D1A-91D2-B10CC64178B6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAdvanceSteel2023", "ConnectorAutocadCivil\ConnectorAdvanceSteel2023\ConnectorAdvanceSteel2023.csproj", "{F4AA033F-4F85-4990-AFE9-86BE00ABE973}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F1311789-37DC-47FD-ACEC-75B9B97EDFED} = {F1311789-37DC-47FD-ACEC-75B9B97EDFED}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAdvanceSteel2023", "Objects\Converters\ConverterAutocadCivil\ConverterAdvanceSteel2023\ConverterAdvanceSteel2023.csproj", "{F1311789-37DC-47FD-ACEC-75B9B97EDFED}"
 EndProject
@@ -301,6 +328,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper6", "Objects\Converters\ConverterRhinoGh\ConverterGrasshopper6\ConverterGrasshopper6.csproj", "{A8607330-1B23-43CC-8B9B-25818D9C1D64}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures2022", "ConnectorTeklaStructures\ConnectorTeklaStructures2022\ConnectorTeklaStructures2022.csproj", "{48C44A7A-122F-4A1F-B3BA-613CB432A7BC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{05F993A6-8651-4801-A732-9A30D1472EEF} = {05F993A6-8651-4801-A732-9A30D1472EEF}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2022", "Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2022\ConverterTeklaStructures2022.csproj", "{05F993A6-8651-4801-A732-9A30D1472EEF}"
 EndProject
@@ -313,6 +343,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2024", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2024\ConverterNavisworks2024.csproj", "{5F8E5DD7-386E-46A6-85E4-1318CBCC4BA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2024", "ConnectorNavisworks\ConnectorNavisworks2024\ConnectorNavisworks2024.csproj", "{2568500E-F1BC-440E-9150-DB4820B3FAD6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5F8E5DD7-386E-46A6-85E4-1318CBCC4BA1} = {5F8E5DD7-386E-46A6-85E4-1318CBCC4BA1}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8FE29045-C85E-4374-A1EF-75B9958D341D}"
 	ProjectSection(SolutionItems) = preProject
@@ -339,6 +372,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2024", "Objects\Converters\ConverterRevit\ConverterRevit2024\ConverterRevit2024.csproj", "{4C6B5FC0-37E2-442C-B647-2D6A544EFD64}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2024", "ConnectorRevit\ConnectorRevit2024\ConnectorRevit2024.csproj", "{9A1E899A-F821-4519-AAD1-0789A4E9CCB3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C6B5FC0-37E2-442C-B647-2D6A544EFD64} = {4C6B5FC0-37E2-442C-B647-2D6A544EFD64}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2020", "ConnectorRevit\RevitSharedResources2020\RevitSharedResources2020.csproj", "{8AD2EA4F-14FB-4BB6-94CD-932630DFED9C}"
 EndProject
@@ -371,12 +407,18 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2024", "Objects\Converters\ConverterAutocadCivil\ConverterCivil2024\ConverterCivil2024.csproj", "{B4D6F6DC-0712-4F9F-A24F-6B76DAE84B6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures2023", "ConnectorTeklaStructures\ConnectorTeklaStructures2023\ConnectorTeklaStructures2023.csproj", "{511C2FB0-9C73-4AC9-BA59-C8A84C089C59}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EB52E451-9ED8-460E-9EE4-6717BFB12EAB} = {EB52E451-9ED8-460E-9EE4-6717BFB12EAB}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2023", "Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2023\ConverterTeklaStructures2023.csproj", "{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsPerformance", "Core\TestsPerformance\TestsPerformance.csproj", "{4D1C70D7-FFD5-4518-A374-2A23E020D416}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAdvanceSteel2024", "ConnectorAutocadCivil\ConnectorAdvanceSteel2024\ConnectorAdvanceSteel2024.csproj", "{3B9189B9-E485-448A-8793-9B9587A36791}"
+	ProjectSection(ProjectDependencies) = postProject
+		{737D5567-7B1F-410D-9B7B-BAE8065ED15B} = {737D5567-7B1F-410D-9B7B-BAE8065ED15B}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAdvanceSteel2024", "Objects\Converters\ConverterAutocadCivil\ConverterAdvanceSteel2024\ConverterAdvanceSteel2024.csproj", "{737D5567-7B1F-410D-9B7B-BAE8065ED15B}"
 EndProject
