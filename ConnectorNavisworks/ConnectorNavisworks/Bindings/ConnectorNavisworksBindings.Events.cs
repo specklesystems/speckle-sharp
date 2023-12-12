@@ -16,7 +16,6 @@ public partial class ConnectorBindingsNavisworks
     // Loading a file doesn't trigger the ActiveDocumentChanged event.
     // Instead it amends it in place. We can listen to the filename changing to get the intuitive event.
     s_doc.FileNameChanged += DocumentChangedEvent;
-    // s_doc.Models.CollectionChanged += DocumentChangedEvent;
     s_doc.SelectionSets.Changed += SetsChangedEvent;
   }
 
