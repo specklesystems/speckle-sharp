@@ -361,11 +361,10 @@ public partial class ConverterNavisworks
       var fragments = path.Fragments();
       foreach (InwOaFragment3 fragment in fragments)
       {
-        var a1 = ((Array)fragment.path.ArrayData).ToArray<int>();
-        var a2 = ((Array)path.ArrayData).ToArray<int>();
-        var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
+        var pathArray1 = ((Array)fragment.path.ArrayData).ToArray<int>();
+        var pathArray2 = ((Array)path.ArrayData).ToArray<int>();
 
-        if (isSame)
+        if (!(pathArray1.Length != pathArray2.Length || !pathArray1.SequenceEqual(pathArray2)))
         {
           geometry.ModelFragmentStack.Push(fragment);
         }
