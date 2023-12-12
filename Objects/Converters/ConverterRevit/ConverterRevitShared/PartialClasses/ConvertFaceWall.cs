@@ -31,11 +31,7 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    if (
-      speckleWall.brep == null
-      || speckleWall.brep.Surfaces.Count == 0
-      || speckleWall.brep.Surfaces.FirstOrDefault() == null
-    )
+    if (speckleWall?.brep?.Surfaces?.FirstOrDefault() == null)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: "FaceWall surface was null");
       return appObj;
@@ -61,6 +57,7 @@ public partial class ConverterRevit
       speckleWall.brep.Surfaces.First(),
       speckleWall.applicationId
     );
+
     Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out Family fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
     symbol.Activate();
