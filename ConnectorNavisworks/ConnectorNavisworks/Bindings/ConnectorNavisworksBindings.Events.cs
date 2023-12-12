@@ -27,7 +27,6 @@ public partial class ConnectorBindingsNavisworks
     s_doc.Models.CollectionChanged += ModelsChangedEvent;
   }
 
-
   /// <summary>
   /// Handles the event triggered when the selection sets are changed.
   /// </summary>
