@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using static SerilogTimings.Operation;
 
 namespace Objects.BuiltElements.Archicad;
 
@@ -12,7 +11,9 @@ public static class PropertyHelper
   public static string RemoveDisallowedPropNameChars(string propertyName)
   {
     foreach (char c in DisallowedPropNameChars)
+    {
       propertyName = propertyName.Replace(c, ' ');
+    }
 
     return propertyName;
   }
@@ -88,7 +89,9 @@ public static class Properties
   public static Base ToBase(this List<Property> properties)
   {
     if (properties == null || properties.Count == 0)
+    {
       return null;
+    }
 
     var @base = new Base();
 
@@ -96,7 +99,9 @@ public static class Properties
     {
       var key = PropertyHelper.RemoveDisallowedPropNameChars(property.name);
       if (string.IsNullOrEmpty(key) || @base[key] != null)
+      {
         continue;
+      }
 
       @base[key] = property.value;
 
@@ -115,7 +120,9 @@ public static class Properties
   public static Base ToBase(this List<PropertyGroup> propertyGroups)
   {
     if (propertyGroups == null || propertyGroups.Count == 0)
+    {
       return null;
+    }
 
     var @base = new Base();
 
@@ -137,7 +144,9 @@ public static class Properties
   public static Base ToBase(this List<ComponentProperties> componentPropertiesList)
   {
     if (componentPropertiesList == null || componentPropertiesList.Count == 0)
+    {
       return null;
+    }
 
     var @base = new Base();
 
