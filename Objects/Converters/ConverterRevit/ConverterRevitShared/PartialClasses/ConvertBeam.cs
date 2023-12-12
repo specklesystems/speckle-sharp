@@ -56,7 +56,7 @@ public partial class ConverterRevit
     {
       if (level != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level.name);
+        level = GetLevelByName(speckleRevitBeam.level?.name);
       }
     }
 
