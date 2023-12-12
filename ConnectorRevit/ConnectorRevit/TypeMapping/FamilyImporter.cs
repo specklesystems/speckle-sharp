@@ -205,11 +205,17 @@ internal sealed class FamilyImporter
       AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
 
       // delete the newly created xml file
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         System.IO.File.Delete(xmlPath);
       }
-      catch (Exception ex) { }
+      catch (Exception ex)
+      {
+        // TODO : check if catch statement is necessary
+        SpeckleLog.Logger.LogDefaultError(ex);
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
     }
 
     //close current dialog body

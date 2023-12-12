@@ -134,7 +134,7 @@ public partial class ConverterRevit
           );
         }
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         System.Diagnostics.Debug.WriteLine(e.ToString());
       }

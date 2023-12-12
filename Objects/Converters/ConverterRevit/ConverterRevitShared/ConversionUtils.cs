@@ -591,7 +591,7 @@ public partial class ConverterRevit
           break;
       }
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       // do nothing for now...
     }
@@ -1030,6 +1030,7 @@ public partial class ConverterRevit
     subtransaction.Start();
 
     T returnValue = default;
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       returnValue = func();
@@ -1041,6 +1042,7 @@ public partial class ConverterRevit
       Doc.Regenerate();
       catchFunc(ex);
     }
+#pragma warning restore CA1031 // Do not catch general exception types
     return returnValue;
   }
   #endregion
@@ -1242,16 +1244,20 @@ public partial class ConverterRevit
       appObj.Log.Add("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
       return false;
     }
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       curveArray.Append(LineToNative(line));
       return true;
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
-      appObj.Log.Add(e.Message);
+      // TODO : check if catch statement is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
+      appObj.Log.Add(ex.Message);
       return false;
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public bool UnboundCurveIfSingle(DB.CurveArray array)

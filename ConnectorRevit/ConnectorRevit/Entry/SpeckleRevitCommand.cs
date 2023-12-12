@@ -70,6 +70,7 @@ public class SpeckleRevitCommand : IExternalCommand
 
   internal static void RegisterPane()
   {
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       if (!UseDockablePanel)
@@ -128,6 +129,7 @@ public class SpeckleRevitCommand : IExternalCommand
         Process.Start("https://speckle.community/");
       }
     }
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public static void CreateOrFocusSpeckle(bool showWindow = true)

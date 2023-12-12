@@ -1,3 +1,5 @@
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using System;
@@ -24,6 +26,7 @@ public partial class ConverterRevit
       );
       return appObj;
     }
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       server = new DirectContext3DServer(meshes, Doc);
@@ -31,8 +34,11 @@ public partial class ConverterRevit
     }
     catch (Exception ex)
     {
+      // TODO : check if catch statement is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
     }
+#pragma warning restore CA1031 // Do not catch general exception types
 
     appObj.Converted = new List<object> { server };
     return appObj;

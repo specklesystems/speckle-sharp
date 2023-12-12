@@ -113,7 +113,7 @@ public partial class ConverterRevit
         true
       );
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
       return appObj;

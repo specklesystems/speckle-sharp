@@ -36,7 +36,7 @@ public class App : IExternalApplication
     {
       application.CreateRibbonTab(tabName);
     }
-    catch { }
+    catch (Autodesk.Revit.Exceptions.ApplicationException) { }
 
     var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
 

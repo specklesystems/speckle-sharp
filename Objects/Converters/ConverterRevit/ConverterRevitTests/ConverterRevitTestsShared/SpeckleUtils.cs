@@ -37,6 +37,7 @@ internal static class SpeckleUtils
         converter.SetContextDocument(transactionManager);
       }
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         action.Invoke();
@@ -46,6 +47,7 @@ internal static class SpeckleUtils
       {
         tcs.TrySetException(exception);
       }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       tcs.TrySetResult("");
     });

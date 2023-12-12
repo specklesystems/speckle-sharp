@@ -178,6 +178,7 @@ public partial class ConverterRevit
 
     var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       View drawingView = GetCurvePlanView(speckleCurve, out bool isTempView);
@@ -193,13 +194,16 @@ public partial class ConverterRevit
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
     }
-    catch (Exception)
+    catch (Exception ex)
     {
+      // TODO : check if catch statement is necessary
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(
         status: ApplicationObject.State.Failed,
         logItem: "View is not valid for room boundary line creation."
       );
     }
+#pragma warning restore CA1031 // Do not catch general exception types
     return appObj;
   }
 
@@ -242,7 +246,7 @@ public partial class ConverterRevit
         .get_Item(0);
       appObj.Update(status: ApplicationObject.State.Created, createdId: res.UniqueId, convertedItem: res);
     }
-    catch (Exception)
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       appObj.Update(
         status: ApplicationObject.State.Failed,

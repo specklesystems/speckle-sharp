@@ -186,6 +186,7 @@ public class SpeckleConversionTest
         foreach (var el in spkElems)
         {
           object res = null;
+#pragma warning disable CA1031 // Do not catch general exception types
           try
           {
             res = converter.ConvertToNative(el);
@@ -194,6 +195,7 @@ public class SpeckleConversionTest
           {
             converter.Report.LogConversionError(new Exception(e.Message, e));
           }
+#pragma warning restore CA1031 // Do not catch general exception types
 
           if (res is List<ApplicationObject> apls)
           {

@@ -608,7 +608,7 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         //something went wrong, re-create it
       }
@@ -653,7 +653,7 @@ public partial class ConverterRevit
           {
             familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
           }
-          catch (Exception e)
+          catch (Autodesk.Revit.Exceptions.ApplicationException e)
           {
             appObj.Update(
               status: ApplicationObject.State.Failed,
@@ -741,7 +741,7 @@ public partial class ConverterRevit
           false
         );
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
       }
@@ -779,7 +779,7 @@ public partial class ConverterRevit
         using var axis = DB.Line.CreateUnbound(location.Point, currentTransform.BasisZ);
         location.Rotate(axis, -rotation);
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
       }

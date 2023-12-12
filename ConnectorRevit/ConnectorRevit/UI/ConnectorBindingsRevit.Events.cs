@@ -26,29 +26,17 @@ public partial class ConnectorBindingsRevit
 
   public override async void WriteStreamsToFile(List<StreamState> streams)
   {
-    try
-    {
-      await APIContext
-        .Run(app =>
+    await APIContext
+      .Run(app =>
+      {
+        using (Transaction t = new(CurrentDoc.Document, "Speckle Write State"))
         {
-          using (Transaction t = new(CurrentDoc.Document, "Speckle Write State"))
-          {
-            t.Start();
-            StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
-            t.Commit();
-          }
-        })
-        .ConfigureAwait(false);
-    }
-    catch (Exception ex)
-    {
-      SpeckleLog.Logger.Fatal(
-        ex,
-        "Swallowing exception in {methodName}: {exceptionMessage}",
-        nameof(WriteStreamsToFile),
-        ex.Message
-      );
-    }
+          t.Start();
+          StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
+          t.Commit();
+        }
+      })
+      .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -241,7 +229,7 @@ public partial class ConnectorBindingsRevit
 
   private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
   {
-#pragma warning disable IDE0059 // Unnecessary assignment of a value
+#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       // the DocumentClosed event is triggered AFTER ViewActivated
@@ -268,7 +256,7 @@ public partial class ConnectorBindingsRevit
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
-#pragma warning restore IDE0059 // Unnecessary assignment of a value
+#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   // this method is triggered when there are changes in the active document

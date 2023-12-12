@@ -40,7 +40,7 @@ public class ErrorEater : IFailuresPreprocessor
         failuresAccessor.ResolveFailure(failure);
         resolvedFailures++;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         var idsToDelete = failure.GetFailingElementIds().ToList();
 

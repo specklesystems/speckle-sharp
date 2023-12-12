@@ -4,6 +4,8 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
@@ -51,18 +53,22 @@ public partial class ConverterRevit
             return appObj;
           }
           Element existingElement;
+#pragma warning disable CA1031 // Do not catch general exception types
           try
           {
             existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
+            // TODO : check if catch statement is necessary
+            SpeckleLog.Logger.LogDefaultError(ex);
             appObj.Update(
               status: ApplicationObject.State.Failed,
-              logItem: $"Could not find the host wall: {e.Message}"
+              logItem: $"Could not find the host wall: {ex.Message}"
             );
             return appObj;
           }
+#pragma warning restore CA1031 // Do not catch general exception types
 
           if (!(existingElement is Wall wall))
           {

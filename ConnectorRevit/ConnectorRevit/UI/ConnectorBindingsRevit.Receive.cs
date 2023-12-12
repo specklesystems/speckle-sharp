@@ -119,6 +119,7 @@ public partial class ConnectorBindingsRevit
         using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
         transactionManager.Start();
 
+#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
           converter.SetContextDocument(transactionManager);
@@ -136,12 +137,14 @@ public partial class ConnectorBindingsRevit
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
-
           string message = $"Fatal Error: {ex.Message}";
           if (ex is OperationCanceledException)
           {
             message = "Receive cancelled";
+          }
+          else
+          {
+            SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
           }
 
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
@@ -149,6 +152,7 @@ public partial class ConnectorBindingsRevit
           transactionManager.RollbackAll();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
+#pragma warning restore CA1031 // Do not catch general exception types
       })
       .ConfigureAwait(false);
 
