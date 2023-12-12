@@ -24,8 +24,9 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public partial class Client : IDisposable
+public sealed partial class Client : IDisposable
 {
+  [Obsolete]
   internal Client() { }
 
   public Client(Account account)
@@ -51,7 +52,6 @@ public partial class Client : IDisposable
         {
           return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
         },
-        OnWebsocketConnected = OnWebSocketConnect
       },
       new NewtonsoftJsonSerializer(),
       HttpClient
@@ -102,11 +102,6 @@ public partial class Client : IDisposable
       GQLClient?.Dispose();
     }
     catch { }
-  }
-
-  public Task OnWebSocketConnect(GraphQLHttpClient client)
-  {
-    return Task.CompletedTask;
   }
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)

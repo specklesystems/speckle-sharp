@@ -32,7 +32,7 @@ public class Base : DynamicBase
   private string _type;
 
   /// <summary>
-  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
+  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId"/> function to get it.</b>
   /// </summary>
   [SchemaIgnore]
   public virtual string id { get; set; }
@@ -95,6 +95,7 @@ public class Base : DynamicBase
   /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
   /// </summary>
   /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
+  /// <param name="serializerVersion"></param>
   /// <returns></returns>
   public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
   {

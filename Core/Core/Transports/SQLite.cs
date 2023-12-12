@@ -141,7 +141,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void EndWrite() { }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
@@ -164,7 +164,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       ret[objectId] = rowFound;
     }
 
-    return ret;
+    return Task.FromResult(ret);
   }
 
   private void Initialize()

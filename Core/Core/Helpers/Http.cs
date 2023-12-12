@@ -21,42 +21,6 @@ namespace Speckle.Core.Helpers;
 
 public static class Http
 {
-  /// <summary>
-  /// Policy for retrying failing Http requests
-  /// </summary>
-  [Obsolete(
-    "All http requests are now retried by the client provided in the GetHttpProxyClient method, there is no need to add retries on top",
-    true
-  )]
-  public static Policy<bool> HttpRetryPolicy = Policy
-    .Handle<Exception>()
-    .OrResult<bool>(r => r.Equals(false))
-    .WaitAndRetry(
-      DefaultDelay(),
-      (exception, timeSpan, retryAttempt, context) =>
-      {
-        SpeckleLog.Logger.Information("Retrying #{retryAttempt}...", retryAttempt);
-      }
-    );
-
-  /// <summary>
-  /// Policy for retrying failing Http requests
-  /// </summary>
-  [Obsolete(
-    "All http requests are now retried by the client provided in the GetHttpProxyClient method, there is no need to add retries on top",
-    true
-  )]
-  public static AsyncPolicy<bool> HttpRetryAsyncPolicy = Policy
-    .Handle<Exception>()
-    .OrResult<bool>(r => r.Equals(false))
-    .WaitAndRetryAsync(
-      DefaultDelay(),
-      (exception, timeSpan, retryAttempt, context) =>
-      {
-        SpeckleLog.Logger.Information("Retrying #{retryAttempt}...", retryAttempt);
-      }
-    );
-
   public static IEnumerable<TimeSpan> DefaultDelay()
   {
     return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
@@ -175,8 +139,8 @@ public static class Http
     SpeckleLog.Logger.Information("HttpPinging {address}", address);
     try
     {
-      using var _httpClient = GetHttpProxyClient();
-      var response = await _httpClient.GetAsync(address).ConfigureAwait(false);
+      using var httpClient = GetHttpProxyClient();
+      var response = await httpClient.GetAsync(address).ConfigureAwait(false);
       return response.IsSuccessStatusCode;
     }
     catch (Exception ex)
@@ -200,7 +164,7 @@ public static class Http
   {
     if (!string.IsNullOrEmpty(authToken))
     {
-      bearerHeader = authToken.ToLowerInvariant().Contains("bearer") ? authToken : $"Bearer {authToken}";
+      bearerHeader = authToken!.ToLowerInvariant().Contains("bearer") ? authToken : $"Bearer {authToken}";
       return true;
     }
 
@@ -217,9 +181,9 @@ public static class Http
   }
 }
 
-public class SpeckleHttpClientHandler : HttpClientHandler
+public sealed class SpeckleHttpClientHandler : HttpClientHandler
 {
-  private IEnumerable<TimeSpan> _delay;
+  private readonly IEnumerable<TimeSpan> _delay;
 
   public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
   {

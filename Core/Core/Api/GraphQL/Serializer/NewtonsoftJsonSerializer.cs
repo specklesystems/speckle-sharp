@@ -11,7 +11,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
+internal sealed class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
 {
   public NewtonsoftJsonSerializer()
     : this(DefaultJsonSerializerSettings) { }
