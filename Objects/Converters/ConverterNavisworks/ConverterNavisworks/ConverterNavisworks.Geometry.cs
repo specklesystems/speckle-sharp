@@ -311,8 +311,8 @@ public partial class ConverterNavisworks
   public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
   {
     var source = Application.ActiveDocument.Units;
-    var target = Units.Meters;
-    var scale = UnitConversion.ScaleFactor(source, target);
+    const Units TARGET_UNITS = Units.Meters;
+    var scale = UnitConversion.ScaleFactor(source, TARGET_UNITS);
 
     var min = boundingBox3D.Min;
     var max = boundingBox3D.Max;
