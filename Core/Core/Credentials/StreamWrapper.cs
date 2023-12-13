@@ -367,7 +367,7 @@ public class StreamWrapper
     var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
     if (!hasInternet)
     {
-      throw new Exception("You are not connected to the internet.");
+      throw new SpeckleException("You are not connected to the internet.");
     }
 
     using var client = new Client(acc);
