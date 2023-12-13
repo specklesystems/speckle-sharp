@@ -1,4 +1,3 @@
-#nullable enable
 using System.Diagnostics.Contracts;
 
 namespace Speckle.Core.Kits;

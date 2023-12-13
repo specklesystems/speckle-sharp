@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using Speckle.Core.Logging;
 
