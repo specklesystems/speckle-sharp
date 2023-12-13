@@ -16,7 +16,7 @@ namespace Speckle.Core.Serialisation;
 
 public sealed class BaseObjectDeserializerV2
 {
-  private bool _busy;
+  private bool _isBusy;
   private readonly object _callbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
@@ -48,11 +48,11 @@ public sealed class BaseObjectDeserializerV2
 
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
-  /// <exception cref="InvalidOperationException">Thrown when <see cref="_busy"/></exception>
-  /// <exception cref="ArgumentException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when <see cref="_isBusy"/></exception>
+  /// <exception cref="SpeckleException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
   public Base Deserialize(string rootObjectJson)
   {
-    if (_busy)
+    if (_isBusy)
     {
       throw new InvalidOperationException(
         "A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances"
@@ -61,7 +61,7 @@ public sealed class BaseObjectDeserializerV2
 
     try
     {
-      _busy = true;
+      _isBusy = true;
       var stopwatch = Stopwatch.StartNew();
       _deserializedObjects = new();
       _workerThreads = new DeserializationWorkerThreads(this, WorkerThreadCount);
@@ -89,7 +89,7 @@ public sealed class BaseObjectDeserializerV2
       Elapsed += stopwatch.Elapsed;
       if (ret is not Base b)
       {
-        throw new Exception(
+        throw new SpeckleException(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
       }
@@ -101,7 +101,7 @@ public sealed class BaseObjectDeserializerV2
       _deserializedObjects = null;
       _workerThreads?.Dispose();
       _workerThreads = null;
-      _busy = false;
+      _isBusy = false;
     }
   }
 

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 
 namespace Speckle.Core.Kits;
@@ -8,7 +9,7 @@ public sealed class SchemaInfo : Attribute
   public SchemaInfo(string name, string description)
     : this(name, description, null, null) { }
 
-  public SchemaInfo(string name, string description, string category, string subcategory)
+  public SchemaInfo(string name, string description, string? category, string? subcategory)
   {
     Name = name;
     Description = description;
@@ -16,9 +17,9 @@ public sealed class SchemaInfo : Attribute
     Subcategory = subcategory;
   }
 
-  public string Subcategory { get; }
+  public string? Subcategory { get; }
 
-  public string Category { get; }
+  public string? Category { get; }
 
   public string Description { get; }
 

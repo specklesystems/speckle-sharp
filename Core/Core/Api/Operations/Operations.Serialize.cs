@@ -1,7 +1,9 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
@@ -54,6 +56,7 @@ public static partial class Operations
   /// <param name="serializerVersion"></param>
   /// <param name="cancellationToken">Propagates notification that operations should be canceled</param>
   /// <returns></returns>
+  /// <exception cref=""></exception>
   public static Base Deserialize(
     string value,
     SerializerVersion serializerVersion = SerializerVersion.V2,
@@ -64,7 +67,8 @@ public static partial class Operations
     {
       var (serializer, settings) = GetSerializerInstance();
       serializer.CancellationToken = cancellationToken;
-      return JsonConvert.DeserializeObject<Base>(value, settings);
+      var ret = JsonConvert.DeserializeObject<Base>(value, settings);
+      return ret ?? throw new SpeckleException($"{nameof(value)} failed to deserialize to a {nameof(Base)} object");
     }
 
     var deserializer = new BaseObjectDeserializerV2 { CancellationToken = cancellationToken };

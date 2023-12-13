@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +9,7 @@ public class CumulativeTimer
 {
   internal class Operation : IDisposable
   {
-    private static readonly double StopwatchToTimeSpanTicks = Stopwatch.Frequency / 10000000.0;
+    private static readonly double s_stopwatchToTimeSpanTicks = Stopwatch.Frequency / 10000000.0;
 
     private readonly CumulativeTimer _cumulativeTimer;
     private readonly string _operationName;
@@ -38,7 +39,7 @@ public class CumulativeTimer
 
     private static long GetTimestamp()
     {
-      return (long)(Stopwatch.GetTimestamp() / StopwatchToTimeSpanTicks);
+      return (long)(Stopwatch.GetTimestamp() / s_stopwatchToTimeSpanTicks);
     }
 
     private void StopTiming()
