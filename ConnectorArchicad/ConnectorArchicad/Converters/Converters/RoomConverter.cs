@@ -134,8 +134,8 @@ public sealed class Room : IConverter
         // Archicad properties
         speckleRoom.elementType = archicadRoom.elementType;
         speckleRoom.classifications = archicadRoom.classifications;
-        speckleRoom.elementProperties = Properties.ToBase(archicadRoom.elementProperties);
-        speckleRoom.componentProperties = Properties.ToBase(archicadRoom.componentProperties);
+        speckleRoom.elementProperties = PropertyGroup.ToBase(archicadRoom.elementProperties);
+        speckleRoom.componentProperties = ComponentProperties.ToBase(archicadRoom.componentProperties);
         speckleRoom.archicadLevel = archicadRoom.level;
         speckleRoom.height = archicadRoom.height ?? .0;
         speckleRoom.shape = archicadRoom.shape;

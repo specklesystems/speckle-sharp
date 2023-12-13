@@ -188,13 +188,13 @@ public static class Utils
     if (elementProperties != null)
     {
       PropertyInfo propElementProperties = speckleObject.GetType().GetProperty("elementProperties");
-      propElementProperties.SetValue(speckleObject, Properties.ToBase(elementProperties));
+      propElementProperties.SetValue(speckleObject, PropertyGroup.ToBase(elementProperties));
     }
 
     if (componentProperties != null)
     {
       PropertyInfo propComponentProperties = speckleObject.GetType().GetProperty("componentProperties");
-      propComponentProperties.SetValue(speckleObject, Properties.ToBase(componentProperties));
+      propComponentProperties.SetValue(speckleObject, ComponentProperties.ToBase(componentProperties));
     }
 
     return speckleObject;
