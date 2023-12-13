@@ -78,12 +78,8 @@ public sealed class BaseObjectDeserializerV2
         stopwatch.Stop();
         string? objJson = ReadTransport.GetObject(objId);
 
-        //TODO: We should fail loudly when a closure can't be found
-        //but adding this throw breaks blobs tests, see CNX-8541
-        // if (objJson is null)
-        // {
-        //   throw new TransportException($"Closure {objId} was not found in transport {ReadTransport}");
-        // }
+        //TODO: We should fail loudly when a closure can't be found (objJson is null)
+        //but adding throw here breaks blobs tests, see CNX-8541
 
         stopwatch.Start();
         object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
