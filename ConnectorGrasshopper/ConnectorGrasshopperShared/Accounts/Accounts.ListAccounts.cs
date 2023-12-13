@@ -127,38 +127,26 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
   {
     // Set isNew to false, indicating this node already existed in some way. This prevents the `NodeCreate` event from being raised.
     IsNew = false;
-    try
-    {
-      selectedUserId = reader.GetString("selectedId");
-      selectedServerUrl = reader.GetString("selectedServer");
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-    }
+
+    reader.TryGetString("selectedId", ref selectedUserId);
+    reader.TryGetString("selectedServer", ref selectedServerUrl);
+
     return base.Read(reader);
   }
 
   public override bool Write(GH_IWriter writer)
   {
-    try
+    var selectedUserId = FirstSelectedItem.Expression?.Trim('"');
+    var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
+    if (selectedAccount != null)
     {
-      var selectedUserId = FirstSelectedItem.Expression?.Trim('"');
-      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
-      if (selectedAccount != null)
-      {
-        writer.SetString("selectedId", selectedUserId);
-        writer.SetString("selectedServer", selectedAccount.serverInfo.url);
-      }
-      else
-      {
-        writer.SetString("selectedId", "-");
-        writer.SetString("selectedServer", "-");
-      }
+      writer.SetString("selectedId", selectedUserId);
+      writer.SetString("selectedServer", selectedAccount.serverInfo.url);
     }
-    catch (Exception e)
+    else
     {
-      Console.WriteLine(e);
+      writer.SetString("selectedId", "-");
+      writer.SetString("selectedServer", "-");
     }
     return base.Write(writer);
   }
