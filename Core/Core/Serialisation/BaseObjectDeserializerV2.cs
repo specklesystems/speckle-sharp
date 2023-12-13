@@ -48,7 +48,10 @@ public sealed class BaseObjectDeserializerV2
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
   /// <exception cref="InvalidOperationException">Thrown when <see cref="_isBusy"/></exception>
-  /// <exception cref="SpeckleException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
+  /// <exception cref="ArgumentNullException"><paramref name="rootObjectJson"/> was null</exception>
+  /// <exception cref="JsonReaderException "><paramref name="rootObjectJson"/> was not valid JSON</exception>
+  /// <exception cref="SpeckleException"><paramref name="rootObjectJson"/> cannot be deserialised to type <see cref="Base"/></exception>
+  /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
   public Base Deserialize(string rootObjectJson)
   {
     if (_isBusy)
@@ -73,7 +76,13 @@ public sealed class BaseObjectDeserializerV2
         string objId = closure.Item1;
         // pausing for getting object from the transport
         stopwatch.Stop();
-        string objJson = ReadTransport.GetObject(objId);
+        string? objJson = ReadTransport.GetObject(objId);
+
+        if (objJson is null)
+        {
+          throw new TransportException($"Closure {objId} was not found in transport {ReadTransport}");
+        }
+
         stopwatch.Start();
         object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
         lock (_deserializedObjects)
@@ -143,6 +152,11 @@ public sealed class BaseObjectDeserializerV2
     return DeserializeTransportObject(objectJson);
   }
 
+  /// <param name="objectJson"></param>
+  /// <returns>The deserialized object</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="objectJson"/> was null</exception>
+  /// <exception cref="JsonReaderException "><paramref name="objectJson"/> was not valid JSON</exception>
+  /// <exception cref="SpeckleException">Failed to deserialize <see cref="JObject"/> to the target type</exception>
   public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
@@ -160,7 +174,15 @@ public sealed class BaseObjectDeserializerV2
       doc1 = JObject.Load(reader);
     }
 
-    object? converted = ConvertJsonElement(doc1);
+    object? converted;
+    try
+    {
+      converted = ConvertJsonElement(doc1);
+    }
+    catch (Exception ex)
+    {
+      throw new SpeckleException($"Failed to deserialize {doc1} as {doc1.Type}", ex);
+    }
 
     lock (_callbackLock)
     {
@@ -288,7 +310,7 @@ public sealed class BaseObjectDeserializerV2
           string? objectJson = ReadTransport.GetObject(objId);
           if (objectJson is null)
           {
-            throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
+            throw new TransportException($"Failed to fetch object id {objId} from {ReadTransport} ");
           }
 
           deserialized = DeserializeTransportObject(objectJson);

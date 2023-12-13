@@ -48,6 +48,10 @@ public class BaseObjectSerializerV2
     CancellationToken = cancellationToken;
   }
 
+  /// <param name="baseObj"></param>
+  /// <returns></returns>
+  /// <exception cref="InvalidOperationException"></exception>
+  /// <exception cref="TransportException">Failed to save object in one or more <see cref="WriteTransports"/></exception>
   public string Serialize(Base baseObj)
   {
     if (_isBusy)

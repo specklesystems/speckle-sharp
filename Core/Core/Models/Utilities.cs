@@ -31,8 +31,8 @@ public static class Utilities
   {
     return func switch
     {
-      HashingFunctions.SHA256 => Crypt.Sha256(input, end: HashLength),
-      HashingFunctions.MD5 => Crypt.Md5(input, end: HashLength),
+      HashingFunctions.SHA256 => Crypt.Sha256(input, length: HashLength),
+      HashingFunctions.MD5 => Crypt.Md5(input, length: HashLength),
       _ => throw new ArgumentOutOfRangeException(nameof(func), func, "Unrecognised value"),
     };
   }

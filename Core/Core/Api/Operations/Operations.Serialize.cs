@@ -43,9 +43,6 @@ public static partial class Operations
     }
   }
 
-  /// <summary>
-  /// Deserializes a given object.
-  /// </summary>
   /// <remarks>
   /// Note: if you want to pull an object from a Speckle Transport or Server,
   /// please use any of the
@@ -53,9 +50,12 @@ public static partial class Operations
   /// </remarks>
   /// <param name="value">The json string representation of a speckle object that you want to deserialise</param>
   /// <param name="serializerVersion"></param>
-  /// <param name="cancellationToken">Propagates notification that operations should be canceled</param>
-  /// <returns></returns>
-  /// <exception cref=""></exception>
+  /// <param name="cancellationToken"></param>
+  /// <returns><inheritdoc cref="BaseObjectDeserializerV2.Deserialize"/></returns>
+  /// <exception cref="ArgumentNullException"><paramref name="value"/> was null</exception>
+  /// <exception cref="JsonReaderException "><paramref name="value"/> was not valid JSON</exception>
+  /// <exception cref="SpeckleException"><paramref name="value"/> cannot be deserialised to type <see cref="Base"/></exception>
+  /// <exception cref="Speckle.Core.Transports.TransportException"><paramref name="value"/> contains closure references (see Remarks)</exception>
   public static Base Deserialize(
     string value,
     SerializerVersion serializerVersion = SerializerVersion.V2,
