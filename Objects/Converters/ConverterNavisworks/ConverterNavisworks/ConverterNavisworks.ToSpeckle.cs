@@ -325,7 +325,7 @@ public partial class ConverterNavisworks
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
   {
-    var geometry = new NavisworksGeometry(element) { ElevationMode = ElevationMode };
+    var geometry = new NavisworksGeometry(element) { IsUpright = IsUpright };
 
     PopulateModelFragments(geometry);
     var fragmentGeometry = TranslateFragmentGeometry(geometry);

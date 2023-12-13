@@ -58,7 +58,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
       Doc = Application.ActiveDocument;
     }
 
-    // This sets or resets the correct ElevationMode flag for model orientation.
+    // This sets or resets the correct IsUpright flag for model orientation.
     // Needs to be called every time a Send is initiated to reflect the options
     SetModelOrientationMode();
     SetModelBoundingBox();
