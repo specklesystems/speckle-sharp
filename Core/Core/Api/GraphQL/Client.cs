@@ -219,7 +219,7 @@ public sealed partial class Client : IDisposable
     // The errors reflect the Apollo server v2 API, which is deprecated. It is bound to change,
     // once we migrate to a newer version.
     var errors = response.Errors;
-    if (errors != null && errors.Any())
+    if (errors != null && errors.Length != 0)
     {
       var errorMessages = errors.Select(e => e.Message);
       if (
@@ -239,8 +239,7 @@ public sealed partial class Client : IDisposable
       if (
         errors.Any(
           e =>
-            e.Extensions != null
-            && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
+            e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
         )
       )
       {
