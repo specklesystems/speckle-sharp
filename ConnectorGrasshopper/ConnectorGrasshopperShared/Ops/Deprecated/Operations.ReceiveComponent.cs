@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -30,6 +31,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
+[Obsolete($"Use {nameof(VariableInputReceiveComponent)}")]
 public class ReceiveComponent : SelectKitAsyncComponentBase
 {
   public GH_Structure<IGH_Goo> PrevReceivedData;
@@ -473,6 +475,11 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
   }
 }
 
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class ReceiveComponentWorker : WorkerInstance
 {
   private GH_Structure<IGH_Goo> DataInput;
@@ -618,7 +625,7 @@ public class ReceiveComponentWorker : WorkerInstance
             }
           );
         }
-        catch
+        catch (Exception)
         {
           // Do nothing!
         }

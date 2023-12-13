@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -14,7 +15,8 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects;
 
-[Obsolete]
+[Obsolete($"Use {nameof(ExtendSpeckleObjectByKeyValueV2TaskComponent)}")]
+[SuppressMessage("Design", "CA1031:Do not catch general exception types")]
 public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
 {
   public ExtendSpeckleObjectByKeyValueTaskComponent()

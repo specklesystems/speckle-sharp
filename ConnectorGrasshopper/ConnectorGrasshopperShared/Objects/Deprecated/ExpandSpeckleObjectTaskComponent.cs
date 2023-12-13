@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -59,6 +60,7 @@ public class UpgradeExpandSpeckleObject : IGH_UpgradeObject
   public Guid UpgradeTo => new("1913AB7A-50D6-4B6C-8353-D3366F73FC84");
 }
 
+[SuppressMessage("Design", "CA1031:Do not catch general exception types")]
 public class ExpandSpeckleObjectTaskComponent
   : SelectKitTaskCapableComponentBase<Dictionary<string, object>>,
     IGH_VariableParameterComponent

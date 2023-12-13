@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -21,6 +22,12 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops.Deprecated;
 
+[Obsolete($"Use {nameof(SyncSendComponent)}")]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class SendComponentSync : GH_SpeckleTaskCapableComponent<List<StreamWrapper>>
 {
   private const int delay = 100000;
