@@ -51,7 +51,7 @@ public sealed class BaseObjectDeserializerV2
   /// <exception cref="ArgumentNullException"><paramref name="rootObjectJson"/> was null</exception>
   /// <exception cref="JsonReaderException "><paramref name="rootObjectJson"/> was not valid JSON</exception>
   /// <exception cref="SpeckleException"><paramref name="rootObjectJson"/> cannot be deserialised to type <see cref="Base"/></exception>
-  /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
+  // /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
   public Base Deserialize(string rootObjectJson)
   {
     if (_isBusy)
@@ -78,10 +78,12 @@ public sealed class BaseObjectDeserializerV2
         stopwatch.Stop();
         string? objJson = ReadTransport.GetObject(objId);
 
-        if (objJson is null)
-        {
-          throw new TransportException($"Closure {objId} was not found in transport {ReadTransport}");
-        }
+        //TODO: We should fail loudly when a closure can't be found
+        //but adding this throw breaks blobs tests, see CNX-8541
+        // if (objJson is null)
+        // {
+        //   throw new TransportException($"Closure {objId} was not found in transport {ReadTransport}");
+        // }
 
         stopwatch.Start();
         object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
