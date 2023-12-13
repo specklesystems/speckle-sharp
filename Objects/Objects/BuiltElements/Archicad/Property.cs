@@ -37,7 +37,7 @@ public class Property : Base
 
     foreach (Property property in properties)
     {
-      var key = PropertyHelper.RemoveDisallowedPropNameChars(property.name);
+      var key = DynamicBase.RemoveDisallowedPropNameChars(property.name);
       if (string.IsNullOrEmpty(key) || @base[key] != null)
       {
         continue;
@@ -50,20 +50,5 @@ public class Property : Base
     }
 
     return @base;
-  }
-}
-
-public static class PropertyHelper
-{
-  private static readonly HashSet<char> DisallowedPropNameChars = new() { '.', '/' };
-
-  public static string RemoveDisallowedPropNameChars(string propertyName)
-  {
-    foreach (char c in DisallowedPropNameChars)
-    {
-      propertyName = propertyName.Replace(c, ' ');
-    }
-
-    return propertyName;
   }
 }

@@ -40,7 +40,7 @@ public class ComponentProperties : Base
 
     foreach (ComponentProperties componentProperties in componentPropertiesList)
     {
-      @base[PropertyHelper.RemoveDisallowedPropNameChars(componentProperties.name)] = PropertyGroup.ToBase(
+      @base[DynamicBase.RemoveDisallowedPropNameChars(componentProperties.name)] = PropertyGroup.ToBase(
         componentProperties.propertyGroups
       );
     }
