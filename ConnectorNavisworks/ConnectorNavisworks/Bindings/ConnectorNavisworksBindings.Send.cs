@@ -44,12 +44,10 @@ public partial class ConnectorBindingsNavisworks
     };
 
   // Stub - Preview send is not supported
-  public override async void PreviewSend(StreamState state, ProgressViewModel progress)
-  {
+  public override async void PreviewSend(StreamState state, ProgressViewModel progress) =>
     await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
-    // TODO!
-  }
 
+  // TODO!
   /// <summary>
   /// Sends the stream to Speckle.
   /// </summary>
@@ -368,11 +366,9 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="_">Unused parameter (typically the sender).</param>
   /// <param name="ex">The exception that occurred.</param>
-  private void HandleError(string _, Exception ex)
-  {
+  private void HandleError(string _, Exception ex) =>
     // Add the exception to the report's operation errors
     _progressViewModel.Report.OperationErrors.Add(ex);
-  }
 
   /// <summary>
   /// Sends converted objects to the Speckle server.

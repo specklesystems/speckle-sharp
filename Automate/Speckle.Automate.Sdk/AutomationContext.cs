@@ -97,7 +97,7 @@ public class AutomationContext
     }
 
     var rootObjectId = await Operations
-      .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport }, useDefaultCache: false)
+      .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport })
       .ConfigureAwait(false);
 
     var branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, branchName).ConfigureAwait(false);

@@ -213,7 +213,7 @@ public partial class ArchicadBinding : ConnectorBindings
           throw new InvalidOperationException("Expected selection filter to be non-null");
         }
 
-        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
+        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state, progress);
 
         if (commitObject == null)
         {

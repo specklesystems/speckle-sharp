@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -203,14 +202,6 @@ namespace Objects.BuiltElements.Revit
 
     public Brep brep { get; set; }
 
-    [Obsolete("Use `Wall.brep` instead", false), SchemaIgnore]
-    public Surface surface
-    {
-      get => brep?.Surfaces.FirstOrDefault();
-      //TODO: This is a simplistic representation of a BREP, may not work in all cases.
-      set => new Brep { Surfaces = new List<Surface> { value } };
-    }
-
     public new Level? level
     {
       get => base.level;
@@ -306,7 +297,10 @@ namespace Objects.BuiltElements.Archicad
 
     // Element base
     public string? elementType { get; set; } /*APINullabe*/
+
     public List<Classification>? classifications { get; set; } /*APINullabe*/
+    public Base? elementProperties { get; set; }
+    public Base? componentProperties { get; set; }
 
     public override Level? level
     {

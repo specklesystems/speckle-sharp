@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -64,18 +63,7 @@ public class Commits
 
     myObject["Points"] = ptsList;
 
-    var objectId = await Operations
-      .Send(
-        myObject,
-        new List<ITransport> { myServerTransport },
-        false,
-        onErrorAction: (name, err) =>
-        {
-          Debug.WriteLine("Err in transport");
-          Debug.WriteLine(err.Message);
-        }
-      )
-      .ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, myServerTransport, false).ConfigureAwait(false);
 
     var commitInput = new CommitCreateInput
     {
