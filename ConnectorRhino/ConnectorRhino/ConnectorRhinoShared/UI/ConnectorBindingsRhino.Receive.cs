@@ -330,23 +330,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     // if nothing is found, look for the geom obj by its guid directly
     if (match.Count == 0)
     {
-      Guid id;
-      try
+      if (Utils.GetGuidFromString(applicationId, out Guid id))
       {
-        id = new Guid(applicationId);
-      }
-      catch (FormatException)
-      {
-        return match;
-      }
-      catch (OverflowException)
-      {
-        return match;
-      }
-
-      if (Doc.Objects.FindId(id) is RhinoObject obj)
-      {
-        match.Add(obj);
+        if (Doc.Objects.FindId(id) is RhinoObject obj)
+        {
+          match.Add(obj);
+        }
       }
     }
 
