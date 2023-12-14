@@ -26,41 +26,44 @@ public class MappingBindingsRhino : MappingsBindings
 
   public override MappingSelectionInfo GetSelectionInfo()
   {
-    try
+    List<RhinoObject> selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false)?.ToList();
+    if (selection is null)
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-      var result = new List<Schema>();
-
-      foreach (var obj in selection)
-      {
-        var schemas = GetObjectSchemas(obj);
-
-        if (!result.Any())
-        {
-          result = schemas;
-        }
-        else
-        {
-          //intersect lists
-          //TODO: if some elements already have a schema and values are different
-          //we should default to an empty schema, instead of potentially restoring the one with values
-          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
-        }
-
-        //incompatible selection
-        if (!result.Any())
-        {
-          return new MappingSelectionInfo(new List<Schema>(), selection.Count);
-        }
-      }
-
-      return new MappingSelectionInfo(result, selection.Count);
-    }
-    catch (Exception ex)
-    {
-      SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
       return new MappingSelectionInfo(new List<Schema>(), 0);
     }
+
+    var result = new List<Schema>();
+    foreach (var obj in selection)
+    {
+      List<Schema> schemas = GetObjectSchemas(obj);
+
+      if (!result.Any())
+      {
+        result = schemas;
+      }
+      else
+      {
+        //intersect lists
+        //TODO: if some elements already have a schema and values are different
+        //we should default to an empty schema, instead of potentially restoring the one with values
+        try
+        {
+          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+        }
+        catch (ArgumentNullException) { }
+      }
+
+      //incompatible selection
+      if (!result.Any())
+      {
+        return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+      }
+    }
+
+    return new MappingSelectionInfo(result, selection.Count);
+
+    // todo: previously entire block was try catched: SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
+    // check seq to see if this has ever been thrown
   }
 
   /// <summary>
@@ -158,6 +161,7 @@ public class MappingBindingsRhino : MappingsBindings
         }
       }
     }
+    // todo: this exception needs to be investigated further
     catch (Exception ex)
     {
       SpeckleLog.Logger.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
@@ -278,8 +282,14 @@ public class MappingBindingsRhino : MappingsBindings
 
       return JsonConvert.DeserializeObject<Schema>(viewModel, settings);
     }
-    catch
+    // todo: deserializer exception needs to be investigated later, adding logging for now
+    catch (Exception ex)
     {
+      SpeckleLog.Logger.Error(
+        ex,
+        "Could not deserialize Speckle mapping view key into a schema: {exceptionMessage}",
+        ex.Message
+      );
       return null;
     }
   }
@@ -298,20 +308,20 @@ public class MappingBindingsRhino : MappingsBindings
 
   public override void ClearMappings(List<string> ids)
   {
-    foreach (var id in ids)
+    foreach (string id in ids)
     {
-      try
+      if (Utils.GetGuidFromString(id, out Guid guid))
       {
-        var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
-        if (obj == null)
+        if (RhinoDoc.ActiveDoc.Objects.FindId(guid) is RhinoObject obj)
         {
-          continue;
+          obj.Attributes.DeleteUserString(SpeckleMappingKey);
+          obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
         }
-
-        obj.Attributes.DeleteUserString(SpeckleMappingKey);
-        obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
       }
-      catch { }
+      else
+      {
+        continue;
+      }
     }
 
     SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
@@ -339,28 +349,33 @@ public class MappingBindingsRhino : MappingsBindings
 
   public override void HighlightElements(List<string> ids)
   {
-    try
+    if (ids is not null && Display is not null)
     {
       Display.ObjectIds = ids;
-      RhinoDoc.ActiveDoc?.Views.Redraw();
-    }
-    catch (Exception ex)
-    {
-      //fail silently
+      RhinoDoc.ActiveDoc?.Views?.Redraw();
     }
   }
 
   public override void SelectElements(List<string> ids)
   {
-    try
+    if (ids is not null)
     {
-      RhinoDoc.ActiveDoc.Objects.UnselectAll();
-      RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
-      RhinoDoc.ActiveDoc?.Views.Redraw();
-    }
-    catch (Exception ex)
-    {
-      //fail silently
+      RhinoDoc.ActiveDoc?.Objects?.UnselectAll();
+      List<Guid> guids = new();
+      foreach (string id in ids)
+      {
+        if (Utils.GetGuidFromString(id, out Guid guid))
+        {
+          guids.Add(guid);
+        }
+        else
+        {
+          continue;
+        }
+      }
+
+      RhinoDoc.ActiveDoc?.Objects?.Select(guids);
+      RhinoDoc.ActiveDoc?.Views?.Redraw();
     }
   }
 }

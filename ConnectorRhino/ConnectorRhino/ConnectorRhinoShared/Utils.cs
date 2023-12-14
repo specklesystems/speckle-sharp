@@ -9,6 +9,7 @@ using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Point = Rhino.Geometry.Point;
 
@@ -42,6 +43,31 @@ public static class Utils
   }
 
   /// <summary>
+  /// Attemps to retrieve a Guid from a string
+  /// </summary>
+  /// <param name="s"></param>
+  /// <returns>Guid on success, null on failure</returns>
+  public static bool GetGuidFromString(string s, out Guid id)
+  {
+    id = Guid.Empty;
+    if (string.IsNullOrEmpty(s))
+    {
+      return false;
+    }
+
+    try
+    {
+      id = Guid.Parse(s);
+    }
+    catch (FormatException)
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// <summary>
   /// Tries to retrieve a doc object from its selected id. THis can be a RhinoObject, Layer, or ViewInfo
   /// </summary>
   /// <param name="doc"></param>
@@ -53,28 +79,24 @@ public static class Utils
   {
     descriptor = string.Empty;
     obj = null;
-    try
-    {
-      Guid guid = new(id); // try to get guid from object id
 
-      RhinoObject geom = doc.Objects.FindId(guid);
-      if (geom != null)
+    if (GetGuidFromString(id, out Guid guid))
+    {
+      if (doc.Objects.FindId(guid) is RhinoObject geom)
       {
         descriptor = Formatting.ObjectDescriptor(geom);
         obj = geom;
       }
       else
       {
-        var layer = doc.Layers.FindId(guid);
-        if (layer != null)
+        if (doc.Layers.FindId(guid) is Layer layer)
         {
           descriptor = "Layer";
           obj = layer;
         }
         else
         {
-          var standardView = doc.Views.Find(guid)?.ActiveViewport;
-          if (standardView != null)
+          if (doc.Views.Find(guid)?.ActiveViewport is RhinoViewport standardView)
           {
             descriptor = "Standard View";
             obj = new ViewInfo(standardView);
@@ -82,7 +104,7 @@ public static class Utils
         }
       }
     }
-    catch // this was a named view name
+    else // this was probably a named view (saved by name, not guid)
     {
       var viewIndex = doc.NamedViews.FindByName(id);
       if (viewIndex != -1)
@@ -92,48 +114,62 @@ public static class Utils
       }
     }
 
-    return obj == null ? false : true;
+    return obj != null;
   }
 
   #region extension methods
+
+  /// <summary>
+  /// Creates a layer from its name and parent
+  /// </summary>
+  /// <param name="doc"></param>
+  /// <param name="path"></param>
+  /// <returns>The new layer</returns>
+  /// <exception cref="ArgumentException">Layer name is invalid.</exception>
+  /// <exception cref="InvalidOperationException">Layer parent could not be set, or a layer with the same name already exists.</exception>
+  public static Layer MakeLayer(this RhinoDoc doc, string name, Layer parentLayer = null)
+  {
+    if (!Layer.IsValidName(name))
+    {
+      throw new ArgumentException("Layer name is invalid.");
+    }
+
+    using Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
+    if (parentLayer != null)
+    {
+      try
+      {
+        newLayer.ParentLayerId = parentLayer.Id;
+      }
+      catch (Exception e)
+      {
+        throw new InvalidOperationException("Could not set layer parent id.", e);
+      }
+    }
+
+    int newIndex = doc.Layers.Add(newLayer);
+    if (newIndex is -1)
+    {
+      throw new InvalidOperationException("A layer with the same name already exists.");
+    }
+
+    return newLayer;
+  }
+
   /// <summary>
   /// Finds a layer from its full path
   /// </summary>
   /// <param name="doc"></param>
   /// <param name="path">Full path of layer</param>
-  /// <param name="MakeIfNull">Create the layer if it doesn't already exist</param>
-  /// <returns>Null on failure</returns>
+  /// <param name="makeIfNull">Create the layer if it doesn't already exist</param>
+  /// <returns>The layer on success. On failure, returns null if makeIfNull is false, otherwise the last successfully created Layer in the provided path.</returns>
   /// <remarks>Note: The created layer path may be different from the input path, due to removal of invalid chars</remarks>
-  public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
+  public static Layer GetLayer(this RhinoDoc doc, string path, bool makeIfNull = false)
   {
-    Layer MakeLayer(string name, Layer parentLayer = null)
-    {
-      try
-      {
-        Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
-        if (parentLayer != null)
-        {
-          newLayer.ParentLayerId = parentLayer.Id;
-        }
-
-        int newIndex = doc.Layers.Add(newLayer);
-        if (newIndex < 0)
-        {
-          return null;
-        }
-
-        return doc.Layers.FindIndex(newIndex);
-      }
-      catch (Exception e)
-      {
-        return null;
-      }
-    }
-
+    Layer layer;
     var cleanPath = RemoveInvalidRhinoChars(path);
     int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
-    Layer layer = doc.Layers.FindIndex(index);
-    if (layer == null && MakeIfNull)
+    if (index is RhinoMath.UnsetIntIndex && makeIfNull)
     {
       var layerNames = cleanPath.Split(new[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -146,18 +182,48 @@ public static class Utils
         currentLayer = doc.GetLayer(currentLayerPath);
         if (currentLayer == null)
         {
-          currentLayer = MakeLayer(layerNames[i], parent);
-        }
-
-        if (currentLayer == null)
-        {
-          break;
+          try
+          {
+            currentLayer = doc.MakeLayer(layerNames[i], parent);
+          }
+          catch (ArgumentException argEx)
+          {
+            SpeckleLog.Logger.Error(
+              argEx,
+              "Failed to create layer {layerPath} with {exceptionMessage}",
+              currentLayerPath,
+              argEx.Message
+            );
+            RhinoApp.CommandLineOut.WriteLine(
+              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {argEx.Message}."
+            );
+            break;
+          }
+          catch (InvalidOperationException ioEx)
+          {
+            SpeckleLog.Logger.Error(
+              ioEx,
+              "Failed to create layer {layerPath} with {exceptionMessage}",
+              currentLayerPath,
+              ioEx.Message
+            );
+            RhinoApp.CommandLineOut.WriteLine(
+              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {ioEx.Message}"
+            );
+            break;
+          }
         }
 
         parent = currentLayer;
       }
+
       layer = currentLayer;
     }
+    else
+    {
+      layer = doc.Layers.FindIndex(index);
+    }
+
     return layer;
   }
 
@@ -188,6 +254,10 @@ public static class Utils
 }
 
 #region Preview
+/// <summary>
+///
+/// </summary>
+/// <remarks> TODO: potentially throw exceptions when no previewable geometry is found </remarks>
 public class PreviewConduit : DisplayConduit
 {
   public BoundingBox bbox;
@@ -206,9 +276,13 @@ public class PreviewConduit : DisplayConduit
     foreach (var previewObj in preview)
     {
       var converted = new List<object>();
-      var toBeConverted = previewObj.Convertible
+      List<object> toBeConverted = previewObj.Convertible
         ? previewObj.Converted
-        : previewObj.Fallback.SelectMany(o => o.Converted).ToList();
+        : previewObj.Fallback?.SelectMany(o => o.Converted)?.ToList();
+      if (toBeConverted is null)
+      {
+        continue;
+      }
       foreach (var obj in toBeConverted)
       {
         switch (obj)
@@ -227,14 +301,14 @@ public class PreviewConduit : DisplayConduit
         converted.Add(obj);
       }
 
-      if (!Preview.ContainsKey(previewObj.OriginalId))
+      if (!Preview.ContainsKey(previewObj.OriginalId) && converted.Count > 0)
       {
         Preview.Add(previewObj.OriginalId, converted);
       }
     }
   }
 
-  private Dictionary<string, List<object>> Preview { get; set; } = new();
+  public Dictionary<string, List<object>> Preview { get; set; } = new();
 
   public void SelectPreviewObject(string id, bool unselect = false)
   {
@@ -370,7 +444,7 @@ public static class Formatting
     {
       timeAgo = DateTime.Now.Subtract(DateTime.Parse(timestamp));
     }
-    catch (FormatException e)
+    catch (FormatException)
     {
       Debug.WriteLine("Could not parse the string to a DateTime");
       return "";

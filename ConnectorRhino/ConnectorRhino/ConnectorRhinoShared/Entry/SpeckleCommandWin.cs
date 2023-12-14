@@ -3,6 +3,7 @@ using System;
 using Rhino;
 using Rhino.Commands;
 using Rhino.UI;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino;
@@ -27,6 +28,8 @@ public class SpeckleCommandWin : Command
     }
     catch (Exception e)
     {
+      // needs more investigation. logging to seq for now.
+      SpeckleLog.Logger.Error(e, "Failed to open Speckle Rhino Connector DuiPanel with {exceptionMessage}", e.Message);
       RhinoApp.CommandLineOut.WriteLine($"Speckle Error - {e.ToFormattedString()}");
       return Result.Failure;
     }

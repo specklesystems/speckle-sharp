@@ -210,6 +210,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     {
       Init();
     }
+    // need investigation in seq of specific excpetions thrown (FileNotFound, TypeInitialization)
     catch (Exception ex)
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
@@ -263,17 +264,30 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
     using (LogContext.PushProperty("path", path))
     {
-      SpeckleLog.Logger.Debug("Deleting and Updating RUI settings file");
-
       if (File.Exists(path))
       {
+        SpeckleLog.Logger.Information("Deleting and Updating RUI settings file");
         try
         {
           File.Delete(path);
         }
-        catch (Exception ex)
+        catch (IOException ioEx)
         {
-          SpeckleLog.Logger.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
+          SpeckleLog.Logger.Error(
+            ioEx,
+            "Failed to delete Speckle toolbar .rui file with {exceptionMessage}",
+            ioEx.Message
+          );
+          RhinoApp.CommandLineOut.WriteLine($"Failed to delete Speckle toolbar {path} with {ioEx.ToFormattedString()}");
+        }
+        catch (UnauthorizedAccessException uaEx)
+        {
+          SpeckleLog.Logger.Error(
+            uaEx,
+            "Failed to delete Speckle toolbar .rui file with {exceptionMessage}",
+            uaEx.Message
+          );
+          RhinoApp.CommandLineOut.WriteLine($"Failed to delete Speckle toolbar {path} with {uaEx.ToFormattedString()}");
         }
       }
     }

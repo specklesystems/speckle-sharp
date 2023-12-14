@@ -314,26 +314,40 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   // gets objects by id directly or by application id user string
   private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
   {
+    List<RhinoObject> match = new();
+
     if (string.IsNullOrEmpty(applicationId))
     {
-      return new List<RhinoObject>();
+      return match;
     }
 
     // first try to find the object by app id user string
-    var match = Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true).ToList();
+    if (Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true) is RhinoObject[] foundObjects)
+    {
+      match = foundObjects.ToList();
+    }
 
     // if nothing is found, look for the geom obj by its guid directly
-    if (!match.Any())
+    if (match.Count == 0)
     {
+      Guid id;
       try
       {
-        RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId));
-        if (obj != null)
-        {
-          match.Add(obj);
-        }
+        id = new Guid(applicationId);
       }
-      catch { }
+      catch (FormatException)
+      {
+        return match;
+      }
+      catch (OverflowException)
+      {
+        return match;
+      }
+
+      if (Doc.Objects.FindId(id) is RhinoObject obj)
+      {
+        match.Add(obj);
+      }
     }
 
     return match;
@@ -607,8 +621,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // handle render material
           if (render != null)
           {
-            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial; //Maybe wrap in try catch in case no conversion exists?
-            if (convertedMaterial != null)
+            if (converter.ConvertToNative(render) is RenderMaterial convertedMaterial)
             {
               RhinoObject rhinoObject = Doc.Objects.FindId(id);
               rhinoObject.RenderMaterial = convertedMaterial;
@@ -672,11 +685,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
     // set application id
     var appId = parent != null ? parent.applicationId : obj.applicationId;
-    try
-    {
-      attributes.SetUserString(ApplicationIdKey, appId);
-    }
-    catch { }
+    attributes.SetUserString(ApplicationIdKey, appId);
 
     // set user dictionaries
     if (obj[UserDictionary] is Base userDictionary)
