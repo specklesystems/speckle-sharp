@@ -28,18 +28,24 @@ public static class Utils
   public static string AppName = "Rhino";
 #endif
 
-  public static string invalidRhinoChars = @"{}()";
+  public static string invalidRhinoChars = @"{}()[]";
 
   /// <summary>
-  /// Removes invalid characters for Rhino layer and block names
+  /// Creates a valid name for Rhino layers, blocks, and named views.
   /// </summary>
-  /// <param name="str"></param>
-  /// <returns></returns>
-  public static string RemoveInvalidRhinoChars(string str)
+  /// <param name="str">Layer, block, or named view name</param>
+  /// <returns>The original name if valid, or "@name" if not.</returns>
+  /// <remarks>From trial and error, names cannot begin with invalidRhinoChars. This has been encountered in grasshopper branch syntax.</remarks>
+  public static string MakeValidName(string str)
   {
-    // using this to handle grasshopper branch syntax
-    string cleanStr = str.Replace("{", "").Replace("}", "");
-    return cleanStr;
+    if (string.IsNullOrEmpty(str))
+    {
+      return str;
+    }
+    else
+    {
+      return invalidRhinoChars.Contains(str[0]) ? $"@{str}" : str;
+    }
   }
 
   /// <summary>
@@ -162,12 +168,12 @@ public static class Utils
   /// <param name="doc"></param>
   /// <param name="path">Full path of layer</param>
   /// <param name="makeIfNull">Create the layer if it doesn't already exist</param>
-  /// <returns>The layer on success. On failure, returns null if makeIfNull is false, otherwise the last successfully created Layer in the provided path.</returns>
+  /// <returns>The layer on success. On failure, returns null.</returns>
   /// <remarks>Note: The created layer path may be different from the input path, due to removal of invalid chars</remarks>
   public static Layer GetLayer(this RhinoDoc doc, string path, bool makeIfNull = false)
   {
     Layer layer;
-    var cleanPath = RemoveInvalidRhinoChars(path);
+    var cleanPath = MakeValidName(path);
     int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
     if (index is RhinoMath.UnsetIntIndex && makeIfNull)
     {
@@ -195,7 +201,7 @@ public static class Utils
               argEx.Message
             );
             RhinoApp.CommandLineOut.WriteLine(
-              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {argEx.Message}."
+              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {argEx.Message}"
             );
             break;
           }
