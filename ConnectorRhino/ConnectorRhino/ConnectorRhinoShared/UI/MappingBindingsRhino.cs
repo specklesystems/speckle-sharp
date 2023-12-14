@@ -318,10 +318,6 @@ public class MappingBindingsRhino : MappingsBindings
           obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
         }
       }
-      else
-      {
-        continue;
-      }
     }
 
     SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
@@ -367,10 +363,6 @@ public class MappingBindingsRhino : MappingsBindings
         if (Utils.GetGuidFromString(id, out Guid guid))
         {
           guids.Add(guid);
-        }
-        else
-        {
-          continue;
         }
       }
 
