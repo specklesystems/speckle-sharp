@@ -33,7 +33,7 @@ public partial class ConverterRhinoGh
       string layerPath = MakeValidPath(path);
 
       // see if this layer already exists in the doc
-      Layer existingLayer = GetLayer(Doc, layerPath);
+      Layer existingLayer = GetLayer(Doc, layerPath, out int _);
 
       // update this layer if it exists & receive mode is on update
       if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
@@ -43,7 +43,7 @@ public partial class ConverterRhinoGh
       }
       else // create this layer
       {
-        if (GetLayer(Doc, layerPath, true) is Layer newLayer)
+        if (GetLayer(Doc, layerPath, out _, true) is Layer newLayer)
         {
           layer = newLayer;
           status = ApplicationObject.State.Created;
