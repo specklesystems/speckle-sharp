@@ -23,8 +23,12 @@ public class App : IExternalApplication
 
   public static UIControlledApplication UICtrlApp { get; set; }
 
+  private bool _initialized;
+
   public Result OnStartup(UIControlledApplication application)
   {
+    InitializeConnector();
+
     //Always initialize RevitTask ahead of time within Revit API context
     APIContext.Initialize(application);
 
@@ -36,7 +40,16 @@ public class App : IExternalApplication
     {
       application.CreateRibbonTab(tabName);
     }
-    catch (Autodesk.Revit.Exceptions.ApplicationException) { }
+    catch (Autodesk.Revit.Exceptions.ArgumentException)
+    {
+      // exception occurs when the speckle tab has already been created.
+      // this happens when both the dui2 and the dui3 connectors are installed. Can be safely ignored.
+    }
+    catch (Autodesk.Revit.Exceptions.ApplicationException ex)
+    {
+      NotifyUserOfErrorStartingConnector(ex);
+      return Result.Failed;
+    }
 
     var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
 
@@ -126,18 +139,10 @@ public class App : IExternalApplication
 #pragma warning disable CA1031 // Do not catch general exception types
     try
     {
-      // We need to hook into the AssemblyResolve event before doing anything else
-      // or we'll run into unresolved issues loading dependencies
-      AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-      AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-      System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+      InitializeConnector();
 
       AppInstance = new UIApplication(sender as Application);
 
-      Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
-
-      //DUI2 - pre build app, so that it's faster to open up
-      SpeckleRevitCommand.InitAvalonia();
       var bindings = new ConnectorBindingsRevit(AppInstance);
       bindings.RegisterAppEvents();
       SpeckleRevitCommand.Bindings = bindings;
@@ -158,26 +163,7 @@ public class App : IExternalApplication
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
-      var td = new TaskDialog("Error loading Speckle");
-      if (ex is KitException)
-      {
-        td.MainContent = ex.Message;
-      }
-      else
-      {
-        td.MainContent =
-          $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n\n{ex.Message}";
-      }
-
-      td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Ask for help on our Community Forum");
-
-      TaskDialogResult tResult = td.Show();
-
-      if (TaskDialogResult.CommandLink1 == tResult)
-      {
-        Process.Start("https://speckle.community/");
-      }
+      NotifyUserOfErrorStartingConnector(ex);
     }
 #pragma warning restore CA1031 // Do not catch general exception types
   }
@@ -253,5 +239,47 @@ public class App : IExternalApplication
     }
 
     return a;
+  }
+
+  internal static void NotifyUserOfErrorStartingConnector(Exception ex)
+  {
+    SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
+    using var td = new TaskDialog("Error loading Speckle");
+
+    td.MainContent =
+      ex is KitException
+        ? ex.Message
+        : $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n\n{ex.Message}";
+
+    td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Ask for help on our Community Forum");
+
+    TaskDialogResult tResult = td.Show();
+
+    if (TaskDialogResult.CommandLink1 == tResult)
+    {
+      Process.Start("https://speckle.community/");
+    }
+  }
+
+  private void InitializeConnector()
+  {
+    if (_initialized)
+    {
+      return;
+    }
+
+    // We need to hook into the AssemblyResolve event before doing anything else
+    // or we'll run into unresolved issues loading dependencies
+    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+    System.Windows.Forms.Application.ThreadException += Application_ThreadException;
+
+    // initialize the speckle logger
+    Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
+
+    //DUI2 - pre build app, so that it's faster to open up
+    SpeckleRevitCommand.InitAvalonia();
+
+    _initialized = true;
   }
 }

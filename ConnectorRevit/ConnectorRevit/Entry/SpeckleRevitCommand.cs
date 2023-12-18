@@ -70,119 +70,79 @@ public class SpeckleRevitCommand : IExternalCommand
 
   internal static void RegisterPane()
   {
-#pragma warning disable CA1031 // Do not catch general exception types
-    try
+    if (!UseDockablePanel)
     {
-      if (!UseDockablePanel)
-      {
-        return;
-      }
-
-      var registered = DockablePane.PaneIsRegistered(PanelId);
-      var created = DockablePane.PaneExists(PanelId);
-
-      if (registered && created)
-      {
-        _panel.Init();
-        return;
-      }
-
-      if (!registered)
-      {
-        //Register dockable panel
-        var viewModel = new MainViewModel(Bindings);
-        _panel = new Panel { DataContext = viewModel };
-        App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
-        _panel.Init();
-      }
-      created = DockablePane.PaneExists(PanelId);
-
-      //if revit was launched double-clicking on a Revit file, we're screwed
-      //could maybe show the old window?
-      if (!created && App.AppInstance.Application.Documents.Size > 0)
-      {
-        TaskDialog mainDialog = new("Dockable Panel Issue");
-        mainDialog.MainInstruction = "Dockable Panel Issue";
-        mainDialog.MainContent =
-          "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
-          + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
-
-        // Set footer text. Footer text is usually used to link to the help document.
-        mainDialog.FooterText =
-          "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">" + "Click here for more info</a>";
-
-        mainDialog.Show();
-      }
+      return;
     }
-    catch (Exception ex)
+
+    var registered = DockablePane.PaneIsRegistered(PanelId);
+    var created = DockablePane.PaneExists(PanelId);
+
+    if (registered && created)
     {
-      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle command for host app");
-      var td = new TaskDialog("Error");
-      td.MainContent =
-        $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
-      td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
-
-      TaskDialogResult tResult = td.Show();
-
-      if (TaskDialogResult.CommandLink1 == tResult)
-      {
-        Process.Start("https://speckle.community/");
-      }
+      _panel.Init();
+      return;
     }
-#pragma warning restore CA1031 // Do not catch general exception types
+
+    if (!registered)
+    {
+      //Register dockable panel
+      var viewModel = new MainViewModel(Bindings);
+      _panel = new Panel { DataContext = viewModel };
+      App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
+      _panel.Init();
+    }
+    created = DockablePane.PaneExists(PanelId);
+
+    //if revit was launched double-clicking on a Revit file, we're screwed
+    //could maybe show the old window?
+    if (!created && App.AppInstance.Application.Documents.Size > 0)
+    {
+      TaskDialog mainDialog = new("Dockable Panel Issue");
+      mainDialog.MainInstruction = "Dockable Panel Issue";
+      mainDialog.MainContent =
+        "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
+        + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
+
+      // Set footer text. Footer text is usually used to link to the help document.
+      mainDialog.FooterText =
+        "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">" + "Click here for more info</a>";
+
+      mainDialog.Show();
+    }
   }
 
   public static void CreateOrFocusSpeckle(bool showWindow = true)
   {
-#pragma warning disable CA1031 // Do not catch general exception types
-    try
+    if (MainWindow == null)
     {
-      if (MainWindow == null)
+      var viewModel = new MainViewModel(Bindings);
+      MainWindow = new MainWindow { DataContext = viewModel };
+
+      //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+      //to avoid an annoying error when closing revit
+      var cts = new CancellationTokenSource();
+      cts.CancelAfter(100);
+      AvaloniaApp.Run(cts.Token);
+    }
+
+    if (showWindow)
+    {
+      MainWindow.Show();
+      MainWindow.Activate();
+
+      //required to gracefully quit avalonia and the skia processes
+      //can also be used to manually do so
+      //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+
+
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new MainWindow { DataContext = viewModel };
-
-        //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
-        //to avoid an annoying error when closing revit
-        var cts = new CancellationTokenSource();
-        cts.CancelAfter(100);
-        AvaloniaApp.Run(cts.Token);
-      }
-
-      if (showWindow)
-      {
-        MainWindow.Show();
-        MainWindow.Activate();
-
-        //required to gracefully quit avalonia and the skia processes
-        //can also be used to manually do so
-        //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
-
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-          var parentHwnd = App.AppInstance.MainWindowHandle;
-          var hwnd = MainWindow.PlatformImpl.Handle.Handle;
-          SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
-        }
+        var parentHwnd = App.AppInstance.MainWindowHandle;
+        var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+        SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
     }
-    catch (Exception ex)
-    {
-      SpeckleLog.Logger.Fatal(ex, "Failed to create main window");
-      var td = new TaskDialog("Error");
-      td.MainContent =
-        $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
-      td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
-
-      TaskDialogResult tResult = td.Show();
-
-      if (TaskDialogResult.CommandLink1 == tResult)
-      {
-        Process.Start("https://speckle.community/");
-      }
-    }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   private static void AppMain(Avalonia.Application app, string[] args)
