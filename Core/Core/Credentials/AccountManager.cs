@@ -127,7 +127,7 @@ public static class AccountManager
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(ex.Message, ex);
+      throw new SpeckleException($"Failed to get user + server info from {server}", ex);
     }
   }
 
