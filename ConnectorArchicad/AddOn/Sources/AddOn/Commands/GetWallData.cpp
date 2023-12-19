@@ -31,11 +31,6 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	const API_WallType wall = element.wall;
 
 	// Wall geometry

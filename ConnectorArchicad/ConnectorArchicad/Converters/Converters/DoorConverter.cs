@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using Archicad.Launcher;
 using Archicad.Model;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -57,15 +60,25 @@ public sealed class Door : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-    IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> data = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId))
+
+    Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetDoorData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
+      token
     );
 
-    var openings = new List<Base>();
-    if (data is null)
+    List<Base> openings = new();
+    if (jArray is null)
     {
       return openings;
     }
@@ -75,12 +88,14 @@ public sealed class Door : IConverter
       context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      foreach (Objects.BuiltElements.Archicad.ArchicadDoor subelement in data)
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
-        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == subelement.applicationId).model
+        Objects.BuiltElements.Archicad.ArchicadDoor door =
+          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadDoor>(jToken);
+        door.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == door.applicationId).model
         );
-        openings.Add(subelement);
+        openings.Add(door);
       }
     }
 

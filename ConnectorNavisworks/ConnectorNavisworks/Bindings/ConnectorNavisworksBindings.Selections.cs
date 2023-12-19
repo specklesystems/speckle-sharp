@@ -21,11 +21,11 @@ public partial class ConnectorBindingsNavisworks
     Cursor.Current = Cursors.WaitCursor;
 
     // Current document, models and selected elements.
-    _doc = Application.ActiveDocument;
+    s_doc = Application.ActiveDocument;
 
     IsFileAndModelsPresent();
 
-    var appSelectedItems = _doc.CurrentSelection.SelectedItems;
+    var appSelectedItems = s_doc.CurrentSelection.SelectedItems;
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.
     var selectedObjects = new HashSet<string>();
@@ -46,10 +46,8 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="element"></param>
   /// <returns></returns>
-  private static bool IsElementVisible(ModelItem element)
-  {
+  private static bool IsElementVisible(ModelItem element) =>
     // Hidden status is stored at the earliest node in the hierarchy
     // All of the the tree path nodes need to not be Hidden
-    return element.AncestorsAndSelf.All(x => x.IsHidden != true);
-  }
+    element.AncestorsAndSelf.All(x => x.IsHidden != true);
 }

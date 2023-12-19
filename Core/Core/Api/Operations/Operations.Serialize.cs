@@ -12,33 +12,18 @@ public static partial class Operations
 {
   /// <summary>
   /// Serializes a given object.
-  /// <remarks>
-  /// if you want to save and persist an object to a Speckle Transport or Server,
-  /// please use any of the "Send" methods.
-  /// See <see cref="Send(Speckle.Core.Models.Base,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
-  /// </remarks>
-  /// </summary>
-  /// <param name="object"></param>
-  /// <returns>A json string representation of the object.</returns>
-  public static string Serialize(Base @object)
-  {
-    return Serialize(@object, CancellationToken.None);
-  }
-
-  /// <summary>
-  /// Serializes a given object.
   /// </summary>
   /// <remarks>
   /// If you want to save and persist an object to Speckle Transport or Server,
   /// please use any of the "Send" methods.
   /// <see cref="Send(Speckle.Core.Models.Base,System.Collections.Generic.List{Speckle.Core.Transports.ITransport}?,bool,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,bool,Speckle.Core.Api.SerializerVersion)"/>
   /// </remarks>
-  /// <param name="object"></param>
-  /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
+  /// <param name="value">The object to serialise</param>
+  /// <param name="cancellationToken"></param>
   /// <returns>A json string representation of the object.</returns>
   public static string Serialize(
-    Base @object,
-    CancellationToken cancellationToken,
+    Base value,
+    CancellationToken cancellationToken = default,
     SerializerVersion serializerVersion = SerializerVersion.V2
   )
   {
@@ -47,13 +32,12 @@ public static partial class Operations
       var (serializer, settings) = GetSerializerInstance();
       serializer.CancellationToken = cancellationToken;
 
-      return JsonConvert.SerializeObject(@object, settings);
+      return JsonConvert.SerializeObject(value, settings);
     }
     else
     {
-      var serializer = new BaseObjectSerializerV2();
-      serializer.CancellationToken = cancellationToken;
-      return serializer.Serialize(@object);
+      var serializer = new BaseObjectSerializerV2 { CancellationToken = cancellationToken };
+      return serializer.Serialize(value);
     }
   }
 
@@ -62,7 +46,7 @@ public static partial class Operations
   /// </summary>
   /// <param name="objects"></param>
   /// <returns></returns>
-  [Obsolete("Please use the Serialize(Base @object) function. This function will be removed in later versions.")]
+  [Obsolete("Please use the Serialize(Base @object) function. This function will be removed in later versions.", true)]
   public static string Serialize(List<Base> objects)
   {
     var (_, settings) = GetSerializerInstance();

@@ -41,7 +41,6 @@ public partial class ConverterCSI
 
     //Properties are sent by default whether you want them to be sent or not. Easier this way to manage information about the model
     Model.PropFrame.GetNameList(ref number, ref properties1D);
-    properties1D.ToList();
     foreach (string property1D in properties1D)
     {
       var speckleProperty1D = Property1DToSpeckle(property1D);
@@ -50,7 +49,6 @@ public partial class ConverterCSI
 
     string[] springPointProperties = { };
     Model.PropPointSpring.GetNameList(ref number, ref springPointProperties);
-    springPointProperties.ToList();
     foreach (string propertySpring in springPointProperties)
     {
       var specklePropertyPointSpring = SpringPropertyToSpeckle(propertySpring);
@@ -59,7 +57,6 @@ public partial class ConverterCSI
 
     string[] springLineProperties = { };
     Model.PropLineSpring.GetNameList(ref number, ref springLineProperties);
-    springLineProperties.ToList();
     foreach (string propertyLine in springLineProperties)
     {
       var specklePropertyLineSpring = LinearSpringToSpeckle(propertyLine);
@@ -68,7 +65,6 @@ public partial class ConverterCSI
 
     string[] springAreaProperties = { };
     Model.PropAreaSpring.GetNameList(ref number, ref springAreaProperties);
-    springAreaProperties.ToList();
     foreach (string propertyArea in springAreaProperties)
     {
       var specklePropertyAreaSpring = AreaSpringToSpeckle(propertyArea);
@@ -76,7 +72,6 @@ public partial class ConverterCSI
     }
     string[] LinkProperties = { };
     Model.PropLink.GetNameList(ref number, ref LinkProperties);
-    LinkProperties.ToList();
     foreach (string propertyLink in LinkProperties)
     {
       var specklePropertyLink = LinkPropertyToSpeckle(propertyLink);
@@ -85,7 +80,6 @@ public partial class ConverterCSI
 
     string[] TendonProperties = { };
     Model.PropTendon.GetNameList(ref number, ref TendonProperties);
-    TendonProperties.ToList();
     foreach (string propertyTendon in TendonProperties)
     {
       var specklePropertyTendon = TendonPropToSpeckle(propertyTendon);
@@ -94,7 +88,6 @@ public partial class ConverterCSI
 
     string[] DiaphragmProperties = { };
     Model.Diaphragm.GetNameList(ref number, ref DiaphragmProperties);
-    DiaphragmProperties.ToList();
     foreach (string propertyDiaphragm in DiaphragmProperties)
     {
       var specklePropertyDiaphragm = diaphragmToSpeckle(propertyDiaphragm);
@@ -103,7 +96,6 @@ public partial class ConverterCSI
 
     string[] properties2D = { };
     Model.PropArea.GetNameList(ref number, ref properties2D);
-    properties2D.ToList();
     foreach (string property in properties2D)
     {
       var speckleProperty2D = FloorPropertyToSpeckle(property);

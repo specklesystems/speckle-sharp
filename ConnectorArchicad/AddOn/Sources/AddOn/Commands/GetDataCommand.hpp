@@ -13,12 +13,19 @@ class GetDataCommand : public BaseCommand {
 	virtual GS::UInt64		GetMemoMask () const;
 	
 protected:
-	GS::ErrCode				ExportClassificationsAndProperties(const API_Element& elem, GS::ObjectState& os) const;
+	GS::ErrCode				ExportProperties (const API_Element& element, const bool& sendProperties, const bool& sendListingParameters, const GS::Array<GS::Pair<API_Guid, API_Guid>>& systemItemPairs, GS::ObjectState& os) const;
+	GS::ErrCode				ExportClassificationsAndProperties(const API_Element& element, GS::ObjectState& os, const bool& sendProperties, const bool& sendListingParameters) const;
 
 	virtual GS::ErrCode		SerializeElementType (const API_Element& elem,
 												  const API_ElementMemo& memo,
-												  GS::ObjectState& os) const;
-	
+												  GS::ObjectState& os) const = 0;
+
+	GS::ErrCode				SerializeElementType (const API_Element& elem,
+												  const API_ElementMemo& memo,
+												  GS::ObjectState& os,
+												  const bool& sendProperties,
+												  const bool& sendListingParameters) const;
+
 public:
 	virtual GS::ObjectState	Execute (const GS::ObjectState& parameters,
 									 GS::ProcessControl& processControl) const override;

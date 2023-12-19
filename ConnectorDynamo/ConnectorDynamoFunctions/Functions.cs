@@ -243,7 +243,7 @@ public static class Functions
       Analytics.Events.Receive,
       new Dictionary<string, object>()
       {
-        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
         { "sourceHostAppVersion", commit.sourceApplication },
         { "isMultiplayer", commit.authorId != client.Account.userInfo.id }
       }

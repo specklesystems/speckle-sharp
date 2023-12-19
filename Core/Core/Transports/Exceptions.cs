@@ -1,9 +1,10 @@
 #nullable enable
 using System;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports;
 
-public class TransportException : Exception
+public class TransportException : SpeckleException
 {
   public ITransport? Transport { get; }
 

@@ -21,6 +21,7 @@ using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 using GridLine = Objects.BuiltElements.GridLine;
+using DesktopUI2.Models;
 
 namespace Archicad;
 
@@ -52,20 +53,22 @@ public sealed partial class ElementConverterManager
 
   #region --- Functions ---
 
-  public async Task<Base?> ConvertToSpeckle(ISelectionFilter filter, ProgressViewModel progress)
+  public async Task<Base?> ConvertToSpeckle(StreamState state, ProgressViewModel progress)
   {
     var objectToCommit = new Collection("Archicad model", "model");
 
-    IEnumerable<string> elementIds = filter.Selection;
-    if (filter.Slug == "all")
+    ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+
+    IEnumerable<string> elementIds = state.Filter.Selection;
+    if (state.Filter.Slug == "all")
     {
       elementIds = AsyncCommandProcessor
         .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
         ?.Result;
     }
-    else if (filter.Slug == "elementType")
+    else if (state.Filter.Slug == "elementType")
     {
-      var elementTypes = filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
+      var elementTypes = state.Filter.Summary.Split(",").Select(elementType => elementType.Trim()).ToList();
       elementIds = AsyncCommandProcessor
         .Execute(
           new Communication.Commands.GetElementIds(
@@ -88,8 +91,9 @@ public sealed partial class ElementConverterManager
       var objects = await ConvertOneTypeToSpeckle(
         guids,
         ElementTypeProvider.GetTypeByName(element),
-        progress.CancellationToken
-      ); // Deserialize all objects with hiven type
+        progress.CancellationToken,
+        conversionOptions
+      ); // Deserialize all objects with given type
 
       if (objects.Count() > 0)
       {
@@ -244,16 +248,17 @@ public sealed partial class ElementConverterManager
   public async Task<List<Base>?> ConvertOneTypeToSpeckle(
     IEnumerable<string> applicationIds,
     Type elementType,
-    CancellationToken token
+    CancellationToken token,
+    ConversionOptions conversionOptions
   )
   {
     var rawModels = await GetModelForElements(applicationIds, token); // Model data, like meshes
     var elementConverter = ElementConverterManager.Instance.GetConverterForElement(elementType, null, false); // Object converter
-    var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, token); // Deserialization
+    var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, token, conversionOptions); // Deserialization
 
     foreach (var convertedObject in convertedObjects)
     {
-      var subElementsAsBases = await ConvertSubElementsToSpeckle(convertedObject, token);
+      var subElementsAsBases = await ConvertSubElementsToSpeckle(convertedObject, token, conversionOptions);
       if (subElementsAsBases.Count() > 0)
       {
         convertedObject["elements"] = subElementsAsBases;
@@ -275,7 +280,11 @@ public sealed partial class ElementConverterManager
     return retval;
   }
 
-  public async Task<List<Base>?> ConvertSubElementsToSpeckle(Base convertedObject, CancellationToken token)
+  public async Task<List<Base>?> ConvertSubElementsToSpeckle(
+    Base convertedObject,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var subElementsAsBases = new List<Base>();
 
@@ -310,7 +319,8 @@ public sealed partial class ElementConverterManager
       var convertedSubElements = await ConvertOneTypeToSpeckle(
         guids,
         ElementTypeProvider.GetTypeByName(element),
-        token
+        token,
+        conversionOptions
       );
       subElementsAsBases = subElementsAsBases.Concat(convertedSubElements).ToList(); // Update list with new values
     }

@@ -73,7 +73,10 @@ namespace Objects.BuiltElements.Archicad
   {
     // Element base
     public string elementType { get; set; }
+
     public List<Classification> classifications { get; set; }
+    public Base? elementProperties { get; set; }
+    public Base? componentProperties { get; set; }
 
     public override Level level
     {

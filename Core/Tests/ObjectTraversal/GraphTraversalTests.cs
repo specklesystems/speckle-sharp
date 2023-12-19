@@ -35,7 +35,7 @@ public class GraphTraversalTests
         Child = expectIgnored
       };
 
-    var ret = Traverse(testCase, traverseListsRule).Select(b => b.current).ToList();
+    var ret = Traverse(testCase, traverseListsRule).Select(b => b.Current).ToList();
 
     //Assert expected members present
     Assert.That(ret, Has.Exactly(1).Items.EqualTo(testCase));
@@ -67,7 +67,7 @@ public class GraphTraversalTests
         Child = expectIgnored
       };
 
-    var ret = Traverse(testCase, traverseListsRule).Select(b => b.current).ToList();
+    var ret = Traverse(testCase, traverseListsRule).Select(b => b.Current).ToList();
 
     //Assert expected members present
     Assert.That(ret, Has.Exactly(1).Items.EqualTo(testCase));
@@ -97,7 +97,7 @@ public class GraphTraversalTests
         ["dynamicListChild"] = new List<Base> { expectTraverse }
       };
 
-    var ret = Traverse(testCase, traverseListsRule).Select(b => b.current).ToList();
+    var ret = Traverse(testCase, traverseListsRule).Select(b => b.Current).ToList();
 
     //Assert expected members present
     Assert.That(ret, Has.Exactly(1).Items.EqualTo(testCase));
@@ -127,7 +127,7 @@ public class GraphTraversalTests
         ["dynamicListChild"] = new List<Base> { expectTraverse }
       };
 
-    var ret = Traverse(testCase, traverseListsRule).Select(b => b.current).ToList();
+    var ret = Traverse(testCase, traverseListsRule).Select(b => b.Current).ToList();
 
     //Assert expected members present
     Assert.That(ret, Has.Exactly(1).Items.EqualTo(testCase));

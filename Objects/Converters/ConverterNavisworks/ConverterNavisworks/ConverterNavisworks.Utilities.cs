@@ -20,17 +20,15 @@ internal static class ArrayExtension
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
-  private const string RootNodePseudoId = "___";
+  private const string ROOT_NODE_PSEUDO_ID = "___";
 
   /// <summary>
   ///   Checks is the Element is hidden or if any of its ancestors is hidden
   /// </summary>
   /// <param name="element"></param>
   /// <returns></returns>
-  private static bool IsElementHidden(ModelItem element)
-  {
+  private static bool IsElementHidden(ModelItem element) =>
     // Hidden status is stored at the earliest node in the hierarchy
     // Any of the the tree path nodes Hidden then the element is hidden
-    return element.AncestorsAndSelf.Any(x => x.IsHidden);
-  }
+    element.AncestorsAndSelf.Any(x => x.IsHidden);
 }

@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +12,8 @@ using System.Web;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Newtonsoft.Json;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Speckle.Core.Logging;
 
@@ -69,8 +69,8 @@ public static class Analytics
     MappingsAction
   }
 
-  private const string MixpanelToken = "acd87c5a50b56df91a795e999812a3a4";
-  private const string MixpanelServer = "https://analytics.speckle.systems";
+  private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";
+  private const string MIXPANEL_SERVER = "https://analytics.speckle.systems";
 
   /// <summary>
   /// Cached email
@@ -81,6 +81,17 @@ public static class Analytics
   /// Cached server URL
   /// </summary>
   private static string LastServer { get; set; }
+
+  /// <summary>
+  /// <see langword="false"/> when the DEBUG pre-processor directive is <see langword="true"/>, <see langword="false"/> otherwise
+  /// </summary>
+  /// <remarks>This must be kept as a computed property, not a compile time const</remarks>
+  internal static bool IsReleaseMode =>
+#if DEBUG
+    false;
+#else
+    true;
+#endif
 
   /// <summary>
   /// Tracks an event without specifying the email and server.
@@ -97,8 +108,8 @@ public static class Analytics
     bool isAction = true
   )
   {
-    string email = "";
-    string server = "";
+    string email;
+    string server;
 
     if (LastEmail != null && LastServer != null && LastServer != "no-account-server")
     {
@@ -176,10 +187,11 @@ public static class Analytics
     LastEmail = hashedEmail;
     LastServer = hashedServer;
 
-#if DEBUG
-    //only track in prod
-    return;
-#endif
+    if (!IsReleaseMode)
+    {
+      //only track in prod
+      return;
+    }
 
     Task.Run(() =>
     {
@@ -190,7 +202,7 @@ public static class Analytics
         {
           { "distinct_id", hashedEmail },
           { "server_id", hashedServer },
-          { "token", MixpanelToken },
+          { "token", MIXPANEL_TOKEN },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
           {
@@ -214,10 +226,11 @@ public static class Analytics
         string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-        HttpClient client = Http.GetHttpProxyClient();
+
+        using HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MixpanelServer + "/track?ip=1", query);
+        client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query);
       }
       catch (Exception ex)
       {
@@ -237,7 +250,7 @@ public static class Analytics
       {
         var data = new Dictionary<string, object>
         {
-          { "$token", MixpanelToken },
+          { "$token", MIXPANEL_TOKEN },
           { "$distinct_id", hashedEmail },
           {
             "$union",
@@ -260,7 +273,7 @@ public static class Analytics
         HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MixpanelServer + "/engage#profile-union", query);
+        client.PostAsync(MIXPANEL_SERVER + "/engage#profile-union", query);
       }
       catch (Exception ex)
       {

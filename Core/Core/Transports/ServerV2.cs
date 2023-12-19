@@ -16,13 +16,7 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports;
 
-public class ServerTransport : ServerTransportV2
-{
-  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
-    : base(account, streamId, timeoutSeconds, blobStorageFolder) { }
-}
-
-public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapableTransport
+public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
   private readonly object _elapsedLock = new();
 
@@ -37,7 +31,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   private bool _shouldSendThreadRun;
 
-  public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
+  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
   {
     Account = account;
     Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
@@ -81,9 +75,8 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public object Clone()
   {
-    return new ServerTransportV2(Account, StreamId, TimeoutSeconds, BlobStorageFolder)
+    return new ServerTransport(Account, StreamId, TimeoutSeconds, BlobStorageFolder)
     {
-      OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
       CancellationToken = CancellationToken,
     };
@@ -113,7 +106,6 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public CancellationToken CancellationToken { get; set; }
   public Action<string, int>? OnProgressAction { get; set; }
-  public Action<string, Exception>? OnErrorAction { get; set; }
   public int SavedObjectCount { get; private set; }
   public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;
 
@@ -136,7 +128,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     api.CancellationToken = CancellationToken;
 
     string rootObjectJson = await api.DownloadSingleObject(StreamId, id).ConfigureAwait(false);
-    List<string> allIds = ParseChildrenIds(rootObjectJson);
+    IList<string> allIds = ParseChildrenIds(rootObjectJson);
 
     List<string> childrenIds = allIds.Where(x => !x.Contains("blob:")).ToList();
     List<string> blobIds = allIds.Where(x => x.Contains("blob:")).Select(x => x.Remove(0, 5)).ToList();
@@ -322,12 +314,14 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     AuthorizationToken = authorizationToken;
     TimeoutSeconds = timeoutSeconds;
 
-    Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds);
-    Api.OnBatchSent = (num, size) =>
+    Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds)
     {
-      OnProgressAction?.Invoke(TransportName, num);
-      TotalSentBytes += size;
-      SavedObjectCount += num;
+      OnBatchSent = (num, size) =>
+      {
+        OnProgressAction?.Invoke(TransportName, num);
+        TotalSentBytes += size;
+        SavedObjectCount += num;
+      }
     };
   }
 
@@ -336,21 +330,22 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     return $"Server Transport @{Account.serverInfo.url}";
   }
 
-  private static List<string> ParseChildrenIds(string json)
+  private static IList<string> ParseChildrenIds(string json)
   {
     List<string> childrenIds = new();
-    try
+
+    JObject doc1 = JObject.Parse(json);
+    JToken? closures = doc1["__closure"];
+    if (closures == null)
     {
-      JObject doc1 = JObject.Parse(json);
-      foreach (JToken prop in doc1["__closure"])
-      {
-        childrenIds.Add(((JProperty)prop).Name);
-      }
+      return Array.Empty<string>();
     }
-    catch (Exception)
+
+    foreach (JToken prop in closures)
     {
-      // empty children list if no __closure key is found
+      childrenIds.Add(((JProperty)prop).Name);
     }
+
     return childrenIds;
   }
 
@@ -386,8 +381,8 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       }
       try
       {
-        var bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList();
-        var bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
+        var bufferObjects = buffer.Where(tuple => !tuple.id.Contains("blob")).ToList();
+        var bufferBlobs = buffer.Where(tuple => tuple.id.Contains("blob")).ToList();
 
         List<string> objectIds = new(bufferObjects.Count);
 
@@ -418,7 +413,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         {
           var blobIdsToUpload = await Api.HasBlobs(StreamId, bufferBlobs).ConfigureAwait(false);
           var formattedIds = blobIdsToUpload.Select(id => $"blob:{id}").ToList();
-          var newBlobs = bufferBlobs.Where(tuple => formattedIds.IndexOf(tuple.Item1) != -1).ToList();
+          var newBlobs = bufferBlobs.Where(tuple => formattedIds.IndexOf(tuple.id) != -1).ToList();
           if (newBlobs.Count != 0)
           {
             await Api.UploadBlobs(StreamId, newBlobs).ConfigureAwait(false);
@@ -444,4 +439,13 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       }
     }
   }
+
+  [Obsolete("Transport will throw exceptions instead", true)]
+  public Action<string, Exception>? OnErrorAction { get; set; }
+}
+
+[Obsolete("Use " + nameof(ServerTransport), true)]
+public sealed class ServerTransportV2
+{
+  public ServerTransportV2(params object[] _) { }
 }

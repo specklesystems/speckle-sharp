@@ -193,6 +193,7 @@ public static class ConnectorHelpers
 
   /// <exception cref="OperationCanceledException"></exception>
   /// <exception cref="SpeckleException"></exception>
+  [Obsolete(nameof(Operations.Send) + "No longer accepts OnErrorHandler")]
   public static void DefaultSendErrorHandler(string error, Exception ex)
   {
     //Don't wrap cancellation exceptions!

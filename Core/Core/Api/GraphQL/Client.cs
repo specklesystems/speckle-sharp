@@ -30,12 +30,7 @@ public partial class Client : IDisposable
 
   public Client(Account account)
   {
-    if (account == null)
-    {
-      throw new SpeckleException("Provided account is null.");
-    }
-
-    Account = account;
+    Account = account ?? throw new SpeckleException("Provided account is null.");
 
     HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
     Http.AddAuthHeader(HttpClient, account.token);
@@ -151,7 +146,7 @@ public partial class Client : IDisposable
 
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
-    using IDisposable context0 = LogContext.Push(_createEnrichers<T>(request));
+    using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
 
     SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
     var timer = new Stopwatch();
@@ -273,7 +268,7 @@ public partial class Client : IDisposable
     }
   }
 
-  private Dictionary<string, object?> _convertExpandoToDict(ExpandoObject expando)
+  private Dictionary<string, object?> ConvertExpandoToDict(ExpandoObject expando)
   {
     var variables = new Dictionary<string, object?>();
     foreach (KeyValuePair<string, object> kvp in expando)
@@ -281,7 +276,7 @@ public partial class Client : IDisposable
       object value;
       if (kvp.Value is ExpandoObject ex)
       {
-        value = _convertExpandoToDict(ex);
+        value = ConvertExpandoToDict(ex);
       }
       else
       {
@@ -293,12 +288,12 @@ public partial class Client : IDisposable
     return variables;
   }
 
-  private ILogEventEnricher[] _createEnrichers<T>(GraphQLRequest request)
+  private ILogEventEnricher[] CreateEnrichers<T>(GraphQLRequest request)
   {
     // i know this is double  (de)serializing, but we need a recursive convert to
     // dict<str, object> here
     var expando = JsonConvert.DeserializeObject<ExpandoObject>(JsonConvert.SerializeObject(request.Variables));
-    var variables = request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
+    var variables = request.Variables != null && expando != null ? ConvertExpandoToDict(expando) : null;
     return new ILogEventEnricher[]
     {
       new PropertyEnricher("serverUrl", ServerUrl),
@@ -310,7 +305,7 @@ public partial class Client : IDisposable
 
   internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
-    using (LogContext.Push(_createEnrichers<T>(request)))
+    using (LogContext.Push(CreateEnrichers<T>(request)))
     {
       try
       {

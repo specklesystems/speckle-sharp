@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,7 +29,6 @@ public sealed class MemoryTransport : ITransport, ICloneable
     return new MemoryTransport(Objects)
     {
       TransportName = TransportName,
-      OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
       CancellationToken = CancellationToken,
       SavedObjectCount = SavedObjectCount
@@ -39,10 +39,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public string TransportName { get; set; } = "Memory";
 
-  public Action<string, int> OnProgressAction { get; set; }
-
-  [Obsolete("Transports will now throw exceptions")]
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
   public int SavedObjectCount { get; private set; }
 
@@ -60,10 +57,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   public void SaveObject(string id, string serializedObject)
   {
     var stopwatch = Stopwatch.StartNew();
-    if (CancellationToken.IsCancellationRequested)
-    {
-      return; // Check for cancellation
-    }
+    CancellationToken.ThrowIfCancellationRequested();
 
     Objects[id] = serializedObject;
 
@@ -90,7 +84,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
     SaveObject(id, serializedObject);
   }
 
-  public string GetObject(string id)
+  public string? GetObject(string id)
   {
     var stopwatch = Stopwatch.StartNew();
     var ret = Objects.TryGetValue(id, out string o) ? o : null;
@@ -102,7 +96,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int> onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown = null
   )
   {
     throw new NotImplementedException();
@@ -110,18 +104,18 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public Task WriteComplete()
   {
-    return Utilities.WaitUntil(() => true);
+    return Task.CompletedTask;
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
-    Dictionary<string, bool> ret = new();
+    Dictionary<string, bool> ret = new(objectIds.Count);
     foreach (string objectId in objectIds)
     {
       ret[objectId] = Objects.ContainsKey(objectId);
     }
 
-    return ret;
+    return Task.FromResult(ret);
   }
 
   public bool GetWriteCompletionStatus()
@@ -133,4 +127,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
   {
     return $"Memory Transport {TransportName}";
   }
+
+  [Obsolete("Transports will now throw exceptions", true)]
+  public Action<string, Exception>? OnErrorAction { get; set; }
 }

@@ -3,46 +3,22 @@ using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using ConnectorArchicad.Communication.Commands;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetDoorData : ICommand<IEnumerable<ArchicadDoor>>
+sealed internal class GetDoorData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
-  [JsonObject(MemberSerialization.OptIn)]
-  public sealed class Parameters
+  public GetDoorData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
+
+  public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
   {
-    [JsonProperty("applicationIds")]
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public Parameters(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-  }
-
-  [JsonObject(MemberSerialization.OptIn)]
-  private sealed class Result
-  {
-    [JsonProperty("doors")]
-    public IEnumerable<ArchicadDoor> Datas { get; private set; }
-  }
-
-  private IEnumerable<string> ApplicationIds { get; }
-
-  public GetDoorData(IEnumerable<string> applicationIds)
-  {
-    ApplicationIds = applicationIds;
-  }
-
-  public async Task<IEnumerable<ArchicadDoor>> Execute()
-  {
-    Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+    dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
       "GetDoorData",
-      new Parameters(ApplicationIds)
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
     );
-    //foreach (var subelement in result.Datas)
-    //subelement.units = Units.Meters;
 
-    return result.Datas;
+    return (Speckle.Newtonsoft.Json.Linq.JArray)result["doors"];
   }
 }

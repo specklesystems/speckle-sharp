@@ -11,30 +11,15 @@ public partial class ConverterNavisworks
   /// No actual receiving exists
   ///
   /// <inheritdoc />
-  public object ConvertToNative(Base @object)
-  {
-    throw new NotImplementedException();
-  }
+  public object ConvertToNative(Base @object) => throw new NotImplementedException();
 
-  public object ConvertToNativeDisplayable(Base @object)
-  {
-    throw new NotImplementedException();
-  }
+  public object ConvertToNativeDisplayable(Base @object) => throw new NotImplementedException();
 
   /// <inheritdoc />
-  public List<object> ConvertToNative(List<Base> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public List<object> ConvertToNative(List<Base> objects) => throw new NotImplementedException();
 
   /// <inheritdoc />
-  public bool CanConvertToNative(Base @object)
-  {
-    throw new NotImplementedException();
-  }
+  public bool CanConvertToNative(Base @object) => throw new NotImplementedException();
 
-  public bool CanConvertToNativeDisplayable(Base @object)
-  {
-    throw new NotImplementedException();
-  }
+  public bool CanConvertToNativeDisplayable(Base @object) => throw new NotImplementedException();
 }

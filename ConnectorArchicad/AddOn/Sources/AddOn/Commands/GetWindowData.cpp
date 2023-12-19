@@ -26,14 +26,9 @@ API_ElemTypeID GetWindowData::GetElemTypeID () const
 
 
 GS::ErrCode	GetWindowData::SerializeElementType (const API_Element& element,
-	const API_ElementMemo& memo,
+	const API_ElementMemo& /*memo*/,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	os.Add (ElementBase::ParentElementId, APIGuidToString (element.window.owner));
 
 	AddOnCommands::GetDoorWindowData<API_WindowType> (element.window, os);

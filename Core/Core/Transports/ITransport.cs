@@ -45,16 +45,16 @@ public interface ITransport
   /// <summary>
   /// Used to report errors during the transport's longer operations.
   /// </summary>
-  [Obsolete("Transports will now throw exceptions")]
+  [Obsolete("Transports will now throw exceptions", true)]
   public Action<string, Exception>? OnErrorAction { get; set; }
 
   /// <summary>
-  /// Optional: signals to the transport that writes are about to begin.
+  /// Signals to the transport that writes are about to begin.
   /// </summary>
   public void BeginWrite();
 
   /// <summary>
-  /// Optional: signals to the transport that no more items will need to be written.
+  /// Signals to the transport that no more items will need to be written.
   /// </summary>
   public void EndWrite();
 
@@ -62,14 +62,20 @@ public interface ITransport
   /// Saves an object.
   /// </summary>
   /// <param name="id">The hash of the object.</param>
-  /// <param name="serializedObject">The full string representation of the object.</param>
+  /// <param name="serializedObject">The full string representation of the object</param>
+  /// <exception cref="TransportException">Failed to save object</exception>
+  /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
   public void SaveObject(string id, string serializedObject);
 
   /// <summary>
-  /// Saves an object, retrieving its serialised version from the provided transport.
+  /// <inheritdoc cref="SaveObject(string, string)"/>
+  /// Retrieving its serialised version from the provided transport.
   /// </summary>
-  /// <param name="id">The hash of the object.</param>
+  /// <param name="id"><inheritdoc cref="SaveObject(string, string)"/></param>
   /// <param name="sourceTransport">The transport from where to retrieve it.</param>
+  /// <exception cref="TransportException"><inheritdoc cref="SaveObject(string, string)"/></exception>
+  /// <exception cref="InvalidOperationException"><inheritdoc cref="SaveObject(string, string)"/></exception>
+  /// <exception cref="OperationCanceledException"><inheritdoc cref="SaveObject(string, string)"/</exception>
   public void SaveObject(string id, ITransport sourceTransport);
 
   /// <summary>
@@ -80,7 +86,7 @@ public interface ITransport
 
   /// <param name="id">The object's hash.</param>
   /// <returns>The serialized object data, or <see langword="null"/> if the transport cannot find the object</returns>
-  /// <exception cref="OperationCanceledException"></exception>
+  /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
   public string? GetObject(string id);
 
   /// <summary>
@@ -90,9 +96,9 @@ public interface ITransport
   /// <param name="targetTransport">The transport you want to copy the object to.</param>
   /// <param name="onTotalChildrenCountKnown">(Optional) an <see cref="Action{T}"/> that will be invoked once, when the number of object children to be copied over is known.</param>
   /// <returns>The string representation of the root object.</returns>
-  /// <exception cref="InvalidOperationException">The transport was in an invalid state</exception>
   /// <exception cref="ArgumentException">The provided arguments are not valid</exception>
-  /// <exception cref="OperationCanceledException"></exception>
+  /// <exception cref="InvalidOperationException">The transport was in an invalid state</exception>
+  /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
   public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,

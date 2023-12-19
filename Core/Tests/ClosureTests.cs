@@ -35,7 +35,7 @@ public class Closures
 
     var transport = new MemoryTransport();
 
-    var result = Operations.Send(d1, new List<ITransport> { transport }, false).Result;
+    var result = Operations.Send(d1, transport, false).Result;
 
     var test = Operations.Receive(result, localTransport: transport).Result;
 

@@ -25,7 +25,7 @@ public sealed class BaseObjectDeserializerV2
   /// <summary>
   /// Property that describes the type of the object.
   /// </summary>
-  public const string TypeDiscriminator = nameof(Base.speckle_type);
+  private const string TYPE_DISCRIMINATOR = nameof(Base.speckle_type);
 
   private DeserializationWorkerThreads? _workerThreads;
 
@@ -83,25 +83,23 @@ public sealed class BaseObjectDeserializerV2
         }
       }
 
-      object ret = DeserializeTransportObject(rootObjectJson);
+      object? ret = DeserializeTransportObject(rootObjectJson);
 
       stopwatch.Stop();
       Elapsed += stopwatch.Elapsed;
-      if (ret is Base b)
-      {
-        return b;
-      }
-      else
+      if (ret is not Base b)
       {
         throw new Exception(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
       }
+
+      return b;
     }
     finally
     {
       _deserializedObjects = null;
-      _workerThreads.Dispose();
+      _workerThreads?.Dispose();
       _workerThreads = null;
       _busy = false;
     }
@@ -127,7 +125,7 @@ public sealed class BaseObjectDeserializerV2
       }
       return closureList;
     }
-    catch
+    catch (Exception)
     {
       return new List<(string, int)>();
     }
@@ -136,7 +134,7 @@ public sealed class BaseObjectDeserializerV2
   private object? DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
-    Task<object?> bgResult = _workerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
+    Task<object?>? bgResult = _workerThreads!.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
     if (bgResult != null)
     {
       return bgResult;
@@ -206,7 +204,7 @@ public sealed class BaseObjectDeserializerV2
       case JTokenType.Float:
         return (double)doc;
       case JTokenType.String:
-        return (string)doc;
+        return (string?)doc;
       case JTokenType.Date:
         return (DateTime)doc;
       case JTokenType.Array:
@@ -215,13 +213,13 @@ public sealed class BaseObjectDeserializerV2
         int retListCount = 0;
         foreach (JToken value in docAsArray)
         {
-          object convertedValue = ConvertJsonElement(value);
+          object? convertedValue = ConvertJsonElement(value);
           retListCount += convertedValue is DataChunk chunk ? chunk.data.Count : 1;
           jsonList.Add(convertedValue);
         }
 
         List<object?> retList = new(retListCount);
-        foreach (object jsonObj in jsonList)
+        foreach (object? jsonObj in jsonList)
         {
           if (jsonObj is DataChunk chunk)
           {
@@ -249,17 +247,15 @@ public sealed class BaseObjectDeserializerV2
           dict[prop.Name] = ConvertJsonElement(prop.Value);
         }
 
-        if (!dict.ContainsKey(TypeDiscriminator))
+        if (!dict.TryGetValue(TYPE_DISCRIMINATOR, out object? speckleType))
         {
           return dict;
         }
 
-        if (
-          dict[TypeDiscriminator] as string == "reference" && dict.TryGetValue("referencedId", out object? referencedId)
-        )
+        if (speckleType as string == "reference" && dict.TryGetValue("referencedId", out object? referencedId))
         {
           var objId = (string)referencedId!;
-          object deserialized = null;
+          object? deserialized = null;
           lock (_deserializedObjects)
           {
             if (_deserializedObjects.TryGetValue(objId, out object? o))
@@ -290,7 +286,7 @@ public sealed class BaseObjectDeserializerV2
           }
 
           // This reference was not already deserialized. Do it now in sync mode
-          string objectJson = ReadTransport.GetObject(objId);
+          string? objectJson = ReadTransport.GetObject(objId);
           if (objectJson is null)
           {
             throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
@@ -314,14 +310,14 @@ public sealed class BaseObjectDeserializerV2
 
   private Base Dict2Base(Dictionary<string, object?> dictObj)
   {
-    string typeName = (string)dictObj[TypeDiscriminator]!;
+    string typeName = (string)dictObj[TYPE_DISCRIMINATOR]!;
     Type type = SerializationUtilities.GetType(typeName);
     Base baseObj = (Base)Activator.CreateInstance(type);
 
-    dictObj.Remove(TypeDiscriminator);
+    dictObj.Remove(TYPE_DISCRIMINATOR);
     dictObj.Remove("__closure");
 
-    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
+    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypeProperties(typeName);
     List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
     foreach (var entry in dictObj)
@@ -361,7 +357,7 @@ public sealed class BaseObjectDeserializerV2
 
     if (baseObj is Blob bb && BlobStorageFolder != null)
     {
-      bb.filePath = bb.getLocalDestinationPath(BlobStorageFolder);
+      bb.filePath = bb.GetLocalDestinationPath(BlobStorageFolder);
     }
 
     foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
@@ -371,4 +367,7 @@ public sealed class BaseObjectDeserializerV2
 
     return baseObj;
   }
+
+  [Obsolete("Use nameof(Base.speckle_type)")]
+  public string TypeDiscriminator => TYPE_DISCRIMINATOR;
 }
