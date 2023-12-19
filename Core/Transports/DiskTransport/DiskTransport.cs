@@ -125,9 +125,12 @@ public class DiskTransport : ICloneable, ITransport
     SaveObject(id, serializedObject);
   }
 
-  public async Task WriteComplete() { }
+  public Task WriteComplete()
+  {
+    return Task.CompletedTask;
+  }
 
-  public async Task<string> CopyObjectAndChildren(
+  public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
     Action<int>? onTotalChildrenCountKnown = null
@@ -147,7 +150,7 @@ public class DiskTransport : ICloneable, ITransport
 
     if (partial?.__closure is null || partial.__closure.Count == 0)
     {
-      return parent;
+      return Task.FromResult(parent);
     }
 
     int i = 0;
@@ -167,7 +170,7 @@ public class DiskTransport : ICloneable, ITransport
       OnProgressAction?.Invoke($"{TransportName}", i++);
     }
 
-    return parent;
+    return Task.FromResult(parent);
   }
 
   public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)

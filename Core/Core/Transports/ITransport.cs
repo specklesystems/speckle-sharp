@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -73,9 +72,8 @@ public interface ITransport
   /// </summary>
   /// <param name="id"><inheritdoc cref="SaveObject(string, string)"/></param>
   /// <param name="sourceTransport">The transport from where to retrieve it.</param>
-  /// <exception cref="TransportException"><inheritdoc cref="SaveObject(string, string)"/></exception>
-  /// <exception cref="InvalidOperationException"><inheritdoc cref="SaveObject(string, string)"/></exception>
-  /// <exception cref="OperationCanceledException"><inheritdoc cref="SaveObject(string, string)"/</exception>
+  /// <exception cref="TransportException">Failed to save object</exception>
+  /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
   public void SaveObject(string id, ITransport sourceTransport);
 
   /// <summary>
@@ -97,7 +95,6 @@ public interface ITransport
   /// <param name="onTotalChildrenCountKnown">(Optional) an <see cref="Action{T}"/> that will be invoked once, when the number of object children to be copied over is known.</param>
   /// <returns>The string representation of the root object.</returns>
   /// <exception cref="ArgumentException">The provided arguments are not valid</exception>
-  /// <exception cref="InvalidOperationException">The transport was in an invalid state</exception>
   /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
   public Task<string> CopyObjectAndChildren(
     string id,
