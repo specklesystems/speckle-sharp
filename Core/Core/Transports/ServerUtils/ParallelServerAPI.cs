@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 
 namespace Speckle.Core.Transports.ServerUtils;
@@ -236,6 +237,11 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
       catch (Exception ex)
       {
         tcs.SetException(ex);
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
     }
   }

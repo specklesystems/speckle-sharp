@@ -25,11 +25,17 @@ public static class Units
   private static readonly List<string> s_supportedUnits =
     new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
 
+  /// <param name="unit"></param>
+  /// <returns><see langword="true"/> if <param name="unit"> is a recognised/supported unit string</param>, otherwise <see langword="false"/></returns>
   public static bool IsUnitSupported(string unit)
   {
     return s_supportedUnits.Contains(unit);
   }
 
+  /// <param name="from">Semantic unit string for the units to convert from</param>
+  /// <param name="to">Semantic unit string for the units to convert to</param>
+  /// <exception cref="ArgumentOutOfRangeException">A <inheritdoc cref="GetUnitsFromString"/></exception>
+  /// <returns>The scaling factor to convert from the <paramref name="from"/> units to the <see cref="to"/> units</returns>
   [Pure]
   public static double GetConversionFactor(string from, string to)
   {
@@ -237,13 +243,13 @@ public static class Units
   }
 
   /// <summary>
-  ///
+  /// Given <paramref name="unit"/>, maps several friendly unit aliases to a a semantic unit string
   /// </summary>
   /// <param name="unit"></param>
-  /// <returns></returns>
+  /// <returns>The semantic unit string, <see langword="null"/> if <paramref name="unit"/> is <see langword="null"/></returns>
   /// <exception cref="ArgumentOutOfRangeException">Unit string is not a supported unit (see <see cref="IsUnitSupported"/>)</exception>
   [Pure]
-  public static string? GetUnitsFromString(string unit)
+  public static string? GetUnitsFromString(string? unit)
   {
     if (unit == null)
     {
@@ -266,6 +272,12 @@ public static class Units
     };
   }
 
+  /// <summary>
+  /// Maps semantic unit strings to a numeric encoding
+  /// </summary>
+  /// <param name="unit"></param>
+  /// <remarks>non-recognised unit encodings will be silently mapped to <c>0</c></remarks>
+  /// <returns></returns>
   [Pure]
   public static int GetEncodingFromUnit(string unit)
   {
@@ -283,6 +295,12 @@ public static class Units
     };
   }
 
+  /// <summary>
+  /// Maps a numeric encoding to the semantic unit string
+  /// </summary>
+  /// <param name="unit">numeric encoded unit</param>
+  /// <remarks>non-recognised unit encodings will be silently mapped to <see cref="None"/></remarks>
+  /// <returns>Semantic unit string</returns>
   [Pure]
   public static string GetUnitFromEncoding(double unit)
   {

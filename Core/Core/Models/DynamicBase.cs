@@ -81,7 +81,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
       {
         prop.SetValue(this, value);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         throw new SpeckleException($"Failed to set value for {GetType().Name}.{prop.Name}", ex);
       }
@@ -304,7 +304,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
           {
             dic[attr.Name] = e.Invoke(this, null);
           }
-          catch (Exception ex)
+          catch (Exception ex) when (!ex.IsFatal())
           {
             SpeckleLog.Logger.Warning(ex, "Failed to get computed member: {name}", attr.Name);
             dic[attr.Name] = null;

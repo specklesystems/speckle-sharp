@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -307,7 +308,7 @@ public sealed class ServerApi : IDisposable, IServerApi
         response.Dispose();
         onBlobCallback();
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         throw new Exception($"Failed to download blob {blobId}", ex);
       }

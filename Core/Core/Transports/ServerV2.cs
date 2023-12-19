@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -232,21 +231,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     }
   }
 
-  public void SaveObject(string id, ITransport sourceTransport)
-  {
-    var objectData = sourceTransport.GetObject(id);
-
-    if (objectData is null)
-    {
-      throw new TransportException(
-        this,
-        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
-      );
-    }
-
-    SaveObject(id, objectData);
-  }
-
   public void BeginWrite()
   {
     if (_shouldSendThreadRun || _sendingThread != null)
@@ -337,7 +321,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     return childrenIds;
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private async void SendingThreadMain()
   {
     while (true)
@@ -415,7 +398,13 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
           _sendBuffer.Clear();
           _exception = ex;
         }
-        return;
+
+        if (!ex.IsFatal())
+        {
+          return;
+        }
+
+        throw;
       }
       finally
       {

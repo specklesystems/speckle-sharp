@@ -223,7 +223,7 @@ public static class Helpers
         return true;
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.ForContext("slug", slug).Warning(ex, "Failed to check for connector updates");
     }

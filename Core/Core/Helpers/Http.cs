@@ -52,23 +52,26 @@ public static class Http
   /// <returns>True if the user is connected to the internet, false otherwise.</returns>
   public static async Task<bool> UserHasInternet()
   {
-    //can ping cloudfare, skip further checks
-    //this method should be the fastest
-    if (await Ping("1.1.1.1").ConfigureAwait(false))
+    string? defaultServer = null;
+    try
     {
+      //Perform a quick ping test e.g. to cloudflaire dns, as is quicker than pinging server
+      if (await Ping("1.1.1.1").ConfigureAwait(false))
+      {
+        return true;
+      }
+
+      defaultServer = AccountManager.GetDefaultServerUrl();
+      Uri serverUrl = new(defaultServer);
+      await HttpPing(serverUrl).ConfigureAwait(false);
       return true;
     }
-
-    //lastly, try getting the default Speckle server, in case this is a sandboxed environment
-    string defaultServer = AccountManager.GetDefaultServerUrl();
-    bool hasInternet = await HttpPing(defaultServer).ConfigureAwait(false);
-
-    if (!hasInternet)
+    catch (HttpRequestException ex)
     {
-      SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning("Failed to ping internet");
-    }
+      SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning(ex, "Failed to ping internet");
 
-    return hasInternet;
+      return false;
+    }
   }
 
   /// <summary>
@@ -128,23 +131,24 @@ public static class Http
   }
 
   /// <summary>
-  /// Pings and tries gettign data from a specific address to verify it's online. Retries 3 times.
+  ///
   /// </summary>
-  /// <param name="address">The address to use</param>
-  /// <returns>True if the the status code is successful, false otherwise.</returns>
-  public static async Task<bool> HttpPing(string address)
+  /// <param name="uri">The URI that should be pinged</param>
+  /// <exception cref="HttpRequestException">Failed to ping <paramref name="uri"/></exception>
+  internal static async Task<HttpResponseMessage> HttpPing(Uri uri)
   {
-    SpeckleLog.Logger.Information("HttpPinging {address}", address);
     try
     {
       using var httpClient = GetHttpProxyClient();
-      var response = await httpClient.GetAsync(address).ConfigureAwait(false);
-      return response.IsSuccessStatusCode;
+      HttpResponseMessage response = await httpClient.GetAsync(uri).ConfigureAwait(false);
+      response.EnsureSuccessStatusCode();
+      SpeckleLog.Logger.Warning("Successfully pinged {uri}", uri);
+      return response;
     }
-    catch (Exception ex)
+    catch (HttpRequestException ex)
     {
-      SpeckleLog.Logger.Warning(ex, "Exception while pinging: {message}", ex.Message);
-      return false;
+      SpeckleLog.Logger.Warning(ex, "Ping to {uri} was unsuccessful: {message}", uri, ex.Message);
+      throw new HttpRequestException($"Ping to {uri} was unsuccessful", ex);
     }
   }
 
@@ -188,6 +192,8 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
     _delay = delay ?? Http.DefaultDelay();
   }
 
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancel</exception>
+  /// <exception cref="HttpRequestException">Send request failed</exception>
   protected override async Task<HttpResponseMessage> SendAsync(
     HttpRequestMessage request,
     CancellationToken cancellationToken
@@ -240,8 +246,7 @@ public sealed class SpeckleHttpClientHandler : HttpClientHandler
         cancellationToken.ThrowIfCancellationRequested();
       }
 
-      // should we wrap this exception into something Speckle specific?
-      throw new Exception("Policy Failed", policyResult.FinalException);
+      throw new HttpRequestException("Policy Failed", policyResult.FinalException);
     }
   }
 }

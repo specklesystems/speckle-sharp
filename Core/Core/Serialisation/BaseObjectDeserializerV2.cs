@@ -177,7 +177,7 @@ public sealed class BaseObjectDeserializerV2
     {
       converted = ConvertJsonElement(doc1);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleException($"Failed to deserialize {doc1} as {doc1.Type}", ex);
     }

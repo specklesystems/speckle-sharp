@@ -133,7 +133,7 @@ public static class SpecklePathProvider
         Environment.SpecialFolderOption.Create
       );
     }
-    catch (Exception ex)
+    catch (SystemException ex) when (ex is PlatformNotSupportedException or ArgumentException)
     {
       //Adding this log just so we confidently know which Exception type to catch here.
       SpeckleLog.Logger.Warning(ex, "Falling back to user profile path");
