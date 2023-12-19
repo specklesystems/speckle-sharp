@@ -490,9 +490,7 @@ public class SelectionHandler
   /// <summary>
   /// Omits items that are hidden from the starting list of nodes if they are not visible in the model.
   /// </summary>
-  public void ValidateStartNodes()
-  {
+  public void ValidateStartNodes() =>
     // Remove any nodes that are descendants of hidden nodes.
     _uniqueModelItems.RemoveWhere(e => e.AncestorsAndSelf.Any(a => a.IsHidden));
-  }
 }

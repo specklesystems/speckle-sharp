@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -119,6 +118,16 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   }
 
   private static readonly HashSet<char> s_disallowedPropNameChars = new() { '.', '/' };
+
+  public static string RemoveDisallowedPropNameChars(string name)
+  {
+    foreach (char c in s_disallowedPropNameChars)
+    {
+      name = name.Replace(c, ' ');
+    }
+
+    return name;
+  }
 
   public bool IsPropNameValid(string name, out string reason)
   {

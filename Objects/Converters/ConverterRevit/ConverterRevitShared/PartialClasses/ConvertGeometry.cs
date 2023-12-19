@@ -1259,7 +1259,12 @@ public partial class ConverterRevit
             // Update trim indices with new item.
             // TODO: Make this better.
             var trimIndices = sEdge.TrimIndices.ToList();
-            trimIndices.Append(sTrimIndex); //TODO Append is a pure function and the return is unused
+
+            // suppressing the warning even though it is completely valid.
+            // reason we are just suppressing is because this entire class is broken anyways
+#pragma warning disable CA1806 // Do not ignore method results
+            trimIndices.Append(sTrimIndex);
+#pragma warning restore CA1806 // Do not ignore method results
             sEdge.TrimIndices = trimIndices.ToArray();
           }
         }

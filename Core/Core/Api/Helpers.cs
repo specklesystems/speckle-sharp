@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -143,7 +144,6 @@ public static class Helpers
   /// <param name="account">Account to use. If not provided the default account will be used.</param>
   /// <param name="useDefaultCache">Toggle for the default cache. If set to false, it will only send to the provided transports.</param>
   /// <param name="onProgressAction">Action invoked on progress iterations.</param>
-  /// <param name="onErrorAction">Action invoked on internal errors.</param>
   /// <returns></returns>
   public static async Task<string> Send(
     string stream,
@@ -153,20 +153,17 @@ public static class Helpers
     int totalChildrenCount = 0,
     Account account = null,
     bool useDefaultCache = true,
-    Action<ConcurrentDictionary<string, int>> onProgressAction = null,
-    Action<string, Exception> onErrorAction = null
+    Action<ConcurrentDictionary<string, int>> onProgressAction = null
   )
   {
     var sw = new StreamWrapper(stream);
 
     using var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
 
-    var transport = new ServerTransport(client.Account, sw.StreamId);
+    using ServerTransport transport = new(client.Account, sw.StreamId);
     var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
 
-    var objectId = await Operations
-      .Send(data, new List<ITransport> { transport }, useDefaultCache, onProgressAction, onErrorAction, true)
-      .ConfigureAwait(false);
+    var objectId = await Operations.Send(data, transport, useDefaultCache, onProgressAction).ConfigureAwait(false);
 
     Analytics.TrackEvent(client.Account, Analytics.Events.Send);
 

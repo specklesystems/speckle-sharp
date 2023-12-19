@@ -142,10 +142,7 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// </summary>
   /// <param name="notAutomatedCheck">The flag indicating whether to check if the application is automated.</param>
   /// <returns>True if the load should be skipped, False otherwise.</returns>
-  private static bool ShouldSkipLoad(bool notAutomatedCheck)
-  {
-    return notAutomatedCheck && NavisworksApp.IsAutomated;
-  }
+  private static bool ShouldSkipLoad(bool notAutomatedCheck) => notAutomatedCheck && NavisworksApp.IsAutomated;
 
   /// <summary>
   /// Checks whether the plugin load should be skipped based on the plugin and command values.
@@ -153,10 +150,8 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// <param name="plugin">The name of the plugin.</param>
   /// <param name="command">The command associated with the plugin.</param>
   /// <returns>True if the plugin load should be skipped, False otherwise.</returns>
-  private static bool ShouldSkipPluginLoad(string plugin, string command)
-  {
-    return string.IsNullOrEmpty(plugin) || string.IsNullOrEmpty(command);
-  }
+  private static bool ShouldSkipPluginLoad(string plugin, string command) =>
+    string.IsNullOrEmpty(plugin) || string.IsNullOrEmpty(command);
 
   /// <summary>
   /// Activates the plugin's pane if it is of the right type.
@@ -187,10 +182,8 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// </summary>
   /// <param name="pluginRecord">The plugin record.</param>
   /// <returns>True if the plugin's pane should be activated, False otherwise.</returns>
-  private static bool ShouldActivatePluginPane(PluginRecord pluginRecord)
-  {
-    return pluginRecord.IsLoaded && pluginRecord is DockPanePluginRecord && pluginRecord.IsEnabled;
-  }
+  private static bool ShouldActivatePluginPane(PluginRecord pluginRecord) =>
+    pluginRecord.IsLoaded && pluginRecord is DockPanePluginRecord && pluginRecord.IsEnabled;
 
   public override int ExecuteCommand(string commandId, params string[] parameters)
   {
@@ -312,9 +305,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// Shows a message box indicating that the plugin was not loaded.
   /// </summary>
   /// <param name="command">The command associated with the plugin.</param>
-  private static void ShowPluginNotLoadedMessageBox(string command)
-  {
-    MessageBox.Show(command + " Plugin not loaded.");
-  }
+  private static void ShowPluginNotLoadedMessageBox(string command) => MessageBox.Show(command + " Plugin not loaded.");
 #endif
 }

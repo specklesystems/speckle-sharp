@@ -33,9 +33,9 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    if (speckleWall.surface == null)
+    if (speckleWall?.brep?.Surfaces?.FirstOrDefault() == null)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Facewall surface was null");
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "FaceWall surface was null");
       return appObj;
     }
 
@@ -54,9 +54,13 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    var tempMassFamilyPath = CreateMassFamily(templatePath, speckleWall.surface, speckleWall.applicationId);
-    Family fam;
-    Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
+    var tempMassFamilyPath = CreateMassFamily(
+      templatePath,
+      speckleWall.brep.Surfaces.First(),
+      speckleWall.applicationId
+    );
+
+    Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out Family fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
     symbol.Activate();
 

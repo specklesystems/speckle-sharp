@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +16,7 @@ public partial class Client
   /// <returns></returns>
   public async Task<List<Branch>> StreamGetBranchesWithLimitRetry(string streamId, int commitsLimit = 10)
   {
-    List<Branch>? branches = null;
+    List<Branch> branches;
     try
     {
       branches = await StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT, commitsLimit).ConfigureAwait(true);
@@ -178,10 +176,12 @@ public partial class Client
         cancellationToken
       )
       .ConfigureAwait(false);
-    var branch = new Branch();
-    branch.description = res["project"]["model"]["description"];
-    branch.id = res["project"]["model"]["id"];
-    branch.name = res["project"]["model"]["name"];
+    var branch = new Branch
+    {
+      description = res["project"]["model"]["description"],
+      id = res["project"]["model"]["id"],
+      name = res["project"]["model"]["name"]
+    };
     return branch;
   }
 

@@ -8,7 +8,7 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class MapConverter : JsonConverter<Map>
+internal sealed class MapConverter : JsonConverter<Map>
 {
   public override void WriteJson(JsonWriter writer, Map value, JsonSerializer serializer)
   {

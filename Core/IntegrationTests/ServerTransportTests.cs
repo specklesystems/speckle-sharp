@@ -1,3 +1,4 @@
+using System.Collections;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -45,11 +46,10 @@ public class ServerTransportTests
 
   private void CleanData()
   {
-    try
+    if (Directory.Exists(_basePath))
     {
       Directory.Delete(_basePath, true);
     }
-    catch (DirectoryNotFoundException) { }
   }
 
   [Test]
@@ -57,7 +57,7 @@ public class ServerTransportTests
   {
     var myObject = Fixtures.GenerateNestedObject();
 
-    var objectId = await Operations.Send(myObject, new List<ITransport> { transport }).ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
 
     var test = objectId;
     Assert.IsNotNull(test);
@@ -69,7 +69,7 @@ public class ServerTransportTests
     var myObject = Fixtures.GenerateSimpleObject();
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
-    var sentObjectId = await Operations.Send(myObject, new List<ITransport> { transport }).ConfigureAwait(false);
+    var sentObjectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
 
     // NOTE: used to debug diffing
     // await Operations.Send(myObject, new List<ITransport> { transport });
@@ -104,7 +104,7 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .Send(myObject, new List<ITransport> { transport, memTransport })
       .ConfigureAwait(false);
 
     var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
@@ -137,21 +137,22 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .Send(myObject, new List<ITransport> { transport, memTransport })
       .ConfigureAwait(false);
 
     memTransport = new MemoryTransport();
-    var receivedObject = await Operations
+    Base? receivedObject = await Operations
       .Receive(
         sentObjectId,
         transport,
         memTransport,
         onErrorAction: (s, e) =>
         {
-          Console.WriteLine(s);
+          throw new Exception(s, e);
         }
       )
       .ConfigureAwait(false);
+    Assert.That(receivedObject, Is.Not.Null);
 
     var allFiles = Directory
       .GetFiles(transport.BlobStorageFolder)
@@ -164,7 +165,7 @@ public class ServerTransportTests
     // Check that there are three downloaded blobs!
     Assert.That(blobPaths.Count, Is.EqualTo(3));
 
-    var blobs = (receivedObject["blobs"] as IList<object>).Cast<Blob>().ToList();
+    var blobs = ((IList)receivedObject!["blobs"]!).Cast<Blob>().ToList();
     // Check that we have three blobs
     Assert.IsTrue(blobs.Count == 3);
     // Check that received blobs point to local path (where they were received)

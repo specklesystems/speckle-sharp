@@ -11,7 +11,10 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
 
   // Element base
   public string? elementType { get; set; } /*APINullabe*/
+
   public List<Classification>? classifications { get; set; } /*APINullabe*/
+  public Base? elementProperties { get; set; }
+  public Base? componentProperties { get; set; }
 
   public double? width { get; set; } /*APINullabe*/
   public double? height { get; set; } /*APINullabe*/
