@@ -240,17 +240,10 @@ public partial class ConverterRevit
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
 
-#pragma warning disable CA1031 // Do not catch general exception types
-    try
+    if (File.Exists(tempFamilyPath))
     {
       File.Delete(tempFamilyPath);
     }
-    catch (Exception ex)
-    {
-      // TODO : check if catch block is necessary
-      SpeckleLog.Logger.LogDefaultError(ex);
-    }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
   }

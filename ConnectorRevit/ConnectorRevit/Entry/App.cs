@@ -45,8 +45,9 @@ public class App : IExternalApplication
       // exception occurs when the speckle tab has already been created.
       // this happens when both the dui2 and the dui3 connectors are installed. Can be safely ignored.
     }
-    catch (Autodesk.Revit.Exceptions.ApplicationException ex)
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException ex)
     {
+      SpeckleLog.Logger.Warning(ex, "User has too many Revit add-on tabs installed");
       NotifyUserOfErrorStartingConnector(ex);
       return Result.Failed;
     }
@@ -131,12 +132,16 @@ public class App : IExternalApplication
     return Result.Succeeded;
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Several errors are being thrown from Core and DUI2 that need to be fixed before this general catch can be removed"
+  )]
   private void ControlledApplication_ApplicationInitialized(
     object sender,
     Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
   )
   {
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       InitializeConnector();
@@ -161,11 +166,16 @@ public class App : IExternalApplication
 
       //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
     }
-    catch (Exception ex)
+    catch (KitException ex)
     {
+      SpeckleLog.Logger.Warning(ex, "Error loading kit on startup");
       NotifyUserOfErrorStartingConnector(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
+      NotifyUserOfErrorStartingConnector(ex);
+    }
   }
 
   private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
@@ -204,9 +214,13 @@ public class App : IExternalApplication
     return Result.Succeeded;
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "This try catch previously swallowed all exceptions and returned null. Logging has been added to see which exceptions are being thrown"
+  )]
   private ImageSource LoadPngImgSource(string sourceName, string path)
   {
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var assembly = Assembly.LoadFrom(Path.Combine(path));
@@ -220,7 +234,6 @@ public class App : IExternalApplication
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     return null;
   }
@@ -243,7 +256,6 @@ public class App : IExternalApplication
 
   internal static void NotifyUserOfErrorStartingConnector(Exception ex)
   {
-    SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
     using var td = new TaskDialog("Error loading Speckle");
 
     td.MainContent =

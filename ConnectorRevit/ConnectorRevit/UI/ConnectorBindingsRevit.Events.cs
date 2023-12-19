@@ -24,17 +24,29 @@ public partial class ConnectorBindingsRevit
 
   public override async void WriteStreamsToFile(List<StreamState> streams)
   {
-    await APIContext
-      .Run(app =>
-      {
-        using (Transaction t = new(CurrentDoc.Document, "Speckle Write State"))
+    try
+    {
+      await APIContext
+        .Run(app =>
         {
-          t.Start();
-          StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
-          t.Commit();
-        }
-      })
-      .ConfigureAwait(false);
+          using (Transaction t = new(CurrentDoc.Document, "Speckle Write State"))
+          {
+            t.Start();
+            StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
+            t.Commit();
+          }
+        })
+        .ConfigureAwait(false);
+    }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(WriteStreamsToFile),
+        ex.Message
+      );
+    }
   }
 
   /// <summary>
@@ -137,9 +149,13 @@ public partial class ConnectorBindingsRevit
     SendScheduledStream("save");
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
+  )]
   private async void SendScheduledStream(string slug, string message = "")
   {
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
@@ -180,13 +196,16 @@ public partial class ConnectorBindingsRevit
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   //checks whether to refresh the stream list in case the user changes active view and selects a different document
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
+  )]
   private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
   {
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       if (
@@ -222,12 +241,15 @@ public partial class ConnectorBindingsRevit
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
+  )]
   private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
   {
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       // the DocumentClosed event is triggered AFTER ViewActivated
@@ -254,7 +276,6 @@ public partial class ConnectorBindingsRevit
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   // this method is triggered when there are changes in the active document

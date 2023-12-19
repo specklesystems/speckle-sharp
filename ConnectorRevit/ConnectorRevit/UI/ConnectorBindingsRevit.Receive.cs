@@ -82,7 +82,6 @@ public partial class ConnectorBindingsRevit
     // share the same revit element cache between the connector and converter
     converter.SetContextDocument(revitDocumentAggregateCache);
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var elementTypeMapper = new ElementTypeMapper(
@@ -99,27 +98,22 @@ public partial class ConnectorBindingsRevit
         )
         .ConfigureAwait(false);
     }
-    catch (Exception ex)
+    catch (SpeckleException ex)
     {
-      var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
-      StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-      progress.Report.LogOperationError(
-        new Exception("Could not update receive object with user types. Using default mapping.", ex)
-      );
+      SpeckleLog.Logger.Warning("Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+      StreamViewModel.HandleCommandException(ex, false, "MapIncomingTypesCommand");
     }
     finally
     {
       MainViewModel.CloseDialog();
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
-    var (success, exception) = await APIContext
+    await APIContext
       .Run(_ =>
       {
         using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
         transactionManager.Start();
 
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
           converter.SetContextDocument(transactionManager);
@@ -133,43 +127,31 @@ public partial class ConnectorBindingsRevit
 
           previousObjects.AddConvertedElements(convertedObjects);
           transactionManager.Finish();
-          return (true, null);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (progress.CancellationToken.IsCancellationRequested)
         {
-          string message = $"Fatal Error: {ex.Message}";
-          if (ex is OperationCanceledException)
-          {
-            message = "Receive cancelled";
-          }
-          else
-          {
-            SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
-          }
-
-          progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
-
           transactionManager.RollbackAll();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+          throw;
         }
-#pragma warning restore CA1031 // Do not catch general exception types
+        catch (SpeckleNonUserFacingException ex)
+        {
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
+          transactionManager.RollbackAll();
+          throw;
+        }
+        catch (Autodesk.Revit.Exceptions.ApplicationException ex)
+        {
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
+          transactionManager.RollbackAll();
+          throw;
+        }
+        finally
+        {
+          revitDocumentAggregateCache.InvalidateAll();
+          CurrentOperationCancellation = null;
+        }
       })
       .ConfigureAwait(false);
-
-    revitDocumentAggregateCache.InvalidateAll();
-    CurrentOperationCancellation = null;
-
-    if (!success)
-    {
-      switch (exception)
-      {
-        case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
-        case SpeckleNonUserFacingException:
-          throw exception;
-        default:
-          throw new SpeckleException(exception.Message, exception);
-      }
-    }
 
     return state;
   }
@@ -201,9 +183,10 @@ public partial class ConnectorBindingsRevit
           {
             CurrentDoc.Document.Delete(elementToDelete.Id);
           }
-          catch (Autodesk.Revit.Exceptions.ApplicationException)
+          catch (Autodesk.Revit.Exceptions.ArgumentException)
           {
             // unable to delete previously recieved object
+            // it was likely already deleted by the user
           }
         }
 
@@ -368,6 +351,11 @@ public partial class ConnectorBindingsRevit
     return convertedObjectsCache;
   }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Many errors of all different kinds are being thrown from here that are bugs that we need to fix"
+  )]
   private ApplicationObject ConvertObject(
     ApplicationObject obj,
     Base @base,
@@ -387,7 +375,6 @@ public partial class ConnectorBindingsRevit
     using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
     transactionManager.StartSubtransaction();
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var s = new CancellationTokenSource();
@@ -482,7 +469,6 @@ public partial class ConnectorBindingsRevit
       obj.Log.Add($"{ex.Message}");
       progress.Report.UpdateReportObject(obj);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     return obj;
   }

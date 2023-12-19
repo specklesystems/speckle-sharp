@@ -52,7 +52,7 @@ public static class Extensions
       return false;
     }
 
-    return categories.Select(x => (int)x).Contains(category.Id.IntegerValue);
+    return categories.Select(x => (int)x).Contains(categoryInt);
   }
 
   /// <summary>

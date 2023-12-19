@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -12,7 +11,6 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorRevit.UI;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry;
 

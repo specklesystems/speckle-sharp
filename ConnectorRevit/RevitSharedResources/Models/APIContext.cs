@@ -109,10 +109,14 @@ internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
   public HandlerStatus Status { get; private set; } = HandlerStatus.NotStarted;
   public TParameter Parameter { get; private set; }
 
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "This is a very generic utility method for running things in a Revit context. If the result of the Run method is awaited, then the exception caught here will be raised there."
+  )]
   public void Execute(UIApplication app)
   {
     Status = HandlerStatus.Started;
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var r = func(Parameter);
@@ -124,7 +128,6 @@ internal class ExternalEventHandler<TParameter, TResult> : IExternalEventHandler
       Status = HandlerStatus.IsFaulted;
       Result.SetException(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public string GetName() => "SpeckleRevitContextEventHandler";

@@ -39,7 +39,7 @@ internal sealed class ElementTypeMapper
   /// <param name="flattenedCommit"></param>
   /// <param name="storedObjects"></param>
   /// <param name="doc"></param>
-  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="SpeckleException"></exception>
   public ElementTypeMapper(
     ISpeckleConverter converter,
     IRevitDocumentAggregateCache revitDocumentAggregateCache,
@@ -52,7 +52,7 @@ internal sealed class ElementTypeMapper
 
     if (converter is not IRevitElementTypeRetriever typeRetriever)
     {
-      throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
+      throw new SpeckleException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
     {
@@ -61,7 +61,7 @@ internal sealed class ElementTypeMapper
 
     if (converter is not IAllRevitCategoriesExposer typeInfoExposer)
     {
-      throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
+      throw new SpeckleException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
     {
@@ -69,7 +69,7 @@ internal sealed class ElementTypeMapper
     }
 
     this.revitDocumentAggregateCache =
-      revitDocumentAggregateCache ?? throw new ArgumentException($"RevitDocumentAggregateCache cannot be null");
+      revitDocumentAggregateCache ?? throw new SpeckleException($"RevitDocumentAggregateCache cannot be null");
 
     var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
     foreach (var appObj in flattenedCommit)

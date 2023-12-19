@@ -77,17 +77,11 @@ public partial class ConverterRevit
     Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
-#pragma warning disable CA1031 // Do not catch general exception types
-    try
+
+    if (File.Exists(tempPath))
     {
       File.Delete(tempPath);
     }
-    catch (Exception ex)
-    {
-      // TODO : check if catch block is necessary
-      SpeckleLog.Logger.LogDefaultError(ex);
-    }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     FamilyInstance freeform;
     if (Doc.IsFamilyDocument)

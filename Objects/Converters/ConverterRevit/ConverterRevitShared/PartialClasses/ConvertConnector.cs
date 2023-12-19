@@ -17,23 +17,21 @@ public partial class ConverterRevit
       systemName = connector.MEPSystem?.Name ?? connector.Owner.Category?.Name,
     };
 
-    // some genius at Autodesk thought it would be a good idea for property getters to throw...
-    try
+    if (connector.Domain is Domain.DomainHvac or Domain.DomainPiping or Domain.DomainCableTrayConduit)
     {
       speckleMEPConnector.angle = connector.Angle;
     }
-    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
-    try
+
+    if (connector.Shape is ConnectorProfileType.Rectangular)
     {
       speckleMEPConnector.height = ScaleToSpeckle(connector.Height);
       speckleMEPConnector.width = ScaleToSpeckle(connector.Width);
     }
-    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
-    try
+    else if (connector.Shape is ConnectorProfileType.Round)
     {
       speckleMEPConnector.radius = ScaleToSpeckle(connector.Radius);
     }
-    catch (Autodesk.Revit.Exceptions.InvalidOperationException) { }
+
     foreach (var reference in connector.AllRefs.Cast<Connector>())
     {
       if (connector.IsConnectedTo(reference))
