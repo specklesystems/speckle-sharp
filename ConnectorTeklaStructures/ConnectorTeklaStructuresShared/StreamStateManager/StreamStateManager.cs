@@ -11,7 +11,7 @@ namespace ConnectorTeklaStructures.Storage;
 
 public static class StreamStateManager
 {
-  private static string _speckleFilePath;
+  private static string s_speckleFilePath;
 
   public static List<StreamState> ReadState(Model model)
   {
@@ -26,26 +26,32 @@ public static class StreamStateManager
     }
     catch (JsonException ex)
     {
+      SpeckleLog.Logger.Warning(
+        "Failed to deserialize saved stream state list: " + $"{ex.Message}. Resetting to an empty list."
+      );
       return new List<StreamState>();
     }
   }
 
   /// <summary>
-  /// Writes the stream states to the <TeklaStructuresModelName>.txt file in speckle folder
+  /// Writes the stream states to the {TeklaStructuresModelName}.txt file in speckle folder
   /// that exists or is created in the folder where the TeklaStructures model exists.
   /// </summary>
   /// <param name="model"></param>
   /// <param name="streamStates"></param>
   public static void WriteStreamStateList(Model model, List<StreamState> streamStates)
   {
-    if (_speckleFilePath == null)
+    if (s_speckleFilePath == null)
     {
       GetOrCreateSpeckleFilePath(model);
     }
 
-    if (_speckleFilePath == null)
+    if (s_speckleFilePath == null)
+    {
       return;
-    FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+    }
+
+    FileStream fileStream = new(s_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
 
     if (!fileStream.CanWrite)
     {
@@ -55,10 +61,13 @@ public static class StreamStateManager
     try
     {
       using var streamWriter = new StreamWriter(fileStream);
-      string streamStateString = JsonConvert.SerializeObject(streamStates) as string;
+      string streamStateString = JsonConvert.SerializeObject(streamStates);
 
       if (string.IsNullOrEmpty(streamStateString))
+      {
         return;
+      }
+
       streamWriter.Write(streamStateString);
       streamWriter.Flush();
     }
@@ -79,12 +88,12 @@ public static class StreamStateManager
   /// <param name="model">The model associated with the stream state file. This is used to determine or create the file path if it is not already set.</param>
   public static void ClearStreamStateList(Model model)
   {
-    if (_speckleFilePath == null)
+    if (s_speckleFilePath == null)
     {
       GetOrCreateSpeckleFilePath(model);
     }
 
-    if (_speckleFilePath == null || !File.Exists(_speckleFilePath))
+    if (s_speckleFilePath == null || !File.Exists(s_speckleFilePath))
     {
       return;
     }
@@ -92,7 +101,7 @@ public static class StreamStateManager
     FileStream fileStream = null;
     try
     {
-      fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+      fileStream = new FileStream(s_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
       fileStream.SetLength(0);
     }
     catch (Exception ex) when (!ex.IsFatal())
@@ -107,22 +116,22 @@ public static class StreamStateManager
 
   /// <summary>
   /// We need a folder in TeklaStructures model folder named "speckle" and a file in it
-  /// called "<TeklaStructuresModelName>.txt". This function create this file and folder if
+  /// called "{TeklaStructuresModelName}.txt". This function create this file and folder if
   /// they doesn't exists and returns it, otherwise just returns the file path
   /// </summary>
   /// <param name="model"></param>
   private static void GetOrCreateSpeckleFilePath(Model model)
   {
-    string TeklaStructuresModelfilePath = model.GetInfo().ModelPath;
-    if (TeklaStructuresModelfilePath == "")
+    string teklaStructuresModelfilePath = model.GetInfo().ModelPath;
+    if (string.IsNullOrEmpty(teklaStructuresModelfilePath))
     {
       // TeklaStructures model is probably not saved, so speckle shouldn't do much
-      _speckleFilePath = null;
+      s_speckleFilePath = null;
       return;
     }
-    string TeklaStructuresFileName = Path.GetFileNameWithoutExtension(model.GetInfo().ModelName);
-    string speckleFolderPath = Path.Combine(TeklaStructuresModelfilePath, "speckle");
-    string speckleFilePath = Path.Combine(speckleFolderPath, $"{TeklaStructuresFileName}.txt");
+    string teklaStructuresFileName = Path.GetFileNameWithoutExtension(model.GetInfo().ModelName);
+    string speckleFolderPath = Path.Combine(teklaStructuresModelfilePath, "speckle");
+    string speckleFilePath = Path.Combine(speckleFolderPath, $"{teklaStructuresFileName}.txt");
 
     try
     {
@@ -139,35 +148,35 @@ public static class StreamStateManager
         }
       }
 
-      _speckleFilePath = speckleFilePath;
+      s_speckleFilePath = speckleFilePath;
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
       // Combine handling for non-fatal exceptions
       string errorMessage = ex switch
       {
-        IOException _ => $"IO error occurred while accessing {speckleFilePath}: {ex.Message}",
-        UnauthorizedAccessException _ => $"Access to {speckleFilePath} denied: {ex.Message}",
+        IOException => $"IO error occurred while accessing {speckleFilePath}: {ex.Message}",
+        UnauthorizedAccessException => $"Access to {speckleFilePath} denied: {ex.Message}",
         _ => $"An unexpected error occurred while processing {speckleFilePath}: {ex.Message}"
       };
 
       SpeckleLog.Logger.Error($"Could not create or retrieve the Speckle Stream State File: {errorMessage}");
-      _speckleFilePath = null;
+      s_speckleFilePath = null;
     }
   }
 
   /// <summary>
-  /// Reads the "/speckle/<TeklaStructuresModelName>.txt" file and returns the string in it
+  /// Reads the "/speckle/{TeklaStructuresModelName}.txt" file and returns the string in it
   /// </summary>
   /// <param name="model"></param>
   private static string ReadSpeckleFile(Model model)
   {
-    if (_speckleFilePath == null)
+    if (s_speckleFilePath == null)
     {
       GetOrCreateSpeckleFilePath(model);
     }
 
-    if (_speckleFilePath == null)
+    if (s_speckleFilePath == null)
     {
       return "";
     }
@@ -175,7 +184,7 @@ public static class StreamStateManager
     FileStream fileStream = null;
     try
     {
-      fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+      fileStream = new FileStream(s_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
       using var streamReader = new StreamReader(fileStream, Encoding.UTF8);
       return streamReader.ReadToEnd();
     }
@@ -184,9 +193,9 @@ public static class StreamStateManager
       // Handle non-fatal exceptions
       string errorMessage = ex switch
       {
-        IOException _ => $"IO error occurred while reading from {_speckleFilePath}: {ex.Message}",
-        UnauthorizedAccessException _ => $"Access to {_speckleFilePath} denied: {ex.Message}",
-        _ => $"An unexpected error occurred while reading from {_speckleFilePath}: {ex.Message}"
+        IOException => $"IO error occurred while reading from {s_speckleFilePath}: {ex.Message}",
+        UnauthorizedAccessException => $"Access to {s_speckleFilePath} denied: {ex.Message}",
+        _ => $"An unexpected error occurred while reading from {s_speckleFilePath}: {ex.Message}"
       };
 
       SpeckleLog.Logger.Error($"Could not read the Speckle Stream State File: {errorMessage}");
