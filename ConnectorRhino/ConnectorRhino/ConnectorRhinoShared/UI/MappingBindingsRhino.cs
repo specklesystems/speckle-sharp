@@ -26,44 +26,50 @@ public class MappingBindingsRhino : MappingsBindings
 
   public override MappingSelectionInfo GetSelectionInfo()
   {
-    List<RhinoObject> selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false)?.ToList();
-    if (selection is null)
+    try
     {
-      return new MappingSelectionInfo(new List<Schema>(), 0);
-    }
-
-    var result = new List<Schema>();
-    foreach (var obj in selection)
-    {
-      List<Schema> schemas = GetObjectSchemas(obj);
-
-      if (!result.Any())
+      List<RhinoObject> selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false)?.ToList();
+      if (selection is null)
       {
-        result = schemas;
+        return new MappingSelectionInfo(new List<Schema>(), 0);
       }
-      else
+
+      var result = new List<Schema>();
+      foreach (var obj in selection)
       {
-        //intersect lists
-        //TODO: if some elements already have a schema and values are different
-        //we should default to an empty schema, instead of potentially restoring the one with values
-        try
+        List<Schema> schemas = GetObjectSchemas(obj);
+
+        if (result.Count == 0)
         {
-          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+          result = schemas;
         }
-        catch (ArgumentNullException) { }
+        else
+        {
+          //intersect lists
+          //TODO: if some elements already have a schema and values are different
+          //we should default to an empty schema, instead of potentially restoring the one with values
+          List<Schema> intersect = result.Where(x => schemas.Any(y => y.Name == x.Name))?.ToList();
+          if (intersect is not null)
+          {
+            result = intersect;
+          }
+        }
+
+        //incompatible selection
+        if (result.Count == 0)
+        {
+          return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+        }
       }
 
-      //incompatible selection
-      if (!result.Any())
-      {
-        return new MappingSelectionInfo(new List<Schema>(), selection.Count);
-      }
+      return new MappingSelectionInfo(result, selection.Count);
     }
-
-    return new MappingSelectionInfo(result, selection.Count);
-
-    // todo: previously entire block was try catched: SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
-    // check seq to see if this has ever been thrown
+    catch (Exception ex)
+    {
+      // check seq to see if this has ever been thrown
+      SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
+      throw;
+    }
   }
 
   /// <summary>
@@ -77,8 +83,7 @@ public class MappingBindingsRhino : MappingsBindings
 
     try
     {
-      var existingSchema = GetExistingObjectSchema(obj);
-      if (existingSchema != null)
+      if (GetExistingObjectSchema(obj) is Schema existingSchema)
       {
         result.Add(existingSchema);
       }
@@ -161,7 +166,7 @@ public class MappingBindingsRhino : MappingsBindings
         }
       }
     }
-    // todo: this exception needs to be investigated further
+    // TODO: this exception needs to be investigated further
     catch (Exception ex)
     {
       SpeckleLog.Logger.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
