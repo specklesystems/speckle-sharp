@@ -24,41 +24,89 @@ public partial class MainForm : PluginFormBase
   const int GWL_HWNDPARENT = -8;
 
   private static Avalonia.Application AvaloniaApp { get; set; }
+
   public Model Model { get; private set; }
+
   public static Window MainWindow { get; private set; }
+
   public static ConnectorBindingsTeklaStructures Bindings { get; set; }
 
+  /// <summary>
+  /// Initializes a new instance of the MainForm class.
+  /// </summary>
   public MainForm()
   {
+    InitializeComponents();
+    SetupApplication();
+  }
+
+  /// <summary>
+  /// Initializes the components of the MainForm.
+  /// </summary>
+  private void InitializeComponents()
+  {
     Load += MainForm_Load;
+
+    if (MainWindow != null)
+    {
+      return;
+    }
+
+    Model = new Model();
+    Bindings = new ConnectorBindingsTeklaStructures(Model);
+  }
+
+  /// <summary>
+  /// Sets up the application, including event subscriptions, UI build, and model bindings.
+  /// </summary>
+  private static void SetupApplication()
+  {
     if (MainWindow == null)
     {
-      // Link to model.
-      Model = new Model();
-      Bindings = new ConnectorBindingsTeklaStructures(Model);
-
       try
       {
-        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-
-        Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
-        BuildAvaloniaApp().Start(AppMain, null);
-        var viewModel = new MainViewModel(Bindings);
-        MainWindow = new DesktopUI2.Views.MainWindow { DataContext = viewModel };
-
-        Bindings.OpenTeklaStructures();
+        SubscribeToEvents();
+        BuildAndShowMainWindow();
+        SetTeklaAsOwner();
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        SpeckleLog.Logger.Fatal(ex, "Failed to create main form");
+        SpeckleLog.Logger.Error(ex, $"Failed to create main form interface with {ex.Message}");
+        MainWindow = null;
+        return;
       }
     }
 
-    MainWindow.Show();
-    MainWindow.Activate();
-    MainWindow.Focus();
+    MainWindow?.Show();
+    MainWindow?.Activate();
+    MainWindow?.Focus();
+  }
 
-    //set Tekla app as owner
+  /// <summary>
+  /// Subscribes to necessary application events.
+  /// </summary>
+  private static void SubscribeToEvents() =>
+    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+
+  /// <summary>
+  /// Builds and displays the main window of the application.
+  /// </summary>
+  private static void BuildAndShowMainWindow()
+  {
+    Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+    BuildAvaloniaApp().Start(AppMain, null);
+
+    var viewModel = new MainViewModel(Bindings);
+    MainWindow = new DesktopUI2.Views.MainWindow { DataContext = viewModel };
+
+    Bindings.OpenTeklaStructures();
+  }
+
+  /// <summary>
+  /// Sets the Tekla application as the owner of the main window.
+  /// </summary>
+  private static void SetTeklaAsOwner()
+  {
     var hwnd = MainWindow.PlatformImpl.Handle.Handle;
     SetWindowLongPtr(hwnd, GWL_HWNDPARENT, Tekla.Structures.Dialog.MainWindow.Frame.Handle);
   }
