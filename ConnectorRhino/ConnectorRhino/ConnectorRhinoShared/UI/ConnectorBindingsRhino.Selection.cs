@@ -84,14 +84,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       {
         if (Doc.Objects.FindId(guid) is RhinoObject obj)
         {
-          if (deselect)
-          {
-            obj.Select(false, true, false, true, true, true);
-          }
-          else
-          {
-            obj.Select(true, true, true, true, true, true);
-          }
+          obj.Select(!deselect, true, true, true, true, true);
         }
         else if (isPreview)
         {
@@ -99,7 +92,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           PreviewConduit.SelectPreviewObject(id, deselect);
           PreviewConduit.Enabled = true;
         }
-        // if null, this was a preivew probably
       }
     }
 

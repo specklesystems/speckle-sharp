@@ -545,9 +545,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           Base render = obj["renderMaterial"] as Base ?? obj["@renderMaterial"] as Base;
           if (display != null)
           {
-            if (converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
+            var convertedDisplay = converter.ConvertToNative(display) as ObjectAttributes;
+            if (convertedDisplay is not null)
             {
-              attributes = displayAttribute;
+              attributes = convertedDisplay;
             }
           }
           else if (render != null)
@@ -610,7 +611,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // handle render material
           if (render != null)
           {
-            if (converter.ConvertToNative(render) is RenderMaterial convertedMaterial)
+            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial;
+            if (convertedMaterial is not null)
             {
               RhinoObject rhinoObject = Doc.Objects.FindId(id);
               rhinoObject.RenderMaterial = convertedMaterial;
