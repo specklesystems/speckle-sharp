@@ -371,6 +371,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     }
     catch (SpeckleException e)
     {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
@@ -577,6 +578,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     }
     catch (SpeckleException e)
     {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
