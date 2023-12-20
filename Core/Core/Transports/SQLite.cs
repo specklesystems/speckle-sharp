@@ -1,8 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -141,7 +141,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void EndWrite() { }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
@@ -164,7 +164,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       ret[objectId] = rowFound;
     }
 
-    return ret;
+    return Task.FromResult(ret);
   }
 
   private void Initialize()
@@ -280,25 +280,14 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <returns></returns>
   public async Task WriteComplete()
   {
-    await Utilities
-      .WaitUntil(
-        () =>
-        {
-          return GetWriteCompletionStatus();
-        },
-        500
-      )
-      .ConfigureAwait(false);
+    await Utilities.WaitUntil(() => WriteCompletionStatus, 500).ConfigureAwait(false);
   }
 
   /// <summary>
   /// Returns true if the current write queue is empty and comitted.
   /// </summary>
   /// <returns></returns>
-  public bool GetWriteCompletionStatus()
-  {
-    return _queue.IsEmpty && !_isWriting;
-  }
+  public bool WriteCompletionStatus => _queue.IsEmpty && !_isWriting;
 
   private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
   {
@@ -459,6 +448,14 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     throw new NotImplementedException();
   }
+
+  #endregion
+
+  #region Deprecated
+
+  [Obsolete("Use " + nameof(WriteCompletionStatus))]
+  [SuppressMessage("Design", "CA1024:Use properties where appropriate")]
+  public bool GetWriteCompletionStatus() => WriteCompletionStatus;
 
   #endregion
 }

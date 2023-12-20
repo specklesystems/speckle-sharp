@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -88,7 +87,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     Dictionary<string, bool> ret = new();
     foreach (var task in tasks)
     {
-      var taskResult = (IReadOnlyDictionary<string, bool>)await task.ConfigureAwait(false)!;
+      var taskResult = (IReadOnlyDictionary<string, bool>)(await task.ConfigureAwait(false))!;
       foreach (KeyValuePair<string, bool> kv in taskResult)
       {
         ret[kv.Key] = kv.Value;

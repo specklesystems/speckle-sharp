@@ -1,7 +1,7 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
@@ -118,6 +118,8 @@ public sealed class MemoryTransport : ITransport, ICloneable
     return Task.FromResult(ret);
   }
 
+  [Obsolete("No replacement required, memory transport is sync")]
+  [SuppressMessage("Design", "CA1024:Use properties where appropriate")]
   public bool GetWriteCompletionStatus()
   {
     return true; // can safely assume it's always true, as ops are atomic?

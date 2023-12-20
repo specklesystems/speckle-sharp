@@ -1,4 +1,3 @@
-#nullable enable
 using System.Collections;
 using System.Collections.Generic;
 
@@ -20,11 +19,11 @@ public class GraphTraversal : GraphTraversal<TraversalContext>
 public abstract class GraphTraversal<T>
   where T : TraversalContext
 {
-  private readonly ITraversalRule[] rules;
+  private readonly ITraversalRule[] _rules;
 
   protected GraphTraversal(params ITraversalRule[] traversalRule)
   {
-    rules = traversalRule;
+    _rules = traversalRule;
   }
 
   /// <summary>
@@ -136,7 +135,7 @@ public abstract class GraphTraversal<T>
 
   private ITraversalRule? GetActiveRule(Base o)
   {
-    foreach (var rule in rules)
+    foreach (var rule in _rules)
     {
       if (rule.DoesRuleHold(o))
       {
