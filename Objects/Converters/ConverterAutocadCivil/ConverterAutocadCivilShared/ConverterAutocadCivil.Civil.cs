@@ -46,7 +46,7 @@ public partial class ConverterAutocadCivil
   }
 
   // stations
-  public Station StationToSpeckle(CivilDB.Station station, double? designSpeed)
+  public Station StationToSpeckle(CivilDB.Station station)
   {
     var speckleStation = new Station
     {
@@ -55,11 +55,6 @@ public partial class ConverterAutocadCivil
       number = station.RawStation,
       units = ModelUnits
     };
-    
-    if (designSpeed is not null)
-    {
-      speckleStation["designSpeed"] = designSpeed.Value;
-    }
 
     return speckleStation;
   }
@@ -156,19 +151,20 @@ public partial class ConverterAutocadCivil
 
     AddNameAndDescriptionProperty(alignment.Name, alignment.Description, speckleAlignment);
 
+    // get design speeds
+    var designSpeeds = DesignSpeedsToSpeckle(alignment.DesignSpeeds);
+    if (designSpeeds.Count > 0)
+    {
+      speckleAlignment["@designSpeeds"] = designSpeeds;
+    }
+
     // get alignment stations and design speeds
     List<Station> stations = new();
-    Dictionary<double,double> designSpeeds =new();
-    foreach (DesignSpeed designSpeed in alignment.DesignSpeeds)
-    {
-      designSpeeds.Add(designSpeed.Station, designSpeed.Value);
-    }
     foreach (CivilDB.Station station in alignment.GetStationSet(StationTypes.All))
     {
-      double? speed = designSpeeds.ContainsKey(station.RawStation) ? designSpeeds[station.RawStation] : null;
-      stations.Add(StationToSpeckle(station, speed));
+      stations.Add(StationToSpeckle(station));
     }
-    if (stations.Any())
+    if (stations.Count > 0)
     {
       speckleAlignment["@stations"] = stations;
     }
@@ -189,6 +185,28 @@ public partial class ConverterAutocadCivil
 
     return speckleAlignment;
   }
+
+  private List<Base> DesignSpeedsToSpeckle(DesignSpeedCollection designSpeeds)
+  {
+    List<Base> speckleDesignSpeeds = new();
+
+    foreach (DesignSpeed designSpeed in designSpeeds)
+    {
+      Base speckleDesignSpeed = new();
+      speckleDesignSpeed["number"] = designSpeed.SpeedNumber;
+      speckleDesignSpeed["station"] = designSpeed.Station;
+      speckleDesignSpeed["value"] = designSpeed.Value;
+      if (!string.IsNullOrEmpty(designSpeed.Comment))
+      {
+        speckleDesignSpeed["comment"] = designSpeed.Comment;
+      }
+
+      speckleDesignSpeeds.Add(speckleDesignSpeed);
+    }
+
+    return speckleDesignSpeeds;
+  }
+
   public ApplicationObject AlignmentToNative(Alignment alignment)
   {
     var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
@@ -331,13 +349,13 @@ public partial class ConverterAutocadCivil
     existingAlignment.ReferencePointStation = alignment.startStation;
 
     // set design speeds if any
-    if (civilAlignment["@stations"] is List<object> stations)
+    if (civilAlignment["@designSpeeds"] is List<object> speeds)
     {
-      foreach (Station station in stations.Cast<Station>())
+      foreach (object speed in speeds)
       {
-        if (station["designSpeed"] is double designSpeed)
+        if (speed is Base speedBase && speedBase["station"] is double station && speedBase["value"] is double value)
         {
-          existingAlignment.DesignSpeeds.Add(station.number, designSpeed);
+          existingAlignment.DesignSpeeds.Add(station, value);
         }
       }
     }

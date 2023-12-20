@@ -172,12 +172,16 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   {
     try
     {
-      var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+      const bool ENHANCED_LOG_CONTEXT =
+#if MAC
+        false;
+#else
+        true;
+#endif
+      var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
+
       var hostAppName = Utils.AppName;
       var hostAppVersion = Utils.RhinoAppName;
-#if MAC
-        logConfig.enhancedLogContext = false;
-#endif
       SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
       SpeckleLog.Logger.Information(
         "Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}",

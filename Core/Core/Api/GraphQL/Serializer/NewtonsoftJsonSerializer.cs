@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.IO;
 using System.Text;
@@ -11,7 +12,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
+internal sealed class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
 {
   public NewtonsoftJsonSerializer()
     : this(DefaultJsonSerializerSettings) { }

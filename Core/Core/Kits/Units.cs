@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using Speckle.Core.Logging;
+using System.Diagnostics.Contracts;
 
 namespace Speckle.Core.Kits;
 
@@ -10,35 +11,36 @@ public static class Units
   public const string Meters = "m";
   public const string Kilometers = "km";
   public const string Inches = "in";
-  public const string Feet = "ft"; // smelly ones
+
+  /// <summary>International Foot</summary>
+  public const string Feet = "ft";
   public const string Yards = "yd";
   public const string Miles = "mi";
   public const string None = "none";
 
-  // public const string USInches = "us_in"; the smelliest ones, can add later if people scream "USA #1"
-  public const string USFeet = "us_ft"; // it happened, absolutely gross
+  /// <summary>US Survey foot</summary>
+  /// <remarks>Considered an obsolete unit, superseded by the international foot <seealso cref="Feet"/></remarks>
+  public const string USFeet = "us_ft";
 
-  private static readonly List<string> SupportedUnits =
+  private static readonly List<string> s_supportedUnits =
     new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
 
   public static bool IsUnitSupported(string unit)
   {
-    return SupportedUnits.Contains(unit);
+    return s_supportedUnits.Contains(unit);
   }
 
-  // public const string USYards = "us_yd"; the smelliest ones, can add later if people scream "USA #1"
-  // public const string USMiles = "us_mi"; the smelliest ones, can add later if people scream "USA #1"
-
+  [Pure]
   public static double GetConversionFactor(string from, string to)
   {
-    from = GetUnitsFromString(from);
-    to = GetUnitsFromString(to);
+    string? fromUnits = GetUnitsFromString(from);
+    string? toUnits = GetUnitsFromString(to);
 
-    switch (from)
+    switch (fromUnits)
     {
       // METRIC
       case Millimeters:
-        switch (to)
+        switch (toUnits)
         {
           case Centimeters:
             return 0.1;
@@ -59,7 +61,7 @@ public static class Units
         }
         break;
       case Centimeters:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 10;
@@ -80,7 +82,7 @@ public static class Units
         }
         break;
       case Meters:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 1000;
@@ -101,7 +103,7 @@ public static class Units
         }
         break;
       case Kilometers:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 1000000;
@@ -124,7 +126,7 @@ public static class Units
 
       // IMPERIAL
       case Inches:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 25.4;
@@ -145,7 +147,7 @@ public static class Units
         }
         break;
       case Feet:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 304.8;
@@ -166,7 +168,7 @@ public static class Units
         }
         break;
       case USFeet:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 120000d / 3937d;
@@ -187,7 +189,7 @@ public static class Units
         }
         break;
       case Yards:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 914.4;
@@ -208,7 +210,7 @@ public static class Units
         }
         break;
       case Miles:
-        switch (to)
+        switch (toUnits)
         {
           case Millimeters:
             return 1.609e+6;
@@ -234,109 +236,67 @@ public static class Units
     return 1;
   }
 
-  public static string GetUnitsFromString(string unit)
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="unit"></param>
+  /// <returns></returns>
+  /// <exception cref="ArgumentOutOfRangeException">Unit string is not a supported unit (see <see cref="IsUnitSupported"/>)</exception>
+  [Pure]
+  public static string? GetUnitsFromString(string unit)
   {
     if (unit == null)
     {
       return null;
     }
 
-    switch (unit.ToLower())
+    return unit.ToLower() switch
     {
-      case "mm":
-      case "mil":
-      case "millimeter":
-      case "millimeters":
-      case "millimetres":
-        return Millimeters;
-      case "cm":
-      case "centimetre":
-      case "centimeter":
-      case "centimetres":
-      case "centimeters":
-        return Centimeters;
-      case "m":
-      case "meter":
-      case "metre":
-      case "meters":
-      case "metres":
-        return Meters;
-      case "inches":
-      case "inch":
-      case "in":
-        return Inches;
-      case "feet":
-      case "foot":
-      case "ft":
-        return Feet;
-      case "ussurveyfeet":
-        return USFeet;
-      case "yard":
-      case "yards":
-      case "yd":
-        return Yards;
-      case "miles":
-      case "mile":
-      case "mi":
-        return Miles;
-      case "kilometers":
-      case "kilometer":
-      case "km":
-        return Kilometers;
-      case "none":
-        return None;
-    }
-
-    throw new SpeckleException($"Cannot understand what unit {unit} is.");
+      "mm" or "mil" or "millimeter" or "millimeters" or "millimetres" => Millimeters,
+      "cm" or "centimetre" or "centimeter" or "centimetres" or "centimeters" => Centimeters,
+      "m" or "meter" or "metre" or "meters" or "metres" => Meters,
+      "inches" or "inch" or "in" => Inches,
+      "feet" or "foot" or "ft" => Feet,
+      "ussurveyfeet" => USFeet, //BUG: why don't we match on "us_ft"?
+      "yard" or "yards" or "yd" => Yards,
+      "miles" or "mile" or "mi" => Miles,
+      "kilometers" or "kilometer" or "km" => Kilometers,
+      "none" => None,
+      _ => throw new ArgumentOutOfRangeException(nameof(unit), $"Unrecognised unit string {unit}"),
+    };
   }
 
+  [Pure]
   public static int GetEncodingFromUnit(string unit)
   {
-    switch (unit)
+    return unit switch
     {
-      case Millimeters:
-        return 1;
-      case Centimeters:
-        return 2;
-      case Meters:
-        return 3;
-      case Kilometers:
-        return 4;
-      case Inches:
-        return 5;
-      case Feet:
-        return 6;
-      case Yards:
-        return 7;
-      case Miles:
-        return 8;
-    }
-
-    return 0;
+      Millimeters => 1,
+      Centimeters => 2,
+      Meters => 3,
+      Kilometers => 4,
+      Inches => 5,
+      Feet => 6,
+      Yards => 7,
+      Miles => 8,
+      _ => 0,
+    };
   }
 
+  [Pure]
   public static string GetUnitFromEncoding(double unit)
   {
-    switch (unit)
+    return unit switch
     {
-      case 1:
-        return Millimeters;
-      case 2:
-        return Centimeters;
-      case 3:
-        return Meters;
-      case 4:
-        return Kilometers;
-      case 5:
-        return Inches;
-      case 6:
-        return Feet;
-      case 7:
-        return Yards;
-      case 8:
-        return Miles;
-    }
-
-    return None;
+      1 => Millimeters,
+      2 => Centimeters,
+      3 => Meters,
+      4 => Kilometers,
+      5 => Inches,
+      6 => Feet,
+      7 => Yards,
+      8 => Miles,
+      _ => None,
+    };
   }
 }

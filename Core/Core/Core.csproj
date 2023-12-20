@@ -12,6 +12,7 @@
     <PackageTags>$(PackageTags) core</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using Utilities = Speckle.Core.Models.Utilities;
 namespace Speckle.Core.Serialisation;
 
 /// <summary>
-/// Json converter that handles base speckle objects. Enables detachment &
+/// Json converter that handles base speckle objects. Enables detachment and
 /// simultaneous transport (persistence) of objects.
 /// </summary>
 public class BaseObjectSerializer : JsonConverter
