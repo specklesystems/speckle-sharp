@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using Autodesk.AutoCAD.ApplicationServices;
 using DesktopUI2;
+using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorAutocadCivil.Entry;
 
@@ -30,44 +32,44 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   //checks whether to refresh the stream list in case the user changes active view and selects a different document
   private void Application_WindowActivated(object sender, DocumentWindowActivatedEventArgs e)
   {
-    try
+    if (e.DocumentWindow?.Document == null || UpdateSavedStreams == null)
     {
-      if (e.DocumentWindow.Document == null || UpdateSavedStreams == null)
-      {
-        return;
-      }
-
-      var streams = GetStreamsInFile();
-      UpdateSavedStreams(streams);
-
-      MainViewModel.GoHome();
+      return;
     }
-    catch { }
+
+    List<StreamState> streams = GetStreamsInFile();
+    if (streams is null)
+    {
+      return;
+    }
+
+    UpdateSavedStreams(streams);
+
+    MainViewModel.GoHome();
   }
 
   private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
   {
-    try
+    // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
+    if (e.Document == null)
     {
-      // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
-      if (e.Document == null)
-      {
-        SpeckleAutocadCommand.MainWindow?.Hide();
-
-        MainViewModel.GoHome();
-        return;
-      }
-
-      var streams = GetStreamsInFile();
-      if (streams.Count > 0)
-      {
-        SpeckleAutocadCommand.CreateOrFocusSpeckle();
-      }
-
-      UpdateSavedStreams?.Invoke(streams);
+      SpeckleAutocadCommand.MainWindow?.Hide();
 
       MainViewModel.GoHome();
+      return;
     }
-    catch { }
+
+    List<StreamState> streams = GetStreamsInFile();
+    if (streams is null)
+    {
+      return;
+    }
+
+    if (streams.Count > 0)
+    {
+      SpeckleAutocadCommand.CreateOrFocusSpeckle();
+      UpdateSavedStreams?.Invoke(streams);
+      MainViewModel.GoHome();
+    }
   }
 }

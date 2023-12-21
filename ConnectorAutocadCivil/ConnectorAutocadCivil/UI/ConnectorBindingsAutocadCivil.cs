@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.AutoCAD.ApplicationServices;
@@ -86,15 +87,36 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
   private string GetDocPath(Document doc) =>
     HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
 
+  /// <summary>
+  /// Retrieves the hashed id of Doc from its path and name (saved) or name and timestamp (if not saved).
+  /// </summary>
+  /// <returns>The hashed Doc id, or null on failure.</returns>
+  /// <remarks>Used as a prefix to an object's id to create a more unique applicationId.</remarks>
   public override string GetDocumentId()
   {
-    string path = null;
+    if (Doc is null)
+    {
+      return null;
+    }
+
+    string name = Doc.Name;
+    string docString;
+
     try
     {
-      path = GetDocPath(Doc);
+      // get the path (unsaved files will not have a path)
+      string path = GetDocPath(Doc);
+      docString = path + name;
     }
-    catch { }
-    var docString = $"{path ?? ""}{(Doc != null ? Doc.Name : "")}";
+    catch // is there a way to check if the doc is saved before attempting to retrieve the doc path?
+    {
+      // get the timestamp if path is null
+      // this is because new unsaved docs have a high chance of having the same name
+      // resulting in non-unique application ids
+      string time = DateTime.Now.ToString();
+      docString = name + time;
+    }
+
     var hash = !string.IsNullOrEmpty(docString)
       ? Utilities.HashString(docString, Utilities.HashingFunctions.MD5)
       : null;

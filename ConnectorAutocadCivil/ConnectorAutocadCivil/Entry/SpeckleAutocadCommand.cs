@@ -19,6 +19,7 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
+using Speckle.Core.Logging;
 
 #if ADVANCESTEEL
 [assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
@@ -67,7 +68,7 @@ public class SpeckleAutocadCommand
   {
     if (MainWindow == null)
     {
-      var viewModel = new MainViewModel(Bindings);
+      MainViewModel viewModel = new(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
     }
 
@@ -114,7 +115,10 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
+    catch (System.Exception ex)
+    {
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Community: {exceptionMessage}");
+    }
   }
 
   [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
@@ -129,7 +133,10 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
+    catch (System.Exception ex)
+    {
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Tutorials: {exceptionMessage}");
+    }
   }
 
   [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
@@ -144,6 +151,9 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
+    catch (System.Exception ex)
+    {
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Docs: {exceptionMessage}");
+    }
   }
 }

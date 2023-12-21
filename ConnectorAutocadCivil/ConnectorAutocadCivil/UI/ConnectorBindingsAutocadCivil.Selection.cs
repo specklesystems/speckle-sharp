@@ -71,13 +71,14 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     };
   }
 
-  public override void SelectClientObjects(List<string> args, bool deselect = false)
+  public override void SelectClientObjects(List<string> objs, bool deselect = false)
   {
-    var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-    var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
-    foreach (var arg in args)
+    if (objs is not null && objs.Count > 0)
     {
-      try
+      Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
+
+      var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+      foreach (var arg in objs)
       {
         if (Utils.GetHandle(arg, out Handle handle))
         {
@@ -85,10 +86,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           {
             if (deselect)
             {
-              if (currentSelection.Contains(id))
-              {
-                currentSelection.Remove(id);
-              }
+              currentSelection.Remove(id);
             }
             else
             {
@@ -100,18 +98,18 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           }
         }
       }
-      catch { }
-    }
-    if (currentSelection.Count == 0)
-    {
-      editor.SetImpliedSelection(new ObjectId[0]);
-    }
-    else
-    {
-      Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
-    }
 
-    Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+      if (currentSelection.Count == 0)
+      {
+        editor.SetImpliedSelection(System.Array.Empty<ObjectId>());
+      }
+      else
+      {
+        Autodesk.AutoCAD.Internal.Utils.SelectObjects(currentSelection.ToArray());
+      }
+
+      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+    }
   }
 
   private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)

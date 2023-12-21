@@ -48,19 +48,15 @@ public static class Utils
     var extensionDictionary = tr.GetObject(source.ExtensionDictionary, OpenMode.ForRead, false) as DBDictionary;
     foreach (var entry in extensionDictionary)
     {
-      var xRecord = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord; // sometimes these can be RXClass objects, in property sets
-      if (xRecord != null)
+      if (tr.GetObject(entry.Value, OpenMode.ForRead) is Xrecord xRecord) // sometimes these can be RXClass objects, in property sets
       {
         var entryBase = new Base();
         foreach (var xEntry in xRecord.Data)
         {
           entryBase[xEntry.TypeCode.ToString()] = xEntry.Value;
         }
-        try
-        {
-          extensionDictionaryBase[$"{entry.Key}"] = entryBase;
-        }
-        catch (Exception e) { }
+
+        extensionDictionaryBase[$"{entry.Key}"] = entryBase;
       }
     }
 
@@ -70,7 +66,7 @@ public static class Utils
 
 public partial class ConverterAutocadCivil
 {
-  public static string invalidAutocadChars = @"<>/\:;""?*|=,‘";
+  private const string INVALIDCHARS = @"<>/\:;""?*|=,‘";
 
   private Dictionary<string, ObjectId> _lineTypeDictionary = new();
   public Dictionary<string, ObjectId> LineTypeDictionary
@@ -95,14 +91,14 @@ public partial class ConverterAutocadCivil
   /// </summary>
   /// <param name="str"></param>
   /// <returns></returns>
-  public static string RemoveInvalidAutocadChars(string str)
+  public static string RemoveInvalidChars(string str)
   {
     // using this to handle rhino nested layer syntax
     // replace "::" layer delimiter with "$" (acad standard)
     string cleanDelimiter = str.Replace("::", "$");
 
     // remove all other invalid chars
-    return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
+    return Regex.Replace(cleanDelimiter, $"[{INVALIDCHARS}]", string.Empty);
   }
 
   public static void AddNameAndDescriptionProperty(string name, string description, Base @base)
@@ -126,14 +122,31 @@ public partial class ConverterAutocadCivil
   public static bool GetHandle(string str, out Handle handle)
   {
     handle = new Handle();
-    try
-    {
-      handle = new Handle(Convert.ToInt64(str, 16));
-    }
-    catch
+    if (string.IsNullOrEmpty(str))
     {
       return false;
     }
+
+    long l;
+    try
+    {
+      l = Convert.ToInt64(str, 16);
+    }
+    catch (ArgumentException)
+    {
+      return false;
+    }
+    catch (FormatException)
+    {
+      return false;
+    }
+    catch (OverflowException)
+    {
+      return false;
+    }
+
+    handle = new Handle(l);
+
     return true;
   }
 
@@ -147,7 +160,7 @@ public partial class ConverterAutocadCivil
   {
     var ids = new List<ObjectId>();
 
-    if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+    if (applicationId == null || ReceiveMode == ReceiveMode.Create)
     {
       return ids;
     }
@@ -233,6 +246,42 @@ public partial class ConverterAutocadCivil
     return id;
   }
 
+  public LayerTableRecord GetLayer(string path, OpenMode mode = OpenMode.ForRead)
+  {
+    if (!string.IsNullOrEmpty(path))
+    {
+      var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead);
+      if (layerTable.Has(path))
+      {
+        return (LayerTableRecord)Trans.GetObject(layerTable[path], mode);
+      }
+    }
+
+    return null;
+  }
+
+  public bool MakeLayer(string name, out LayerTableRecord layer)
+  {
+    layer = null;
+
+    if (!string.IsNullOrEmpty(name))
+    {
+      var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForWrite);
+
+      LayerTableRecord newLayer = new() { Name = name };
+      try
+      {
+        layerTable.Add(newLayer);
+        Trans.AddNewlyCreatedDBObject(newLayer, true);
+        layer = newLayer;
+        return true;
+      }
+      catch { } // TODO: use !IsFatal() here
+    }
+
+    return false;
+  }
+
   #region Reference Point
 
   // CAUTION: these strings need to have the same values as in the connector bindings
@@ -246,9 +295,7 @@ public partial class ConverterAutocadCivil
       if (_transform == null || _transform == new Matrix3d())
       {
         // get from settings
-        var referencePointSetting = Settings.ContainsKey("reference-point")
-          ? Settings["reference-point"]
-          : string.Empty;
+        var referencePointSetting = Settings.TryGetValue("reference-point", out string value) ? value : string.Empty;
         _transform = GetReferencePointTransform(referencePointSetting);
       }
       return _transform;

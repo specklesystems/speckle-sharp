@@ -254,34 +254,73 @@ public static class Utils
     }
     else
     {
-      PropertyInfo prop = obj.GetType().GetProperty("Visible");
       try
       {
-        isVisible = (bool)prop.GetValue(obj);
+        PropertyInfo prop = obj.GetType().GetProperty("Visible");
+        if (prop.GetValue(obj) is bool visible)
+        {
+          isVisible = visible;
+        }
       }
-      catch { }
+      catch (AmbiguousMatchException) { }
     }
     return isVisible;
   }
 
+  public static bool GetOrMakeLayer(this Document doc, string layerName, Transaction tr, out string cleanName)
+  {
+    cleanName = RemoveInvalidChars(layerName);
+    if (tr.GetObject(doc.Database.LayerTableId, OpenMode.ForRead) is LayerTable layerTable)
+    {
+      if (layerTable.Has(cleanName))
+      {
+        return true;
+      }
+      else
+      {
+        layerTable.UpgradeOpen();
+        LayerTableRecord newLayer =
+          new()
+          {
+            Color = Color.FromColorIndex(ColorMethod.ByColor, 7), // white
+            Name = cleanName
+          };
+
+        // Append the new layer to the layer table and the transaction
+        try
+        {
+          layerTable.Add(newLayer);
+        }
+        catch // TODO: use !IsFatal() here
+        {
+          return false;
+        }
+        tr.AddNewlyCreatedDBObject(newLayer, true);
+      }
+    }
+    return true;
+  }
+  #endregion
+
+  #region property sets
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
   private static Autodesk.Aec.PropertyData.DataType? GetPropertySetType(object prop)
   {
     switch (prop)
     {
-      case IEnumerable<string> _:
-      case IEnumerable<int> _:
-      case IEnumerable<double> _:
-      case IEnumerable<bool> _:
+      case IEnumerable<string>:
+      case IEnumerable<int>:
+      case IEnumerable<double>:
+      case IEnumerable<bool>:
         return Autodesk.Aec.PropertyData.DataType.List;
 
-      case string _:
+      case string:
         return Autodesk.Aec.PropertyData.DataType.Text;
-      case int _:
+      case int:
         return Autodesk.Aec.PropertyData.DataType.Integer;
-      case double _:
+      case double:
         return Autodesk.Aec.PropertyData.DataType.Real;
-      case bool _:
+      case bool:
         return Autodesk.Aec.PropertyData.DataType.TrueFalse;
 
       default:
@@ -289,60 +328,118 @@ public static class Utils
     }
   }
 
+  public static PropertySetDefinition CreatePropertySet(Dictionary<string,object> propertySetDict, Document doc)
+  {
+    PropertySetDefinition propSetDef = new();
+    propSetDef.SetToStandard(doc.Database);
+    propSetDef.SubSetDatabaseDefaults(doc.Database);
+    propSetDef.Description = "Property Set Definition added with Speckle";
+    propSetDef.AppliesToAll = true;
+
+    // Create the definition for each property
+    foreach (var entry in propertySetDict)
+    {
+      var propDef = new PropertyDefinition();
+      propDef.SetToStandard(doc.Database);
+      propDef.SubSetDatabaseDefaults(doc.Database);
+      propDef.Name = entry.Key;
+      if (GetPropertySetType(entry.Value) is Autodesk.Aec.PropertyData.DataType dataType)
+      {
+        propDef.DataType = dataType;
+      }
+
+      propDef.DefaultData = entry.Value;
+      propSetDef.Definitions.Add(propDef);
+    }
+
+    return propSetDef;
+  }
+
+  /// <summary>
+  /// Finds a property set by its ObjectId on a given object.
+  /// </summary>
+  /// <param name="obj">The object to find the property set on.</param>
+  /// <param name="propertySetId">The property set ObjectId to find on the object.</param>
+  /// <returns> True if the property set with the given ObjectId was found, or false otherwise. </returns>
+  public static bool ObjectHasPropertySet(DBObject obj, ObjectId propertySetId)
+  {
+    ObjectId temporaryId = ObjectId.Null;
+
+    try
+    {
+      // attempt to retrieve the property set.
+      // this will throw if the property set does not exist on the object.
+      // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
+      temporaryId = PropertyDataServices.GetPropertySet(obj, propertySetId);
+    } 
+    catch (Autodesk.AutoCAD.Runtime.Exception)
+    {
+      // More than likely eKeyNotFound exception.
+    }
+
+    return temporaryId != ObjectId.Null;
+  }
+
+  /// <summary>
+  /// Creates a property set on a given object.
+  /// Requires that the property set exists in the current database and
+  /// that the property set applies to the object.
+  /// </summary>
+  /// <param name="obj">The  object to create the property set on.</param>
+  /// <param name="propertySetId">The objectID of the property set to create on the object </param>
+  /// <returns> True if the property set was created on the object, or false if there was a failure. </returns>
+  public static void AddPropertySetToObject(DBObject obj, ObjectId propertySetId)
+  {
+    try
+    {
+      if (!ObjectHasPropertySet(obj, propertySetId))
+      {
+        if (!obj.IsWriteEnabled)
+        {
+          obj.UpgradeOpen();
+        }
+
+        PropertyDataServices.AddPropertySet(obj, propertySetId);
+      }
+    }
+    catch (Autodesk.AutoCAD.Runtime.Exception e)
+    {
+      throw new InvalidOperationException($"Could not create property set on object {obj.Id}", e);
+    }
+  } 
+
   public static void SetPropertySets(this Entity entity, Document doc, List<Dictionary<string, object>> propertySetDicts)
   {
     // create a dictionary for property sets for this object
     var name = $"Speckle {entity.Handle} Property Set";
     int count = 0;
-    foreach (var propertySetDict in propertySetDicts)
+    using DictionaryPropertySetDefinitions dictPropSetDef = new(doc.Database);
+
+    // add property sets to object
+    using Transaction tr = doc.Database.TransactionManager.StartTransaction();
+    foreach (Dictionary<string, object> propertySetDict in propertySetDicts)
     {
-      // create the property set definition for this set.
-      var propSetDef = new PropertySetDefinition();
-      propSetDef.SetToStandard(doc.Database);
-      propSetDef.SubSetDatabaseDefaults(doc.Database);
-      var propSetDefName = name += $" - {count}";
-      propSetDef.Description = "Property Set Definition added with Speckle";
-      propSetDef.AppliesToAll = true;
-
-      // Create the definition for each property
-      foreach (var entry in propertySetDict)
-      {
-        var propDef = new PropertyDefinition();
-        propDef.SetToStandard(doc.Database);
-        propDef.SubSetDatabaseDefaults(doc.Database);
-        propDef.Name = entry.Key;
-        var dataType = GetPropertySetType(entry.Value);
-        if (dataType != null)
-        {
-          propDef.DataType = (Autodesk.Aec.PropertyData.DataType)dataType;
-        }
-
-        propDef.DefaultData = entry.Value;
-        propSetDef.Definitions.Add(propDef);
-      }
-
-      // add the property sets to the object
       try
       {
+        // create the property set definition for this set
+        PropertySetDefinition propSetDef = CreatePropertySet(propertySetDict, doc);
+        var propSetDefName = name += $" - {count}";
         // add property set to the database
-        // todo: add logging if the property set couldnt be added because a def already exists
-        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
-        {
-          var dictPropSetDef = new DictionaryPropertySetDefinitions(doc.Database);
-          dictPropSetDef.AddNewRecord(propSetDefName, propSetDef);
-          tr.AddNewlyCreatedDBObject(propSetDef, true);
-
-          entity.UpgradeOpen();
-          PropertyDataServices.AddPropertySet(entity, propSetDef.ObjectId);
-          tr.Commit();
-        }
+        dictPropSetDef.AddNewRecord(propSetDefName, propSetDef);
+        tr.AddNewlyCreatedDBObject(propSetDef, true);
+        // add property set to the object
+        AddPropertySetToObject(entity, propSetDef.ObjectId);
       }
-      catch { }
+      catch (Autodesk.AutoCAD.Runtime.Exception) { }
+
+      count++;
     }
+
+    tr.Commit();
   }
 
   /// <summary>
-  /// Get the property sets of  DBObject
+  /// Get the property sets of DBObject
   /// </summary>
   /// <param name="obj"></param>
   /// <returns></returns>
@@ -354,9 +451,9 @@ public static class Utils
     {
       propertySets = PropertyDataServices.GetPropertySets(obj);
     }
-    catch (Exception e)
-    { }
-    if (propertySets == null)
+    catch (Autodesk.AutoCAD.Runtime.Exception) { }
+
+    if (propertySets is null)
     {
       return sets;
     }
@@ -377,9 +474,9 @@ public static class Utils
 
       foreach (PropertySetData data in propertySet.PropertySetData)
       {
-        if (propDefs.ContainsKey(data.Id))
+        if (propDefs.TryGetValue(data.Id, out PropertyDefinition value))
         {
-          setDictionary.Add(propDefs[data.Id].Name, data.GetData());
+          setDictionary.Add(value.Name, data.GetData());
         }
         else
         {
@@ -404,14 +501,14 @@ public static class Utils
       var obj = dict[key];
       switch (obj)
       {
-        case double _:
-        case bool _:
-        case int _:
-        case string _:
-        case IEnumerable<double> _:
-        case IEnumerable<bool> _:
-        case IEnumerable<int> _:
-        case IEnumerable<string> _:
+        case double:
+        case bool:
+        case int:
+        case string:
+        case IEnumerable<double>:
+        case IEnumerable<bool>:
+        case IEnumerable<int>:
+        case IEnumerable<string>:
           target[key] = obj;
           continue;
 
@@ -430,6 +527,7 @@ public static class Utils
     return target;
   }
 #endif
+  #endregion
 
   /// <summary>
   /// Gets the handles of all visible document objects that can be converted to Speckle
@@ -475,16 +573,14 @@ public static class Utils
       {
         try
         {
-          using (RegAppTableRecord regAppRecord = new())
-          {
-            regAppRecord.Name = ApplicationIdKey;
-            regAppTable.UpgradeOpen();
-            regAppTable.Add(regAppRecord);
-            regAppTable.DowngradeOpen();
-            tr.AddNewlyCreatedDBObject(regAppRecord, true);
-          }
+          using RegAppTableRecord regAppRecord = new();
+          regAppRecord.Name = ApplicationIdKey;
+          regAppTable.UpgradeOpen();
+          regAppTable.Add(regAppRecord);
+          regAppTable.DowngradeOpen();
+          tr.AddNewlyCreatedDBObject(regAppRecord, true);
         }
-        catch (Exception e)
+        catch (Autodesk.AutoCAD.Runtime.Exception)
         {
           return false;
         }
@@ -520,7 +616,7 @@ public static class Utils
     /// This is used because the persistent id of the db object in the file is almost guaranteed to not be unique between files
     /// </summary>
     /// <param name="obj"></param>
-    /// <param name="handle"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
     public static bool SetObjectCustomApplicationId(
       DBObject obj,
@@ -544,7 +640,7 @@ public static class Utils
 
         obj.XData = rb;
       }
-      catch (Exception e)
+      catch (Autodesk.AutoCAD.Runtime.Exception)
       {
         return false;
       }
@@ -606,7 +702,7 @@ public static class Utils
           }
         }
       }
-      if (foundObjects.Any())
+      if (foundObjects.Count != 0)
       {
         return foundObjects;
       }
@@ -628,7 +724,6 @@ public static class Utils
     }
   }
   #endregion
-
 
   /// <summary>
   /// Returns a descriptive string for reporting
@@ -681,14 +776,31 @@ public static class Utils
   public static bool GetHandle(string str, out Handle handle)
   {
     handle = new Handle();
-    try
-    {
-      handle = new Handle(Convert.ToInt64(str, 16));
-    }
-    catch
+    if (string.IsNullOrEmpty(str))
     {
       return false;
     }
+
+    long l;
+    try
+    {
+      l = Convert.ToInt64(str, 16);
+    }
+    catch (ArgumentException)
+    {
+      return false;
+    }
+    catch (FormatException)
+    {
+      return false;
+    }
+    catch (OverflowException)
+    {
+      return false;
+    }
+
+    handle = new Handle(l);
+
     return true;
   }
 
@@ -735,9 +847,9 @@ public static class Utils
 
     if (styleBase["linetype"] is string lineType)
     {
-      if (lineTypeDictionary.ContainsKey(lineType))
+      if (lineTypeDictionary.TryGetValue(lineType, out ObjectId value))
       {
-        entity.LinetypeId = lineTypeDictionary[lineType];
+        entity.LinetypeId = value;
       }
     }
   }

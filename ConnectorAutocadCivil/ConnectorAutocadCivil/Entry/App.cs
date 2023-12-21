@@ -30,15 +30,14 @@ public class App : IExtensionApplication
   #region Initializing and termination
   public void Initialize()
   {
+    //Advance Steel addon is initialized after ribbon creation
+    bool advanceSteel = false;
+#if ADVANCESTEEL
+    advanceSteel = true;
+#endif
+    ribbon = ComponentManager.Ribbon;
     try
     {
-      //Advance Steel addon is initialized after ribbon creation
-      bool advanceSteel = false;
-#if ADVANCESTEEL
-      advanceSteel = true;
-#endif
-
-      ribbon = ComponentManager.Ribbon;
       if (ribbon != null && !advanceSteel) //the assembly was loaded using netload
       {
         Create();
@@ -243,21 +242,54 @@ public class App : IExtensionApplication
     return button;
   }
 
+  /// <summary>
+  /// Retrieve the png image source
+  /// </summary>
+  /// <param name="sourceName"></param>
+  /// <returns></returns>
   private ImageSource LoadPngImgSource(string sourceName)
   {
-    try
+    if (!string.IsNullOrEmpty(sourceName) && sourceName.ToLower().EndsWith(".png"))
     {
+      Assembly assembly = Assembly.GetExecutingAssembly();
       string resource = GetType().Assembly
         .GetManifestResourceNames()
         .Where(o => o.EndsWith(sourceName))
         .FirstOrDefault();
-      Assembly assembly = Assembly.GetExecutingAssembly();
-      Stream stream = assembly.GetManifestResourceStream(resource);
-      PngBitmapDecoder decoder = new(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
-      ImageSource source = decoder.Frames[0];
-      return source;
+      if (string.IsNullOrEmpty(resource))
+      {
+        return null;
+      }
+
+      Stream stream = null;
+      try
+      {
+        stream = assembly.GetManifestResourceStream(resource);
+      }
+      catch (FileLoadException flEx)
+      {
+        SpeckleLog.Logger.Error(flEx, "Could not load app image source: {exceptionMessage}");
+      }
+      catch (FileNotFoundException fnfEx)
+      {
+        SpeckleLog.Logger.Error(fnfEx, "Could not find app image source: {exceptionMessage}");
+      }
+      catch (NotImplementedException niEx)
+      {
+        SpeckleLog.Logger.Error(niEx, "App image source could not be loaded: {exceptionMessage}");
+      }
+
+      if (stream is not null)
+      {
+        PngBitmapDecoder decoder = new(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+        if (decoder.Frames.Count > 0)
+        {
+          ImageSource source = decoder.Frames[0];
+          return source;
+        }
+      }
     }
-    catch { }
+
     return null;
   }
 
