@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -142,14 +141,14 @@ public static class DefaultTraversal
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  public static readonly string[] DisplayValueAndElementsPropAliases = displayValuePropAliases
-    .Concat(elementsPropAliases)
+  public static readonly string[] DisplayValueAndElementsPropAliases = DisplayValuePropAliases
+    .Concat(ElementsPropAliases)
     .ToArray();
 
   [Pure]
   public static IEnumerable<string> DisplayValueAndElementsAliases(Base _)
   {
-    return displayValueAndElementsPropAliases;
+    return DisplayValueAndElementsPropAliases;
   }
 
   #endregion

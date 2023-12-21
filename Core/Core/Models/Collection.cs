@@ -19,6 +19,7 @@ public class Collection : Base
   /// Constructor for a basic collection.
   /// </summary>
   /// <param name="name">The human-readable name of this collection</param>
+  /// <param name="collectionType"></param>
   public Collection(string name, string collectionType)
   {
     this.name = name;

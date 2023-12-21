@@ -24,7 +24,11 @@ public class Commits
   {
     testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
     client = new Client(testUserAccount);
-    myServerTransport = new ServerTransport(testUserAccount, null);
+  }
+
+  private void InitServerTransport()
+  {
+    myServerTransport = new ServerTransport(testUserAccount, streamId);
     myServerTransport.Api.CompressPayloads = false;
   }
 
@@ -37,7 +41,7 @@ public class Commits
     streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
     Assert.NotNull(streamId);
 
-    myServerTransport.StreamId = streamId; // FML
+    InitServerTransport();
 
     var branchInput = new BranchCreateInput
     {

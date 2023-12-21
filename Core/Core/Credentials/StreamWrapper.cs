@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -176,7 +175,7 @@ public class StreamWrapper
 
   private void StreamWrapperFromUrl(string streamUrl)
   {
-    Uri uri = new(streamUrl, true);
+    Uri uri = new(streamUrl);
     ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
     var fe2Match = s_fe2UrlRegex.Match(uri.AbsolutePath);
