@@ -300,6 +300,7 @@ public static class Utils
     }
     return true;
   }
+
   #endregion
 
   #region property sets
@@ -555,7 +556,6 @@ public static class Utils
     }
     return objs;
   }
-  #endregion
 
   #region application id
   public static class ApplicationIdManager

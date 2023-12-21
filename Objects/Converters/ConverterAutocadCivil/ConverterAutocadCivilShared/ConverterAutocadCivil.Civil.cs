@@ -572,11 +572,16 @@ public partial class ConverterAutocadCivil
     var pvis = new Point3dCollection();
     foreach (ProfilePVI pvi in profile.PVIs)
     {
-      pvisConverted.Add(PointToSpeckle(new Point2d(pvi.RawStation, pvi.Elevation)));
-      pvis.Add(new Point3d(pvi.RawStation, pvi.Elevation, 0));
+      double pviStation = 0;
+#if CIVIL2024
+      pviStation = pvi.RawStation;
+#else
+      pviStation = pvi.Station;
+#endif
+      pvisConverted.Add(PointToSpeckle(new Point2d(pviStation, pvi.Elevation)));
+      pvis.Add(new Point3d(pviStation, pvi.Elevation, 0));
     }
     speckleProfile.pvis = pvisConverted;
-
 
     if (pvisConverted.Count > 1)
     {

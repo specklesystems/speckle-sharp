@@ -608,8 +608,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     }
   }
 
-  private void DeleteBlocksWithPrefix(string prefix, Transaction tr)
+  private bool DeleteBlocksWithPrefix(string prefix, Transaction tr, out List<string> failedBlocks)
   {
+    failedBlocks = new List<string>();
+    bool success = true;
     if (tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) is BlockTable blockTable)
     {
       foreach (ObjectId blockId in blockTable)
@@ -618,11 +620,20 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         {
           if (block.Name.StartsWith(prefix) && !block.IsErased)
           {
-            block.UpgradeOpen();
-            block.Erase();
+            try
+            {
+              block.UpgradeOpen();
+              block.Erase();
+            }
+            catch // TODO: use !IsFatal() here
+            {
+              failedBlocks.Add(block.Name);
+              success = false;
+            }
           }
         }
       }
     }
+    return success;
   }
 }
