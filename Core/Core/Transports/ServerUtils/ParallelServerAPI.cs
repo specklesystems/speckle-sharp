@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -206,7 +205,6 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     }
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
     using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds);

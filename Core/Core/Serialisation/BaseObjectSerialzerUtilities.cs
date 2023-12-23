@@ -387,7 +387,7 @@ internal static class CallSiteCache
   {
     lock (s_setters)
     {
-      CallSite<Func<CallSite, object, object?, object>> site;
+      CallSite<Func<CallSite, object, object?, object>>? site;
 
       lock (s_setters)
       {

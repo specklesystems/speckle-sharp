@@ -398,10 +398,11 @@ public class StreamWrapper
     {
       await client.StreamGet(StreamId).ConfigureAwait(false);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleException(
-        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist."
+        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
+        ex
       );
     }
 

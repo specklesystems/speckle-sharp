@@ -111,7 +111,7 @@ public static class Http
         PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions).ConfigureAwait(false);
         if (reply.Status != IPStatus.Success)
         {
-          throw new Exception($"The ping operation failed with status {reply.Status}");
+          throw new SpeckleException($"The ping operation failed with status {reply.Status}");
         }
 
         return true;

@@ -131,7 +131,7 @@ public sealed class BaseObjectDeserializerV2
       }
       return closureList;
     }
-    catch (Exception)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return new List<(string, int)>();
     }
@@ -291,7 +291,7 @@ public sealed class BaseObjectDeserializerV2
             }
             catch (AggregateException ex)
             {
-              throw new Exception("Failed to deserialize reference object", ex);
+              throw new SpeckleException("Failed to deserialize reference object", ex);
             }
             lock (_deserializedObjects)
             {
@@ -342,7 +342,7 @@ public sealed class BaseObjectDeserializerV2
     foreach (var entry in dictObj)
     {
       string lowerPropertyName = entry.Key.ToLower();
-      if (staticProperties.TryGetValue(lowerPropertyName, out PropertyInfo value) && value.CanWrite)
+      if (staticProperties.TryGetValue(lowerPropertyName, out PropertyInfo? value) && value.CanWrite)
       {
         PropertyInfo property = staticProperties[lowerPropertyName];
         if (entry.Value == null)
@@ -364,7 +364,9 @@ public sealed class BaseObjectDeserializerV2
         else
         {
           // Cannot convert the value in the json to the static property type
-          throw new Exception($"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}");
+          throw new SpeckleException(
+            $"Cannot deserialize {entry.Value?.GetType().FullName} to {targetValueType.FullName}"
+          );
         }
       }
       else

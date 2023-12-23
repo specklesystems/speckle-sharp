@@ -10,7 +10,7 @@ namespace Speckle.Core.Models;
 /// <summary>
 /// Abstract Builder class for a root commit <see cref="Base"/> object.
 /// </summary>
-/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="_parentInfos"/></typeparam>
+/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="_nestingInstructions"/></typeparam>
 /// <remarks>
 /// It is designed to be inherited by a host app specific implementation,
 /// to give connectors flexibility in constructing their objects.
@@ -126,7 +126,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
-  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="_nestingInstructions"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <parameref cref="current"/> given <see cref="_nestingInstructions"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
     var instructions = _nestingInstructions[current];

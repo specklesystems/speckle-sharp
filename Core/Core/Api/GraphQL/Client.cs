@@ -100,7 +100,7 @@ public sealed partial class Client : IDisposable
       CommentActivitySubscription?.Dispose();
       GQLClient?.Dispose();
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)

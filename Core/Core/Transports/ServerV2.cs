@@ -399,12 +399,10 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
           _exception = ex;
         }
 
-        if (!ex.IsFatal())
+        if (ex.IsFatal())
         {
-          return;
+          throw;
         }
-
-        throw;
       }
       finally
       {

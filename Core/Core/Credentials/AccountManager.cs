@@ -372,7 +372,7 @@ public static class AccountManager
     if (!HttpListener.IsSupported)
     {
       SpeckleLog.Logger.Error("HttpListener not supported");
-      throw new Exception("Your operating system is not supported");
+      throw new PlatformNotSupportedException("Your operating system is not supported");
     }
   }
 

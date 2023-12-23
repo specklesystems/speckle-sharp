@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -279,7 +280,7 @@ public class Base : DynamicBase
       {
         myDuplicate[kvp.Key] = kvp.Value;
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // avoids any last ditch unsettable or strange props.
       }

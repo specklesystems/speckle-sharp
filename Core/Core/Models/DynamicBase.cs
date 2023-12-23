@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
@@ -106,7 +107,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// <param name="binder"></param>
   /// <param name="value"></param>
   /// <returns></returns>
-  public override bool TrySetMember(SetMemberBinder binder, object value)
+  public override bool TrySetMember(SetMemberBinder binder, object? value)
   {
     var valid = IsPropNameValid(binder.Name, out _);
     if (valid)
@@ -326,6 +327,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   }
 
   [Obsolete("Renamed to " + nameof(DEFAULT_INCLUDE_MEMBERS))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public const DynamicBaseMemberType DefaultIncludeMembers = DEFAULT_INCLUDE_MEMBERS;
 }
 

@@ -187,7 +187,7 @@ public static class KitManager
         {
           assembly = Assembly.Load(reference);
         }
-        catch
+        catch (SystemException ex) when (ex is IOException or BadImageFormatException)
         {
           continue;
         }
@@ -296,13 +296,13 @@ public static class KitManager
     }
   }
 
-  private static AssemblyName? SafeGetAssemblyName(string assemblyPath)
+  private static AssemblyName? SafeGetAssemblyName(string? assemblyPath)
   {
     try
     {
       return AssemblyName.GetAssemblyName(assemblyPath);
     }
-    catch (Exception)
+    catch (Exception ex) when (ex is ArgumentException or IOException or BadImageFormatException)
     {
       return null;
     }
