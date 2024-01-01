@@ -39,10 +39,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
 
   private static Document Doc { get; set; }
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new[] { s_versionedAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new[] { s_versionedAppName };
 
   public void SetContextDocument(object doc)
   {
@@ -61,7 +58,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
       Doc = Application.ActiveDocument;
     }
 
-    // This sets or resets the correct ElevationMode flag for model orientation.
+    // This sets or resets the correct IsUpright flag for model orientation.
     // Needs to be called every time a Send is initiated to reflect the options
     SetModelOrientationMode();
     SetModelBoundingBox();
@@ -73,16 +70,11 @@ public partial class ConverterNavisworks : ISpeckleConverter
   public IReadOnlyList<ApplicationObject> ContextObjects => _contextObjects;
 
   /// <inheritdoc />
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
+  public void SetContextObjects(List<ApplicationObject> objects) =>
     _contextObjects = objects ?? throw new ArgumentNullException(nameof(objects));
-  }
 
   /// <inheritdoc />
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
 
   /// <inheritdoc />
   public void SetConverterSettings(object settings)

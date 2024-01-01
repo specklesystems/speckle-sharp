@@ -33,9 +33,13 @@ public class Api
 
     myClient = new Client(firstUserAccount);
     secondClient = new Client(secondUserAccount);
-    myServerTransport = new ServerTransport(firstUserAccount, null);
+  }
+
+  private void InitServerTransport()
+  {
+    myServerTransport = new ServerTransport(firstUserAccount, streamId);
     myServerTransport.Api.CompressPayloads = false;
-    otherServerTransport = new ServerTransport(firstUserAccount, null);
+    otherServerTransport = new ServerTransport(firstUserAccount, streamId);
     otherServerTransport.Api.CompressPayloads = false;
   }
 
@@ -76,10 +80,9 @@ public class Api
       .StreamCreate(new StreamCreateInput { description = "Hello World", name = "Super Stream 01" })
       .ConfigureAwait(false);
 
-    myServerTransport.StreamId = res;
-    otherServerTransport.StreamId = res;
     Assert.NotNull(res);
     streamId = res;
+    InitServerTransport();
   }
 
   [Test, Order(10)]
@@ -336,20 +339,9 @@ public class Api
 
     myObject["@Points"] = ptsList;
 
-    bool sendError = false;
-    objectId = await Operations
-      .Send(
-        myObject,
-        new List<ITransport> { myServerTransport },
-        false,
-        disposeTransports: true,
-        onErrorAction: (s, e) =>
-        {
-          sendError = true;
-        }
-      )
-      .ConfigureAwait(false);
-    Assert.IsFalse(sendError);
+    objectId = await Operations.Send(myObject, new List<ITransport> { myServerTransport }).ConfigureAwait(false);
+
+    Assert.That(objectId, Is.Not.Null);
 
     var res = await myClient
       .CommitCreate(

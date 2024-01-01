@@ -44,10 +44,14 @@ public class Loader : GH_AssemblyPriority
       version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
     }
 
-    var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+    const bool ENHANCED_LOG_CONTEXT =
 #if MAC
-      logConfig.enhancedLogContext = false;
+        false;
+#else
+      true;
 #endif
+    var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
+
     SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
     try
     {

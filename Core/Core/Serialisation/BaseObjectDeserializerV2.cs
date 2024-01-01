@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +15,7 @@ namespace Speckle.Core.Serialisation;
 
 public sealed class BaseObjectDeserializerV2
 {
-  private bool _busy;
+  private bool _isBusy;
   private readonly object _callbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
@@ -48,11 +47,14 @@ public sealed class BaseObjectDeserializerV2
 
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
-  /// <exception cref="InvalidOperationException">Thrown when <see cref="_busy"/></exception>
-  /// <exception cref="ArgumentException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when <see cref="_isBusy"/></exception>
+  /// <exception cref="ArgumentNullException"><paramref name="rootObjectJson"/> was null</exception>
+  /// <exception cref="JsonReaderException "><paramref name="rootObjectJson"/> was not valid JSON</exception>
+  /// <exception cref="SpeckleException"><paramref name="rootObjectJson"/> cannot be deserialised to type <see cref="Base"/></exception>
+  // /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
   public Base Deserialize(string rootObjectJson)
   {
-    if (_busy)
+    if (_isBusy)
     {
       throw new InvalidOperationException(
         "A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances"
@@ -61,7 +63,7 @@ public sealed class BaseObjectDeserializerV2
 
     try
     {
-      _busy = true;
+      _isBusy = true;
       var stopwatch = Stopwatch.StartNew();
       _deserializedObjects = new();
       _workerThreads = new DeserializationWorkerThreads(this, WorkerThreadCount);
@@ -74,7 +76,11 @@ public sealed class BaseObjectDeserializerV2
         string objId = closure.Item1;
         // pausing for getting object from the transport
         stopwatch.Stop();
-        string objJson = ReadTransport.GetObject(objId);
+        string? objJson = ReadTransport.GetObject(objId);
+
+        //TODO: We should fail loudly when a closure can't be found (objJson is null)
+        //but adding throw here breaks blobs tests, see CNX-8541
+
         stopwatch.Start();
         object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
         lock (_deserializedObjects)
@@ -89,7 +95,7 @@ public sealed class BaseObjectDeserializerV2
       Elapsed += stopwatch.Elapsed;
       if (ret is not Base b)
       {
-        throw new Exception(
+        throw new SpeckleException(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
       }
@@ -101,7 +107,7 @@ public sealed class BaseObjectDeserializerV2
       _deserializedObjects = null;
       _workerThreads?.Dispose();
       _workerThreads = null;
-      _busy = false;
+      _isBusy = false;
     }
   }
 
@@ -144,6 +150,11 @@ public sealed class BaseObjectDeserializerV2
     return DeserializeTransportObject(objectJson);
   }
 
+  /// <param name="objectJson"></param>
+  /// <returns>The deserialized object</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="objectJson"/> was null</exception>
+  /// <exception cref="JsonReaderException "><paramref name="objectJson"/> was not valid JSON</exception>
+  /// <exception cref="SpeckleException">Failed to deserialize <see cref="JObject"/> to the target type</exception>
   public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
@@ -161,7 +172,15 @@ public sealed class BaseObjectDeserializerV2
       doc1 = JObject.Load(reader);
     }
 
-    object? converted = ConvertJsonElement(doc1);
+    object? converted;
+    try
+    {
+      converted = ConvertJsonElement(doc1);
+    }
+    catch (Exception ex)
+    {
+      throw new SpeckleException($"Failed to deserialize {doc1} as {doc1.Type}", ex);
+    }
 
     lock (_callbackLock)
     {
@@ -289,7 +308,7 @@ public sealed class BaseObjectDeserializerV2
           string? objectJson = ReadTransport.GetObject(objId);
           if (objectJson is null)
           {
-            throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
+            throw new TransportException($"Failed to fetch object id {objId} from {ReadTransport} ");
           }
 
           deserialized = DeserializeTransportObject(objectJson);

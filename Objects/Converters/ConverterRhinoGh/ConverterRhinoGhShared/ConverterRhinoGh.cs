@@ -105,7 +105,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
     if (Settings.TryGetValue("preprocessGeometry", out string setting))
     {
-      bool.TryParse(setting, out PreprocessGeometry);
+      _ = bool.TryParse(setting, out PreprocessGeometry);
     }
   }
 

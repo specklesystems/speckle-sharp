@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DesktopUI2.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -17,7 +18,11 @@ public interface IConverter
 
   #region --- Functions ---
 
-  Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token);
+  Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions state
+  );
 
   Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token);
 

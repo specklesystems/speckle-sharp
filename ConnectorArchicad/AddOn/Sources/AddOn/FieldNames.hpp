@@ -44,6 +44,28 @@ static const char* System = "system";
 static const char* Code = "code"; // id is reserved for Speckle id
 static const char* Name = "name";
 }
+
+static const char* ElementProperties = "elementProperties";
+static const char* ComponentProperties = "componentProperties";
+static const char* SendListingParameters = "sendListingParameters";
+static const char* SendProperties = "sendProperties";
+namespace ComponentProperty
+{
+static const char* Name = "name";
+static const char* PropertyGroups = "propertyGroups";
+}
+namespace PropertyGroup
+{
+static const char* Name = "name";
+static const char* PropertList = "propertyList";
+}
+namespace Property
+{
+static const char* Name = "name";
+static const char* Value = "value";
+static const char* Values = "values";
+static const char* Units = "units";
+}
 }
 
 static const char* Elements = "elements";

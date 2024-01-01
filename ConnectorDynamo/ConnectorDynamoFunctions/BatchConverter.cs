@@ -226,7 +226,8 @@ public class BatchConverter
         .Split(';') // Split by ;
         .Select(text =>
         {
-          int.TryParse(text, out var num);
+          // At this point, we expect split to yield all integers based on the dataTreePathRegex check above.
+          _ = int.TryParse(text, out var num);
           return num;
         })
         .ToList();

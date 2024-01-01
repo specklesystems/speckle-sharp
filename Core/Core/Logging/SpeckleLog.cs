@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -19,7 +17,7 @@ namespace Speckle.Core.Logging;
 /// <summary>
 /// Configuration object for the Speckle logging system.
 /// </summary>
-public class SpeckleLogConfiguration
+public sealed class SpeckleLogConfiguration
 {
   /// <summary>
   /// Flag to enable enhanced log context. This adds the following enrich calls:
@@ -27,37 +25,39 @@ public class SpeckleLogConfiguration
   /// - WithClientIp
   /// - WithExceptionDetails
   /// </summary>
-  public bool enhancedLogContext;
+  public bool EnhancedLogContext { get; }
 
   /// <summary>
   /// Flag to enable console sink
   /// </summary>
-  public bool logToConsole;
+  public bool LogToConsole { get; }
 
   /// <summary>
   /// Flag to enable File sink
   /// </summary>
-  public bool logToFile;
+  public bool LogToFile { get; }
 
   /// <summary>
   /// Flag to enable Sentry sink
   /// </summary>
-  public bool logToSentry;
+  public bool LogToSentry { get; }
 
   /// <summary>
   /// Flag to enable Seq sink
   /// </summary>
-  public bool logToSeq;
+  public bool LogToSeq { get; }
 
   /// <summary>
   /// Log events bellow this level are silently dropped
   /// </summary>
-  public LogEventLevel minimumLevel;
+  public LogEventLevel MinimumLevel { get; }
 
   /// <summary>
   /// Flag to override the default Sentry DNS
   /// </summary>
-  public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
+  public string SentryDns { get; }
+
+  private const string DEFAULT_SENTRY_DNS = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
@@ -75,15 +75,17 @@ public class SpeckleLogConfiguration
     bool logToSeq = true,
     bool logToSentry = true,
     bool logToFile = true,
-    bool enhancedLogContext = true
+    bool enhancedLogContext = true,
+    string sentryDns = DEFAULT_SENTRY_DNS
   )
   {
-    this.minimumLevel = minimumLevel;
-    this.logToConsole = logToConsole;
-    this.logToSeq = logToSeq;
-    this.logToSentry = logToSentry;
-    this.logToFile = logToFile;
-    this.enhancedLogContext = enhancedLogContext;
+    MinimumLevel = minimumLevel;
+    LogToConsole = logToConsole;
+    LogToSeq = logToSeq;
+    LogToSentry = logToSentry;
+    LogToFile = logToFile;
+    EnhancedLogContext = enhancedLogContext;
+    SentryDns = sentryDns;
   }
 }
 
@@ -92,24 +94,24 @@ public class SpeckleLogConfiguration
 /// </summary>
 public static class SpeckleLog
 {
-  private static ILogger? _logger;
+  private static ILogger? s_logger;
 
   public static ILogger Logger
   {
     get
     {
-      if (_logger == null)
+      if (s_logger == null)
       {
         Initialize("Core", "unknown");
       }
 
-      return _logger!;
+      return s_logger!;
     }
   }
 
-  private static bool _initialized;
+  private static bool s_initialized;
 
-  private static string _logFolderPath;
+  private static string s_logFolderPath;
 
   /// <summary>
   /// Initialize logger configuration for a global Serilog.Log logger.
@@ -120,9 +122,9 @@ public static class SpeckleLog
     SpeckleLogConfiguration? logConfiguration = null
   )
   {
-    if (_initialized)
+    if (s_initialized)
     {
-      SpeckleLog.Logger
+      Logger
         .ForContext("hostApplicationVersion", hostApplicationVersion)
         .ForContext("hostApplicationName", hostApplicationName)
         .Information("Setup was already initialized");
@@ -131,13 +133,13 @@ public static class SpeckleLog
 
     logConfiguration ??= new SpeckleLogConfiguration();
 
-    _logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
+    s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
     Log.Logger = Logger;
 
     AddUserIdToGlobalContextFromDefaultAccount();
-    _addVersionInfoToGlobalContext();
-    _addHostOsInfoToGlobalContext();
-    _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
+    AddVersionInfoToGlobalContext();
+    AddHostOsInfoToGlobalContext();
+    AddHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
 
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
@@ -147,7 +149,7 @@ public static class SpeckleLog
         "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
       );
 
-    _initialized = true;
+    s_initialized = true;
   }
 
   /// <summary>
@@ -167,14 +169,14 @@ public static class SpeckleLog
     // if not, disable file sink, even if its enabled in the config
     // show a warning about that...
     var canLogToFile = true;
-    _logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
-    var logFilePath = Path.Combine(_logFolderPath, "SpeckleCoreLog.txt");
+    s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
+    var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
-      .Is(logConfiguration.minimumLevel)
+      .Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
       .Enrich.FromGlobalLogContext();
 
-    if (logConfiguration.enhancedLogContext)
+    if (logConfiguration.EnhancedLogContext)
     {
       serilogLogConfiguration = serilogLogConfiguration.Enrich
         .WithClientAgent()
@@ -182,7 +184,7 @@ public static class SpeckleLog
         .Enrich.WithExceptionDetails();
     }
 
-    if (logConfiguration.logToFile && canLogToFile)
+    if (logConfiguration.LogToFile && canLogToFile)
     {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
         logFilePath,
@@ -191,12 +193,12 @@ public static class SpeckleLog
       );
     }
 
-    if (logConfiguration.logToConsole)
+    if (logConfiguration.LogToConsole)
     {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Console();
     }
 
-    if (logConfiguration.logToSeq)
+    if (logConfiguration.LogToSeq)
     {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
         "https://seq.speckle.systems",
@@ -204,19 +206,20 @@ public static class SpeckleLog
       );
     }
 
-    if (logConfiguration.logToSentry)
+    if (logConfiguration.LogToSentry)
     {
-      var env = "production";
-
+      const string ENV =
 #if DEBUG
-      env = "dev";
+        "dev";
+#else
+        "production";
 #endif
 
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Sentry(o =>
       {
-        o.Dsn = logConfiguration.sentryDns;
+        o.Dsn = logConfiguration.SentryDns;
         o.Debug = false;
-        o.Environment = env;
+        o.Environment = ENV;
         o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
         o.AttachStacktrace = true;
         o.StackTraceMode = StackTraceMode.Enhanced;
@@ -233,7 +236,7 @@ public static class SpeckleLog
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
-    if (logConfiguration.logToFile && !canLogToFile)
+    if (logConfiguration.LogToFile && !canLogToFile)
     {
       logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
     }
@@ -245,11 +248,11 @@ public static class SpeckleLog
   {
     try
     {
-      Process.Start(_logFolderPath);
+      Process.Start(s_logFolderPath);
     }
     catch (FileNotFoundException ex)
     {
-      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", _logFolderPath);
+      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", s_logFolderPath);
     }
   }
 
@@ -278,7 +281,7 @@ public static class SpeckleLog
     });
   }
 
-  private static void _addVersionInfoToGlobalContext()
+  private static void AddVersionInfoToGlobalContext()
   {
     var assembly = Assembly.GetExecutingAssembly().Location;
     var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly);
@@ -287,7 +290,7 @@ public static class SpeckleLog
     GlobalLogContext.PushProperty("productVersion", fileVersionInfo.ProductVersion);
   }
 
-  private static string _deterimineHostOsSlug()
+  private static string DetermineHostOsSlug()
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     {
@@ -307,16 +310,27 @@ public static class SpeckleLog
     return RuntimeInformation.OSDescription;
   }
 
-  private static void _addHostOsInfoToGlobalContext()
+  private static void AddHostOsInfoToGlobalContext()
   {
     var osVersion = Environment.OSVersion;
     var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-    GlobalLogContext.PushProperty("hostOs", _deterimineHostOsSlug());
+    var osSlug = DetermineHostOsSlug();
+    var runtime = RuntimeInformation.FrameworkDescription;
+    GlobalLogContext.PushProperty("hostOs", osSlug);
     GlobalLogContext.PushProperty("hostOsVersion", osVersion);
     GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
+    GlobalLogContext.PushProperty("runtime", runtime);
+
+    Logger.Information(
+      "Executing using {runtime} on {hostOs} {hostOsVersion} {hostOsArchitecture}",
+      runtime,
+      osSlug,
+      osVersion,
+      osArchitecture
+    );
   }
 
-  private static void _addHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
+  private static void AddHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
   {
     GlobalLogContext.PushProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
