@@ -310,7 +310,7 @@ public partial class ConverterRhinoGh
       throw new ArgumentException("Layer name is invalid.");
     }
 
-    using Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
+    Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
     if (parentLayer != null)
     {
       try
