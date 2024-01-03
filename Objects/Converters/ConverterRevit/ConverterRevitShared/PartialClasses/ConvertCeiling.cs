@@ -3,10 +3,10 @@ using Objects.BuiltElements.Revit;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Speckle.Core.Logging;
 
 #if !REVIT2020 && !REVIT2021
 using Ceiling = Objects.BuiltElements.Ceiling;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 #endif
 

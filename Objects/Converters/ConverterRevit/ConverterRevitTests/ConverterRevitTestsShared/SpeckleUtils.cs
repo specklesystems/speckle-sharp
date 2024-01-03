@@ -17,7 +17,7 @@ internal static class SpeckleUtils
 {
   public static SemaphoreSlim Throttler = new(1, 1);
 
-  internal async static Task<string> RunInTransaction(
+  internal static async Task<string> RunInTransaction(
     Action action,
     DB.Document doc,
     ConverterRevit converter = null,
