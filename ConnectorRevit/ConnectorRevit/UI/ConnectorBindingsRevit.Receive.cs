@@ -185,8 +185,8 @@ public partial class ConnectorBindingsRevit
           }
           catch (Autodesk.Revit.Exceptions.ArgumentException)
           {
-            // unable to delete previously recieved object
-            // it was likely already deleted by the user
+            // unable to delete object that was previously received and then removed from the stream
+            // because it was already deleted by the user. This isn't an issue and can safely be ignored.
           }
         }
 
@@ -351,11 +351,6 @@ public partial class ConnectorBindingsRevit
     return convertedObjectsCache;
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "Many errors of all different kinds are being thrown from here that are bugs that we need to fix"
-  )]
   private ApplicationObject ConvertObject(
     ApplicationObject obj,
     Base @base,
@@ -461,7 +456,7 @@ public partial class ConnectorBindingsRevit
       // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
       notReadyDataCache.Set(@base.id, notReadyData);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       transactionManager.RollbackSubTransaction();
       SpeckleLog.Logger.Warning(ex, "Failed to convert due to unexpected error.");

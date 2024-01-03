@@ -60,7 +60,6 @@ public partial class ConverterRevit
           }
           catch (Exception ex) when (!ex.IsFatal())
           {
-            // TODO : check if catch statement is necessary
             SpeckleLog.Logger.LogDefaultError(ex);
             appObj.Update(
               status: ApplicationObject.State.Failed,

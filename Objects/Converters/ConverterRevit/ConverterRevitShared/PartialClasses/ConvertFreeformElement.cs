@@ -40,11 +40,11 @@ public partial class ConverterRevit
 
             solids.Add(solid);
           }
-          catch (Exception e) when (!ex.IsFatal())
+          catch (Exception ex) when (!ex.IsFatal())
           {
-            SpeckleLog.Logger.LogDefaultError(e);
+            SpeckleLog.Logger.LogDefaultError(ex);
             appObj.Update(
-              logItem: $"Could not convert brep to native, falling back to mesh representation: {e.Message}"
+              logItem: $"Could not convert brep to native, falling back to mesh representation: {ex.Message}"
             );
             var brepMeshSolids = GetSolidMeshes(brep.displayValue);
             solids.AddRange(brepMeshSolids);
