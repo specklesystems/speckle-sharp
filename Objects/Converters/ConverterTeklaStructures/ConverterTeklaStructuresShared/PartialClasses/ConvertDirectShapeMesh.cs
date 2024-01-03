@@ -4,7 +4,6 @@ using GE = Objects.Geometry;
 using Speckle.Core.Models;
 using System.Linq;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Tekla.Structures.Model;
 using Tekla.Structures.Geometry3d;
 using Tekla.Structures.Catalogs;
