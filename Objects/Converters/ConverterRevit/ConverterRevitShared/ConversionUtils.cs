@@ -1102,7 +1102,7 @@ public partial class ConverterRevit
     return RenderMaterialToSpeckle(revitMaterial);
   }
 
-  public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
+  public static RenderMaterial? RenderMaterialToSpeckle(DB.Material? revitMaterial)
   {
     if (revitMaterial == null)
     {

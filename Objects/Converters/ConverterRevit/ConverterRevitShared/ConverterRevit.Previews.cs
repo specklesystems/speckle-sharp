@@ -1,8 +1,5 @@
-using RevitSharedResources.Extensions.SpeckleExtensions;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mesh = Objects.Geometry.Mesh;

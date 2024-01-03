@@ -870,7 +870,6 @@ public partial class ConverterRevit
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       notes.Add($"Could not retrieve display meshes: {ex.Message}");
     }

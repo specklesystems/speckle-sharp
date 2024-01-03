@@ -259,7 +259,6 @@ public partial class ConnectorBindingsRevit
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
   }

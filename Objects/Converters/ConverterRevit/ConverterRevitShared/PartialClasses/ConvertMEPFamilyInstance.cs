@@ -109,7 +109,6 @@ public partial class ConverterRevit
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        // TODO : check if catch block is necessary
         SpeckleLog.Logger.LogDefaultError(ex);
         appObj.Update(
           logItem: $"Could not create fitting as part of the system. Reason: {ex.Message}. Converting as independent instance instead"

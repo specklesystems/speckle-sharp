@@ -203,7 +203,6 @@ internal sealed class ElementTypeMapper
 
     while (vm.DoneMapping == false)
     {
-#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         familyImporter ??= new FamilyImporter(
@@ -218,14 +217,12 @@ internal sealed class ElementTypeMapper
       {
         StreamViewModel.HandleCommandException(ex, false, "ImportTypesCommand");
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // TODO : check if catch statement is necessary
         SpeckleLog.Logger.LogDefaultError(ex);
         var speckleEx = new SpeckleException(ex.Message, ex);
         StreamViewModel.HandleCommandException(speckleEx, false, "ImportTypesCommand");
       }
-#pragma warning restore CA1031 // Do not catch general exception types
 
       vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       await Dispatcher.UIThread

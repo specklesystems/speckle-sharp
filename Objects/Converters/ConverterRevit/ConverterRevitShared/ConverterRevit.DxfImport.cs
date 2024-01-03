@@ -13,7 +13,6 @@ using Speckle.Core.Models;
 using Speckle.netDxf.Entities;
 using Mesh = Objects.Geometry.Mesh;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
-using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
