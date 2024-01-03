@@ -4,7 +4,6 @@ using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
 using System;
-using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI;
 

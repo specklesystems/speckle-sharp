@@ -1,6 +1,5 @@
 using CSiAPIv1;
 using DesktopUI2.Models;
-using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
