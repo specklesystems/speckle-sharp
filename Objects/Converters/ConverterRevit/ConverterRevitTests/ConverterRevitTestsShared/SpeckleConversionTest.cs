@@ -4,6 +4,7 @@ using DesktopUI2.Models;
 using Objects.Converter.Revit;
 using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -186,16 +187,14 @@ public class SpeckleConversionTest
         foreach (var el in spkElems)
         {
           object res = null;
-#pragma warning disable CA1031 // Do not catch general exception types
           try
           {
             res = converter.ConvertToNative(el);
           }
-          catch (Exception ex)
+          catch (Exception ex) when (!ex.IsFatal())
           {
             converter.Report.LogConversionError(new Exception(ex.Message, ex));
           }
-#pragma warning restore CA1031 // Do not catch general exception types
 
           if (res is List<ApplicationObject> apls)
           {
