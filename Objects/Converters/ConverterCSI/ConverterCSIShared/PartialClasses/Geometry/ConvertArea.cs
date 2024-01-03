@@ -230,12 +230,14 @@ public partial class ConverterCSI
       foreach (var opening in area.openings)
       {
         string openingName;
+        List<Point> openingPoints = opening.ToPoints().ToList();
         try
         {
-          openingName = CreateAreaFromPoints(opening.ToPoints(), propName);
+          openingName = CreateAreaFromPoints(openingPoints, propName);
         }
-        catch (Exception)
+        catch (ConversionException ex)
         {
+          SpeckleLog.Logger.Error(ex, "Failed to create opening with {numPoints} points", openingPoints.Count);
           openingName = string.Empty;
         }
 
@@ -323,8 +325,9 @@ public partial class ConverterCSI
       {
         return Property2DToNative(prop2D);
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        SpeckleLog.Logger.Error(ex, "Unable to create property2d");
         // something failed... replace the type
       }
     }

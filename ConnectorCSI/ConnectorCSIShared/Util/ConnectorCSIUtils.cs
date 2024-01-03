@@ -129,31 +129,19 @@ public static class ConnectorCSIUtils
   public static List<string> GetAllPointNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PointObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PointObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllFrameNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.FrameObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.FrameObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetColumnNames(cSapModel model)
@@ -238,31 +226,19 @@ public static class ConnectorCSIUtils
   public static List<string> GetAllTendonNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.TendonObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.TendonObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllAreaNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.AreaObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.AreaObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllWallNames(cSapModel model)
@@ -312,345 +288,207 @@ public static class ConnectorCSIUtils
   public static List<string> GetAllLinkNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.LinkObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.LinkObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropMaterialNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropMaterial.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropMaterial.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropRebarNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropRebar.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropRebar.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropFrameNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropFrame.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropFrame.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllLoadCaseNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.LoadCases.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.LoadCases.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllGroupNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.GroupDef.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.GroupDef.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllGridNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.GridSys.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.GridSys.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllComboNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.RespCombo.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.RespCombo.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllConstraintNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.ConstraintDef.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.ConstraintDef.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllLoadPatternNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.LoadPatterns.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.LoadPatterns.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllSteelDesignNames(cSapModel model)
   {
     var name = "";
-    try
-    {
-      model.DesignSteel.GetCode(ref name);
-      return new List<string>() { name };
-    }
-    catch
-    {
-      return null;
-    }
+
+    model.DesignSteel.GetCode(ref name);
+    return new List<string>() { name };
   }
 
   public static List<string> GetAllConcreteDesignNames(cSapModel model)
   {
     var name = "";
-    try
-    {
-      model.DesignConcrete.GetCode(ref name);
-      return new List<string>() { name };
-    }
-    catch
-    {
-      return null;
-    }
+
+    model.DesignConcrete.GetCode(ref name);
+    return new List<string>() { name };
   }
 
   public static List<string> GetAllStoryNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.Story.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.Story.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllDiaphragmNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.Diaphragm.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.Diaphragm.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllLineNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.LineElm.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.LineElm.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPierLabelNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PierLabel.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PierLabel.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropAreaSpringNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropAreaSpring.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropAreaSpring.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropLineSpringNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropLineSpring.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropLineSpring.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropPointSpringNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropPointSpring.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropPointSpring.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllSpandrelLabelNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    var isMultiStory = new bool[] { };
-    try
-    {
-      model.SpandrelLabel.GetNameList(ref num, ref names, ref isMultiStory);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+    var isMultiStory = Array.Empty<bool>();
+
+    model.SpandrelLabel.GetNameList(ref num, ref names, ref isMultiStory);
+    return names.ToList();
   }
 
   public static List<string> GetAllTowerNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.Tower.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.Tower.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropTendonNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropTendon.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropTendon.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllPropLinkNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PropLink.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PropLink.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   #endregion
@@ -658,8 +496,8 @@ public static class ConnectorCSIUtils
   public static List<(string, string)> SelectedObjects(cSapModel model)
   {
     int num = 0;
-    var types = new int[] { };
-    var names = new string[] { };
+    var types = Array.Empty<int>();
+    var names = Array.Empty<string>();
     model.SelectObj.GetSelected(ref num, ref types, ref names);
     var typesAndNames = new List<(string, string)>();
     if (num < 1)

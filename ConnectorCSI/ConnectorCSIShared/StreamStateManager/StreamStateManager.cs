@@ -1,5 +1,6 @@
 using CSiAPIv1;
 using DesktopUI2.Models;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -60,11 +61,8 @@ public static class StreamStateManager
     }
 
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-    try
-    {
-      fileStream.SetLength(0);
-    }
-    catch { }
+
+    fileStream.SetLength(0);
   }
 
   /// <summary>
