@@ -134,7 +134,6 @@ public partial class ConverterRevit
 
       if (CanConvertToSpeckle(element))
       {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
           var obj = ConvertToSpeckle(element);
@@ -153,13 +152,11 @@ public partial class ConverterRevit
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          // TODO : check if catch block is necessary
           SpeckleLog.Logger.LogDefaultError(ex);
           reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
         }
-#pragma warning restore CA1031 // Do not catch general exception types
       }
       else
       {
@@ -168,7 +165,7 @@ public partial class ConverterRevit
       Report.Log(reportObj);
     }
 
-    if (convertedHostedElements.Any())
+    if (convertedHostedElements.Count > 0)
     {
       notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
 
@@ -241,16 +238,18 @@ public partial class ConverterRevit
     //sort by key
     foreach (var kv in allParams.OrderBy(x => x.Key))
     {
-#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         paramBase[kv.Key] = kv.Value;
       }
-      catch
+      catch (InvalidPropNameException)
       {
         //ignore
       }
-#pragma warning restore CA1031 // Do not catch general exception types
+      catch (SpeckleException)
+      {
+        //ignore
+      }
     }
 
     if (paramBase.GetDynamicMembers().Any())
@@ -1030,19 +1029,18 @@ public partial class ConverterRevit
     subtransaction.Start();
 
     T returnValue = default;
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       returnValue = func();
       subtransaction.Commit();
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       subtransaction.RollBack();
       Doc.Regenerate();
       catchFunc(ex);
     }
-#pragma warning restore CA1031 // Do not catch general exception types
+
     return returnValue;
   }
   #endregion
@@ -1090,7 +1088,7 @@ public partial class ConverterRevit
   }
 
   #region materials
-  public RenderMaterial GetElementRenderMaterial(DB.Element element)
+  public RenderMaterial? GetElementRenderMaterial(DB.Element? element)
   {
     var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
 
@@ -1244,20 +1242,17 @@ public partial class ConverterRevit
       appObj.Log.Add("Some lines in the CurveArray where ignored due to being smaller than the allowed curve length.");
       return false;
     }
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       curveArray.Append(LineToNative(line));
       return true;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch statement is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Log.Add(ex.Message);
       return false;
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public bool UnboundCurveIfSingle(DB.CurveArray array)

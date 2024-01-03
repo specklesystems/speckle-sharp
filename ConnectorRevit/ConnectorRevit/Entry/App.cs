@@ -132,11 +132,6 @@ public class App : IExternalApplication
     return Result.Succeeded;
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "Several errors are being thrown from Core and DUI2 that need to be fixed before this general catch can be removed"
-  )]
   private void ControlledApplication_ApplicationInitialized(
     object sender,
     Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
@@ -171,7 +166,7 @@ public class App : IExternalApplication
       SpeckleLog.Logger.Warning(ex, "Error loading kit on startup");
       NotifyUserOfErrorStartingConnector(ex);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
       NotifyUserOfErrorStartingConnector(ex);
@@ -214,11 +209,6 @@ public class App : IExternalApplication
     return Result.Succeeded;
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "This try catch previously swallowed all exceptions and returned null. Logging has been added to see which exceptions are being thrown"
-  )]
   private ImageSource LoadPngImgSource(string sourceName, string path)
   {
     try
@@ -229,9 +219,8 @@ public class App : IExternalApplication
       ImageSource m_source = m_decoder.Frames[0];
       return (m_source);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
 

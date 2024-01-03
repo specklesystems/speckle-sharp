@@ -198,18 +198,15 @@ public partial class ConverterRevit
 
     Doc.Regenerate();
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       CreateVoids(revitRoof, speckleRoof);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch statement is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     if (speckleRevitRoof != null)
     {

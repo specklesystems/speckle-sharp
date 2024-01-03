@@ -76,7 +76,7 @@ public partial class ConverterRevit
       {
         revitCurve = Doc.Create.NewDetailCurve(Doc.ActiveView, baseCurve);
       }
-      catch (Autodesk.Revit.Exceptions.ApplicationException)
+      catch (Autodesk.Revit.Exceptions.ArgumentException)
       {
         appObj.Update(logItem: $"Detail curve creation failed\nView is not valid for detail curve creation.");
         continue;
@@ -142,14 +142,12 @@ public partial class ConverterRevit
       return appObj;
     }
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       return ModelCurvesFromEnumerator(CurveToNative(speckleLine).GetEnumerator(), speckleLine, appObj);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       // use display value if curve fails (prob a closed, periodic curve or a non-planar nurbs)
       if (speckleLine is IDisplayValue<Geometry.Polyline> d)
@@ -165,7 +163,6 @@ public partial class ConverterRevit
         return appObj;
       }
     }
-#pragma warning restore CA1031 // Do not catch general exception types
   }
 
   public ApplicationObject RoomBoundaryLineToNative(RoomBoundaryLine speckleCurve)
@@ -178,7 +175,6 @@ public partial class ConverterRevit
 
     var baseCurve = CurveToNative(speckleCurve.baseCurve);
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       View drawingView = GetCurvePlanView(speckleCurve, out bool isTempView);
@@ -194,16 +190,14 @@ public partial class ConverterRevit
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch statement is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(
         status: ApplicationObject.State.Failed,
         logItem: "View is not valid for room boundary line creation."
       );
     }
-#pragma warning restore CA1031 // Do not catch general exception types
     return appObj;
   }
 

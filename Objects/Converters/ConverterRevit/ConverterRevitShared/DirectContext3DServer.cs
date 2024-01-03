@@ -4,6 +4,8 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.ExternalService;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using OG = Objects.Geometry;
 
 namespace Objects.Converter.Revit;
@@ -136,7 +138,7 @@ public partial class ConverterRevit
       }
       catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
-        System.Diagnostics.Debug.WriteLine(e.ToString());
+        SpeckleLog.Logger.LogDefaultError(e);
       }
     }
 

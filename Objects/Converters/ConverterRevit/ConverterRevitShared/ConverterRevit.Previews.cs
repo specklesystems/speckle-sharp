@@ -26,19 +26,9 @@ public partial class ConverterRevit
       );
       return appObj;
     }
-#pragma warning disable CA1031 // Do not catch general exception types
-    try
-    {
-      server = new DirectContext3DServer(meshes, Doc);
-      appObj.Update(status: ApplicationObject.State.Created);
-    }
-    catch (Exception ex)
-    {
-      // TODO : check if catch statement is necessary
-      SpeckleLog.Logger.LogDefaultError(ex);
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-    }
-#pragma warning restore CA1031 // Do not catch general exception types
+
+    server = new DirectContext3DServer(meshes, Doc);
+    appObj.Update(status: ApplicationObject.State.Created);
 
     appObj.Converted = new List<object> { server };
     return appObj;

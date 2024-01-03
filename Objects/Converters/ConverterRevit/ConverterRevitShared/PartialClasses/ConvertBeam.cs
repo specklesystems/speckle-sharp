@@ -96,6 +96,7 @@ public partial class ConverterRevit
       }
       catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
+        appObj.Update(logItem: "Unable to update element. Creating a new element instead");
         //something went wrong, re-create it
       }
     }

@@ -80,7 +80,6 @@ public partial class ConverterRevit
 
     if (Enum.TryParse<PartType>(speckleFi.RevitPartType, out var partType) && FittingPartTypes.Contains(partType))
     {
-#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         _ = FittingToNative(speckleFi, partType, appObj);
@@ -108,7 +107,7 @@ public partial class ConverterRevit
           return appObj;
         }
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // TODO : check if catch block is necessary
         SpeckleLog.Logger.LogDefaultError(ex);
@@ -118,7 +117,6 @@ public partial class ConverterRevit
         _ = MEPFamilyInstanceToNative(speckleFi, appObj);
         return appObj;
       }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
     else
     {

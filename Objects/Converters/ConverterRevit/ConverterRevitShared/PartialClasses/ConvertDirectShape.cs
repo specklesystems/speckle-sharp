@@ -204,7 +204,6 @@ public partial class ConverterRevit
 
     var cat = Doc.Settings.Categories.get_Item(bic);
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
@@ -231,13 +230,12 @@ public partial class ConverterRevit
       }
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
     }
-#pragma warning restore CA1031 // Do not catch general exception types
+
     return appObj;
   }
 

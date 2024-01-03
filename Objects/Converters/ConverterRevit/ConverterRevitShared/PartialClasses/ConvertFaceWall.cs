@@ -131,7 +131,7 @@ public partial class ConverterRevit
     {
       applicationId = speckleWall.applicationId
     };
-#pragma warning disable CA1031 // Do not catch general exception types
+
     try
     {
       var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
@@ -182,9 +182,8 @@ public partial class ConverterRevit
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
       //appObj = SetHostedElements(speckleWall, revitWall, appObj);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(
         status: ApplicationObject.State.Failed,
@@ -192,7 +191,7 @@ public partial class ConverterRevit
         log: new List<string> { ex.ToFormattedString() }
       );
     }
-#pragma warning restore CA1031 // Do not catch general exception types
+
     return appObj;
   }
 
@@ -230,7 +229,6 @@ public partial class ConverterRevit
     {
       t.Start();
 
-#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         var pointLists = surface.GetControlPoints();
@@ -253,12 +251,10 @@ public partial class ConverterRevit
 
         var loft = famDoc.FamilyCreate.NewLoftForm(true, curveArray);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // TODO : check if catch block is necessary
         SpeckleLog.Logger.LogDefaultError(ex);
       }
-#pragma warning restore CA1031 // Do not catch general exception types
 
       t.Commit();
     }

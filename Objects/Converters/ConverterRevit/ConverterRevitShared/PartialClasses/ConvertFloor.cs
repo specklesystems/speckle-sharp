@@ -150,18 +150,15 @@ public partial class ConverterRevit
     Doc.Regenerate();
 
 #if (REVIT2020 || REVIT2021)
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       CreateVoids(revitFloor, speckleFloor);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 #endif
 
     SetInstanceParameters(revitFloor, speckleFloor);

@@ -38,7 +38,10 @@ public partial class ConnectorBindingsRevit
         })
         .ConfigureAwait(false);
     }
-    catch (Exception ex)
+    // note : I don't think this exception catch is necessary, but this is an async VOID instead
+    // of an async Task. Revit WILL CRASH if this method tries to throw an error, so keeping this
+    // catch out of an abundance of caution
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(
         ex,
@@ -149,11 +152,6 @@ public partial class ConnectorBindingsRevit
     SendScheduledStream("save");
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
-  )]
   private async void SendScheduledStream(string slug, string message = "")
   {
     try
@@ -191,19 +189,13 @@ public partial class ConnectorBindingsRevit
         );
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
   }
 
   //checks whether to refresh the stream list in case the user changes active view and selects a different document
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
-  )]
   private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
   {
     try
@@ -236,18 +228,12 @@ public partial class ConnectorBindingsRevit
 
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
     }
   }
 
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "This try catch previously swallowed all exceptions. Logging has been added to see which exceptions are being thrown"
-  )]
   private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
   {
     try
@@ -271,7 +257,7 @@ public partial class ConnectorBindingsRevit
 
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);

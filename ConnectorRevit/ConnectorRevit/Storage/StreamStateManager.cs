@@ -23,11 +23,6 @@ public static class StreamStateManager
   /// </summary>
   /// <param name="doc"></param>
   /// <returns></returns>
-  [System.Diagnostics.CodeAnalysis.SuppressMessage(
-    "Design",
-    "CA1031:Do not catch general exception types",
-    Justification = "This try catch previously swallowed all exceptions and returned empty list. Logging has been added to see which exceptions are being thrown"
-  )]
   public static List<StreamState> ReadState(Document doc)
   {
     try
@@ -43,9 +38,8 @@ public static class StreamStateManager
 
       return states;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO : check if catch statement is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       return new List<StreamState>();
     }

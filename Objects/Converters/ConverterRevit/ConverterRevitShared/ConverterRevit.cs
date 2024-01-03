@@ -402,14 +402,9 @@ public partial class ConverterRevit : ISpeckleConverter
       && !(returnObject is Collection)
     )
     {
-      try
+      if (GetElementRenderMaterial(@object as DB.Element) is RenderMaterial material)
       {
-        var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
-      }
-      catch (Autodesk.Revit.Exceptions.ApplicationException)
-      {
-        // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
       }
     }
 

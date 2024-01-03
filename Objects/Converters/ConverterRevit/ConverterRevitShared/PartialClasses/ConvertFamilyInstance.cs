@@ -863,19 +863,17 @@ public partial class ConverterRevit
     }
 
     // get the displayvalue of the family symbol
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var meshes = GetElementDisplayValue(instance, isConvertedAsInstance: true, transform: parentTransform);
       symbol.displayValue = meshes;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // TODO : check if catch block is necessary
       SpeckleLog.Logger.LogDefaultError(ex);
       notes.Add($"Could not retrieve display meshes: {ex.Message}");
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
     #region sub elements capture
 

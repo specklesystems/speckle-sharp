@@ -53,12 +53,12 @@ public partial class ConverterRevit
             return appObj;
           }
           Element existingElement;
-#pragma warning disable CA1031 // Do not catch general exception types
+
           try
           {
             existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
           }
-          catch (Exception ex)
+          catch (Exception ex) when (!ex.IsFatal())
           {
             // TODO : check if catch statement is necessary
             SpeckleLog.Logger.LogDefaultError(ex);
@@ -68,7 +68,6 @@ public partial class ConverterRevit
             );
             return appObj;
           }
-#pragma warning restore CA1031 // Do not catch general exception types
 
           if (!(existingElement is Wall wall))
           {

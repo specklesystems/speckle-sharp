@@ -27,7 +27,7 @@ public partial class ConverterRevit
       if (element is Element1D element1D)
       {
         element1D.units = lengthUnits;
-#pragma warning disable CA1031 // Do not catch general exception types
+
         try
         {
           if (element is CSIElement1D csiElement1D)
@@ -41,16 +41,13 @@ public partial class ConverterRevit
             appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          // TODO : check if catch statement is necessary
           SpeckleLog.Logger.LogDefaultError(ex);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
       }
       else
       {
-#pragma warning disable CA1031 // Do not catch general exception types
         try
         {
           if (element is CSIElement2D csiElement2D)
@@ -64,12 +61,10 @@ public partial class ConverterRevit
             appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          // TODO : check if catch statement is necessary
           SpeckleLog.Logger.LogDefaultError(ex);
         }
-#pragma warning restore CA1031 // Do not catch general exception types
       }
     }
 
