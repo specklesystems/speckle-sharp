@@ -1,11 +1,13 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +15,6 @@ using System.Web;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Newtonsoft.Json;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace Speckle.Core.Logging;
 

@@ -8,8 +8,8 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Tests.Unit.Kits;
 using Speckle.Core.Transports;
-using Tests;
 
 /// <summary>
 /// Quick and dirty tests/examples of Speckle usage.
