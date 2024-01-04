@@ -76,8 +76,9 @@ public partial class ConverterTeklaStructures
         }
         else
         {
-          // TODO: Consider what to do for the case where Insert returned false but didnt throw an exception and no matching shape was found.
-          // e.g. continue? throw?
+          throw new ConversionException(
+            "The Mesh could either not be converted or not be inserted but no internal error occurred."
+          );
         }
       }
 
