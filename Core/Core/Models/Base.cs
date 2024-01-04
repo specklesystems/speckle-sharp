@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -86,6 +87,7 @@ public class Base : DynamicBase
           _type = string.Join(":", bases);
         }
       }
+
       return _type;
     }
   }
@@ -258,7 +260,8 @@ public class Base : DynamicBase
   /// <returns>A shallow copy of the original object.</returns>
   public Base ShallowCopy()
   {
-    Base myDuplicate = (Base)Activator.CreateInstance(GetType());
+    Type type = GetType();
+    Base myDuplicate = (Base)Activator.CreateInstance(type);
     myDuplicate.id = id;
     myDuplicate.applicationId = applicationId;
 
@@ -268,8 +271,8 @@ public class Base : DynamicBase
       )
     )
     {
-      var p = GetType().GetProperty(kvp.Key);
-      if (p != null && !p.CanWrite)
+      var propertyInfo = type.GetProperty(kvp.Key);
+      if (propertyInfo is not null && !propertyInfo.CanWrite)
       {
         continue;
       }
@@ -278,9 +281,19 @@ public class Base : DynamicBase
       {
         myDuplicate[kvp.Key] = kvp.Value;
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // avoids any last ditch unsettable or strange props.
+        SpeckleLog.Logger
+          .ForContext("canWrite", propertyInfo?.CanWrite)
+          .ForContext("canRead", propertyInfo?.CanRead)
+          .Warning(
+            "Shallow copy of {type} failed to copy {propertyName} of type {propertyType} with value {valueType}",
+            type,
+            kvp.Key,
+            propertyInfo?.PropertyType,
+            kvp.Value?.GetType()
+          );
       }
     }
 
