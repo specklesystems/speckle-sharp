@@ -47,7 +47,6 @@ public static class Http
   /// <summary>
   /// Checks if the user has a valid internet connection by first pinging cloudfare (fast)
   /// and then trying get from the default Speckle server (slower)
-  /// Each check is retried 3 times
   /// </summary>
   /// <returns>True if the user is connected to the internet, false otherwise.</returns>
   public static async Task<bool> UserHasInternet()
@@ -131,10 +130,10 @@ public static class Http
   }
 
   /// <summary>
-  ///
+  /// Sends a <c>GET</c> request to the provided <paramref name="uri"/>
   /// </summary>
   /// <param name="uri">The URI that should be pinged</param>
-  /// <exception cref="HttpRequestException">Failed to ping <paramref name="uri"/></exception>
+  /// <exception cref="HttpRequestException">Request to <paramref name="uri"/> failed</exception>
   internal static async Task<HttpResponseMessage> HttpPing(Uri uri)
   {
     try

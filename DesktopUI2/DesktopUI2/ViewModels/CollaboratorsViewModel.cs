@@ -105,7 +105,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         userSearchDebouncer();
       }
     }
-    catch (Exception ex) when (!ex.IsFatal())
+    catch (Exception ex)
     {
       SpeckleLog.Logger.Error(
         ex,
@@ -146,7 +146,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
       Users = users.Select(x => new AccountViewModel(x)).ToList();
     }
-    catch (Exception ex) when (!ex.IsFatal())
+    catch (Exception ex)
     {
       SpeckleLog.Logger.Error(
         ex,
@@ -410,7 +410,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         MainViewModel.RouterInstance.NavigateBack.Execute();
       }
     }
-    catch (Exception ex) when (!ex.IsFatal())
+    catch (Exception ex)
     {
       SpeckleLog.Logger.Error(
         ex,

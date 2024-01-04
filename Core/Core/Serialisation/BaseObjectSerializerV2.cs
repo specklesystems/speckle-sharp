@@ -52,7 +52,7 @@ public class BaseObjectSerializerV2
   /// <returns>The serialized JSON</returns>
   /// <exception cref="InvalidOperationException">A serialize is busy (already serialising an object)</exception>
   /// <exception cref="TransportException">Failed to save object in one or more <see cref="WriteTransports"/></exception>
-  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="SpeckleException">Failed to extract (pre-serialize) properties from the <param name="baseObj"></param></exception>
   public string Serialize(Base baseObj)
   {
     if (_isBusy)
@@ -73,11 +73,7 @@ public class BaseObjectSerializerV2
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        throw new ArgumentException(
-          $"Failed to extract (pre-serialize) properties from the {baseObj}",
-          nameof(baseObj),
-          ex
-        );
+        throw new SpeckleException($"Failed to extract (pre-serialize) properties from the {baseObj}");
       }
       string serialized = Dict2Json(converted);
       StoreObject((string)converted["id"]!, serialized);
