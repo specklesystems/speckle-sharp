@@ -59,6 +59,11 @@ public partial class MainForm : PluginFormBase
   /// <summary>
   /// Sets up the application, including event subscriptions, UI build, and model bindings.
   /// </summary>
+  [SuppressMessage(
+    category: "Design",
+    checkId: "CA1031:Do not catch general exception types",
+    Justification = "Exception is logged and plugin window doesn't populate."
+  )]
   private static void SetupApplication()
   {
     if (MainWindow == null)
@@ -69,9 +74,9 @@ public partial class MainForm : PluginFormBase
         BuildAndShowMainWindow();
         SetTeklaAsOwner();
       }
-      catch (Exception ex) when (!ex.IsFatal())
+      catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, $"Failed to create main form interface with {ex.Message}");
+        SpeckleLog.Logger.Error(ex, "Failed to create main form interface with {errorMessage}", ex.Message);
         MainWindow = null;
         return;
       }
