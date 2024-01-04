@@ -51,18 +51,16 @@ public static class StreamStateManager
       return;
     }
 
-    FileStream fileStream = new(s_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-
-    if (!fileStream.CanWrite)
-    {
-      return;
-    }
-
     try
     {
+      FileStream fileStream = new(s_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+      if (!fileStream.CanWrite)
+      {
+        return;
+      }
+
       using var streamWriter = new StreamWriter(fileStream);
       string streamStateString = JsonConvert.SerializeObject(streamStates);
-
       if (string.IsNullOrEmpty(streamStateString))
       {
         return;
@@ -73,7 +71,7 @@ public static class StreamStateManager
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      SpeckleLog.Logger.Error("Failed to write stream state list to file");
+      throw new SpeckleException($"Failed to write stream state list to file: {ex.Message}");
     }
   }
 
