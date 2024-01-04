@@ -67,6 +67,16 @@ public interface ITransport
   public void SaveObject(string id, string serializedObject);
 
   /// <summary>
+  /// <inheritdoc cref="SaveObject(string, string)"/>
+  /// Retrieving its serialised version from the provided transport.
+  /// </summary>
+  /// <param name="id"><inheritdoc cref="SaveObject(string, string)"/></param>
+  /// <param name="sourceTransport">The transport from where to retrieve it.</param>
+  /// <exception cref="TransportException">Failed to save object</exception>
+  /// <exception cref="OperationCanceledException"><see cref="CancellationToken"/> requested cancel</exception>
+  public void SaveObject(string id, ITransport sourceTransport);
+
+  /// <summary>
   /// Awaitable method to figure out whether writing is completed.
   /// </summary>
   /// <returns></returns>

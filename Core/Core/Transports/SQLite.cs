@@ -371,6 +371,24 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     _writeTimer.Start();
   }
 
+  public void SaveObject(string id, ITransport sourceTransport)
+  {
+    CancellationToken.ThrowIfCancellationRequested();
+
+    var serializedObject = sourceTransport.GetObject(id);
+
+    if (serializedObject is null)
+    {
+      throw new TransportException(
+        this,
+        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
+      );
+    }
+
+    //Should this just call SaveObject... do we not want the write timers?
+    _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
+  }
+
   /// <summary>
   /// Directly saves the object in the db.
   /// </summary>

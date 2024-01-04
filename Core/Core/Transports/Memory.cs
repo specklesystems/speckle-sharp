@@ -67,6 +67,23 @@ public sealed class MemoryTransport : ITransport, ICloneable
     Elapsed += stopwatch.Elapsed;
   }
 
+  public void SaveObject(string id, ITransport sourceTransport)
+  {
+    CancellationToken.ThrowIfCancellationRequested();
+
+    var serializedObject = sourceTransport.GetObject(id);
+
+    if (serializedObject is null)
+    {
+      throw new TransportException(
+        this,
+        $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
+      );
+    }
+
+    SaveObject(id, serializedObject);
+  }
+
   public string? GetObject(string id)
   {
     var stopwatch = Stopwatch.StartNew();
