@@ -100,7 +100,7 @@ public sealed partial class Client : IDisposable
       CommentActivitySubscription?.Dispose();
       GQLClient?.Dispose();
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)
@@ -138,6 +138,9 @@ public sealed partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
+  /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
+  /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
+  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
@@ -188,7 +191,7 @@ public sealed partial class Client : IDisposable
     }
     // we log and wrap anything that is not a graphql exception.
     // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(
         ex,
@@ -362,7 +365,7 @@ public sealed partial class Client : IDisposable
           }
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Warning(
           ex,

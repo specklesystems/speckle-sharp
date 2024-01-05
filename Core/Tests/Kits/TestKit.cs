@@ -25,36 +25,6 @@ public class TestKit : ISpeckleKit
   {
     throw new KitException("This is the test kit");
   }
-
-  public Base ToSpeckle(object @object)
-  {
-    throw new NotImplementedException();
-  }
-
-  public bool CanConvertToSpeckle(object @object)
-  {
-    throw new NotImplementedException();
-  }
-
-  public object ToNative(Base @object)
-  {
-    throw new NotImplementedException();
-  }
-
-  public bool CanConvertToNative(Base @object)
-  {
-    throw new NotImplementedException();
-  }
-
-  public IEnumerable<string> GetServicedApplications()
-  {
-    throw new NotImplementedException();
-  }
-
-  public void SetContextDocument(object @object)
-  {
-    throw new NotImplementedException();
-  }
 }
 
 public class FakeMesh : Base
@@ -130,11 +100,11 @@ public class Point : Base
 {
   public Point() { }
 
-  public Point(double X, double Y, double Z)
+  public Point(double x, double y, double z)
   {
-    this.X = X;
-    this.Y = Y;
-    this.Z = Z;
+    X = x;
+    Y = y;
+    Z = z;
   }
 
   public double X { get; set; }
@@ -149,7 +119,7 @@ public class SuperPoint : Point
 
 public class Mesh : Base
 {
-  public List<int> Faces = new();
+  private List<int> Faces = new();
 
   [JsonIgnore]
   public List<Point> Points = new();
@@ -178,7 +148,7 @@ public interface ICurve
 public class Polyline : Base, ICurve
 {
   [JsonIgnore]
-  public List<Point> Points = new();
+  public List<Point> Points { get; set; } = new();
 
   public List<double> Vertices
   {

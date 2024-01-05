@@ -4,7 +4,7 @@ namespace Speckle.Core.Models;
 
 /// <summary>
 /// A simple container for organising objects within a model and preserving object hierarchy.
-/// A container is defined by a human-readable <see cref="name"/>, a unique <see cref="applicationId"/>, and its list of contained <see cref="elements"/>.
+/// A container is defined by a human-readable <see cref="name"/>, a unique <see cref="Base.applicationId"/>, and its list of contained <see cref="elements"/>.
 /// The <see cref="elements"/> can include an unrestricted number of <see cref="Base"/> objects including additional nested <see cref="Collection"/>s.
 /// </summary>
 /// <remarks>

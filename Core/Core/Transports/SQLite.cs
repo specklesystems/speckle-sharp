@@ -36,42 +36,38 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <param name="basePath">defaults to <see cref="SpecklePathProvider.UserApplicationDataPath"/> if <see langword="null"/></param>
   /// <param name="applicationName">defaults to <c>"Speckle"</c> if <see langword="null"/></param>
   /// <param name="scope">defaults to <c>"Data"</c> if <see langword="null"/></param>
-  /// <exception cref="TransportException">could not create directory, db, or failed to initialize a connection to the db</exception>
+  /// <exception cref="SqliteException">Failed to initialize a connection to the db</exception>
+  /// <exception cref="TransportException">Path was invalid or could not be created</exception>
   public SQLiteTransport(string? basePath = null, string? applicationName = null, string? scope = null)
   {
     _basePath = basePath ?? SpecklePathProvider.UserApplicationDataPath();
     _applicationName = applicationName ?? "Speckle";
     _scope = scope ?? "Data";
 
-    var dir = Path.Combine(_basePath, _applicationName);
     try
     {
+      var dir = Path.Combine(_basePath, _applicationName);
+      _rootPath = Path.Combine(dir, $"{_scope}.db");
+
       Directory.CreateDirectory(dir); //ensure dir is there
     }
     catch (Exception ex)
+      when (ex is ArgumentException or IOException or UnauthorizedAccessException or NotSupportedException)
     {
-      throw new TransportException(this, $"Could not create {dir}", ex);
+      throw new TransportException($"Path was invalid or could not be created {_rootPath}", ex);
     }
 
-    _rootPath = Path.Combine(_basePath, _applicationName, $"{_scope}.db");
     _connectionString = $"Data Source={_rootPath};";
 
-    try
-    {
-      Initialize();
+    Initialize();
 
-      _writeTimer = new Timer
-      {
-        AutoReset = true,
-        Enabled = false,
-        Interval = POLL_INTERVAL
-      };
-      _writeTimer.Elapsed += WriteTimerElapsed;
-    }
-    catch (Exception ex)
+    _writeTimer = new Timer
     {
-      throw new TransportException(this, "Failed to initialize DB connection", ex);
-    }
+      AutoReset = true,
+      Enabled = false,
+      Interval = POLL_INTERVAL
+    };
+    _writeTimer.Elapsed += WriteTimerElapsed;
   }
 
   private readonly string _rootPath;
@@ -167,6 +163,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     return Task.FromResult(ret);
   }
 
+  /// <exception cref="SqliteException">Failed to initialize connection to the SQLite DB</exception>
   private void Initialize()
   {
     // NOTE: used for creating partioned object tables.
@@ -175,7 +172,6 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     //foreach (var str in HexChars)
     //  foreach (var str2 in HexChars)
     //    cart.Add(str + str2);
-    CancellationToken.ThrowIfCancellationRequested();
 
     using (var c = new SqliteConnection(_connectionString))
     {
@@ -368,6 +364,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <param name="serializedObject"></param>
   public void SaveObject(string id, string serializedObject)
   {
+    CancellationToken.ThrowIfCancellationRequested();
     _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
     _writeTimer.Enabled = true;
