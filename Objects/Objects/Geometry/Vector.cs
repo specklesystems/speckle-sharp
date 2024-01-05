@@ -119,7 +119,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out ITransformable transformed)
   {
-    var res = TransformTo(transform, out Vector vec);
+    _ = TransformTo(transform, out Vector vec);
     transformed = vec;
     return true;
   }
@@ -150,10 +150,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector">The vector to divide</param>
   /// <param name="val">The value to divide by</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator /(Vector vector, double val)
-  {
-    return new Vector(vector.x / val, vector.y / val, vector.z / val, vector.units);
-  }
+  public static Vector operator /(Vector vector, double val) =>
+    new(vector.x / val, vector.y / val, vector.z / val, vector.units);
 
   /// <summary>
   /// Multiplies a vector by a numerical value. This will multiply each coordinate by the provided value.
@@ -161,10 +159,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector">The vector to multiply</param>
   /// <param name="val">The value to multiply by</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator *(Vector vector, double val)
-  {
-    return new Vector(vector.x * val, vector.y * val, vector.z * val, vector.units);
-  }
+  public static Vector operator *(Vector vector, double val) =>
+    new(vector.x * val, vector.y * val, vector.z * val, vector.units);
 
   /// <summary>
   /// Adds two vectors by adding each of their coordinates.
@@ -172,10 +168,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector1">The first vector</param>
   /// <param name="vector2">The second vector</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator +(Vector vector1, Vector vector2)
-  {
-    return new Vector(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z, vector1.units);
-  }
+  public static Vector operator +(Vector vector1, Vector vector2) =>
+    new(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z, vector1.units);
 
   /// <summary>
   /// Subtracts two vectors by subtracting each of their coordinates.
@@ -183,10 +177,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector1">The first vector</param>
   /// <param name="vector2">The second vector</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator -(Vector vector1, Vector vector2)
-  {
-    return new Vector(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z, vector1.units);
-  }
+  public static Vector operator -(Vector vector1, Vector vector2) =>
+    new(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z, vector1.units);
 
   /// <summary>
   /// Gets the scalar product (dot product) of two given vectors

@@ -68,7 +68,7 @@ public sealed class ArchicadWindow : ArchicadDoorWindowBase { }
 
 public sealed class ArchicadSkylight : ArchicadFenestration
 {
-  public UInt32? vertexID { get; set; } /*APINullabe*/
+  public uint? vertexID { get; set; } /*APINullabe*/
   public string? skylightFixMode { get; set; } /*APINullabe*/
   public string? skylightAnchor { get; set; } /*APINullabe*/
   public Point? anchorPosition { get; set; } /*APINullabe*/

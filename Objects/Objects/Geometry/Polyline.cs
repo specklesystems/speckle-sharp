@@ -27,7 +27,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
   [Obsolete("Use list constructor instead")]
-  public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+  public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId) { }
 
   /// <summary>
@@ -36,7 +36,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <param name="coordinates">The list of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  public Polyline(List<double> coordinates, string units = Units.Meters, string applicationId = null)
+  public Polyline(List<double> coordinates, string units = Units.Meters, string? applicationId = null)
   {
     value = coordinates;
     this.units = units;
@@ -257,9 +257,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
 
   public static Polyline FromList(List<double> list)
   {
-    var polyline = new Polyline();
-    polyline.closed = list[2] == 1;
-    polyline.domain = new Interval(list[3], list[4]);
+    var polyline = new Polyline { closed = list[2] == 1, domain = new Interval(list[3], list[4]) };
     var pointCount = (int)list[5];
     polyline.value = list.GetRange(6, pointCount);
     polyline.units = Units.GetUnitFromEncoding(list[list.Count - 1]);

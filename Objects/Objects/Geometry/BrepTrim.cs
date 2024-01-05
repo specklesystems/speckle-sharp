@@ -56,7 +56,7 @@ public class BrepTrim : Base
   public BrepLoop Loop => Brep.Loops[LoopIndex];
 
   [JsonIgnore]
-  public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
+  public BrepEdge? Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
 
   [JsonIgnore]
   public ICurve Curve2d => Brep.Curve2D[CurveIndex];

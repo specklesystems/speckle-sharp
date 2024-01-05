@@ -24,7 +24,7 @@ public class Spiral : Base, ICurve, IHasBoundingBox, IDisplayValue<Polyline>
   public Plane plane { get; set; } // plane with origin at spiral center
   public double turns { get; set; } // total angle of spiral. positive is counterclockwise, negative is clockwise
   public Vector pitchAxis { get; set; } = new();
-  public double pitch { get; set; } = 0;
+  public double pitch { get; set; }
   public SpiralType spiralType { get; set; }
 
   public string units { get; set; }

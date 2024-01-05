@@ -13,10 +13,10 @@ public class BlockDefinition : Base
   public BlockDefinition() { }
 
   [SchemaInfo("Block Definition", "A Speckle Block definition")]
-  public BlockDefinition(string name, List<Base> geometry, Point basePoint = null)
+  public BlockDefinition(string name, List<Base> geometry, Point? basePoint = null)
   {
     this.name = name;
-    this.basePoint = basePoint ?? new Point(0, 0, 0, Units.None);
+    this.basePoint = basePoint ?? new() { units = Units.None };
     this.geometry = geometry;
   }
 
@@ -25,7 +25,7 @@ public class BlockDefinition : Base
   /// <summary>
   /// The definition base point of the block
   /// </summary>
-  public Point basePoint { get; set; }
+  public Point basePoint { get; set; } = new() { units = Units.None };
 
   [DetachProperty]
   public List<Base> geometry { get; set; }

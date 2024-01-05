@@ -22,7 +22,7 @@ public class Circle : Base, ICurve, IHasArea, IHasBoundingBox
   /// <param name="radius">The radius of the circle</param>
   /// <param name="units">The units the circle is modeled in</param>
   /// <param name="applicationId">The unique ID of this circle in a specific application</param>
-  public Circle(Plane plane, double radius, string units = Units.Meters, string applicationId = null)
+  public Circle(Plane plane, double radius, string units = Units.Meters, string? applicationId = null)
   {
     this.plane = plane;
     this.radius = radius;
@@ -85,11 +85,13 @@ public class Circle : Base, ICurve, IHasArea, IHasBoundingBox
   /// <returns>A new <see cref="Circle"/> with the provided values.</returns>
   public static Circle FromList(List<double> list)
   {
-    var circle = new Circle();
-    circle.radius = list[2];
-    circle.domain = new Interval(list[3], list[4]);
-    circle.plane = Plane.FromList(list.GetRange(5, 13));
-    circle.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+    var circle = new Circle
+    {
+      radius = list[2],
+      domain = new Interval(list[3], list[4]),
+      plane = Plane.FromList(list.GetRange(5, 13)),
+      units = Units.GetUnitFromEncoding(list[list.Count - 1])
+    };
 
     return circle;
   }

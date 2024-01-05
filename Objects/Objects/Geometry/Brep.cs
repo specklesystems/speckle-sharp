@@ -34,10 +34,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     Orientation = BrepOrientation.None;
   }
 
-  public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null)
+  public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string? applicationId = null)
     : this(provenance, new List<Mesh> { displayValue }, units, applicationId) { }
 
-  public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string applicationId = null)
+  public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string? applicationId = null)
     : this()
   {
     this.provenance = provenance;
@@ -242,11 +242,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         var proxyReversed = Convert.ToBoolean(loopValues[3]);
         var domainStart = loopValues[4];
         var domainEnd = loopValues[5];
-        Interval domain = null;
-        if (domainStart.HasValue && domainEnd.HasValue)
-        {
-          domain = new Interval(domainStart.Value, domainEnd.Value);
-        }
+        Interval domain = domainStart.HasValue && domainEnd.HasValue ? new(domainStart.Value, domainEnd.Value) : null;
 
         var trimIndices = loopValues.GetRange(6, loopValues.Count - 6).Select(d => Convert.ToInt32(d)).ToArray();
 

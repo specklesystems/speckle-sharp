@@ -16,14 +16,14 @@ public class AdaptiveComponent : Base, IDisplayValue<List<Mesh>>
     string family,
     List<Point> basePoints,
     bool flipped = false,
-    List<Parameter> parameters = null
+    List<Parameter>? parameters = null
   )
   {
     this.type = type;
     this.family = family;
     this.basePoints = basePoints;
     this.flipped = flipped;
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   public string type { get; set; }
@@ -31,7 +31,7 @@ public class AdaptiveComponent : Base, IDisplayValue<List<Mesh>>
   public List<Point> basePoints { get; set; }
   public bool flipped { get; set; }
   public string elementId { get; set; }
-  public Base parameters { get; set; }
+  public Base? parameters { get; set; }
 
   public string units { get; set; }
 

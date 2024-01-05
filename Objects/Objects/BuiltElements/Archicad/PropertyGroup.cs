@@ -27,9 +27,9 @@ public class PropertyGroup : Base
   /// <summary>
   /// Turns a List of PropertyGroup into a Base so that it can be used with the Speckle properties prop
   /// </summary>
-  /// <param name="properties"></param>
+  /// <param name="propertyGroups"></param>
   /// <returns></returns>
-  public static Base ToBase(List<PropertyGroup> propertyGroups)
+  public static Base? ToBase(List<PropertyGroup> propertyGroups)
   {
     if (propertyGroups == null || propertyGroups.Count == 0)
     {
@@ -40,9 +40,7 @@ public class PropertyGroup : Base
 
     foreach (PropertyGroup propertyGroup in propertyGroups)
     {
-      @base[DynamicBase.RemoveDisallowedPropNameChars(propertyGroup.name)] = Property.ToBase(
-        propertyGroup.propertyList
-      );
+      @base[RemoveDisallowedPropNameChars(propertyGroup.name)] = Property.ToBase(propertyGroup.propertyList);
     }
 
     return @base;

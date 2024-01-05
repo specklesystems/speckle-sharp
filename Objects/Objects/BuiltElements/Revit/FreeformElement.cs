@@ -19,7 +19,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     "Revit",
     "Families"
   )]
-  public FreeformElement(List<Base> baseGeometries, string subcategory = "", List<Parameter> parameters = null)
+  public FreeformElement(List<Base> baseGeometries, string subcategory = "", List<Parameter>? parameters = null)
   {
     this.baseGeometries = baseGeometries;
     //this.category = category;
@@ -29,12 +29,11 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
     }
 
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
-  public Base parameters { get; set; }
+  public Base? parameters { get; set; }
 
-  //public RevitCategory category { get; set; }
   public string subcategory { get; set; }
 
   public string elementId { get; set; }
@@ -93,7 +92,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       "Families"
     )
   ]
-  public FreeformElement(Base baseGeometry, List<Parameter> parameters = null)
+  public FreeformElement(Base baseGeometry, List<Parameter>? parameters = null)
   {
     if (!IsValidObject(baseGeometry))
     {
@@ -101,7 +100,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     }
 
     baseGeometries = new List<Base> { baseGeometry };
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   [
@@ -113,7 +112,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       "Families"
     )
   ]
-  public FreeformElement(List<Base> baseGeometries, List<Parameter> parameters = null)
+  public FreeformElement(List<Base> baseGeometries, List<Parameter>? parameters = null)
   {
     this.baseGeometries = baseGeometries;
     if (!IsValid())
@@ -121,7 +120,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
     }
 
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   #endregion

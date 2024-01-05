@@ -3,6 +3,7 @@ using Speckle.Core.Models;
 
 namespace Objects.GIS;
 
+// TODO: doesn't this need empty constructor?
 public class PolygonElement : Base
 {
   [DetachProperty]

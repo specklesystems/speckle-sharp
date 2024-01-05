@@ -28,9 +28,7 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitOpening : Opening
   {
-    //public string family { get; set; }
-    //public string type { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 
@@ -92,13 +90,13 @@ namespace Objects.BuiltElements.Revit
       [SchemaMainParam] ICurve outline,
       Level bottomLevel,
       Level topLevel,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.outline = outline;
       this.bottomLevel = bottomLevel;
       this.topLevel = topLevel;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public Level bottomLevel { get; set; }

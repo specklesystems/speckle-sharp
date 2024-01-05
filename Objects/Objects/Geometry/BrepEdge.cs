@@ -20,7 +20,7 @@ public class BrepEdge : Base
     int startIndex,
     int endIndex,
     bool proxyCurvedIsReversed,
-    Interval domain
+    Interval? domain
   )
   {
     Brep = brep;
@@ -42,7 +42,7 @@ public class BrepEdge : Base
 
   public bool ProxyCurveIsReversed { get; set; }
 
-  public Interval Domain { get; set; }
+  public Interval? Domain { get; set; }
 
   [JsonIgnore]
   public Point StartVertex => Brep.Vertices[StartIndex];

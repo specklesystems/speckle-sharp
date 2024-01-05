@@ -8,13 +8,13 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
 {
   public ControlPoint() { }
 
-  public ControlPoint(double x, double y, double z, string units, string applicationId = null)
+  public ControlPoint(double x, double y, double z, string units, string? applicationId = null)
     : base(x, y, z, units, applicationId)
   {
     weight = 1;
   }
 
-  public ControlPoint(double x, double y, double z, double w, string units, string applicationId = null)
+  public ControlPoint(double x, double y, double z, double w, string units, string? applicationId = null)
     : base(x, y, z, units, applicationId)
   {
     weight = w;

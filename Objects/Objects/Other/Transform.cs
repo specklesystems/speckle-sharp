@@ -23,7 +23,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(double[] value, string units = null)
+  public Transform(double[] value, string? units = null)
   {
     if (value.Length != 16)
     {
@@ -34,7 +34,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units;
+    this.units = units; // TODO:  handle nullability
   }
 
   /// <summary>
@@ -43,7 +43,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(float[] value, string units = null)
+  public Transform(float[] value, string? units = null)
   {
     if (value.Length != 16)
     {
@@ -51,7 +51,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units;
+    this.units = units; // TODO:  handle nullability
   }
 
   /// <summary>
@@ -59,10 +59,10 @@ public class Transform : Base
   /// </summary>
   /// <param name="matrix"></param>
   /// <param name="units"></param>
-  public Transform(Matrix4x4 matrix, string units = null)
+  public Transform(Matrix4x4 matrix, string? units = null)
   {
     this.matrix = matrix;
-    this.units = units;
+    this.units = units; // handle nullability
   }
 
   /// <summary>

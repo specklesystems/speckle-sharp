@@ -151,9 +151,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// <returns>A new <see cref="Polycurve"/> with the provided values.</returns>
   public static Polycurve FromList(List<double> list)
   {
-    var polycurve = new Polycurve();
-    polycurve.closed = list[2] == 1;
-    polycurve.domain = new Interval(list[3], list[4]);
+    var polycurve = new Polycurve { closed = list[2] == 1, domain = new Interval(list[3], list[4]) };
 
     var temp = list.GetRange(6, (int)list[5]);
     polycurve.segments = CurveArrayEncodingExtensions.FromArray(temp);

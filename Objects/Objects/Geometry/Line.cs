@@ -14,15 +14,15 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
 {
   public Line() { }
 
-  public Line(double x, double y, double z = 0, string units = Units.Meters, string applicationId = null)
+  public Line(double x, double y, double z = 0, string units = Units.Meters, string? applicationId = null)
   {
     start = new Point(x, y, z);
-    end = null;
+    end = null; // TODO: resolve nullability
     this.applicationId = applicationId;
     this.units = units;
   }
 
-  public Line(Point start, Point end, string units = Units.Meters, string applicationId = null)
+  public Line(Point start, Point end, string units = Units.Meters, string? applicationId = null)
   {
     this.start = start;
     this.end = end;
@@ -31,7 +31,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
     this.units = units;
   }
 
-  public Line(IList<double> coordinates, string units = Units.Meters, string applicationId = null)
+  public Line(IList<double> coordinates, string units = Units.Meters, string? applicationId = null)
   {
     if (coordinates.Count < 6)
     {
@@ -46,7 +46,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   }
 
   [Obsolete("Use IList constructor")]
-  public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+  public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId) { }
 
   /// <summary>
@@ -77,7 +77,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   public Point start { get; set; }
   public Point end { get; set; }
 
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; } // TODO: resolve nullability
   public double length { get; set; }
 
   public Box bbox { get; set; }
@@ -109,8 +109,8 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
     var list = new List<double>();
     list.AddRange(start.ToList());
     list.AddRange(end.ToList());
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 1);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 1);
     list.Add(Units.GetEncodingFromUnit(units));
     list.Insert(0, CurveTypeEncoding.Line);
     list.Insert(0, list.Count);
@@ -122,8 +122,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
     var units = Units.GetUnitFromEncoding(list[list.Count - 1]);
     var startPt = new Point(list[2], list[3], list[4], units);
     var endPt = new Point(list[5], list[6], list[7], units);
-    var line = new Line(startPt, endPt, units);
-    line.domain = new Interval(list[8], list[9]);
+    var line = new Line(startPt, endPt, units) { domain = new Interval(list[8], list[9]) };
     return line;
   }
 }

@@ -79,7 +79,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Box? bbox { get; set; }
+  public Box? bbox { get; set; } // TODO: resolve nullability
 
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out Point point)
@@ -92,7 +92,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
     var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
 
-    point = new Point(x, y, z) { units = units, applicationId = applicationId };
+    point = new Point(x, y, z) { units = units, applicationId = applicationId }; // TODO: resolve nullability
     return true;
   }
 
@@ -150,30 +150,20 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     z = this.z;
   }
 
-  public static Point operator +(Point point1, Point point2)
-  {
-    return new Point(point1.x + point2.x, point1.y + point2.y, point1.z + point2.z, point1.units);
-  }
+  public static Point operator +(Point point1, Point point2) =>
+    new(point1.x + point2.x, point1.y + point2.y, point1.z + point2.z, point1.units);
 
-  public static Point operator -(Point point1, Point point2)
-  {
-    return new Point(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z, point1.units);
-  }
+  public static Point operator -(Point point1, Point point2) =>
+    new(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z, point1.units);
 
-  public static Point operator *(Point point1, Point point2)
-  {
-    return new Point(point1.x * point2.x, point1.y * point2.y, point1.z * point2.z, point1.units);
-  }
+  public static Point operator *(Point point1, Point point2) =>
+    new(point1.x * point2.x, point1.y * point2.y, point1.z * point2.z, point1.units);
 
-  public static Point operator *(Point point, double val)
-  {
-    return new Point(point.x * val, point.y * val, point.z * val, point.units);
-  }
+  public static Point operator *(Point point, double val) =>
+    new(point.x * val, point.y * val, point.z * val, point.units);
 
-  public static Point operator /(Point point, double val)
-  {
-    return new Point(point.x / val, point.y / val, point.z / val, point.units);
-  }
+  public static Point operator /(Point point, double val) =>
+    new(point.x / val, point.y / val, point.z / val, point.units);
 
   public static bool operator ==(Point? point1, Point? point2)
   {
@@ -190,10 +180,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     return point1.units == point2.units && point1.x == point2.x && point1.y == point2.y && point1.z == point2.z;
   }
 
-  public static bool operator !=(Point? point1, Point? point2)
-  {
-    return !(point1 == point2);
-  }
+  public static bool operator !=(Point? point1, Point? point2) => !(point1 == point2);
 
   /// <summary>
   /// Computes a point equidistant from two points.

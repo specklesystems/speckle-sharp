@@ -22,7 +22,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   /// <param name="poly">The polyline that will be this curve's <see cref="displayValue"/></param>
   /// <param name="units">The units this curve is be modelled in</param>
   /// <param name="applicationId">The unique ID of this curve in a specific application</param>
-  public Curve(Polyline poly, string units = Units.Meters, string applicationId = null)
+  public Curve(Polyline poly, string units = Units.Meters, string? applicationId = null)
   {
     displayValue = poly;
     this.applicationId = applicationId;
@@ -61,7 +61,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; }
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -146,8 +146,8 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
     list.Add(curve.periodic ? 1 : 0); // 1
     list.Add(curve.rational ? 1 : 0); // 2
     list.Add(curve.closed ? 1 : 0); // 3
-    list.Add((double)curve.domain.start); // 4
-    list.Add((double)curve.domain.end); // 5
+    list.Add((double)curve.domain.start); // 4 //TODO: resolve nullability
+    list.Add((double)curve.domain.end); // 5  //TODO: resolve nullability
 
     list.Add(curve.points.Count); // 6
     list.Add(curve.weights.Count); // 7
@@ -180,12 +180,14 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
       throw new Exception($"Wrong curve type. Expected {CurveTypeEncoding.Curve}, got {list[1]}.");
     }
 
-    var curve = new Curve();
-    curve.degree = (int)list[2];
-    curve.periodic = list[3] == 1;
-    curve.rational = list[4] == 1;
-    curve.closed = list[5] == 1;
-    curve.domain = new Interval(list[6], list[7]);
+    var curve = new Curve
+    {
+      degree = (int)list[2],
+      periodic = list[3] == 1,
+      rational = list[4] == 1,
+      closed = list[5] == 1,
+      domain = new Interval(list[6], list[7])
+    };
 
     var pointsCount = (int)list[8];
     var weightsCount = (int)list[9];

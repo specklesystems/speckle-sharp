@@ -9,7 +9,7 @@ public sealed class ElementShape : Base
 {
   public ElementShape() { }
 
-  public ElementShape(Polyline contourPolyline, List<Polyline> holePolylines = null)
+  public ElementShape(Polyline contourPolyline, List<Polyline>? holePolylines = null)
   {
     this.contourPolyline = contourPolyline;
     this.holePolylines = holePolylines;
@@ -17,7 +17,7 @@ public sealed class ElementShape : Base
 
   public Polyline contourPolyline { get; set; }
 
-  public List<Polyline> holePolylines { get; set; }
+  public List<Polyline>? holePolylines { get; set; }
 
   public sealed class PolylineSegment : Base, ICurve
   {

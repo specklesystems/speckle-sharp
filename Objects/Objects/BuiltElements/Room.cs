@@ -35,14 +35,14 @@ namespace Objects.BuiltElements
       string number,
       Level level,
       [SchemaMainParam] Point basePoint,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.name = name;
       this.number = number;
       this.level = level;
       this.basePoint = basePoint;
-      this["parameters"] = parameters.ToBase();
+      this["parameters"] = parameters?.ToBase();
     }
 
     public string name { get; set; }
