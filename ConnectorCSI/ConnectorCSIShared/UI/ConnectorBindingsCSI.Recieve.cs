@@ -108,7 +108,6 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     return state;
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
   {
     List<ApplicationObject> conversionResults = new();
