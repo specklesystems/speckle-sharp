@@ -1,23 +1,22 @@
-using System.Reactive;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
-namespace TestsPerformance;
+namespace Speckle.Core.Tests.Performance;
 
 public sealed class TestDataHelper : IDisposable
 {
-  private static readonly string BasePath = $"./temp {Guid.NewGuid()}";
-  private const string ApplicationName = "Speckle Performance Tests";
+  private static readonly string s_basePath = $"./temp {Guid.NewGuid()}";
+  private const string APPLICATION_NAME = "Speckle Performance Tests";
 
   public SQLiteTransport Transport { get; private set; }
   public string ObjectId { get; private set; }
 
   public async Task SeedTransport(int dataComplexity)
   {
-    Transport = new SQLiteTransport(BasePath, ApplicationName);
+    Transport = new SQLiteTransport(s_basePath, APPLICATION_NAME);
 
     //seed SQLite transport with test data
     ObjectId = await SeedTransport(dataComplexity, Transport).ConfigureAwait(false);
@@ -52,6 +51,6 @@ public sealed class TestDataHelper : IDisposable
   {
     Transport.Dispose();
     SqliteConnection.ClearAllPools();
-    Directory.Delete(BasePath, true);
+    Directory.Delete(s_basePath, true);
   }
 }

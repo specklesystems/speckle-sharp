@@ -2,7 +2,7 @@ using BenchmarkDotNet.Attributes;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
 
-namespace TestsPerformance.Serialisation;
+namespace Speckle.Core.Tests.Performance.Serialisation;
 
 [MemoryDiagnoser]
 [RegressionTestConfig(1, 1, 6)]

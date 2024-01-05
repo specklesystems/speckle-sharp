@@ -1,10 +1,10 @@
 using BenchmarkDotNet.Running;
 
-namespace TestsPerformance;
+namespace Speckle.Core.Tests.Performance;
 
 public static class Program
 {
-  public static async Task Main(string[] args)
+  public static void Main(string[] args)
   {
     BenchmarkSwitcher.FromAssemblies(new[] { typeof(Program).Assembly }).Run(args);
   }

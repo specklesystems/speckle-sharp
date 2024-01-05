@@ -98,4 +98,50 @@ public abstract class TransportTests
     var exception = Assert.Throws<TransportException>(() => Sut.SaveObject("non-existent-id", Sut));
     Assert.That(exception?.Transport, Is.EqualTo(Sut));
   }
+
+  [Test]
+  public async Task ProgressAction_Called_OnSaveObject()
+  {
+    bool wasCalled = false;
+    Sut.OnProgressAction = (_, _) => wasCalled = true;
+
+    Sut.SaveObject("12345", "fake payload data");
+
+    await Sut.WriteComplete().ConfigureAwait(false);
+
+    Assert.That(wasCalled, Is.True);
+  }
+
+  [Test]
+  public void ToString_IsNotEmpty()
+  {
+    var toString = Sut.ToString();
+
+    Assert.That(toString, Is.Not.Null);
+    Assert.That(toString, Is.Not.Empty);
+  }
+
+  [Test]
+  public void TransportName_IsNotEmpty()
+  {
+    var toString = Sut.TransportName;
+
+    Assert.That(toString, Is.Not.Null);
+    Assert.That(toString, Is.Not.Empty);
+  }
+
+  [Test]
+  public void SaveObject_ExceptionThrown_TaskIsCanceled()
+  {
+    using CancellationTokenSource tokenSource = new();
+    Sut.CancellationToken = tokenSource.Token;
+
+    tokenSource.Cancel();
+
+    Assert.ThrowsAsync<OperationCanceledException>(async () =>
+    {
+      Sut.SaveObject("abcdef", "fake payload data");
+      await Sut.WriteComplete();
+    });
+  }
 }

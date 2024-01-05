@@ -2,7 +2,7 @@ using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 using Speckle.Core.Models;
 
-namespace TestsPerformance.Api.Operations;
+namespace Speckle.Core.Tests.Performance.Api.Operations;
 
 [MemoryDiagnoser]
 [RegressionTestConfig(1, 1, 8, nugetVersions: "2.15.2")]
