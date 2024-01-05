@@ -3,14 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-
+    <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
     <RootNamespace>Speckle.Core.Tests.Unit</RootNamespace>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,10 +27,12 @@
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="7.0.2" />
   </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.csproj" />
     <ProjectReference Include="..\..\Transports\DiskTransport\DiskTransport.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <Folder Include="Logging\" />
   </ItemGroup>

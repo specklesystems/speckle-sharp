@@ -4,16 +4,14 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Speckle.Core.Tests.Integration</RootNamespace>
     <IsPackable>false</IsPackable>
-    
-
-    <AnalysisMode>Recommended</AnalysisMode>
-    <NoWarn>$(NoWarn);CS0618;CA5394;CA1034;CA2201;CA1819;IDE0130;CA2007;</NoWarn>
+    <RootNamespace>Speckle.Core.Tests.Integration</RootNamespace>
   </PropertyGroup>
+
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="3.2.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
