@@ -11,23 +11,19 @@ namespace ConnectorCSI.Storage;
 
 public static class StreamStateManager
 {
-  private static string _speckleFilePath;
+  private static string? _speckleFilePath;
 
   public static List<StreamState> ReadState(cSapModel model)
   {
     var strings = ReadSpeckleFile(model);
-    if (strings == "")
+    if (string.IsNullOrEmpty(strings))
     {
       return new List<StreamState>();
     }
-    try
-    {
-      return JsonConvert.DeserializeObject<List<StreamState>>(strings);
-    }
-    catch (Exception e)
-    {
-      return new List<StreamState>();
-    }
+
+    return JsonConvert.DeserializeObject<List<StreamState>>(
+      strings
+    );
   }
 
   /// <summary>
@@ -83,23 +79,16 @@ public static class StreamStateManager
     string CSIFileName = Path.GetFileNameWithoutExtension(CSIModelfilePath);
     string speckleFolderPath = Path.Combine(CSIModelFolder, "speckle");
     string speckleFilePath = Path.Combine(CSIModelFolder, "speckle", $"{CSIFileName}.txt");
-    try
+
+    if (!Directory.Exists(speckleFolderPath))
     {
-      if (!Directory.Exists(speckleFolderPath))
-      {
-        Directory.CreateDirectory(speckleFolderPath);
-      }
-      if (!File.Exists(speckleFilePath))
-      {
-        File.CreateText(speckleFilePath);
-      }
-      _speckleFilePath = speckleFilePath;
+      Directory.CreateDirectory(speckleFolderPath);
     }
-    catch
+    if (!File.Exists(speckleFilePath))
     {
-      _speckleFilePath = null;
-      return;
+      File.CreateText(speckleFilePath);
     }
+    _speckleFilePath = speckleFilePath;
   }
 
   /// <summary>
@@ -119,17 +108,9 @@ public static class StreamStateManager
     }
 
     FileStream fileStream = new(_speckleFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-    try
-    {
-      using (var streamReader = new StreamReader(fileStream, Encoding.UTF8))
-      {
-        return streamReader.ReadToEnd();
-      }
-    }
-    catch
-    {
-      return "";
-    }
+
+    using var streamReader = new StreamReader(fileStream, Encoding.UTF8);
+    return streamReader.ReadToEnd();
   }
 
   /// <summary>

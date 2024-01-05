@@ -10,6 +10,7 @@ using Objects.Structural.Properties;
 using Objects.Geometry;
 using ConverterCSIShared.Extensions;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 #if !SAP2000
 using Speckle.Core.Logging;
 #endif

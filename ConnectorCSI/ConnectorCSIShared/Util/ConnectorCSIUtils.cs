@@ -42,7 +42,10 @@ public static class ConnectorCSIUtils
       {
         names = GetAllNamesOfObjectType(model, objectType);
       }
-      catch { }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        SpeckleLog.Logger.Error(ex, "Error thrown from method {method}", nameof(GetAllNamesOfObjectType));
+      }
       if (names.Count > 0)
       {
         foreach (string name in names)

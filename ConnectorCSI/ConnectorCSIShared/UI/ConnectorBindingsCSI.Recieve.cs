@@ -5,6 +5,7 @@ using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
@@ -141,7 +142,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
           log: conversionResult.Log
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         ConnectorHelpers.LogConversionException(ex);
 

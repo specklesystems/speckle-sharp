@@ -81,7 +81,6 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     return await SendCommitObj(state, progress, commitObj, conversionProgressDict);
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   public void BuildSendCommitObj(
     ISpeckleConverter converter,
     List<string> selectedObjIds,
@@ -129,7 +128,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
           logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}"
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         ConnectorHelpers.LogConversionException(ex);
 
@@ -159,8 +158,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
         reportObj.Update(status: ApplicationObject.State.Created);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        SpeckleLog.Logger.Error(ex, "Error when attempting to retreive commit object");
         reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
       }
       progress.Report.Log(reportObj);
@@ -174,8 +174,9 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
         reportObj.Update(status: ApplicationObject.State.Created);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        SpeckleLog.Logger.Error(ex, "Error when attempting to retreive analysis results");
         reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
       }
       progress.Report.Log(reportObj);
