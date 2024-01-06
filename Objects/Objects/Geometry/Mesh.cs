@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Other;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
@@ -26,7 +27,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     List<int> faces,
     List<int>? colors = null,
     List<double>? texture_coords = null,
-    string? units = null,
+    string units = Units.None,
     string? applicationId = null
   )
   {
@@ -44,7 +45,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     int[] faces,
     int[]? colors = null,
     double[]? texture_coords = null,
-    string? units = null,
+    string units = Units.None,
     string? applicationId = null
   )
     : this(
@@ -73,7 +74,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   /// The unit's this <see cref="Mesh"/> is in.
   /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string? units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <inheritdoc/>
   public double area { get; set; }

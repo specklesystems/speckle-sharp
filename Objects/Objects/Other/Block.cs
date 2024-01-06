@@ -30,7 +30,7 @@ public class BlockDefinition : Base
   [DetachProperty]
   public List<Base> geometry { get; set; }
 
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <summary>
   /// Returns the translation transform of the base point to the internal origin [0,0,0]
@@ -38,7 +38,7 @@ public class BlockDefinition : Base
   /// <returns></returns>
   public Transform GetBasePointTransform()
   {
-    var translation = new Vector(-basePoint.x, -basePoint.y, -basePoint.z) { units = basePoint.units };
+    var translation = new Vector(-basePoint.x, -basePoint.y, -basePoint.z) { units = basePoint.units ?? Units.None };
     var transform = new Transform(new Vector(1, 0, 0), new Vector(0, 1, 0), new Vector(1, 0, 0), translation);
     return transform;
   }

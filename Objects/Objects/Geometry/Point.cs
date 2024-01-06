@@ -26,7 +26,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="z">The z coordinate</param>
   /// <param name="units">The units the point's coordinates are in.</param>
   /// <param name="applicationId">The object's unique application ID</param>
-  public Point(double x, double y, double z = 0d, string? units = null, string? applicationId = null)
+  public Point(double x, double y, double z = 0d, string units = Units.None, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -76,7 +76,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// The units this <see cref="Point"/> is in.
   /// This should be one of the units specified in <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string? units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <inheritdoc/>
   public Box? bbox { get; set; } // TODO: resolve nullability
@@ -171,13 +171,12 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     {
       return true;
     }
-
-    if (point1 is null ^ point2 is null)
+    else if (point1 is null ^ point2 is null)
     {
       return false;
     }
 
-    return point1.units == point2.units && point1.x == point2.x && point1.y == point2.y && point1.z == point2.z;
+    return point1?.units == point2?.units && point1?.x == point2?.x && point1?.y == point2?.y && point1?.z == point2?.z;
   }
 
   public static bool operator !=(Point? point1, Point? point2) => !(point1 == point2);

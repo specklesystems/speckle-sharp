@@ -54,7 +54,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="point">The point whose coordinates will be used</param>
   /// <param name="applicationId">The unique application ID of the object.</param>
   public Vector(Point point, string? applicationId = null)
-    : this(point.x, point.y, point.z, point.units, applicationId) { }
+    : this(point.x, point.y, point.z, point.units ?? Units.None, applicationId) { }
 
   /// <summary>
   /// Gets or sets the coordinates of the vector
@@ -78,7 +78,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// The unit's this <see cref="Vector"/> is in.
   /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <summary>
   /// The x coordinate of the vector.

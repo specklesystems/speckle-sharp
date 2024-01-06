@@ -23,7 +23,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(double[] value, string? units = null)
+  public Transform(double[] value, string units = Units.None)
   {
     if (value.Length != 16)
     {
@@ -34,7 +34,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units ?? "";
+    this.units = units;
   }
 
   /// <summary>
@@ -43,7 +43,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(float[] value, string? units = null)
+  public Transform(float[] value, string units = Units.None)
   {
     if (value.Length != 16)
     {
@@ -51,7 +51,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units ?? "";
+    this.units = units;
   }
 
   /// <summary>
@@ -59,10 +59,10 @@ public class Transform : Base
   /// </summary>
   /// <param name="matrix"></param>
   /// <param name="units"></param>
-  public Transform(Matrix4x4 matrix, string? units = null)
+  public Transform(Matrix4x4 matrix, string units = Units.None)
   {
     this.matrix = matrix;
-    this.units = units ?? "";
+    this.units = units;
   }
 
   /// <summary>
@@ -107,7 +107,7 @@ public class Transform : Base
   /// <summary>
   /// Units for translation
   /// </summary>
-  public string units { get; set; } = "";
+  public string units { get; set; } = Units.None;
 
   /// <summary>
   /// Decomposes matrix into its scaling, rotation, and translation components
