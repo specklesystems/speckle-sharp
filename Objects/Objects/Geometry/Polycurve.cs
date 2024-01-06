@@ -48,7 +48,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; }
 
   /// <inheritdoc/>
   public double length { get; set; }

@@ -34,7 +34,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units; // TODO:  handle nullability
+    this.units = units ?? "";
   }
 
   /// <summary>
@@ -51,7 +51,7 @@ public class Transform : Base
     }
 
     matrix = CreateMatrix(value);
-    this.units = units; // TODO:  handle nullability
+    this.units = units ?? "";
   }
 
   /// <summary>
@@ -62,7 +62,7 @@ public class Transform : Base
   public Transform(Matrix4x4 matrix, string? units = null)
   {
     this.matrix = matrix;
-    this.units = units; // handle nullability
+    this.units = units ?? "";
   }
 
   /// <summary>
@@ -107,7 +107,7 @@ public class Transform : Base
   /// <summary>
   /// Units for translation
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = "";
 
   /// <summary>
   /// Decomposes matrix into its scaling, rotation, and translation components
@@ -376,7 +376,7 @@ public class Transform : Base
   /// Transform a single speckle Point
   /// </summary>
   [Obsolete("Use transform method in Point class", true)]
-  public Point ApplyToPoint(Point point)
+  public Point? ApplyToPoint(Point point)
   {
     if (point == null)
     {

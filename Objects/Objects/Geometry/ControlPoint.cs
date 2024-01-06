@@ -14,7 +14,7 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
     weight = 1;
   }
 
-  public ControlPoint(double x, double y, double z, double w, string units, string? applicationId = null)
+  public ControlPoint(double x, double y, double z, double w, string? units, string? applicationId = null)
     : base(x, y, z, units, applicationId)
   {
     weight = w;
@@ -56,7 +56,7 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
     Deconstruct(out x, out y, out z, out weight, out _);
   }
 
-  public void Deconstruct(out double x, out double y, out double z, out double weight, out string units)
+  public void Deconstruct(out double x, out double y, out double z, out double weight, out string? units)
   {
     Deconstruct(out x, out y, out z, out units);
     weight = this.weight;

@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
     /// <summary>
     /// SchemaBuilder constructor for a Room
     /// </summary>
-    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    /// <remarks>Assign units when using this constructor due to <propref name="height"/> prop</remarks>
     [SchemaInfo("Room", "Creates a Speckle room", "BIM", "Architecture")]
     public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint)
     {
@@ -28,7 +28,7 @@ namespace Objects.BuiltElements
     /// <summary>
     /// SchemaBuilder constructor for a Room
     /// </summary>
-    /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
+    /// <remarks>Assign units when using this constructor due to <propref name="height"/> prop</remarks>
     [SchemaInfo("RevitRoom", "Creates a Revit room with parameters", "Revit", "Architecture")]
     public Room(
       string name,
@@ -47,7 +47,7 @@ namespace Objects.BuiltElements
 
     public string name { get; set; }
     public string number { get; set; }
-    virtual public Level level { get; set; }
+    public virtual Level level { get; set; }
     public Point basePoint { get; set; }
     public double height { get; set; }
     public List<ICurve> voids { get; set; } = new();
@@ -81,7 +81,7 @@ namespace Objects.BuiltElements.Archicad
     public override Level level
     {
       get => archicadLevel;
-      set => archicadLevel = value as ArchicadLevel ?? null;
+      set => archicadLevel = value as ArchicadLevel ?? null; // TODO: resolve nullability
     }
 
     [JsonIgnore]

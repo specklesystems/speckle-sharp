@@ -19,8 +19,6 @@ public class GSALoadGridArea : GSALoadGrid
     double value
   )
   {
-    name = name;
-    loadCase = loadCase;
     this.nativeId = nativeId;
     this.gridSurface = gridSurface;
     this.loadAxis = loadAxis;

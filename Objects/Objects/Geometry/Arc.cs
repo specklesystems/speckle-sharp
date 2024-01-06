@@ -202,7 +202,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; }
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -249,8 +249,8 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     list.Add(startAngle ?? 0);
     list.Add(endAngle ?? 0);
     list.Add(angleRadians);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 0);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 0);
 
     list.AddRange(plane.ToList());
     list.AddRange(startPoint.ToList());

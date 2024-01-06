@@ -77,7 +77,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   public Point start { get; set; }
   public Point end { get; set; }
 
-  public Interval? domain { get; set; } // TODO: resolve nullability
+  public Interval? domain { get; set; }
   public double length { get; set; }
 
   public Box bbox { get; set; }
@@ -92,7 +92,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
       end = transformedEnd,
       applicationId = applicationId,
       units = units,
-      domain = domain == null ? null : new Interval { start = domain.start, end = domain.end }
+      domain = domain is null ? null : new Interval { start = domain.start, end = domain.end }
     };
     return true;
   }

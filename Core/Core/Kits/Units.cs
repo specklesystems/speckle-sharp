@@ -30,8 +30,14 @@ public static class Units
     return s_supportedUnits.Contains(unit);
   }
 
+  /// <summary>
+  /// Gets the conversion factor from one unit system to another
+  /// </summary>
+  /// <param name="from"></param>
+  /// <param name="to"></param>
+  /// <returns>The conversion factor, or 1 if either unit param is null</returns>
   [Pure]
-  public static double GetConversionFactor(string from, string to)
+  public static double GetConversionFactor(string? from, string? to)
   {
     string? fromUnits = GetUnitsFromString(from);
     string? toUnits = GetUnitsFromString(to);
@@ -243,7 +249,7 @@ public static class Units
   /// <returns></returns>
   /// <exception cref="ArgumentOutOfRangeException">Unit string is not a supported unit (see <see cref="IsUnitSupported"/>)</exception>
   [Pure]
-  public static string? GetUnitsFromString(string unit)
+  public static string? GetUnitsFromString(string? unit)
   {
     if (unit == null)
     {

@@ -26,7 +26,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="z">The z coordinate</param>
   /// <param name="units">The units the point's coordinates are in.</param>
   /// <param name="applicationId">The object's unique application ID</param>
-  public Point(double x, double y, double z = 0d, string units = Units.Meters, string? applicationId = null)
+  public Point(double x, double y, double z = 0d, string? units = null, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -73,10 +73,10 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   public double z { get; set; }
 
   /// <summary>
-  /// The unit's this <see cref="Vector"/> is in.
+  /// The units this <see cref="Point"/> is in.
   /// This should be one of the units specified in <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string? units { get; set; }
 
   /// <inheritdoc/>
   public Box? bbox { get; set; } // TODO: resolve nullability
@@ -86,13 +86,13 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   {
     var matrix = transform.matrix;
 
-    var unitFactor = units != null ? Units.GetConversionFactor(transform.units, units) : 1; // applied to translation vector
+    var unitFactor = Units.GetConversionFactor(transform.units, units); // applied to translation vector
     var divisor = matrix.M41 + matrix.M42 + matrix.M43 + unitFactor * matrix.M44;
     var x = (this.x * matrix.M11 + this.y * matrix.M12 + this.z * matrix.M13 + unitFactor * matrix.M14) / divisor;
     var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
     var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
 
-    point = new Point(x, y, z) { units = units, applicationId = applicationId }; // TODO: resolve nullability
+    point = new Point(x, y, z) { units = units, applicationId = applicationId };
     return true;
   }
 
@@ -131,7 +131,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="y">The y coordinate</param>
   /// <param name="z">The z coordinate</param>
   /// <param name="units">The units the point's coordinates are in.</param>
-  public void Deconstruct(out double x, out double y, out double z, out string units)
+  public void Deconstruct(out double x, out double y, out double z, out string? units)
   {
     Deconstruct(out x, out y, out z);
     units = this.units;

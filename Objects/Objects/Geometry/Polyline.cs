@@ -176,7 +176,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; }
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -238,8 +238,8 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   {
     var list = new List<double>();
     list.Add(closed ? 1 : 0); // 2
-    list.Add(domain.start ?? 0); // 3
-    list.Add(domain.end ?? 1); // 4
+    list.Add(domain?.start ?? 0); // 3
+    list.Add(domain?.end ?? 1); // 4
     list.Add(value.Count); // 5
     list.AddRange(value); // 6 onwards
 

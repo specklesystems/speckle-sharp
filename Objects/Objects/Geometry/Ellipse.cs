@@ -80,7 +80,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <summary>
   /// Gets or sets the domain interval for this <see cref="Ellipse"/>.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval? domain { get; set; }
 
   /// <inheritdoc />
   public double length { get; set; }
@@ -96,8 +96,8 @@ public class Ellipse : Base, ICurve, IHasArea
     var list = new List<double>();
     list.Add(firstRadius ?? 0);
     list.Add(secondRadius ?? 0);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 0);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 0);
 
     list.AddRange(plane.ToList());
 

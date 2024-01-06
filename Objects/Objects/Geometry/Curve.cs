@@ -135,7 +135,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   }
 
   /// <summary>
-  /// Returns the vales of this <see cref="Curve"/> as a list of numbers
+  /// Returns the values of this <see cref="Curve"/> as a list of numbers
   /// </summary>
   /// <returns>A list of values representing the <see cref="Curve"/></returns>
   public List<double> ToList()
@@ -146,8 +146,8 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
     list.Add(curve.periodic ? 1 : 0); // 1
     list.Add(curve.rational ? 1 : 0); // 2
     list.Add(curve.closed ? 1 : 0); // 3
-    list.Add((double)curve.domain.start); // 4 //TODO: resolve nullability
-    list.Add((double)curve.domain.end); // 5  //TODO: resolve nullability
+    list.Add(curve.domain?.start ?? 0); // 4
+    list.Add(curve.domain?.end ?? 1); // 5
 
     list.Add(curve.points.Count); // 6
     list.Add(curve.weights.Count); // 7

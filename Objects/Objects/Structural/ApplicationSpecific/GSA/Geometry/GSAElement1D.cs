@@ -21,22 +21,22 @@ public class GSAElement1D : Element1D
     Property1D property,
     ElementType1D type,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Plane localAxis = null
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Plane? localAxis = null
   )
   {
     this.nativeId = nativeId;
     this.baseLine = baseLine;
     this.property = property;
     this.type = type;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.localAxis = localAxis;
   }
 
@@ -52,12 +52,12 @@ public class GSAElement1D : Element1D
     Property1D property,
     ElementType1D type,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end1Releases = null,
+      Restraint? end1Releases = null,
     [SchemaParamInfo("If null, restraint condition defaults to unreleased (fully fixed translations and rotations)")]
-      Restraint end2Releases = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end1Offset = null,
-    [SchemaParamInfo("If null, defaults to no offsets")] Vector end2Offset = null,
-    Node orientationNode = null,
+      Restraint? end2Releases = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end1Offset = null,
+    [SchemaParamInfo("If null, defaults to no offsets")] Vector? end2Offset = null,
+    Node? orientationNode = null,
     double orientationAngle = 0
   )
   {
@@ -65,10 +65,10 @@ public class GSAElement1D : Element1D
     this.baseLine = baseLine;
     this.property = property;
     this.type = type;
-    this.end1Releases = end1Releases == null ? new Restraint("FFFFFF") : end1Releases;
-    this.end2Releases = end2Releases == null ? new Restraint("FFFFFF") : end2Releases;
-    this.end1Offset = end1Offset == null ? new Vector(0, 0, 0) : end1Offset;
-    this.end2Offset = end2Offset == null ? new Vector(0, 0, 0) : end2Offset;
+    this.end1Releases = end1Releases ?? new Restraint("FFFFFF");
+    this.end2Releases = end2Releases ?? new Restraint("FFFFFF");
+    this.end1Offset = end1Offset ?? new Vector(0, 0, 0);
+    this.end2Offset = end2Offset ?? new Vector(0, 0, 0);
     this.orientationNode = orientationNode;
     this.orientationAngle = orientationAngle;
   }
