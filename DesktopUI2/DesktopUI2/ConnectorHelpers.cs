@@ -40,7 +40,7 @@ public static class ConnectorHelpers
 
     using ServerTransport transport = new(state.Client.Account, state.StreamId);
 
-    Base? commitObject = await Operations
+    Base commitObject = await Operations
       .Receive(
         commit.referencedObject,
         transport,
@@ -49,13 +49,6 @@ public static class ConnectorHelpers
         cancellationToken: progress.CancellationToken
       )
       .ConfigureAwait(false);
-
-    if (commitObject == null)
-    {
-      throw new SpeckleException(
-        $"Failed to receive commit: {commit.id} objects from server: {nameof(Operations.Receive)} returned null"
-      );
-    }
 
     return commitObject;
   }
