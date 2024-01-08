@@ -377,7 +377,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
       );
     }
-    catch (Exception ex) // TODO: use IsFatal here when pattern is clarified/implemented
+    catch (Exception ex) when (!ex.IsFatal())
     {
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
@@ -584,7 +584,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
       );
     }
-    catch (Exception e) // TODO: use IsFatal here when pattern is clarified/implemented
+    catch (Exception e) when (!e.IsFatal())
     {
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
