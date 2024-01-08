@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>exe</OutputType>
-    <RootNamespace>Speckle.Core.Tests.Performance</RootNamespace>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   
   <ItemGroup>

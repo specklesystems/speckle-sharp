@@ -433,9 +433,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchUploader.Sdk", "ConnectorCore\BatchUploader.Sdk\BatchUploader.Sdk.csproj", "{2CC777EB-BD63-4FAB-BC3A-68A640D2E639}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{5009BB59-0F77-4202-8FD2-DECC07E93146}"
-	ProjectSection(SolutionItems) = preProject
-		Core\Tests\Directory.Build.props = Core\Tests\Directory.Build.props
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Unit", "Core\Tests\Speckle.Core.Tests.Unit\Speckle.Core.Tests.Unit.csproj", "{2A88A9EA-EB11-49FD-BE95-DA6FC8F6CB3D}"
 EndProject
