@@ -265,7 +265,7 @@ public static partial class Operations
       {
         throw;
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
         if (serializerV2.OnErrorAction == null)

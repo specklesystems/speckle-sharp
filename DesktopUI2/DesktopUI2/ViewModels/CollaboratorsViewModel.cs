@@ -63,44 +63,56 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   private async void Search()
   {
-    Focus();
-    if (SearchQuery.Length < 3)
+    try
     {
-      return;
-    }
-
-    if (!await Http.UserHasInternet().ConfigureAwait(true))
-    {
-      Dispatcher.UIThread.Post(
-        () =>
-          MainUserControl.NotificationManager.Show(
-            new PopUpNotificationViewModel
-            {
-              Title = "⚠️ Oh no!",
-              Message = "Could not reach the internet, are you connected?",
-              Type = NotificationType.Error
-            }
-          ),
-        DispatcherPriority.Background
-      );
-
-      return;
-    }
-
-    if (SearchQuery.Contains("@"))
-    {
-      if (Utils.IsValidEmail(SearchQuery))
+      Focus();
+      if (SearchQuery.Length < 3)
       {
-        var emailAcc = new AccountViewModel { Name = SearchQuery };
-        Users = new List<AccountViewModel> { emailAcc };
+        return;
+      }
 
-        ShowProgress = false;
-        DropDownOpen = true;
+      if (!await Http.UserHasInternet().ConfigureAwait(true))
+      {
+        Dispatcher.UIThread.Post(
+          () =>
+            MainUserControl.NotificationManager.Show(
+              new PopUpNotificationViewModel
+              {
+                Title = "⚠️ Oh no!",
+                Message = "Could not reach the internet, are you connected?",
+                Type = NotificationType.Error
+              }
+            ),
+          DispatcherPriority.Background
+        );
+
+        return;
+      }
+
+      if (SearchQuery.Contains("@"))
+      {
+        if (Utils.IsValidEmail(SearchQuery))
+        {
+          var emailAcc = new AccountViewModel { Name = SearchQuery };
+          Users = new List<AccountViewModel> { emailAcc };
+
+          ShowProgress = false;
+          DropDownOpen = true;
+        }
+      }
+      else
+      {
+        userSearchDebouncer();
       }
     }
-    else
+    catch (Exception ex)
     {
-      userSearchDebouncer();
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(Search),
+        ex.Message
+      );
     }
   }
 
@@ -134,9 +146,14 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
       Users = users.Select(x => new AccountViewModel(x)).ToList();
     }
-    catch
+    catch (Exception ex)
     {
-      //ignore
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(SearchUsers),
+        ex.Message
+      );
     }
 
     ShowProgress = false;
