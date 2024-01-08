@@ -34,7 +34,7 @@ public class Base : DynamicBase
   private string _type;
 
   /// <summary>
-  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId"/> function to get it.</b>
+  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
   /// </summary>
   [SchemaIgnore]
   public virtual string id { get; set; }
