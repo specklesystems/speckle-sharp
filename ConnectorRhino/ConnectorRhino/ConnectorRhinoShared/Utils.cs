@@ -285,6 +285,7 @@ public class PreviewConduit : DisplayConduit
       {
         continue;
       }
+
       foreach (var obj in toBeConverted)
       {
         switch (obj)
