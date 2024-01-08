@@ -32,7 +32,7 @@ public partial class ConverterCSI
     model.restraints = new List<Base> { };
     model.loads = new List<Base> { };
     int number = 0;
-    string[] properties1D = { };
+    string[] properties1D = System.Array.Empty<string>();
 
     //var stories = StoriesToSpeckle();
     ////Should stories belong here ? not sure
@@ -47,7 +47,7 @@ public partial class ConverterCSI
       model.properties.Add(speckleProperty1D);
     }
 
-    string[] springPointProperties = { };
+    string[] springPointProperties = System.Array.Empty<string>();
     Model.PropPointSpring.GetNameList(ref number, ref springPointProperties);
     foreach (string propertySpring in springPointProperties)
     {
@@ -55,7 +55,7 @@ public partial class ConverterCSI
       model.properties.Add(specklePropertyPointSpring);
     }
 
-    string[] springLineProperties = { };
+    string[] springLineProperties = System.Array.Empty<string>();
     Model.PropLineSpring.GetNameList(ref number, ref springLineProperties);
     foreach (string propertyLine in springLineProperties)
     {
@@ -63,14 +63,14 @@ public partial class ConverterCSI
       model.properties.Add(specklePropertyLineSpring);
     }
 
-    string[] springAreaProperties = { };
+    string[] springAreaProperties = System.Array.Empty<string>();
     Model.PropAreaSpring.GetNameList(ref number, ref springAreaProperties);
     foreach (string propertyArea in springAreaProperties)
     {
       var specklePropertyAreaSpring = AreaSpringToSpeckle(propertyArea);
       model.properties.Add(specklePropertyAreaSpring);
     }
-    string[] LinkProperties = { };
+    string[] LinkProperties = System.Array.Empty<string>();
     Model.PropLink.GetNameList(ref number, ref LinkProperties);
     foreach (string propertyLink in LinkProperties)
     {
@@ -78,7 +78,7 @@ public partial class ConverterCSI
       model.properties.Add(specklePropertyLink);
     }
 
-    string[] TendonProperties = { };
+    string[] TendonProperties = System.Array.Empty<string>();
     Model.PropTendon.GetNameList(ref number, ref TendonProperties);
     foreach (string propertyTendon in TendonProperties)
     {
@@ -86,7 +86,7 @@ public partial class ConverterCSI
       model.properties.Add(specklePropertyTendon);
     }
 
-    string[] DiaphragmProperties = { };
+    string[] DiaphragmProperties = System.Array.Empty<string>();
     Model.Diaphragm.GetNameList(ref number, ref DiaphragmProperties);
     foreach (string propertyDiaphragm in DiaphragmProperties)
     {
@@ -94,7 +94,7 @@ public partial class ConverterCSI
       model.properties.Add(specklePropertyDiaphragm);
     }
 
-    string[] properties2D = { };
+    string[] properties2D = System.Array.Empty<string>();
     Model.PropArea.GetNameList(ref number, ref properties2D);
     foreach (string property in properties2D)
     {
@@ -109,7 +109,7 @@ public partial class ConverterCSI
       }
     }
 
-    string[] materials = { };
+    string[] materials = System.Array.Empty<string>();
     Model.PropMaterial.GetNameList(ref number, ref materials);
     foreach (string material in materials)
     {
