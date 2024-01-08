@@ -21,9 +21,9 @@ class Program
   {
     try
     {
-  #if DEBUG
-        Debugger.Launch();
-  #endif
+#if DEBUG
+      Debugger.Launch();
+#endif
       //MessageBox.Show("Starting DriverCSharp");
 
       // dimension the SapObject as cOAPI type
@@ -94,7 +94,6 @@ class Program
         ret = -2;
         return ret;
       }
-
 
       // Get a reference to cSapModel to access all API classes and functions
       cSapModel mySapModel = mySapObject.SapModel;

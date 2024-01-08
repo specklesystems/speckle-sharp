@@ -21,9 +21,7 @@ public static class StreamStateManager
       return new List<StreamState>();
     }
 
-    return JsonConvert.DeserializeObject<List<StreamState>>(
-      strings
-    );
+    return JsonConvert.DeserializeObject<List<StreamState>>(strings);
   }
 
   /// <summary>
