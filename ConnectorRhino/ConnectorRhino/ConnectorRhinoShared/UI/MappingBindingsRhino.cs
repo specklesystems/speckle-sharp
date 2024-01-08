@@ -166,8 +166,7 @@ public class MappingBindingsRhino : MappingsBindings
         }
       }
     }
-    // TODO: this exception needs to be investigated further
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
     }
@@ -287,8 +286,7 @@ public class MappingBindingsRhino : MappingsBindings
 
       return JsonConvert.DeserializeObject<Schema>(viewModel, settings);
     }
-    // todo: deserializer exception needs to be investigated later, adding logging for now
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(
         ex,

@@ -145,7 +145,7 @@ public static class Utils
       {
         newLayer.ParentLayerId = parentLayer.Id;
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         throw new InvalidOperationException("Could not set layer parent id.", e);
       }
@@ -258,10 +258,7 @@ public static class Utils
 }
 
 #region Preview
-/// <summary>
-///
-/// </summary>
-/// <remarks> TODO: potentially throw exceptions when no previewable geometry is found </remarks>
+
 public class PreviewConduit : DisplayConduit
 {
   public BoundingBox bbox;
@@ -283,6 +280,7 @@ public class PreviewConduit : DisplayConduit
       List<object> toBeConverted = previewObj.Convertible
         ? previewObj.Converted
         : previewObj.Fallback?.SelectMany(o => o.Converted)?.ToList();
+
       if (toBeConverted is null)
       {
         continue;
