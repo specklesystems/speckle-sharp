@@ -17,11 +17,18 @@ namespace Speckle.Core.Api;
 public static partial class Operations
 {
   /// <summary>
-  ///  Receives an object from a transport.
+  /// Receives an object (and all its sub-children) from the two provided transports.
+  /// <br/>
+  /// Will first try and find objects using the <paramref name="localTransport"/> (the faster transport)
+  /// If not found, will attempt to copy the objects from the <paramref name="remoteTransport"/> into the <see cref="localTransport"/> before deserialization
   /// </summary>
+  /// <remarks>
+  /// If Transports are properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a <see cref="ServerTransport"/> as a local transport.
+  /// <br/>This is not recommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in <see cref="MemoryTransport"/>. In memory transports are the fastest ones, but they're of limited use for larger datasets
+  /// </remarks>
   /// <param name="objectId">The id of the object to receive</param>
-  /// <param name="remoteTransport">The remote transport to receive from</param>
-  /// <param name="localTransport">The local transport to receive from. If <see langword="null"/>, will use a default <see cref="SQLiteTransport"/> cache</param>
+  /// <param name="remoteTransport">The remote transport (slower). If <see langword="null"/>, will assume all objects are present in <paramref name="localTransport"/></param>
+  /// <param name="localTransport">The local transport (faster). If <see langword="null"/>, will use a default <see cref="SQLiteTransport"/> cache</param>
   /// <param name="onProgressAction">Action invoked on progress iterations</param>
   /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known</param>
   /// <param name="cancellationToken"></param>
@@ -77,23 +84,36 @@ public static partial class Operations
       remoteTransport?.TransportName
     );
 
-    string? objString = LocalReceive(objectId, localTransport);
+    // Try Local Receive
+    string? objString = LocalReceive(objectId, localTransport, onTotalChildrenCountKnown);
 
     if (objString is null)
     {
+      // Fall back to remote
+      if (remoteTransport is null)
+      {
+        var ex = new TransportException(
+          $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
+        );
+
+        SpeckleLog.Logger.Error(ex, "Cannot receive object from the given transports {exceptionMessage}", ex.Message);
+        throw ex;
+      }
+
       SpeckleLog.Logger.Debug(
         "Cannot find object {objectId} in the local transport, hitting remote {transportName}",
         objectId,
-        remoteTransport?.TransportName
+        remoteTransport.TransportName
       );
 
-      objString = await RemoteReceive(objectId, remoteTransport, localTransport).ConfigureAwait(false);
+      objString = await RemoteReceive(objectId, remoteTransport, localTransport, onTotalChildrenCountKnown)
+        .ConfigureAwait(false);
     }
 
-    // Deserialize Json
-
+    // Proceed to deserialize the object, now safely knowing that all its children are present in the local (fast) transport.
     Base res = serializerV2.Deserialize(objString);
 
+    timer.Stop();
     SpeckleLog.Logger
       .ForContext("deserializerElapsed", serializerV2.Elapsed)
       .ForContext(
@@ -113,7 +133,8 @@ public static partial class Operations
   }
 
   /// <summary>
-  ///
+  /// Try and get the object from the local transport. If it's there, we assume all its children are there
+  /// This assumption is hard-wired into the <see cref="BaseObjectDeserializerV2"/>
   /// </summary>
   /// <param name="objectId"></param>
   /// <param name="localTransport"></param>
@@ -123,7 +144,7 @@ public static partial class Operations
   internal static string? LocalReceive(
     string objectId,
     ITransport localTransport,
-    Action<int>? onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown
   )
   {
     string? objString = localTransport.GetObject(objectId);
@@ -148,29 +169,23 @@ public static partial class Operations
     return objString;
   }
 
-  internal static async Task<string> RemoteReceive(
+  /// <summary>
+  /// Copies the requested object and all its children from <paramref name="remoteTransport"/> to <paramref name="localTransport"/>
+  /// </summary>
+  /// <seealso cref="ITransport.CopyObjectAndChildren"/>
+  /// <param name="objectId"></param>
+  /// <param name="remoteTransport"></param>
+  /// <param name="localTransport"></param>
+  /// <param name="onTotalChildrenCountKnown"></param>
+  /// <returns></returns>
+  /// <exception cref="TransportException">Remote transport was not specified</exception>
+  private static async Task<string> RemoteReceive(
     string objectId,
-    ITransport? remoteTransport,
+    ITransport remoteTransport,
     ITransport localTransport,
-    Action<int>? onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown
   )
   {
-    if (remoteTransport == null)
-    {
-      var ex = new TransportException(
-        $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
-      );
-
-      SpeckleLog.Logger.Error(ex, "Cannot receive object from the given transports {exceptionMessage}", ex.Message);
-      throw ex;
-    }
-
-    SpeckleLog.Logger.Debug(
-      "Cannot find object {objectId} in the local transport, hitting remote {transportName}",
-      objectId,
-      remoteTransport.TransportName
-    );
-
     var objString = await remoteTransport
       .CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown)
       .ConfigureAwait(false);
@@ -196,7 +211,7 @@ public static partial class Operations
     return defaultLocalTransport;
   }
 
-  internal class Placeholder
+  internal sealed class Placeholder
   {
     public Dictionary<string, int>? __closure { get; set; } = new();
   }
