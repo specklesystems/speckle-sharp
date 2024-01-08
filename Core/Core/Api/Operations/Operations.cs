@@ -36,13 +36,17 @@ public static partial class Operations
   /// <summary>
   /// Factory for progress actions used internally inside send and receive methods.
   /// </summary>
-  /// <param name="localProgressDict"></param>
   /// <param name="onProgressAction"></param>
   /// <returns></returns>
-  private static Action<string, int> GetInternalProgressAction(
-    Action<ConcurrentDictionary<string, int>>? onProgressAction = null
+  private static Action<string, int>? GetInternalProgressAction(
+    Action<ConcurrentDictionary<string, int>>? onProgressAction
   )
   {
+    if (onProgressAction is null)
+    {
+      return null;
+    }
+
     var localProgressDict = new ConcurrentDictionary<string, int>();
 
     return (name, processed) =>
@@ -52,7 +56,7 @@ public static partial class Operations
         localProgressDict[name] += processed;
       }
 
-      onProgressAction?.Invoke(localProgressDict);
+      onProgressAction.Invoke(localProgressDict);
     };
   }
 }

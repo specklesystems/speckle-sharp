@@ -37,8 +37,6 @@ public sealed class BaseObjectDeserializerV2
 
   public Action<string, int>? OnProgressAction { get; set; }
 
-  public Action<string, Exception>? OnErrorAction { get; set; }
-
   public string? BlobStorageFolder { get; set; }
   public TimeSpan Elapsed { get; private set; }
 
@@ -49,8 +47,7 @@ public sealed class BaseObjectDeserializerV2
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
   /// <exception cref="InvalidOperationException">Thrown when <see cref="_isBusy"/></exception>
   /// <exception cref="ArgumentNullException"><paramref name="rootObjectJson"/> was null</exception>
-  /// <exception cref="JsonReaderException "><paramref name="rootObjectJson"/> was not valid JSON</exception>
-  /// <exception cref="SpeckleException"><paramref name="rootObjectJson"/> cannot be deserialised to type <see cref="Base"/></exception>
+  /// <exception cref="SpeckleDeserializeException"><paramref name="rootObjectJson"/> cannot be deserialised to type <see cref="Base"/></exception>
   // /// <exception cref="TransportException"><see cref="ReadTransport"/> did not contain the required json objects (closures)</exception>
   public Base Deserialize(string rootObjectJson)
   {
@@ -89,13 +86,21 @@ public sealed class BaseObjectDeserializerV2
         }
       }
 
-      object? ret = DeserializeTransportObject(rootObjectJson);
+      object? ret;
+      try
+      {
+        ret = DeserializeTransportObject(rootObjectJson);
+      }
+      catch (JsonReaderException ex)
+      {
+        throw new SpeckleDeserializeException("Failed to deserialize json", ex);
+      }
 
       stopwatch.Stop();
       Elapsed += stopwatch.Elapsed;
       if (ret is not Base b)
       {
-        throw new SpeckleException(
+        throw new SpeckleDeserializeException(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
       }
@@ -154,7 +159,7 @@ public sealed class BaseObjectDeserializerV2
   /// <returns>The deserialized object</returns>
   /// <exception cref="ArgumentNullException"><paramref name="objectJson"/> was null</exception>
   /// <exception cref="JsonReaderException "><paramref name="objectJson"/> was not valid JSON</exception>
-  /// <exception cref="SpeckleException">Failed to deserialize <see cref="JObject"/> to the target type</exception>
+  /// <exception cref="SpeckleDeserializeException">Failed to deserialize <see cref="JObject"/> to the target type</exception>
   public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
@@ -179,7 +184,7 @@ public sealed class BaseObjectDeserializerV2
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException($"Failed to deserialize {doc1} as {doc1.Type}", ex);
+      throw new SpeckleDeserializeException($"Failed to deserialize {doc1} as {doc1.Type}", ex);
     }
 
     lock (_callbackLock)
@@ -291,7 +296,7 @@ public sealed class BaseObjectDeserializerV2
             }
             catch (AggregateException ex)
             {
-              throw new SpeckleException("Failed to deserialize reference object", ex);
+              throw new SpeckleDeserializeException("Failed to deserialize reference object", ex);
             }
             lock (_deserializedObjects)
             {
@@ -364,7 +369,7 @@ public sealed class BaseObjectDeserializerV2
         else
         {
           // Cannot convert the value in the json to the static property type
-          throw new SpeckleException(
+          throw new SpeckleDeserializeException(
             $"Cannot deserialize {entry.Value?.GetType().FullName} to {targetValueType.FullName}"
           );
         }
@@ -391,4 +396,7 @@ public sealed class BaseObjectDeserializerV2
 
   [Obsolete("Use nameof(Base.speckle_type)")]
   public string TypeDiscriminator => TYPE_DISCRIMINATOR;
+
+  [Obsolete("OnErrorAction unused, deserializer will throw exceptions instead")]
+  public Action<string, Exception>? OnErrorAction { get; set; }
 }

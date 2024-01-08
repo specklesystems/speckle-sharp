@@ -14,20 +14,26 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public enum SerializerVersion
-{
-  V1,
-  V2
-}
-
 public static partial class Operations
 {
-  public static async Task<Base?> Receive(
+  /// <summary>
+  ///  Receives an object from a transport.
+  /// </summary>
+  /// <param name="objectId">The id of the object to receive</param>
+  /// <param name="remoteTransport">The remote transport to receive from</param>
+  /// <param name="localTransport">The local transport to receive from. If <see langword="null"/>, will use a default <see cref="SQLiteTransport"/> cache</param>
+  /// <param name="onProgressAction">Action invoked on progress iterations</param>
+  /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known</param>
+  /// <param name="cancellationToken"></param>
+  /// <exception cref="TransportException">Failed to retrieve objects from the provided transport(s)</exception>
+  /// <exception cref="SpeckleDeserializeException">Deserialization of the requested object(s) failed</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> requested cancel</exception>
+  /// <returns>The requested Speckle Object</returns>
+  public static async Task<Base> Receive(
     string objectId,
     ITransport? remoteTransport = null,
     ITransport? localTransport = null,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
-    Action<string, Exception>? onErrorAction = null,
     Action<int>? onTotalChildrenCountKnown = null,
     CancellationToken cancellationToken = default
   )
@@ -53,7 +59,6 @@ public static partial class Operations
       {
         ReadTransport = localTransport,
         OnProgressAction = internalProgressAction,
-        OnErrorAction = onErrorAction,
         CancellationToken = cancellationToken,
         BlobStorageFolder = (remoteTransport as IBlobCapableTransport)?.BlobStorageFolder
       };
@@ -86,7 +91,8 @@ public static partial class Operations
     }
 
     // Deserialize Json
-    Base? res = DeserializeStringToBase(objString, serializerV2);
+
+    Base res = serializerV2.Deserialize(objString);
 
     SpeckleLog.Logger
       .ForContext("deserializerElapsed", serializerV2.Elapsed)
@@ -106,6 +112,14 @@ public static partial class Operations
     return res;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="objectId"></param>
+  /// <param name="localTransport"></param>
+  /// <param name="onTotalChildrenCountKnown"></param>
+  /// <returns></returns>
+  /// <exception cref="SpeckleDeserializeException"></exception>
   internal static string? LocalReceive(
     string objectId,
     ITransport localTransport,
@@ -143,7 +157,7 @@ public static partial class Operations
   {
     if (remoteTransport == null)
     {
-      var ex = new SpeckleException(
+      var ex = new TransportException(
         $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
       );
 
@@ -182,43 +196,19 @@ public static partial class Operations
     return defaultLocalTransport;
   }
 
-  private static Base? DeserializeStringToBase(string objString, BaseObjectDeserializerV2 serializerV2)
-  {
-    try
-    {
-      return serializerV2.Deserialize(objString);
-    }
-    catch (OperationCanceledException)
-    {
-      throw;
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
-      if (serializerV2.OnErrorAction == null)
-      {
-        throw;
-      }
-
-      serializerV2.OnErrorAction.Invoke(
-        $"A deserialization error has occurred: {ex.Message}",
-        new SpeckleDeserializeException("A deserialization error has occurred", ex)
-      );
-      return null;
-    }
-  }
-
   internal class Placeholder
   {
     public Dictionary<string, int>? __closure { get; set; } = new();
   }
 
   #region Obsolete Overloads
+#pragma warning disable CA1068
 
   private const string RECEIVE_DEPRECATION_MESSAGE = """
     This method overload is obsolete, consider using a non-obsolete overload.
-    All overloads that request SerializerV1 have been deprecated along with SerializerV1.
-    Additionally, use of disposeTransports will no longer be supported going forward (you should dispose your own transports).
+    1.SerializerVersion selection will no longer be supported going foward (serializer v1 is now deprecated).
+    2.Use of disposeTransports will no longer be supported going forward (you should dispose your own transports).
+    3 OnErrorAction is no longer used (instead functions with throw exceptions for consistancy and clear stack trace)
     """;
 
   /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
@@ -461,6 +451,41 @@ public static partial class Operations
     );
   }
 
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    Action<string, Exception>? onErrorAction
+  )
+  {
+    return Receive(
+      objectId,
+      default,
+      remoteTransport,
+      localTransport,
+      null,
+      onErrorAction,
+      null,
+      false,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    Action<string, Exception>? onErrorAction
+  )
+  {
+    return Receive(objectId, default, remoteTransport, null, null, onErrorAction, null, false, SerializerVersion.V2);
+  }
+
   /// <summary>
   /// Receives an object from a transport.
   /// </summary>
@@ -472,7 +497,7 @@ public static partial class Operations
   /// <br/>
   /// We also no longer offer the option to <paramref name="disposeTransports"/>.
   /// You should instead handle disposal yourself
-  /// using conventional mechanisms like the <c>using</c> keyword.<br/>
+  /// using conventional mechanisms like the <c>using</c> keyword or try finally block<br/>
   /// <br/>
   /// This function overload will be kept around for several releases, but will eventually be removed.
   /// </remarks>
@@ -612,7 +637,7 @@ public static partial class Operations
       remoteTransport.CancellationToken = cancellationToken;
 
       SpeckleLog.Logger.Debug(
-        "Cannot find object {objectId} in the local transport, hitting remote {transportName}.",
+        "Cannot find object {objectId} in the local transport, hitting remote {transportName}",
         remoteTransport.TransportName
       );
       objString = await remoteTransport
@@ -636,7 +661,7 @@ public static partial class Operations
       }
 
       SpeckleLog.Logger
-        .ForContext("deserializerElapsed", serializerV2.Elapsed)
+        .ForContext("deserializerElapsed", serializerV2?.Elapsed)
         .ForContext(
           "transportElapsedBreakdown",
           new[] { localTransport, remoteTransport }
@@ -673,20 +698,17 @@ public static partial class Operations
     }
     else
     {
-      return DeserializeStringToBase(objString, serializerV2!);
+      return serializerV2!.Deserialize(objString);
     }
   }
+#pragma warning restore CA1068
 
   #endregion
 }
 
-public class SpeckleDeserializeException : SpeckleException
+[Obsolete("Serializer v1 is no deprecated")]
+public enum SerializerVersion
 {
-  public SpeckleDeserializeException() { }
-
-  public SpeckleDeserializeException(string message, Exception? inner = null)
-    : base(message, inner) { }
-
-  public SpeckleDeserializeException(string message)
-    : base(message) { }
+  V1,
+  V2
 }

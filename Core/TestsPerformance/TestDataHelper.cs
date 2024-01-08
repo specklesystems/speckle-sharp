@@ -1,4 +1,3 @@
-using System.Reactive;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -43,9 +42,7 @@ public sealed class TestDataHelper : IDisposable
 
   public async Task<Base> DeserializeBase()
   {
-    return await Speckle.Core.Api.Operations
-        .Receive(ObjectId, null, Transport, onErrorAction: (message, ex) => throw new Exception(message, ex))
-        .ConfigureAwait(false) ?? throw new InvalidOperationException("Test data was null");
+    return await Operations.Receive(ObjectId, null, Transport).ConfigureAwait(false);
   }
 
   public void Dispose()

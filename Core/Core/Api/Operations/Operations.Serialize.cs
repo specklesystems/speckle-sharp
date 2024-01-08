@@ -30,10 +30,10 @@ public static partial class Operations
 
   /// <remarks>
   /// Note: if you want to pull an object from a Speckle Transport or Server,
-  /// please use any of the
-  /// <see cref="Receive(string,Speckle.Core.Transports.ITransport?,Speckle.Core.Transports.ITransport?,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,System.Action{int}?,bool,Speckle.Core.Api.SerializerVersion)"/>.
+  /// please use
+  /// <see cref="Receive(string,Speckle.Core.Transports.ITransport?,Speckle.Core.Transports.ITransport?,System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}?,System.Action{string,System.Exception}?,System.Action{int}?,System.Threading.CancellationToken)"/>
   /// </remarks>
-  /// <param name="value">The json string representation of a speckle object that you want to deserialise</param>
+  /// <param name="value">The json string representation of a speckle object that you want to deserialize</param>
   /// <param name="cancellationToken"></param>
   /// <returns><inheritdoc cref="BaseObjectDeserializerV2.Deserialize"/></returns>
   /// <exception cref="ArgumentNullException"><paramref name="value"/> was null</exception>
