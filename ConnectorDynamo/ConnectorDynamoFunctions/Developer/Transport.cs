@@ -28,7 +28,7 @@ public static class Transport
 
     Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
 
-    return new DiskTransport.DiskTransport(basePath);
+    return new DiskTransport(basePath);
   }
 
   /// <summary>
