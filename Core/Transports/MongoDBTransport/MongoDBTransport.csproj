@@ -7,7 +7,7 @@
     <PackageTags>$(PackageTags) mongodb transport</PackageTags>
     <IsPackable>true</IsPackable>
     <Nullable>disable</Nullable>
-
+    <RootNamespace>Speckle.Core.Transports</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
