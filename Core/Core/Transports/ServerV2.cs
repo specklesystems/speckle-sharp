@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -337,7 +336,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     return childrenIds;
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private async void SendingThreadMain()
   {
     while (true)
@@ -415,7 +413,11 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
           _sendBuffer.Clear();
           _exception = ex;
         }
-        return;
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
       finally
       {
