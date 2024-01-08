@@ -64,7 +64,7 @@ public class MappingBindingsRhino : MappingsBindings
 
       return new MappingSelectionInfo(result, selection.Count);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // check seq to see if this has ever been thrown
       SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);

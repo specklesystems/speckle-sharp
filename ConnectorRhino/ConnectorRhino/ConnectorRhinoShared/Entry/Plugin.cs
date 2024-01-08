@@ -144,7 +144,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         try
         {
           SpeckleCommandMac.CreateOrFocusSpeckle();
-        } catch (Exception ex)
+        } 
+        catch (Exception ex) when (!e.IsFatal())
         {
           SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
@@ -189,7 +190,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         hostAppVersion
       );
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       RhinoApp.CommandLineOut.WriteLine("Failed to init speckle logger: " + e.ToFormattedString());
       return LoadReturnCode.ErrorShowDialog;
@@ -215,7 +216,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
       Init();
     }
     // need investigation in seq of specific excpetions thrown (FileNotFound, TypeInitialization)
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
       errorMessage = $"Failed to load Speckle Plugin with {ex.ToFormattedString()}";
@@ -334,7 +335,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
       }
     }
-    catch (Exception ex) { }
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   private void RhinoDoc_DeselectObjects(object sender, RhinoObjectSelectionEventArgs e)
