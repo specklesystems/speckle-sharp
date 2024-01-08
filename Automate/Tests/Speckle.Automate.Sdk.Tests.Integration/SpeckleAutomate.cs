@@ -2,8 +2,8 @@ using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
+using Speckle.Core.Tests.Integration;
 using Speckle.Core.Transports;
-using TestsIntegration;
 using Utils = Speckle.Automate.Sdk.Tests.Integration.TestAutomateUtils;
 
 namespace Speckle.Automate.Sdk.Tests.Integration;

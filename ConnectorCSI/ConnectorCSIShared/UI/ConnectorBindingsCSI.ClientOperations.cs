@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
 using ConnectorCSI.Storage;
+using Speckle.Core.Logging;
+using System;
 
 namespace Speckle.ConnectorCSI.UI;
 
@@ -21,7 +23,15 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
 
   public override List<StreamState> GetStreamsInFile()
   {
-    return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
+    try
+    {
+      return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Error when retreiving streams in file");
+      return new();
+    }
   }
 
   #endregion

@@ -5,6 +5,7 @@ using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.CSI;
 
@@ -40,8 +41,9 @@ public partial class ConverterCSI
       parentLog?.Add(ex.Message);
       return property1D.name;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "Failed to convert property {propertyName}", property1D.name);
       parentLog?.Add($"Failed to convert property {property1D.name}: {ex.Message}");
       return null;
     }
