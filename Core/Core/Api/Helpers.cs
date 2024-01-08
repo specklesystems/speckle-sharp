@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reflection;
@@ -129,7 +130,7 @@ public static class Helpers
         )
         .ConfigureAwait(false);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // Do nothing!
     }
@@ -223,7 +224,7 @@ public static class Helpers
         return true;
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.ForContext("slug", slug).Warning(ex, "Failed to check for connector updates");
     }
@@ -306,5 +307,6 @@ public static class Helpers
   public static string PluralS(int num) => num != 1 ? "s" : "";
 
   [Obsolete("Renamed to " + nameof(RELEASES_URL))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles")]
   public const string ReleasesUrl = RELEASES_URL;
 }

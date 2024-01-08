@@ -269,7 +269,7 @@ public static class SpeckleLog
         id = defaultAccount.GetHashedEmail();
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       Logger.Warning(ex, "Cannot set user id for the global log context.");
     }

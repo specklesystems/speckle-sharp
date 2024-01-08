@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -268,7 +270,7 @@ public class StreamWrapper
   /// Gets a valid account for this stream wrapper.
   /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
   /// </summary>
-  /// <exception cref="Exception">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
+  /// <exception cref="SpeckleException">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
   /// <returns>The valid account object for this stream.</returns>
   public async Task<Account> GetAccount()
   {
@@ -292,16 +294,16 @@ public class StreamWrapper
 
     // Step 2: check the default
     var defAcc = AccountManager.GetDefaultAccount();
-    Exception err;
+    List<Exception> err = new();
     try
     {
       await ValidateWithAccount(defAcc).ConfigureAwait(false);
       _account = defAcc;
       return defAcc;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      err = e;
+      err.Add(new SpeckleException($"Account {defAcc?.userInfo?.email} failed to auth stream wrapper", ex));
     }
 
     // Step 3: all the rest
@@ -319,13 +321,14 @@ public class StreamWrapper
         _account = acc;
         return acc;
       }
-      catch (Exception e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        err = e;
+        err.Add(new SpeckleException($"Account {acc} failed to auth stream wrapper", ex));
       }
     }
 
-    throw err;
+    AggregateException inner = new(null, err);
+    throw new SpeckleException("Failed to validate stream wrapper", inner);
   }
 
   public void SetAccount(Account acc)
@@ -356,17 +359,37 @@ public class StreamWrapper
       || Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId;
   }
 
+  /// <summary>
+  /// Verifies that the state of the stream wrapper represents a valid Speckle resource e.g. points to a valid stream/branch etc.
+  /// </summary>
+  /// <param name="acc">The account to use to verify the current state of the stream wrapper</param>
+  /// <exception cref="ArgumentException">The <see cref="ServerInfo"/> of the provided <paramref name="acc"/> is invalid or does not match the <see cref="StreamWrapper"/>'s <see cref="ServerUrl"/></exception>
+  /// <exception cref="HttpRequestException">You are not connected to the internet</exception>
+  /// <exception cref="SpeckleException">Verification of the current state of the stream wrapper with provided <paramref name="acc"/> was unsuccessful. The <paramref name="acc"/> could be invalid, or lack permissions for the <see cref="StreamId"/>, or the <see cref="StreamId"/> or <see cref="BranchName"/> are invalid</exception>
   public async Task ValidateWithAccount(Account acc)
   {
     if (ServerUrl != acc.serverInfo.url)
     {
-      throw new SpeckleException($"Account is not from server {ServerUrl}");
+      throw new ArgumentException($"Account is not from server {ServerUrl}", nameof(acc));
     }
 
-    var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
-    if (!hasInternet)
+    Uri url;
+    try
     {
-      throw new Exception("You are not connected to the internet.");
+      url = new(ServerUrl);
+    }
+    catch (UriFormatException ex)
+    {
+      throw new ArgumentException("Server Url is improperly formatted", nameof(acc), ex);
+    }
+
+    try
+    {
+      await Http.HttpPing(url).ConfigureAwait(false);
+    }
+    catch (HttpRequestException ex)
+    {
+      throw new HttpRequestException("You are not connected to the internet.", ex);
     }
 
     using var client = new Client(acc);
@@ -375,10 +398,11 @@ public class StreamWrapper
     {
       await client.StreamGet(StreamId).ConfigureAwait(false);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleException(
-        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist."
+        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
+        ex
       );
     }
 
