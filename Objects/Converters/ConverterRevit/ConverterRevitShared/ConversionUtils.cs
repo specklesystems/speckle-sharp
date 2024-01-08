@@ -246,9 +246,9 @@ public partial class ConverterRevit
       {
         //ignore
       }
-      catch (SpeckleException)
+      catch (SpeckleException ex)
       {
-        //ignore
+        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
       }
     }
 

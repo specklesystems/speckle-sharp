@@ -193,7 +193,7 @@ public class SpeckleConversionTest
           }
           catch (Exception ex) when (!ex.IsFatal())
           {
-            converter.Report.LogConversionError(new Exception(ex.Message, ex));
+            converter.Report.LogConversionError(ex);
           }
 
           if (res is List<ApplicationObject> apls)
