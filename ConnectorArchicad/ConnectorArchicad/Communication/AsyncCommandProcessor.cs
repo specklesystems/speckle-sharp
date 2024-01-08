@@ -27,7 +27,15 @@ internal class AsyncCommandProcessor
     {
       return Task.Run(command.Execute, token);
     }
-    catch (Exception e)
+    catch (ArgumentNullException)
+    {
+      return null;
+    }
+    catch (TaskCanceledException)
+    {
+      return null;
+    }
+    catch (ObjectDisposedException)
     {
       return null;
     }
