@@ -17,6 +17,7 @@ public static partial class Operations
   /// <summary>
   /// Convenience method to instantiate an instance of the default object serializer and settings pre-populated with it.
   /// </summary>
+  [Obsolete("V1 Serializer is deprecated. Use " + nameof(BaseObjectSerializerV2))]
   public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
   {
     var serializer = new BaseObjectSerializer();

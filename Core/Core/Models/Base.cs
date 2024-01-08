@@ -93,35 +93,22 @@ public class Base : DynamicBase
   }
 
   /// <summary>
-  /// Gets the id (a unique hash) of this object. ⚠️ This method fully serializes the object, which in the case of large objects (with many sub-objects), has a tangible cost. Avoid using it!
-  /// <para><b>Hint:</b> Objects that are retrieved/pulled from a server/local cache do have an id (hash) property pre-populated.</para>
-  /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
+  /// Calculates the id (a unique hash) of this object.
   /// </summary>
-  /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
-  /// <param name="serializerVersion"></param>
-  /// <returns></returns>
-  public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+  /// <remarks>
+  /// This method fully serialize the object and any referenced objects. This has a tangible cost and should be avoided.<br/>
+  /// Objects retrieved from a <see cref="ITransport"/> already have a <see cref="id"/> property populated<br/>
+  /// The hash of a decomposed object differs from the hash of a non-decomposed object.
+  /// </remarks>
+  /// <param name="decompose">If <see langword="true"/>, will decompose the object in the process of hashing.</param>
+  /// <returns>the resulting id (hash)</returns>
+  public string GetId(bool decompose = false)
   {
-    if (serializerVersion == SerializerVersion.V1)
-    {
-      var (s, t) = Operations.GetSerializerInstance();
-      if (decompose)
-      {
-        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
-      }
+    var transports = decompose ? new[] { new MemoryTransport() } : Array.Empty<ITransport>();
+    var serializer = new BaseObjectSerializerV2(transports);
 
-      var obj = JsonConvert.SerializeObject(this, t);
-      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
-    }
-    else
-    {
-      var serializer = decompose
-        ? new BaseObjectSerializerV2(new[] { new MemoryTransport() })
-        : new BaseObjectSerializerV2();
-
-      string obj = serializer.Serialize(this);
-      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
-    }
+    string obj = serializer.Serialize(this);
+    return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
   }
 
   /// <summary>
@@ -299,4 +286,35 @@ public class Base : DynamicBase
 
     return myDuplicate;
   }
+
+  #region Obsolete
+  /// <inheritdoc cref="GetId(bool)"/>
+  [Obsolete("Serializer v1 is now deprecated, use other overload(s)")]
+  public string GetId(SerializerVersion serializerVersion)
+  {
+    return GetId(false, serializerVersion);
+  }
+
+  /// <inheritdoc cref="GetId(bool)"/>
+  [Obsolete("Serializer v1 is now deprecated, use other overload(s)")]
+  public string GetId(bool decompose, SerializerVersion serializerVersion)
+  {
+    if (serializerVersion == SerializerVersion.V1)
+    {
+      var (s, t) = Operations.GetSerializerInstance();
+      if (decompose)
+      {
+        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
+      }
+
+      var obj = JsonConvert.SerializeObject(this, t);
+      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
+    }
+    else
+    {
+      return GetId(decompose);
+    }
+  }
+
+  #endregion
 }

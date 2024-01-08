@@ -13,12 +13,17 @@ using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
 using Utilities = Speckle.Core.Models.Utilities;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UseNegatedPatternInIsExpression
+#pragma warning disable IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854
+
 namespace Speckle.Core.Serialisation;
 
 /// <summary>
 /// Json converter that handles base speckle objects. Enables detachment and
 /// simultaneous transport (persistence) of objects.
 /// </summary>
+[Obsolete("Use " + nameof(BaseObjectSerializerV2))]
 public class BaseObjectSerializer : JsonConverter
 {
   /// <summary>
@@ -705,3 +710,4 @@ public class BaseObjectSerializer : JsonConverter
 
   #endregion
 }
+#pragma warning restore IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854

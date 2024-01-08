@@ -52,7 +52,7 @@ public class BaseObjectSerializerV2
   /// <returns>The serialized JSON</returns>
   /// <exception cref="InvalidOperationException">A serialize is busy (already serialising an object)</exception>
   /// <exception cref="TransportException">Failed to save object in one or more <see cref="WriteTransports"/></exception>
-  /// <exception cref="SpeckleException">Failed to extract (pre-serialize) properties from the <param name="baseObj"></param></exception>
+  /// <exception cref="SpeckleException">Failed to extract (pre-serialize) properties from the <parameref name="baseObj"/></exception>
   public string Serialize(Base baseObj)
   {
     if (_isBusy)

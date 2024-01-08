@@ -122,7 +122,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// 1. Is non null
   /// 2. Is in the <see cref="Converted"/> dictionary
   /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_nestingInstructions"/> item
-  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
+  /// 4. Said <see cref="IList"/> can accept the <parameref cref="current"/> object's type
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
