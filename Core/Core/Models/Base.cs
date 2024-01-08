@@ -289,14 +289,14 @@ public class Base : DynamicBase
 
   #region Obsolete
   /// <inheritdoc cref="GetId(bool)"/>
-  [Obsolete("Serializer v1 is now deprecated, use other overload(s)")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   public string GetId(SerializerVersion serializerVersion)
   {
     return GetId(false, serializerVersion);
   }
 
   /// <inheritdoc cref="GetId(bool)"/>
-  [Obsolete("Serializer v1 is now deprecated, use other overload(s)")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   public string GetId(bool decompose, SerializerVersion serializerVersion)
   {
     if (serializerVersion == SerializerVersion.V1)

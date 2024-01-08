@@ -48,7 +48,7 @@ public static partial class Operations
 
   #region obsolete
 
-  [Obsolete("Serializer v1 is deprecated, use other overload")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   public static string Serialize(
     Base value,
     SerializerVersion serializerVersion,
@@ -68,7 +68,7 @@ public static partial class Operations
     }
   }
 
-  [Obsolete("Serializer v1 is deprecated, use other overload")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   public static Base Deserialize(
     string value,
     SerializerVersion serializerVersion,

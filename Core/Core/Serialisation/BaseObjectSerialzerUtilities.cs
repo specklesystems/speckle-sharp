@@ -59,7 +59,7 @@ internal static class CallSiteCache
 
 #pragma warning disable CS8602, CA1502
 
-[Obsolete("Serializer v1 is deprecated")]
+[Obsolete("Serializer v1 is deprecated, use other overload(s)")]
 [SuppressMessage("Maintainability", "CA1502:Avoid excessive complexity", Justification = "Obsolete")]
 internal static class SerializationUtilities
 {

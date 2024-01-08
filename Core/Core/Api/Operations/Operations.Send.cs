@@ -92,8 +92,7 @@ public static partial class Operations
       var sendTimer = Stopwatch.StartNew();
       SpeckleLog.Logger.Information("Starting send operation");
 
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+      var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
       BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, cancellationToken);
 
@@ -252,7 +251,7 @@ public static partial class Operations
   /// You should instead handle disposal yourself
   /// using conventional mechanisms like the <c>using</c> keyword.<br/>
   /// <br/>
-  /// This function will be kept around for several releases, but will eventually be removed.
+  /// This function overload will be kept around for several releases, but will eventually be removed.
   /// </remarks>
   /// <param name="object">The object you want to send.</param>
   /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
@@ -301,8 +300,7 @@ public static partial class Operations
       var sendTimer = Stopwatch.StartNew();
       SpeckleLog.Logger.Information("Starting send operation");
 
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+      var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
       BaseObjectSerializer? serializer = null;
       JsonSerializerSettings? settings = null;

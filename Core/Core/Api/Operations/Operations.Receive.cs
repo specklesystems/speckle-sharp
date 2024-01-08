@@ -22,25 +22,320 @@ public enum SerializerVersion
 
 public static partial class Operations
 {
-  /// <summary>
-  /// Receives an object from a transport.
-  /// </summary>
-  /// <param name="objectId"></param>
-  /// <param name="remoteTransport">The transport to receive from.</param>
-  /// <param name="localTransport">Leave null to use the default cache.</param>
-  /// <param name="onProgressAction">Action invoked on progress iterations.</param>
-  /// <param name="onErrorAction">Action invoked on internal errors.</param>
-  /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
-  /// <returns></returns>
-  public static Task<Base?> Receive(
+  public static async Task<Base?> Receive(
     string objectId,
     ITransport? remoteTransport = null,
     ITransport? localTransport = null,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
     Action<string, Exception>? onErrorAction = null,
     Action<int>? onTotalChildrenCountKnown = null,
-    bool disposeTransports = false,
-    SerializerVersion serializerVersion = SerializerVersion.V2
+    CancellationToken cancellationToken = default
+  )
+  {
+    // Setup Progress Reporting
+    var internalProgressAction = GetInternalProgressAction(onProgressAction);
+
+    // Setup Local Transport
+    using IDisposable? d4 = UseDefaultTransportIfNull(localTransport, out localTransport);
+    localTransport.OnProgressAction = internalProgressAction;
+    localTransport.CancellationToken = cancellationToken;
+
+    // Setup Remote Transport
+    if (remoteTransport is not null)
+    {
+      remoteTransport.OnProgressAction = internalProgressAction;
+      remoteTransport.CancellationToken = cancellationToken;
+    }
+
+    // Setup Serializer
+    BaseObjectDeserializerV2 serializerV2 =
+      new()
+      {
+        ReadTransport = localTransport,
+        OnProgressAction = internalProgressAction,
+        OnErrorAction = onErrorAction,
+        CancellationToken = cancellationToken,
+        BlobStorageFolder = (remoteTransport as IBlobCapableTransport)?.BlobStorageFolder
+      };
+
+    // Setup Logging
+    using IDisposable d1 = LogContext.PushProperty("remoteTransportContext", remoteTransport?.TransportContext);
+    using IDisposable d2 = LogContext.PushProperty("localTransportContext", localTransport.TransportContext);
+    using IDisposable d3 = LogContext.PushProperty("objectId", objectId);
+    var timer = Stopwatch.StartNew();
+
+    // Receive Json
+    SpeckleLog.Logger.Information(
+      "Starting receive {objectId} from transports {localTransport} / {remoteTransport}",
+      objectId,
+      localTransport.TransportName,
+      remoteTransport?.TransportName
+    );
+
+    string? objString = LocalReceive(objectId, localTransport);
+
+    if (objString is null)
+    {
+      SpeckleLog.Logger.Debug(
+        "Cannot find object {objectId} in the local transport, hitting remote {transportName}",
+        objectId,
+        remoteTransport?.TransportName
+      );
+
+      objString = await RemoteReceive(objectId, remoteTransport, localTransport).ConfigureAwait(false);
+    }
+
+    // Deserialize Json
+    Base? res = DeserializeStringToBase(objString, serializerV2);
+
+    SpeckleLog.Logger
+      .ForContext("deserializerElapsed", serializerV2.Elapsed)
+      .ForContext(
+        "transportElapsedBreakdown",
+        new[] { localTransport, remoteTransport }
+          .Where(t => t != null)
+          .ToDictionary(t => t!.TransportName, t => t!.Elapsed)
+      )
+      .Information(
+        "Finished receiving {objectId} from {source} in {elapsed} seconds",
+        objectId,
+        remoteTransport?.TransportName,
+        timer.Elapsed.TotalSeconds
+      );
+
+    return res;
+  }
+
+  internal static string? LocalReceive(
+    string objectId,
+    ITransport localTransport,
+    Action<int>? onTotalChildrenCountKnown = null
+  )
+  {
+    string? objString = localTransport.GetObject(objectId);
+    if (objString is null)
+    {
+      return null;
+    }
+
+    // Shoot out the total children count
+    Placeholder? partial = JsonConvert.DeserializeObject<Placeholder>(objString);
+
+    if (partial is null)
+    {
+      throw new SpeckleDeserializeException($"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}");
+    }
+
+    if (partial.__closure != null)
+    {
+      onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
+    }
+
+    return objString;
+  }
+
+  internal static async Task<string> RemoteReceive(
+    string objectId,
+    ITransport? remoteTransport,
+    ITransport localTransport,
+    Action<int>? onTotalChildrenCountKnown = null
+  )
+  {
+    if (remoteTransport == null)
+    {
+      var ex = new SpeckleException(
+        $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
+      );
+
+      SpeckleLog.Logger.Error(ex, "Cannot receive object from the given transports {exceptionMessage}", ex.Message);
+      throw ex;
+    }
+
+    SpeckleLog.Logger.Debug(
+      "Cannot find object {objectId} in the local transport, hitting remote {transportName}",
+      objectId,
+      remoteTransport.TransportName
+    );
+
+    var objString = await remoteTransport
+      .CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown)
+      .ConfigureAwait(false);
+
+    // DON'T THINK THIS IS NEEDED CopyObjectAndChildren should call this
+    // Wait for the local transport to finish "writing" - in this case, it signifies that the remote transport has done pushing copying objects into it. (TODO: I can see some scenarios where latency can screw things up, and we should rather wait on the remote transport).
+    await localTransport.WriteComplete().ConfigureAwait(false);
+
+    return objString;
+  }
+
+  private static IDisposable? UseDefaultTransportIfNull(ITransport? userTransport, out ITransport actualLocalTransport)
+  {
+    if (userTransport is not null)
+    {
+      actualLocalTransport = userTransport;
+      return null;
+    }
+
+    //User did not specify a transport, default to SQLite
+    SQLiteTransport defaultLocalTransport = new();
+    actualLocalTransport = defaultLocalTransport;
+    return defaultLocalTransport;
+  }
+
+  private static Base? DeserializeStringToBase(string objString, BaseObjectDeserializerV2 serializerV2)
+  {
+    try
+    {
+      return serializerV2.Deserialize(objString);
+    }
+    catch (OperationCanceledException)
+    {
+      throw;
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
+      if (serializerV2.OnErrorAction == null)
+      {
+        throw;
+      }
+
+      serializerV2.OnErrorAction.Invoke(
+        $"A deserialization error has occurred: {ex.Message}",
+        new SpeckleDeserializeException("A deserialization error has occurred", ex)
+      );
+      return null;
+    }
+  }
+
+  internal class Placeholder
+  {
+    public Dictionary<string, int>? __closure { get; set; } = new();
+  }
+
+  #region Obsolete Overloads
+
+  private const string RECEIVE_DEPRECATION_MESSAGE = """
+    This method overload is obsolete, consider using a non-obsolete overload.
+    All overloads that request SerializerV1 have been deprecated along with SerializerV1.
+    Additionally, use of disposeTransports will no longer be supported going forward (you should dispose your own transports).
+    """;
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    CancellationToken cancellationToken,
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      cancellationToken,
+      remoteTransport,
+      localTransport,
+      onProgressAction,
+      onErrorAction,
+      onTotalChildrenCountKnown,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    CancellationToken cancellationToken,
+    ITransport? remoteTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports,
+    SerializerVersion serializerVersion
+  )
+  {
+    return Receive(
+      objectId,
+      cancellationToken,
+      remoteTransport,
+      null,
+      onProgressAction,
+      onErrorAction,
+      onTotalChildrenCountKnown,
+      disposeTransports,
+      serializerVersion
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    CancellationToken cancellationToken,
+    ITransport? remoteTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      cancellationToken,
+      remoteTransport,
+      null,
+      onProgressAction,
+      onErrorAction,
+      onTotalChildrenCountKnown,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    CancellationToken cancellationToken,
+    ITransport? remoteTransport,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      cancellationToken,
+      remoteTransport,
+      null,
+      null,
+      null,
+      null,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports,
+    SerializerVersion serializerVersion
   )
   {
     return Receive(
@@ -56,27 +351,149 @@ public static partial class Operations
     );
   }
 
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      CancellationToken.None,
+      remoteTransport,
+      localTransport,
+      onProgressAction,
+      onErrorAction,
+      onTotalChildrenCountKnown,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      CancellationToken.None,
+      remoteTransport,
+      null,
+      onProgressAction,
+      onErrorAction,
+      onTotalChildrenCountKnown,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(
+    string objectId,
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    bool disposeTransports
+  )
+  {
+    return Receive(
+      objectId,
+      CancellationToken.None,
+      remoteTransport,
+      localTransport,
+      null,
+      null,
+      null,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(string objectId, ITransport? remoteTransport, bool disposeTransports)
+  {
+    return Receive(
+      objectId,
+      CancellationToken.None,
+      remoteTransport,
+      null,
+      null,
+      null,
+      null,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
+  /// <inheritdoc cref="Receive(string,CancellationToken,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,bool,SerializerVersion)"/>
+  /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
+  public static Task<Base?> Receive(string objectId, bool disposeTransports)
+  {
+    return Receive(
+      objectId,
+      CancellationToken.None,
+      null,
+      null,
+      null,
+      null,
+      null,
+      disposeTransports,
+      SerializerVersion.V2
+    );
+  }
+
   /// <summary>
   /// Receives an object from a transport.
   /// </summary>
+  /// <remarks>
+  /// This overload is deprecated. You should consider using
+  /// <see cref="Receive(string,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,CancellationToken)"/>
+  /// <br/>
+  /// The new overload no longer support <paramref name="serializerVersion"/> switching as v1 is now deprecated.
+  /// <br/>
+  /// We also no longer offer the option to <paramref name="disposeTransports"/>.
+  /// You should instead handle disposal yourself
+  /// using conventional mechanisms like the <c>using</c> keyword.<br/>
+  /// <br/>
+  /// This function overload will be kept around for several releases, but will eventually be removed.
+  /// </remarks>
   /// <param name="objectId"></param>
-  /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
   /// <param name="remoteTransport">The transport to receive from.</param>
   /// <param name="localTransport">Leave null to use the default cache.</param>
   /// <param name="onProgressAction">Action invoked on progress iterations.</param>
   /// <param name="onErrorAction">Action invoked on internal errors.</param>
   /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
   /// <returns></returns>
+  [Obsolete(RECEIVE_DEPRECATION_MESSAGE)]
   public static async Task<Base?> Receive(
     string objectId,
     CancellationToken cancellationToken,
-    ITransport? remoteTransport = null,
-    ITransport? localTransport = null,
-    Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
-    Action<string, Exception>? onErrorAction = null,
-    Action<int>? onTotalChildrenCountKnown = null,
-    bool disposeTransports = false,
-    SerializerVersion serializerVersion = SerializerVersion.V2
+    ITransport? remoteTransport,
+    ITransport? localTransport,
+    Action<ConcurrentDictionary<string, int>>? onProgressAction,
+    Action<string, Exception>? onErrorAction,
+    Action<int>? onTotalChildrenCountKnown,
+    bool disposeTransports,
+    SerializerVersion serializerVersion
   )
   {
     var hasUserProvidedLocalTransport = localTransport != null;
@@ -105,8 +522,7 @@ public static partial class Operations
         serializerV2 = new BaseObjectDeserializerV2();
       }
 
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
+      var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
       localTransport.OnProgressAction = internalProgressAction;
       localTransport.CancellationToken = cancellationToken;
@@ -243,6 +659,7 @@ public static partial class Operations
     }
   }
 
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   private static Base? DeserializeStringToBase(
     SerializerVersion serializerVersion,
     string objString,
@@ -250,53 +667,26 @@ public static partial class Operations
     BaseObjectDeserializerV2? serializerV2
   )
   {
-    Base? localRes;
     if (serializerVersion == SerializerVersion.V1)
     {
-      localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+      return JsonConvert.DeserializeObject<Base>(objString, settings);
     }
     else
     {
-      try
-      {
-        localRes = serializerV2!.Deserialize(objString);
-      }
-      catch (OperationCanceledException)
-      {
-        throw;
-      }
-      catch (Exception ex) when (!ex.IsFatal())
-      {
-        SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
-        if (serializerV2.OnErrorAction == null)
-        {
-          throw;
-        }
-
-        serializerV2.OnErrorAction.Invoke(
-          $"A deserialization error has occurred: {ex.Message}",
-          new SpeckleDeserializeException("A deserialization error has occurred", ex)
-        );
-        localRes = null;
-      }
+      return DeserializeStringToBase(objString, serializerV2!);
     }
-
-    return localRes;
   }
 
-  internal class Placeholder
-  {
-    public Dictionary<string, int>? __closure { get; set; } = new();
-  }
+  #endregion
+}
 
-  public class SpeckleDeserializeException : SpeckleException
-  {
-    public SpeckleDeserializeException() { }
+public class SpeckleDeserializeException : SpeckleException
+{
+  public SpeckleDeserializeException() { }
 
-    public SpeckleDeserializeException(string message, Exception? inner = null)
-      : base(message, inner) { }
+  public SpeckleDeserializeException(string message, Exception? inner = null)
+    : base(message, inner) { }
 
-    public SpeckleDeserializeException(string message)
-      : base(message) { }
-  }
+  public SpeckleDeserializeException(string message)
+    : base(message) { }
 }

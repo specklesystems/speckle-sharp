@@ -229,6 +229,7 @@ dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: 
 dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0042.severity = suggestion # Deconstruct variable declaration: Subjective
 dotnet_diagnostic.ide0028.severity = suggestion # Use collection initializers: Subjective
+dotnet_diagnostic.ide0074.severity = suggestion # Use collection initializers: Subjective
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance

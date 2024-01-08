@@ -40,10 +40,11 @@ public static partial class Operations
   /// <param name="onProgressAction"></param>
   /// <returns></returns>
   private static Action<string, int> GetInternalProgressAction(
-    ConcurrentDictionary<string, int> localProgressDict,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null
   )
   {
+    var localProgressDict = new ConcurrentDictionary<string, int>();
+
     return (name, processed) =>
     {
       if (!localProgressDict.TryAdd(name, processed))
