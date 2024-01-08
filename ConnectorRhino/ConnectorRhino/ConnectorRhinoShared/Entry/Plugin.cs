@@ -145,7 +145,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         {
           SpeckleCommandMac.CreateOrFocusSpeckle();
         } 
-        catch (Exception ex) when (!e.IsFatal())
+        catch (Exception ex) when (!ex.IsFatal())
         {
           SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
