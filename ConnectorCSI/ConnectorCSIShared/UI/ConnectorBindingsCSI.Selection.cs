@@ -66,7 +66,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         );
       }
 
-      string[] groupNames = new string[0];
+      string[] groupNames = System.Array.Empty<string>();
       int numNames = 0;
       Model.GroupDef.GetNameList(ref numNames, ref groupNames);
       if (groupNames.Any())

@@ -45,7 +45,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
 
-  public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
+  public TimeSpan Elapsed { get; private set; } = TimeSpan.Zero;
 
   public void BeginWrite()
   {
@@ -56,8 +56,8 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
   public void SaveObject(string id, string serializedObject)
   {
-    var stopwatch = Stopwatch.StartNew();
     CancellationToken.ThrowIfCancellationRequested();
+    var stopwatch = Stopwatch.StartNew();
 
     Objects[id] = serializedObject;
 
@@ -118,7 +118,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
     return Task.FromResult(ret);
   }
 
-  [Obsolete("No replacement required, memory transport is sync")]
+  [Obsolete("No replacement required, memory transport is always sync")]
   [SuppressMessage("Design", "CA1024:Use properties where appropriate")]
   public bool GetWriteCompletionStatus()
   {

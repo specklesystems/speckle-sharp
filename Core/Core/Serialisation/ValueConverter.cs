@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.DoubleNumerics;
 using System.Drawing;
 using System.Globalization;
-using Numerics = System.Numerics;
-using System.DoubleNumerics;
 using Speckle.Core.Logging;
+using Numerics = System.Numerics;
 
 namespace Speckle.Core.Serialisation;
 

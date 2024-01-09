@@ -4,6 +4,7 @@ using System.Linq;
 using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
+using Speckle.Core.Transports;
 
 namespace ConnectorGrasshopper.Transports;
 
@@ -83,7 +84,7 @@ public class DiskTransportComponent : GH_SpeckleComponent
     string basePath = null;
     DA.GetData(0, ref basePath);
 
-    var myTransport = new DiskTransport.DiskTransport(basePath);
+    var myTransport = new DiskTransport(basePath);
 
     DA.SetData(0, myTransport);
   }

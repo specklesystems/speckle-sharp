@@ -174,22 +174,14 @@ public partial class ArchicadBinding : ConnectorBindings
         }
       }
     }
-    catch (Exception ex)
+    catch (SpeckleException)
     {
-      // log
-      if (ex is not OperationCanceledException)
-      {
-        SpeckleLog.Logger.Error("Conversion to native failed.");
-      }
-
-      // throw
-      switch (ex)
-      {
-        case OperationCanceledException:
-          throw new OperationCanceledException(ex.Message);
-        default:
-          throw new SpeckleException(ex.Message, ex);
-      }
+      SpeckleLog.Logger.Error("Conversion to native failed.");
+      throw;
+    }
+    catch (OperationCanceledException)
+    {
+      throw;
     }
 
     return state;

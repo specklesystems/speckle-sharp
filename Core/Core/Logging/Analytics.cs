@@ -1,11 +1,13 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +15,6 @@ using System.Web;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Newtonsoft.Json;
-using System.Diagnostics;
-using System.Reflection;
 
 namespace Speckle.Core.Logging;
 
@@ -233,7 +233,7 @@ public static class Analytics
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger
           .ForContext("eventName", eventName.ToString())
@@ -276,7 +276,7 @@ public static class Analytics
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         client.PostAsync(MIXPANEL_SERVER + "/engage#profile-union", query);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed add connector to profile");
       }

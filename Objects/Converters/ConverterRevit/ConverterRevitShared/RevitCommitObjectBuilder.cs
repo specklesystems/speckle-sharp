@@ -206,7 +206,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       Autodesk.Revit.DB.FamilyInstance i => i.Host,
       Autodesk.Revit.DB.Opening i => i.Host,
       Autodesk.Revit.DB.DividedSurface i => i.Host,
-      Autodesk.Revit.DB.FabricationPart i => i.Document.GetElement(i.GetHostedInfo()?.HostId),
+      Autodesk.Revit.DB.FabricationPart i => HandleFabricationPart(i),
       Autodesk.Revit.DB.DisplacementElement i => i.Document.GetElement(i.ParentId),
       Autodesk.Revit.DB.Architecture.ContinuousRail i => i.Document.GetElement(i.HostRailingId),
       Autodesk.Revit.DB.Architecture.BuildingPad i => i.Document.GetElement(i.HostId),
@@ -221,6 +221,19 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       Autodesk.Revit.DB.Structure.Rebar i => i.Document.GetElement(i.GetHostId()),
       _ => null
     };
+  }
+
+  /// <summary>
+  /// Processes a FabricationPart to retrieve its associated host element. FabricationPart class has no HasHost method.
+  /// </summary>
+  /// <param name="fabricationPart">The FabricationPart to process.</param>
+  /// <returns>
+  /// The host element of the given FabricationPart, or null if no host is associated.
+  /// </returns>
+  private static Element? HandleFabricationPart(FabricationPart fabricationPart)
+  {
+    var hostedInfo = fabricationPart.GetHostedInfo();
+    return hostedInfo == null ? null : fabricationPart.Document.GetElement(hostedInfo.HostId);
   }
 
   /// <summary>

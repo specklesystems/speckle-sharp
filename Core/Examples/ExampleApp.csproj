@@ -9,7 +9,9 @@
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tests\TestsUnit.csproj" />
+
     <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Tests\Speckle.Core.Tests.Unit\Speckle.Core.Tests.Unit.csproj" />
+
   </ItemGroup>
 </Project>
