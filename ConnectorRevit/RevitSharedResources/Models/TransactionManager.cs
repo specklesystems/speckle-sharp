@@ -186,9 +186,10 @@ public class TransactionManager : IDisposable
         t.Start();
         result = function();
       }
-      catch (Autodesk.Revit.Exceptions.ApplicationException)
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
+        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
       }
       finally
       {
@@ -203,9 +204,10 @@ public class TransactionManager : IDisposable
         t.Start();
         result = function();
       }
-      catch (Autodesk.Revit.Exceptions.ApplicationException)
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
+        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
       }
       finally
       {
