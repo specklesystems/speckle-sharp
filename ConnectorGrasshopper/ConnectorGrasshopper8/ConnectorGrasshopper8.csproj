@@ -9,6 +9,7 @@
     <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
