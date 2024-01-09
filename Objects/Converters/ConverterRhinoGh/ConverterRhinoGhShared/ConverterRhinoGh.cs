@@ -34,12 +34,14 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
 #elif RHINO7 && GRASSHOPPER
   public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+#elif RHINO8 && GRASSHOPPER
+  public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v8);
 #elif RHINO6
   public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
 #elif RHINO7
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #elif RHINO8
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
+  public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
 #endif
 
   [Obsolete]
