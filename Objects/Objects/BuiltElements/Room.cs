@@ -47,7 +47,7 @@ namespace Objects.BuiltElements
 
     public string name { get; set; }
     public string number { get; set; }
-    public virtual Level level { get; set; }
+    public virtual Level? level { get; set; }
     public Point basePoint { get; set; }
     public double height { get; set; }
     public List<ICurve> voids { get; set; } = new();
@@ -78,14 +78,14 @@ namespace Objects.BuiltElements.Archicad
     public Base? elementProperties { get; set; }
     public Base? componentProperties { get; set; }
 
-    public override Level level
+    public override Level? level
     {
       get => archicadLevel;
-      set => archicadLevel = value as ArchicadLevel ?? null; // TODO: resolve nullability
+      set => archicadLevel = value as ArchicadLevel ?? null;
     }
 
     [JsonIgnore]
-    public ArchicadLevel archicadLevel { get; set; }
+    public ArchicadLevel? archicadLevel { get; set; }
 
     public string? layer { get; set; } /*APINullabe*/
 
