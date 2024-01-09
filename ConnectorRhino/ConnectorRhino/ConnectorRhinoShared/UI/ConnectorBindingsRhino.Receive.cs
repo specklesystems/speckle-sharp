@@ -314,26 +314,29 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   // gets objects by id directly or by application id user string
   private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
   {
+    List<RhinoObject> match = new();
+
     if (string.IsNullOrEmpty(applicationId))
     {
-      return new List<RhinoObject>();
+      return match;
     }
 
     // first try to find the object by app id user string
-    var match = Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true).ToList();
+    if (Doc.Objects.FindByUserString(ApplicationIdKey, applicationId, true) is RhinoObject[] foundObjects)
+    {
+      match = foundObjects.ToList();
+    }
 
     // if nothing is found, look for the geom obj by its guid directly
-    if (!match.Any())
+    if (match.Count == 0)
     {
-      try
+      if (Utils.GetGuidFromString(applicationId, out Guid id))
       {
-        RhinoObject obj = Doc.Objects.FindId(new Guid(applicationId));
-        if (obj != null)
+        if (Doc.Objects.FindId(id) is RhinoObject obj)
         {
           match.Add(obj);
         }
       }
-      catch { }
     }
 
     return match;
@@ -542,9 +545,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           Base render = obj["renderMaterial"] as Base ?? obj["@renderMaterial"] as Base;
           if (display != null)
           {
-            if (converter.ConvertToNative(display) is ObjectAttributes displayAttribute)
+            var convertedDisplay = converter.ConvertToNative(display) as ObjectAttributes;
+            if (convertedDisplay is not null)
             {
-              attributes = displayAttribute;
+              attributes = convertedDisplay;
             }
           }
           else if (render != null)
@@ -607,8 +611,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // handle render material
           if (render != null)
           {
-            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial; //Maybe wrap in try catch in case no conversion exists?
-            if (convertedMaterial != null)
+            var convertedMaterial = converter.ConvertToNative(render) as RenderMaterial;
+            if (convertedMaterial is not null)
             {
               RhinoObject rhinoObject = Doc.Objects.FindId(id);
               rhinoObject.RenderMaterial = convertedMaterial;
@@ -672,11 +676,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
     // set application id
     var appId = parent != null ? parent.applicationId : obj.applicationId;
-    try
-    {
-      attributes.SetUserString(ApplicationIdKey, appId);
-    }
-    catch { }
+    attributes.SetUserString(ApplicationIdKey, appId);
 
     // set user dictionaries
     if (obj[UserDictionary] is Base userDictionary)

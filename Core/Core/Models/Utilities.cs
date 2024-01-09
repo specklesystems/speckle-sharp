@@ -119,7 +119,7 @@ public static class Utilities
         }
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(ex, "Failed to get application properties");
     }
@@ -127,7 +127,7 @@ public static class Utilities
     return appProps;
   }
 
-  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object value)
+  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object? value)
   {
     value = propInfo.GetValue(o);
     if (propInfo.GetSetMethod() != null && value != null)
@@ -191,7 +191,7 @@ public static class Utilities
               new[] { value }
             );
           }
-          catch (Exception) { }
+          catch (Exception ex) when (!ex.IsFatal()) { }
         }
       }
     }

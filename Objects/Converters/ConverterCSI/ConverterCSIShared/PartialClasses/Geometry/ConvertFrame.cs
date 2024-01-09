@@ -305,7 +305,7 @@ public partial class ConverterCSI
           break;
       }
     }
-    double[] modifiers = new double[] { };
+    double[] modifiers = Array.Empty<double>();
     int s = Model.FrameObj.GetModifiers(name, ref modifiers);
     if (s == 0)
     {

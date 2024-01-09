@@ -15,6 +15,7 @@ using Rhino.Collections;
 
 using Rhino.DocObjects;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Plane = Objects.Geometry.Plane;
 using RH = Rhino.Geometry;
@@ -335,16 +336,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           @base = LayerToSpeckle(o);
           break;
         default:
-          if (reportObj != null)
-          {
-            reportObj.Update(
-              status: ApplicationObject.State.Skipped,
-              logItem: $"{@object.GetType()} type not supported"
-            );
-            Report.UpdateReportObject(reportObj);
-          }
-
-          return @base;
+          throw new ConversionNotSupportedException(
+            $"Rhino object of type {@object.GetType()} is not supported for conversion."
+          );
       }
 
       if (@base is null)
@@ -372,7 +366,20 @@ public partial class ConverterRhinoGh : ISpeckleConverter
         @base["@SpeckleSchema"] = schema;
       }
     }
-    catch (Exception ex)
+    catch (ConversionNotSupportedException e)
+    {
+      SpeckleLog.Logger.Information(e, "{exceptionMessage}");
+      reportObj?.Update(status: ApplicationObject.State.Skipped, logItem: e.Message);
+    }
+    catch (SpeckleException e)
+    {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
+    }
+    catch (Exception ex) when (!ex.IsFatal())
     {
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
@@ -561,48 +568,48 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           break;
 
         default:
-          if (reportObj != null)
-          {
-            reportObj.Update(
-              status: ApplicationObject.State.Skipped,
-              logItem: $"{@object.GetType()} type not supported"
-            );
-            Report.UpdateReportObject(reportObj);
-          }
-
-          break;
+          throw new ConversionNotSupportedException(
+            $"Speckle object of type {@object.GetType()} is not supported for conversion."
+          );
       }
     }
-    catch (Exception ex)
+    catch (ConversionNotSupportedException e)
     {
-      reportObj.Update(
+      SpeckleLog.Logger.Information(e, "{exceptionMessage}");
+      reportObj?.Update(status: ApplicationObject.State.Skipped, logItem: e.Message);
+    }
+    catch (SpeckleException e)
+    {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
+      reportObj?.Update(
         status: ApplicationObject.State.Failed,
-        logItem: $"{@object.GetType()} unhandled converion error: {ex.Message}\n{ex.StackTrace}"
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
+    }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
       );
     }
 
     switch (rhinoObj)
     {
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
-        rhinoObj = o.Converted.Any() ? o.Converted : null;
-        if (reportObj != null)
-        {
-          reportObj.Update(
-            status: o.Status,
-            createdIds: o.CreatedIds,
-            converted: o.Converted,
-            container: o.Container,
-            log: o.Log
-          );
-        }
+        rhinoObj = o.Converted.Count == 0 ? null : o.Converted;
+        reportObj?.Update(
+          status: o.Status,
+          createdIds: o.CreatedIds,
+          converted: o.Converted,
+          container: o.Container,
+          log: o.Log
+        );
 
         break;
 
       default:
-        if (reportObj != null)
-        {
-          reportObj.Update(log: notes);
-        }
+        reportObj?.Update(log: notes);
 
         break;
     }

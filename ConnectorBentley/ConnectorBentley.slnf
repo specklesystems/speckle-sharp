@@ -8,7 +8,7 @@
       "ConnectorBentley\\ConnectorOpenRail\\ConnectorOpenRail.csproj",
       "ConnectorBentley\\ConnectorOpenRoads\\ConnectorOpenRoads.csproj",
       "Core\\Core\\Core.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
       "Objects\\Converters\\ConverterBentley\\ConverterMicroStation\\ConverterMicroStation.csproj",

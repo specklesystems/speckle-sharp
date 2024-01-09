@@ -26,14 +26,14 @@ public sealed partial class ElementConverterManager
       var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
       return await elementConverter.ConvertToArchicad(elements, token);
     }
+    catch (Exception ex) when (ex is SpeckleException or ArgumentNullException or ObjectDisposedException)
+    {
+      SpeckleLog.Logger.Warning(ex, "Failed to convert element type {elementType}", elementType.ToString());
+      return null;
+    }
     catch (OperationCanceledException)
     {
       throw;
-    }
-    catch (Exception)
-    {
-      SpeckleLog.Logger.Warning("Failed to convert element type {elementType}", elementType.ToString());
-      return null;
     }
   }
 

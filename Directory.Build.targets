@@ -19,7 +19,7 @@
     <!-- The name of the kit folder we want to copy into. Can be overriden per-project.  -->
     <KitFolder Condition="$(KitFolder) == ''">Objects</KitFolder>
   </PropertyGroup>
-
+    
   <!--
   Ensures consistent behaviour when copying files from our Objects Kit to the local Kit folder for
   every supported OS.
@@ -62,4 +62,29 @@
     <RemoveDir Directories="$(BaseIntermediateOutputPath)"/>
     <RemoveDir Directories="$(BaseOutputPath)"/>
   </Target>
+
+  <!--
+  Supress many analysers for test projects, since we may want to test code that would otherwise generate warnings
+  -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <AnalysisMode>Recommended</AnalysisMode>
+    <NoWarn>
+      $(NoWarn);
+      <!-- Things we need to test -->
+      CS0618;CA1034;CA2201;CA1051;CA1040;CA1724;
+      IDE0044;IDE0130;
+      <!-- Analysers that provide no tangeable value to a test project -->
+      CA5394;CA2007;CA1852;CA1819;CA1711;
+    </NoWarn>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <Target
+    Label="Warn user of test analyser settings"
+    Name="TestProjectAnalysersWarnings"
+    AfterTargets="PostBuildEvent"
+    Condition="'$(IsTestProject)' == 'true'">
+    <Message Text="Running project with Test project analysers configuration (many analysers supressed)" Importance="high"/>
+  </Target>
+  
 </Project>

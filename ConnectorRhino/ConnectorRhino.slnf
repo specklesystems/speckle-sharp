@@ -11,7 +11,7 @@
       "ConnectorRhino\\ConnectorRhino8\\ConnectorRhino8.csproj",
       "ConnectorRhino\\ConnectorRhino\\ConnectorRhinoShared\\ConnectorRhinoShared.shproj",
       "Core\\Core\\Core.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",

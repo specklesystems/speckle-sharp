@@ -1,6 +1,6 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Serialisation;
 
@@ -33,7 +33,6 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
     base.Dispose();
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
     while (true)
@@ -57,6 +56,11 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
       catch (Exception ex)
       {
         tcs.SetException(ex);
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
     }
   }
