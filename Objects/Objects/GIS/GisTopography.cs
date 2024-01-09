@@ -3,7 +3,6 @@ using Objects.BuiltElements;
 
 namespace Objects.GIS;
 
-// TODO: doesn't this need empty constructor?
 public class GisTopography : Topography
 {
   public int band_count { get; set; }

@@ -47,7 +47,7 @@ public class BrepTrim : Base
   public BrepTrimType TrimType { get; set; }
   public bool IsReversed { get; set; }
 
-  public Interval Domain { get; set; }
+  public Interval Domain { get; set; } = new(0, 1);
 
   [JsonIgnore]
   public BrepFace Face => Brep.Faces[FaceIndex];

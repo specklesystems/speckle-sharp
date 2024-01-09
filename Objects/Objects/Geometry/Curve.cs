@@ -61,7 +61,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new Interval(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -100,7 +100,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
       closed = closed,
       units = units,
       applicationId = applicationId,
-      domain = domain != null ? new Interval { start = domain.start, end = domain.end } : null
+      domain = domain != null ? new Interval { start = domain.start, end = domain.end } : new Interval(0, 1)
     };
 
     return result;

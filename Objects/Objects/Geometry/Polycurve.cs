@@ -48,7 +48,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -130,8 +130,8 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   {
     var list = new List<double>();
     list.Add(closed ? 1 : 0);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 1);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 1);
 
     var crvs = CurveArrayEncodingExtensions.ToArray(segments);
     list.Add(crvs.Count);

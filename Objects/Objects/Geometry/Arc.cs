@@ -41,6 +41,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     this.startAngle = startAngle;
     this.endAngle = endAngle;
     this.angleRadians = angleRadians;
+    domain = new Interval(0, angleRadians);
     this.applicationId = applicationId;
     this.units = units;
   }
@@ -105,6 +106,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     this.startPoint = startPoint;
     this.endPoint = endPoint;
     this.angleRadians = angleRadians;
+    domain = new Interval(0, angleRadians);
     this.applicationId = applicationId;
 
     // find chord and chord angle which may differ from the arc angle
@@ -202,7 +204,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new(0, 0);
 
   /// <inheritdoc/>
   public double length { get; set; }

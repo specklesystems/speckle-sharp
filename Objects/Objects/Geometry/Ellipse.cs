@@ -80,7 +80,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <summary>
   /// Gets or sets the domain interval for this <see cref="Ellipse"/>.
   /// </summary>
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new(0, 0);
 
   /// <inheritdoc />
   public double length { get; set; }

@@ -14,10 +14,11 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
 {
   public Line() { }
 
+  [Obsolete("Line should not use a constructor that only sets the start point. Deprecated in 2.18.", true)]
   public Line(double x, double y, double z = 0, string units = Units.Meters, string? applicationId = null)
   {
     start = new Point(x, y, z);
-    end = null; // TODO: resolve nullability
+    end = null; // constructor is marked obsolete because we don't want to allow setting a null end point here.
     this.applicationId = applicationId;
     this.units = units;
   }
@@ -77,7 +78,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   public Point start { get; set; }
   public Point end { get; set; }
 
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new(0, 1);
   public double length { get; set; }
 
   public Box bbox { get; set; }
@@ -92,7 +93,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
       end = transformedEnd,
       applicationId = applicationId,
       units = units,
-      domain = domain is null ? null : new Interval { start = domain.start, end = domain.end }
+      domain = domain is null ? new(0, 1) : new() { start = domain.start, end = domain.end }
     };
     return true;
   }

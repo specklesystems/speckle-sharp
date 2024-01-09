@@ -27,7 +27,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     List<int> faces,
     List<int>? colors = null,
     List<double>? texture_coords = null,
-    string units = Units.None,
+    string units = Units.Meters,
     string? applicationId = null
   )
   {
@@ -45,7 +45,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     int[] faces,
     int[]? colors = null,
     double[]? texture_coords = null,
-    string units = Units.None,
+    string units = Units.Meters,
     string? applicationId = null
   )
     : this(

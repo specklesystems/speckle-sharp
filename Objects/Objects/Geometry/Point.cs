@@ -13,7 +13,7 @@ namespace Objects.Geometry;
 /// <remarks>
 /// TODO: The Point class does not override the Equality operator, which means that there may be cases where `Equals` is used instead of `==`, as the comparison will be done by reference, not value.
 /// </remarks>
-public class Point : Base, IHasBoundingBox, ITransformable<Point>
+public class Point : Base, ITransformable<Point>
 {
   /// <inheritdoc/>
   public Point() { }
@@ -24,9 +24,9 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="x">The x coordinate</param>
   /// <param name="y">The y coordinate</param>
   /// <param name="z">The z coordinate</param>
-  /// <param name="units">The units the point's coordinates are in.</param>
+  /// <param name="units">The units of the point's coordinates. Defaults to Meters. </param>
   /// <param name="applicationId">The object's unique application ID</param>
-  public Point(double x, double y, double z = 0d, string units = Units.None, string? applicationId = null)
+  public Point(double x, double y, double z = 0d, string units = Units.Meters, string? applicationId = null)
   {
     this.x = x;
     this.y = y;
@@ -78,8 +78,8 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// </summary>
   public string units { get; set; } = Units.None;
 
-  /// <inheritdoc/>
-  public Box? bbox { get; set; } // TODO: resolve nullability
+  [JsonIgnore, Obsolete("Bounding box no longer applicable to point as of 2.18", true)]
+  public Box? bbox { get; set; }
 
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out Point point)

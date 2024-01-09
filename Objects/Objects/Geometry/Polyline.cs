@@ -176,7 +176,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; } = new(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }

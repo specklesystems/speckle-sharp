@@ -55,7 +55,7 @@ public interface ICurve
   /// <summary>
   /// The numerical domain driving the curve's internal parametrization.
   /// </summary>
-  Interval? domain { get; set; }
+  Interval domain { get; set; }
 }
 
 /// <summary>
