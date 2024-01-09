@@ -20,11 +20,11 @@ public class GSALoadFace : LoadFace
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Uniform: 1, Variable: 4 (corner nodes), Point: 1)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Uniform: null, Variable: null, Point: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false
   )
   {

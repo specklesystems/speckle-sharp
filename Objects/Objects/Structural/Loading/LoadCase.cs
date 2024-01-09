@@ -19,21 +19,21 @@ public class LoadCase : Base // or LoadPattern? (per CSI)
   public LoadCase(
     string name,
     LoadType loadType,
-    string group = null,
+    string? group = null,
     ActionType actionType = ActionType.None,
-    string description = null
+    string? description = null
   )
   {
     this.name = name;
     this.loadType = loadType;
     this.group = group;
     this.actionType = actionType;
-    this.description = description;
+    this.description = description ?? "";
   }
 
   public string name { get; set; } //load case title, ex. "Dead load"
   public LoadType loadType { get; set; } //ex. Dead load
-  public string group { get; set; } //or load group, "A"
+  public string? group { get; set; } //or load group, "A"
   public ActionType actionType { get; set; } //ex. Permanent
-  public string description { get; set; } //category as alternative, ex. Offices – Cat.B, assembly area
+  public string description { get; set; } = ""; //category as alternative, ex. Offices – Cat.B, assembly area
 }

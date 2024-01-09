@@ -214,15 +214,13 @@ namespace Objects.BuiltElements.Revit
     public override RebarHook? startHook
     {
       get => revitStartHook;
-      set
-      {
-        if (value is not RevitRebarHook && value is not null)
+      set =>
+        revitStartHook = value switch
         {
-          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
-        }
-
-        revitStartHook = (RevitRebarHook)value;
-      }
+          RevitRebarHook o => o,
+          null => null,
+          _ => throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null"),
+        };
     }
 
     [JsonIgnore]
@@ -231,15 +229,13 @@ namespace Objects.BuiltElements.Revit
     public override RebarHook? endHook
     {
       get => revitEndHook;
-      set
-      {
-        if (value is not RevitRebarHook && value is not null)
+      set =>
+        revitEndHook = value switch
         {
-          throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null");
-        }
-
-        revitEndHook = (RevitRebarHook)value;
-      }
+          RevitRebarHook o => o,
+          null => null,
+          _ => throw new ArgumentException($"Expected object of type {nameof(RevitRebarHook)} or null"),
+        };
     }
 
     [JsonIgnore]

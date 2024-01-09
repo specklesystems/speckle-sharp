@@ -16,12 +16,12 @@ public class GSALoadGravity : LoadGravity
     "GSA",
     "Loading"
   )]
-  public GSALoadGravity(int nativeId, string name, LoadCase loadCase, Vector gravityFactors = null)
+  public GSALoadGravity(int nativeId, string name, LoadCase loadCase, Vector? gravityFactors = null)
   {
     this.nativeId = nativeId;
     this.name = name;
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
   }
 
   [SchemaInfo(
@@ -30,13 +30,19 @@ public class GSALoadGravity : LoadGravity
     "GSA",
     "Loading"
   )]
-  public GSALoadGravity(int nativeId, string name, LoadCase loadCase, List<Base> elements, Vector gravityFactors = null)
+  public GSALoadGravity(
+    int nativeId,
+    string name,
+    LoadCase loadCase,
+    List<Base> elements,
+    Vector? gravityFactors = null
+  )
   {
     this.nativeId = nativeId;
     this.name = name;
     this.elements = elements;
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
   }
 
   [SchemaInfo(
@@ -51,8 +57,8 @@ public class GSALoadGravity : LoadGravity
     LoadCase loadCase,
     List<Base> elements,
     List<Base> nodes,
-    Vector gravityFactors = null,
-    string nativedId = null
+    Vector? gravityFactors = null,
+    string? nativedId = null
   )
   {
     this.nativeId = nativeId;
@@ -60,7 +66,7 @@ public class GSALoadGravity : LoadGravity
     this.elements = elements;
     this.nodes = nodes;
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
   }
 
   public int nativeId { get; set; }

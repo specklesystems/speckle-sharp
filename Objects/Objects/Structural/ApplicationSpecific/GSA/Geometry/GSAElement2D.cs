@@ -15,7 +15,7 @@ public class GSAElement2D : Element2D
     List<Node> nodes,
     Property2D property,
     ElementType2D type,
-    string name = null,
+    string? name = null,
     double offset = 0,
     double orientationAngle = 0,
     int group = 0,
@@ -27,7 +27,7 @@ public class GSAElement2D : Element2D
     topology = nodes;
     this.property = property;
     this.type = type;
-    this.name = name;
+    this.name = name ?? "";
     this.nativeId = nativeId;
     this.offset = offset;
     this.orientationAngle = orientationAngle;

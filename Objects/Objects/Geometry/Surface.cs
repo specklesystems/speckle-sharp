@@ -25,7 +25,7 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// </summary>
   /// <param name="units">The units this surface is modeled in</param>
   /// <param name="applicationId">This surface's unique identifier on a specific application</param>
-  public Surface(string units = Units.Meters, string applicationId = null)
+  public Surface(string units = Units.Meters, string? applicationId = null)
   {
     this.applicationId = applicationId;
     this.units = units;
@@ -230,16 +230,18 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// <returns>A new <see cref="Surface"/> with the provided values.</returns>
   public static Surface FromList(List<double> list)
   {
-    var srf = new Surface();
-    srf.degreeU = (int)list[0];
-    srf.degreeV = (int)list[1];
-    srf.countU = (int)list[2];
-    srf.countV = (int)list[3];
-    srf.rational = list[4] == 1;
-    srf.closedU = list[5] == 1;
-    srf.closedV = list[6] == 1;
-    srf.domainU = new Interval { start = list[7], end = list[8] };
-    srf.domainV = new Interval { start = list[9], end = list[10] };
+    var srf = new Surface
+    {
+      degreeU = (int)list[0],
+      degreeV = (int)list[1],
+      countU = (int)list[2],
+      countV = (int)list[3],
+      rational = list[4] == 1,
+      closedU = list[5] == 1,
+      closedV = list[6] == 1,
+      domainU = new Interval { start = list[7], end = list[8] },
+      domainV = new Interval { start = list[9], end = list[10] }
+    };
 
     var pointCount = (int)list[11];
     var knotsUCount = (int)list[12];

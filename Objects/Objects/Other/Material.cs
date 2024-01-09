@@ -40,10 +40,10 @@ namespace Objects.Other.Revit
       int shiny,
       int smooth,
       int transparent,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.name = name;
       materialCategory = category;
       materialClass = materialclass;
@@ -59,6 +59,6 @@ namespace Objects.Other.Revit
     public int smoothness { get; set; }
     public int transparency { get; set; }
 
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
   }
 }

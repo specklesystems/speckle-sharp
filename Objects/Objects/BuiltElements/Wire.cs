@@ -35,7 +35,7 @@ namespace Objects.BuiltElements.Revit
       string type,
       Level level,
       string wiringType = "Arc",
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.constructionPoints = constructionPoints;
@@ -43,7 +43,7 @@ namespace Objects.BuiltElements.Revit
       this.type = type;
       this.level = level;
       this.wiringType = wiringType;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string family { get; set; }
@@ -52,7 +52,7 @@ namespace Objects.BuiltElements.Revit
     public List<double> constructionPoints { get; set; } // used in constructor for revit native wires
     public string system { get; set; }
     public Level level { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
     public List<RevitMEPConnector> Connectors { get; set; } = new();
   }

@@ -9,7 +9,7 @@ public class Axis : Base
   public Axis() { }
 
   [SchemaInfo("Axis", "Creates a Speckle structural axis (a user-defined axis)", "Structural", "Geometry")]
-  public Axis(string name, AxisType axisType = AxisType.Cartesian, Plane definition = null)
+  public Axis(string name, AxisType axisType = AxisType.Cartesian, Plane? definition = null)
   {
     this.name = name;
     this.axisType = axisType;
@@ -18,5 +18,5 @@ public class Axis : Base
 
   public string name { get; set; }
   public AxisType axisType { get; set; }
-  public Plane definition { get; set; }
+  public Plane? definition { get; set; }
 }

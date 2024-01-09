@@ -8,7 +8,7 @@ public class Classification : Base
   public Classification() { }
 
   [SchemaInfo("Classification", "A classification to set on an element", "BIM", "All")]
-  public Classification(string system, string code = null, string name = null)
+  public Classification(string system, string? code = null, string? name = null)
   {
     this.system = system;
     this.code = code;
