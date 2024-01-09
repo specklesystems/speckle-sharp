@@ -868,6 +868,7 @@ public partial class ConverterAutocadCivil
       {
         docStyles.Add(styleId);
       }
+      
       if (docStyles.Count != 0 )
       {
         style = GetFromObjectIdCollection(props["style"] as string, docStyles, true);

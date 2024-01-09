@@ -256,6 +256,7 @@ public class App : IExtensionApplication
         .GetManifestResourceNames()
         .Where(o => o.EndsWith(sourceName))
         .FirstOrDefault();
+
       if (string.IsNullOrEmpty(resource))
       {
         return null;
