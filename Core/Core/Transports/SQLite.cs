@@ -22,7 +22,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   private const int MAX_TRANSACTION_SIZE = 1000;
   private const int POLL_INTERVAL = 500;
 
-  private ConcurrentQueue<(string, string, int)> _queue = new();
+  private ConcurrentQueue<(string id, string serializedObject, int byteCount)> _queue = new();
 
   /// <summary>
   /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -131,7 +131,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void BeginWrite()
   {
-    _queue = new ConcurrentQueue<(string, string, int)>();
+    _queue = new();
     SavedObjectCount = 0;
   }
 
@@ -146,18 +146,26 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       ret[objectId] = false;
     }
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    foreach (string objectId in objectIds)
+    try
     {
-      CancellationToken.ThrowIfCancellationRequested();
       const string COMMAND_TEXT = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
-      using var command = new SqliteCommand(COMMAND_TEXT, c);
-      command.Parameters.AddWithValue("@hash", objectId);
-      using var reader = command.ExecuteReader();
-      bool rowFound = reader.Read();
-      ret[objectId] = rowFound;
+      using var command = new SqliteCommand(COMMAND_TEXT, Connection);
+
+      foreach (string objectId in objectIds)
+      {
+        CancellationToken.ThrowIfCancellationRequested();
+
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@hash", objectId);
+
+        using var reader = command.ExecuteReader();
+        bool rowFound = reader.Read();
+        ret[objectId] = rowFound;
+      }
+    }
+    catch (SqliteException ex)
+    {
+      throw new TransportException("SQLite transport failed", ex);
     }
 
     return Task.FromResult(ret);
@@ -217,10 +225,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    using var command = new SqliteCommand("SELECT * FROM objects", c);
+    using var command = new SqliteCommand("SELECT * FROM objects", Connection);
 
     using var reader = command.ExecuteReader();
     while (reader.Read())
@@ -238,9 +243,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-    using var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", c);
+    using var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", Connection);
     command.Parameters.AddWithValue("@hash", hash);
     command.ExecuteNonQuery();
   }
@@ -254,10 +257,8 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
     const string COMMAND_TEXT = "REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
-    using var command = new SqliteCommand(COMMAND_TEXT, c);
+    using var command = new SqliteCommand(COMMAND_TEXT, Connection);
     command.Parameters.AddWithValue("@hash", hash);
     command.Parameters.AddWithValue("@content", serializedObject);
     command.ExecuteNonQuery();
@@ -319,9 +320,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
         using var t = c.BeginTransaction();
         const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
-        while (
-          i < MAX_TRANSACTION_SIZE && _queue.TryPeek(out (string id, string serializedObject, int byteCount) result)
-        )
+        while (i < MAX_TRANSACTION_SIZE && _queue.TryPeek(out var result))
         {
           using var command = new SqliteCommand(COMMAND_TEXT, c, t);
           _queue.TryDequeue(out result);
@@ -345,9 +344,13 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
         ConsumeQueue();
       }
     }
+    catch (SqliteException ex)
+    {
+      throw new TransportException(this, "SQLite Command Failed", ex);
+    }
     catch (OperationCanceledException)
     {
-      _queue = new ConcurrentQueue<(string, string, int)>();
+      _queue = new();
     }
     finally
     {
@@ -398,13 +401,17 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    using var command = new SqliteCommand(COMMAND_TEXT, c);
-    command.Parameters.AddWithValue("@hash", hash);
-    command.Parameters.AddWithValue("@content", serializedObject);
-    command.ExecuteNonQuery();
+    try
+    {
+      using var command = new SqliteCommand(COMMAND_TEXT, Connection);
+      command.Parameters.AddWithValue("@hash", hash);
+      command.Parameters.AddWithValue("@content", serializedObject);
+      command.ExecuteNonQuery();
+    }
+    catch (SqliteException ex)
+    {
+      throw new TransportException(this, "SQLite Command Failed", ex);
+    }
   }
 
   #endregion

@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="TestsUnit" />
-    <InternalsVisibleTo Include="TestsIntegration" />
+    <InternalsVisibleTo Include="Speckle.Core.Tests.Unit" />
+    <InternalsVisibleTo Include="Speckle.Core.Tests.Integration" />
   </ItemGroup>
 
   <!--Do
