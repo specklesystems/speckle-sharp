@@ -27,6 +27,7 @@
     <DefineConstants>$(DefineConstants);RHINO8;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
