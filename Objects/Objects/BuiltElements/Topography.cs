@@ -36,13 +36,13 @@ namespace Objects.BuiltElements.Revit
     public RevitTopography() { }
 
     [SchemaInfo("RevitTopography", "Creates a Revit topography", "Revit", "Architecture")]
-    public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
+    public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter>? parameters = null)
     {
       displayValue = new List<Mesh> { displayMesh };
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string elementId { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
   }
 }

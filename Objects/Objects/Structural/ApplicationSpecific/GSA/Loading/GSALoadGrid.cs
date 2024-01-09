@@ -11,8 +11,6 @@ public abstract class GSALoadGrid : Load
   protected GSALoadGrid(int nativeId, GSAGridSurface gridSurface, Axis loadAxis, LoadDirection2D direction)
   {
     this.nativeId = nativeId;
-    name = name;
-    loadCase = loadCase;
     this.gridSurface = gridSurface;
     this.loadAxis = loadAxis;
     this.direction = direction;

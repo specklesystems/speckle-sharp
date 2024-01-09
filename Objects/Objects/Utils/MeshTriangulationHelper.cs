@@ -242,22 +242,16 @@ public static class MeshTriangulationHelper
 
     public static readonly Vector3 Zero = new(0, 0, 0);
 
-    public static Vector3 operator +(Vector3 a, Vector3 b)
-    {
-      return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
-    }
+    public static Vector3 operator +(Vector3 a, Vector3 b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
 
-    public static Vector3 operator -(Vector3 a, Vector3 b)
-    {
-      return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
-    }
+    public static Vector3 operator -(Vector3 a, Vector3 b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
 
-    public double Dot(Vector3 v)
+    public readonly double Dot(Vector3 v)
     {
       return x * v.x + y * v.y + z * v.z;
     }
 
-    public Vector3 Cross(Vector3 v)
+    public readonly Vector3 Cross(Vector3 v)
     {
       var x = this.y * v.z - this.z * v.y;
       var y = this.z * v.x - this.x * v.z;
@@ -266,7 +260,7 @@ public static class MeshTriangulationHelper
       return new Vector3(x, y, z);
     }
 
-    public double SquareSum => x * x + y * y + z * z;
+    public readonly double SquareSum => x * x + y * y + z * z;
 
     public void Normalize()
     {

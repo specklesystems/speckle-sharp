@@ -11,9 +11,9 @@ public class GSAConcrete : Concrete
   public GSAConcrete(
     int nativeId,
     string name,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double elasticModulus = 0,
     double compressiveStrength = 0,
     double tensileStrength = 0,
@@ -48,7 +48,6 @@ public class GSAConcrete : Concrete
     this.poissonsRatio = poissonsRatio;
     this.shearModulus = shearModulus;
     this.density = density;
-    thermalExpansivity = thermalExpansivity;
     this.dampingRatio = dampingRatio;
     this.cost = cost;
     this.colour = colour;

@@ -12,8 +12,6 @@ public class GSALoadThermal2d : Load
   public GSALoadThermal2d(int nativeId, List<Element2D> elements, Thermal2dLoadType type, List<double> values)
   {
     this.nativeId = nativeId;
-    name = name;
-    loadCase = loadCase;
     this.elements = elements;
     this.type = type;
     this.values = values;

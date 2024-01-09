@@ -51,7 +51,7 @@ namespace Objects.BuiltElements.Revit
       Level level,
       string systemName = "",
       string systemType = "",
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -61,14 +61,14 @@ namespace Objects.BuiltElements.Revit
       this.systemName = systemName;
       this.systemType = systemType;
       this.level = level;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string family { get; set; }
     public string type { get; set; }
     public string systemName { get; set; }
     public string systemType { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
     public Level level { get; set; }
     public List<RevitMEPConnector> Connectors { get; set; } = new();
@@ -89,7 +89,7 @@ namespace Objects.BuiltElements.Revit
       Vector endTangent,
       string systemName = "",
       string systemType = "",
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -101,7 +101,7 @@ namespace Objects.BuiltElements.Revit
       this.systemName = systemName;
       this.systemType = systemType;
       this.level = level;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public Vector startTangent { get; set; }

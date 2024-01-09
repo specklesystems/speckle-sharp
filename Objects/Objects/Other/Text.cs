@@ -10,7 +10,7 @@ namespace Objects.Other;
 public class Text : Base, IDisplayValue<List<Polyline>>
 {
   public Plane plane { get; set; } // origin should be center
-  public double rotation { get; set; } = 0; // using radians
+  public double rotation { get; set; } // using radians
   public string value { get; set; } // text without RTF
   public string richText { get; set; }
   public double height { get; set; }

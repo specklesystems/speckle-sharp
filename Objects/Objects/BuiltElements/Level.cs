@@ -61,13 +61,13 @@ namespace Objects.BuiltElements.Revit
         "If true, it creates an associated view in Revit. NOTE: only used when creating a level for the first time"
       )]
         bool createView,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.name = name;
       this.elevation = elevation;
       this.createView = createView;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       referenceOnly = false;
     }
 
@@ -79,7 +79,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     public bool createView { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
     public bool referenceOnly { get; set; }
   }

@@ -32,12 +32,15 @@ public static class Units
     return s_supportedUnits.Contains(unit);
   }
 
+  /// <summary>
+  /// Gets the conversion factor from one unit system to another
+  /// </summary>
   /// <param name="from">Semantic unit string for the units to convert from</param>
   /// <param name="to">Semantic unit string for the units to convert to</param>
   /// <exception cref="ArgumentOutOfRangeException">A <inheritdoc cref="GetUnitsFromString"/></exception>
-  /// <returns>The scaling factor to convert from the <paramref name="from"/> units to the <paramref cref="to"/> units</returns>
+  /// <returns>The scaling factor to convert from the <paramref name="from"/> units to the <paramref cref="to"/> units, or 1 if either unit param is null or none</returns>
   [Pure]
-  public static double GetConversionFactor(string from, string to)
+  public static double GetConversionFactor(string? from, string? to)
   {
     string? fromUnits = GetUnitsFromString(from);
     string? toUnits = GetUnitsFromString(to);

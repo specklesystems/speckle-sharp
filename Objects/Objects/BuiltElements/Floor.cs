@@ -15,12 +15,14 @@ namespace Objects.BuiltElements
     [SchemaInfo("Floor", "Creates a Speckle floor", "BIM", "Architecture")]
     public Floor(
       [SchemaMainParam] ICurve outline,
-      List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null
+      List<ICurve>? voids = null,
+      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base>? elements = null
     )
     {
       this.outline = outline;
-      this.voids = voids;
+
+      this.voids = voids ?? new();
+
       this.elements = elements;
     }
 
@@ -28,7 +30,7 @@ namespace Objects.BuiltElements
     public List<ICurve> voids { get; set; } = new();
 
     [DetachProperty]
-    public List<Base> elements { get; set; }
+    public List<Base>? elements { get; set; }
     public virtual Level? level { get; internal set; }
     public string units { get; set; }
 
@@ -51,10 +53,10 @@ namespace Objects.BuiltElements.Revit
       Level level,
       bool structural = false,
       double slope = 0,
-      Line slopeDirection = null,
-      List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
-      List<Parameter> parameters = null
+      Line? slopeDirection = null,
+      List<ICurve>? voids = null,
+      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -63,9 +65,9 @@ namespace Objects.BuiltElements.Revit
       this.structural = structural;
       this.slope = slope;
       this.slopeDirection = slopeDirection;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.outline = outline;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.elements = elements;
     }
 
@@ -80,8 +82,8 @@ namespace Objects.BuiltElements.Revit
 
     public bool structural { get; set; }
     public double slope { get; set; }
-    public Line slopeDirection { get; set; }
-    public Base parameters { get; set; }
+    public Line? slopeDirection { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 }
@@ -95,9 +97,9 @@ namespace Objects.BuiltElements.Archicad
   public sealed class ArchicadFloor : Floor
   {
     // Element base
-    public string? elementType { get; set; } /*APINullabe*/
+    public string? elementType { get; set; } /*APINullable*/
 
-    public List<Classification>? classifications { get; set; } /*APINullabe*/
+    public List<Classification>? classifications { get; set; } /*APINullable*/
     public Base? elementProperties { get; set; }
     public Base? componentProperties { get; set; }
 

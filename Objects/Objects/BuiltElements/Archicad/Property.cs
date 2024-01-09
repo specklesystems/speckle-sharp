@@ -26,7 +26,7 @@ public class Property : Base
   /// </summary>
   /// <param name="properties"></param>
   /// <returns></returns>
-  public static Base ToBase(List<Property> properties)
+  public static Base? ToBase(List<Property>? properties)
   {
     if (properties == null || properties.Count == 0)
     {
@@ -37,7 +37,7 @@ public class Property : Base
 
     foreach (Property property in properties)
     {
-      var key = DynamicBase.RemoveDisallowedPropNameChars(property.name);
+      var key = RemoveDisallowedPropNameChars(property.name);
       if (string.IsNullOrEmpty(key) || @base[key] != null)
       {
         continue;
