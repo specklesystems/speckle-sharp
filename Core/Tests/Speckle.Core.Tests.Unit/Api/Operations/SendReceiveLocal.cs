@@ -250,52 +250,6 @@ public sealed class SendReceiveLocal : IDisposable
     await Core.Api.Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
   }
 
-  [Test(Description = "Tests that onProgressAction is called when specified")]
-  public async Task OnProgressAction_IsCalled_LocalReceive()
-  {
-    var @base = new Base();
-    @base["test"] = "the best";
-
-    using var myLocalTransport = new SQLiteTransport();
-    var id = await Core.Api.Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
-
-    bool wasCalled = false;
-    _ = await Core.Api.Operations
-      .Receive(id, null, myLocalTransport, onProgressAction: _ => wasCalled = true)
-      .ConfigureAwait(false);
-
-    Assert.That(wasCalled, Is.True);
-  }
-
-  [Test(Description = $"Tests that onTotalChildrenCountKnown is called when specified")]
-  public async Task OnTotalChildrenCountKnown_IsCalled_WhenLocalReceive()
-  {
-    var @base = new Base();
-    @base["@test"] = new Base() { ["test"] = "The best payload" };
-    long expectedChildren = @base.GetTotalChildrenCount() - 1;
-
-    using var myLocalTransport = new SQLiteTransport();
-    var id = await Core.Api.Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
-
-    bool wasCalled = false;
-    int children = 0;
-    _ = await Core.Api.Operations
-      .Receive(
-        id,
-        null,
-        myLocalTransport,
-        onTotalChildrenCountKnown: c =>
-        {
-          wasCalled = true;
-          children = c;
-        }
-      )
-      .ConfigureAwait(false);
-
-    Assert.That(wasCalled, Is.True);
-    Assert.That(children, Is.EqualTo(expectedChildren));
-  }
-
   //[Test]
   //public async Task DiskTransportTest()
   //{

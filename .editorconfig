@@ -244,6 +244,7 @@ dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics conf
 # Performance rules
 dotnet_diagnostic.ca1849.severity = suggestion # Call async methods when in an async method: May decrease performance
 dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+dotnet_diagnostic.CA1859.severity = suggestion # Use concrete types when possible for improved performance
 
 # Design rule
 dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists

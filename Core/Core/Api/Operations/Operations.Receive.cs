@@ -120,7 +120,8 @@ public static partial class Operations
         "transportElapsedBreakdown",
         new[] { localTransport, remoteTransport }
           .Where(t => t != null)
-          .ToDictionary(t => t!.TransportName, t => t!.Elapsed)
+          .Select(t => new KeyValuePair<string, TimeSpan>(t!.TransportName, t.Elapsed))
+          .ToArray()
       )
       .Information(
         "Finished receiving {objectId} from {source} in {elapsed} seconds",
@@ -154,17 +155,9 @@ public static partial class Operations
     }
 
     // Shoot out the total children count
-    Placeholder? partial = JsonConvert.DeserializeObject<Placeholder>(objString);
+    var closures = TransportHelpers.GetClosureTable(objString);
 
-    if (partial is null)
-    {
-      throw new SpeckleDeserializeException($"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}");
-    }
-
-    if (partial.__closure != null)
-    {
-      onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
-    }
+    onTotalChildrenCountKnown?.Invoke(closures?.Count ?? 0);
 
     return objString;
   }
@@ -211,6 +204,7 @@ public static partial class Operations
     return defaultLocalTransport;
   }
 
+  [Obsolete("Use " + nameof(TransportHelpers.Placeholder))]
   internal sealed class Placeholder
   {
     public Dictionary<string, int>? __closure { get; set; } = new();
