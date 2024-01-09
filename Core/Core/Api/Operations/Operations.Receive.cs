@@ -17,13 +17,14 @@ namespace Speckle.Core.Api;
 public static partial class Operations
 {
   /// <summary>
-  /// Receives an object (and all its sub-children) from the two provided transports.
+  /// Receives an object (and all its sub-children) from the two provided <see cref="ITransport"/>s.
   /// <br/>
   /// Will first try and find objects using the <paramref name="localTransport"/> (the faster transport)
-  /// If not found, will attempt to copy the objects from the <paramref name="remoteTransport"/> into the <see cref="localTransport"/> before deserialization
+  /// If not found, will attempt to copy the objects from the <paramref name="remoteTransport"/> into the <paramref name="localTransport"/> before deserialization
   /// </summary>
   /// <remarks>
-  /// If Transports are properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a <see cref="ServerTransport"/> as a local transport.
+  /// If Transports are properly implemented, there is no hard distinction between what is a local or remote transport; it's still just an <see cref="ITransport"/>.
+  /// <br/>So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a <see cref="ServerTransport"/> as a local transport.
   /// <br/>This is not recommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in <see cref="MemoryTransport"/>. In memory transports are the fastest ones, but they're of limited use for larger datasets
   /// </remarks>
   /// <param name="objectId">The id of the object to receive</param>
@@ -49,7 +50,7 @@ public static partial class Operations
     var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
     // Setup Local Transport
-    using IDisposable? d4 = UseDefaultTransportIfNull(localTransport, out localTransport);
+    using IDisposable? d1 = UseDefaultTransportIfNull(localTransport, out localTransport);
     localTransport.OnProgressAction = internalProgressAction;
     localTransport.CancellationToken = cancellationToken;
 
@@ -71,9 +72,9 @@ public static partial class Operations
       };
 
     // Setup Logging
-    using IDisposable d1 = LogContext.PushProperty("remoteTransportContext", remoteTransport?.TransportContext);
-    using IDisposable d2 = LogContext.PushProperty("localTransportContext", localTransport.TransportContext);
-    using IDisposable d3 = LogContext.PushProperty("objectId", objectId);
+    using IDisposable d2 = LogContext.PushProperty("remoteTransportContext", remoteTransport?.TransportContext);
+    using IDisposable d3 = LogContext.PushProperty("localTransportContext", localTransport.TransportContext);
+    using IDisposable d4 = LogContext.PushProperty("objectId", objectId);
     var timer = Stopwatch.StartNew();
 
     // Receive Json
@@ -204,14 +205,15 @@ public static partial class Operations
     return defaultLocalTransport;
   }
 
+  #region Obsolete Overloads
+#pragma warning disable CA1068, IDE1006
+
+
   [Obsolete("Use " + nameof(TransportHelpers.Placeholder))]
   internal sealed class Placeholder
   {
     public Dictionary<string, int>? __closure { get; set; } = new();
   }
-
-  #region Obsolete Overloads
-#pragma warning disable CA1068
 
   private const string RECEIVE_DEPRECATION_MESSAGE = """
     This method overload is obsolete, consider using a non-obsolete overload.
@@ -500,7 +502,7 @@ public static partial class Operations
   /// </summary>
   /// <remarks>
   /// This overload is deprecated. You should consider using
-  /// <see cref="Receive(string,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{string,Exception}?,Action{int}?,CancellationToken)"/>
+  /// <see cref="Receive(string,ITransport?,ITransport?,Action{ConcurrentDictionary{string,int}}?,Action{int}?,CancellationToken)"/>
   /// <br/>
   /// The new overload no longer support <paramref name="serializerVersion"/> switching as v1 is now deprecated.
   /// <br/>
@@ -710,7 +712,7 @@ public static partial class Operations
       return serializerV2!.Deserialize(objString);
     }
   }
-#pragma warning restore CA1068
+#pragma warning restore CA1068, IDE1006
 
   #endregion
 }
