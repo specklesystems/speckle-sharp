@@ -26,7 +26,7 @@ public class Property : Base
   /// </summary>
   /// <param name="properties"></param>
   /// <returns></returns>
-  public static Base? ToBase(List<Property> properties)
+  public static Base? ToBase(List<Property>? properties)
   {
     if (properties == null || properties.Count == 0)
     {

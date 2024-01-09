@@ -29,7 +29,7 @@ public class PropertyGroup : Base
   /// </summary>
   /// <param name="propertyGroups"></param>
   /// <returns></returns>
-  public static Base? ToBase(List<PropertyGroup> propertyGroups)
+  public static Base? ToBase(List<PropertyGroup>? propertyGroups)
   {
     if (propertyGroups == null || propertyGroups.Count == 0)
     {

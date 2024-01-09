@@ -18,7 +18,9 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   public Line(double x, double y, double z = 0, string units = Units.Meters, string? applicationId = null)
   {
     start = new Point(x, y, z);
-    end = null; // constructor is marked obsolete because we don't want to allow setting a null end point here.
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type. Reason: Obsolete.
+    end = null;
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type. Reason: Obsolete.
     this.applicationId = applicationId;
     this.units = units;
   }
@@ -58,7 +60,9 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
   [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
   public List<double> value
   {
+#pragma warning disable CS8603 // Possible null reference return. Reason: Obsolete.
     get => null;
+#pragma warning restore CS8603 // Possible null reference return. Reason: Obsolete.
     set
     {
       if (value == null)

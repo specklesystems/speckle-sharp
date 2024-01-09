@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
     /// <summary>
     /// SchemaBuilder constructor for a Room
     /// </summary>
-    /// <remarks>Assign units when using this constructor due to <propref name="height"/> prop</remarks>
+    /// <remarks>Assign units when using this constructor due to <see cref="height"/> prop</remarks>
     [SchemaInfo("Room", "Creates a Speckle room", "BIM", "Architecture")]
     public Room(string name, string number, Level level, [SchemaMainParam] Point basePoint)
     {
@@ -28,7 +28,7 @@ namespace Objects.BuiltElements
     /// <summary>
     /// SchemaBuilder constructor for a Room
     /// </summary>
-    /// <remarks>Assign units when using this constructor due to <propref name="height"/> prop</remarks>
+    /// <remarks>Assign units when using this constructor due to <see cref="height"/> prop</remarks>
     [SchemaInfo("RevitRoom", "Creates a Revit room with parameters", "Revit", "Architecture")]
     public Room(
       string name,

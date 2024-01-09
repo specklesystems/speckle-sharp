@@ -22,7 +22,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// </summary>
   /// <param name="units">The units the Polycurve was modelled in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  public Polycurve(string units = Units.Meters, string applicationId = null)
+  public Polycurve(string units = Units.Meters, string? applicationId = null)
   {
     this.applicationId = applicationId;
     this.units = units;

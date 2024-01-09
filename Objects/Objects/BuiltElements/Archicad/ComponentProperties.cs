@@ -29,7 +29,7 @@ public class ComponentProperties : Base
   /// </summary>
   /// <param name="componentPropertiesList"></param>
   /// <returns></returns>
-  public static Base? ToBase(List<ComponentProperties> componentPropertiesList)
+  public static Base? ToBase(List<ComponentProperties>? componentPropertiesList)
   {
     if (componentPropertiesList == null || componentPropertiesList.Count == 0)
     {

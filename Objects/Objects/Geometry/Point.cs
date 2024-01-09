@@ -171,12 +171,12 @@ public class Point : Base, ITransformable<Point>
     {
       return true;
     }
-    else if (point1 is null ^ point2 is null)
+    else if (point1 is null || point2 is null)
     {
       return false;
     }
 
-    return point1?.units == point2?.units && point1?.x == point2?.x && point1?.y == point2?.y && point1?.z == point2?.z;
+    return point1.units == point2.units && point1.x == point2.x && point1.y == point2.y && point1.z == point2.z;
   }
 
   public static bool operator !=(Point? point1, Point? point2) => !(point1 == point2);
