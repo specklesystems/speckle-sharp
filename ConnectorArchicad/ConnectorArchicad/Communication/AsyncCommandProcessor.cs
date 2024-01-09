@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication;
 
@@ -31,12 +32,14 @@ internal class AsyncCommandProcessor
     {
       return null;
     }
-    catch (TaskCanceledException)
+    catch (TaskCanceledException e)
     {
+      SpeckleLog.Logger.Error(e, "Could not communicate with Archicad.");
       return null;
     }
-    catch (ObjectDisposedException)
+    catch (ObjectDisposedException e)
     {
+      SpeckleLog.Logger.Error(e, "Could not communicate with Archicad.");
       return null;
     }
   }
