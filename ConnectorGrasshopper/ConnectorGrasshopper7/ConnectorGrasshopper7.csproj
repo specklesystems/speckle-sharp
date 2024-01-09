@@ -6,7 +6,7 @@
     <TargetExt>.gha</TargetExt>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO7;RHINO7_OR_GREATER;RHINO6_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">

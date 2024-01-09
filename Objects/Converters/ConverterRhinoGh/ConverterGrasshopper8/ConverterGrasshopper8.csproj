@@ -8,7 +8,7 @@
     <RootNamespace>Objects.Converter.Rhino</RootNamespace>
     <RhinoPluginType>none</RhinoPluginType>
     <CopyToKitFolder>true</CopyToKitFolder>
-    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />

@@ -24,7 +24,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWpf>true</UseWpf>
     <UseWinForms>true</UseWinForms>
-    <DefineConstants>$(DefineConstants);RHINO8</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO8;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>

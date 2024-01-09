@@ -6,7 +6,7 @@
     <TargetExt>.gha</TargetExt>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
