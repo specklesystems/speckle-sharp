@@ -297,7 +297,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           break;
 #endif
 
-#if RHINO7 || RHINO8
+#if RHINO7_OR_GREATER
         case RH.SubD o:
           if (o.HasBrepForm)
           {
@@ -663,7 +663,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case RH.NurbsCurve _:
       case RH.Box _:
       case RH.Mesh _:
-#if RHINO7 || RHINO8
+#if RHINO7_OR_GREATER
       case RH.SubD _:
 #endif
       case RH.Extrusion _:
