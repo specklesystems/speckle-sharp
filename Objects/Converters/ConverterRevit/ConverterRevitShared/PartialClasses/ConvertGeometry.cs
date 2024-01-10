@@ -702,7 +702,7 @@ public partial class ConverterRevit
     {
       tsb.Build();
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       Report.LogConversionError(e);
       return null;
@@ -1427,7 +1427,7 @@ public partial class ConverterRevit
       }
       revitDs.SetShape(new List<GeometryObject> { solid });
     }
-    catch (Exception e)
+    catch (SpeckleException)
     {
       notes.Add($"Failed to convert brep, using display value meshes instead.");
       var meshes = brep.displayValue.SelectMany(m => MeshToNative(m));
