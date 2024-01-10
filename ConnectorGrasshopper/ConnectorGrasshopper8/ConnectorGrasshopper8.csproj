@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
     <TargetExt>.gha</TargetExt>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
@@ -10,6 +10,7 @@
     <UseWpf>true</UseWpf>
     <UseWindowsForms>true</UseWindowsForms>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
@@ -26,7 +27,8 @@
 
   <ItemGroup>
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="Grasshopper" Version="8.2.23346.13001" IncludeAssets="compile;build" />
+    <PackageReference Include="Grasshopper" Version="8.3.24009.15001" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
 

@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="8.1.23325.13001" />
-    <PackageReference Include="RhinoCommon" Version="8.1.23325.13001" />
+    <PackageReference Include="Grasshopper" Version="8.3.24009.15001" />
+    <PackageReference Include="RhinoCommon" Version="8.3.24009.15001" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
