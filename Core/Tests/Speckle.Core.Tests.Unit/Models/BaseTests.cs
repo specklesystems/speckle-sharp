@@ -106,7 +106,7 @@ public class BaseTests
     var @base = new SampleObject();
     var dynamicProp = "dynamicProp";
     @base[dynamicProp] = 123;
-    var names = @base.GetMemberNames();
+    var names = @base.GetMembers().Keys;
     Assert.That(names, Has.No.Member(nameof(@base.IgnoredSchemaProp)));
     Assert.That(names, Has.No.Member(nameof(@base.ObsoleteSchemaProp)));
     Assert.That(names, Has.Member(dynamicProp));
@@ -146,7 +146,7 @@ public class BaseTests
 
     var names = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
     Assert.That(names, Has.Member(dynamicProp));
-    Assert.That(names.Count, Is.EqualTo(1));
+    Assert.That(names, Has.Count.EqualTo(1));
   }
 
   [Test(Description = "Checks that all typed properties (including ignored ones) are returned")]
@@ -180,7 +180,7 @@ public class BaseTests
 
     var names = @base.GetDynamicMemberNames();
     Assert.That(names, Has.Member(dynamicProp));
-    Assert.Null(@base[dynamicProp]);
+    Assert.That(@base[dynamicProp], Is.Null);
   }
 
   [Test]
@@ -200,7 +200,7 @@ public class BaseTests
 
     // Accepts null values
     @base[key] = null;
-    Assert.IsNull(@base[key]);
+    Assert.That(@base[key], Is.Null);
   }
 
   [Test]
@@ -216,7 +216,7 @@ public class BaseTests
 
     foreach (var kvp in copyMembers)
     {
-      Assert.Contains(kvp.Key, sampleMembers.Keys);
+      Assert.That(sampleMembers.Keys, Does.Contain(kvp.Key));
       Assert.That(kvp.Value, Is.EqualTo(sample[kvp.Key]));
     }
   }

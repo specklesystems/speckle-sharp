@@ -43,7 +43,7 @@ public class ObjectSerialization
 
     var result = Core.Api.Operations.Deserialize(test);
     var circle = result["circle"];
-    Assert.Null(circle);
+    Assert.That(circle, Is.Null);
   }
 
   [Test]
@@ -119,7 +119,7 @@ public class ObjectSerialization
     var dsrls = Core.Api.Operations.Deserialize(str);
 
     var list = dsrls["test"] as List<object>; // NOTE: on dynamically added lists, we cannot infer the inner type and we always fall back to a generic list<object>.
-    Assert.That(list.Count, Is.EqualTo(100));
+    Assert.That(list, Has.Count.EqualTo(100));
   }
 
   [Test]
@@ -151,9 +151,9 @@ public class ObjectSerialization
     var stringChunkDeserialised = (DataChunk)Core.Api.Operations.Deserialize(stringChunkString);
     var doubleChunkDeserialised = (DataChunk)Core.Api.Operations.Deserialize(doubleChunkString);
 
-    Assert.That(baseChunkDeserialised.data.Count, Is.EqualTo(baseBasedChunk.data.Count));
-    Assert.That(stringChunkDeserialised.data.Count, Is.EqualTo(stringBasedChunk.data.Count));
-    Assert.That(doubleChunkDeserialised.data.Count, Is.EqualTo(doubleBasedChunk.data.Count));
+    Assert.That(baseChunkDeserialised.data, Has.Count.EqualTo(baseBasedChunk.data.Count));
+    Assert.That(stringChunkDeserialised.data, Has.Count.EqualTo(stringBasedChunk.data.Count));
+    Assert.That(doubleChunkDeserialised.data, Has.Count.EqualTo(doubleBasedChunk.data.Count));
   }
 
   [Test]

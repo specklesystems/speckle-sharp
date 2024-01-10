@@ -64,9 +64,7 @@ public sealed class GraphQLClientTests : IDisposable
   [Test]
   public void TestMaybeThrowsDoesntThrowForNoErrors()
   {
-    _client.MaybeThrowFromGraphQLErrors(new GraphQLRequest(), new GraphQLResponse<string>());
-    // We're just checking that the prev function didn't throw
-    Assert.True(true);
+    Assert.DoesNotThrow(() => _client.MaybeThrowFromGraphQLErrors(new GraphQLRequest(), new GraphQLResponse<string>()));
   }
 
   [Test]
@@ -98,7 +96,7 @@ public sealed class GraphQLClientTests : IDisposable
 
     // the default retry policy would retry 5 times with 1 second jitter backoff each
     // if the elapsed is less than a second, this was def not retried
-    Assert.Less(elapsed, 1000);
+    Assert.That(elapsed, Is.LessThan(1000));
   }
 
   [Test]
@@ -123,7 +121,7 @@ public sealed class GraphQLClientTests : IDisposable
       .ConfigureAwait(false);
     timer.Stop();
     // The baseline for wait is 1 seconds between the jittered retry
-    Assert.GreaterOrEqual(timer.ElapsedMilliseconds, 5000);
+    Assert.That(timer.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(5000));
     Assert.That(counter, Is.EqualTo(maxRetryCount));
   }
 

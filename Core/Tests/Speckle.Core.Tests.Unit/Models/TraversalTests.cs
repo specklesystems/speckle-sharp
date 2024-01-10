@@ -35,7 +35,7 @@ public class TraversalTests
     Assert.That(ret, Has.Count.EqualTo(3));
     Assert.That(ret, Is.Unique);
     Assert.That(ret.Where(BreakRule), Is.Not.Empty);
-    Assert.That(ret.Where(x => x.id.Contains("should have ignored me")), Is.Empty);
+    Assert.That(ret, Has.No.Member(Contains.Substring("should have ignored me")));
   }
 
   [Test, TestCase(5, 5), TestCase(5, 10), TestCase(10, 5), Description("Tests breaking after a fixed number of items")]

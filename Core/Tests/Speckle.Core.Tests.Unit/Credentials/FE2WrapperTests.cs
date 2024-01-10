@@ -39,7 +39,7 @@ public class Fe2WrapperTests
   )
   {
     var streamWrapper = new StreamWrapper(url);
-    Assert.NotNull(streamWrapper);
+    Assert.That(streamWrapper, Is.Not.Null);
     Assert.That(streamWrapper.Type, Is.EqualTo(expectedType));
     Assert.That(streamWrapper.StreamId, Is.EqualTo(expectedProjectId));
     Assert.That(streamWrapper.BranchName, Is.EqualTo(expectedBranchId));

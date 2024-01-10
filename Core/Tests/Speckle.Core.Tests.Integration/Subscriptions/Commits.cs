@@ -10,7 +10,6 @@ namespace Speckle.Core.Tests.Integration.Subscriptions;
 public class Commits : IDisposable
 {
   private Client _client;
-
   private CommitInfo _commitCreatedInfo;
   private CommitInfo _commitDeletedInfo;
   private string _commitId;
@@ -22,7 +21,7 @@ public class Commits : IDisposable
   [OneTimeSetUp]
   public async Task Setup()
   {
-    _testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
+    _testUserAccount = await Fixtures.SeedUser();
     _client = new Client(_testUserAccount);
   }
 
@@ -38,8 +37,8 @@ public class Commits : IDisposable
   {
     var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
-    _streamId = await _client.StreamCreate(streamInput).ConfigureAwait(false);
-    Assert.NotNull(_streamId);
+    _streamId = await _client.StreamCreate(streamInput);
+    Assert.That(_streamId, Is.Not.Null);
 
     InitServerTransport();
 
@@ -50,8 +49,8 @@ public class Commits : IDisposable
       streamId = _streamId
     };
 
-    var branchId = await _client.BranchCreate(branchInput).ConfigureAwait(false);
-    Assert.NotNull(branchId);
+    var branchId = await _client.BranchCreate(branchInput);
+    Assert.That(branchId, Is.Not.Null);
 
     _client.SubscribeCommitCreated(_streamId);
     _client.OnCommitCreated += Client_OnCommitCreated;
@@ -67,7 +66,7 @@ public class Commits : IDisposable
 
     myObject["Points"] = ptsList;
 
-    var objectId = await Operations.Send(myObject, _myServerTransport, false).ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, _myServerTransport, false);
 
     var commitInput = new CommitCreateInput
     {
@@ -79,16 +78,15 @@ public class Commits : IDisposable
       totalChildrenCount = 20
     };
 
-    _commitId = await _client.CommitCreate(commitInput).ConfigureAwait(false);
-    Assert.NotNull(_commitId);
+    _commitId = await _client.CommitCreate(commitInput);
+    Assert.That(_commitId, Is.Not.Null);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(_commitCreatedInfo);
-        Assert.That(_commitCreatedInfo.message, Is.EqualTo(commitInput.message));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(2000); //let client catch-up
+      Assert.That(_commitCreatedInfo, Is.Not.Null);
+      Assert.That(_commitCreatedInfo.message, Is.EqualTo(commitInput.message));
+    });
   }
 
   private void Client_OnCommitCreated(object sender, CommitInfo e)
@@ -112,16 +110,15 @@ public class Commits : IDisposable
       id = _commitId
     };
 
-    var res = await _client.CommitUpdate(commitInput).ConfigureAwait(false);
-    Assert.True(res);
+    var res = await _client.CommitUpdate(commitInput);
+    Assert.That(res, Is.True);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(_commitUpdatedInfo);
-        Assert.That(_commitUpdatedInfo.message, Is.EqualTo(commitInput.message));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(2000); //let client catch-up
+      Assert.That(_commitUpdatedInfo, Is.Not.Null);
+      Assert.That(_commitUpdatedInfo.message, Is.EqualTo(commitInput.message));
+    });
   }
 
   private void Client_OnCommitUpdated(object sender, CommitInfo e)
@@ -140,16 +137,15 @@ public class Commits : IDisposable
 
     var commitInput = new CommitDeleteInput { streamId = _streamId, id = _commitId };
 
-    var res = await _client.CommitDelete(commitInput).ConfigureAwait(false);
-    Assert.True(res);
+    var res = await _client.CommitDelete(commitInput);
+    Assert.That(res, Is.True);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(_commitDeletedInfo);
-        Assert.That(_commitDeletedInfo.id, Is.EqualTo(_commitId));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(2000); //let client catch-up
+      Assert.That(_commitDeletedInfo, Is.Not.Null);
+      Assert.That(_commitDeletedInfo.id, Is.EqualTo(_commitId));
+    });
   }
 
   private void Client_OnCommitDeleted(object sender, CommitInfo e)

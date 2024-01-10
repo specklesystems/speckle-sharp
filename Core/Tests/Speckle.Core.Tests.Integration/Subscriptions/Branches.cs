@@ -17,7 +17,7 @@ public class Branches : IDisposable
   [OneTimeSetUp]
   public async Task Setup()
   {
-    _testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
+    _testUserAccount = await Fixtures.SeedUser();
     _client = new Client(_testUserAccount);
   }
 
@@ -26,8 +26,8 @@ public class Branches : IDisposable
   {
     var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
-    _streamId = await _client.StreamCreate(streamInput).ConfigureAwait(false);
-    Assert.NotNull(_streamId);
+    _streamId = await _client.StreamCreate(streamInput);
+    Assert.That(_streamId, Is.Not.Null);
 
     _client.SubscribeBranchCreated(_streamId);
     _client.OnBranchCreated += Client_OnBranchCreated;
@@ -41,16 +41,15 @@ public class Branches : IDisposable
       streamId = _streamId
     };
 
-    _branchId = await _client.BranchCreate(branchInput).ConfigureAwait(false);
-    Assert.NotNull(_branchId);
+    _branchId = await _client.BranchCreate(branchInput);
+    Assert.That(_branchId, Is.Not.Null);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(1000); //let client catch-up
-        Assert.NotNull(_branchCreatedInfo);
-        Assert.That(_branchCreatedInfo.name, Is.EqualTo(branchInput.name));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(1000); //let client catch-up
+      Assert.That(_branchCreatedInfo, Is.Not.Null);
+      Assert.That(_branchCreatedInfo.name, Is.EqualTo(branchInput.name));
+    });
   }
 
   private void Client_OnBranchCreated(object sender, BranchInfo e)
@@ -74,16 +73,15 @@ public class Branches : IDisposable
       id = _branchId
     };
 
-    var res = await _client.BranchUpdate(branchInput).ConfigureAwait(false);
-    Assert.True(res);
+    var res = await _client.BranchUpdate(branchInput);
+    Assert.That(res, Is.True);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(1000); //let client catch-up
-        Assert.NotNull(_branchUpdatedInfo);
-        Assert.That(_branchUpdatedInfo.name, Is.EqualTo(branchInput.name));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(1000); //let client catch-up
+      Assert.That(_branchUpdatedInfo, Is.Not.Null);
+      Assert.That(_branchUpdatedInfo.name, Is.EqualTo(branchInput.name));
+    });
   }
 
   private void Client_OnBranchUpdated(object sender, BranchInfo e)
@@ -101,16 +99,15 @@ public class Branches : IDisposable
 
     var branchInput = new BranchDeleteInput { streamId = _streamId, id = _branchId };
 
-    var res = await _client.BranchDelete(branchInput).ConfigureAwait(false);
-    Assert.True(res);
+    var res = await _client.BranchDelete(branchInput);
+    Assert.That(res, Is.True);
 
     await Task.Run(() =>
-      {
-        Thread.Sleep(1000); //let client catch-up
-        Assert.NotNull(_branchDeletedInfo);
-        Assert.That(_branchDeletedInfo.id, Is.EqualTo(_branchId));
-      })
-      .ConfigureAwait(false);
+    {
+      Thread.Sleep(1000); //let client catch-up
+      Assert.That(_branchDeletedInfo, Is.Not.Null);
+      Assert.That(_branchDeletedInfo.id, Is.EqualTo(_branchId));
+    });
   }
 
   private void Client_OnBranchDeleted(object sender, BranchInfo e)

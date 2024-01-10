@@ -10,10 +10,10 @@ public class KitManagerTests
   [Test]
   public void KitsExist()
   {
-    var kits = KitManager.Kits;
-    Assert.Greater(kits.Count(), 0);
+    var kits = KitManager.Kits.ToArray();
+    Assert.That(kits, Has.Length.GreaterThan(0));
 
-    var types = KitManager.Types;
-    Assert.Greater(types.Count(), 0);
+    var types = KitManager.Types.ToArray();
+    Assert.That(types, Has.Length.GreaterThan(0));
   }
 }

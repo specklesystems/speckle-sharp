@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Mime;
 using System.Text;
 using System.Web;
@@ -22,59 +23,59 @@ public class SetUp
 
 public static class Fixtures
 {
-  public static readonly ServerInfo Server = new() { url = "http://localhost:3000", name = "Docker Server" };
+  private static readonly ServerInfo s_server = new() { url = "http://localhost:3000", name = "Docker Server" };
 
   public static async Task<Account> SeedUser()
   {
     var seed = Guid.NewGuid().ToString().ToLower();
-    var user = new Dictionary<string, string>();
-    user["email"] = $"{seed.Substring(0, 7)}@acme.com";
-    user["password"] = "12ABC3456789DEF0GHO";
-    user["name"] = $"{seed.Substring(0, 5)} Name";
+    Dictionary<string, string> user =
+      new()
+      {
+        ["email"] = $"{seed.Substring(0, 7)}@acme.com",
+        ["password"] = "12ABC3456789DEF0GHO",
+        ["name"] = $"{seed.Substring(0, 5)} Name"
+      };
 
     using var httpClient = new HttpClient(
       new HttpClientHandler { AllowAutoRedirect = false, CheckCertificateRevocationList = true }
     );
 
-    httpClient.BaseAddress = new Uri(Server.url);
+    httpClient.BaseAddress = new Uri(s_server.url);
 
     string redirectUrl;
     try
     {
-      var response = await httpClient
-        .PostAsync(
-          "/auth/local/register?challenge=challengingchallenge",
-          // $"{Server.url}/auth/local/register?challenge=challengingchallenge",
-          new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
-        )
-        .ConfigureAwait(false);
+      var response = await httpClient.PostAsync(
+        "/auth/local/register?challenge=challengingchallenge",
+        // $"{Server.url}/auth/local/register?challenge=challengingchallenge",
+        new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
+      );
       redirectUrl = response.Headers.Location!.AbsoluteUri;
     }
     catch (Exception e)
     {
-      throw new Exception($"Cannot seed user on the server {Server.url}", e);
+      throw new Exception($"Cannot seed user on the server {s_server.url}", e);
     }
 
-    var uri = new Uri(redirectUrl);
+    Uri uri = new(redirectUrl);
     var query = HttpUtility.ParseQueryString(uri.Query);
 
-    var accessCode = query["access_code"] ?? throw new Exception("Redirect Uri has no 'access_code'.");
-    var tokenBody = new Dictionary<string, string>
-    {
-      ["accessCode"] = accessCode,
-      ["appId"] = "spklwebapp",
-      ["appSecret"] = "spklwebapp",
-      ["challenge"] = "challengingchallenge"
-    };
+    string accessCode = query["access_code"] ?? throw new Exception("Redirect Uri has no 'access_code'.");
+    Dictionary<string, string> tokenBody =
+      new()
+      {
+        ["accessCode"] = accessCode,
+        ["appId"] = "spklwebapp",
+        ["appSecret"] = "spklwebapp",
+        ["challenge"] = "challengingchallenge"
+      };
 
-    var tokenResponse = await httpClient
-      .PostAsync(
-        "/auth/token",
-        new StringContent(JsonConvert.SerializeObject(tokenBody), Encoding.UTF8, MediaTypeNames.Application.Json)
-      )
-      .ConfigureAwait(false);
+    var tokenResponse = await httpClient.PostAsync(
+      "/auth/token",
+      new StringContent(JsonConvert.SerializeObject(tokenBody), Encoding.UTF8, MediaTypeNames.Application.Json)
+    );
     var deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-      await tokenResponse.Content.ReadAsStringAsync().ConfigureAwait(false)
+      await tokenResponse.Content.ReadAsStringAsync()
     );
 
     var acc = new Account
@@ -86,22 +87,24 @@ public static class Fixtures
         email = user["email"],
         name = user["name"]
       },
-      serverInfo = Server
+      serverInfo = s_server
     };
     using var client = new Client(acc);
 
-    var user1 = await client.ActiveUserGet().ConfigureAwait(false);
+    var user1 = await client.ActiveUserGet();
     acc.userInfo.id = user1.id;
     return acc;
   }
 
   public static Base GenerateSimpleObject()
   {
-    var @base = new Base();
-    @base["foo"] = "foo";
-    @base["bar"] = "bar";
-    @base["baz"] = "baz";
-    @base["now"] = DateTime.Now.ToString();
+    var @base = new Base
+    {
+      ["foo"] = "foo",
+      ["bar"] = "bar",
+      ["baz"] = "baz",
+      ["now"] = DateTime.Now.ToString(CultureInfo.InvariantCulture)
+    };
 
     return @base;
   }

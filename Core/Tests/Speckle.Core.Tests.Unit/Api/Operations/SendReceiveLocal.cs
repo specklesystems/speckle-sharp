@@ -32,7 +32,7 @@ public sealed class SendReceiveLocal : IDisposable
     using SQLiteTransport localTransport = new();
     _objId01 = Core.Api.Operations.Send(myObject, localTransport, false).Result;
 
-    Assert.NotNull(_objId01);
+    Assert.That(_objId01, Is.Not.Null);
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
   }
 
@@ -41,8 +41,8 @@ public sealed class SendReceiveLocal : IDisposable
   {
     var commitPulled = Core.Api.Operations.Receive(_objId01).Result;
 
-    Assert.That(((List<object>)commitPulled["@items"])[0].GetType(), Is.EqualTo(typeof(Point)));
-    Assert.That(((List<object>)commitPulled["@items"]).Count, Is.EqualTo(NUM_OBJECTS));
+    Assert.That(((List<object>)commitPulled["@items"])[0], Is.TypeOf<Point>());
+    Assert.That(((List<object>)commitPulled["@items"]), Has.Count.EqualTo(NUM_OBJECTS));
   }
 
   [Test(Description = "Pushing and Pulling a commit locally")]
@@ -64,7 +64,7 @@ public sealed class SendReceiveLocal : IDisposable
     List<object> items = (List<object>)commitPulled["@items"];
 
     Assert.That(items, Has.All.TypeOf<Point>());
-    Assert.That(items.Count, Is.EqualTo(NUM_OBJECTS));
+    Assert.That(items, Has.Count.EqualTo(NUM_OBJECTS));
   }
 
   [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
@@ -82,11 +82,11 @@ public sealed class SendReceiveLocal : IDisposable
 
     _objId01 = await Core.Api.Operations.Send(myObject, _sut, false).ConfigureAwait(false);
 
-    Assert.NotNull(_objId01);
+    Assert.That(_objId01, Is.Not.Null);
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
 
     var objsPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
-    Assert.That(((List<object>)objsPulled["@items"]).Count, Is.EqualTo(30));
+    Assert.That(((List<object>)objsPulled["@items"]), Has.Count.EqualTo(30));
   }
 
   [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
@@ -106,7 +106,7 @@ public sealed class SendReceiveLocal : IDisposable
 
     _objId01 = await Core.Api.Operations.Send(myObject, _sut, false).ConfigureAwait(false);
 
-    Assert.NotNull(_objId01);
+    Assert.That(_objId01, Is.Not.Null);
 
     var objsPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
     Assert.That(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), Is.EqualTo(1));
@@ -141,26 +141,26 @@ public sealed class SendReceiveLocal : IDisposable
 
     _objId01 = await Core.Api.Operations.Send(obj, _sut, false).ConfigureAwait(false);
 
-    Assert.NotNull(_objId01);
+    Assert.That(_objId01, Is.Not.Null);
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
 
     var objPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
 
-    Assert.That(objPulled.GetType(), Is.EqualTo(typeof(Base)));
+    Assert.That(objPulled, Is.TypeOf<Base>());
 
     // Note: even if the layers were originally declared as lists of "Base" objects, on deserialisation we cannot know that,
     // as it's a dynamic property. Dynamic properties, if their content value is ambigous, will default to a common-sense standard.
     // This specifically manifests in the case of lists and dictionaries: List<AnySpecificType> will become List<object>, and
     // Dictionary<string, MyType> will deserialize to Dictionary<string,object>.
     var layerA = ((dynamic)objPulled)["LayerA"] as List<object>;
-    Assert.That(layerA.Count, Is.EqualTo(30));
+    Assert.That(layerA, Has.Count.EqualTo(30));
 
     var layerC = ((dynamic)objPulled)["@LayerC"] as List<object>;
-    Assert.That(layerC.Count, Is.EqualTo(30));
-    Assert.That(layerC[0].GetType(), Is.EqualTo(typeof(Point)));
+    Assert.That(layerC, Has.Count.EqualTo(30));
+    Assert.That(layerC[0], Is.TypeOf<Point>());
 
     var layerD = ((dynamic)objPulled)["@LayerD"] as List<object>;
-    Assert.That(layerD.Count, Is.EqualTo(2));
+    Assert.That(layerD, Has.Count.EqualTo(2));
   }
 
   [Test(Description = "Should show progress!"), Order(4)]
@@ -187,8 +187,8 @@ public sealed class SendReceiveLocal : IDisposable
       )
       .ConfigureAwait(false);
 
-    Assert.NotNull(progress);
-    Assert.GreaterOrEqual(progress!.Keys.Count, 1);
+    Assert.That(progress, Is.Not.Null);
+    Assert.That(progress!.Keys, Has.Count.GreaterThanOrEqualTo(1));
   }
 
   [Test(Description = "Should show progress!"), Order(5)]
@@ -204,8 +204,8 @@ public sealed class SendReceiveLocal : IDisposable
         }
       )
       .ConfigureAwait(false);
-    Assert.NotNull(progress);
-    Assert.GreaterOrEqual(progress.Keys.Count, 1);
+    Assert.That(progress, Is.Not.Null);
+    Assert.That(progress.Keys, Has.Count.GreaterThanOrEqualTo(1));
   }
 
   [Test(Description = "Should dispose of transports after a send or receive operation if so specified.")]
@@ -216,23 +216,24 @@ public sealed class SendReceiveLocal : IDisposable
     @base["test"] = "the best";
 
     var myLocalTransport = new SQLiteTransport();
-    var id = await Core.Api.Operations
-      .Send(@base, new List<ITransport> { myLocalTransport }, false, disposeTransports: true)
-      .ConfigureAwait(false);
+    var id = await Core.Api.Operations.Send(
+      @base,
+      new List<ITransport> { myLocalTransport },
+      false,
+      disposeTransports: true
+    );
 
     // Send
     Assert.ThrowsAsync<ObjectDisposedException>(
       async () =>
-        await Core.Api.Operations
-          .Send(@base, new List<ITransport> { myLocalTransport }, false, disposeTransports: true)
-          .ConfigureAwait(false)
+        await Core.Api.Operations.Send(@base, new List<ITransport> { myLocalTransport }, false, disposeTransports: true)
     );
 
     myLocalTransport = myLocalTransport.Clone() as SQLiteTransport;
-    _ = await Core.Api.Operations.Receive(id, null, myLocalTransport, disposeTransports: true).ConfigureAwait(false);
+    _ = await Core.Api.Operations.Receive(id, null, myLocalTransport, disposeTransports: true);
 
     Assert.ThrowsAsync<InvalidOperationException>(
-      async () => await Core.Api.Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false)
+      async () => await Core.Api.Operations.Receive(id, null, myLocalTransport)
     );
   }
 
@@ -242,12 +243,12 @@ public sealed class SendReceiveLocal : IDisposable
     var @base = new Base();
     @base["test"] = "the best";
 
-    var myLocalTransport = new SQLiteTransport();
-    var id = await Core.Api.Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
-    await Core.Api.Operations.Send(@base, myLocalTransport, false).ConfigureAwait(false);
+    SQLiteTransport myLocalTransport = new();
+    var id = await Core.Api.Operations.Send(@base, myLocalTransport, false);
+    await Core.Api.Operations.Send(@base, myLocalTransport, false);
 
-    _ = await Core.Api.Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
-    await Core.Api.Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
+    _ = await Core.Api.Operations.Receive(id, null, myLocalTransport);
+    await Core.Api.Operations.Receive(id, null, myLocalTransport);
   }
 
   //[Test]
