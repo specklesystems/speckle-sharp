@@ -174,9 +174,9 @@ public partial class ArchicadBinding : ConnectorBindings
         }
       }
     }
-    catch (SpeckleException)
+    catch (SpeckleException ex)
     {
-      SpeckleLog.Logger.Error("Conversion to native failed.");
+      SpeckleLog.Logger.Error(ex, "Conversion to native failed.");
       throw;
     }
     catch (OperationCanceledException)
