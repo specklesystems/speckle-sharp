@@ -3,60 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Threading;
-using Microsoft.CSharp.RuntimeBinder;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
-using Binder = Microsoft.CSharp.RuntimeBinder.Binder;
 
-namespace Speckle.Core.Serialisation;
+namespace Speckle.Core.Serialisation.SerializationUtilities;
 
-internal static class CallSiteCache
-{
-  // Adapted from the answer to
-  // https://stackoverflow.com/questions/12057516/c-sharp-dynamicobject-dynamic-properties
-  // by jbtule, https://stackoverflow.com/users/637783/jbtule
-  // And also
-  // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
-  // by Marc Gravell, https://github.com/mgravell
-  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object?, object>>> s_setters = new();
-
-  public static void SetValue(string propertyName, object target, object? value)
-  {
-    lock (s_setters)
-    {
-      CallSite<Func<CallSite, object, object?, object>>? site;
-
-      lock (s_setters)
-      {
-        if (!s_setters.TryGetValue(propertyName, out site))
-        {
-          var binder = Binder.SetMember(
-            CSharpBinderFlags.None,
-            propertyName,
-            typeof(CallSiteCache),
-            new List<CSharpArgumentInfo>
-            {
-              CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
-              CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-            }
-          );
-          s_setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
-        }
-      }
-
-      site.Target.Invoke(site, target, value);
-    }
-  }
-}
-
-internal static class SerializationUtilities
+internal static class BaseObjectSerializationUtilities
 {
   #region Getting Types
 

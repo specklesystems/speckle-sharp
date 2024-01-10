@@ -7,6 +7,7 @@ using System.Threading;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation.SerializationUtilities;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -103,7 +104,7 @@ public class BaseObjectSerializer : JsonConverter
           return null; // Check for cancellation
         }
 
-        var whatever = SerializationUtilities.HandleValue(val, serializer, CancellationToken);
+        var whatever = BaseObjectSerializationUtilities.HandleValue(val, serializer, CancellationToken);
         list.Add(whatever as Base);
       }
       return list;
@@ -135,7 +136,7 @@ public class BaseObjectSerializer : JsonConverter
           return null; // Check for cancellation
         }
 
-        dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
+        dict[val.Key] = BaseObjectSerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
       }
       return dict;
     }
@@ -168,7 +169,7 @@ public class BaseObjectSerializer : JsonConverter
       }
     }
 
-    var type = SerializationUtilities.GetType(discriminator);
+    var type = BaseObjectSerializationUtilities.GetType(discriminator);
     var obj = existingValue ?? Activator.CreateInstance(type);
 
     var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(type);
@@ -204,7 +205,7 @@ public class BaseObjectSerializer : JsonConverter
       {
         if (type == typeof(Abstract) && property.PropertyName == "base")
         {
-          var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(
+          var propertyValue = BaseObjectSerializationUtilities.HandleAbstractOriginalValue(
             jProperty.Value,
             ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string
           );
@@ -212,7 +213,12 @@ public class BaseObjectSerializer : JsonConverter
         }
         else
         {
-          var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
+          var val = BaseObjectSerializationUtilities.HandleValue(
+            jProperty.Value,
+            serializer,
+            CancellationToken,
+            property
+          );
           property.ValueProvider.SetValue(obj, val);
         }
       }
@@ -222,7 +228,7 @@ public class BaseObjectSerializer : JsonConverter
         CallSiteCache.SetValue(
           jProperty.Name,
           obj,
-          SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
+          BaseObjectSerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
         );
       }
     }

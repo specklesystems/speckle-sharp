@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation.SerializationUtilities;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -335,14 +336,14 @@ public sealed class BaseObjectDeserializerV2
   private Base Dict2Base(Dictionary<string, object?> dictObj)
   {
     string typeName = (string)dictObj[TYPE_DISCRIMINATOR]!;
-    Type type = SerializationUtilities.GetType(typeName);
+    Type type = BaseObjectSerializationUtilities.GetType(typeName);
     Base baseObj = (Base)Activator.CreateInstance(type);
 
     dictObj.Remove(TYPE_DISCRIMINATOR);
     dictObj.Remove("__closure");
 
-    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypeProperties(typeName);
-    List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
+    Dictionary<string, PropertyInfo> staticProperties = BaseObjectSerializationUtilities.GetTypeProperties(typeName);
+    List<MethodInfo> onDeserializedCallbacks = BaseObjectSerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
     foreach (var entry in dictObj)
     {

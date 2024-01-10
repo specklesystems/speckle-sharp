@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
+using Speckle.Core.Serialisation.SerializationUtilities;
 
 namespace Speckle.Core.Transports.ServerUtils;
 

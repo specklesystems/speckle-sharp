@@ -289,31 +289,19 @@ public class Base : DynamicBase
 
   #region Obsolete
   /// <inheritdoc cref="GetId(bool)"/>
-  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)", true)]
   public string GetId(SerializerVersion serializerVersion)
   {
     return GetId(false, serializerVersion);
   }
 
   /// <inheritdoc cref="GetId(bool)"/>
-  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)", true)]
   public string GetId(bool decompose, SerializerVersion serializerVersion)
   {
-    if (serializerVersion == SerializerVersion.V1)
-    {
-      var (s, t) = Operations.GetSerializerInstance();
-      if (decompose)
-      {
-        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
-      }
-
-      var obj = JsonConvert.SerializeObject(this, t);
-      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
-    }
-    else
-    {
-      return GetId(decompose);
-    }
+    throw new NotImplementedException(
+      "Overload has been deprecated along with SerializerV1, use other overload (uses SerializerV2)"
+    );
   }
 
   #endregion
