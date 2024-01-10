@@ -28,10 +28,6 @@ internal class AsyncCommandProcessor
     {
       return Task.Run(command.Execute, token);
     }
-    catch (ArgumentNullException)
-    {
-      return null;
-    }
     catch (Exception ex) when (ex is TaskCanceledException or ObjectDisposedException)
     {
       SpeckleLog.Logger.Error(ex, "Could not communicate with Archicad.");
