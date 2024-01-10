@@ -1,6 +1,8 @@
 #nullable enable
 using NUnit.Framework;
+using Speckle.Core.Api;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Tests.Unit.Transports;
 
@@ -143,5 +145,39 @@ public abstract class TransportTests
       Sut.SaveObject("abcdef", "fake payload data");
       await Sut.WriteComplete();
     });
+  }
+
+  [Test]
+  public async Task CopyObjectAndChildren()
+  {
+    //Assemble
+    const int TEST_DATA_COUNT = 100;
+    List<(string id, string data)> testData = Enumerable
+      .Range(0, TEST_DATA_COUNT)
+      .Select(_ => (Guid.NewGuid().ToString(), Guid.NewGuid().ToString()))
+      .ToList();
+
+    foreach (var x in testData)
+    {
+      Sut.SaveObject(x.id, x.data);
+    }
+
+    var parent = JsonConvert.SerializeObject(
+      new TransportHelpers.Placeholder() { __closure = testData.Select(x => x.id).ToDictionary(x => x, _ => 1) }
+    );
+    Sut.SaveObject("root", parent);
+
+    await Sut.WriteComplete().ConfigureAwait(false);
+
+    // Act
+    MemoryTransport destination = new();
+    await Sut.CopyObjectAndChildren("root", destination);
+
+    //Assert
+    foreach (var (expectedId, expectedData) in testData)
+    {
+      var actual = destination.GetObject(expectedId);
+      Assert.That(actual, Is.EqualTo(expectedData));
+    }
   }
 }

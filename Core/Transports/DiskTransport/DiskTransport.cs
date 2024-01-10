@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
-using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Transports;
 
@@ -133,41 +131,14 @@ public class DiskTransport : ICloneable, ITransport
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    CancellationToken.ThrowIfCancellationRequested();
-
-    var parent = GetObject(id);
-    if (parent is null)
-    {
-      throw new InvalidOperationException($"Requested id {id} was not found within this transport {TransportName}");
-    }
-
-    targetTransport.SaveObject(id, parent);
-
-    var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
-
-    if (partial?.__closure is null || partial.__closure.Count == 0)
-    {
-      return Task.FromResult(parent);
-    }
-
-    int i = 0;
-    foreach (var kvp in partial.__closure)
-    {
-      CancellationToken.ThrowIfCancellationRequested();
-
-      var child = GetObject(kvp.Key);
-      if (child is null)
-      {
-        throw new InvalidOperationException(
-          $"Closure id {kvp.Key} was not found within this transport {TransportName}"
-        );
-      }
-
-      targetTransport.SaveObject(kvp.Key, child);
-      OnProgressAction?.Invoke($"{TransportName}", i++);
-    }
-
-    return Task.FromResult(parent);
+    string res = TransportHelpers.CopyObjectAndChildrenSync(
+      id,
+      this,
+      targetTransport,
+      onTotalChildrenCountKnown,
+      CancellationToken
+    );
+    return Task.FromResult(res);
   }
 
   public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
@@ -184,11 +155,5 @@ public class DiskTransport : ICloneable, ITransport
   public override string ToString()
   {
     return $"Disk Transport @{RootPath}";
-  }
-
-  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Deserialization target for DTO")]
-  private sealed class Placeholder
-  {
-    public Dictionary<string, int> __closure { get; set; } = new();
   }
 }

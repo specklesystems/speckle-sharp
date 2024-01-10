@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Speckle.Core.Serialisation;
+namespace Speckle.Core.Serialisation.SerializationUtilities;
 
 internal readonly struct OperationTask<T>
   where T : struct

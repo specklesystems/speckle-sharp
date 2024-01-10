@@ -30,12 +30,7 @@ public class ReceiveFromSQLite
   public async Task<Base?> Receive_FromSQLite()
   {
     Base? b = await Speckle.Core.Api.Operations
-      .Receive(
-        _dataSource.ObjectId,
-        null,
-        _dataSource.Transport,
-        onErrorAction: (message, ex) => throw new Exception(message, ex)
-      )
+      .Receive(_dataSource.ObjectId, null, _dataSource.Transport)
       .ConfigureAwait(false);
 
     Trace.Assert(b is not null);
