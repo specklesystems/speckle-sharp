@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -87,7 +88,7 @@ public class SendLocalWorker : WorkerInstance
       ObjectToSend["@data"] = converted;
       sentObjectId = Operations.Send(ObjectToSend).Result;
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       Console.WriteLine(e);
       RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));

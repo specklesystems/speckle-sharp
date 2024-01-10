@@ -8,6 +8,7 @@ using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Conversion;
@@ -102,7 +103,7 @@ public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<stri
       {
         return Operations.Serialize(item.Value);
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
         return null;

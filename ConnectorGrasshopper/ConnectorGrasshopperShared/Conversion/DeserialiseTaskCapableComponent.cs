@@ -8,6 +8,7 @@ using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
@@ -99,11 +100,12 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
     {
       return Operations.Deserialize(item);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "Failed to deserialize object");
       AddRuntimeMessage(
         GH_RuntimeMessageLevel.Warning,
-        $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.ToFormattedString()}"
+        $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {ex.ToFormattedString()}"
       );
       return null;
     }

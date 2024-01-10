@@ -13,6 +13,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -233,20 +234,19 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
       var task = Task.Run(
         async () =>
         {
-          var acc = await StreamWrapper?.GetAccount();
-          var client = new Client(acc);
-          var remoteTransport = new ServerTransport(acc, StreamWrapper?.StreamId);
-          remoteTransport.TransportName = "R";
+          if (StreamWrapper == null)
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input cannot be null");
+            return null;
+          }
 
-          var myCommit = await ReceiveComponentWorker.GetCommit(
-            StreamWrapper,
-            client,
-            (level, message) =>
-            {
-              AddRuntimeMessage(level, message);
-            },
-            CancelToken
-          );
+          var acc = await StreamWrapper.GetAccount().ConfigureAwait(false);
+          var client = new Client(acc);
+          var remoteTransport = new ServerTransport(acc, StreamWrapper.StreamId) { TransportName = "R" };
+
+          var myCommit = await ReceiveComponentWorker
+            .GetCommit(StreamWrapper, client, AddRuntimeMessage, CancelToken)
+            .ConfigureAwait(false);
 
           if (myCommit == null)
           {
@@ -266,9 +266,9 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
             }
           );
 
-          var TotalObjectCount = 1;
+          var totalObjectCount = 1;
 
-          var ReceivedObject = Operations
+          var receivedObject = Operations
             .Receive(
               myCommit.referencedObject,
               CancelToken,
@@ -276,29 +276,31 @@ public class SyncReceiveComponent : SelectKitTaskCapableComponentBase<Base>
               new SQLiteTransport { TransportName = "LC" }, // Local cache!
               null,
               null,
-              count => TotalObjectCount = count,
+              count => totalObjectCount = count,
               true
             )
             .Result;
 
           try
           {
-            await client.CommitReceived(
-              new CommitReceivedInput
-              {
-                streamId = StreamWrapper.StreamId,
-                commitId = myCommit.id,
-                message = myCommit.message,
-                sourceApplication = Utilities.GetVersionedAppName()
-              }
-            );
+            await client
+              .CommitReceived(
+                new CommitReceivedInput
+                {
+                  streamId = StreamWrapper.StreamId,
+                  commitId = myCommit.id,
+                  message = myCommit.message,
+                  sourceApplication = Utilities.GetVersionedAppName()
+                }
+              )
+              .ConfigureAwait(false);
           }
-          catch
+          catch (Exception e) when (!e.IsFatal())
           {
-            // Do nothing!
+            SpeckleLog.Logger.Error(e, "CommitReceived failed after send.");
           }
 
-          return ReceivedObject;
+          return receivedObject;
         },
         CancelToken
       );

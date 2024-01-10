@@ -14,6 +14,7 @@ using Rhino;
 using Rhino.Display;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Extras;
@@ -435,9 +436,9 @@ public static class Utilities
           var converted = converter.ConvertToNative(@base);
           return WrapInGhType(converted);
         }
-        catch (Exception e)
+        catch (SpeckleException e)
         {
-          converter.Report.ConversionErrors.Add(new Exception($"Could not convert {@base}", e));
+          converter.Report.ConversionErrors.Add(new SpeckleException($"Could not convert {@base}", e));
           return null;
         }
       }

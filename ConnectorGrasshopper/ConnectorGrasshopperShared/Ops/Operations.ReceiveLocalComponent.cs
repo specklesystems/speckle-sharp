@@ -108,7 +108,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
       Converter.SetContextDocument(Loader.GetCurrentDocument());
       foundKit = true;
     }
-    catch
+    catch (Exception e) when (!e.IsFatal())
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       foundKit = false;
@@ -158,7 +158,7 @@ public class ReceiveLocalWorker : WorkerInstance
       {
         @base = Operations.Receive(localDataId, disposeTransports: true).Result;
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Failed to receive local data."));
         Done();
@@ -167,7 +167,7 @@ public class ReceiveLocalWorker : WorkerInstance
 
       data = Utilities.ConvertToTree(Converter, @base, Parent.AddRuntimeMessage);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

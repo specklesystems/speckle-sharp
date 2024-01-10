@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -536,10 +537,10 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
   {
     try
     {
-      var hasInternet = await Http.UserHasInternet();
+      var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
       if (!hasInternet)
       {
-        throw new Exception("You are not connected to the internet.");
+        throw new HttpRequestException("You are not connected to the internet.");
       }
 
       Account account;
@@ -547,7 +548,7 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       {
         account = wrapper?.GetAccount().Result;
       }
-      catch (Exception e)
+      catch (SpeckleException e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
         account = new Account
@@ -564,8 +565,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
       ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
       ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
+      SpeckleLog.Logger.Error(e, "Failed to reset API client");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
     }
   }
@@ -762,7 +764,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
       });
       t.Wait();
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
@@ -795,7 +797,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
 
           return myCommit;
         }
-        catch (Exception e)
+        catch (Exception e) when (!e.IsFatal())
         {
           OnFail(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
           return null;

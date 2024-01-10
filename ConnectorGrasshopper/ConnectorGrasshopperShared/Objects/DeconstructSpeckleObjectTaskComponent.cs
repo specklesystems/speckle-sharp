@@ -329,7 +329,7 @@ public class DeconstructSpeckleObjectTaskComponent
         }
       }
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to fetch outputs:\n\t{e.ToFormattedString()}");
     }
@@ -379,7 +379,7 @@ public class DeconstructSpeckleObjectTaskComponent
     {
       return CreateOutputDictionary(@base);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
