@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
@@ -48,7 +49,7 @@ public partial class ConverterRevit
     var activeViewPhaseName = activeViewPhase?.Name;
     var targetPhaseName = targetPhase?.Name;
 
-    if (activeViewPhase.Id != targetPhase.Id)
+    if (targetPhase != null && activeViewPhase.Id != targetPhase.Id)
     {
       appObj.Update(
         logItem: $"Space Phase {targetPhase.Name} not selected in the Active View.",
@@ -133,9 +134,8 @@ public partial class ConverterRevit
     }
 
     TrySetParam(revitSpace, BuiltInParameter.ROOM_UPPER_LEVEL, upperLimit);
-
-    revitSpace.LimitOffset = ScaleToNative(speckleSpace.topOffset, speckleSpace.units);
-    revitSpace.BaseOffset = ScaleToNative(speckleSpace.baseOffset, speckleSpace.units);
+    TrySetParam(revitSpace, BuiltInParameter.ROOM_UPPER_OFFSET, ScaleToNative(speckleSpace.topOffset, speckleSpace.units));
+    TrySetParam(revitSpace, BuiltInParameter.ROOM_LOWER_OFFSET, ScaleToNative(speckleSpace.baseOffset, speckleSpace.units));
   }
 
   /// <summary>
