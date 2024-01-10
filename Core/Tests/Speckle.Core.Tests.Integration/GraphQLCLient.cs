@@ -4,7 +4,7 @@ using Speckle.Core.Credentials;
 
 namespace Speckle.Core.Tests.Integration;
 
-public class GraphQLClientTests
+public class GraphQLClientTests : IDisposable
 {
   private Account _account;
   private Client _client;
@@ -17,7 +17,7 @@ public class GraphQLClientTests
   }
 
   [Test]
-  public async Task ThrowsForbiddenException()
+  public void ThrowsForbiddenException()
   {
     Assert.ThrowsAsync<SpeckleGraphQLForbiddenException<Dictionary<string, object>>>(
       async () =>
@@ -36,5 +36,10 @@ public class GraphQLClientTests
           )
           .ConfigureAwait(false)
     );
+  }
+
+  public void Dispose()
+  {
+    _client?.Dispose();
   }
 }

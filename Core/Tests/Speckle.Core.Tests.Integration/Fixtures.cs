@@ -48,7 +48,7 @@ public static class Fixtures
           new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
         )
         .ConfigureAwait(false);
-      redirectUrl = response.Headers.Location.AbsoluteUri;
+      redirectUrl = response.Headers.Location!.AbsoluteUri;
     }
     catch (Exception e)
     {
@@ -79,7 +79,7 @@ public static class Fixtures
 
     var acc = new Account
     {
-      token = deserialised["token"],
+      token = deserialised["token"]!,
       userInfo = new UserInfo
       {
         id = user["name"],
@@ -108,12 +108,12 @@ public static class Fixtures
 
   public static Base GenerateNestedObject()
   {
-    var @base = new Base();
-    @base["foo"] = "foo";
-    @base["bar"] = "bar";
-    @base["@baz"] = new Base();
-    ((Base)@base["@baz"])["mux"] = "mux";
-    ((Base)@base["@baz"])["qux"] = "qux";
+    var @base = new Base
+    {
+      ["foo"] = "foo",
+      ["bar"] = "bar",
+      ["@baz"] = new Base() { ["mux"] = "mux", ["qux"] = "qux" }
+    };
 
     return @base;
   }

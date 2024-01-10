@@ -7,29 +7,29 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Integration.Subscriptions;
 
-public class Commits
+public class Commits : IDisposable
 {
-  public Client client;
+  private Client _client;
 
-  private CommitInfo CommitCreatedInfo;
-  private CommitInfo CommitDeletedInfo;
-  private string commitId;
-  private CommitInfo CommitUpdatedInfo;
-  private ServerTransport myServerTransport;
-  private string streamId;
-  public Account testUserAccount;
+  private CommitInfo _commitCreatedInfo;
+  private CommitInfo _commitDeletedInfo;
+  private string _commitId;
+  private CommitInfo _commitUpdatedInfo;
+  private ServerTransport _myServerTransport;
+  private string _streamId;
+  private Account _testUserAccount;
 
   [OneTimeSetUp]
   public async Task Setup()
   {
-    testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
-    client = new Client(testUserAccount);
+    _testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
+    _client = new Client(_testUserAccount);
   }
 
   private void InitServerTransport()
   {
-    myServerTransport = new ServerTransport(testUserAccount, streamId);
-    myServerTransport.Api.CompressPayloads = false;
+    _myServerTransport = new ServerTransport(_testUserAccount, _streamId);
+    _myServerTransport.Api.CompressPayloads = false;
   }
 
   [Test, Order(0)]
@@ -38,8 +38,8 @@ public class Commits
   {
     var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
-    streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
-    Assert.NotNull(streamId);
+    _streamId = await _client.StreamCreate(streamInput).ConfigureAwait(false);
+    Assert.NotNull(_streamId);
 
     InitServerTransport();
 
@@ -47,14 +47,14 @@ public class Commits
     {
       description = "Just testing branch create...",
       name = "awesome-features",
-      streamId = streamId
+      streamId = _streamId
     };
 
-    var branchId = await client.BranchCreate(branchInput).ConfigureAwait(false);
+    var branchId = await _client.BranchCreate(branchInput).ConfigureAwait(false);
     Assert.NotNull(branchId);
 
-    client.SubscribeCommitCreated(streamId);
-    client.OnCommitCreated += Client_OnCommitCreated;
+    _client.SubscribeCommitCreated(_streamId);
+    _client.OnCommitCreated += Client_OnCommitCreated;
 
     Thread.Sleep(1000); //let server catch-up
 
@@ -67,11 +67,11 @@ public class Commits
 
     myObject["Points"] = ptsList;
 
-    var objectId = await Operations.Send(myObject, myServerTransport, false).ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, _myServerTransport, false).ConfigureAwait(false);
 
     var commitInput = new CommitCreateInput
     {
-      streamId = streamId,
+      streamId = _streamId,
       branchName = "awesome-features",
       objectId = objectId,
       message = "sending some test points",
@@ -79,81 +79,87 @@ public class Commits
       totalChildrenCount = 20
     };
 
-    commitId = await client.CommitCreate(commitInput).ConfigureAwait(false);
-    Assert.NotNull(commitId);
+    _commitId = await _client.CommitCreate(commitInput).ConfigureAwait(false);
+    Assert.NotNull(_commitId);
 
     await Task.Run(() =>
       {
         Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(CommitCreatedInfo);
-        Assert.That(CommitCreatedInfo.message, Is.EqualTo(commitInput.message));
+        Assert.NotNull(_commitCreatedInfo);
+        Assert.That(_commitCreatedInfo.message, Is.EqualTo(commitInput.message));
       })
       .ConfigureAwait(false);
   }
 
   private void Client_OnCommitCreated(object sender, CommitInfo e)
   {
-    CommitCreatedInfo = e;
+    _commitCreatedInfo = e;
   }
 
   [Test, Order(1)]
   //[Ignore("Ironically, it fails.")]
   public async Task SubscribeCommitUpdated()
   {
-    client.SubscribeCommitUpdated(streamId);
-    client.OnCommitUpdated += Client_OnCommitUpdated;
+    _client.SubscribeCommitUpdated(_streamId);
+    _client.OnCommitUpdated += Client_OnCommitUpdated;
 
     Thread.Sleep(1000); //let server catch-up
 
     var commitInput = new CommitUpdateInput
     {
       message = "Just testing commit update...",
-      streamId = streamId,
-      id = commitId
+      streamId = _streamId,
+      id = _commitId
     };
 
-    var res = await client.CommitUpdate(commitInput).ConfigureAwait(false);
+    var res = await _client.CommitUpdate(commitInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
       {
         Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(CommitUpdatedInfo);
-        Assert.That(CommitUpdatedInfo.message, Is.EqualTo(commitInput.message));
+        Assert.NotNull(_commitUpdatedInfo);
+        Assert.That(_commitUpdatedInfo.message, Is.EqualTo(commitInput.message));
       })
       .ConfigureAwait(false);
   }
 
   private void Client_OnCommitUpdated(object sender, CommitInfo e)
   {
-    CommitUpdatedInfo = e;
+    _commitUpdatedInfo = e;
   }
 
   [Test, Order(3)]
   //[Ignore("Ironically, it fails.")]
   public async Task SubscribeCommitDeleted()
   {
-    client.SubscribeCommitDeleted(streamId);
-    client.OnCommitDeleted += Client_OnCommitDeleted;
+    _client.SubscribeCommitDeleted(_streamId);
+    _client.OnCommitDeleted += Client_OnCommitDeleted;
 
     Thread.Sleep(1000); //let server catch-up
 
-    var commitInput = new CommitDeleteInput { streamId = streamId, id = commitId };
+    var commitInput = new CommitDeleteInput { streamId = _streamId, id = _commitId };
 
-    var res = await client.CommitDelete(commitInput).ConfigureAwait(false);
+    var res = await _client.CommitDelete(commitInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
       {
         Thread.Sleep(2000); //let client catch-up
-        Assert.NotNull(CommitDeletedInfo);
-        Assert.That(CommitDeletedInfo.id, Is.EqualTo(commitId));
+        Assert.NotNull(_commitDeletedInfo);
+        Assert.That(_commitDeletedInfo.id, Is.EqualTo(_commitId));
       })
       .ConfigureAwait(false);
   }
 
   private void Client_OnCommitDeleted(object sender, CommitInfo e)
   {
-    CommitDeletedInfo = e;
+    _commitDeletedInfo = e;
+  }
+
+  public void Dispose()
+  {
+    _client?.Dispose();
+    _myServerTransport?.Dispose();
   }
 }

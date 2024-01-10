@@ -7,13 +7,13 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Integration;
 
-public class ServerTransportTests
+public class ServerTransportTests : IDisposable
 {
   private string _basePath;
-  public Account account;
-  public Client client;
-  public string streamId;
-  public ServerTransport transport;
+  private Account _account;
+  private Client _client;
+  private string _streamId;
+  private ServerTransport _transport;
 
   [OneTimeSetUp]
   public async Task InitialSetup()
@@ -24,9 +24,9 @@ public class ServerTransportTests
     Directory.CreateDirectory(_basePath);
     SpecklePathProvider.OverrideApplicationDataPath(_basePath);
 
-    account = await Fixtures.SeedUser().ConfigureAwait(false);
-    client = new Client(account);
-    streamId = client.StreamCreate(new StreamCreateInput { description = "Flobber", name = "Blobber" }).Result;
+    _account = await Fixtures.SeedUser().ConfigureAwait(false);
+    _client = new Client(_account);
+    _streamId = _client.StreamCreate(new StreamCreateInput { description = "Flobber", name = "Blobber" }).Result;
   }
 
   [SetUp]
@@ -35,7 +35,7 @@ public class ServerTransportTests
     CleanData();
     // need to recreate the server transport object for each test
     // to make sure all folders are properly initialized
-    transport = new ServerTransport(account, streamId);
+    _transport = new ServerTransport(_account, _streamId);
   }
 
   [TearDown]
@@ -57,7 +57,7 @@ public class ServerTransportTests
   {
     var myObject = Fixtures.GenerateNestedObject();
 
-    var objectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
+    var objectId = await Operations.Send(myObject, _transport, false).ConfigureAwait(false);
 
     var test = objectId;
     Assert.IsNotNull(test);
@@ -69,15 +69,15 @@ public class ServerTransportTests
     var myObject = Fixtures.GenerateSimpleObject();
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
-    var sentObjectId = await Operations.Send(myObject, transport, false).ConfigureAwait(false);
+    var sentObjectId = await Operations.Send(myObject, _transport, false).ConfigureAwait(false);
 
     // NOTE: used to debug diffing
     // await Operations.Send(myObject, new List<ITransport> { transport });
 
-    var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
+    var receivedObject = await Operations.Receive(sentObjectId, _transport).ConfigureAwait(false);
 
     var allFiles = Directory
-      .GetFiles(transport.BlobStorageFolder)
+      .GetFiles(_transport.BlobStorageFolder)
       .Select(fp => fp.Split(Path.DirectorySeparatorChar).Last())
       .ToList();
     var blobPaths = allFiles
@@ -87,13 +87,13 @@ public class ServerTransportTests
     // Check that there are three downloaded blobs!
     Assert.That(blobPaths.Count, Is.EqualTo(3));
 
-    var blobs = (receivedObject["blobs"] as IList<object>).Cast<Blob>().ToList();
+    var blobs = ((IList<object>)receivedObject["blobs"]!).Cast<Blob>().ToList();
     // Check that we have three blobs
     Assert.IsTrue(blobs.Count == 3);
     // Check that received blobs point to local path (where they were received)
-    Assert.IsTrue(blobs[0].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[1].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[2].filePath.Contains(transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[0].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[1].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[2].filePath.Contains(_transport.BlobStorageFolder));
   }
 
   [Test]
@@ -104,13 +104,13 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport })
+      .Send(myObject, new List<ITransport> { _transport, memTransport })
       .ConfigureAwait(false);
 
-    var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
+    var receivedObject = await Operations.Receive(sentObjectId, _transport).ConfigureAwait(false);
 
     var allFiles = Directory
-      .GetFiles(transport.BlobStorageFolder)
+      .GetFiles(_transport.BlobStorageFolder)
       .Select(fp => fp.Split(Path.DirectorySeparatorChar).Last())
       .ToList();
     var blobPaths = allFiles
@@ -120,13 +120,13 @@ public class ServerTransportTests
     // Check that there are three downloaded blobs!
     Assert.That(blobPaths.Count, Is.EqualTo(3));
 
-    var blobs = (receivedObject["blobs"] as IList<object>).Cast<Blob>().ToList();
+    var blobs = ((IList<object>)receivedObject["blobs"]!).Cast<Blob>().ToList();
     // Check that we have three blobs
     Assert.IsTrue(blobs.Count == 3);
     // Check that received blobs point to local path (where they were received)
-    Assert.IsTrue(blobs[0].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[1].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[2].filePath.Contains(transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[0].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[1].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[2].filePath.Contains(_transport.BlobStorageFolder));
   }
 
   [Test]
@@ -137,15 +137,15 @@ public class ServerTransportTests
 
     var memTransport = new MemoryTransport();
     var sentObjectId = await Operations
-      .Send(myObject, new List<ITransport> { transport, memTransport })
+      .Send(myObject, new List<ITransport> { _transport, memTransport })
       .ConfigureAwait(false);
 
     memTransport = new MemoryTransport();
-    Base? receivedObject = await Operations.Receive(sentObjectId, transport, memTransport).ConfigureAwait(false);
+    Base receivedObject = await Operations.Receive(sentObjectId, _transport, memTransport).ConfigureAwait(false);
     Assert.That(receivedObject, Is.Not.Null);
 
     var allFiles = Directory
-      .GetFiles(transport.BlobStorageFolder)
+      .GetFiles(_transport.BlobStorageFolder)
       .Select(fp => fp.Split(Path.DirectorySeparatorChar).Last())
       .ToList();
     var blobPaths = allFiles
@@ -159,8 +159,14 @@ public class ServerTransportTests
     // Check that we have three blobs
     Assert.IsTrue(blobs.Count == 3);
     // Check that received blobs point to local path (where they were received)
-    Assert.IsTrue(blobs[0].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[1].filePath.Contains(transport.BlobStorageFolder));
-    Assert.IsTrue(blobs[2].filePath.Contains(transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[0].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[1].filePath.Contains(_transport.BlobStorageFolder));
+    Assert.IsTrue(blobs[2].filePath.Contains(_transport.BlobStorageFolder));
+  }
+
+  public void Dispose()
+  {
+    _client?.Dispose();
+    _transport?.Dispose();
   }
 }
