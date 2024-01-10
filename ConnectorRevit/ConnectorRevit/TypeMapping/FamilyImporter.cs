@@ -205,11 +205,10 @@ internal sealed class FamilyImporter
       AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
 
       // delete the newly created xml file
-      try
+      if (System.IO.File.Exists(xmlPath))
       {
         System.IO.File.Delete(xmlPath);
       }
-      catch (Exception ex) { }
     }
 
     //close current dialog body

@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
-using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 
-namespace DiskTransport;
+namespace Speckle.Core.Transports;
 
 /// <summary>
 /// Writes speckle objects to disk.
@@ -18,10 +18,7 @@ public class DiskTransport : ICloneable, ITransport
 {
   public DiskTransport(string? basePath = null)
   {
-    if (basePath == null)
-    {
-      basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
-    }
+    basePath ??= Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
 
     RootPath = Path.Combine(basePath);
 
@@ -125,9 +122,12 @@ public class DiskTransport : ICloneable, ITransport
     SaveObject(id, serializedObject);
   }
 
-  public async Task WriteComplete() { }
+  public Task WriteComplete()
+  {
+    return Task.CompletedTask;
+  }
 
-  public async Task<string> CopyObjectAndChildren(
+  public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
     Action<int>? onTotalChildrenCountKnown = null
@@ -147,7 +147,7 @@ public class DiskTransport : ICloneable, ITransport
 
     if (partial?.__closure is null || partial.__closure.Count == 0)
     {
-      return parent;
+      return Task.FromResult(parent);
     }
 
     int i = 0;
@@ -167,10 +167,10 @@ public class DiskTransport : ICloneable, ITransport
       OnProgressAction?.Invoke($"{TransportName}", i++);
     }
 
-    return parent;
+    return Task.FromResult(parent);
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new();
     foreach (string objectId in objectIds)
@@ -178,7 +178,7 @@ public class DiskTransport : ICloneable, ITransport
       var filePath = Path.Combine(RootPath, objectId);
       ret[objectId] = File.Exists(filePath);
     }
-    return ret;
+    return Task.FromResult(ret);
   }
 
   public override string ToString()
@@ -186,6 +186,7 @@ public class DiskTransport : ICloneable, ITransport
     return $"Disk Transport @{RootPath}";
   }
 
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Deserialization target for DTO")]
   private sealed class Placeholder
   {
     public Dictionary<string, int> __closure { get; set; } = new();

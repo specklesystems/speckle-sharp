@@ -1,7 +1,7 @@
-#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -10,7 +10,7 @@ namespace Speckle.Core.Models;
 /// <summary>
 /// Abstract Builder class for a root commit <see cref="Base"/> object.
 /// </summary>
-/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="_parentInfos"/></typeparam>
+/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="_nestingInstructions"/></typeparam>
 /// <remarks>
 /// It is designed to be inherited by a host app specific implementation,
 /// to give connectors flexibility in constructing their objects.
@@ -34,7 +34,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   }
 
   /// <summary>
-  /// Given the parameters, builds connector specific <see cref="_parentInfos"/>
+  /// Given the parameters, builds connector specific <see cref="_nestingInstructions"/>
   /// to be applied when <see cref="BuildCommitObject"/> is called.
   /// </summary>
   /// <param name="conversionResult"></param>
@@ -61,11 +61,11 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
-  /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
-  /// when <see cref="CommitObjectBuilder"/> is called
+  /// <paramref name="nestingInstructionsList"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
+  /// when <see cref="BuildCommitObject"/> is called
   /// </summary>
   /// <param name="conversionResult">The object to be nested</param>
-  /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
+  /// <param name="nestingInstructionsList">Information about how the object ideally should be nested, in order of priority</param>
   protected void SetRelationship(Base conversionResult, IList<NestingInstructions> nestingInstructionsList)
   {
     string? appId = conversionResult.applicationId;
@@ -92,7 +92,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   }
 
   /// <summary>
-  /// For each object in <paramref name="ToAdd"/>
+  /// For each object in <paramref name="toAdd"/>
   /// <inheritdoc cref="ApplyRelationship"/>
   /// </summary>
   /// <param name="toAdd"></param>
@@ -105,7 +105,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       {
         ApplyRelationship(c, rootCommitObject);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // This should never happen, we should be ensuring that at least one of the parents is valid.
         SpeckleLog.Logger.Fatal(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
@@ -115,18 +115,18 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
   /// <summary>
   /// Will attempt to find and nest the <paramref name="current"/> object
-  /// under the first valid parent according to the <see cref="_parentInfos"/> <see cref="Converted"/> dictionary.
+  /// under the first valid parent according to the <see cref="_nestingInstructions"/> <see cref="Converted"/> dictionary.
   /// </summary>
   /// <remarks>
   /// A parent is considered valid if
   /// 1. Is non null
   /// 2. Is in the <see cref="Converted"/> dictionary
-  /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_parentInfos"/> item
+  /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_nestingInstructions"/> item
   /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
-  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="_parentInfos"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <parameref cref="current"/> given <see cref="_nestingInstructions"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
     var instructions = _nestingInstructions[current];
@@ -157,7 +157,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
         instruction.Nest(parent, current);
         return;
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
         SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current.GetType());
@@ -186,8 +186,10 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   }
 
   [Obsolete("Renamed to " + nameof(ROOT))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles")]
   protected const string Root = ROOT;
 
   [Obsolete("Renamed to " + nameof(Converted))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles")]
   protected IDictionary<string, Base> converted => Converted;
 }

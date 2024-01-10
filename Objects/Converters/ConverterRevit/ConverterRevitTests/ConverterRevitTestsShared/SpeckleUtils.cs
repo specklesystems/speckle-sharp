@@ -17,7 +17,7 @@ internal static class SpeckleUtils
 {
   public static SemaphoreSlim Throttler = new(1, 1);
 
-  internal async static Task<string> RunInTransaction(
+  internal static async Task<string> RunInTransaction(
     Action action,
     DB.Document doc,
     ConverterRevit converter = null,
@@ -37,6 +37,7 @@ internal static class SpeckleUtils
         converter.SetContextDocument(transactionManager);
       }
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         action.Invoke();
@@ -46,6 +47,7 @@ internal static class SpeckleUtils
       {
         tcs.TrySetException(exception);
       }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       tcs.TrySetResult("");
     });
@@ -101,7 +103,7 @@ internal static class SpeckleUtils
             .Wait();
         }
         // element already deleted, don't worry about it
-        catch { }
+        catch (Autodesk.Revit.Exceptions.ArgumentException) { }
         break;
       default:
         throw new Exception("It's not an element!?!?!");
@@ -148,7 +150,7 @@ internal static class SpeckleUtils
           {
             stringAssertionMethod(param.AsValueString(), baseString);
           }
-          catch (Exception ex)
+          catch (Autodesk.Revit.Exceptions.ApplicationException)
           {
             stringAssertionMethod(param.AsString(), baseString);
           }

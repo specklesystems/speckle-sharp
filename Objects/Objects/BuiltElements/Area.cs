@@ -10,9 +10,8 @@ public class Area : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   public Area() { }
 
   /// <summary>
-  /// SchemaBuilder constructor for a Room
+  /// SchemaBuilder constructor for an Area
   /// </summary>
-  /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
   [SchemaInfo("Area", "Creates a Speckle area", "BIM", "Other")]
   public Area(string name, string number, Level level, [SchemaMainParam] Point center)
   {

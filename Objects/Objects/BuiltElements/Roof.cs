@@ -14,10 +14,10 @@ namespace Objects.BuiltElements
     public Roof() { }
 
     [SchemaDeprecated, SchemaInfo("Roof", "Creates a Speckle roof", "BIM", "Architecture")]
-    public Roof([SchemaMainParam] ICurve outline, List<ICurve> voids = null, List<Base> elements = null)
+    public Roof([SchemaMainParam] ICurve outline, List<ICurve>? voids = null, List<Base>? elements = null)
     {
       this.outline = outline;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.elements = elements;
     }
 
@@ -26,7 +26,7 @@ namespace Objects.BuiltElements
     public List<ICurve> voids { get; set; } = new();
 
     [DetachProperty]
-    public List<Base> elements { get; set; }
+    public List<Base>? elements { get; set; }
 
     public string units { get; set; }
 
@@ -41,7 +41,7 @@ namespace Objects.BuiltElements.Revit.RevitRoof
   {
     public string family { get; set; }
     public string type { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
 
     public new Level? level
@@ -75,13 +75,13 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       [SchemaParamInfo("Extrusion end")] double end,
       [SchemaParamInfo("Profile along which to extrude the roof"), SchemaMainParam] Line referenceLine,
       Level level,
-      List<Base> elements = null,
-      List<Parameter> parameters = null
+      List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
       this.type = type;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
       this.start = start;
       this.end = end;
@@ -104,25 +104,25 @@ namespace Objects.BuiltElements.Revit.RevitRoof
       string family,
       string type,
       Level level,
-      RevitLevel cutOffLevel = null,
+      RevitLevel? cutOffLevel = null,
       double slope = 0,
-      List<ICurve> voids = null,
-      List<Base> elements = null,
-      List<Parameter> parameters = null
+      List<ICurve>? voids = null,
+      List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.outline = outline;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.family = family;
       this.type = type;
       this.slope = slope;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
       this.cutOffLevel = cutOffLevel;
       this.elements = elements;
     }
 
-    public RevitLevel cutOffLevel { get; set; }
+    public RevitLevel? cutOffLevel { get; set; }
     public double? slope { get; set; }
   }
 }
@@ -255,7 +255,7 @@ namespace Objects.BuiltElements.Archicad
 
     public class PivotPolyEdge : Base
     {
-      public Int32? nLevelEdgeData { get; set; }
+      public int? nLevelEdgeData { get; set; }
       public Dictionary<string, LevelEdge>? roofLevels { get; set; }
     }
 

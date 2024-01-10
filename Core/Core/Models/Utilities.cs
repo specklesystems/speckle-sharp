@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -32,8 +31,8 @@ public static class Utilities
   {
     return func switch
     {
-      HashingFunctions.SHA256 => Crypt.Sha256(input, end: HashLength),
-      HashingFunctions.MD5 => Crypt.Md5(input, end: HashLength),
+      HashingFunctions.SHA256 => Crypt.Sha256(input, length: HashLength),
+      HashingFunctions.MD5 => Crypt.Md5(input, length: HashLength),
       _ => throw new ArgumentOutOfRangeException(nameof(func), func, "Unrecognised value"),
     };
   }
@@ -120,7 +119,7 @@ public static class Utilities
         }
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(ex, "Failed to get application properties");
     }
@@ -128,7 +127,7 @@ public static class Utilities
     return appProps;
   }
 
-  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object value)
+  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object? value)
   {
     value = propInfo.GetValue(o);
     if (propInfo.GetSetMethod() != null && value != null)
@@ -192,7 +191,7 @@ public static class Utilities
               new[] { value }
             );
           }
-          catch (Exception) { }
+          catch (Exception ex) when (!ex.IsFatal()) { }
         }
       }
     }

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -110,7 +109,7 @@ public static partial class Operations
       {
         hash = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Information(
           ex,

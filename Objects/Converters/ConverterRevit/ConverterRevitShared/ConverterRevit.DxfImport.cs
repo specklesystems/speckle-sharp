@@ -239,11 +239,10 @@ public partial class ConverterRevit
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
 
-    try
+    if (File.Exists(tempFamilyPath))
     {
       File.Delete(tempFamilyPath);
     }
-    catch { }
 
     return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
   }

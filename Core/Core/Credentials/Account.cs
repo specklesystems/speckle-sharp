@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
@@ -43,11 +44,9 @@ public class Account : IEquatable<Account>
 
   private static string CleanURL(string server)
   {
-    Uri NewUri;
-
-    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+    if (Uri.TryCreate(server, UriKind.Absolute, out Uri newUri))
     {
-      server = NewUri.Authority;
+      server = newUri.Authority;
     }
 
     return server;

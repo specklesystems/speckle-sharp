@@ -185,11 +185,11 @@ public class Perimeter : SectionProfile
     "Structural",
     "Section Profile"
   )]
-  public Perimeter(string name, ICurve outline, List<ICurve> voids = null)
+  public Perimeter(string name, ICurve outline, List<ICurve>? voids = null)
   {
     this.name = name;
     this.outline = outline;
-    this.voids = voids;
+    this.voids = voids ?? new();
   }
 
   public ICurve outline { get; set; }

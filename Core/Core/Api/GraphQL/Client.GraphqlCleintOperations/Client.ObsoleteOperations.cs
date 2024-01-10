@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -21,6 +20,7 @@ public partial class Client
   /// <returns>true if invites are supported</returns>
   /// <exception cref="SpeckleException">if Speckle Server version is less than v2.6.4</exception>
   [Obsolete("We're not supporting 2.6.4 version any more", true)]
+  [SuppressMessage("Style", "IDE1006:Naming Styles")]
   public async Task<bool> _CheckStreamInvitesSupported(CancellationToken cancellationToken = default)
   {
     var version = ServerVersion ?? await GetServerVersion(cancellationToken).ConfigureAwait(false);

@@ -23,7 +23,7 @@ namespace Speckle.Core.Transports;
 /// <summary>
 /// Sends data to a speckle server.
 /// </summary>
-[Obsolete("Use " + nameof(ServerTransportV2))]
+[Obsolete("Use " + nameof(ServerTransport))]
 public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 {
   private const int DownloadBatchSize = 1000;

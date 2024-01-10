@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable disable
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.Serialization;
 using Speckle.Newtonsoft.Json;
@@ -26,10 +28,7 @@ public class Blob : Base
     get => _filePath;
     set
     {
-      if (originalPath is null)
-      {
-        originalPath = value;
-      }
+      originalPath ??= value;
 
       _filePath = value;
       _isHashExpired = true;
@@ -70,5 +69,6 @@ public class Blob : Base
   }
 
   [Obsolete("Renamed to " + nameof(GetLocalDestinationPath))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public string getLocalDestinationPath(string blobStorageFolder) => GetLocalDestinationPath(blobStorageFolder);
 }

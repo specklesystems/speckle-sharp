@@ -1,4 +1,3 @@
-# nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,8 +23,9 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public partial class Client : IDisposable
+public sealed partial class Client : IDisposable
 {
+  [Obsolete]
   internal Client() { }
 
   public Client(Account account)
@@ -51,7 +51,6 @@ public partial class Client : IDisposable
         {
           return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
         },
-        OnWebsocketConnected = OnWebSocketConnect
       },
       new NewtonsoftJsonSerializer(),
       HttpClient
@@ -101,12 +100,7 @@ public partial class Client : IDisposable
       CommentActivitySubscription?.Dispose();
       GQLClient?.Dispose();
     }
-    catch { }
-  }
-
-  public Task OnWebSocketConnect(GraphQLHttpClient client)
-  {
-    return Task.CompletedTask;
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)
@@ -127,7 +121,7 @@ public partial class Client : IDisposable
         delay,
         (ex, timeout, context) =>
         {
-          var graphqlEx = ex as SpeckleGraphQLException<T>;
+          var graphqlEx = (SpeckleGraphQLException<T>)ex;
           SpeckleLog.Logger
             .ForContext("graphqlExtensions", graphqlEx.Extensions)
             .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
@@ -144,6 +138,9 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
+  /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
+  /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
+  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
     using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
@@ -194,7 +191,7 @@ public partial class Client : IDisposable
     }
     // we log and wrap anything that is not a graphql exception.
     // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(
         ex,
@@ -225,7 +222,7 @@ public partial class Client : IDisposable
     // The errors reflect the Apollo server v2 API, which is deprecated. It is bound to change,
     // once we migrate to a newer version.
     var errors = response.Errors;
-    if (errors != null && errors.Any())
+    if (errors != null && errors.Length != 0)
     {
       var errorMessages = errors.Select(e => e.Message);
       if (
@@ -245,8 +242,7 @@ public partial class Client : IDisposable
       if (
         errors.Any(
           e =>
-            e.Extensions != null
-            && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
+            e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
         )
       )
       {
@@ -369,7 +365,7 @@ public partial class Client : IDisposable
           }
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Warning(
           ex,

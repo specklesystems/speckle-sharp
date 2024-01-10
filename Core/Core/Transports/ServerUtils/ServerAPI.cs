@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -290,8 +290,8 @@ public sealed class ServerApi : IDisposable, IServerApi
           Method = HttpMethod.Get
         };
 
-        var response = await _client.SendAsync(blobMessage, CancellationToken).ConfigureAwait(false);
-        response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string> cdHeaderValues);
+        using var response = await _client.SendAsync(blobMessage, CancellationToken).ConfigureAwait(false);
+        response.Content.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? cdHeaderValues);
 
         var cdHeader = cdHeaderValues.First();
         var fileName = cdHeader.Split(s_filenameSeparator, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
@@ -305,12 +305,11 @@ public sealed class ServerApi : IDisposable, IServerApi
           await response.Content.CopyToAsync(fs).ConfigureAwait(false);
         }
 
-        response.Dispose();
         onBlobCallback();
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        throw new Exception($"Failed to download blob {blobId}", ex);
+        throw new SpeckleException($"Failed to download blob {blobId}", ex);
       }
     }
   }
@@ -468,7 +467,7 @@ public sealed class ServerApi : IDisposable, IServerApi
     var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
     if (parsed is null)
     {
-      throw new Exception($"Failed to deserialize successful response {response.Content}");
+      throw new SpeckleException($"Failed to deserialize successful response {response.Content}");
     }
 
     return parsed;

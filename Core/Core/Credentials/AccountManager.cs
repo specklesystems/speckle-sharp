@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -126,9 +125,9 @@ public static class AccountManager
 
       return res.Data;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get user + server info from {server}", ex);
     }
   }
 
@@ -262,7 +261,7 @@ public static class AccountManager
           accounts.Add(account);
         }
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Warning(ex, "Failed to load json account at {filePath}", file);
       }
@@ -307,7 +306,7 @@ public static class AccountManager
         account.serverInfo.url = url;
         account.serverInfo.frontend2 = await IsFrontend2Server(url).ConfigureAwait(false);
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         account.isOnline = false;
       }
@@ -373,7 +372,7 @@ public static class AccountManager
     if (!HttpListener.IsSupported)
     {
       SpeckleLog.Logger.Error("HttpListener not supported");
-      throw new Exception("Your operating system is not supported");
+      throw new PlatformNotSupportedException("Your operating system is not supported");
     }
   }
 
@@ -469,7 +468,7 @@ public static class AccountManager
 
       return account;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleAccountManagerException("Failed to create account from access code and challenge", ex);
     }
@@ -562,7 +561,7 @@ public static class AccountManager
       // rethrowing any known errors
       throw;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
       throw new SpeckleAccountManagerException($"Failed to add account: {ex.Message}", ex);
@@ -595,9 +594,9 @@ public static class AccountManager
         await response.Content.ReadAsStringAsync().ConfigureAwait(false)
       );
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get authentication token from {server}", ex);
     }
   }
 
@@ -622,9 +621,9 @@ public static class AccountManager
         await response.Content.ReadAsStringAsync().ConfigureAwait(false)
       );
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get refreshed token from {server}", ex);
     }
   }
 
@@ -646,7 +645,7 @@ public static class AccountManager
 
       return false;
     }
-    catch (Exception)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }

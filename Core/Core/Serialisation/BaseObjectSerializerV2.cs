@@ -1,12 +1,11 @@
-#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DoubleNumerics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.DoubleNumerics;
 using System.Reflection;
 using System.Threading;
 using Speckle.Core.Helpers;
@@ -49,6 +48,11 @@ public class BaseObjectSerializerV2
     CancellationToken = cancellationToken;
   }
 
+  /// <param name="baseObj">The object to serialize</param>
+  /// <returns>The serialized JSON</returns>
+  /// <exception cref="InvalidOperationException">A serialize is busy (already serialising an object)</exception>
+  /// <exception cref="TransportException">Failed to save object in one or more <see cref="WriteTransports"/></exception>
+  /// <exception cref="SpeckleException">Failed to extract (pre-serialize) properties from the <param name="baseObj"></param></exception>
   public string Serialize(Base baseObj)
   {
     if (_isBusy)
@@ -62,7 +66,15 @@ public class BaseObjectSerializerV2
     {
       _stopwatch.Start();
       _isBusy = true;
-      IDictionary<string, object?> converted = PreserializeBase(baseObj, true)!;
+      IDictionary<string, object?> converted;
+      try
+      {
+        converted = PreserializeBase(baseObj, true)!;
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        throw new SpeckleException($"Failed to extract (pre-serialize) properties from the {baseObj}");
+      }
       string serialized = Dict2Json(converted);
       StoreObject((string)converted["id"]!, serialized);
       return serialized;

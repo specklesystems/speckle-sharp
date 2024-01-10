@@ -1,8 +1,6 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -29,25 +27,39 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
   private readonly object _sendBufferLock = new();
   private Thread? _sendingThread;
 
-  private bool _shouldSendThreadRun;
+  private volatile bool _shouldSendThreadRun;
 
+  /// <param name="account"></param>
+  /// <param name="streamId"></param>
+  /// <param name="timeoutSeconds"></param>
+  /// <param name="blobStorageFolder">Defaults to <see cref="SpecklePathProvider.BlobStoragePath"/></param>
+  /// <exception cref="ArgumentException"><paramref name="streamId"/> was not formatted as valid stream id</exception>
   public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string? blobStorageFolder = null)
   {
+    if (string.IsNullOrWhiteSpace(streamId))
+    {
+      throw new ArgumentException($"{streamId} is not a valid id", streamId);
+    }
+
     Account = account;
-    Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+    BaseUri = account.serverInfo.url;
+    StreamId = streamId;
+    AuthorizationToken = account.token;
+    TimeoutSeconds = timeoutSeconds;
     BlobStorageFolder = blobStorageFolder ?? SpecklePathProvider.BlobStoragePath();
+    Initialize(account.serverInfo.url);
 
     Directory.CreateDirectory(BlobStorageFolder);
   }
 
   public int TotalSentBytes { get; private set; }
 
-  public Account Account { get; set; }
-  public string BaseUri { get; private set; }
-  public string StreamId { get; set; }
+  public Account Account { get; }
+  public string BaseUri { get; }
+  public string StreamId { get; internal set; }
 
   public int TimeoutSeconds { get; set; }
-  private string AuthorizationToken { get; set; }
+  private string AuthorizationToken { get; }
 
   internal ParallelServerApi Api { get; private set; }
 
@@ -55,11 +67,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void SaveBlob(Blob obj)
   {
-    if (string.IsNullOrEmpty(StreamId))
-    {
-      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
-    }
-
     var hash = obj.GetFileHash();
 
     lock (_sendBufferLock)
@@ -115,9 +122,9 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || targetTransport == null)
+    if (string.IsNullOrEmpty(id))
     {
-      throw new InvalidOperationException("Invalid parameters to CopyObjectAndChildren");
+      throw new ArgumentException("Cannot copy object with empty id", nameof(id));
     }
 
     CancellationToken.ThrowIfCancellationRequested();
@@ -207,21 +214,11 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
-    if (string.IsNullOrEmpty(StreamId))
-    {
-      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
-    }
-
     return await Api.HasObjects(StreamId, objectIds).ConfigureAwait(false);
   }
 
   public void SaveObject(string id, string serializedObject)
   {
-    if (string.IsNullOrEmpty(StreamId))
-    {
-      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
-    }
-
     lock (_sendBufferLock)
     {
       if (IsInErrorState)
@@ -236,11 +233,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void SaveObject(string id, ITransport sourceTransport)
   {
-    if (string.IsNullOrEmpty(StreamId))
-    {
-      throw new InvalidOperationException($"Invalid StreamID {StreamId}");
-    }
-
     var objectData = sourceTransport.GetObject(id);
 
     if (objectData is null)
@@ -289,7 +281,7 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
         }
       }
 
-      await Task.Delay(50).ConfigureAwait(false);
+      await Task.Delay(50, CancellationToken).ConfigureAwait(false);
     }
   }
 
@@ -305,14 +297,9 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     _sendingThread = null;
   }
 
-  private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+  private void Initialize(string baseUri)
   {
     SpeckleLog.Logger.Information("Initializing a new Remote Transport for {baseUri}", baseUri);
-
-    BaseUri = baseUri;
-    StreamId = streamId;
-    AuthorizationToken = authorizationToken;
-    TimeoutSeconds = timeoutSeconds;
 
     Api = new ParallelServerApi(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds)
     {
@@ -349,7 +336,6 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
     return childrenIds;
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private async void SendingThreadMain()
   {
     while (true)
@@ -427,7 +413,11 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
           _sendBuffer.Clear();
           _exception = ex;
         }
-        return;
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
       finally
       {

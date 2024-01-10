@@ -1,4 +1,3 @@
-#nullable enable
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -32,7 +31,7 @@ internal sealed class GzipContent : HttpContent
     Headers.ContentEncoding.Add("gzip");
   }
 
-  protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+  protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
   {
     // Open a GZipStream that writes to the specified output stream.
     using GZipStream gzip = new(stream, CompressionMode.Compress, true);

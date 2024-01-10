@@ -82,7 +82,6 @@ public partial class ConnectorBindingsRevit
     // share the same revit element cache between the connector and converter
     converter.SetContextDocument(revitDocumentAggregateCache);
 
-#pragma warning disable CA1031 // Do not catch general exception types
     try
     {
       var elementTypeMapper = new ElementTypeMapper(
@@ -99,21 +98,17 @@ public partial class ConnectorBindingsRevit
         )
         .ConfigureAwait(false);
     }
-    catch (Exception ex)
+    catch (SpeckleException ex)
     {
-      var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
-      StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-      progress.Report.LogOperationError(
-        new Exception("Could not update receive object with user types. Using default mapping.", ex)
-      );
+      SpeckleLog.Logger.Warning("Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+      StreamViewModel.HandleCommandException(ex, false, "MapIncomingTypesCommand");
     }
     finally
     {
       MainViewModel.CloseDialog();
     }
-#pragma warning restore CA1031 // Do not catch general exception types
 
-    var (success, exception) = await APIContext
+    await APIContext
       .Run(_ =>
       {
         using var transactionManager = new TransactionManager(state.StreamId, CurrentDoc.Document);
@@ -132,40 +127,31 @@ public partial class ConnectorBindingsRevit
 
           previousObjects.AddConvertedElements(convertedObjects);
           transactionManager.Finish();
-          return (true, null);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (progress.CancellationToken.IsCancellationRequested)
+        {
+          transactionManager.RollbackAll();
+          throw;
+        }
+        catch (SpeckleNonUserFacingException ex)
         {
           SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
-
-          string message = $"Fatal Error: {ex.Message}";
-          if (ex is OperationCanceledException)
-          {
-            message = "Receive cancelled";
-          }
-
-          progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
-
           transactionManager.RollbackAll();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+          throw;
+        }
+        catch (Autodesk.Revit.Exceptions.ApplicationException ex)
+        {
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction");
+          transactionManager.RollbackAll();
+          throw;
+        }
+        finally
+        {
+          revitDocumentAggregateCache.InvalidateAll();
+          CurrentOperationCancellation = null;
         }
       })
       .ConfigureAwait(false);
-
-    revitDocumentAggregateCache.InvalidateAll();
-    CurrentOperationCancellation = null;
-
-    if (!success)
-    {
-      switch (exception)
-      {
-        case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
-        case SpeckleNonUserFacingException:
-          throw exception;
-        default:
-          throw new SpeckleException(exception.Message, exception);
-      }
-    }
 
     return state;
   }
@@ -197,9 +183,10 @@ public partial class ConnectorBindingsRevit
           {
             CurrentDoc.Document.Delete(elementToDelete.Id);
           }
-          catch
+          catch (Autodesk.Revit.Exceptions.ArgumentException)
           {
-            // unable to delete previously recieved object
+            // unable to delete object that was previously received and then removed from the stream
+            // because it was already deleted by the user. This isn't an issue and can safely be ignored.
           }
         }
 
@@ -469,7 +456,7 @@ public partial class ConnectorBindingsRevit
       // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
       notReadyDataCache.Set(@base.id, notReadyData);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       transactionManager.RollbackSubTransaction();
       SpeckleLog.Logger.Warning(ex, "Failed to convert due to unexpected error.");

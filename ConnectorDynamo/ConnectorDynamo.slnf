@@ -6,7 +6,7 @@
       "ConnectorDynamo\\ConnectorDynamoFunctions\\ConnectorDynamoFunctions.csproj",
       "ConnectorDynamo\\ConnectorDynamo\\ConnectorDynamo.csproj",
       "Core\\Core\\Core.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Objects\\Converters\\ConverterDxf\\ConverterDxf\\ConverterDxf.csproj",
       "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2021\\ConverterDynamoRevit2021.csproj",

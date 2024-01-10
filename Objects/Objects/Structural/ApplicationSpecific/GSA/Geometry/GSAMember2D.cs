@@ -20,7 +20,7 @@ public class GSAMember2D : Element2D
     [SchemaParamInfo(
       "A list of ordered lists of nodes representing the voids within a member (ie. order of points should be based on valid polyline)"
     )]
-      List<List<Node>> voids = null,
+      List<List<Node>>? voids = null,
     double offset = 0,
     double orientationAngle = 0
   )
@@ -39,5 +39,5 @@ public class GSAMember2D : Element2D
   public bool isDummy { get; set; }
   public bool intersectsWithOthers { get; set; }
   public double targetMeshSize { get; set; }
-  public List<List<Node>> voids { get; set; }
+  public List<List<Node>>? voids { get; set; }
 }

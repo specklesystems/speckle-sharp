@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -33,7 +32,7 @@ public static class DefaultTraversal
   /// Traverses until finds a convertable object then HALTS deeper traversal
   /// </summary>
   /// <remarks>
-  /// Current <see cref="Converter{TInput,TOutput}.Revit.ConverterRevit"/> does traversal,
+  /// Current Revit connector does traversal,
   /// so this traversal is a shallow traversal for directly convertable objects,
   /// and a deep traversal for all other types
   /// </remarks>
@@ -142,14 +141,14 @@ public static class DefaultTraversal
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  public static readonly string[] DisplayValueAndElementsPropAliases = displayValuePropAliases
-    .Concat(elementsPropAliases)
+  public static readonly string[] DisplayValueAndElementsPropAliases = DisplayValuePropAliases
+    .Concat(ElementsPropAliases)
     .ToArray();
 
   [Pure]
   public static IEnumerable<string> DisplayValueAndElementsAliases(Base _)
   {
-    return displayValueAndElementsPropAliases;
+    return DisplayValueAndElementsPropAliases;
   }
 
   #endregion
@@ -172,5 +171,6 @@ public static class DefaultTraversal
 
   [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
   [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
+  [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Obsolete")]
   public static string[] displayValueAndElementsPropAliases => DisplayValueAndElementsPropAliases;
 }

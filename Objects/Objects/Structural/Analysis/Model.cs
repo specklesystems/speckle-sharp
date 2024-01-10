@@ -11,7 +11,6 @@ public class Model : Base
   /// <summary>
   /// SchemaBuilder constructor for a structural model object
   /// </summary>
-  /// <param name="modelInfo"></param>
   /// <param name="nodes"></param>
   /// <param name="elements"></param>
   /// <param name="loads"></param>

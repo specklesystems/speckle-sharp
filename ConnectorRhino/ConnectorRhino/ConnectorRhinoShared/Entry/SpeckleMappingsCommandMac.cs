@@ -41,7 +41,7 @@ namespace SpeckleRhino;
         MainWindow.Activate();
         return Result.Success;
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle mappings window");
         RhinoApp.CommandLineOut.WriteLine($"Speckle Error - {e.ToFormattedString()}");

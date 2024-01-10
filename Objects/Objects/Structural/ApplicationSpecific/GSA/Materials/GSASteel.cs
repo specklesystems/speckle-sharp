@@ -16,9 +16,9 @@ public class GSASteel : Steel
   public GSASteel(
     int nativeId,
     string name,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double elasticModulus = 0,
     double yieldStrength = 0,
     double ultimateStrength = 0,
@@ -45,7 +45,6 @@ public class GSASteel : Steel
     this.poissonsRatio = poissonsRatio;
     this.shearModulus = shearModulus;
     this.density = density;
-    thermalExpansivity = thermalExpansivity;
     this.dampingRatio = dampingRatio;
     this.cost = cost;
     this.colour = colour;

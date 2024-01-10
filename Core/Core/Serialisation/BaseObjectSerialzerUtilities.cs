@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -388,7 +387,7 @@ internal static class CallSiteCache
   {
     lock (s_setters)
     {
-      CallSite<Func<CallSite, object, object?, object>> site;
+      CallSite<Func<CallSite, object, object?, object>>? site;
 
       lock (s_setters)
       {

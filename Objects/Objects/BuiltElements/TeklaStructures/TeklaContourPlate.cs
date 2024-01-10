@@ -16,9 +16,9 @@ public class TeklaContourPlate : Area
     string finish,
     string classNumber,
     string units,
-    StructuralMaterial material = null,
-    TeklaPosition position = null,
-    Base rebars = null
+    StructuralMaterial? material = null,
+    TeklaPosition? position = null,
+    Base? rebars = null
   )
   {
     this.profile = profile;
@@ -26,7 +26,7 @@ public class TeklaContourPlate : Area
     this.material = material;
     this.finish = finish;
     this.classNumber = classNumber;
-    this.position = position;
+    this.position = position ?? new();
     this.rebars = rebars;
     this.units = units;
   }
@@ -37,7 +37,7 @@ public class TeklaContourPlate : Area
   public SectionProfile profile { get; set; }
 
   [DetachProperty]
-  public StructuralMaterial material { get; set; }
+  public StructuralMaterial? material { get; set; }
 
   [DetachProperty]
   public string finish { get; set; }
@@ -46,10 +46,10 @@ public class TeklaContourPlate : Area
   public string classNumber { get; set; }
 
   [DetachProperty]
-  public TeklaPosition position { get; set; }
+  public TeklaPosition position { get; set; } = new();
 
   [DetachProperty]
-  public Base rebars { get; set; }
+  public Base? rebars { get; set; }
 
   public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
 }

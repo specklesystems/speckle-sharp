@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Text.RegularExpressions;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -32,7 +34,7 @@ public class Base : DynamicBase
   private string _type;
 
   /// <summary>
-  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
+  /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId"/> function to get it.</b>
   /// </summary>
   [SchemaIgnore]
   public virtual string id { get; set; }
@@ -85,6 +87,7 @@ public class Base : DynamicBase
           _type = string.Join(":", bases);
         }
       }
+
       return _type;
     }
   }
@@ -95,6 +98,7 @@ public class Base : DynamicBase
   /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
   /// </summary>
   /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
+  /// <param name="serializerVersion"></param>
   /// <returns></returns>
   public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
   {
@@ -256,7 +260,8 @@ public class Base : DynamicBase
   /// <returns>A shallow copy of the original object.</returns>
   public Base ShallowCopy()
   {
-    Base myDuplicate = (Base)Activator.CreateInstance(GetType());
+    Type type = GetType();
+    Base myDuplicate = (Base)Activator.CreateInstance(type);
     myDuplicate.id = id;
     myDuplicate.applicationId = applicationId;
 
@@ -266,8 +271,8 @@ public class Base : DynamicBase
       )
     )
     {
-      var p = GetType().GetProperty(kvp.Key);
-      if (p != null && !p.CanWrite)
+      var propertyInfo = type.GetProperty(kvp.Key);
+      if (propertyInfo is not null && !propertyInfo.CanWrite)
       {
         continue;
       }
@@ -276,9 +281,19 @@ public class Base : DynamicBase
       {
         myDuplicate[kvp.Key] = kvp.Value;
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // avoids any last ditch unsettable or strange props.
+        SpeckleLog.Logger
+          .ForContext("canWrite", propertyInfo?.CanWrite)
+          .ForContext("canRead", propertyInfo?.CanRead)
+          .Warning(
+            "Shallow copy of {type} failed to copy {propertyName} of type {propertyType} with value {valueType}",
+            type,
+            kvp.Key,
+            propertyInfo?.PropertyType,
+            kvp.Value?.GetType()
+          );
       }
     }
 
