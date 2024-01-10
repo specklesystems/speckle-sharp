@@ -173,7 +173,7 @@ public class ExtendSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
             @base[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
           }
         }
-        catch (Exception e)
+        catch (Exception e) when (!e.IsFatal())
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
           hasErrors = true;
