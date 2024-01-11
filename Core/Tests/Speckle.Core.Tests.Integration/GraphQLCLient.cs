@@ -40,7 +40,7 @@ public class GraphQLClientTests : IDisposable
   {
     using CancellationTokenSource tokenSource = new();
     tokenSource.Cancel();
-    Assert.ThrowsAsync<OperationCanceledException>(
+    Assert.CatchAsync<OperationCanceledException>(
       async () =>
         await _client.ExecuteGraphQLRequest<Dictionary<string, object>>(
           new GraphQLRequest

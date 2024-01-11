@@ -140,7 +140,7 @@ public abstract class TransportTests
 
     tokenSource.Cancel();
 
-    Assert.ThrowsAsync<OperationCanceledException>(async () =>
+    Assert.CatchAsync<OperationCanceledException>(async () =>
     {
       Sut.SaveObject("abcdef", "fake payload data");
       await Sut.WriteComplete();

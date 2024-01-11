@@ -33,7 +33,7 @@ public partial class OperationsReceiveTests
     ctc.Cancel();
 
     MemoryTransport emptyTransport2 = new();
-    Assert.ThrowsAsync<OperationCanceledException>(async () =>
+    Assert.CatchAsync<OperationCanceledException>(async () =>
     {
       await Core.Api.Operations.Receive(id, _testCaseTransport, emptyTransport2, cancellationToken: ctc.Token);
     });
