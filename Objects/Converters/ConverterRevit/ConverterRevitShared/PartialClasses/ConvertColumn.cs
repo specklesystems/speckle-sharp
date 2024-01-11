@@ -111,7 +111,11 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch { }
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
+      {
+        //something went wrong, re-create it
+        appObj.Update(logItem: "Unable to update element. Creating a new element instead");
+      }
     }
 
     if (revitColumn == null && isLineBased)

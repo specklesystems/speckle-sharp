@@ -9,7 +9,7 @@ public sealed class ElementShape : Base
 {
   public ElementShape() { }
 
-  public ElementShape(Polyline contourPolyline, List<Polyline> holePolylines = null)
+  public ElementShape(Polyline contourPolyline, List<Polyline>? holePolylines = null)
   {
     this.contourPolyline = contourPolyline;
     this.holePolylines = holePolylines;
@@ -17,7 +17,7 @@ public sealed class ElementShape : Base
 
   public Polyline contourPolyline { get; set; }
 
-  public List<Polyline> holePolylines { get; set; }
+  public List<Polyline>? holePolylines { get; set; }
 
   public sealed class PolylineSegment : Base, ICurve
   {
@@ -36,7 +36,7 @@ public sealed class ElementShape : Base
     public double arcAngle { get; set; }
     public bool? bodyFlag { get; set; }
     public double length { get; set; }
-    public Interval domain { get; set; }
+    public Interval domain { get; set; } = new(0, 1);
   }
 
   public sealed class Polyline : Base, ICurve
@@ -50,6 +50,6 @@ public sealed class ElementShape : Base
 
     public List<PolylineSegment> polylineSegments { get; set; } = new();
     public double length { get; set; }
-    public Interval domain { get; set; }
+    public Interval domain { get; set; } = new(0, 1);
   }
 }

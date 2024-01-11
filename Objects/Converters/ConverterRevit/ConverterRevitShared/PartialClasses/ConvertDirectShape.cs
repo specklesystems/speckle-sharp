@@ -5,6 +5,8 @@ using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
@@ -221,17 +223,19 @@ public partial class ConverterRevit
         {
           Doc.Delete(existingObj.Id);
         }
-        catch (Exception e)
+        catch (Autodesk.Revit.Exceptions.ArgumentException e)
         {
           appObj.Log.Add($"Could not delete existing object: {e.Message}");
         }
       }
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
     }
+
     return appObj;
   }
 

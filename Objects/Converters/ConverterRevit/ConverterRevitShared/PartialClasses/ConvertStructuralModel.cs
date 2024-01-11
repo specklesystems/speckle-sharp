@@ -2,6 +2,9 @@ using Objects.Structural.Geometry;
 using Speckle.Core.Models;
 using Objects.Structural.Analysis;
 using Objects.Structural.CSI.Geometry;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
+using System;
 
 namespace Objects.Converter.Revit;
 
@@ -24,6 +27,7 @@ public partial class ConverterRevit
       if (element is Element1D element1D)
       {
         element1D.units = lengthUnits;
+
         try
         {
           if (element is CSIElement1D csiElement1D)
@@ -37,7 +41,10 @@ public partial class ConverterRevit
             appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
           }
         }
-        catch { }
+        catch (Exception ex) when (!ex.IsFatal())
+        {
+          SpeckleLog.Logger.LogDefaultError(ex);
+        }
       }
       else
       {
@@ -54,7 +61,10 @@ public partial class ConverterRevit
             appObj.Update(createdIds: _stick.CreatedIds, converted: _stick.Converted);
           }
         }
-        catch { }
+        catch (Exception ex) when (!ex.IsFatal())
+        {
+          SpeckleLog.Logger.LogDefaultError(ex);
+        }
       }
     }
 

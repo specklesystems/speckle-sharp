@@ -13,12 +13,12 @@ namespace Objects.BuiltElements
     [SchemaInfo("Ceiling", "Creates a Speckle ceiling", "BIM", "Architecture")]
     public Ceiling(
       [SchemaMainParam] ICurve outline,
-      List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base> elements = null
+      List<ICurve>? voids = null,
+      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base>? elements = null
     )
     {
       this.outline = outline;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.elements = elements;
     }
 
@@ -26,7 +26,7 @@ namespace Objects.BuiltElements
     public List<ICurve> voids { get; set; } = new();
 
     [DetachProperty]
-    public List<Base> elements { get; set; }
+    public List<Base>? elements { get; set; }
 
     public string units { get; set; }
 
@@ -48,10 +48,10 @@ namespace Objects.BuiltElements.Revit
       string type,
       Level level,
       double slope = 0,
-      [SchemaParamInfo("Planar line indicating slope direction")] Line slopeDirection = null,
+      [SchemaParamInfo("Planar line indicating slope direction")] Line? slopeDirection = null,
       double offset = 0,
-      List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base> elements = null
+      List<ICurve>? voids = null,
+      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base>? elements = null
     )
     {
       this.outline = outline;
@@ -61,7 +61,7 @@ namespace Objects.BuiltElements.Revit
       this.slope = slope;
       this.slopeDirection = slopeDirection;
       this.offset = offset;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.elements = elements;
     }
 
@@ -72,9 +72,9 @@ namespace Objects.BuiltElements.Revit
       string type,
       Level level,
       double slope = 0,
-      [SchemaParamInfo("Planar line indicating slope direction")] Line slopeDirection = null,
-      List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base> elements = null
+      [SchemaParamInfo("Planar line indicating slope direction")] Line? slopeDirection = null,
+      List<ICurve>? voids = null,
+      [SchemaParamInfo("Any nested elements that this ceiling might have")] List<Base>? elements = null
     )
     {
       this.outline = outline;
@@ -83,7 +83,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.slope = slope;
       this.slopeDirection = slopeDirection;
-      this.voids = voids;
+      this.voids = voids ?? new();
       this.elements = elements;
     }
 
@@ -91,7 +91,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public Level level { get; set; }
     public double slope { get; set; }
-    public Line slopeDirection { get; set; }
+    public Line? slopeDirection { get; set; }
 
     [Obsolete("Offset property is now captured in parameters to match the behavior of other Revit objects")]
     public double offset { get; set; }

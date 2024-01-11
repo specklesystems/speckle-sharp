@@ -9,6 +9,7 @@
     <Import_RootNamespace>RevitSharedResources</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\ILoggerExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitDocumentAggregateCacheExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\SpeckleExtensions\IRevitObjectCacheExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Categories.cs" />

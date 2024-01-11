@@ -27,9 +27,9 @@ public class ComponentProperties : Base
   /// <summary>
   /// Turns a List of ComponentProperties into a Base so that it can be used with the Speckle properties prop
   /// </summary>
-  /// <param name="properties"></param>
+  /// <param name="componentPropertiesList"></param>
   /// <returns></returns>
-  public static Base ToBase(List<ComponentProperties> componentPropertiesList)
+  public static Base? ToBase(List<ComponentProperties>? componentPropertiesList)
   {
     if (componentPropertiesList == null || componentPropertiesList.Count == 0)
     {
@@ -40,7 +40,7 @@ public class ComponentProperties : Base
 
     foreach (ComponentProperties componentProperties in componentPropertiesList)
     {
-      @base[DynamicBase.RemoveDisallowedPropNameChars(componentProperties.name)] = PropertyGroup.ToBase(
+      @base[RemoveDisallowedPropNameChars(componentProperties.name)] = PropertyGroup.ToBase(
         componentProperties.propertyGroups
       );
     }

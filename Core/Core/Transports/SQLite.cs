@@ -450,7 +450,14 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    throw new NotImplementedException();
+    string res = TransportHelpers.CopyObjectAndChildrenSync(
+      id,
+      this,
+      targetTransport,
+      onTotalChildrenCountKnown,
+      CancellationToken
+    );
+    return Task.FromResult(res);
   }
 
   #endregion

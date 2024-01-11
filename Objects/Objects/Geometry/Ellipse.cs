@@ -21,7 +21,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <param name="radius1">First radius of the ellipse.</param>
   /// <param name="radius2">Second radius of the ellipse.</param>
   /// <param name="applicationId">Application ID, defaults to null.</param>
-  public Ellipse(Plane plane, double radius1, double radius2, string units = Units.Meters, string applicationId = null)
+  public Ellipse(Plane plane, double radius1, double radius2, string units = Units.Meters, string? applicationId = null)
     : this(plane, radius1, radius2, new Interval(0, 1), null, units) { }
 
   /// <summary>
@@ -38,9 +38,9 @@ public class Ellipse : Base, ICurve, IHasArea
     double radius1,
     double radius2,
     Interval domain,
-    Interval trimDomain,
+    Interval? trimDomain,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.plane = plane;
@@ -70,7 +70,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <summary>
   /// Gets or set the domain interval to trim this <see cref="Ellipse"/> with.
   /// </summary>
-  public Interval trimDomain { get; set; }
+  public Interval? trimDomain { get; set; }
 
   /// <inheritdoc />
   public Box bbox { get; set; }
@@ -80,7 +80,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <summary>
   /// Gets or sets the domain interval for this <see cref="Ellipse"/>.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval domain { get; set; } = new(0, 0);
 
   /// <inheritdoc />
   public double length { get; set; }
@@ -96,8 +96,8 @@ public class Ellipse : Base, ICurve, IHasArea
     var list = new List<double>();
     list.Add(firstRadius ?? 0);
     list.Add(secondRadius ?? 0);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 0);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 0);
 
     list.AddRange(plane.ToList());
 
@@ -109,14 +109,14 @@ public class Ellipse : Base, ICurve, IHasArea
 
   public static Ellipse FromList(List<double> list)
   {
-    var ellipse = new Ellipse();
-
-    ellipse.firstRadius = list[2];
-    ellipse.secondRadius = list[3];
-    ellipse.domain = new Interval(list[4], list[5]);
-
-    ellipse.plane = Plane.FromList(list.GetRange(6, 13));
-    ellipse.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
+    var ellipse = new Ellipse
+    {
+      firstRadius = list[2],
+      secondRadius = list[3],
+      domain = new Interval(list[4], list[5]),
+      plane = Plane.FromList(list.GetRange(6, 13)),
+      units = Units.GetUnitFromEncoding(list[list.Count - 1])
+    };
     return ellipse;
   }
 }

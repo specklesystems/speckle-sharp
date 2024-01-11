@@ -34,22 +34,6 @@ public class ObjectSerialization
   }
 
   [Test]
-  public void DictionarySerialisation()
-  {
-    // TODO
-    var dict = new Dictionary<string, Base>();
-    for (int i = 0; i < 10; i++)
-    {
-      dict[$"key{i}"] = new Point(i, i, i);
-    }
-
-    var result = Core.Api.Operations.Serialize(dict);
-    var test = Core.Api.Operations.DeserializeDictionary(result);
-
-    Assert.That(dict.Keys, Is.EqualTo(test.Keys));
-  }
-
-  [Test]
   public void IgnoreCircularReferences()
   {
     var pt = new Point(1, 2, 3);

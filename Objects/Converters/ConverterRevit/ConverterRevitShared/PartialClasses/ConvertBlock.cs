@@ -59,7 +59,7 @@ public partial class ConverterRevit
         isUpdate = true;
         Doc.Delete(docObj.Id);
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         SpeckleLog.Logger.Warning(
           e,
@@ -79,7 +79,7 @@ public partial class ConverterRevit
         logItem: $"Assigned name: {familyInstance.Symbol.Name}"
       );
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       var errMsg = "An unexpected error occured when converting a BlockInstance to Native";
       SpeckleLog.Logger.Error(e, errMsg);
@@ -208,7 +208,7 @@ public partial class ConverterRevit
       famDoc.OwnerFamily.FamilyCategory = familyCategory;
       t.Commit();
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ArgumentException e)
     {
       SpeckleLog.Logger.Error(e, "Document category could not be modified");
       t.RollBack();
@@ -415,7 +415,7 @@ public partial class ConverterRevit
           Doc.Regenerate();
           DB.ElementTransformUtils.MirrorElements(Doc, new List<DB.ElementId> { elementId }, item.mirrorPlane, false);
         }
-        catch (Exception e)
+        catch (Autodesk.Revit.Exceptions.ApplicationException e)
         {
           SpeckleLog.Logger.Warning(e, "Failed to mirror element on {name} plane", item.name);
         }

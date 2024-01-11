@@ -16,6 +16,11 @@ namespace Speckle.Core.Models;
 /// to give connectors flexibility in constructing their objects.
 /// Inheritors should also create some function to add
 /// </remarks>
+[SuppressMessage(
+  "Naming",
+  "CA1708:Identifiers should differ by more than case",
+  Justification = "Class contains obsolete members that are kept for backwards compatiblity"
+)]
 public abstract class CommitObjectBuilder<TNativeObjectData>
 {
   /// <summary>Special appId symbol for the root object</summary>
@@ -122,11 +127,11 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// 1. Is non null
   /// 2. Is in the <see cref="Converted"/> dictionary
   /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_nestingInstructions"/> item
-  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
+  /// 4. Said <see cref="IList"/> can accept the <paramref name="current"/> object's type
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
-  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <parameref cref="current"/> given <see cref="_nestingInstructions"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <parameref name="current"/> given <see cref="_nestingInstructions"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
     var instructions = _nestingInstructions[current];

@@ -30,7 +30,7 @@ public class CSIElement2D : Element2D
     this.property = property;
     this.offset = offset;
     this.orientationAngle = orientationAngle;
-    DiaphragmAssignment = CSIDiaphragm.name;
+    DiaphragmAssignment = CSIDiaphragm?.name;
     this.CSIAreaSpring = CSIAreaSpring;
     this.modifiers = modifiers;
   }

@@ -26,18 +26,21 @@ public static class Units
     new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
 
   /// <param name="unit"></param>
-  /// <returns><see langword="true"/> if <param name="unit"> is a recognised/supported unit string</param>, otherwise <see langword="false"/></returns>
+  /// <returns><see langword="true"/> if <paramref name="unit"/> is a recognised/supported unit string, otherwise <see langword="false"/></returns>
   public static bool IsUnitSupported(string unit)
   {
     return s_supportedUnits.Contains(unit);
   }
 
+  /// <summary>
+  /// Gets the conversion factor from one unit system to another
+  /// </summary>
   /// <param name="from">Semantic unit string for the units to convert from</param>
   /// <param name="to">Semantic unit string for the units to convert to</param>
   /// <exception cref="ArgumentOutOfRangeException">A <inheritdoc cref="GetUnitsFromString"/></exception>
-  /// <returns>The scaling factor to convert from the <paramref name="from"/> units to the <paramref cref="to"/> units</returns>
+  /// <returns>The scaling factor to convert from the <paramref name="from"/> units to the <paramref name="to"/> units, or 1 if either unit param is null or none</returns>
   [Pure]
-  public static double GetConversionFactor(string from, string to)
+  public static double GetConversionFactor(string? from, string? to)
   {
     string? fromUnits = GetUnitsFromString(from);
     string? toUnits = GetUnitsFromString(to);

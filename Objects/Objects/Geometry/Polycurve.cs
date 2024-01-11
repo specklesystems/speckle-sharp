@@ -22,7 +22,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// </summary>
   /// <param name="units">The units the Polycurve was modelled in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  public Polycurve(string units = Units.Meters, string applicationId = null)
+  public Polycurve(string units = Units.Meters, string? applicationId = null)
   {
     this.applicationId = applicationId;
     this.units = units;
@@ -48,7 +48,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval domain { get; set; } = new(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -130,8 +130,8 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   {
     var list = new List<double>();
     list.Add(closed ? 1 : 0);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 1);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 1);
 
     var crvs = CurveArrayEncodingExtensions.ToArray(segments);
     list.Add(crvs.Count);
@@ -151,9 +151,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   /// <returns>A new <see cref="Polycurve"/> with the provided values.</returns>
   public static Polycurve FromList(List<double> list)
   {
-    var polycurve = new Polycurve();
-    polycurve.closed = list[2] == 1;
-    polycurve.domain = new Interval(list[3], list[4]);
+    var polycurve = new Polycurve { closed = list[2] == 1, domain = new Interval(list[3], list[4]) };
 
     var temp = list.GetRange(6, (int)list[5]);
     polycurve.segments = CurveArrayEncodingExtensions.FromArray(temp);
