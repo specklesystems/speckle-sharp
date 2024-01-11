@@ -1,16 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
-    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RhinoMacLauncher>/Applications/Rhino 8.app</RhinoMacLauncher>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
-    <Product>ConnectorRhino7</Product>
+    <Product>ConnectorRhino8</Product>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 
     <!--NOTE-->
@@ -20,11 +19,12 @@
     They are loaded from the nuget mac folder
     REMEMBER to update its numbers if updating the nugets
     -->
-    <PlatformTarget>x64</PlatformTarget>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <UseWpf>true</UseWpf>
-    <DefineConstants>$(DefineConstants);RHINO7;RHINO6_OR_GREATER;RHINO7_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO8;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
     <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <UseWpf>true</UseWpf>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
@@ -32,7 +32,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
     <StartAction>Program</StartAction>
   </PropertyGroup>
 
@@ -43,20 +43,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.10.21256.17001" IncludeAssets="compile; build" PrivateAssets="all" />
-    <PackageReference Include="RhinoWindows" Version="7.10.21256.17001" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="RhinoCommon" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="RhinoWindows" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper8\ConnectorGrasshopper8.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
 
   <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->

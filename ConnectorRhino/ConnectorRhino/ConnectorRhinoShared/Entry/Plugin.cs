@@ -262,6 +262,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
       sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
+#elif RHINO8
+      sb.Append(@"\McNeel\Rhinoceros\8.0\UI\Plug-ins\");
 #endif
     sb.AppendFormat("{0}.rui", Assembly.GetName().Name);
 
