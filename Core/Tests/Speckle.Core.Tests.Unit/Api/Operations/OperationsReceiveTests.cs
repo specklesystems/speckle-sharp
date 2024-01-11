@@ -53,8 +53,7 @@ public sealed partial class OperationsReceiveTests
   public async Task Receive_FromLocal_OnProgressActionCalled(string id)
   {
     bool wasCalled = false;
-    _ = await Core.Api.Operations
-      .Receive(id, null, _testCaseTransport, onProgressAction: _ => wasCalled = true);
+    _ = await Core.Api.Operations.Receive(id, null, _testCaseTransport, onProgressAction: _ => wasCalled = true);
 
     Assert.That(wasCalled, Is.True);
   }
@@ -64,17 +63,16 @@ public sealed partial class OperationsReceiveTests
   {
     bool wasCalled = false;
     int children = 0;
-    var result = await Core.Api.Operations
-      .Receive(
-        id,
-        null,
-        _testCaseTransport,
-        onTotalChildrenCountKnown: c =>
-        {
-          wasCalled = true;
-          children = c;
-        }
-      );
+    var result = await Core.Api.Operations.Receive(
+      id,
+      null,
+      _testCaseTransport,
+      onTotalChildrenCountKnown: c =>
+      {
+        wasCalled = true;
+        children = c;
+      }
+    );
 
     Assert.That(result.id, Is.EqualTo(id));
 

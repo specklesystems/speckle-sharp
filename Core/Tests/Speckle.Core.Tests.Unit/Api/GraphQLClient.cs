@@ -76,18 +76,17 @@ public sealed class GraphQLClientTests : IDisposable
     {
       var tokenSource = new CancellationTokenSource();
       tokenSource.Cancel();
-      await _client
-        .ExecuteWithResiliencePolicies(
-          async () =>
-            await Task.Run(
-              async () =>
-              {
-                await Task.Delay(1000);
-                return "foo";
-              },
-              tokenSource.Token
-            )
-        );
+      await _client.ExecuteWithResiliencePolicies(
+        async () =>
+          await Task.Run(
+            async () =>
+            {
+              await Task.Delay(1000);
+              return "foo";
+            },
+            tokenSource.Token
+          )
+      );
     });
     timer.Stop();
     var elapsed = timer.ElapsedMilliseconds;
@@ -105,17 +104,16 @@ public sealed class GraphQLClientTests : IDisposable
     var expectedResult = "finally it finishes";
     var timer = new Stopwatch();
     timer.Start();
-    var result = await _client
-      .ExecuteWithResiliencePolicies(() =>
+    var result = await _client.ExecuteWithResiliencePolicies(() =>
+    {
+      counter++;
+      if (counter < maxRetryCount)
       {
-        counter++;
-        if (counter < maxRetryCount)
-        {
-          throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
-        }
+        throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
+      }
 
-        return Task.FromResult(expectedResult);
-      });
+      return Task.FromResult(expectedResult);
+    });
     timer.Stop();
     // The baseline for wait is 1 seconds between the jittered retry
     Assert.That(timer.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(5000));
