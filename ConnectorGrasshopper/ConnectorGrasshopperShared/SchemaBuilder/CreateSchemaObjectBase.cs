@@ -98,10 +98,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
               ?.Count() > 0
         );
     }
-    catch (Exception e) when (!e.IsFatal())
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // Above code needs refactoring to have more granular exceptions thrown and documented.
-      SpeckleLog.Logger.Error(e, "Failed to obtain main param for constructor {}", SelectedConstructor.Name);
+      SpeckleLog.Logger.Error(ex, "Failed to obtain main param for constructor {}", SelectedConstructor.Name);
     }
 
     var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
@@ -571,15 +571,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       {
         return Convert.ChangeType(value, type);
       }
-      catch (InvalidCastException e)
-      {
-        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", e);
-      }
-      catch (FormatException e)
-      {
-        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", e);
-      }
-      catch (OverflowException e)
+      catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
       {
         throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", e);
       }
@@ -598,10 +590,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         {
           return Convert.ChangeType(converted, type);
         }
-        catch (Exception e)
-          when (e is InvalidCastException or FormatException or OverflowException or ArgumentNullException)
+        catch (Exception ex)
+          when (ex is InvalidCastException or FormatException or OverflowException or ArgumentNullException)
         {
-          throw new SpeckleException($"Cannot convert {converted.GetType()} to {type}", e);
+          throw new SpeckleException($"Cannot convert {converted.GetType()} to {type}", ex);
         }
       }
 
@@ -616,9 +608,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       MethodInfo castIntoMethod = GetType().GetMethod("CastObject").MakeGenericMethod(type);
       return castIntoMethod.Invoke(null, new[] { value });
     }
-    catch (Exception e) when (!e.IsFatal())
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      SpeckleLog.Logger.Error(e, "Failed to cast type");
+      SpeckleLog.Logger.Error(ex, "Failed to cast type");
     }
 
     AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");

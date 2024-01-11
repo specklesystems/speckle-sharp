@@ -103,9 +103,10 @@ public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<stri
       {
         return Operations.Serialize(item.Value);
       }
-      catch (Exception e) when (!e.IsFatal())
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
+        SpeckleLog.Logger.ForContext("speckle_type", item.Value.speckle_type).Error(ex, "Failed to serialise object");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, ex.ToFormattedString());
         return null;
       }
     }

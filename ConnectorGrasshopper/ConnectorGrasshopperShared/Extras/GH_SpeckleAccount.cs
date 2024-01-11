@@ -48,7 +48,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
       }
       catch (Exception ex) when (!ex.IsFatal()) // TODO: Handle this exception instead of ignoring it
       {
-        SpeckleLog.Logger.Warning("Failed to get account with same id");
+        SpeckleLog.Logger.Warning(ex, "Failed to get account with same id");
       }
     }
 
@@ -61,7 +61,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
       }
       catch (Exception ex) when (!ex.IsFatal()) // TODO: Handle this exception instead of ignoring it
       {
-        SpeckleLog.Logger.Warning("Failed to get account with same id");
+        SpeckleLog.Logger.Warning(ex, "Failed to get account with same id");
       }
     }
 

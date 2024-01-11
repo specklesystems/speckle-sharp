@@ -436,9 +436,9 @@ public static class Utilities
           var converted = converter.ConvertToNative(@base);
           return WrapInGhType(converted);
         }
-        catch (SpeckleException e)
+        catch (SpeckleException ex)
         {
-          converter.Report.ConversionErrors.Add(new SpeckleException($"Could not convert {@base}", e));
+          converter.Report.ConversionErrors.Add(new SpeckleException($"Could not convert {@base}", ex));
           return null;
         }
       }

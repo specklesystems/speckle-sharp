@@ -16,7 +16,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 namespace ConnectorGrasshopper.Objects;
 
 [Obsolete($"Use {nameof(ExtendSpeckleObjectByKeyValueV2TaskComponent)}")]
-[SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Component is obsolete")]
 public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
 {
   public ExtendSpeckleObjectByKeyValueTaskComponent()

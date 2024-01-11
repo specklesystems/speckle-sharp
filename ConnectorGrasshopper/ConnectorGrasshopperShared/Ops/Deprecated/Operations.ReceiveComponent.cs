@@ -548,9 +548,10 @@ public class ReceiveComponentWorker : WorkerInstance
       {
         client = new Client(InputWrapper?.GetAccount().Result);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+        SpeckleLog.Logger.Warning(ex, "Failed to get speckle client");
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, ex.ToFormattedString()));
         Done();
         return;
       }

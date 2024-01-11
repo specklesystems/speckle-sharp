@@ -120,9 +120,9 @@ public class StreamListComponent : GH_SpeckleComponent
             .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
             .ToList();
         }
-        catch (SpeckleGraphQLException e)
+        catch (Exception ex)
         {
-          error = e;
+          error = ex;
         }
         finally
         {

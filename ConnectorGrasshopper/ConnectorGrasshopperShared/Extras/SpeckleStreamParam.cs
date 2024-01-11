@@ -93,7 +93,7 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
         Value = new StreamWrapper(ghStr.Value);
         return true;
       }
-      catch (Exception e) when (!e.IsFatal())
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return false;
       }

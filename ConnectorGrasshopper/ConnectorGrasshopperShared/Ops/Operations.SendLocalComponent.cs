@@ -88,10 +88,10 @@ public class SendLocalWorker : WorkerInstance
       ObjectToSend["@data"] = converted;
       sentObjectId = Operations.Send(ObjectToSend).Result;
     }
-    catch (Exception e) when (!e.IsFatal())
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      Console.WriteLine(e);
-      RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+      SpeckleLog.Logger.Error(ex, "Local send failed");
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, ex.ToFormattedString()));
     }
 
     Done();
