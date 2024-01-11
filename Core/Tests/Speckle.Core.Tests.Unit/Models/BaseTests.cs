@@ -113,20 +113,6 @@ public class BaseTests
     Assert.That(names, Has.Member(nameof(@base.attachedProp)));
   }
 
-  [Test(Description = "Checks that no ignored or obsolete properties are returned")]
-  public void CanGetMembers()
-  {
-    var @base = new SampleObject();
-    var dynamicProp = "dynamicProp";
-    @base[dynamicProp] = 123;
-
-    var names = @base.GetMembers().Keys;
-    Assert.That(names, Has.No.Member(nameof(@base.IgnoredSchemaProp)));
-    Assert.That(names, Has.No.Member(nameof(@base.ObsoleteSchemaProp)));
-    Assert.That(names, Has.Member(dynamicProp));
-    Assert.That(names, Has.Member(nameof(@base.attachedProp)));
-  }
-
   [Test(Description = "Checks that only instance properties are returned, excluding obsolete and ignored.")]
   public void CanGetMembers_OnlyInstance()
   {
@@ -214,11 +200,8 @@ public class BaseTests
     var sampleMembers = sample.GetMembers(selectedMembers);
     var copyMembers = copy.GetMembers(selectedMembers);
 
-    foreach (var kvp in copyMembers)
-    {
-      Assert.That(sampleMembers.Keys, Does.Contain(kvp.Key));
-      Assert.That(kvp.Value, Is.EqualTo(sample[kvp.Key]));
-    }
+    Assert.That(copyMembers.Keys, Is.EquivalentTo(sampleMembers.Keys));
+    Assert.That(copyMembers.Values, Is.EquivalentTo(sampleMembers.Values));
   }
 
   public class SampleObject : Base
