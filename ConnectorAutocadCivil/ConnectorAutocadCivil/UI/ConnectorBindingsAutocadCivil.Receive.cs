@@ -12,7 +12,9 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Speckle.Core.Logging;
+#endif
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using static Speckle.ConnectorAutocadCivil.Utils;
