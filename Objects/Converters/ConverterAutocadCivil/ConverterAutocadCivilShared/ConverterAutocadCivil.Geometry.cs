@@ -29,6 +29,7 @@ using Spiral = Objects.Geometry.Spiral;
 using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -856,23 +857,25 @@ public partial class ConverterAutocadCivil
 
     // get nurbs and geo data
     var data = spline.NurbsData;
-    var _spline = spline.GetGeCurve() as NurbCurve3d;
+    var nurbs = spline.GetGeCurve() as NurbCurve3d;
 
     // hack: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
     bool periodicClosed = false;
-    if (_spline.Knots.Count < _spline.NumberOfControlPoints + _spline.Degree + 1 && spline.IsPeriodic)
+    if (nurbs.Knots.Count < nurbs.NumberOfControlPoints + nurbs.Degree + 1 && spline.IsPeriodic)
     {
       periodicClosed = true;
     }
 
     // handle the display polyline
-    if (spline.ToPolyline(false, true) is AcadDB.Curve poly)
+    AcadDB.Curve poly = spline.ToPolyline(false, true);
+    ICurve convertedPoly = CurveToSpeckle(poly);
+    if (convertedPoly is Polyline polyline)
     {
-      ICurve convertedPoly = CurveToSpeckle(poly);
-      if (convertedPoly is Polyline polyline)
-      {
-        curve.displayValue = polyline;
-      }
+      curve.displayValue = polyline;
+    }
+    else
+    {
+      SpeckleLog.Logger.Error("Could not create polyline for spline's display value.");
     }
 
     // get points
@@ -934,8 +937,8 @@ public partial class ConverterAutocadCivil
     curve.periodic = spline.IsPeriodic;
     curve.rational = spline.IsRational;
     curve.closed = periodicClosed || spline.Closed;
-    curve.length = _spline.GetLength(_spline.StartParameter, _spline.EndParameter, tolerance);
-    curve.domain = IntervalToSpeckle(_spline.GetInterval());
+    curve.length = nurbs.GetLength(nurbs.StartParameter, nurbs.EndParameter, tolerance);
+    curve.domain = IntervalToSpeckle(nurbs.GetInterval());
     curve.bbox = BoxToSpeckle(spline.GeometricExtents);
     curve.units = ModelUnits;
 

@@ -115,7 +115,7 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch (System.Exception ex)
+    catch (System.Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Community: {exceptionMessage}");
     }
@@ -133,7 +133,7 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch (System.Exception ex)
+    catch (System.Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Tutorials: {exceptionMessage}");
     }
@@ -151,7 +151,7 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch (System.Exception ex)
+    catch (System.Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Docs: {exceptionMessage}");
     }

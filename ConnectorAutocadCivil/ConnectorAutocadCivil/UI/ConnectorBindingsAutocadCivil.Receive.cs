@@ -12,6 +12,7 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using static Speckle.ConnectorAutocadCivil.Utils;
@@ -249,10 +250,10 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           }
 
           // if the object wasnt converted, log fallback status
-          if (commitObj.Converted == null || commitObj.Converted.Count == 0)
+          if (commitObj.Converted.Count == 0)
           {
-            var convertedFallbackCount = commitObj.Fallback.Where(o => o.Converted.Any())?.Count();
-            if (convertedFallbackCount is not null)
+            var convertedFallbackCount = commitObj.Fallback.Where(o => o.Converted.Count != 0).Count();
+            if (convertedFallbackCount > 0)
             {
               commitObj.Update(logItem: $"Creating with {convertedFallbackCount} fallback values");
             }
@@ -449,6 +450,12 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     return objectsToConvert;
   }
 
+  /// <summary>
+  /// Converts a Base into its Speckle equivalents
+  /// </summary>
+  /// <param name="obj"></param>
+  /// <param name="converter"></param>
+  /// <returns>A list of converted objects, or an empty list if no objects were converted.</returns>
   private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
   {
     var convertedList = new List<object>();
@@ -529,8 +536,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
               {
                 o.SetPropertySets(Doc, propertySets);
               }
-              catch (Exception e)
+              catch (Exception e) when (!e.IsFatal())
               {
+                SpeckleLog.Logger.Error(e, "Could not set property sets: {exceptionMessage}");
                 appObj.Log.Add($"Could not attach property sets: {e.Message}");
               }
             }

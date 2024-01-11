@@ -272,7 +272,7 @@ public partial class ConverterAutocadCivil
           // create only if parent exists in doc
           if (parent == ObjectId.Null || civilAlignment.offset == 0)
           {
-            goto default;
+            id = CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
           }
 
           try
@@ -288,19 +288,12 @@ public partial class ConverterAutocadCivil
             }
             catch (ArgumentException)
             {
-              goto default;
+              id = CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
             }
           }
           break;
         default:
-          try // throws when name already exsits or objectIds are invalid
-          {
-            id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
-          }
-          catch (ArgumentException)
-          {
-            id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
-          }
+          id =CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
           break;
       }
 
@@ -364,6 +357,20 @@ public partial class ConverterAutocadCivil
   }
 
 #region helper methods
+  private ObjectId CreateDefaultAlignment(CivilDocument civilDoc, string name, ObjectId site, ObjectId layer, ObjectId style, ObjectId label)
+  {
+    ObjectId id = ObjectId.Null;
+    try // throws when name already exsits or objectIds are invalid
+    {
+      id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
+    }
+    catch (ArgumentException)
+    {
+      id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
+    }
+    return id;
+  }
+
   private SpiralType SpiralTypeToSpeckle(Civil.SpiralType type)
   {
     return type switch
@@ -448,12 +455,12 @@ public partial class ConverterAutocadCivil
     Point2d midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
     try
     {
-      if (arc.GreaterThan180) // this can throw
+      if (arc.GreaterThan180) // this can throw : The property gets an invalid value according to the entity's constraint type.
       {
         midPoint = chordMid.Add(unitMidVector.Negate().MultiplyBy(2 * arc.Radius - sagitta));
       }
     }
-    catch (InvalidOperationException){ } // The property gets an invalid value according to the entity's constraint type.
+    catch (InvalidOperationException){ } // continue with original midpoint if GreaterThan180 doesn't apply to this arc
 
     // create arc
     var speckleArc = ArcToSpeckle(new CircularArc2d(arc.StartPoint, midPoint, arc.EndPoint));
@@ -1053,7 +1060,6 @@ public partial class ConverterAutocadCivil
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
 
-    // TODO: use !IsFatal() here
     try { specklePipe["shape"] = pipe.CrossSectionalShape.ToString(); } catch { }
     try { specklePipe["slope"] = pipe.Slope; } catch { }
     try { specklePipe["flowDirection"] = pipe.FlowDirection.ToString(); } catch { }

@@ -68,14 +68,18 @@ public static class SpeckleStreamManager
         if (!string.IsNullOrEmpty(value))
         {
           //Try to decode here because there is old data
-          if (Base64Decode(value, out value))
+          if (TryBase64Decode(value, out value))
           {
             streams = JsonConvert.DeserializeObject<List<StreamState>>(value);
+          }
+          else
+          {
+            SpeckleLog.Logger.Error("Could not decode Base54 encoded StreamState Xrecord string");
           }
         }
       }
 
-      return streams;
+      return streams ?? new();
     }
   }
 
@@ -83,6 +87,7 @@ public static class SpeckleStreamManager
   /// Writes the stream states to the current document.
   /// </summary>
   /// <param name="doc"></param>
+  /// <param name="streamStates"></param>
   public static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
   {
     if (doc == null)
@@ -156,10 +161,10 @@ public static class SpeckleStreamManager
   /// <param name="base64EncodedData"></param>
   /// <param name="decodedString">The decoded string</param>
   /// <returns>True on success, false on failure</returns>
-  private static bool Base64Decode(string base64EncodedData, out string decodedString)
+  private static bool TryBase64Decode(string base64EncodedData, out string decodedString)
   {
     decodedString = null;
-    if (string.IsNullOrEmpty(base64EncodedData))
+    if (string.IsNullOrWhiteSpace(base64EncodedData))
     {
       return false;
     }

@@ -66,7 +66,7 @@ public static class Utils
 
 public partial class ConverterAutocadCivil
 {
-  private const string INVALIDCHARS = @"<>/\:;""?*|=,‘";
+  private const string INVALID_CHARS = @"<>/\:;""?*|=,‘";
 
   private Dictionary<string, ObjectId> _lineTypeDictionary = new();
   public Dictionary<string, ObjectId> LineTypeDictionary
@@ -98,7 +98,7 @@ public partial class ConverterAutocadCivil
     string cleanDelimiter = str.Replace("::", "$");
 
     // remove all other invalid chars
-    return Regex.Replace(cleanDelimiter, $"[{INVALIDCHARS}]", string.Empty);
+    return Regex.Replace(cleanDelimiter, $"[{INVALID_CHARS}]", string.Empty);
   }
 
   public static void AddNameAndDescriptionProperty(string name, string description, Base @base)

@@ -12,6 +12,7 @@ using Autodesk.AutoCAD.Colors;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
+using Speckle.Core.Logging;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Autodesk.Aec.ApplicationServices;
@@ -226,7 +227,7 @@ public static class Utils
   /// Get visibility of a DBObject
   /// </summary>
   /// <param name="obj"></param>
-  /// <returns></returns>
+  /// <returns>True if the object is visible, or false if not. Returns true on failure to retrieve object visibility property.</returns>
   public static bool Visible(this DBObject obj)
   {
     bool isVisible = true;
@@ -262,7 +263,7 @@ public static class Utils
           isVisible = visible;
         }
       }
-      catch (AmbiguousMatchException) { }
+      catch (AmbiguousMatchException) { } // will return true on failure to retrieve object visibility property.
     }
     return isVisible;
   }
@@ -340,17 +341,23 @@ public static class Utils
     // Create the definition for each property
     foreach (var entry in propertySetDict)
     {
-      var propDef = new PropertyDefinition();
-      propDef.SetToStandard(doc.Database);
-      propDef.SubSetDatabaseDefaults(doc.Database);
-      propDef.Name = entry.Key;
       if (GetPropertySetType(entry.Value) is Autodesk.Aec.PropertyData.DataType dataType)
       {
-        propDef.DataType = dataType;
-      }
+        var propDef = new PropertyDefinition
+        {
+          DataType = dataType,
+          Name = entry.Key,
+          DefaultData = entry.Value
+        };
 
-      propDef.DefaultData = entry.Value;
-      propSetDef.Definitions.Add(propDef);
+        propDef.SetToStandard(doc.Database);
+        propDef.SubSetDatabaseDefaults(doc.Database);
+        propSetDef.Definitions.Add(propDef);
+      }
+      else
+      {
+        SpeckleLog.Logger.Error( $"Could not determine property set entry type of {entry.Value}. Property set entry not added to property set definitions.");
+      }
     }
 
     return propSetDef;
@@ -368,14 +375,13 @@ public static class Utils
 
     try
     {
-      // attempt to retrieve the property set.
-      // this will throw if the property set does not exist on the object.
-      // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
       temporaryId = PropertyDataServices.GetPropertySet(obj, propertySetId);
     } 
-    catch (Autodesk.AutoCAD.Runtime.Exception)
+    catch (Autodesk.AutoCAD.Runtime.Exception e) when (!e.IsFatal())
     {
-      // More than likely eKeyNotFound exception.
+      // This will throw if the property set does not exist on the object.
+      // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
+      // More than likely a runtime exception with message: eKeyNotFound.
     }
 
     return temporaryId != ObjectId.Null;
@@ -452,7 +458,11 @@ public static class Utils
     {
       propertySets = PropertyDataServices.GetPropertySets(obj);
     }
-    catch (Autodesk.AutoCAD.Runtime.Exception) { }
+    catch (Autodesk.AutoCAD.Runtime.Exception e) when (!e.IsFatal())
+    {
+      // This may throw if property sets do not exist on the object.
+      // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.
+    }
 
     if (propertySets is null)
     {
@@ -580,8 +590,9 @@ public static class Utils
           regAppTable.DowngradeOpen();
           tr.AddNewlyCreatedDBObject(regAppRecord, true);
         }
-        catch (Autodesk.AutoCAD.Runtime.Exception)
+        catch (Exception e) when (!e.IsFatal())
         {
+          SpeckleLog.Logger.Error(e, "Could not create the RegAppTableRecord for application ids in the Doc.");
           return false;
         }
       }

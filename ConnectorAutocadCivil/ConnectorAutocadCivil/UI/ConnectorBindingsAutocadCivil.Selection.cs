@@ -77,7 +77,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     {
       Editor editor = Application.DocumentManager.MdiActiveDocument.Editor;
 
-      var currentSelection = editor.SelectImplied().Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
+      var currentSelection = editor.SelectImplied()?.Value?.GetObjectIds()?.ToList() ?? new List<ObjectId>();
       foreach (var arg in objs)
       {
         if (Utils.GetHandle(arg, out Handle handle))

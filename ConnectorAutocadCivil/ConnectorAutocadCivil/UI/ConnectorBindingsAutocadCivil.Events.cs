@@ -5,6 +5,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorAutocadCivil.Entry;
+using Speckle.Core.Logging;
 
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
@@ -37,13 +38,15 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       return;
     }
 
-    List<StreamState> streams = GetStreamsInFile();
-    if (streams is null)
+    try
     {
-      return;
+      List<StreamState> streams = GetStreamsInFile();
+      UpdateSavedStreams(streams);
     }
-
-    UpdateSavedStreams(streams);
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Failed to get and update current streams in file: {exceptionMessage}", ex.Message);
+    }
 
     MainViewModel.GoHome();
   }
@@ -59,17 +62,18 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       return;
     }
 
-    List<StreamState> streams = GetStreamsInFile();
-    if (streams is null)
+    try
     {
-      return;
+      List<StreamState> streams = GetStreamsInFile();
+      if (streams.Count > 0)
+      {
+        SpeckleAutocadCommand.CreateOrFocusSpeckle();
+        UpdateSavedStreams?.Invoke(streams);
+      }
     }
-
-    if (streams.Count > 0)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      SpeckleAutocadCommand.CreateOrFocusSpeckle();
-      UpdateSavedStreams?.Invoke(streams);
-      MainViewModel.GoHome();
+      SpeckleLog.Logger.Error(ex, "Failed to get and update current streams in file: {exceptionMessage}", ex.Message);
     }
   }
 }

@@ -9,6 +9,7 @@ using DesktopUI2.Models.Settings;
 using Speckle.ConnectorAutocadCivil.Storage;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Logging;
 
 #if ADVANCESTEEL
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
@@ -108,7 +109,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       string path = GetDocPath(Doc);
       docString = path + name;
     }
-    catch // is there a way to check if the doc is saved before attempting to retrieve the doc path?
+    catch (Exception e) when (!e.IsFatal()) // is there a way to check if the doc is saved before attempting to retrieve the doc path?
     {
       // get the timestamp if path is null
       // this is because new unsaved docs have a high chance of having the same name
