@@ -573,7 +573,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       }
       catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
       {
-        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", e);
+        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", ex);
       }
     }
 
