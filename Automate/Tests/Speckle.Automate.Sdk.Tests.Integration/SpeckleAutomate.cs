@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -91,6 +92,18 @@ public sealed class AutomationContextTest : IDisposable
     var statusMessage = status.AutomationRuns[0].FunctionRuns[0].StatusMessage;
 
     Assert.That(statusMessage, Is.EqualTo(automationContext.AutomationResult.StatusMessage));
+  }
+
+  [Test]
+  public void TestParseInputData()
+  {
+    TestFunctionInputs testFunctionInputs = new() { ForbiddenSpeckleType = "Base" };
+    FunctionRunData<TestFunctionInputs> functionRunData = new() { FunctionInputs = testFunctionInputs };
+    string serializedFunctionRunData = JsonConvert.SerializeObject(functionRunData);
+    File.WriteAllText("./inputData.json", serializedFunctionRunData);
+    FunctionRunData<TestFunctionInputs>? data = FunctionRunDataParser.FromPath<TestFunctionInputs>("./inputData.json");
+
+    Assert.AreEqual("Base", data.FunctionInputs.ForbiddenSpeckleType);
   }
 
   [Test]
