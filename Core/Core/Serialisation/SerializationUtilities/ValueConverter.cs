@@ -7,7 +7,7 @@ using System.Globalization;
 using Speckle.Core.Logging;
 using Numerics = System.Numerics;
 
-namespace Speckle.Core.Serialisation;
+namespace Speckle.Core.Serialisation.SerializationUtilities;
 
 internal static class ValueConverter
 {

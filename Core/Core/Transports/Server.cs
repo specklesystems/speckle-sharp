@@ -18,6 +18,9 @@ using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 using Timer = System.Timers.Timer;
 
+// ReSharper disable InconsistentNaming
+#pragma warning disable IDE1006, IDE0018, CA2000, CA1031, CS1634, CS1570, CS1696, CA1836, CA1854, CA1834, CA2201, CA1725, CA1861, CA1024
+
 namespace Speckle.Core.Transports;
 
 /// <summary>
@@ -628,3 +631,4 @@ internal sealed class GzipContent : HttpContent
     return false;
   }
 }
+#pragma warning restore IDE1006, IDE0018, CA2000, CA1031, CS1634, CS1570, CS1696, CA1836, CA1854, CA1834, CA2201, CA1725, CA1861, CA1024

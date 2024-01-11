@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 
-namespace Speckle.Core.Serialisation;
+namespace Speckle.Core.Serialisation.SerializationUtilities;
 
 internal enum WorkerThreadTaskType
 {

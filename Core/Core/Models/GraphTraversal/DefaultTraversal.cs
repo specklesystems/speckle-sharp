@@ -7,6 +7,11 @@ using Speckle.Core.Kits;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
+[SuppressMessage(
+  "Naming",
+  "CA1708:Identifiers should differ by more than case",
+  Justification = "Class contains obsolete members that are kept for backwards compatiblity"
+)]
 public static class DefaultTraversal
 {
   /// <summary>

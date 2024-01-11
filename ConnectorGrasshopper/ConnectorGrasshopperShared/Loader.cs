@@ -37,11 +37,13 @@ public class Loader : GH_AssemblyPriority
 
   public override GH_LoadingInstruction PriorityLoad()
   {
-    var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
-    if (RhinoApp.Version.Major == 7)
+    string version = RhinoApp.Version.Major switch
     {
-      version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
-    }
+      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
@@ -54,7 +56,6 @@ public class Loader : GH_AssemblyPriority
     SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
     try
     {
-      // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
       Setup.Init(version, HostApplications.Grasshopper.Slug);
     }
     catch (Exception ex) when (!ex.IsFatal())

@@ -1,12 +1,12 @@
 using NUnit.Framework;
 using Speckle.Core.Models;
-using Speckle.Core.Serialisation;
 using Speckle.Core.Serialisation.Deprecated;
+using Speckle.Core.Serialisation.SerializationUtilities;
 
 namespace Speckle.Core.Tests.Unit.Serialisation
 {
   [TestFixture]
-  [TestOf(typeof(SerializationUtilities))]
+  [TestOf(typeof(BaseObjectSerializationUtilities))]
   public class ObjectModelDeprecationTests
   {
     [Test]
@@ -14,7 +14,7 @@ namespace Speckle.Core.Tests.Unit.Serialisation
     {
       string destinationType = $"Speckle.Core.Serialisation.{nameof(MySpeckleBase)}";
 
-      var result = SerializationUtilities.GetAtomicType(destinationType);
+      var result = BaseObjectSerializationUtilities.GetAtomicType(destinationType);
       Assert.That(result, Is.EqualTo(typeof(MySpeckleBase)));
     }
 
@@ -23,7 +23,7 @@ namespace Speckle.Core.Tests.Unit.Serialisation
     [TestCase("Objects.Mesh", "Objects.Deprecated.Mesh")]
     public void GetDeprecatedTypeName(string input, string expected)
     {
-      var actual = SerializationUtilities.GetDeprecatedTypeName(input);
+      var actual = BaseObjectSerializationUtilities.GetDeprecatedTypeName(input);
       Assert.That(actual, Is.EqualTo(expected));
     }
   }

@@ -99,7 +99,14 @@ public sealed class MemoryTransport : ITransport, ICloneable
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    throw new NotImplementedException();
+    string res = TransportHelpers.CopyObjectAndChildrenSync(
+      id,
+      this,
+      targetTransport,
+      onTotalChildrenCountKnown,
+      CancellationToken
+    );
+    return Task.FromResult(res);
   }
 
   public Task WriteComplete()

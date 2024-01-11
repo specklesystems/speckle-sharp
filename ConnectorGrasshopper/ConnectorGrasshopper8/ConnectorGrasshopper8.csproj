@@ -1,19 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
     <TargetExt>.gha</TargetExt>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <DefineConstants>$(DefineConstants);RHINO7;RHINO7_OR_GREATER;RHINO6_OR_GREATER</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
+    <UseWpf>true</UseWpf>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    
   </PropertyGroup>
-
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-    <StartAction>Program</StartAction>
-  </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
     <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
@@ -28,14 +27,11 @@
 
   <ItemGroup>
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="Grasshopper" Version="7.10.21256.17001" IncludeAssets="compile;build" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" Version="1.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="Grasshopper" Version="8.3.24009.15001" IncludeAssets="compile;build" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.1" />
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
-  
+
   <Target Name="GenerateT4">
     <Message Text="Generating T4 templates..." Importance="high" />
     <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)" />
