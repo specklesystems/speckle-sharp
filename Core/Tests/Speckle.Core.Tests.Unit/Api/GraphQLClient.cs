@@ -80,16 +80,14 @@ public sealed class GraphQLClientTests : IDisposable
         .ExecuteWithResiliencePolicies(
           async () =>
             await Task.Run(
-                async () =>
-                {
-                  await Task.Delay(1000).ConfigureAwait(false);
-                  return "foo";
-                },
-                tokenSource.Token
-              )
-              .ConfigureAwait(false)
-        )
-        .ConfigureAwait(false);
+              async () =>
+              {
+                await Task.Delay(1000);
+                return "foo";
+              },
+              tokenSource.Token
+            )
+        );
     });
     timer.Stop();
     var elapsed = timer.ElapsedMilliseconds;
@@ -117,8 +115,7 @@ public sealed class GraphQLClientTests : IDisposable
         }
 
         return Task.FromResult(expectedResult);
-      })
-      .ConfigureAwait(false);
+      });
     timer.Stop();
     // The baseline for wait is 1 seconds between the jittered retry
     Assert.That(timer.ElapsedMilliseconds, Is.GreaterThanOrEqualTo(5000));

@@ -54,8 +54,7 @@ public sealed partial class OperationsReceiveTests
   {
     bool wasCalled = false;
     _ = await Core.Api.Operations
-      .Receive(id, null, _testCaseTransport, onProgressAction: _ => wasCalled = true)
-      .ConfigureAwait(false);
+      .Receive(id, null, _testCaseTransport, onProgressAction: _ => wasCalled = true);
 
     Assert.That(wasCalled, Is.True);
   }
@@ -75,8 +74,7 @@ public sealed partial class OperationsReceiveTests
           wasCalled = true;
           children = c;
         }
-      )
-      .ConfigureAwait(false);
+      );
 
     Assert.That(result.id, Is.EqualTo(id));
 

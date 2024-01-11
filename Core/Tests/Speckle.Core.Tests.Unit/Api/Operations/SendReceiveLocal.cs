@@ -80,12 +80,12 @@ public sealed class SendReceiveLocal : IDisposable
       ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
     }
 
-    _objId01 = await Core.Api.Operations.Send(myObject, _sut, false).ConfigureAwait(false);
+    _objId01 = await Core.Api.Operations.Send(myObject, _sut, false);
 
     Assert.That(_objId01, Is.Not.Null);
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
 
-    var objsPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
+    var objsPulled = await Core.Api.Operations.Receive(_objId01);
     Assert.That(((List<object>)objsPulled["@items"]), Has.Count.EqualTo(30));
   }
 
@@ -104,11 +104,11 @@ public sealed class SendReceiveLocal : IDisposable
     myObject["@dictionary"] = myDic;
     myObject["@list"] = myList;
 
-    _objId01 = await Core.Api.Operations.Send(myObject, _sut, false).ConfigureAwait(false);
+    _objId01 = await Core.Api.Operations.Send(myObject, _sut, false);
 
     Assert.That(_objId01, Is.Not.Null);
 
-    var objsPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
+    var objsPulled = await Core.Api.Operations.Receive(_objId01);
     Assert.That(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), Is.EqualTo(1));
     Assert.That(((List<object>)objsPulled["@list"]).Last(), Is.EqualTo("ciao"));
   }
@@ -139,12 +139,12 @@ public sealed class SendReceiveLocal : IDisposable
       ((List<Base>)((dynamic)obj)["@LayerC"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" });
     }
 
-    _objId01 = await Core.Api.Operations.Send(obj, _sut, false).ConfigureAwait(false);
+    _objId01 = await Core.Api.Operations.Send(obj, _sut, false);
 
     Assert.That(_objId01, Is.Not.Null);
     TestContext.Out.WriteLine($"Written {NUM_OBJECTS + 1} objects. Commit id is {_objId01}");
 
-    var objPulled = await Core.Api.Operations.Receive(_objId01).ConfigureAwait(false);
+    var objPulled = await Core.Api.Operations.Receive(_objId01);
 
     Assert.That(objPulled, Is.TypeOf<Base>());
 
@@ -175,17 +175,15 @@ public sealed class SendReceiveLocal : IDisposable
     }
 
     ConcurrentDictionary<string, int> progress = null;
-    _commitId02 = await Core.Api.Operations
-      .Send(
-        myObject,
-        _sut,
-        false,
-        onProgressAction: dict =>
-        {
-          progress = dict;
-        }
-      )
-      .ConfigureAwait(false);
+    _commitId02 = await Core.Api.Operations.Send(
+      myObject,
+      _sut,
+      false,
+      onProgressAction: dict =>
+      {
+        progress = dict;
+      }
+    );
 
     Assert.That(progress, Is.Not.Null);
     Assert.That(progress!.Keys, Has.Count.GreaterThanOrEqualTo(1));
@@ -195,15 +193,13 @@ public sealed class SendReceiveLocal : IDisposable
   public async Task DownloadProgressReports()
   {
     ConcurrentDictionary<string, int> progress = null;
-    var pulledCommit = await Core.Api.Operations
-      .Receive(
-        _commitId02,
-        onProgressAction: dict =>
-        {
-          progress = dict;
-        }
-      )
-      .ConfigureAwait(false);
+    var pulledCommit = await Core.Api.Operations.Receive(
+      _commitId02,
+      onProgressAction: dict =>
+      {
+        progress = dict;
+      }
+    );
     Assert.That(progress, Is.Not.Null);
     Assert.That(progress.Keys, Has.Count.GreaterThanOrEqualTo(1));
   }
