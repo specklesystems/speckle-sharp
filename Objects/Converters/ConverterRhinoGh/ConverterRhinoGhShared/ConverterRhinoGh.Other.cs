@@ -19,7 +19,7 @@ using RH = Rhino.DocObjects;
 using Transform = Rhino.Geometry.Transform;
 using Utilities = Speckle.Core.Models.Utilities;
 
-#if RHINO7
+#if RHINO7_OR_GREATER
 using Rhino.Render;
 #endif
 
