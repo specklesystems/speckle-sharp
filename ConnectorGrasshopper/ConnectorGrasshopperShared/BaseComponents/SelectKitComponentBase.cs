@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Objects;
 
@@ -46,10 +47,9 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
 
       Menu_AppendSeparator(menu);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // Todo: handle this
-      Console.WriteLine(e);
+      SpeckleLog.Logger.Error(ex, "Failed to append Kit selection menu items");
     }
   }
 
@@ -71,10 +71,9 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
       Message = $"Using the {Kit.Name} Converter";
       ExpireSolution(true);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // TODO: handle this.
-      Console.WriteLine(e);
+      SpeckleLog.Logger.Error(ex, "Failed to set converter from Kit");
     }
   }
 
@@ -94,8 +93,9 @@ public abstract class SelectKitComponentBase : GH_SpeckleComponent
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       Message = $"{Kit.Name} Kit";
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "No default kit found on this machine.");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
     }
   }

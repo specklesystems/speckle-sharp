@@ -58,7 +58,7 @@ public class Loader : GH_AssemblyPriority
     {
       Setup.Init(version, HostApplications.Grasshopper.Slug);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
       // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
@@ -145,7 +145,7 @@ public class Loader : GH_AssemblyPriority
       var mainMenu = Instances.DocumentEditor.MainMenuStrip;
       AddSpeckleMenu(mainMenu);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       ShowLoadErrorMessageBox();
     }
@@ -268,7 +268,7 @@ public class Loader : GH_AssemblyPriority
             Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
           SpeckleLog.Logger.Fatal(
             ex,

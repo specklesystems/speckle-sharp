@@ -300,7 +300,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 })
                 .ToList();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Error(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
@@ -311,7 +311,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             {
               @base[key] = converted;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Error(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -333,7 +333,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 @base[key] = value;
               }
             }
-            catch (Exception ex)
+            catch (SpeckleException ex)
             {
               SpeckleLog.Logger.Warning(ex, "Failed while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -347,7 +347,7 @@ public class ExtendSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
         @base = null;
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
