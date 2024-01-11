@@ -12,6 +12,7 @@ public static class FunctionRunDataParser
   /// <typeparam name="T"> Type for function inputs.</typeparam>
   /// <returns>The data to be able run function.</returns>
   /// <exception cref="SerializationException"> Throws if deserialized object is null.</exception>
+  /// <exception cref="FileNotFoundException"> Throws unless file exists.</exception>
   public static FunctionRunData<T> FromPath<T>(string inputLocation)
   {
     string inputJsonString = ReadInputData(inputLocation);
