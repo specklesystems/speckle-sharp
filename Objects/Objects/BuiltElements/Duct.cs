@@ -101,7 +101,7 @@ namespace Objects.BuiltElements.Revit
       double height,
       double diameter,
       double velocity = 0,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       baseCurve = baseLine;
@@ -113,7 +113,7 @@ namespace Objects.BuiltElements.Revit
       this.velocity = velocity;
       this.systemName = systemName;
       this.systemType = systemType;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
     }
 
@@ -144,7 +144,7 @@ namespace Objects.BuiltElements.Revit
       double height,
       double diameter,
       double velocity = 0,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.baseCurve = baseCurve;
@@ -156,7 +156,7 @@ namespace Objects.BuiltElements.Revit
       this.velocity = velocity;
       this.systemName = systemName;
       this.systemType = systemType;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
     }
 
@@ -165,7 +165,7 @@ namespace Objects.BuiltElements.Revit
     public string systemName { get; set; }
     public string systemType { get; set; }
     public Level level { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
     public List<RevitMEPConnector> Connectors { get; set; } = new();
   }
@@ -203,7 +203,7 @@ namespace Objects.BuiltElements.Revit
       Vector startTangent,
       Vector endTangent,
       double velocity = 0,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.baseCurve = baseCurve;
@@ -217,7 +217,7 @@ namespace Objects.BuiltElements.Revit
       this.velocity = velocity;
       this.systemName = systemName;
       this.systemType = systemType;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
     }
 

@@ -47,14 +47,12 @@ public static class Extensions
   /// <remarks>This function will never throw, returning false instead</remarks>
   public static bool HasCategory(this IEnumerable<BuiltInCategory> categories, Category category)
   {
-    try
-    {
-      return categories.Select(x => (int)x).Contains(category.Id.IntegerValue);
-    }
-    catch (Exception e)
+    if (category?.Id?.IntegerValue is not int categoryInt)
     {
       return false;
     }
+
+    return categories.Select(x => (int)x).Contains(categoryInt);
   }
 
   /// <summary>

@@ -33,6 +33,6 @@ public class Property1D : Property //SectionProperty as alt class name
   public SectionProfile profile { get; set; } //section description
 
   public BaseReferencePoint referencePoint { get; set; }
-  public double offsetY { get; set; } = 0; //offset from reference point
-  public double offsetZ { get; set; } = 0; //offset from reference point
+  public double offsetY { get; set; } //offset from reference point
+  public double offsetZ { get; set; } //offset from reference point
 }

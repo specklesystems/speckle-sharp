@@ -357,7 +357,7 @@ public partial class ConverterRevit
     {
       sketchEditScope.Commit(new ErrorEater());
     }
-    catch (Exception ex)
+    catch (Autodesk.Revit.Exceptions.InvalidOperationException)
     {
       if (sketchEditScope.IsActive)
       {

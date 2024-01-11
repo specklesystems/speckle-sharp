@@ -72,7 +72,6 @@ public static class Utilities
   /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
   /// <param name="ignore">Names of props to ignore</param>
   /// <returns></returns>
-  [Obsolete("Unused")]
   public static Base GetApplicationProps(
     object o,
     Type t,
@@ -93,7 +92,7 @@ public static class Utilities
           continue;
         }
 
-        if (IsMeaningfulProp(propInfo, o, out object propValue))
+        if (IsMeaningfulProp(propInfo, o, out object? propValue))
         {
           appProps[propInfo.Name] = propValue;
         }
@@ -112,7 +111,7 @@ public static class Utilities
             continue;
           }
 
-          if (IsMeaningfulProp(propInfo, o, out object propValue))
+          if (IsMeaningfulProp(propInfo, o, out object? propValue))
           {
             appProps[propInfo.Name] = propValue;
           }

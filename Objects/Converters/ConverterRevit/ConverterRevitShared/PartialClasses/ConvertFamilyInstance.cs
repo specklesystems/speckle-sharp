@@ -4,7 +4,9 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using ConverterRevitShared.Extensions;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Helpers.Extensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
@@ -212,7 +214,7 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         //something went wrong, re-create it
       }
@@ -248,19 +250,14 @@ public partial class ConverterRevit
     }
 
     // NOTE: do not check for the CanRotate prop as it doesn't work (at least on some families I tried)!
-    // some point based families don't have a rotation, so keep this in a try catch
-    try
+    if (speckleFi.rotation != (familyInstance.Location as LocationPoint)?.Rotation)
     {
-      if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
-      {
-        var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-        (familyInstance.Location as LocationPoint).Rotate(
-          axis,
-          speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation
-        );
-      }
+      var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
+      (familyInstance.Location as LocationPoint).Rotate(
+        axis,
+        speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation
+      );
     }
-    catch { }
 
     if (
       familySymbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased
@@ -347,14 +344,10 @@ public partial class ConverterRevit
           InstanceVoidCutUtils.AddInstanceVoidCut(Doc, el, familyInstance);
         }
 
-        try
+        if (lvlParams.ElementAtOrDefault(0) != null && level.Id is ElementId levelId)
         {
-          if (lvlParams.ElementAtOrDefault(0) != null)
-          {
-            lvlParams[0].Set(level.Id); // this can be null
-          }
+          lvlParams[0].Set(levelId);
         }
-        catch { }
       }
       else if (CurrentHostElement is DB.Floor floor)
       {
@@ -412,7 +405,7 @@ public partial class ConverterRevit
           StructuralType.NonStructural
         );
       }
-      catch { }
+      catch (Autodesk.Revit.Exceptions.ApplicationException) { }
     }
 
     return familyInstance;
@@ -615,7 +608,7 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
         //something went wrong, re-create it
       }
@@ -660,7 +653,7 @@ public partial class ConverterRevit
           {
             familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
           }
-          catch (Exception e)
+          catch (Autodesk.Revit.Exceptions.ApplicationException e)
           {
             appObj.Update(
               status: ApplicationObject.State.Failed,
@@ -748,7 +741,7 @@ public partial class ConverterRevit
           false
         );
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
       }
@@ -786,7 +779,7 @@ public partial class ConverterRevit
         using var axis = DB.Line.CreateUnbound(location.Point, currentTransform.BasisZ);
         location.Rotate(axis, -rotation);
       }
-      catch (Exception e)
+      catch (Autodesk.Revit.Exceptions.ApplicationException e)
       {
         appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
       }
@@ -875,9 +868,10 @@ public partial class ConverterRevit
       var meshes = GetElementDisplayValue(instance, isConvertedAsInstance: true, transform: parentTransform);
       symbol.displayValue = meshes;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      notes.Add($"Could not retrieve display meshes: {e.Message}");
+      SpeckleLog.Logger.LogDefaultError(ex);
+      notes.Add($"Could not retrieve display meshes: {ex.Message}");
     }
 
     #region sub elements capture

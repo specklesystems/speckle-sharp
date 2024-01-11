@@ -10,7 +10,7 @@ public class Extrusion : Base, IHasVolume, IHasArea, IHasBoundingBox
 
   public Extrusion() { }
 
-  public Extrusion(Base profile, double length, bool capped, string units = Units.Meters, string applicationId = null)
+  public Extrusion(Base profile, double length, bool capped, string units = Units.Meters, string? applicationId = null)
   {
     this.profile = profile;
     this.length = length;

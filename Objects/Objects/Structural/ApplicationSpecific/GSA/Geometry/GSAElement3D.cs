@@ -15,7 +15,7 @@ public class GSAElement3D : Element3D
     Mesh baseMesh,
     Property3D property,
     ElementType3D type,
-    string name = null,
+    string? name = null,
     double orientationAngle = 0,
     int group = 0,
     string colour = "NO_RGB",
@@ -26,7 +26,7 @@ public class GSAElement3D : Element3D
     this.baseMesh = baseMesh;
     this.property = property;
     this.type = type;
-    this.name = name;
+    this.name = name ?? "";
     this.orientationAngle = orientationAngle;
     this.group = group;
     this.colour = colour;

@@ -141,17 +141,7 @@ public class ServerTransportTests
       .ConfigureAwait(false);
 
     memTransport = new MemoryTransport();
-    Base? receivedObject = await Operations
-      .Receive(
-        sentObjectId,
-        transport,
-        memTransport,
-        onErrorAction: (s, e) =>
-        {
-          throw new Exception(s, e);
-        }
-      )
-      .ConfigureAwait(false);
+    Base? receivedObject = await Operations.Receive(sentObjectId, transport, memTransport).ConfigureAwait(false);
     Assert.That(receivedObject, Is.Not.Null);
 
     var allFiles = Directory

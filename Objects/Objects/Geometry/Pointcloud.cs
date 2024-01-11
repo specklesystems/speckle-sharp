@@ -21,11 +21,11 @@ public class Pointcloud : Base, IHasBoundingBox, ITransformable<Pointcloud>
   /// <param name="colors">Optional list of colors</param>
   /// <param name="sizes">Optional list of sizes</param>
   [SchemaInfo(nameof(Pointcloud), "Create a point cloud object", "Objects", "Geometry")]
-  public Pointcloud(List<double> points, List<int> colors = null, List<double> sizes = null)
+  public Pointcloud(List<double> points, List<int>? colors = null, List<double>? sizes = null)
   {
     this.points = points;
-    this.colors = colors ?? new List<int>();
-    this.sizes = sizes ?? new List<double>();
+    this.colors = colors ?? new();
+    this.sizes = sizes ?? new();
   }
 
   /// <summary>

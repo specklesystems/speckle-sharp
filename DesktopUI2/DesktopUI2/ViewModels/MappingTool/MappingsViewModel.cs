@@ -252,7 +252,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       StreamSelector.SelectedStream.Account,
       StreamSelector.SelectedStream.Stream.id
     );
-    return await Operations.Receive(commit.referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
+    return await Operations.Receive(commit.referencedObject, transport).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)

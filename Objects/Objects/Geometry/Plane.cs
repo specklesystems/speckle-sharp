@@ -30,7 +30,7 @@ public class Plane : Base, ITransformable<Plane>
     Vector xDir,
     Vector yDir,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.origin = origin;

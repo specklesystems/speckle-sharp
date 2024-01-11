@@ -17,6 +17,7 @@ public static partial class Operations
   /// <summary>
   /// Convenience method to instantiate an instance of the default object serializer and settings pre-populated with it.
   /// </summary>
+  [Obsolete("V1 Serializer is deprecated. Use " + nameof(BaseObjectSerializerV2))]
   public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
   {
     var serializer = new BaseObjectSerializer();
@@ -35,14 +36,19 @@ public static partial class Operations
   /// <summary>
   /// Factory for progress actions used internally inside send and receive methods.
   /// </summary>
-  /// <param name="localProgressDict"></param>
   /// <param name="onProgressAction"></param>
   /// <returns></returns>
-  private static Action<string, int> GetInternalProgressAction(
-    ConcurrentDictionary<string, int> localProgressDict,
-    Action<ConcurrentDictionary<string, int>>? onProgressAction = null
+  private static Action<string, int>? GetInternalProgressAction(
+    Action<ConcurrentDictionary<string, int>>? onProgressAction
   )
   {
+    if (onProgressAction is null)
+    {
+      return null;
+    }
+
+    var localProgressDict = new ConcurrentDictionary<string, int>();
+
     return (name, processed) =>
     {
       if (!localProgressDict.TryAdd(name, processed))
@@ -50,7 +56,7 @@ public static partial class Operations
         localProgressDict[name] += processed;
       }
 
-      onProgressAction?.Invoke(localProgressDict);
+      onProgressAction.Invoke(localProgressDict);
     };
   }
 }

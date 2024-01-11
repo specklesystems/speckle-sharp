@@ -30,14 +30,12 @@ public static class Helpers
   /// <param name="stream">Stream URL or Id to receive from. If the URL contains branchName, commitId or objectId those will be used, otherwise the latest commit from main will be received.</param>
   /// <param name="account">Account to use. If not provided the default account will be used.</param>
   /// <param name="onProgressAction">Action invoked on progress iterations.</param>
-  /// <param name="onErrorAction">Action invoked on internal errors.</param>
   /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
   /// <returns></returns>
   public static async Task<Base> Receive(
     string stream,
     Account account = null,
     Action<ConcurrentDictionary<string, int>> onProgressAction = null,
-    Action<string, Exception> onErrorAction = null,
     Action<int> onTotalChildrenCountKnown = null
   )
   {
@@ -109,10 +107,8 @@ public static class Helpers
       .Receive(
         objectId,
         transport,
-        onErrorAction: onErrorAction,
         onProgressAction: onProgressAction,
-        onTotalChildrenCountKnown: onTotalChildrenCountKnown,
-        disposeTransports: true
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown
       )
       .ConfigureAwait(false);
 

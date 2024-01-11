@@ -11,7 +11,7 @@ public static class Parameters
   /// </summary>
   /// <param name="parameters"></param>
   /// <returns></returns>
-  public static Base ToBase(this List<Parameter> parameters)
+  public static Base? ToBase(this List<Parameter> parameters)
   {
     if (parameters == null)
     {

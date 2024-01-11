@@ -15,7 +15,7 @@ public class View3D : View
   public Vector upDirection { get; set; }
   public Vector forwardDirection { get; set; }
   public Box boundingBox { get; set; } // x is right, y is top of screen, z is towards viewer
-  public bool isOrthogonal { get; set; } = false;
+  public bool isOrthogonal { get; set; }
 
   public string units { get; set; }
 }
