@@ -98,7 +98,11 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
               ?.Count() > 0
         );
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      // Above code needs refactoring to have more granular exceptions thrown and documented.
+      SpeckleLog.Logger.Error(ex, "Failed to obtain main param for constructor {}", SelectedConstructor.Name);
+    }
 
     var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
     objectItem.Checked = !UseSchemaTag;
@@ -140,33 +144,25 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
 
   public override bool Read(GH_IReader reader)
   {
+    var constructorName = reader.GetString("SelectedConstructorName");
+    var typeName = reader.GetString("SelectedTypeName");
+
+    reader.TryGetBoolean("UseSchemaTag", ref UseSchemaTag);
+    reader.TryGetBoolean("UserSetSchemaTag", ref UserSetSchemaTag);
+    reader.TryGetString("seed", ref Seed);
+
     try
     {
-      var constructorName = reader.GetString("SelectedConstructorName");
-      var typeName = reader.GetString("SelectedTypeName");
-      try
-      {
-        UseSchemaTag = reader.GetBoolean("UseSchemaTag");
-        UserSetSchemaTag = reader.GetBoolean("UserSetSchemaTag");
-      }
-      catch { }
-
       SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
       if (SelectedConstructor == null)
       {
         readFailed = true;
       }
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       readFailed = true;
     }
-
-    try
-    {
-      Seed = reader.GetString("seed");
-    }
-    catch { }
 
     return base.Read(reader);
   }
@@ -406,10 +402,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
 
         try
         {
-          inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
+          inputValues = inputValues.Select(ExtractRealInputValue).ToList();
           objectProp = GetObjectListProp(param, inputValues, cParam.ParameterType);
         }
-        catch (Exception e)
+        catch (Exception e) when (!e.IsFatal())
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
           return;
@@ -445,8 +441,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         ((Base)schemaObject)["units"] = units;
       }
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
+      SpeckleLog.Logger.Error(e, "Failed to obtain create object from constructor");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
       return;
     }
@@ -456,15 +453,8 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     if (UseSchemaTag)
     {
       commitObj = commitObj.ShallowCopy();
-      try
+      if (mainSchemaObj != null)
       {
-        if (mainSchemaObj == null)
-        {
-          UseSchemaTag = false;
-          ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
-          throw new Exception("Schema tag is not supported for this object type, will return Schema object instead.");
-        }
-
         commitObj = ((Base)mainSchemaObj).ShallowCopy();
         commitObj["@SpeckleSchema"] = schemaObject;
         if (commitObj["units"] == null || commitObj["units"] == "")
@@ -472,9 +462,14 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
           commitObj["units"] = units;
         }
       }
-      catch (Exception e)
+      else
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, e.ToFormattedString());
+        UseSchemaTag = false;
+        ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
+        AddRuntimeMessage(
+          GH_RuntimeMessageLevel.Remark,
+          "Schema tag is not supported for this object type, will return Schema object instead."
+        );
       }
     }
 
@@ -551,7 +546,7 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
     }
 
     var typeOfValue = value.GetType();
-    if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
+    if (typeOfValue == type || type.IsAssignableFrom(typeOfValue))
     {
       return value;
     }
@@ -563,7 +558,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       {
         return Enum.Parse(type, value.ToString());
       }
-      catch { }
+      catch (Exception e) when (e is ArgumentException or OverflowException)
+      {
+        SpeckleLog.Logger.Error(e, "Failed to parse enum value");
+      }
     }
 
     // int, doubles, etc
@@ -573,9 +571,9 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       {
         return Convert.ChangeType(value, type);
       }
-      catch (Exception e)
+      catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
       {
-        throw new Exception($"Cannot convert {value.GetType()} to {type}");
+        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", ex);
       }
     }
 
@@ -592,9 +590,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
         {
           return Convert.ChangeType(converted, type);
         }
-        catch (Exception e)
+        catch (Exception ex)
+          when (ex is InvalidCastException or FormatException or OverflowException or ArgumentNullException)
         {
-          throw new Exception($"Cannot convert {converted.GetType()} to {type}");
+          throw new SpeckleException($"Cannot convert {converted.GetType()} to {type}", ex);
         }
       }
 
@@ -609,7 +608,10 @@ public abstract class CreateSchemaObjectBase : SelectKitComponentBase, IGH_Varia
       MethodInfo castIntoMethod = GetType().GetMethod("CastObject").MakeGenericMethod(type);
       return castIntoMethod.Invoke(null, new[] { value });
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Failed to cast type");
+    }
 
     AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
     throw new SpeckleException($"Could not covert object to {type}");

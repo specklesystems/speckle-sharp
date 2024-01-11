@@ -60,8 +60,9 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
       SetConverterFromKit(SelectedKitName);
       return true;
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "No kit found on this machine.");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
       return false;
     }
@@ -122,8 +123,9 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
 
       Menu_AppendSeparator(menu);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "An error occurred while fetching Kits");
       Menu_AppendItem(menu, "An error occurred while fetching Kits", null, false);
     }
   }
@@ -161,9 +163,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
     {
       Converter?.SetContextDocument(Loader.GetCurrentDocument());
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to set document context:\n\t{e.ToFormattedString()}");
+      SpeckleLog.Logger.Error(ex, "Failed to set document context");
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to set document context:\n\t{ex.ToFormattedString()}");
     }
     base.BeforeSolveInstance();
   }

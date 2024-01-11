@@ -470,7 +470,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
           ObjectToSend[key] = converted;
           TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
         }
-        catch (Exception e)
+        catch (Exception e) when (!e.IsFatal())
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
           Done();
@@ -516,7 +516,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
           {
             transport = new StreamWrapper(s);
           }
-          catch (Exception e)
+          catch (Exception e) when (!e.IsFatal())
           {
             // TODO: Check this with team.
             RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
@@ -548,7 +548,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
           {
             acc = sw.GetAccount().Result;
           }
-          catch (Exception e)
+          catch (SpeckleException e)
           {
             RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
             continue;
@@ -634,7 +634,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
               true
             );
           }
-          catch (Exception e)
+          catch (Exception e) when (!e.IsFatal())
           {
             ErrorAction("S", e);
             return;
@@ -693,7 +693,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
               );
               OutputWrappers.Add(wrapper);
             }
-            catch (Exception e)
+            catch (Exception e) when (!e.IsFatal())
             {
               ErrorAction.Invoke("Commits", e);
             }
@@ -710,7 +710,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
         CancellationToken
       );
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

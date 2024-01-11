@@ -138,7 +138,7 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
           break;
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

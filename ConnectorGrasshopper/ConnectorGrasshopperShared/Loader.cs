@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
@@ -38,11 +37,13 @@ public class Loader : GH_AssemblyPriority
 
   public override GH_LoadingInstruction PriorityLoad()
   {
-    var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
-    if (RhinoApp.Version.Major == 7)
+    string version = RhinoApp.Version.Major switch
     {
-      version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
-    }
+      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
@@ -55,12 +56,9 @@ public class Loader : GH_AssemblyPriority
     SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
     try
     {
-      // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
-      typeof(Setup)
-        .GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
-        .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
+      Setup.Init(version, HostApplications.Grasshopper.Slug);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
       // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
@@ -147,7 +145,7 @@ public class Loader : GH_AssemblyPriority
       var mainMenu = Instances.DocumentEditor.MainMenuStrip;
       AddSpeckleMenu(mainMenu);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       ShowLoadErrorMessageBox();
     }
@@ -270,7 +268,7 @@ public class Loader : GH_AssemblyPriority
             Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
           SpeckleLog.Logger.Fatal(
             ex,
