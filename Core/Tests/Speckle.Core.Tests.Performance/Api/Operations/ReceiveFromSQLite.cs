@@ -6,7 +6,7 @@ namespace Speckle.Core.Tests.Performance.Api.Operations;
 
 [MemoryDiagnoser]
 [RegressionTestConfig(1, 1, 8, nugetVersions: "2.15.2")]
-public class ReceiveFromSQLite
+public class ReceiveFromSQLite : IDisposable
 {
   [Params(0, 4, 9, 19)]
   public int DataComplexity { get; set; }
@@ -20,12 +20,6 @@ public class ReceiveFromSQLite
     await _dataSource.SeedTransport(DataComplexity).ConfigureAwait(false);
   }
 
-  [GlobalCleanup]
-  public virtual void Cleanup()
-  {
-    _dataSource.Dispose();
-  }
-
   [Benchmark]
   public async Task<Base?> Receive_FromSQLite()
   {
@@ -35,5 +29,16 @@ public class ReceiveFromSQLite
 
     Trace.Assert(b is not null);
     return b;
+  }
+
+  [GlobalCleanup]
+  public virtual void Cleanup()
+  {
+    Dispose();
+  }
+
+  public void Dispose()
+  {
+    _dataSource.Dispose();
   }
 }

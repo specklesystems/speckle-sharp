@@ -409,8 +409,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorTeklaStructures202
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2023", "Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2023\ConverterTeklaStructures2023.csproj", "{EB52E451-9ED8-460E-9EE4-6717BFB12EAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsPerformance", "Core\TestsPerformance\TestsPerformance.csproj", "{4D1C70D7-FFD5-4518-A374-2A23E020D416}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAdvanceSteel2024", "ConnectorAutocadCivil\ConnectorAdvanceSteel2024\ConnectorAdvanceSteel2024.csproj", "{3B9189B9-E485-448A-8793-9B9587A36791}"
 	ProjectSection(ProjectDependencies) = postProject
 		{737D5567-7B1F-410D-9B7B-BAE8065ED15B} = {737D5567-7B1F-410D-9B7B-BAE8065ED15B}

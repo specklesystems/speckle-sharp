@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Environments;
@@ -6,6 +7,11 @@ using BenchmarkDotNet.Jobs;
 namespace Speckle.Core.Tests.Performance;
 
 [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = true)]
+[SuppressMessage(
+  "Design",
+  "CA1019:Define accessors for attribute arguments",
+  Justification = "Suggestion does not fit with IConfigSource pattern"
+)]
 public sealed class RegressionTestConfigAttribute : Attribute, IConfigSource
 {
   public IConfig Config { get; private set; }

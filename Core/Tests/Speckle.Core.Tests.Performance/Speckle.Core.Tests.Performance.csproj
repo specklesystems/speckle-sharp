@@ -7,6 +7,10 @@
     <OutputType>exe</OutputType>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.7" />
