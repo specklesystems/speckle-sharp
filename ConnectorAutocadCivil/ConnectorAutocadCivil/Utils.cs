@@ -292,8 +292,10 @@ public static class Utils
         {
           layerTable.Add(newLayer);
         }
-        catch // TODO: use !IsFatal() here
+        catch (Exception e) when (!e.IsFatal())
         {
+          // Objects on this layer will be placed on the default layer instead
+          SpeckleLog.Logger.Error(e, $"Could not add new layer {cleanName} to the layer table");
           return false;
         }
         tr.AddNewlyCreatedDBObject(newLayer, true);

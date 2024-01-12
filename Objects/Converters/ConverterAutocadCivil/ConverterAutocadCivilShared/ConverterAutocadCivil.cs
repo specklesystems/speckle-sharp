@@ -439,8 +439,9 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
       );
     }
-    catch (Exception e) // TODO: use !IsFatal() here
+    catch (Exception e) when (!e.IsFatal())
     {
+      SpeckleLog.Logger.Error(e, $"{@object.GetType()} unhandled conversion error");
       reportObj?.Update(
         status: ApplicationObject.State.Failed,
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"

@@ -303,9 +303,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
             convertedCount++;
           }
-          catch (Exception e)
+          catch (Exception e) when (!e.IsFatal())
           {
-            //TODO: Log to serilog failed conversions
+            SpeckleLog.Logger.Error(e, $"Failed object conversion");
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
             progress.Report.Log(reportObj);
             continue;

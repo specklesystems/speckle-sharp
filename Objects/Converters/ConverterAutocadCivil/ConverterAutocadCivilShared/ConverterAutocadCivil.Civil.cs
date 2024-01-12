@@ -1106,14 +1106,13 @@ public partial class ConverterAutocadCivil
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
     specklePipe["isPressurePipe"] = true;
 
-    // TODO: use !IsFatal() here
-    try { specklePipe["partType"] = pipe.PartType.ToString(); } catch { }
-    try { specklePipe["slope"] = pipe.Slope; } catch { }
-    try { specklePipe["network"] = pipe.NetworkName; } catch { }
-    try { specklePipe["startOffset"] = pipe.StartOffset; } catch { }
-    try { specklePipe["endOffset"] = pipe.EndOffset; } catch { }
-    try { specklePipe["startStation"] = pipe.StartStation; } catch { }
-    try { specklePipe["endStation"] = pipe.EndStation; } catch { }
+    try { specklePipe["partType"] = pipe.PartType.ToString(); } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["slope"] = pipe.Slope; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["network"] = pipe.NetworkName; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["startOffset"] = pipe.StartOffset; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["endOffset"] = pipe.EndOffset; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["startStation"] = pipe.StartStation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["endStation"] = pipe.EndStation; } catch (Exception e) when (!e.IsFatal()) { }
 
     return specklePipe;
   }
@@ -1187,8 +1186,10 @@ public partial class ConverterAutocadCivil
           surfaces.Add(mesh);
         }
       }
-      catch (Exception e) // TODO: use !IsFatal() here
-      { }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        SpeckleLog.Logger.Warning(e, $"Could not convert and add surface to corridor");
+      }
     }
 
     var corridorBase = new Base();

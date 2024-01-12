@@ -634,8 +634,12 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
               block.UpgradeOpen();
               block.Erase();
             }
-            catch // TODO: use !IsFatal() here
+            catch (Exception e) when (!e.IsFatal())
             {
+              SpeckleLog.Logger.Error(
+                e,
+                $"Could not delete existing block of name {block.Name} before creating new blocks with prefix {prefix}"
+              );
               failedBlocks.Add(block.Name);
               success = false;
             }
