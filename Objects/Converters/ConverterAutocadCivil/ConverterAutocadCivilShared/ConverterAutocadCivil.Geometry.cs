@@ -1672,8 +1672,9 @@ public partial class ConverterAutocadCivil
           };
         }
       }
-      catch (Exception e) // TODO: use !IsFatal() here
+      catch (Exception e) when (!e.IsFatal())
       {
+        SpeckleLog.Logger.Warning(e, $"Could not retrieve mesh from brep");
         notes.Add(e.Message);
       }
     }
