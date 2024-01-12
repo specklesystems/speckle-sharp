@@ -29,6 +29,7 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -172,15 +173,12 @@ public partial class ConverterAutocadCivil
     // if offset alignment, also set parent and offset side
     if (alignment.IsOffsetAlignment)
     {
-      speckleAlignment["offsetSide"] = alignment.OffsetAlignmentInfo.Side.ToString();
-      try
+      OffsetAlignmentInfo offsetInfo = alignment.OffsetAlignmentInfo;
+      speckleAlignment["offsetSide"] = offsetInfo.Side.ToString();
+      if (Trans.GetObject(offsetInfo.ParentAlignmentId, OpenMode.ForRead) is CivilDB.Alignment parent && parent.Name != null)
       {
-        if (Trans.GetObject(alignment.OffsetAlignmentInfo.ParentAlignmentId, OpenMode.ForRead) is CivilDB.Alignment parent && parent.Name != null)
-        {
-          speckleAlignment.parent = parent.Name;
-        }
+        speckleAlignment.parent = parent.Name;
       }
-      catch { }
     }
 
     return speckleAlignment;
@@ -267,52 +265,45 @@ public partial class ConverterAutocadCivil
         GetFromObjectIdCollection(civilAlignment["label"] as string, labelStyles, true) : civilDoc.Styles.LabelSetStyles.AlignmentLabelSetStyles.First();
 #endregion
 
-      try
+      // create the alignment
+      var id = ObjectId.Null;
+      switch (type)
       {
-        // add new alignment to doc
-        // ⚠ this will throw if name is not unique!!
-        var id = ObjectId.Null;
-        switch (type)
-        {
-          case AlignmentType.Offset:
-            // create only if parent exists in doc
-            if (parent == ObjectId.Null)
-            {
-              goto default;
-            }
+        case AlignmentType.Offset:
+          // create only if parent exists in doc
+          if (parent == ObjectId.Null || civilAlignment.offset == 0)
+          {
+            id = CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
+          }
 
+          try
+          {
+            id = CivilDB.Alignment.CreateOffsetAlignment(name, parent, civilAlignment.offset, style);
+          }
+          catch (ArgumentException) // throws when name is invalid or offset is too large
+          {
+            // try to recreate with a unique name
             try
-            {
-              id = CivilDB.Alignment.CreateOffsetAlignment(name, parent, civilAlignment.offset, style);
-            }
-            catch
             {
               id = CivilDB.Alignment.CreateOffsetAlignment(CivilDB.Alignment.GetNextUniqueName(name), parent, civilAlignment.offset, style);
             }
-            break;
-          default:
-            try
+            catch (ArgumentException)
             {
-              id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
+              id = CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
             }
-            catch
-            {
-              id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
-            }
-            break;
-        }
-        if (!id.IsValid)
-        {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
-          return appObj;
-        }
-        existingAlignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
+          }
+          break;
+        default:
+          id =CreateDefaultAlignment(civilDoc, name, site, layer, style, label);
+          break;
       }
-      catch (Exception e)
+
+      if (!id.IsValid)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
         return appObj;
       }
+      existingAlignment = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Alignment;
     }
 
     if (existingAlignment == null)
@@ -367,6 +358,20 @@ public partial class ConverterAutocadCivil
   }
 
 #region helper methods
+  private ObjectId CreateDefaultAlignment(CivilDocument civilDoc, string name, ObjectId site, ObjectId layer, ObjectId style, ObjectId label)
+  {
+    ObjectId id = ObjectId.Null;
+    try // throws when name already exsits or objectIds are invalid
+    {
+      id = CivilDB.Alignment.Create(civilDoc, name, site, layer, style, label);
+    }
+    catch (ArgumentException)
+    {
+      id = CivilDB.Alignment.Create(civilDoc, CivilDB.Alignment.GetNextUniqueName(name), site, layer, style, label);
+    }
+    return id;
+  }
+
   private SpiralType SpiralTypeToSpeckle(Civil.SpiralType type)
   {
     return type switch
@@ -433,7 +438,7 @@ public partial class ConverterAutocadCivil
     var speckleLine = LineToSpeckle(new LineSegment2d(line.StartPoint, line.EndPoint));
     return speckleLine;
   }
-  private Arc AlignmentArcToSpeckle(CivilDB.AlignmentSubEntityArc arc)
+  private Arc AlignmentArcToSpeckle(AlignmentSubEntityArc arc)
   {
     // calculate midpoint of chord as between start and end point
     Point2d chordMid = new((arc.StartPoint.X + arc.EndPoint.X) / 2, (arc.StartPoint.Y + arc.EndPoint.Y) / 2);
@@ -451,12 +456,12 @@ public partial class ConverterAutocadCivil
     Point2d midPoint = chordMid.Add(unitMidVector.MultiplyBy(sagitta));
     try
     {
-      if (arc.GreaterThan180) // sometimes this prop throws an exception??
+      if (arc.GreaterThan180) // this can throw : The property gets an invalid value according to the entity's constraint type.
       {
         midPoint = chordMid.Add(unitMidVector.Negate().MultiplyBy(2 * arc.Radius - sagitta));
       }
     }
-    catch { }
+    catch (InvalidOperationException){ } // continue with original midpoint if GreaterThan180 doesn't apply to this arc
 
     // create arc
     var speckleArc = ArcToSpeckle(new CircularArc2d(arc.StartPoint, midPoint, arc.EndPoint));
@@ -580,28 +585,29 @@ public partial class ConverterAutocadCivil
 
     // if offset profile, get offset distance and parent
     speckleProfile.offset = profile.Offset;
-    try
+    if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
     {
-      if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
+      if (Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) is CivilDB.Profile parent && parent.Name != null)
       {
-        if (Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) is CivilDB.Profile parent && parent.Name != null)
-        {
-          speckleProfile.parent = parent.Name;
-        }
+        speckleProfile.parent = parent.Name;
       }
     }
-    catch { }
 
     // get points of vertical intersection (PVIs)
     List<Point> pvisConverted = new();
     var pvis = new Point3dCollection();
     foreach (ProfilePVI pvi in profile.PVIs)
     {
-      pvisConverted.Add(PointToSpeckle(new Point2d(pvi.Station, pvi.Elevation)));
-      pvis.Add(new Point3d(pvi.Station, pvi.Elevation, 0));
+      double pviStation = 0;
+#if CIVIL2024
+      pviStation = pvi.RawStation;
+#else
+      pviStation = pvi.Station;
+#endif
+      pvisConverted.Add(PointToSpeckle(new Point2d(pviStation, pvi.Elevation)));
+      pvis.Add(new Point3d(pviStation, pvi.Elevation, 0));
     }
     speckleProfile.pvis = pvisConverted;
-
 
     if (pvisConverted.Count > 1)
     {
@@ -631,97 +637,6 @@ public partial class ConverterAutocadCivil
     var end = new Point2d(endStation, endElevation);
     return LineToSpeckle(new LineSegment2d(start, end));
   }
-
-  /*
-  public ApplicationObject ProfileToNative(Profile profile)
-  {
-    var appObj = new ApplicationObject(profile.id, profile.speckle_type) { applicationId = profile.applicationId };
-    var existingObjs = GetExistingElementsByApplicationId(profile.applicationId);
-    var civilProfile = profile as CivilProfile;
-
-    // get civil doc
-    if (!GetCivilDocument(out CivilDocument civilDoc))
-      return appObj;
-
-    // create or retrieve alignment, and parent if it exists
-    CivilDB.Profile _profile = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Profile : null;
-    var parent = civilProfile != null ? GetFromObjectIdCollection(civilProfile.parent, civilDoc.get()) : ObjectId.Null;
-    bool isUpdate = true;
-    if (_profile == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new profile
-    {
-      isUpdate = false;
-
-      // get civil props for creation
-#region properties
-      var name = string.IsNullOrEmpty(profile.name) ? profile.applicationId : profile.name; // names need to be unique on creation (but not send i guess??)
-      var layer = Doc.Database.LayerZero;
-
-      // type
-      var type = CivilDB.ProfileType.File;
-      if (civilProfile != null)
-        if (Enum.TryParse(civilProfile.type, out CivilDB.ProfileType civilType))
-          type = civilType;
-
-      // style
-      var docStyles = new ObjectIdCollection();
-      foreach (ObjectId styleId in civilDoc.Styles.ProfileStyles) docStyles.Add(styleId);
-      var style = civilProfile != null ?
-        GetFromObjectIdCollection(civilProfile.style, docStyles, true) : civilDoc.Styles.ProfileStyles.First();
-
-#endregion
-
-      try
-      {
-        // add new profile to doc
-        // ⚠ this will throw if name is not unique!!
-        var id = ObjectId.Null;
-        switch (type)
-        {
-          // A surface profile—often called an existing ground (EG) profile—is extracted from a surface, showing the changes in elevation along a particular route
-          case CivilDB.ProfileType.EG:
-           
-            if (parent == ObjectId.Null) goto default; 
-            try
-            {
-              id = CivilDB.Profile.CreateFromSurface(Doc, );
-            }
-            catch
-            {
-            }
-            break;
-          default:
-            try
-            {
-              id = CivilDB.Profile.CreateFromGeCurve();
-            }
-            catch
-            {
-              
-            }
-            break;
-        }
-        if (!id.IsValid)
-        {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
-          return appObj;
-        }
-        _profile = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Profile;
-      }
-      catch (System.Exception e)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
-        return appObj;
-      }
-    }
-
-    if (_profile == null)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: $"returned null after bake");
-      return appObj;
-    }
-
-  }
-  */
 
   // featurelines
   public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
@@ -949,35 +864,34 @@ public partial class ConverterAutocadCivil
       isUpdate = false;
 
       // get civil props for creation
-      var name = string.IsNullOrEmpty(mesh["name"] as string) ? mesh.applicationId : mesh["name"] as string;
-      var layer = Doc.Database.LayerZero;
-      var docStyles = new ObjectIdCollection();
+      var name = string.IsNullOrEmpty(mesh["name"] as string) ? 
+        string.IsNullOrEmpty(mesh.applicationId) ? 
+        mesh.id : 
+        mesh.applicationId :
+        mesh["name"] as string;
+      ObjectId layer = Doc.Database.LayerZero;
+      ObjectIdCollection docStyles = new();
+      ObjectId style = ObjectId.Null;
       foreach (ObjectId styleId in civilDoc.Styles.SurfaceStyles)
       {
         docStyles.Add(styleId);
       }
-
-      var style = props["style"] as string != null ?
-        GetFromObjectIdCollection(props["style"] as string, docStyles) : civilDoc.Styles.SurfaceStyles.First();
+      
+      if (docStyles.Count != 0 )
+      {
+        style = GetFromObjectIdCollection(props["style"] as string, docStyles, true);
+      }
 
       // add new surface to doc
-      // ⚠ this will throw if name is empty?
       var id = ObjectId.Null;
-      try
-      {
-        id = CivilDB.TinSurface.Create(name, style);
-      }
-      catch (Exception e)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
-        return appObj;
-      }
+      id = style == ObjectId.Null ? TinSurface.Create(Doc.Database, name) : TinSurface.Create(name, style);
       if (!id.IsValid)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
         return appObj;
       }
-      surface = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.TinSurface;
+
+      surface = Trans.GetObject(id, OpenMode.ForWrite) as TinSurface;
     }
 
     if (surface == null)
@@ -1100,15 +1014,23 @@ public partial class ConverterAutocadCivil
     {
       location = PointToSpeckle(structure.Location, ModelUnits),
       pipeIds = pipeIds,
-      displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody, out List<string> notes) },
+      displayValue = new List<Mesh>() { SolidToSpeckle(structure.Solid3dBody, out List<string>_) },
       units = ModelUnits
     };
 
     // assign additional structure props
     AddNameAndDescriptionProperty(structure.Name, structure.Description, speckleStructure);
-    try{ speckleStructure["grate"] = structure.Grate; } catch{ }
-    try{ speckleStructure["station"] = structure.Station; } catch{ }
-    try{ speckleStructure["network"] = structure.NetworkName; } catch{ }
+
+    try
+    {
+      speckleStructure["grate"] = structure.Grate;
+      speckleStructure["station"] = structure.Station;
+      speckleStructure["network"] = structure.NetworkName;
+    }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      // Couldn't set non-essential structure properties
+    }
 
     return speckleStructure;
   }
@@ -1183,75 +1105,78 @@ public partial class ConverterAutocadCivil
     // assign additional pipe props
     AddNameAndDescriptionProperty(pipe.Name, pipe.Description, specklePipe);
     specklePipe["isPressurePipe"] = true;
-    try { specklePipe["partType"] = pipe.PartType.ToString(); } catch { }
-    try { specklePipe["slope"] = pipe.Slope; } catch { }
-    try { specklePipe["network"] = pipe.NetworkName; } catch { }
-    try { specklePipe["startOffset"] = pipe.StartOffset; } catch { }
-    try { specklePipe["endOffset"] = pipe.EndOffset; } catch { }
-    try { specklePipe["startStation"] = pipe.StartStation; } catch { }
-    try { specklePipe["endStation"] = pipe.EndStation; } catch { }
+
+    try { specklePipe["partType"] = pipe.PartType.ToString(); } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["slope"] = pipe.Slope; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["network"] = pipe.NetworkName; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["startOffset"] = pipe.StartOffset; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["endOffset"] = pipe.EndOffset; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["startStation"] = pipe.StartStation; } catch (Exception e) when (!e.IsFatal()) { }
+    try { specklePipe["endStation"] = pipe.EndStation; } catch (Exception e) when (!e.IsFatal()) { }
 
     return specklePipe;
   }
 
   // corridors
   // this is composed of assemblies, alignments, and profiles, use point codes to generate featurelines (which will have the 3d curve)
-  public Base CorridorToSpeckle(CivilDB.Corridor corridor)
+  public Base CorridorToSpeckle(Corridor corridor)
   {
     List<Alignment> alignments = new();
     List<Profile> profiles = new();
     List<Featureline> featurelines = new();
-    foreach (var baseline in corridor.Baselines)
+    foreach (Baseline baseline in corridor.Baselines)
     {
 
       // get the collection of featurelines for this baseline
-      foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
+      foreach (FeatureLineCollection mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
       {
-        foreach (var featureline in mainFeaturelineCollection)
+        foreach (CorridorFeatureLine featureline in mainFeaturelineCollection)
         {
           featurelines.Add(FeaturelineToSpeckle(featureline));
         }
       }
 
-      foreach (var offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
+      foreach (BaselineFeatureLines offsetFeaturelineCollection in baseline.OffsetBaselineFeatureLinesCol) // offset featurelines
       {
-        foreach (var featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
+        foreach (FeatureLineCollection featurelineCollection in offsetFeaturelineCollection.FeatureLineCollectionMap)
         {
-          foreach (var featureline in featurelineCollection)
+          foreach (CorridorFeatureLine featureline in featurelineCollection)
           {
             featurelines.Add(FeaturelineToSpeckle(featureline));
           }
         }
       }
 
-      // get alignment
-      try
+      // get alignment and profile if relevant
+      // for featureline based corridors, accessing AlignmentId and ProfileId will return NULL
+      // and throw an exception ""This operation on feature line based baseline is invalid".
+      if (!baseline.IsFeatureLineBased())
       {
-        var alignmentId = baseline.AlignmentId;
-        var alignment = AlignmentToSpeckle(Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment);
-        if (alignment != null)
+        if (baseline.AlignmentId is ObjectId alignmentId)
         {
-          alignments.Add(alignment);
+          var alignment = Trans.GetObject(alignmentId, OpenMode.ForRead) as CivilDB.Alignment;
+          var convertedAlignment = AlignmentToSpeckle(alignment);
+          if (convertedAlignment != null)
+          {
+            alignments.Add(convertedAlignment);
+          }
+        }
+        
+        if (baseline.ProfileId is ObjectId profileId)
+        {
+          var profile = Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile;
+          var convertedProfile = ProfileToSpeckle(profile);
+          if (convertedProfile != null)
+          {
+            profiles.Add(convertedProfile);
+          }
         }
       }
-      catch { }
-
-      // get profile
-      try
-      {
-        var profileId = baseline.ProfileId;
-        var profile = ProfileToSpeckle(Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile);
-        if (profile != null)
-        {
-          profiles.Add(profile);
-        }
-      }
-      catch { }
     }
 
     // get corridor surfaces
     List<Mesh> surfaces = new();
-    foreach (var corridorSurface in corridor.CorridorSurfaces)
+    foreach (CorridorSurface corridorSurface in corridor.CorridorSurfaces)
     {
       try
       {
@@ -1261,8 +1186,10 @@ public partial class ConverterAutocadCivil
           surfaces.Add(mesh);
         }
       }
-      catch (Exception e) 
-      { }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        SpeckleLog.Logger.Warning(e, $"Could not convert and add surface to corridor");
+      }
     }
 
     var corridorBase = new Base();
