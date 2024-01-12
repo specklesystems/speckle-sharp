@@ -1,7 +1,7 @@
 namespace Speckle.Automate.Sdk.Schema;
 
-struct ObjectResults
+public struct ObjectResults
 {
-  public string Version => "1.0.0";
+  public static string Version => "1.0.0";
   public ObjectResultValues Values { get; set; }
 }

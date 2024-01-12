@@ -1,9 +1,9 @@
-# nullable enable
 using System.Diagnostics;
 using GraphQL;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -17,14 +17,14 @@ public class AutomationContext
   public string? ContextView => AutomationResult.ResultView;
   public Client SpeckleClient { get; set; }
 
-  private ServerTransport serverTransport;
-  private string speckleToken;
+  private ServerTransport _serverTransport;
+  private string _speckleToken;
 
   // keep a memory transport at hand, to speed up things if needed
-  private MemoryTransport memoryTransport;
+  private MemoryTransport _memoryTransport;
 
   // added for performance measuring
-  private Stopwatch initTime;
+  private Stopwatch _initTime;
 
   internal AutomationResult AutomationResult { get; set; }
 
@@ -45,10 +45,10 @@ public class AutomationContext
     {
       AutomationRunData = automationRunData,
       SpeckleClient = client,
-      serverTransport = serverTransport,
-      speckleToken = speckleToken,
-      memoryTransport = new MemoryTransport(),
-      initTime = initTime,
+      _serverTransport = serverTransport,
+      _speckleToken = speckleToken,
+      _memoryTransport = new MemoryTransport(),
+      _initTime = initTime,
       AutomationResult = new AutomationResult(),
     };
   }
@@ -65,19 +65,24 @@ public class AutomationContext
   public string RunStatus => AutomationResult.RunStatus;
 
   public string? StatusMessage => AutomationResult.StatusMessage;
-  public TimeSpan Elapsed => initTime.Elapsed;
+  public TimeSpan Elapsed => _initTime.Elapsed;
 
+  /// <summary>
+  /// Receive version for automation.
+  /// </summary>
+  /// <returns> Commit object. </returns>
+  /// <exception cref="SpeckleException">Throws if commit object is null.</exception>
   public async Task<Base> ReceiveVersion()
   {
     var commit = await SpeckleClient
       .CommitGet(AutomationRunData.ProjectId, AutomationRunData.VersionId)
       .ConfigureAwait(false);
     var commitRootObject = await Operations
-      .Receive(commit.referencedObject, serverTransport, memoryTransport)
+      .Receive(commit.referencedObject, _serverTransport, _memoryTransport)
       .ConfigureAwait(false);
     if (commitRootObject == null)
     {
-      throw new Exception("Commit root object was null");
+      throw new SpeckleException("Commit root object was null");
     }
 
     Console.WriteLine(
@@ -97,7 +102,7 @@ public class AutomationContext
     }
 
     var rootObjectId = await Operations
-      .Send(rootObject, new List<ITransport> { serverTransport, memoryTransport })
+      .Send(rootObject, new List<ITransport> { _serverTransport, _memoryTransport })
       .ConfigureAwait(false);
 
     var branch = await SpeckleClient.BranchGet(AutomationRunData.ProjectId, branchName).ConfigureAwait(false);
@@ -122,6 +127,12 @@ public class AutomationContext
     return versionId;
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="resourceIds"></param>
+  /// <param name="includeSourceModelVersion"></param>
+  /// <exception cref="SpeckleException"></exception>
   public void SetContextView(List<string>? resourceIds = null, bool includeSourceModelVersion = true)
   {
     var linkResources = new List<string>();
@@ -137,7 +148,7 @@ public class AutomationContext
 
     if (linkResources.Count == 0)
     {
-      throw new Exception("We do not have enough resource ids to compose a context view");
+      throw new SpeckleException("We do not have enough resource ids to compose a context view");
     }
 
     AutomationResult.ResultView = $"/projects/{AutomationRunData.ProjectId}/models/{string.Join(",", linkResources)}";
@@ -238,13 +249,13 @@ public class AutomationContext
     var uploadResponse = JsonConvert.DeserializeObject<BlobUploadResponse>(responseString);
     if (uploadResponse.UploadResults.Count != 1)
     {
-      throw new Exception("Expected one upload result.");
+      throw new SpeckleException("Expected one upload result.");
     }
 
     AutomationResult.Blobs.AddRange(uploadResponse.UploadResults.Select(r => r.BlobId));
   }
 
-  private void _markRun(AutomationStatus status, string? statusMessage)
+  private void MarkRun(AutomationStatus status, string? statusMessage)
   {
     var duration = Elapsed.TotalSeconds;
     AutomationResult.StatusMessage = statusMessage;
@@ -261,15 +272,9 @@ public class AutomationContext
     Console.WriteLine(msg);
   }
 
-  public void MarkRunFailed(string statusMessage)
-  {
-    _markRun(AutomationStatus.Failed, statusMessage);
-  }
+  public void MarkRunFailed(string statusMessage) => MarkRun(AutomationStatus.Failed, statusMessage);
 
-  public void MarkRunSuccess(string? statusMessage)
-  {
-    _markRun(AutomationStatus.Succeeded, statusMessage);
-  }
+  public void MarkRunSuccess(string? statusMessage) => MarkRun(AutomationStatus.Succeeded, statusMessage);
 
   public void AttachErrorToObjects(
     string category,
@@ -277,10 +282,7 @@ public class AutomationContext
     string? message = null,
     Dictionary<string, object>? metadata = null,
     Dictionary<string, object>? visualOverrides = null
-  )
-  {
-    AttachResultToObjects(ObjectResultLevel.Error, category, objectIds, message, metadata, visualOverrides);
-  }
+  ) => AttachResultToObjects(ObjectResultLevel.Error, category, objectIds, message, metadata, visualOverrides);
 
   public void AttachWarningToObjects(
     string category,
@@ -288,10 +290,7 @@ public class AutomationContext
     string? message = null,
     Dictionary<string, object>? metadata = null,
     Dictionary<string, object>? visualOverrides = null
-  )
-  {
-    AttachResultToObjects(ObjectResultLevel.Warning, category, objectIds, message, metadata, visualOverrides);
-  }
+  ) => AttachResultToObjects(ObjectResultLevel.Warning, category, objectIds, message, metadata, visualOverrides);
 
   public void AttachInfoToObjects(
     string category,
@@ -299,10 +298,7 @@ public class AutomationContext
     string? message = null,
     Dictionary<string, object>? metadata = null,
     Dictionary<string, object>? visualOverrides = null
-  )
-  {
-    AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
-  }
+  ) => AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
 
   public void AttachResultToObjects(
     ObjectResultLevel level,

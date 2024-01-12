@@ -85,7 +85,7 @@ public static class AutomationRunner
   }
 
   /// <summary>
-  /// Main entrypoint to execute an Automate function with input data of type <see cref="TInput"/>
+  /// Main entrypoint to execute an Automate function with input data of type.
   /// </summary>
   /// <param name="args">The command line arguments passed into the function by automate</param>
   /// <param name="automateFunction">The automate function to execute</param>
