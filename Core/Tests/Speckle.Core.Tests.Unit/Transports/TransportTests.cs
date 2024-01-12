@@ -23,7 +23,7 @@ public abstract class TransportTests
     }
 
     Sut.SaveObject(PAYLOAD_ID, PAYLOAD_DATA);
-    await Sut.WriteComplete().ConfigureAwait(false);
+    await Sut.WriteComplete();
 
     {
       var postAdd = Sut.GetObject(PAYLOAD_ID);
@@ -38,17 +38,17 @@ public abstract class TransportTests
     const string PAYLOAD_DATA = "MyTestObjectData";
 
     {
-      var preAdd = await Sut.HasObjects(new[] { PAYLOAD_ID }).ConfigureAwait(false);
+      var preAdd = await Sut.HasObjects(new[] { PAYLOAD_ID });
       Assert.That(preAdd, Has.Exactly(1).Items);
       Assert.That(preAdd, Has.No.ContainValue(true));
       Assert.That(preAdd, Contains.Key(PAYLOAD_ID));
     }
 
     Sut.SaveObject(PAYLOAD_ID, PAYLOAD_DATA);
-    await Sut.WriteComplete().ConfigureAwait(false);
+    await Sut.WriteComplete();
 
     {
-      var postAdd = await Sut.HasObjects(new[] { PAYLOAD_ID }).ConfigureAwait(false);
+      var postAdd = await Sut.HasObjects(new[] { PAYLOAD_ID });
 
       Assert.That(postAdd, Has.Exactly(1).Items);
       Assert.That(postAdd, Has.No.ContainValue(false));
@@ -74,14 +74,14 @@ public abstract class TransportTests
       }
     );
 
-    await Sut.WriteComplete().ConfigureAwait(false);
+    await Sut.WriteComplete();
 
     //Test 1. SavedObjectCount //WARN: FAIL!!! seems this is not implemented for SQLite Transport
     //Assert.That(transport.SavedObjectCount, Is.EqualTo(testDataCount));
 
     //Test 2. HasObjects
     var ids = testData.Select(x => x.id).ToList();
-    var hasObjectsResult = await Sut.HasObjects(ids).ConfigureAwait(false);
+    var hasObjectsResult = await Sut.HasObjects(ids);
 
     Assert.That(hasObjectsResult, Does.Not.ContainValue(false));
     Assert.That(hasObjectsResult.Keys, Is.EquivalentTo(ids));
@@ -109,7 +109,7 @@ public abstract class TransportTests
 
     Sut.SaveObject("12345", "fake payload data");
 
-    await Sut.WriteComplete().ConfigureAwait(false);
+    await Sut.WriteComplete();
 
     Assert.That(wasCalled, Is.True);
   }
@@ -140,7 +140,7 @@ public abstract class TransportTests
 
     tokenSource.Cancel();
 
-    Assert.ThrowsAsync<OperationCanceledException>(async () =>
+    Assert.CatchAsync<OperationCanceledException>(async () =>
     {
       Sut.SaveObject("abcdef", "fake payload data");
       await Sut.WriteComplete();
@@ -167,7 +167,7 @@ public abstract class TransportTests
     );
     Sut.SaveObject("root", parent);
 
-    await Sut.WriteComplete().ConfigureAwait(false);
+    await Sut.WriteComplete();
 
     // Act
     MemoryTransport destination = new();

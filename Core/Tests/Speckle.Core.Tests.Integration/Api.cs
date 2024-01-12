@@ -6,203 +6,194 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Integration;
 
-public class Api
+public class Api : IDisposable
 {
-  private string branchId = "";
-  private string branchName = "";
-  private string commitId = "";
+  private string _branchId = "";
+  private string _branchName = "";
+  private string _commitId = "";
 
-  public Account firstUserAccount,
-    secondUserAccount;
+  private Account _firstUserAccount,
+    _secondUserAccount;
 
-  public Client myClient,
-    secondClient;
+  private Client _myClient,
+    _secondClient;
 
-  public ServerTransport myServerTransport,
-    otherServerTransport;
+  private ServerTransport _myServerTransport,
+    _otherServerTransport;
 
-  private string objectId = "";
+  private string _objectId = "";
 
-  private string streamId = "";
+  private string _streamId = "";
 
   [OneTimeSetUp]
   public async Task Setup()
   {
-    firstUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
-    secondUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
+    _firstUserAccount = await Fixtures.SeedUser();
+    _secondUserAccount = await Fixtures.SeedUser();
 
-    myClient = new Client(firstUserAccount);
-    secondClient = new Client(secondUserAccount);
+    _myClient = new Client(_firstUserAccount);
+    _secondClient = new Client(_secondUserAccount);
   }
 
   private void InitServerTransport()
   {
-    myServerTransport = new ServerTransport(firstUserAccount, streamId);
-    myServerTransport.Api.CompressPayloads = false;
-    otherServerTransport = new ServerTransport(firstUserAccount, streamId);
-    otherServerTransport.Api.CompressPayloads = false;
+    _myServerTransport = new ServerTransport(_firstUserAccount, _streamId);
+    _myServerTransport.Api.CompressPayloads = false;
+    _otherServerTransport = new ServerTransport(_firstUserAccount, _streamId);
+    _otherServerTransport.Api.CompressPayloads = false;
   }
 
   [Test]
   public async Task ActiveUserGet()
   {
-    var res = await myClient.ActiveUserGet().ConfigureAwait(false);
-    Assert.That(myClient.Account.userInfo.id, Is.EqualTo(res.id));
+    var res = await _myClient.ActiveUserGet();
+    Assert.That(res.id, Is.EqualTo(_myClient.Account.userInfo.id));
   }
 
   [Test]
   public async Task OtherUserGet()
   {
-    var res = await myClient.OtherUserGet(secondUserAccount.userInfo.id).ConfigureAwait(false);
-    Assert.That(secondUserAccount.userInfo.name, Is.EqualTo(res.name));
+    var res = await _myClient.OtherUserGet(_secondUserAccount.userInfo.id);
+    Assert.That(res!.name, Is.EqualTo(_secondUserAccount.userInfo.name));
   }
 
   [Test]
   public async Task UserSearch()
   {
-    var res = await myClient.UserSearch(firstUserAccount.userInfo.email).ConfigureAwait(false);
-    Assert.That(res.Count, Is.EqualTo(1));
-    Assert.That(firstUserAccount.userInfo.id, Is.EqualTo(res[0].id));
+    var res = await _myClient.UserSearch(_firstUserAccount.userInfo.email);
+    Assert.That(res, Has.Count.EqualTo(1));
+    Assert.That(res[0].id, Is.EqualTo(_firstUserAccount.userInfo.id));
   }
 
   [Test]
   public async Task ServerVersion()
   {
-    var res = await myClient.GetServerVersion().ConfigureAwait(false);
+    var res = await _myClient.GetServerVersion();
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
   }
 
   [Test, Order(0)]
   public async Task StreamCreate()
   {
-    var res = await myClient
-      .StreamCreate(new StreamCreateInput { description = "Hello World", name = "Super Stream 01" })
-      .ConfigureAwait(false);
+    var res = await _myClient.StreamCreate(
+      new StreamCreateInput { description = "Hello World", name = "Super Stream 01" }
+    );
 
-    Assert.NotNull(res);
-    streamId = res;
+    Assert.That(res, Is.Not.Null);
+    _streamId = res;
     InitServerTransport();
   }
 
   [Test, Order(10)]
   public async Task StreamsGet()
   {
-    var res = await myClient.StreamsGet().ConfigureAwait(false);
+    var res = await _myClient.StreamsGet();
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
   }
 
   [Test, Order(11)]
   public async Task StreamGet()
   {
-    var res = await myClient.StreamGet(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamGet(_streamId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     Assert.That(res.branches.items[0].name, Is.EqualTo("main"));
-    Assert.IsNotEmpty(res.collaborators);
+    Assert.That(res.collaborators, Is.Not.Empty);
   }
 
   [Test, Order(12)]
   public async Task IsStreamAccessible()
   {
-    var res = await myClient.IsStreamAccessible(streamId).ConfigureAwait(false);
+    var res = await _myClient.IsStreamAccessible(_streamId);
 
-    Assert.True(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(13)]
   public async Task StreamSearch()
   {
-    var res = await myClient.StreamSearch(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamSearch(_streamId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
   }
 
   [Test, Order(20)]
   public async Task StreamUpdate()
   {
-    var res = await myClient
-      .StreamUpdate(
-        new StreamUpdateInput
-        {
-          id = streamId,
-          description = "Hello World",
-          name = "Super Stream 01 EDITED"
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.StreamUpdate(
+      new StreamUpdateInput
+      {
+        id = _streamId,
+        description = "Hello World",
+        name = "Super Stream 01 EDITED"
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(31)]
   public async Task StreamInviteCreate()
   {
-    var res = await myClient
-      .StreamInviteCreate(
-        new StreamInviteCreateInput
-        {
-          streamId = streamId,
-          email = secondUserAccount.userInfo.email,
-          message = "Whasssup!"
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.StreamInviteCreate(
+      new StreamInviteCreateInput
+      {
+        streamId = _streamId,
+        email = _secondUserAccount.userInfo.email,
+        message = "Whasssup!"
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
 
     Assert.ThrowsAsync<ArgumentException>(
-      async () =>
-        await myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId }).ConfigureAwait(false)
+      async () => await _myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = _streamId })
     );
   }
 
   [Test, Order(32)]
   public async Task StreamInviteGet()
   {
-    var invites = await secondClient.GetAllPendingInvites().ConfigureAwait(false);
+    var invites = await _secondClient.GetAllPendingInvites();
 
-    Assert.NotNull(invites);
+    Assert.That(invites, Is.Not.Null);
   }
 
   [Test, Order(33)]
   public async Task StreamInviteUse()
   {
-    var invites = await secondClient.GetAllPendingInvites().ConfigureAwait(false);
+    var invites = await _secondClient.GetAllPendingInvites();
 
-    var res = await secondClient.StreamInviteUse(invites[0].streamId, invites[0].token).ConfigureAwait(false);
+    var res = await _secondClient.StreamInviteUse(invites[0].streamId, invites[0].token);
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(34)]
   public async Task StreamUpdatePermission()
   {
-    var res = await myClient
-      .StreamUpdatePermission(
-        new StreamPermissionInput
-        {
-          role = "stream:reviewer",
-          streamId = streamId,
-          userId = secondUserAccount.userInfo.id
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.StreamUpdatePermission(
+      new StreamPermissionInput
+      {
+        role = "stream:reviewer",
+        streamId = _streamId,
+        userId = _secondUserAccount.userInfo.id
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(40)]
   public async Task StreamRevokePermission()
   {
-    var res = await myClient
-      .StreamRevokePermission(
-        new StreamRevokePermissionInput { streamId = streamId, userId = secondUserAccount.userInfo.id }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.StreamRevokePermission(
+      new StreamRevokePermissionInput { streamId = _streamId, userId = _secondUserAccount.userInfo.id }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   #region activity
@@ -210,9 +201,9 @@ public class Api
   [Test, Order(51)]
   public async Task StreamGetActivity()
   {
-    var res = await myClient.StreamGetActivity(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamGetActivity(_streamId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     //Assert.AreEqual(commitId, res[0].);
   }
 
@@ -223,9 +214,9 @@ public class Api
   [Test, Order(52)]
   public async Task StreamGetComments()
   {
-    var res = await myClient.StreamGetActivity(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamGetActivity(_streamId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     //Assert.AreEqual(commitId, res[0].);
   }
 
@@ -234,8 +225,8 @@ public class Api
   [Test, Order(60)]
   public async Task StreamDelete()
   {
-    var res = await myClient.StreamDelete(streamId).ConfigureAwait(false);
-    Assert.IsTrue(res);
+    var res = await _myClient.StreamDelete(_streamId);
+    Assert.That(res, Is.True);
   }
 
   #region branches
@@ -243,36 +234,34 @@ public class Api
   [Test, Order(41)]
   public async Task BranchCreate()
   {
-    var res = await myClient
-      .BranchCreate(
-        new BranchCreateInput
-        {
-          streamId = streamId,
-          description = "this is a sample branch",
-          name = "sample-branch"
-        }
-      )
-      .ConfigureAwait(false);
-    Assert.NotNull(res);
-    branchId = res;
-    branchName = "sample-branch";
+    var res = await _myClient.BranchCreate(
+      new BranchCreateInput
+      {
+        streamId = _streamId,
+        description = "this is a sample branch",
+        name = "sample-branch"
+      }
+    );
+    Assert.That(res, Is.Not.Null);
+    _branchId = res;
+    _branchName = "sample-branch";
   }
 
   [Test, Order(42)]
   public async Task BranchGet()
   {
-    var res = await myClient.BranchGet(streamId, branchName).ConfigureAwait(false);
+    var res = await _myClient.BranchGet(_streamId, _branchName);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     Assert.That(res.description, Is.EqualTo("this is a sample branch"));
   }
 
   [Test, Order(43)]
   public async Task StreamGetBranches()
   {
-    var res = await myClient.StreamGetBranches(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamGetBranches(_streamId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     // Branches are now returned in order of creation so 'main' should always go first.
     Assert.That(res[0].name, Is.EqualTo("main"));
   }
@@ -281,9 +270,9 @@ public class Api
   public async Task StreamGetBranches_Throws_WhenRequestingOverLimit()
   {
     Assert.ThrowsAsync<SpeckleGraphQLException<StreamData>>(
-      async () => await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT + 1).ConfigureAwait(false)
+      async () => await _myClient.StreamGetBranches(_streamId, ServerLimits.BRANCH_GET_LIMIT + 1)
     );
-    var res = await myClient.StreamGetBranches(streamId, ServerLimits.BRANCH_GET_LIMIT).ConfigureAwait(false);
+    var res = await _myClient.StreamGetBranches(_streamId, ServerLimits.BRANCH_GET_LIMIT);
 
     Assert.That(res, Is.Not.Null);
   }
@@ -291,17 +280,17 @@ public class Api
   [Test, Order(52)]
   public async Task StreamGetBranches_WithManyBranches()
   {
-    var newStreamId = await myClient.StreamCreate(new StreamCreateInput { name = "Many branches stream" });
+    var newStreamId = await _myClient.StreamCreate(new StreamCreateInput { name = "Many branches stream" });
 
-    await CreateEmptyBranches(myClient, newStreamId, ServerLimits.BRANCH_GET_LIMIT);
+    await CreateEmptyBranches(_myClient, newStreamId, ServerLimits.BRANCH_GET_LIMIT);
 
-    var res = await myClient.StreamGetBranches(newStreamId, ServerLimits.BRANCH_GET_LIMIT);
+    var res = await _myClient.StreamGetBranches(newStreamId, ServerLimits.BRANCH_GET_LIMIT);
 
     Assert.That(res, Is.Not.Null);
     Assert.That(res, Has.Count.EqualTo(ServerLimits.BRANCH_GET_LIMIT));
   }
 
-  public async Task CreateEmptyBranches(
+  private async Task CreateEmptyBranches(
     Client client,
     string streamId,
     int branchCount,
@@ -339,62 +328,58 @@ public class Api
 
     myObject["@Points"] = ptsList;
 
-    objectId = await Operations.Send(myObject, new List<ITransport> { myServerTransport }).ConfigureAwait(false);
+    _objectId = await Operations.Send(myObject, new List<ITransport> { _myServerTransport });
 
-    Assert.That(objectId, Is.Not.Null);
+    Assert.That(_objectId, Is.Not.Null);
 
-    var res = await myClient
-      .CommitCreate(
-        new CommitCreateInput
-        {
-          streamId = streamId,
-          branchName = branchName,
-          objectId = objectId,
-          message = "Fibber Fibbo",
-          sourceApplication = "Tests",
-          totalChildrenCount = 100
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.CommitCreate(
+      new CommitCreateInput
+      {
+        streamId = _streamId,
+        branchName = _branchName,
+        objectId = _objectId,
+        message = "Fibber Fibbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100
+      }
+    );
 
-    Assert.NotNull(res);
-    commitId = res;
+    Assert.That(res, Is.Not.Null);
+    _commitId = res;
 
-    var res2 = await myClient
-      .CommitCreate(
-        new CommitCreateInput
-        {
-          streamId = streamId,
-          branchName = branchName,
-          objectId = objectId,
-          message = "Fabber Fabbo",
-          sourceApplication = "Tests",
-          totalChildrenCount = 100,
-          parents = new List<string> { commitId }
-        }
-      )
-      .ConfigureAwait(false);
+    var res2 = await _myClient.CommitCreate(
+      new CommitCreateInput
+      {
+        streamId = _streamId,
+        branchName = _branchName,
+        objectId = _objectId,
+        message = "Fabber Fabbo",
+        sourceApplication = "Tests",
+        totalChildrenCount = 100,
+        parents = new List<string> { _commitId }
+      }
+    );
 
-    Assert.NotNull(res2);
-    commitId = res2;
+    Assert.That(res2, Is.Not.Null);
+    _commitId = res2;
   }
 
   [Test, Order(44)]
   public async Task CommitGet()
   {
-    var res = await myClient.CommitGet(streamId, commitId).ConfigureAwait(false);
+    var res = await _myClient.CommitGet(_streamId, _commitId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     Assert.That(res.message, Is.EqualTo("Fabber Fabbo"));
   }
 
   [Test, Order(45)]
   public async Task StreamGetCommits()
   {
-    var res = await myClient.StreamGetCommits(streamId).ConfigureAwait(false);
+    var res = await _myClient.StreamGetCommits(_streamId);
 
-    Assert.NotNull(res);
-    Assert.That(res[0].id, Is.EqualTo(commitId));
+    Assert.That(res, Is.Not.Null);
+    Assert.That(res[0].id, Is.EqualTo(_commitId));
   }
 
   #region object
@@ -402,9 +387,9 @@ public class Api
   [Test, Order(45)]
   public async Task ObjectGet()
   {
-    var res = await myClient.ObjectGet(streamId, objectId).ConfigureAwait(false);
+    var res = await _myClient.ObjectGet(_streamId, _objectId);
 
-    Assert.NotNull(res);
+    Assert.That(res, Is.Not.Null);
     Assert.That(res.totalChildrenCount, Is.EqualTo(100));
   }
 
@@ -413,45 +398,39 @@ public class Api
   [Test, Order(46)]
   public async Task CommitUpdate()
   {
-    var res = await myClient
-      .CommitUpdate(
-        new CommitUpdateInput
-        {
-          streamId = streamId,
-          id = commitId,
-          message = "DIM IS DA BEST"
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.CommitUpdate(
+      new CommitUpdateInput
+      {
+        streamId = _streamId,
+        id = _commitId,
+        message = "DIM IS DA BEST"
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(47)]
   public async Task CommitReceived()
   {
-    var res = await myClient
-      .CommitReceived(
-        new CommitReceivedInput
-        {
-          commitId = commitId,
-          streamId = streamId,
-          sourceApplication = "sharp-tests",
-          message = "The test message"
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.CommitReceived(
+      new CommitReceivedInput
+      {
+        commitId = _commitId,
+        streamId = _streamId,
+        sourceApplication = "sharp-tests",
+        message = "The test message"
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(48)]
   public async Task CommitDelete()
   {
-    var res = await myClient
-      .CommitDelete(new CommitDeleteInput { id = commitId, streamId = streamId })
-      .ConfigureAwait(false);
-    Assert.IsTrue(res);
+    var res = await _myClient.CommitDelete(new CommitDeleteInput { id = _commitId, streamId = _streamId });
+    Assert.That(res, Is.True);
   }
 
   #endregion
@@ -460,27 +439,23 @@ public class Api
   [Test, Order(49)]
   public async Task BranchUpdate()
   {
-    var res = await myClient
-      .BranchUpdate(
-        new BranchUpdateInput
-        {
-          streamId = streamId,
-          id = branchId,
-          name = "sample-branch EDITED"
-        }
-      )
-      .ConfigureAwait(false);
+    var res = await _myClient.BranchUpdate(
+      new BranchUpdateInput
+      {
+        streamId = _streamId,
+        id = _branchId,
+        name = "sample-branch EDITED"
+      }
+    );
 
-    Assert.IsTrue(res);
+    Assert.That(res, Is.True);
   }
 
   [Test, Order(50)]
   public async Task BranchDelete()
   {
-    var res = await myClient
-      .BranchDelete(new BranchDeleteInput { id = branchId, streamId = streamId })
-      .ConfigureAwait(false);
-    Assert.IsTrue(res);
+    var res = await _myClient.BranchDelete(new BranchDeleteInput { id = _branchId, streamId = _streamId });
+    Assert.That(res, Is.True);
   }
 
   #endregion
@@ -512,4 +487,12 @@ public class Api
   //}
 
   #endregion
+
+  public void Dispose()
+  {
+    _myClient?.Dispose();
+    _secondClient?.Dispose();
+    _myServerTransport?.Dispose();
+    _otherServerTransport?.Dispose();
+  }
 }
