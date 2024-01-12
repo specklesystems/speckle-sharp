@@ -4,6 +4,7 @@ using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 using Speckle.Automate.Sdk.Schema;
+using Speckle.Core.Logging;
 
 namespace Speckle.Automate.Sdk;
 
@@ -35,7 +36,7 @@ public static class AutomationRunner
         );
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       Console.WriteLine(ex.ToString());
       automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
@@ -85,7 +86,7 @@ public static class AutomationRunner
   }
 
   /// <summary>
-  /// Main entrypoint to execute an Automate function with input data of type <see cref="TInput"/>
+  /// Main entrypoint to execute an Automate function with input data of type <typeparamref name="TInput"/>.
   /// </summary>
   /// <param name="args">The command line arguments passed into the function by automate</param>
   /// <param name="automateFunction">The automate function to execute</param>

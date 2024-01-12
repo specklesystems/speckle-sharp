@@ -39,9 +39,8 @@ public class SpecklePathTests
     {
       throw new NotImplementedException("Your OS platform is not supported");
     }
-    var regex = new Regex(pattern);
-    var match = regex.Match(userPath);
-    Assert.True(match.Success, $"{userPath} did not match on {pattern}");
+
+    Assert.That(userPath, Does.Match(pattern));
   }
 
   [Test]
@@ -88,8 +87,7 @@ public class SpecklePathTests
     {
       throw new NotImplementedException("Your OS platform is not supported");
     }
-    var regex = new Regex(pattern);
-    var match = regex.Match(installPath);
-    Assert.True(match.Success, $"{installPath} did not match on {pattern}");
+
+    Assert.That(installPath, Does.Match(pattern));
   }
 }
