@@ -6,6 +6,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 using DesktopUI2.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorAutocadCivil.Storage;
@@ -42,13 +43,14 @@ public static class SpeckleStreamManager
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
-      var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
-      if (!NOD.Contains(SpeckleExtensionDictionary))
+      var namedObjectsDict = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
+      if (!namedObjectsDict.Contains(SpeckleExtensionDictionary))
       {
         return streams;
       }
 
-      var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
+      var speckleDict =
+        tr.GetObject(namedObjectsDict.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
       if (speckleDict == null || speckleDict.Count == 0)
       {
         return streams;
@@ -60,19 +62,24 @@ public static class SpeckleStreamManager
         return streams;
       }
 
-      var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
-      var value = GetXrecordData(record);
-
-      try
+      if (tr.GetObject(id, OpenMode.ForRead) is Xrecord record)
       {
-        //Try to decode here because there is old data
-        value = Base64Decode(value);
+        string value = GetXrecordData(record);
+        if (!string.IsNullOrEmpty(value))
+        {
+          //Try to decode here because there is old data
+          if (TryBase64Decode(value, out value))
+          {
+            streams = JsonConvert.DeserializeObject<List<StreamState>>(value);
+          }
+          else
+          {
+            SpeckleLog.Logger.Error("Could not decode Base64 encoded StreamState Xrecord string");
+          }
+        }
       }
-      catch (Exception e) { }
 
-      streams = JsonConvert.DeserializeObject<List<StreamState>>(value);
-
-      return streams;
+      return streams ?? new();
     }
   }
 
@@ -80,7 +87,7 @@ public static class SpeckleStreamManager
   /// Writes the stream states to the current document.
   /// </summary>
   /// <param name="doc"></param>
-  /// <param name="wrap"></param>
+  /// <param name="streamStates"></param>
   public static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
   {
     if (doc == null)
@@ -148,10 +155,45 @@ public static class SpeckleStreamManager
     return Convert.ToBase64String(plainTextBytes);
   }
 
-  private static string Base64Decode(string base64EncodedData)
+  /// <summary>
+  /// Decodes base64 encoded string.
+  /// </summary>
+  /// <param name="base64EncodedData"></param>
+  /// <param name="decodedString">The decoded string</param>
+  /// <returns>True on success, false on failure</returns>
+  private static bool TryBase64Decode(string base64EncodedData, out string decodedString)
   {
-    var base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
-    return Encoding.UTF8.GetString(base64EncodedBytes);
+    decodedString = null;
+    if (string.IsNullOrWhiteSpace(base64EncodedData))
+    {
+      return false;
+    }
+
+    byte[] base64EncodedBytes;
+    try
+    {
+      base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
+    }
+    catch (FormatException fEx)
+    {
+      SpeckleLog.Logger.Error(fEx, "Could not decode saved stream with invalid format: {exceptionMessage}");
+      return false;
+    }
+
+    if (base64EncodedBytes == null)
+    {
+      return false;
+    }
+
+    try
+    {
+      decodedString = Encoding.UTF8.GetString(base64EncodedBytes);
+      return true;
+    }
+    catch (DecoderFallbackException)
+    {
+      return false;
+    }
   }
 
   private static IEnumerable<string> SplitString(string text, int chunkSize)
