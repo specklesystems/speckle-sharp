@@ -28,6 +28,8 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -77,11 +79,10 @@ public partial class ConverterAutocadCivil
       {
         var point = surface.ControlPoints[count];
         double weight = 1;
-        try
+        if (count < surface.Weights.Count)
         {
           weight = surface.Weights[count];
         }
-        catch { }
         row.Add(new ControlPoint(point.X, point.Y, point.Z, weight, u));
         count++;
       }
@@ -248,21 +249,6 @@ public partial class ConverterAutocadCivil
       domain = IntervalToSpeckle(line.GetInterval()),
       bbox = BoxToSpeckle(line.OrthoBoundBlock)
     };
-    return _line;
-  }
-
-  public Line3d LineToNative(Line line)
-  {
-    var _line = new Line3d(PointToNative(line.start), PointToNative(line.end));
-    if (line.domain != null)
-    {
-      try
-      {
-        _line.SetInterval(IntervalToNative(line.domain));
-      }
-      catch { }
-    }
-
     return _line;
   }
 
@@ -536,8 +522,6 @@ public partial class ConverterAutocadCivil
   // Polycurve
   public Polycurve PolycurveToSpeckle(Polyline2d polyline) // AC polyline2d can have linear, circlular, or elliptical segments
   {
-    var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
-
     // extract segment curves
     var segments = new List<ICurve>();
     var exploded = new DBObjectCollection();
@@ -564,26 +548,31 @@ public partial class ConverterAutocadCivil
       {
         segment = GetCorrectSegmentDirection(segment, previousPoint, false, out previousPoint);
       }
-      segments.Add(CurveToSpeckle(segment));
+
+      ICurve convertedSegment = CurveToSpeckle(segment);
+      if (convertedSegment is null)
+      {
+        throw new ConversionException($"Could not convert a Polyline2D segment to speckle curve");
+      }
+
+      segments.Add(convertedSegment);
     }
 
-    if (segments.Count == 0)
-    {
-      throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
-    }
-
-    polycurve.segments = segments;
-
-    polycurve.length = polyline.Length;
-    polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    Polycurve polycurve =
+      new()
+      {
+        segments = segments,
+        length = polyline.Length,
+        closed = polyline.Closed,
+        bbox = BoxToSpeckle(polyline.GeometricExtents),
+        units = ModelUnits
+      };
 
     return polycurve;
   }
 
   public Polycurve PolycurveToSpeckle(AcadDB.Polyline polyline) // AC polylines are polycurves with linear or arc segments
   {
-    var polycurve = new Polycurve(units: ModelUnits) { closed = polyline.Closed };
-
     // extract segments
     var segments = new List<ICurve>();
     Point3d previousPoint = new();
@@ -626,18 +615,25 @@ public partial class ConverterAutocadCivil
       {
         segment = GetCorrectSegmentDirection(segment, previousPoint, false, out previousPoint);
       }
+
+      ICurve convertedSegment = CurveToSpeckle(segment);
+      if (convertedSegment is null)
+      {
+        throw new ConversionException($"Could not convert a Polyline segment to speckle curve");
+      }
+
       segments.Add(CurveToSpeckle(segment));
     }
 
-    if (segments.Count == 0)
-    {
-      throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
-    }
-
-    polycurve.segments = segments;
-
-    polycurve.length = polyline.Length;
-    polycurve.bbox = BoxToSpeckle(polyline.GeometricExtents);
+    Polycurve polycurve =
+      new()
+      {
+        segments = segments,
+        length = polyline.Length,
+        closed = polyline.Closed,
+        bbox = BoxToSpeckle(polyline.GeometricExtents),
+        units = ModelUnits
+      };
 
     return polycurve;
   }
@@ -861,23 +857,26 @@ public partial class ConverterAutocadCivil
 
     // get nurbs and geo data
     var data = spline.NurbsData;
-    var _spline = spline.GetGeCurve() as NurbCurve3d;
+    var nurbs = spline.GetGeCurve() as NurbCurve3d;
 
     // hack: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
     bool periodicClosed = false;
-    if (_spline.Knots.Count < _spline.NumberOfControlPoints + _spline.Degree + 1 && spline.IsPeriodic)
+    if (nurbs.Knots.Count < nurbs.NumberOfControlPoints + nurbs.Degree + 1 && spline.IsPeriodic)
     {
       periodicClosed = true;
     }
 
     // handle the display polyline
-    try
+    AcadDB.Curve poly = spline.ToPolyline(false, true);
+    ICurve convertedPoly = CurveToSpeckle(poly);
+    if (convertedPoly is Polyline polyline)
     {
-      var poly = spline.ToPolyline(false, true);
-      Polyline displayValue = CurveToSpeckle(poly) as Polyline;
-      curve.displayValue = displayValue;
+      curve.displayValue = polyline;
     }
-    catch { }
+    else
+    {
+      SpeckleLog.Logger.Error("Could not create polyline for spline's display value.");
+    }
 
     // get points
     // NOTE: for closed periodic splines, autocad does not track last #degree points. Add the first #degree control points to the list if so.
@@ -938,15 +937,16 @@ public partial class ConverterAutocadCivil
     curve.periodic = spline.IsPeriodic;
     curve.rational = spline.IsRational;
     curve.closed = periodicClosed || spline.Closed;
-    curve.length = _spline.GetLength(_spline.StartParameter, _spline.EndParameter, tolerance);
-    curve.domain = IntervalToSpeckle(_spline.GetInterval());
+    curve.length = nurbs.GetLength(nurbs.StartParameter, nurbs.EndParameter, tolerance);
+    curve.domain = IntervalToSpeckle(nurbs.GetInterval());
     curve.bbox = BoxToSpeckle(spline.GeometricExtents);
     curve.units = ModelUnits;
 
     return curve;
   }
 
-  // handles polycurves with spline segments: bakes segments individually and then joins
+  // handles polycurves with spline segments: bakes segments individually
+
   public ApplicationObject PolycurveSplineToNativeDB(Polycurve polycurve)
   {
     var appObj = new ApplicationObject(polycurve.id, polycurve.speckle_type)
@@ -985,22 +985,9 @@ public partial class ConverterAutocadCivil
 
     if (first == null)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No segments were successfully converted");
-      return appObj;
+      throw new ConversionException($"No segments were successfully converted");
     }
 
-    if (others.Count > 0)
-    {
-      try
-      {
-        first.JoinEntities(others.ToArray());
-        // TODO: this always fails. Fix and edit the createdids and converted to only reflect the new joined entities
-      }
-      catch (Exception e)
-      {
-        appObj.Update(logItem: $"Could not create spline from segments: {e.Message}");
-      }
-    }
     return appObj;
   }
 
@@ -1194,10 +1181,10 @@ public partial class ConverterAutocadCivil
           return PolycurveToSpeckle(polyline);
         }
 
-      case AcadDB.Polyline2d polyline2d:
+      case Polyline2d polyline2d:
         return PolycurveToSpeckle(polyline2d);
 
-      case AcadDB.Polyline3d polyline3d:
+      case Polyline3d polyline3d:
         return PolylineToSpeckle(polyline3d);
 
       case AcadDB.Arc arc:
@@ -1325,72 +1312,63 @@ public partial class ConverterAutocadCivil
 
   public Box BoxToSpeckle(BoundBlock3d bound)
   {
-    try
+    Box box = null;
+    if (bound.GetMinimumPoint() is Point3d min && bound.GetMaximumPoint() is Point3d max)
     {
-      // convert min and max pts to speckle first
-      var min = PointToSpeckle(bound.GetMinimumPoint());
-      var max = PointToSpeckle(bound.GetMaximumPoint());
-
-      // get dimension intervals
-      var xSize = new Interval(min.x, max.x);
-      var ySize = new Interval(min.y, max.y);
-      var zSize = new Interval(min.z, max.z);
-
-      // get the base plane of the bounding box from extents and current UCS
-      var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
-      var plane = new AcadGeo.Plane(bound.GetMinimumPoint(), ucs.Xaxis, ucs.Yaxis);
-
-      var box = new Box()
-      {
-        xSize = xSize,
-        ySize = ySize,
-        zSize = zSize,
-        basePlane = PlaneToSpeckle(plane),
-        volume = xSize.Length * ySize.Length * zSize.Length,
-        units = ModelUnits
-      };
-
-      return box;
+      box = GetBoxFromMinAndMaxPoints(min, max);
     }
-    catch
-    {
-      return null;
-    }
+    return box;
   }
 
   public Box BoxToSpeckle(Extents3d extents)
   {
+    Box box = null;
+    if (extents.MinPoint is Point3d min && extents.MaxPoint is Point3d max)
+    {
+      box = GetBoxFromMinAndMaxPoints(min, max);
+    }
+    return box;
+  }
+
+  private Box GetBoxFromMinAndMaxPoints(Point3d min, Point3d max)
+  {
+    Point3d extMin = ToExternalCoordinates(min);
+    Point3d extMax = ToExternalCoordinates(max);
+
+    // get dimension intervals
+    Interval xSize = new(extMin.X, extMax.X);
+    Interval ySize = new(extMin.Y, extMax.Y);
+    Interval zSize = new(extMin.Z, extMax.Z);
+
+    // create box
+    var box = new Box()
+    {
+      xSize = xSize,
+      ySize = ySize,
+      zSize = zSize,
+      volume = xSize.Length * ySize.Length * zSize.Length,
+      units = ModelUnits
+    };
+
+    // get the base plane of the bounding box from extents and current UCS
+    var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
+    Plane plane = null;
     try
     {
-      // convert min and max pts to speckle first
-      var min = PointToSpeckle(extents.MinPoint);
-      var max = PointToSpeckle(extents.MaxPoint);
-
-      // get dimension intervals
-      var xSize = new Interval(min.x, max.x);
-      var ySize = new Interval(min.y, max.y);
-      var zSize = new Interval(min.z, max.z);
-
-      // get the base plane of the bounding box from extents and current UCS
-      var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
-      var plane = new AcadGeo.Plane(extents.MinPoint, ucs.Xaxis, ucs.Yaxis);
-
-      var box = new Box()
-      {
-        xSize = xSize,
-        ySize = ySize,
-        zSize = zSize,
-        basePlane = PlaneToSpeckle(plane),
-        volume = xSize.Length * ySize.Length * zSize.Length,
-        units = ModelUnits
-      };
-
-      return box;
+      AcadGeo.Plane acadPlane = new(min, ucs.Xaxis, ucs.Yaxis);
+      plane = PlaneToSpeckle(acadPlane);
     }
-    catch
+    catch (Exception e) when (!e.IsFatal())
     {
-      return null;
+      SpeckleLog.Logger.Error(e, "Could not create base plane for box");
     }
+
+    if (plane != null)
+    {
+      box.basePlane = plane;
+    }
+
+    return box;
   }
 
   // Brep
@@ -1400,29 +1378,7 @@ public partial class ConverterAutocadCivil
   }
 
   // Mesh
-  /* need edge & face info on polygon meshes
-  public Mesh MeshToSpeckle(AcadDB.PolygonMesh mesh)
-  {
-    var _vertices = new List<Point3d>();
-    var colors = new List<int>();
-    using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
-    {
-      foreach (ObjectId id in mesh)
-      {
-        var vertex = (PolygonMeshVertex)tr.GetObject(id, OpenMode.ForRead);
-        _vertices.Add(vertex.Position);
-        colors.Add(vertex.Color.ColorValue.ToArgb());
-      }
-      tr.Commit();
-    }
-    var vertices = PointsToFlatArray(_vertices);
 
-    var speckleMesh = new Mesh(vertices, faces, colors.ToArray(), null, ModelUnits);
-    speckleMesh.bbox = BoxToSpeckle(mesh.GeometricExtents, true);
-
-    return speckleMesh;
-  }
-  */
   // Polyface mesh vertex indexing starts at 1. Subtract 1 from face vertex index when sending to Speckle
   public Mesh MeshToSpeckle(PolyFaceMesh mesh, string units = null)
   {
@@ -1556,14 +1512,19 @@ public partial class ConverterAutocadCivil
       for (int i = 0; i < vertices.Count; i++)
       {
         var vertex = new PolyFaceMeshVertex(points[i]);
-        if (mesh.colors.Count > 0)
+        if (i < mesh.colors.Count)
         {
           try
           {
-            Color color = Color.FromArgb(mesh.colors[i]);
-            vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            if (Color.FromArgb(mesh.colors[i]) is Color color)
+            {
+              vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
+            }
           }
-          catch { }
+          catch (Exception e) when (!e.IsFatal())
+          {
+            // Couldn't set vertex color, but this should not prevent conversion.
+          }
         }
         if (vertex.IsNewObject)
         {
@@ -1634,8 +1595,10 @@ public partial class ConverterAutocadCivil
         area = solid.Area;
         volume = solid.MassProperties.Volume;
       }
-      catch (Exception e) { }
-      ;
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // Couldn't set area and /or volume props, but this should not prevent conversion.
+      }
 
       bbox = BoxToSpeckle(solid.GeometricExtents);
     }
@@ -1709,8 +1672,9 @@ public partial class ConverterAutocadCivil
           };
         }
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
+        SpeckleLog.Logger.Warning(e, $"Could not retrieve mesh from brep");
         notes.Add(e.Message);
       }
     }

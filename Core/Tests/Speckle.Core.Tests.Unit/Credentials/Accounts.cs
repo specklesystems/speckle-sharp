@@ -58,8 +58,8 @@ public class CredentialInfrastructure
   [Test]
   public void GetAllAccounts()
   {
-    var accs = AccountManager.GetAccounts();
-    Assert.GreaterOrEqual(accs.Count(), 3); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D
+    var accs = AccountManager.GetAccounts().ToList();
+    Assert.That(accs, Has.Count.GreaterThanOrEqualTo(3)); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D
   }
 
   [Test]
@@ -67,7 +67,7 @@ public class CredentialInfrastructure
   {
     var accs = AccountManager.GetAccounts("baz").ToList();
 
-    Assert.That(accs.Count, Is.EqualTo(1));
+    Assert.That(accs, Has.Count.EqualTo(1));
     Assert.That(accs[0].serverInfo.company, Is.EqualTo("qux"));
     Assert.That(accs[0].serverInfo.url, Is.EqualTo("baz"));
     Assert.That(accs[0].refreshToken, Is.EqualTo("foo"));

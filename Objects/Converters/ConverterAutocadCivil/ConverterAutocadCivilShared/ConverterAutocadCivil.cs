@@ -24,6 +24,8 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
+using Speckle.Core.Logging;
+
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -102,167 +104,189 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
     Base extensionDictionary = null;
     List<string> notes = new();
 
-    switch (@object)
+    try
     {
-      case DBObject obj:
+      switch (@object)
+      {
+        case DBObject obj:
 
-        var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
+          var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
 
-        //Use the Handle object to update progressReport object.
-        //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
-        reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
-        style = DisplayStyleToSpeckle(obj as Entity); // note layer display styles are converted in the layer method
-        extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
+          //Use the Handle object to update progressReport object.
+          //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
+          reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
+          style = DisplayStyleToSpeckle(obj as Entity); // note layer display styles are converted in the layer method
+          extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
 
-        switch (obj)
-        {
-          case DBPoint o:
-            @base = PointToSpeckle(o);
-            break;
-          case AcadDB.Line o:
-            @base = LineToSpeckle(o);
-            break;
-          case AcadDB.Arc o:
-            @base = ArcToSpeckle(o);
-            break;
-          case AcadDB.Circle o:
-            @base = CircleToSpeckle(o);
-            break;
-          case AcadDB.Ellipse o:
-            @base = EllipseToSpeckle(o);
-            break;
-          case AcadDB.Hatch o:
-            @base = HatchToSpeckle(o);
-            break;
-          case AcadDB.Spline o:
-            @base = SplineToSpeckle(o);
-            break;
-          case AcadDB.Polyline o:
-            @base = o.IsOnlyLines ? PolylineToSpeckle(o) : (Base)PolycurveToSpeckle(o);
+          switch (obj)
+          {
+            case DBPoint o:
+              @base = PointToSpeckle(o);
+              break;
+            case AcadDB.Line o:
+              @base = LineToSpeckle(o);
+              break;
+            case AcadDB.Arc o:
+              @base = ArcToSpeckle(o);
+              break;
+            case AcadDB.Circle o:
+              @base = CircleToSpeckle(o);
+              break;
+            case AcadDB.Ellipse o:
+              @base = EllipseToSpeckle(o);
+              break;
+            case AcadDB.Hatch o:
+              @base = HatchToSpeckle(o);
+              break;
+            case AcadDB.Spline o:
+              @base = SplineToSpeckle(o);
+              break;
+            case AcadDB.Polyline o:
+              @base = o.IsOnlyLines ? PolylineToSpeckle(o) : (Base)PolycurveToSpeckle(o);
 
-            break;
-          case AcadDB.Polyline3d o:
-            @base = PolylineToSpeckle(o);
-            break;
-          case Polyline2d o:
-            @base = PolycurveToSpeckle(o);
-            break;
-          case Region o:
-            @base = RegionToSpeckle(o, out notes);
-            break;
-          case AcadDB.Surface o:
-            @base = SurfaceToSpeckle(o, out notes);
-            break;
-          case PolyFaceMesh o:
-            @base = MeshToSpeckle(o);
-            break;
-          case ProxyEntity o:
-            @base = ProxyEntityToSpeckle(o);
-            break;
-          case SubDMesh o:
-            @base = MeshToSpeckle(o);
-            break;
-          case Solid3d o:
-            if (o.IsNull)
-            {
-              notes.Add($"Solid was null");
-            }
-            else
-            {
-              @base = SolidToSpeckle(o, out notes);
-            }
+              break;
+            case AcadDB.Polyline3d o:
+              @base = PolylineToSpeckle(o);
+              break;
+            case Polyline2d o:
+              @base = PolycurveToSpeckle(o);
+              break;
+            case Region o:
+              @base = RegionToSpeckle(o, out notes);
+              break;
+            case AcadDB.Surface o:
+              @base = SurfaceToSpeckle(o, out notes);
+              break;
+            case PolyFaceMesh o:
+              @base = MeshToSpeckle(o);
+              break;
+            case ProxyEntity o:
+              @base = ProxyEntityToSpeckle(o);
+              break;
+            case SubDMesh o:
+              @base = MeshToSpeckle(o);
+              break;
+            case Solid3d o:
+              if (o.IsNull)
+              {
+                notes.Add($"Solid was null");
+              }
+              else
+              {
+                @base = SolidToSpeckle(o, out notes);
+              }
 
-            break;
-          case AcadDB.Dimension o:
-            @base = DimensionToSpeckle(o);
-            break;
-          case BlockReference o:
-            @base = BlockReferenceToSpeckle(o);
-            break;
-          case BlockTableRecord o:
-            @base = BlockRecordToSpeckle(o);
-            break;
-          case DBText o:
-            @base = TextToSpeckle(o);
-            break;
-          case MText o:
-            @base = TextToSpeckle(o);
-            break;
-          case LayerTableRecord o:
-            @base = LayerToSpeckle(o);
-            break;
+              break;
+            case AcadDB.Dimension o:
+              @base = DimensionToSpeckle(o);
+              break;
+            case BlockReference o:
+              @base = BlockReferenceToSpeckle(o);
+              break;
+            case BlockTableRecord o:
+              @base = BlockRecordToSpeckle(o);
+              break;
+            case DBText o:
+              @base = TextToSpeckle(o);
+              break;
+            case MText o:
+              @base = TextToSpeckle(o);
+              break;
+            case LayerTableRecord o:
+              @base = LayerToSpeckle(o);
+              break;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
-          case CivilDB.Alignment o:
-            @base = AlignmentToSpeckle(o);
-            break;
-          case CivilDB.Corridor o:
-            @base = CorridorToSpeckle(o);
-            break;
-          case CivilDB.FeatureLine o:
-            @base = FeatureLineToSpeckle(o);
-            break;
-          case CivilDB.Structure o:
-            @base = StructureToSpeckle(o);
-            break;
-          case CivilDB.Pipe o:
-            @base = PipeToSpeckle(o);
-            break;
-          case CivilDB.PressurePipe o:
-            @base = PipeToSpeckle(o);
-            break;
-          case CivilDB.Profile o:
-            @base = ProfileToSpeckle(o);
-            break;
-          case CivilDB.TinSurface o:
-            @base = SurfaceToSpeckle(o);
-            break;
-
-#elif ADVANCESTEEL
-
-          default:
-            try
-            {
-              @base = ConvertASToSpeckle(obj, reportObj, notes);
-            }
-            catch (Exception ex)
-            {
-              //Update report because AS object type
-              Report.UpdateReportObject(reportObj);
-              throw;
-            }
-
-            break;
+            case CivilDB.Alignment o:
+              @base = AlignmentToSpeckle(o);
+              break;
+            case CivilDB.Corridor o:
+              @base = CorridorToSpeckle(o);
+              break;
+            case CivilDB.FeatureLine o:
+              @base = FeatureLineToSpeckle(o);
+              break;
+            case CivilDB.Structure o:
+              @base = StructureToSpeckle(o);
+              break;
+            case CivilDB.Pipe o:
+              @base = PipeToSpeckle(o);
+              break;
+            case CivilDB.PressurePipe o:
+              @base = PipeToSpeckle(o);
+              break;
+            case CivilDB.Profile o:
+              @base = ProfileToSpeckle(o);
+              break;
+            case CivilDB.TinSurface o:
+              @base = SurfaceToSpeckle(o);
+              break;
 #endif
-        }
-        break;
-      case Acad.Geometry.Point3d o:
-        @base = PointToSpeckle(o);
-        break;
-      case Acad.Geometry.Vector3d o:
-        @base = VectorToSpeckle(o);
-        break;
-      case Acad.Geometry.Line3d o:
-        @base = LineToSpeckle(o);
-        break;
-      case Acad.Geometry.LineSegment3d o:
-        @base = LineToSpeckle(o);
-        break;
-      case Acad.Geometry.CircularArc3d o:
-        @base = ArcToSpeckle(o);
-        break;
-      case Acad.Geometry.Plane o:
-        @base = PlaneToSpeckle(o);
-        break;
-      case Acad.Geometry.Curve3d o:
-        @base = CurveToSpeckle(o) as Base;
-        break;
-      default:
-        if (reportObj != null)
-        {
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
-          Report.UpdateReportObject(reportObj);
-        }
-        return @base;
+            default:
+#if ADVANCESTEEL
+              try
+              {
+                @base = ConvertASToSpeckle(obj, reportObj, notes);
+              }
+              catch (Exception e) when (!e.IsFatal())
+              {
+                //Update report because AS object type
+                Report.UpdateReportObject(reportObj);
+                throw;
+              }
+              break;
+#else
+              throw new ConversionNotSupportedException(
+                $"AutocadCivil3D object of type {@object.GetType()} is not supported for conversion."
+              );
+#endif
+          }
+          break;
+        case Acad.Geometry.Point3d o:
+          @base = PointToSpeckle(o);
+          break;
+        case Acad.Geometry.Vector3d o:
+          @base = VectorToSpeckle(o);
+          break;
+        case Acad.Geometry.Line3d o:
+          @base = LineToSpeckle(o);
+          break;
+        case Acad.Geometry.LineSegment3d o:
+          @base = LineToSpeckle(o);
+          break;
+        case Acad.Geometry.CircularArc3d o:
+          @base = ArcToSpeckle(o);
+          break;
+        case Acad.Geometry.Plane o:
+          @base = PlaneToSpeckle(o);
+          break;
+        case Acad.Geometry.Curve3d o:
+          @base = CurveToSpeckle(o) as Base;
+          break;
+        default:
+          throw new ConversionNotSupportedException(
+            $"AutocadCivil object of type {@object.GetType()} is not supported for conversion."
+          );
+      }
+    }
+    catch (ConversionNotSupportedException e)
+    {
+      SpeckleLog.Logger.Information(e, "{exceptionMessage}");
+      reportObj?.Update(status: ApplicationObject.State.Skipped, logItem: e.Message);
+    }
+    catch (SpeckleException e)
+    {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
+    }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
     }
 
     if (@base is null)
@@ -308,111 +332,126 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
       ? new ApplicationObject(@object.id, @object.speckle_type)
       : null;
     List<string> notes = new();
-    switch (@object)
+    try
     {
-      case Point o:
-        acadObj = PointToNativeDB(o);
-        break;
+      switch (@object)
+      {
+        case Point o:
+          acadObj = PointToNativeDB(o);
+          break;
 
-      case Line o:
-        acadObj = LineToNativeDB(o);
-        break;
+        case Line o:
+          acadObj = LineToNativeDB(o);
+          break;
 
-      case Arc o:
-        acadObj = ArcToNativeDB(o);
-        break;
+        case Arc o:
+          acadObj = ArcToNativeDB(o);
+          break;
 
-      case Circle o:
-        acadObj = CircleToNativeDB(o);
-        break;
+        case Circle o:
+          acadObj = CircleToNativeDB(o);
+          break;
 
-      case Ellipse o:
-        acadObj = EllipseToNativeDB(o);
-        break;
+        case Ellipse o:
+          acadObj = EllipseToNativeDB(o);
+          break;
 
-      case Spiral o:
-        acadObj = PolylineToNativeDB(o.displayValue);
-        break;
+        case Spiral o:
+          acadObj = PolylineToNativeDB(o.displayValue);
+          break;
 
-      case Hatch o:
-        acadObj = HatchToNativeDB(o);
-        break;
+        case Hatch o:
+          acadObj = HatchToNativeDB(o);
+          break;
 
-      case Polyline o:
-        acadObj = PolylineToNativeDB(o);
-        break;
+        case Polyline o:
+          acadObj = PolylineToNativeDB(o);
+          break;
 
-      case Polycurve o:
-        bool convertAsSpline = o.segments.Any(s => s is not Line and not Arc);
-        acadObj = convertAsSpline || !IsPolycurvePlanar(o) ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
+        case Polycurve o:
+          bool convertAsSpline = o.segments.Any(s => s is not Line and not Arc);
+          acadObj = convertAsSpline || !IsPolycurvePlanar(o) ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
 
-        break;
+          break;
 
-      case Curve o:
-        acadObj = CurveToNativeDB(o);
-        break;
+        case Curve o:
+          acadObj = CurveToNativeDB(o);
+          break;
 
-      /*
-      case Surface o:
-        return SurfaceToNative(o);
-
-      */
-
-      case Mesh o:
+        case Mesh o:
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
-        acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
+          acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
 #else
-        acadObj = MeshToNativeDB(o);
+          acadObj = MeshToNativeDB(o);
 #endif
-        break;
+          break;
 
-      case Dimension o:
-        acadObj = isFromAutoCAD ? AcadDimensionToNative(o) : DimensionToNative(o);
-        break;
+        case Dimension o:
+          acadObj = isFromAutoCAD ? AcadDimensionToNative(o) : DimensionToNative(o);
+          break;
 
-      case Instance o:
-        acadObj = InstanceToNativeDB(o);
-        break;
+        case Instance o:
+          acadObj = InstanceToNativeDB(o);
+          break;
 
-      case BlockDefinition o:
-        acadObj = DefinitionToNativeDB(o, out notes);
-        break;
+        case BlockDefinition o:
+          acadObj = DefinitionToNativeDB(o, out notes);
+          break;
 
-      case Text o:
-        acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
-        break;
+        case Text o:
+          acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
+          break;
 
-      case Collection o:
-        acadObj = CollectionToNative(o);
-        break;
+        case Collection o:
+          acadObj = CollectionToNative(o);
+          break;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
-      case Alignment o:
-        acadObj = AlignmentToNative(o);
-        break;
+        case Alignment o:
+          acadObj = AlignmentToNative(o);
+          break;
 #endif
 
-      case ModelCurve o:
-        acadObj = CurveToNativeDB(o.baseCurve);
-        break;
+        case ModelCurve o:
+          acadObj = CurveToNativeDB(o.baseCurve);
+          break;
 
-      case GridLine o:
-        acadObj = CurveToNativeDB(o.baseLine);
-        break;
+        case GridLine o:
+          acadObj = CurveToNativeDB(o.baseLine);
+          break;
 
-      default:
-        if (reportObj != null)
-        {
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
-          Report.UpdateReportObject(reportObj);
-        }
-        throw new NotSupportedException();
+        default:
+          throw new ConversionNotSupportedException(
+            $"Speckle object of type {@object.GetType()} is not supported for conversion."
+          );
+      }
+    }
+    catch (ConversionNotSupportedException e)
+    {
+      SpeckleLog.Logger.Information(e, "{exceptionMessage}");
+      reportObj?.Update(status: ApplicationObject.State.Skipped, logItem: e.Message);
+    }
+    catch (SpeckleException e)
+    {
+      SpeckleLog.Logger.Warning(e, "{exceptionMessage}");
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
+    }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      SpeckleLog.Logger.Error(e, $"{@object.GetType()} unhandled conversion error");
+      reportObj?.Update(
+        status: ApplicationObject.State.Failed,
+        logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
+      );
     }
 
     switch (acadObj)
     {
       case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
-        acadObj = o.Converted.Any() ? o.Converted : null;
+        acadObj = o.Converted.Count != 0 ? o.Converted : null;
         reportObj?.Update(
           status: o.Status,
           createdIds: o.CreatedIds,
@@ -420,13 +459,12 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           container: o.Container,
           log: o.Log
         );
-
         break;
       default:
         reportObj?.Update(log: notes);
-
         break;
     }
+
     if (reportObj != null)
     {
       Report.UpdateReportObject(reportObj);
@@ -461,11 +499,11 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
           case AcadDB.Hatch:
           case AcadDB.Spline:
           case AcadDB.Polyline:
-          case AcadDB.Polyline2d:
-          case AcadDB.Polyline3d:
+          case Polyline2d:
+          case Polyline3d:
           case AcadDB.Surface:
-          case AcadDB.PolyFaceMesh:
-          case AcadDB.ProxyEntity:
+          case PolyFaceMesh:
+          case ProxyEntity:
           case AcadDB.Region:
           case SubDMesh:
           case Solid3d:
@@ -473,8 +511,8 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
 
           case BlockReference:
           case BlockTableRecord:
-          case AcadDB.DBText:
-          case AcadDB.MText:
+          case DBText:
+          case MText:
           case LayerTableRecord:
             return true;
 

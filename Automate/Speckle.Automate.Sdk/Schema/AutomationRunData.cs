@@ -1,8 +1,7 @@
-# nullable enable
 namespace Speckle.Automate.Sdk.Schema;
 
 ///<summary>
-///Values of the project, model and automation that triggere this function run.
+///Values of the project, model and automation that triggered this function run.
 ///</summary>
 public struct AutomationRunData
 {

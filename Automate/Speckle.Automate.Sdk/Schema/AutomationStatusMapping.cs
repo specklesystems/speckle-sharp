@@ -2,20 +2,18 @@ namespace Speckle.Automate.Sdk.Schema;
 
 public abstract class AutomationStatusMapping
 {
-  private const string Initializing = "INITIALIZING";
-  private const string Running = "RUNNING";
-  private const string Failed = "FAILED";
-  private const string Succeeded = "SUCCEEDED";
+  private const string INITIALIZING = "INITIALIZING";
+  private const string RUNNING = "RUNNING";
+  private const string FAILED = "FAILED";
+  private const string SUCCEEDED = "SUCCEEDED";
 
-  public static string Get(AutomationStatus status)
-  {
-    return status switch
+  public static string Get(AutomationStatus status) =>
+    status switch
     {
-      AutomationStatus.Running => Running,
-      AutomationStatus.Failed => Failed,
-      AutomationStatus.Succeeded => Succeeded,
-      AutomationStatus.Initializing => Initializing,
+      AutomationStatus.Running => RUNNING,
+      AutomationStatus.Failed => FAILED,
+      AutomationStatus.Succeeded => SUCCEEDED,
+      AutomationStatus.Initializing => INITIALIZING,
       _ => throw new ArgumentOutOfRangeException($"Not valid value for enum {status}")
     };
-  }
 }

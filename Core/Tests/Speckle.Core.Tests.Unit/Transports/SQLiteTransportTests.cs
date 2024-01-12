@@ -45,11 +45,11 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
     const string PAYLOAD_DATA = "MyTestObjectData";
 
     _sqlite.SaveObject(PAYLOAD_ID, PAYLOAD_DATA);
-    await _sqlite.WriteComplete().ConfigureAwait(false);
+    await _sqlite.WriteComplete();
 
     const string NEW_PAYLOAD = "MyEvenBetterObjectData";
     _sqlite.UpdateObject(PAYLOAD_ID, NEW_PAYLOAD);
-    await _sqlite.WriteComplete().ConfigureAwait(false);
+    await _sqlite.WriteComplete();
 
     var result = _sqlite.GetObject(PAYLOAD_ID);
     Assert.That(result, Is.EqualTo(NEW_PAYLOAD));
@@ -66,7 +66,7 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
     Assert.That(preUpdate, Is.Null);
 
     _sqlite.UpdateObject(PAYLOAD_ID, PAYLOAD_DATA);
-    await _sqlite.WriteComplete().ConfigureAwait(false);
+    await _sqlite.WriteComplete();
 
     var postUpdate = _sqlite.GetObject(PAYLOAD_ID);
     Assert.That(postUpdate, Is.EqualTo(PAYLOAD_DATA));
