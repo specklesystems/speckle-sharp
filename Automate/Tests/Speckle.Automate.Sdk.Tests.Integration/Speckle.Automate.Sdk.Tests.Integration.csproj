@@ -10,6 +10,10 @@
         <NoWarn>$(NoWarn);CA2007</NoWarn>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1"/>
         <PackageReference Include="coverlet.collector" Version="3.2.0"/>
