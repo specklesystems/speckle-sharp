@@ -4,6 +4,7 @@ using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 using Speckle.Automate.Sdk.Schema;
+using Speckle.Core.Logging;
 
 namespace Speckle.Automate.Sdk;
 
@@ -35,7 +36,7 @@ public static class AutomationRunner
         );
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       Console.WriteLine(ex.ToString());
       automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
