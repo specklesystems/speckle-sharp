@@ -26,6 +26,7 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -407,8 +408,9 @@ public partial class ConverterAutocadCivil
         newHatch.EvaluateHatch(true);
         entry.Key.Erase(); // delete created hatch loop curve
       }
-      catch (Exception e) // TODO: use !IsFatal() here
+      catch (Exception e) when (!e.IsFatal())
       {
+        // A hatch loop failed to create, but potentially can still create the rest of the hatch.
         appObj.Update(
           createdId: loopHandle,
           convertedItem: entry.Key,

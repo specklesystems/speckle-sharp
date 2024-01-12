@@ -227,7 +227,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
               {
                 @base = ConvertASToSpeckle(obj, reportObj, notes);
               }
-              catch (Exception)
+              catch (Exception e) when (!e.IsFatal())
               {
                 //Update report because AS object type
                 Report.UpdateReportObject(reportObj);
@@ -281,7 +281,7 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
         logItem: $"{@object.GetType()} unhandled conversion error: {e.Message}\n{e.StackTrace}"
       );
     }
-    catch (Exception e) // TODO: use !IsFatal here
+    catch (Exception e) when (!e.IsFatal())
     {
       reportObj?.Update(
         status: ApplicationObject.State.Failed,

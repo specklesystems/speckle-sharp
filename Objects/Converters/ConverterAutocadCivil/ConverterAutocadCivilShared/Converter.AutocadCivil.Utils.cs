@@ -9,6 +9,7 @@ using Speckle.Core.Models;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
+using Speckle.Core.Logging;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Autodesk.Aec.ApplicationServices;
@@ -132,15 +133,7 @@ public partial class ConverterAutocadCivil
     {
       l = Convert.ToInt64(str, 16);
     }
-    catch (ArgumentException)
-    {
-      return false;
-    }
-    catch (FormatException)
-    {
-      return false;
-    }
-    catch (OverflowException)
+    catch (Exception ex) when (ex is ArgumentException or FormatException or OverflowException)
     {
       return false;
     }
@@ -276,7 +269,11 @@ public partial class ConverterAutocadCivil
         layer = newLayer;
         return true;
       }
-      catch { } // TODO: use !IsFatal() here
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // Couldn't create a layer, but can use default layer instead.
+        SpeckleLog.Logger.Error(e, $"Could not add new layer {name} to the layer table");
+      }
     }
 
     return false;
@@ -468,7 +465,7 @@ public partial class ConverterAutocadCivil
       case UnitsValue.Undefined:
         return Units.None;
       default:
-        throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
+        throw new SpeckleException($"The Unit System \"{units}\" is unsupported.");
     }
   }
 

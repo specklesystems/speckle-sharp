@@ -29,6 +29,7 @@ using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -1026,7 +1027,10 @@ public partial class ConverterAutocadCivil
       speckleStructure["station"] = structure.Station;
       speckleStructure["network"] = structure.NetworkName;
     }
-    catch { } // TODO: use !IsFatal here
+    catch (Exception e) when (!e.IsFatal())
+    {
+      // Couldn't set non-essential structure properties
+    }
 
     return speckleStructure;
   }

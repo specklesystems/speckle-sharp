@@ -74,7 +74,7 @@ public static class SpeckleStreamManager
           }
           else
           {
-            SpeckleLog.Logger.Error("Could not decode Base54 encoded StreamState Xrecord string");
+            SpeckleLog.Logger.Error("Could not decode Base64 encoded StreamState Xrecord string");
           }
         }
       }

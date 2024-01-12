@@ -458,7 +458,7 @@ public static class Utils
     {
       propertySets = PropertyDataServices.GetPropertySets(obj);
     }
-    catch (Autodesk.AutoCAD.Runtime.Exception e) when (!e.IsFatal())
+    catch (Autodesk.AutoCAD.Runtime.Exception e) 
     {
       // This may throw if property sets do not exist on the object.
       // afaik, trycatch is necessary because there is no way to preemptively check if the set already exists.

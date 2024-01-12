@@ -1352,17 +1352,20 @@ public partial class ConverterAutocadCivil
 
     // get the base plane of the bounding box from extents and current UCS
     var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
-    AcadGeo.Plane plane = null;
+    Plane plane = null;
     try
     {
-      plane = new AcadGeo.Plane(min, ucs.Xaxis, ucs.Yaxis);
+      AcadGeo.Plane acadPlane = new(min, ucs.Xaxis, ucs.Yaxis);
+      plane = PlaneToSpeckle(acadPlane);
     }
-    catch // TODO: use !IsFatal here
-    { }
+    catch (Exception e) when (!e.IsFatal())
+    {
+      SpeckleLog.Logger.Error(e, "Could not create base plane for box");
+    }
 
     if (plane != null)
     {
-      box.basePlane = PlaneToSpeckle(plane);
+      box.basePlane = plane;
     }
 
     return box;
@@ -1518,7 +1521,10 @@ public partial class ConverterAutocadCivil
               vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
             }
           }
-          catch { } // TODO: use !IsFatal here
+          catch (Exception e) when (!e.IsFatal())
+          {
+            // Couldn't set vertex color, but this should not prevent conversion.
+          }
         }
         if (vertex.IsNewObject)
         {
@@ -1589,7 +1595,10 @@ public partial class ConverterAutocadCivil
         area = solid.Area;
         volume = solid.MassProperties.Volume;
       }
-      catch { } // TODO: use !IsFatal() here
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // Couldn't set area and /or volume props, but this should not prevent conversion.
+      }
 
       bbox = BoxToSpeckle(solid.GeometricExtents);
     }
