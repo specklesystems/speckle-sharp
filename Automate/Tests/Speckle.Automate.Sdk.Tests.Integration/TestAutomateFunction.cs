@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Speckle.Core.Models;
 
 namespace Speckle.Automate.Sdk.Tests.Integration;
 
@@ -12,7 +13,7 @@ public static class TestAutomateFunction
 {
   public static async Task Run(AutomationContext automateContext, TestFunctionInputs testFunctionInputs)
   {
-    var versionRootObject = await automateContext.ReceiveVersion();
+    Base versionRootObject = await automateContext.ReceiveVersion();
 
     int count = 0;
     if (versionRootObject.speckle_type == testFunctionInputs.ForbiddenSpeckleType)
