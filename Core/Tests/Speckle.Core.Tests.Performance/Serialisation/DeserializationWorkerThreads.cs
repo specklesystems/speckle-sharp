@@ -6,7 +6,7 @@ namespace Speckle.Core.Tests.Performance.Serialisation;
 
 [MemoryDiagnoser]
 [RegressionTestConfig(1, 1, 6)]
-public class DeserializationWorkerThreads
+public class DeserializationWorkerThreads : IDisposable
 {
   public static IEnumerable<int> NumThreadsToTest => Enumerable.Range(0, Environment.ProcessorCount + 1);
 
@@ -22,17 +22,22 @@ public class DeserializationWorkerThreads
     await _dataSource.SeedTransport(DataComplexity).ConfigureAwait(false);
   }
 
-  [GlobalCleanup]
-  public virtual void Cleanup()
-  {
-    _dataSource.Dispose();
-  }
-
   [Benchmark]
   [ArgumentsSource(nameof(NumThreadsToTest))]
   public Base RunTest(int numThreads)
   {
     BaseObjectDeserializerV2 sut = new() { WorkerThreadCount = numThreads, ReadTransport = _dataSource.Transport };
     return sut.Deserialize(_dataSource.Transport.GetObject(_dataSource.ObjectId)!);
+  }
+
+  [GlobalCleanup]
+  public virtual void Cleanup()
+  {
+    Dispose();
+  }
+
+  public void Dispose()
+  {
+    _dataSource.Dispose();
   }
 }
