@@ -342,20 +342,24 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   VER=$(echo "$SEMVER" | sed -e 's/-.*//')
                   VERSION=$(echo $VER.$WORKFLOW_NUM)
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-arm64 --self-contained /p:Version=$SEMVER /p:FileVersion=$VERSION
                   $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-x64 --self-contained /p:Version=$SEMVER /p:FileVersion=$VERSION
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
             - run:
                 name: Zip Connector files
                 command: |
+                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
+                  zip -r << parameters.slug >>-mac-arm.zip "./"
                   cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish"
-                  zip -r << parameters.slug >>-mac.zip "./"
+                  zip -r << parameters.slug >>-mac-x64.zip "./"
             # Copy installer files
             - run:
                 name: Copy files to installer
                 command: |
                   mkdir -p speckle-sharp-ci-tools/Mac/<< parameters.installername >>/.installationFiles/
-                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.slug >>-mac-arm64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+                  cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac-x64.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
       - run:
           name: Exit if External PR

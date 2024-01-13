@@ -1,4 +1,5 @@
 #include "GetBeamData.hpp"
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -95,10 +96,10 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 
 			// The left overridden material name
 			int countOverriddenMaterial = 0;
-			if (beamSegment.leftMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (beamSegment.leftMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = beamSegment.leftMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (beamSegment.leftMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -106,10 +107,10 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The top overridden material name
-			if (beamSegment.topMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (beamSegment.topMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = beamSegment.topMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (beamSegment.topMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -117,10 +118,10 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The right overridden material name
-			if (beamSegment.rightMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (beamSegment.rightMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = beamSegment.rightMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (beamSegment.rightMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -128,10 +129,10 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The bottom overridden material name
-			if (beamSegment.bottomMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (beamSegment.bottomMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = beamSegment.bottomMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (beamSegment.bottomMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -139,10 +140,10 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The ends overridden material name
-			if (beamSegment.endsMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (beamSegment.endsMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = beamSegment.endsMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (beamSegment.endsMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -223,14 +224,26 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 	}
 
 	// Override cut fill pen
+#ifdef ServerMainVers_2700
+	if (elem.beam.cutFillPen.hasValue) {
+		os.Add (Beam::OverrideCutFillPenIndex, elem.beam.cutFillPen.value);
+	}
+#else
 	if (elem.beam.penOverride.overrideCutFillPen) {
 		os.Add (Beam::OverrideCutFillPenIndex, elem.beam.penOverride.cutFillPen);
 	}
+#endif
 
 	// Override cut fill backgound pen
+#ifdef ServerMainVers_2700
+	if (elem.beam.cutFillBackgroundPen.hasValue) {
+		os.Add (Beam::OverrideCutFillBackgroundPenIndex, elem.beam.cutFillBackgroundPen.value);
+	}
+#else
 	if (elem.beam.penOverride.overrideCutFillBackgroundPen) {
 		os.Add (Beam::OverrideCutFillBackgroundPenIndex, elem.beam.penOverride.cutFillBackgroundPen);
 	}
+#endif
 
 	// Floor Plan and Section - Outlines
 

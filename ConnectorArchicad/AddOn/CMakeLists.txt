@@ -1,7 +1,11 @@
 cmake_minimum_required (VERSION 3.16)
 
-function (SetCompilerOptions target)
-	target_compile_features (${target} PUBLIC cxx_std_14)
+function (SetCompilerOptions target ac_version)
+	if (${ac_version} LESS "27")
+		target_compile_features (${target} PUBLIC cxx_std_14)
+	else ()
+		target_compile_features (${target} PUBLIC cxx_std_17)
+	endif ()
 	target_compile_options (${target} PUBLIC "$<$<CONFIG:Debug>:-DDEBUG>")
 	if (WIN32)
 		target_compile_options (${target} PUBLIC /W4 /WX
@@ -19,12 +23,12 @@ function (SetCompilerOptions target)
 			-Wno-ignored-qualifiers
 			-Wno-reorder
 			-Wno-overloaded-virtual
+			-Wno-missing-braces
 			-Wno-unused-parameter
 			-Wno-deprecated				# HashTable.hpp:1752 error: 'sprintf' is deprecated
 			-Wno-unknown-pragmas
-			-Wno-missing-braces
-			-Wno-unused-private-field
 			-Wno-shorten-64-to-32		# BrepExternalBufferArray.hpp:34: error: implicit conversion loses integer precision: 'long long' to 'const GS::USize' (aka 'const unsigned int')
+			-Wno-unused-private-field
 			)
 	endif ()
 endfunction ()
@@ -57,7 +61,6 @@ set (AC_ADDON_LANGUAGE "INT" CACHE STRING "Add-On language code.")
 set (AC_MDID_DEV "1" CACHE STRING "Your Developer ID")
 set (AC_MDID_LOC "1" CACHE STRING "Add-On Local ID")
 
-
 set (ACAPINC_FILE_LOCATION ${AC_API_DEVKIT_DIR}/Support/Inc/ACAPinc.h)
 if (EXISTS ${ACAPINC_FILE_LOCATION})
 	file (READ ${ACAPINC_FILE_LOCATION} ACAPIncContent)
@@ -72,6 +75,9 @@ if (WIN32)
 	add_definitions (-DUNICODE -D_UNICODE)
 else ()
 	add_definitions (-Dmacintosh=1)
+	if (${ARCHICAD_VERSION} GREATER_EQUAL "26")
+		set (CMAKE_OSX_ARCHITECTURES "x86_64;arm64" PARENT_SCOPE CACHE STRING "" FORCE)
+	endif ()
 endif ()
 add_definitions (-DACExtension)
 
@@ -187,20 +193,35 @@ target_include_directories (AddOn PUBLIC
 )
 
 if (WIN32)
-	target_link_libraries (AddOn
-		"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STATD.lib>"
-		"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
-		"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
-	)
+	if (${ARCHICAD_VERSION} LESS "27")
+		target_link_libraries (AddOn
+			"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STATD.lib>"
+			"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
+			"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/Win/ACAP_STAT.lib>"
+		)
+	else ()
+		target_link_libraries (AddOn
+			"$<$<CONFIG:Debug>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STATD.lib>"
+			"$<$<CONFIG:Release>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STAT.lib>"
+			"$<$<CONFIG:RelWithDebInfo>:${AC_API_DEVKIT_DIR}/Support/Lib/ACAP_STAT.lib>"
+		)
+	endif ()
 else ()
 	find_library (CocoaFramework Cocoa)
-	target_link_libraries (AddOn
-		"${AC_API_DEVKIT_DIR}/Support/Lib/Mactel/libACAP_STAT.a"
-		${CocoaFramework}
-	)
+	if (${ARCHICAD_VERSION} LESS "27")
+		target_link_libraries (AddOn
+			"${AC_API_DEVKIT_DIR}/Support/Lib/Mactel/libACAP_STAT.a"
+			${CocoaFramework}
+		)
+	else ()
+		target_link_libraries (AddOn
+			"${AC_API_DEVKIT_DIR}/Support/Lib/libACAP_STAT.a"
+			${CocoaFramework}
+		)
+	endif ()
 endif ()
 
-SetCompilerOptions (AddOn)
+SetCompilerOptions (AddOn ARCHICAD_VERSION)
 set_source_files_properties (${AddOnSourceFiles} PROPERTIES LANGUAGE CXX)
 
 file (GLOB ModuleFolders ${AC_API_DEVKIT_DIR}/Support/Modules/*)

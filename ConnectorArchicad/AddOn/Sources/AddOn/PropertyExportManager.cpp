@@ -341,7 +341,11 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 		GS::Array<API_PropertyDefinition> componentUserDefinedDefinitions;
 
 		if (sendProperties) {
+#ifdef ServerMainVers_2700
+			err = ACAPI_Element_GetPropertyDefinitions (component, API_PropertyDefinitionFilter_UserDefined, componentUserDefinedDefinitions);
+#else
 			err = ACAPI_ElemComponent_GetPropertyDefinitions (component, API_PropertyDefinitionFilter_UserDefined, componentUserDefinedDefinitions);
+#endif
 			if (err != NoError)
 				continue;
 
@@ -352,7 +356,11 @@ GSErrCode PropertyExportManager::GetElementDefinitions (const API_Element& eleme
 
 		GS::Array<API_PropertyDefinition> componentUserLevelBuiltInDefinitions;
 		if (sendListingParameters) {
+#ifdef ServerMainVers_2700
+			err = ACAPI_Element_GetPropertyDefinitions (component, API_PropertyDefinitionFilter_UserLevelBuiltIn, componentUserLevelBuiltInDefinitions);
+#else
 			err = ACAPI_ElemComponent_GetPropertyDefinitions (component, API_PropertyDefinitionFilter_UserLevelBuiltIn, componentUserLevelBuiltInDefinitions);
+#endif
 			if (err != NoError)
 				continue;
 
