@@ -351,7 +351,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish"
                   zip -r << parameters.slug >>-mac-arm.zip "./"
-                  cd "<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish"
+                  cd "../../osx-x64/publish"
                   zip -r << parameters.slug >>-mac-x64.zip "./"
             # Copy installer files
             - run:
