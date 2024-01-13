@@ -504,9 +504,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd speckle-sharp-ci-tools
             if [ -z "$CIRCLE_TAG" ]
             then
-                  git checkout ${CIRCLE_BRANCH} || git checkout main
+                  git checkout ${CIRCLE_BRANCH} || git checkout archicad/v27
             else
-                  git checkout ${CIRCLE_TAG} || git checkout main
+                  git checkout ${CIRCLE_TAG} || git checkout archicad/v27
             fi
 
       - persist_to_workspace:
