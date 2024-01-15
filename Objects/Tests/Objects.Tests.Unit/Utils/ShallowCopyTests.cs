@@ -5,7 +5,7 @@ using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 
-namespace Objects.Tests.Utils;
+namespace Objects.Tests.Unit.Utils;
 
 [TestFixture]
 public class ShallowCopyTests
@@ -20,7 +20,7 @@ public class ShallowCopyTests
     };
 
     var shallow = wall.ShallowCopy();
-
-    Assert.AreEqual(wall.displayValue.Count, ((IList)shallow["displayValue"]).Count);
+    var displayValue = (IList)shallow["displayValue"];
+    Assert.That(wall.displayValue, Has.Count.EqualTo(displayValue.Count));
   }
 }

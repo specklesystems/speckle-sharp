@@ -16,7 +16,7 @@
       "Objects\\Converters\\ConverterBentley\\ConverterOpenRail\\ConverterOpenRail.csproj",
       "Objects\\Converters\\ConverterBentley\\ConverterOpenRoads\\ConverterOpenRoads.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

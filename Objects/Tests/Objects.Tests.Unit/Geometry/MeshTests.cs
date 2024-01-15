@@ -1,19 +1,19 @@
 using NUnit.Framework;
 using Objects.Geometry;
 
-namespace Objects.Tests.Geometry;
+namespace Objects.Tests.Unit.Geometry;
 
 [TestFixture, TestOf(typeof(Mesh))]
 public class MeshTests
 {
-  private static Mesh[] _testCaseSource = { CreateBlenderStylePolygon(), CreateRhinoStylePolygon() };
+  private static Mesh[] s_testCaseSource = { CreateBlenderStylePolygon(), CreateRhinoStylePolygon() };
 
-  [Test, TestCaseSource(nameof(_testCaseSource))]
+  [Test, TestCaseSource(nameof(s_testCaseSource))]
   public void CanAlignVertices(Mesh inPolygon)
   {
     inPolygon.AlignVerticesWithTexCoordsByIndex();
 
-    Assert.AreEqual(inPolygon.VerticesCount, inPolygon.TextureCoordinatesCount);
+    Assert.That(inPolygon.VerticesCount, Is.EqualTo(inPolygon.TextureCoordinatesCount));
 
     var expectedPolygon = CreateRhinoStylePolygon();
 

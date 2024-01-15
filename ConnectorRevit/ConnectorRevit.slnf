@@ -38,7 +38,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTestsShared\\ConverterRevitTestsShared.shproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\TestGenerator\\TestGenerator.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

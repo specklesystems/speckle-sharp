@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Objects.Tests;
+namespace Objects.Tests.Unit;
 
 [TestFixture]
 public class GenericTests
@@ -48,7 +48,7 @@ public class GenericTests
         // Check if all parameters are optional.
         // This allows for other methods to be used as long as they can be called empty.
         // But also covers the basic case of having no parameters in the first place.
-        Assert.True(m.GetParameters().All(p => p.IsOptional));
+        Assert.That(m.GetParameters().All(p => p.IsOptional), Is.True);
       });
   }
 }

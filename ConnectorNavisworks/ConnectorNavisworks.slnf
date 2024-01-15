@@ -20,7 +20,7 @@
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
    
-      "Objects\\Objects\\Objects.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }
