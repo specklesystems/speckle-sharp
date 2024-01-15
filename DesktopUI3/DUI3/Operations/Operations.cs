@@ -93,23 +93,7 @@ public static class Operations
 
     Base? commitObject =
       await Speckle.Core.Api.Operations
-        .Receive(
-          referencedObjectId,
-          token,
-          transport,
-          onErrorAction: (s, ex) =>
-          {
-            //Don't wrap cancellation exceptions!
-            if (ex is OperationCanceledException)
-            {
-              throw ex;
-            }
-
-            //Treat all operation errors as fatal
-            throw new SpeckleException($"Failed to receive commit: {referencedObjectId} objects from server: {s}", ex);
-          },
-          disposeTransports: false
-        )
+        .Receive(referencedObjectId, cancellationToken: token, remoteTransport: transport)
         .ConfigureAwait(false)
       ?? throw new SpeckleException(
         $"Failed to receive commit: {referencedObjectId} objects from server: {nameof(Speckle.Core.Api.Operations)} returned null"

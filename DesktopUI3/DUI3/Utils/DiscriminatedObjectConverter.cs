@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Speckle.Core.Logging;
+using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
@@ -42,12 +43,12 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 
     var typeName =
       jsonObject.Value<string>("typeDiscriminator")
-      ?? throw new Speckle.Core.Api.Operations.SpeckleDeserializeException(
+      ?? throw new SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed: did not find a typeDiscriminator field."
       );
     var type =
       GetTypeByName(typeName)
-      ?? throw new Speckle.Core.Api.Operations.SpeckleDeserializeException(
+      ?? throw new SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed, type not found: " + typeName
       );
     var obj = Activator.CreateInstance(type);
