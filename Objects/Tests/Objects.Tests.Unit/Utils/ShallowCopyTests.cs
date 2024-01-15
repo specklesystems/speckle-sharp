@@ -22,6 +22,5 @@ public class ShallowCopyTests
     var shallow = wall.ShallowCopy();
     var displayValue = (IList)shallow["displayValue"];
     Assert.That(wall.displayValue, Has.Count.EqualTo(displayValue.Count));
-    Assert.That(wall.displayValue, Has.Count.EqualTo(displayValue.Count));
   }
 }

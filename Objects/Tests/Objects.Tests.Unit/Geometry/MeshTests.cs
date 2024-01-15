@@ -13,7 +13,7 @@ public class MeshTests
   {
     inPolygon.AlignVerticesWithTexCoordsByIndex();
 
-    Assert.That(inPolygon.TextureCoordinatesCount, Is.EqualTo(inPolygon.VerticesCount));
+    Assert.That(inPolygon.VerticesCount, Is.EqualTo(inPolygon.TextureCoordinatesCount));
 
     var expectedPolygon = CreateRhinoStylePolygon();
 
