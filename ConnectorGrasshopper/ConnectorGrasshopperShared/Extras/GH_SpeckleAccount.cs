@@ -18,6 +18,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
     m_value = account;
   }
 
+  [Obsolete("Implementation is faulty", true)]
   public GH_SpeckleAccountGoo(string userId)
   {
     m_value = AccountManager.GetAccounts().First(acc => acc.id == userId);
@@ -39,30 +40,37 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
 
   public override bool CastFrom(object source)
   {
+    var temp = string.Empty;
     if (source is GH_String ghString)
     {
-      try
-      {
-        Value = AccountManager.GetAccounts().First(acc => acc.userInfo.id == ghString.Value);
-        return true;
-      }
-      catch (Exception ex) when (!ex.IsFatal()) // TODO: Handle this exception instead of ignoring it
-      {
-        SpeckleLog.Logger.Warning(ex, "Failed to get account with same id");
-      }
+      temp = ghString.Value;
+    }
+    else if (source is string text)
+    {
+      temp = text;
     }
 
-    if (source is string userId)
+    if (!string.IsNullOrEmpty(temp))
     {
-      try
+      var searchResult = AccountManager
+        .GetAccounts()
+        .FirstOrDefault(acc => $"{acc.serverInfo.url}?u={acc.userInfo.id}" == temp);
+
+      if (searchResult == null)
       {
-        Value = AccountManager.GetAccounts().First(acc => acc.id == userId);
+        SpeckleLog.Logger.Warning("Failed to get local account with same server+id combination as the provided string");
+        SpeckleLog.Logger.Information("Attempting match by ID only for backwards compatibility.");
+
+        searchResult = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == temp);
+      }
+
+      if (searchResult != null)
+      {
+        Value = searchResult;
         return true;
       }
-      catch (Exception ex) when (!ex.IsFatal()) // TODO: Handle this exception instead of ignoring it
-      {
-        SpeckleLog.Logger.Warning(ex, "Failed to get account with same id");
-      }
+
+      return false;
     }
 
     if (source is Account account)
@@ -71,6 +79,7 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
       return true;
     }
 
+    // Last ditch attempt, tries to use the casting logic of the parent.
     return base.CastFrom(source);
   }
 

@@ -77,7 +77,7 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
         defaultAccountIndex = index + 1;
       }
 
-      ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.userInfo.id}\""));
+      ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.serverInfo.url}?u={account.userInfo.id}\""));
       index++;
     }
 
