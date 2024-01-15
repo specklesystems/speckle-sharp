@@ -32,8 +32,6 @@ public static class TransportHelpers
       );
     }
 
-    targetTransport.SaveObject(id, parent);
-
     var closures = GetClosureTable(parent);
 
     onTotalChildrenCountKnown?.Invoke(closures?.Count ?? 0);
@@ -57,6 +55,8 @@ public static class TransportHelpers
         sourceTransport.OnProgressAction?.Invoke($"{sourceTransport}", i++);
       }
     }
+
+    targetTransport.SaveObject(id, parent);
 
     return parent;
   }

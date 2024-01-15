@@ -319,14 +319,14 @@ public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlob
 
   private static IList<string> ParseChildrenIds(string json)
   {
-    List<string> childrenIds = new();
-
     JObject doc1 = JObject.Parse(json);
     JToken? closures = doc1["__closure"];
     if (closures == null)
     {
       return Array.Empty<string>();
     }
+
+    List<string> childrenIds = new();
 
     foreach (JToken prop in closures)
     {

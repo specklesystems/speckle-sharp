@@ -3,17 +3,20 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Models;
+using Speckle.Core.Tests.Unit.Transports;
 using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Integration;
 
-public class ServerTransportTests : IDisposable
+public class ServerTransportTests : TransportTests, IDisposable
 {
   private string _basePath;
   private Account _account;
   private Client _client;
   private string _streamId;
   private ServerTransport _transport;
+
+  protected override ITransport Sut => _transport;
 
   [OneTimeSetUp]
   public async Task InitialSetup()

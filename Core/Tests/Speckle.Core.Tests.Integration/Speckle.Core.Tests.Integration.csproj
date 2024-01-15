@@ -40,4 +40,8 @@
     <ProjectReference Include="..\..\Core\Core.csproj" />
     <ProjectReference Include="..\Speckle.Core.Tests.Unit\Speckle.Core.Tests.Unit.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Transports\" />
+  </ItemGroup>
 </Project>

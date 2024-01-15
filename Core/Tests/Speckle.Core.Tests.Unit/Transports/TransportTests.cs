@@ -1,8 +1,8 @@
 #nullable enable
 using NUnit.Framework;
-using Speckle.Core.Api;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
+using Microsoft.Collections.Extensions;
 
 namespace Speckle.Core.Tests.Unit.Transports;
 
@@ -170,7 +170,7 @@ public abstract class TransportTests
     await Sut.WriteComplete();
 
     // Act
-    MemoryTransport destination = new();
+    MemoryTransport destination = new(new OrderedDictionary<string, string>());
     await Sut.CopyObjectAndChildren("root", destination);
 
     //Assert
@@ -179,5 +179,8 @@ public abstract class TransportTests
       var actual = destination.GetObject(expectedId);
       Assert.That(actual, Is.EqualTo(expectedData));
     }
+
+    var last = destination.Objects.Last().Key;
+    Assert.That(last, Is.EqualTo("root"));
   }
 }
