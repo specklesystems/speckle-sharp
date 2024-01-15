@@ -3,7 +3,7 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 
-namespace Objects.Structural.GSA.Geometry; //GSA.Geometry?
+namespace Objects.Structural.GSA.Geometry;
 
 public class GSAMember1D : Element1D
 {
