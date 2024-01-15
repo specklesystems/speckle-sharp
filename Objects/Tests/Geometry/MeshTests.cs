@@ -6,14 +6,14 @@ namespace Objects.Tests.Geometry;
 [TestFixture, TestOf(typeof(Mesh))]
 public class MeshTests
 {
-  private static Mesh[] _testCaseSource = { CreateBlenderStylePolygon(), CreateRhinoStylePolygon() };
+  private static Mesh[] s_testCaseSource = { CreateBlenderStylePolygon(), CreateRhinoStylePolygon() };
 
-  [Test, TestCaseSource(nameof(_testCaseSource))]
+  [Test, TestCaseSource(nameof(s_testCaseSource))]
   public void CanAlignVertices(Mesh inPolygon)
   {
     inPolygon.AlignVerticesWithTexCoordsByIndex();
 
-    Assert.AreEqual(inPolygon.VerticesCount, inPolygon.TextureCoordinatesCount);
+    Assert.That(inPolygon.TextureCoordinatesCount, Is.EqualTo(inPolygon.VerticesCount));
 
     var expectedPolygon = CreateRhinoStylePolygon();
 

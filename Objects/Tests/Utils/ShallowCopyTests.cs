@@ -20,7 +20,8 @@ public class ShallowCopyTests
     };
 
     var shallow = wall.ShallowCopy();
-
-    Assert.AreEqual(wall.displayValue.Count, ((IList)shallow["displayValue"]).Count);
+    var displayValue = (IList)shallow["displayValue"];
+    Assert.That(wall.displayValue, Has.Count.EqualTo(displayValue.Count));
+    Assert.That(wall.displayValue, Has.Count.EqualTo(displayValue.Count));
   }
 }
