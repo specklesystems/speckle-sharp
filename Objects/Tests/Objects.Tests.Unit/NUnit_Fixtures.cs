@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Speckle.Core.Logging;
 
-namespace Objects.Tests;
+namespace Objects.Tests.Unit;
 
 [SetUpFixture]
 public class NUnitFixtures

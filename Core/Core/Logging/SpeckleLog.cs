@@ -134,7 +134,8 @@ public static class SpeckleLog
     logConfiguration ??= new SpeckleLogConfiguration();
 
     s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
-    
+    Log.Logger = Logger;
+
     AddUserIdToGlobalContextFromDefaultAccount();
     AddVersionInfoToGlobalContext();
     AddHostOsInfoToGlobalContext();

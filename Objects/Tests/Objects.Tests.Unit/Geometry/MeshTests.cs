@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using Objects.Geometry;
 
-namespace Objects.Tests.Geometry;
+namespace Objects.Tests.Unit.Geometry;
 
 [TestFixture, TestOf(typeof(Mesh))]
 public class MeshTests

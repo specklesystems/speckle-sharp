@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Objects.Tests</RootNamespace>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
@@ -35,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\Objects\Objects.csproj" />
   </ItemGroup>
 
 </Project>

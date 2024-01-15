@@ -4,7 +4,7 @@ using NUnit.Framework;
 using Objects.Other;
 using Speckle.Core.Kits;
 
-namespace Objects.Tests.Geometry;
+namespace Objects.Tests.Unit.Geometry;
 
 [TestFixture, TestOf(typeof(Transform))]
 public class TransformTests

@@ -6,7 +6,7 @@ using NUnit.Framework;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Objects.Tests;
+namespace Objects.Tests.Unit;
 
 [TestFixture]
 public class GenericTests
