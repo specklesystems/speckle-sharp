@@ -222,7 +222,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		GS::Array<ModelInfo::Vertex> vertices = modelInfo.GetVertices ();
 		Box3D box = Box3D::CreateEmpty ();
 		for (UInt32 i = 0; i < vertices.GetSize (); i++) {
-			line = GS::String::SPrintf ("VERT %f, %f, %f\t!#%d%s", vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ (), i + 1, GS::EOL);
+			line = GS::String::SPrintf ("VERT %lf, %lf, %lf\t!#%u%s", vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ (), i + 1, GS::EOL);
 			ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 			box.Extend (Point3D (vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ ()));
 		}
@@ -247,7 +247,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 				}
 			}
 
-			line = GS::String::SPrintf ("! Polygon #%d%s%sMATERIAL \"%s\"%s", polygonIndex, GS::EOL, GS::EOL, materialName.ToCStr ().Get (), GS::EOL);
+			line = GS::String::SPrintf ("! Polygon #%u%s%sMATERIAL \"%s\"%s", polygonIndex, GS::EOL, GS::EOL, materialName.ToCStr ().Get (), GS::EOL);
 			ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			for (UInt32 i = 0; i < pointsCount; i++) {
@@ -277,19 +277,19 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 					}
 				}
 
-				line = GS::String::SPrintf ("EDGE %d, %d, -1, -1, %s\t!#%d%s", pointIds[start] + 1, pointIds[end] + 1, (smooth ? "smoothBodyEdge" : (hidden ? "hiddenBodyEdge" : "visibleBodyEdge")), edgeIndex + i, GS::EOL);
+				line = GS::String::SPrintf ("EDGE %d, %d, -1, -1, %s\t!#%u%s", pointIds[start] + 1, pointIds[end] + 1, (smooth ? "smoothBodyEdge" : (hidden ? "hiddenBodyEdge" : "visibleBodyEdge")), edgeIndex + i, GS::EOL);
 				ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 			}
 
-			line = GS::String::SPrintf ("PGON %d, 0, -1", pointsCount);
+			line = GS::String::SPrintf ("PGON %u, 0, -1", pointsCount);
 			ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			for (UInt32 i = 0; i < pointsCount; i++) {
-				line = GS::String::SPrintf (",%s%d", ((i + 1) % 10 == 0 ? GS::EOL : " "), edgeIndex + i);
+				line = GS::String::SPrintf (",%s%u", ((i + 1) % 10 == 0 ? GS::EOL : " "), edgeIndex + i);
 				ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 			}
 
-			line = GS::String::SPrintf ("\t!#%d%s%s", polygonIndex, GS::EOL, GS::EOL);
+			line = GS::String::SPrintf ("\t!#%u%s%s", polygonIndex, GS::EOL, GS::EOL);
 			ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			edgeIndex += pointsCount;
@@ -299,21 +299,21 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		line = GS::String::SPrintf ("BODY 4%s%s", GS::EOL, GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMinX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMinX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMinX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMinX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMaxX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMaxX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s", box.GetMaxX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
-		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s%s", box.GetMaxX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL, GS::EOL);
+		line = GS::String::SPrintf ("HOTSPOT %lf, %lf, %lf%s%s", box.GetMaxX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL, GS::EOL);
 		ACAPI_LibraryPart_WriteSection (line.GetLength(), line.ToCStr());
 
 		line = "DEL TOP";
