@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Newtonsoft.Json;
 
 namespace ExampleApp;
 

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Core.Models;
@@ -11,7 +10,10 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
 
   // Element base
   public string? elementType { get; set; } /*APINullabe*/
+
   public List<Classification>? classifications { get; set; } /*APINullabe*/
+  public Base? elementProperties { get; set; }
+  public Base? componentProperties { get; set; }
 
   public double? width { get; set; } /*APINullabe*/
   public double? height { get; set; } /*APINullabe*/
@@ -65,7 +67,7 @@ public sealed class ArchicadWindow : ArchicadDoorWindowBase { }
 
 public sealed class ArchicadSkylight : ArchicadFenestration
 {
-  public UInt32? vertexID { get; set; } /*APINullabe*/
+  public uint? vertexID { get; set; } /*APINullabe*/
   public string? skylightFixMode { get; set; } /*APINullabe*/
   public string? skylightAnchor { get; set; } /*APINullabe*/
   public Point? anchorPosition { get; set; } /*APINullabe*/

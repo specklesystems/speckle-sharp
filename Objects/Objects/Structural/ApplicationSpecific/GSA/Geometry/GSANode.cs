@@ -24,10 +24,10 @@ public class GSANode : Node
     int nativeId,
     Point basePoint,
     Restraint restraint,
-    Axis constraintAxis = null,
-    PropertySpring springProperty = null,
-    PropertyMass massProperty = null,
-    PropertyDamper damperProperty = null,
+    Axis? constraintAxis = null,
+    PropertySpring? springProperty = null,
+    PropertyMass? massProperty = null,
+    PropertyDamper? damperProperty = null,
     double localElementSize = 0,
     string colour = "NO_RGB"
   )

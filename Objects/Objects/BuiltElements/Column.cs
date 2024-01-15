@@ -66,7 +66,7 @@ namespace Objects.BuiltElements.Revit
       double topOffset = 0,
       bool structural = false,
       [SchemaParamInfo("Rotation angle in radians")] double rotation = 0,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -77,7 +77,7 @@ namespace Objects.BuiltElements.Revit
       this.topOffset = topOffset;
       //this.structural = structural;
       this.rotation = rotation;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
     }
 
@@ -91,7 +91,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaMainParam] ICurve baseLine,
       Level level,
       bool structural = false,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -100,7 +100,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       //this.structural = structural;
       isSlanted = true;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
@@ -109,9 +109,9 @@ namespace Objects.BuiltElements.Revit
       string type,
       [SchemaMainParam] ICurve baseLine,
       Level level,
-      Level topLevel = null,
+      Level? topLevel = null,
       bool structural = false,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -121,7 +121,7 @@ namespace Objects.BuiltElements.Revit
       this.topLevel = topLevel;
       //this.structural = structural;
       isSlanted = true;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public new Level? level
@@ -130,7 +130,7 @@ namespace Objects.BuiltElements.Revit
       set => base.level = value;
     }
 
-    public Level topLevel { get; set; }
+    public Level? topLevel { get; set; }
     public double baseOffset { get; set; }
     public double topOffset { get; set; }
     public bool facingFlipped { get; set; }
@@ -142,7 +142,7 @@ namespace Objects.BuiltElements.Revit
     public bool isSlanted { get; set; }
     public string family { get; set; }
     public string type { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 }
@@ -160,7 +160,10 @@ namespace Objects.BuiltElements.Archicad
 
     // Element base
     public string? elementType { get; set; } /*APINullabe*/
+
     public List<Classification>? classifications { get; set; } /*APINullabe*/
+    public Base? elementProperties { get; set; }
+    public Base? componentProperties { get; set; }
 
     public override Level? level
     {

@@ -1,12 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFrameworks>net462;net7.0</TargetFrameworks>
     <RootNamespace>ConnectorGrasshopperUtils</RootNamespace>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RhinoPluginType>none</RhinoPluginType>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PackageReference Include="Grasshopper" Version="8.3.24009.15001" IncludeAssets="compile;build"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build"/>
   </ItemGroup>
 

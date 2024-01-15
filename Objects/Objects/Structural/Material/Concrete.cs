@@ -14,9 +14,9 @@ public class Concrete : StructuralMaterial
   )]
   public Concrete(
     string name,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double elasticModulus = 0,
     double compressiveStrength = 0,
     double tensileStrength = 0,

@@ -21,7 +21,7 @@ public static class Local
     converter.OnError += (sender, args) => throw args.Error;
 
     var @base = converter.ConvertRecursivelyToSpeckle(data);
-    var objectId = Task.Run(async () => await Operations.Send(@base, disposeTransports: true)).Result;
+    var objectId = Task.Run(() => Operations.Send(@base)).Result;
 
     return objectId;
   }

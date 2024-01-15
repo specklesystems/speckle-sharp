@@ -1,4 +1,3 @@
-#nullable enable
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -8,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
-/// <summary>
+/// <remarks>
 /// https://cymbeline.ch/2014/03/16/gzip-encoding-an-http-post-request-body/
-/// </summary>
+/// </remarks>
 internal sealed class GzipContent : HttpContent
 {
   private readonly HttpContent? _content;
@@ -32,7 +31,7 @@ internal sealed class GzipContent : HttpContent
     Headers.ContentEncoding.Add("gzip");
   }
 
-  protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+  protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
   {
     // Open a GZipStream that writes to the specified output stream.
     using GZipStream gzip = new(stream, CompressionMode.Compress, true);
@@ -53,5 +52,11 @@ internal sealed class GzipContent : HttpContent
   {
     length = -1;
     return false;
+  }
+
+  protected override void Dispose(bool disposing)
+  {
+    _content?.Dispose();
+    base.Dispose(disposing);
   }
 }

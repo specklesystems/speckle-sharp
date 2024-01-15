@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,18 +7,24 @@ using System.Threading;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation.SerializationUtilities;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
 using Utilities = Speckle.Core.Models.Utilities;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UseNegatedPatternInIsExpression
+#pragma warning disable IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854
+
 namespace Speckle.Core.Serialisation;
 
 /// <summary>
-/// Json converter that handles base speckle objects. Enables detachment &
+/// Json converter that handles base speckle objects. Enables detachment and
 /// simultaneous transport (persistence) of objects.
 /// </summary>
+[Obsolete("Use " + nameof(BaseObjectSerializerV2))]
 public class BaseObjectSerializer : JsonConverter
 {
   /// <summary>
@@ -97,7 +104,7 @@ public class BaseObjectSerializer : JsonConverter
           return null; // Check for cancellation
         }
 
-        var whatever = SerializationUtilities.HandleValue(val, serializer, CancellationToken);
+        var whatever = BaseObjectSerializationUtilities.HandleValue(val, serializer, CancellationToken);
         list.Add(whatever as Base);
       }
       return list;
@@ -129,7 +136,7 @@ public class BaseObjectSerializer : JsonConverter
           return null; // Check for cancellation
         }
 
-        dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
+        dict[val.Key] = BaseObjectSerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
       }
       return dict;
     }
@@ -145,16 +152,11 @@ public class BaseObjectSerializer : JsonConverter
     if (discriminator == "reference")
     {
       var id = jObject.GetValue("referencedId").Value<string>();
-      string str = "";
 
-      if (ReadTransport != null)
-      {
-        str = ReadTransport.GetObject(id);
-      }
-      else
-      {
-        throw new SpeckleException("Cannot resolve reference, no transport is defined.");
-      }
+      string str =
+        ReadTransport != null
+          ? ReadTransport.GetObject(id)
+          : throw new SpeckleException("Cannot resolve reference, no transport is defined.");
 
       if (str != null && !string.IsNullOrEmpty(str))
       {
@@ -167,7 +169,7 @@ public class BaseObjectSerializer : JsonConverter
       }
     }
 
-    var type = SerializationUtilities.GetType(discriminator);
+    var type = BaseObjectSerializationUtilities.GetType(discriminator);
     var obj = existingValue ?? Activator.CreateInstance(type);
 
     var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(type);
@@ -203,16 +205,20 @@ public class BaseObjectSerializer : JsonConverter
       {
         if (type == typeof(Abstract) && property.PropertyName == "base")
         {
-          var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(
+          var propertyValue = BaseObjectSerializationUtilities.HandleAbstractOriginalValue(
             jProperty.Value,
-            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string,
-            serializer
+            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string
           );
           property.ValueProvider.SetValue(obj, propertyValue);
         }
         else
         {
-          var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
+          var val = BaseObjectSerializationUtilities.HandleValue(
+            jProperty.Value,
+            serializer,
+            CancellationToken,
+            property
+          );
           property.ValueProvider.SetValue(obj, val);
         }
       }
@@ -222,7 +228,7 @@ public class BaseObjectSerializer : JsonConverter
         CallSiteCache.SetValue(
           jProperty.Name,
           obj,
-          SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
+          BaseObjectSerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
         );
       }
     }
@@ -420,9 +426,8 @@ public class BaseObjectSerializer : JsonConverter
 
           if (chunkSyntax.IsMatch(prop))
           {
-            int chunkSize;
             var match = chunkSyntax.Match(prop);
-            int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+            _ = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out int chunkSize);
             serializer.Context = new StreamingContext(
               StreamingContextStates.Other,
               chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable()
@@ -711,3 +716,4 @@ public class BaseObjectSerializer : JsonConverter
 
   #endregion
 }
+#pragma warning restore IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854

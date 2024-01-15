@@ -1,8 +1,8 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -19,51 +19,55 @@ namespace Speckle.Core.Transports;
 public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
   private bool _isWriting;
-  private const int MaxTransactionSize = 1000;
-  private const int PollInterval = 500;
+  private const int MAX_TRANSACTION_SIZE = 1000;
+  private const int POLL_INTERVAL = 500;
 
-  private ConcurrentQueue<(string, string, int)> _queue = new();
+  private ConcurrentQueue<(string id, string serializedObject, int byteCount)> _queue = new();
 
   /// <summary>
   /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
   /// </summary>
   private readonly Timer _writeTimer;
 
+  /// <summary>
+  /// Connects to an SQLite DB at {<paramref name="basePath"/>}/{<paramref name="applicationName"/>}/{<paramref name="scope"/>}.db
+  /// Will attempt to create db + directory structure as needed
+  /// </summary>
+  /// <param name="basePath">defaults to <see cref="SpecklePathProvider.UserApplicationDataPath"/> if <see langword="null"/></param>
+  /// <param name="applicationName">defaults to <c>"Speckle"</c> if <see langword="null"/></param>
+  /// <param name="scope">defaults to <c>"Data"</c> if <see langword="null"/></param>
+  /// <exception cref="SqliteException">Failed to initialize a connection to the db</exception>
+  /// <exception cref="TransportException">Path was invalid or could not be created</exception>
   public SQLiteTransport(string? basePath = null, string? applicationName = null, string? scope = null)
   {
     _basePath = basePath ?? SpecklePathProvider.UserApplicationDataPath();
     _applicationName = applicationName ?? "Speckle";
     _scope = scope ?? "Data";
 
-    var dir = Path.Combine(_basePath, _applicationName);
     try
     {
+      var dir = Path.Combine(_basePath, _applicationName);
+      _rootPath = Path.Combine(dir, $"{_scope}.db");
+
       Directory.CreateDirectory(dir); //ensure dir is there
     }
     catch (Exception ex)
+      when (ex is ArgumentException or IOException or UnauthorizedAccessException or NotSupportedException)
     {
-      throw new TransportException(this, $"Could not create {dir}", ex);
+      throw new TransportException($"Path was invalid or could not be created {_rootPath}", ex);
     }
 
-    _rootPath = Path.Combine(_basePath, _applicationName, $"{_scope}.db");
     _connectionString = $"Data Source={_rootPath};";
 
-    try
-    {
-      Initialize();
+    Initialize();
 
-      _writeTimer = new Timer
-      {
-        AutoReset = true,
-        Enabled = false,
-        Interval = PollInterval
-      };
-      _writeTimer.Elapsed += WriteTimerElapsed;
-    }
-    catch (Exception ex)
+    _writeTimer = new Timer
     {
-      throw new TransportException(this, "Failed to initialize DB connection", ex);
-    }
+      AutoReset = true,
+      Enabled = false,
+      Interval = POLL_INTERVAL
+    };
+    _writeTimer.Elapsed += WriteTimerElapsed;
   }
 
   private readonly string _rootPath;
@@ -81,7 +85,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   public void SaveBlob(Blob obj)
   {
     var blobPath = obj.originalPath;
-    var targetPath = obj.getLocalDestinationPath(BlobStorageFolder);
+    var targetPath = obj.GetLocalDestinationPath(BlobStorageFolder);
     File.Copy(blobPath, targetPath, true);
   }
 
@@ -90,7 +94,6 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     return new SQLiteTransport(_basePath, _applicationName, _scope)
     {
       OnProgressAction = OnProgressAction,
-      OnErrorAction = OnErrorAction,
       CancellationToken = CancellationToken
     };
   }
@@ -128,13 +131,13 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public void BeginWrite()
   {
-    _queue = new ConcurrentQueue<(string, string, int)>();
+    _queue = new();
     SavedObjectCount = 0;
   }
 
   public void EndWrite() { }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
@@ -143,23 +146,32 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       ret[objectId] = false;
     }
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    foreach (string objectId in objectIds)
+    try
     {
-      CancellationToken.ThrowIfCancellationRequested();
-      const string commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
-      using var command = new SqliteCommand(commandText, c);
-      command.Parameters.AddWithValue("@hash", objectId);
-      using var reader = command.ExecuteReader();
-      bool rowFound = reader.Read();
-      ret[objectId] = rowFound;
+      const string COMMAND_TEXT = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
+      using var command = new SqliteCommand(COMMAND_TEXT, Connection);
+
+      foreach (string objectId in objectIds)
+      {
+        CancellationToken.ThrowIfCancellationRequested();
+
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue("@hash", objectId);
+
+        using var reader = command.ExecuteReader();
+        bool rowFound = reader.Read();
+        ret[objectId] = rowFound;
+      }
+    }
+    catch (SqliteException ex)
+    {
+      throw new TransportException("SQLite transport failed", ex);
     }
 
-    return ret;
+    return Task.FromResult(ret);
   }
 
+  /// <exception cref="SqliteException">Failed to initialize connection to the SQLite DB</exception>
   private void Initialize()
   {
     // NOTE: used for creating partioned object tables.
@@ -168,19 +180,18 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     //foreach (var str in HexChars)
     //  foreach (var str2 in HexChars)
     //    cart.Add(str + str2);
-    CancellationToken.ThrowIfCancellationRequested();
 
     using (var c = new SqliteConnection(_connectionString))
     {
       c.Open();
-      const string commandText =
+      const string COMMAND_TEXT =
         @"
             CREATE TABLE IF NOT EXISTS objects(
               hash TEXT PRIMARY KEY,
               content TEXT
             ) WITHOUT ROWID;
           ";
-      using (var command = new SqliteCommand(commandText, c))
+      using (var command = new SqliteCommand(COMMAND_TEXT, c))
       {
         command.ExecuteNonQuery();
       }
@@ -214,10 +225,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    using var command = new SqliteCommand("SELECT * FROM objects", c);
+    using var command = new SqliteCommand("SELECT * FROM objects", Connection);
 
     using var reader = command.ExecuteReader();
     while (reader.Read())
@@ -235,9 +243,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-    using var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", c);
+    using var command = new SqliteCommand("DELETE FROM objects WHERE hash = @hash", Connection);
     command.Parameters.AddWithValue("@hash", hash);
     command.ExecuteNonQuery();
   }
@@ -251,10 +257,8 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-    const string commandText = "REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
-    using var command = new SqliteCommand(commandText, c);
+    const string COMMAND_TEXT = "REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
+    using var command = new SqliteCommand(COMMAND_TEXT, Connection);
     command.Parameters.AddWithValue("@hash", hash);
     command.Parameters.AddWithValue("@content", serializedObject);
     command.ExecuteNonQuery();
@@ -273,25 +277,14 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <returns></returns>
   public async Task WriteComplete()
   {
-    await Utilities
-      .WaitUntil(
-        () =>
-        {
-          return GetWriteCompletionStatus();
-        },
-        500
-      )
-      .ConfigureAwait(false);
+    await Utilities.WaitUntil(() => WriteCompletionStatus, 500).ConfigureAwait(false);
   }
 
   /// <summary>
   /// Returns true if the current write queue is empty and comitted.
   /// </summary>
   /// <returns></returns>
-  public bool GetWriteCompletionStatus()
-  {
-    return _queue.IsEmpty && !_isWriting;
-  }
+  public bool WriteCompletionStatus => _queue.IsEmpty && !_isWriting;
 
   private void WriteTimerElapsed(object sender, ElapsedEventArgs e)
   {
@@ -325,11 +318,11 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       {
         c.Open();
         using var t = c.BeginTransaction();
-        const string commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+        const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
-        while (i < MaxTransactionSize && _queue.TryPeek(out (string id, string serializedObject, int byteCount) result))
+        while (i < MAX_TRANSACTION_SIZE && _queue.TryPeek(out var result))
         {
-          using var command = new SqliteCommand(commandText, c, t);
+          using var command = new SqliteCommand(COMMAND_TEXT, c, t);
           _queue.TryDequeue(out result);
           command.Parameters.AddWithValue("@hash", result.id);
           command.Parameters.AddWithValue("@content", result.serializedObject);
@@ -351,9 +344,13 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
         ConsumeQueue();
       }
     }
+    catch (SqliteException ex)
+    {
+      throw new TransportException(this, "SQLite Command Failed", ex);
+    }
     catch (OperationCanceledException)
     {
-      _queue = new ConcurrentQueue<(string, string, int)>();
+      _queue = new();
     }
     finally
     {
@@ -370,6 +367,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <param name="serializedObject"></param>
   public void SaveObject(string id, string serializedObject)
   {
+    CancellationToken.ThrowIfCancellationRequested();
     _queue.Enqueue((id, serializedObject, Encoding.UTF8.GetByteCount(serializedObject)));
 
     _writeTimer.Enabled = true;
@@ -401,15 +399,19 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <param name="serializedObject"></param>
   public void SaveObjectSync(string hash, string serializedObject)
   {
-    const string commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+    const string COMMAND_TEXT = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
-    using var c = new SqliteConnection(_connectionString);
-    c.Open();
-
-    using var command = new SqliteCommand(commandText, c);
-    command.Parameters.AddWithValue("@hash", hash);
-    command.Parameters.AddWithValue("@content", serializedObject);
-    command.ExecuteNonQuery();
+    try
+    {
+      using var command = new SqliteCommand(COMMAND_TEXT, Connection);
+      command.Parameters.AddWithValue("@hash", hash);
+      command.Parameters.AddWithValue("@content", serializedObject);
+      command.ExecuteNonQuery();
+    }
+    catch (SqliteException ex)
+    {
+      throw new TransportException(this, "SQLite Command Failed", ex);
+    }
   }
 
   #endregion
@@ -430,12 +432,11 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       using (var command = new SqliteCommand("SELECT * FROM objects WHERE hash = @hash LIMIT 1 ", Connection))
       {
         command.Parameters.AddWithValue("@hash", id);
-        using (var reader = command.ExecuteReader())
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
         {
-          while (reader.Read())
-          {
-            return reader.GetString(1);
-          }
+          return reader.GetString(1);
         }
       }
       Elapsed += LoggingHelpers.GetElapsedTime(startTime, Stopwatch.GetTimestamp());
@@ -443,14 +444,29 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     return null; // pass on the duty of null checks to consumers
   }
 
-  public async Task<string> CopyObjectAndChildren(
+  public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    throw new NotImplementedException();
+    string res = TransportHelpers.CopyObjectAndChildrenSync(
+      id,
+      this,
+      targetTransport,
+      onTotalChildrenCountKnown,
+      CancellationToken
+    );
+    return Task.FromResult(res);
   }
+
+  #endregion
+
+  #region Deprecated
+
+  [Obsolete("Use " + nameof(WriteCompletionStatus))]
+  [SuppressMessage("Design", "CA1024:Use properties where appropriate")]
+  public bool GetWriteCompletionStatus() => WriteCompletionStatus;
 
   #endregion
 }

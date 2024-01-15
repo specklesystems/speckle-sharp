@@ -29,11 +29,6 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	// quantities
 	API_ElementQuantity quantity = {};
 	API_Quantities quantities = {};
@@ -43,7 +38,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	ACAPI_ELEMENT_QUANTITY_MASK_SET (quantityMask, roof, volume);
 
 	quantities.elements = &quantity;
-	err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
+	GSErrCode err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
 	if (err != NoError)
 		return err;
 

@@ -3,6 +3,7 @@ using Objects.Structural.Geometry;
 using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
+using System;
 
 namespace Objects.Converter.CSI;
 
@@ -44,16 +45,10 @@ public partial class ConverterCSI
   public static List<string> GetAllFrameNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.FrameObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.FrameObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetColumnNames(cSapModel model)
@@ -125,16 +120,10 @@ public partial class ConverterCSI
   public static List<string> GetAllAreaNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.AreaObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.AreaObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public static List<string> GetAllWallNames(cSapModel model)
@@ -344,16 +333,10 @@ public partial class ConverterCSI
   public static List<string> GetAllPointNames(cSapModel model)
   {
     int num = 0;
-    var names = new string[] { };
-    try
-    {
-      model.PointObj.GetNameList(ref num, ref names);
-      return names.ToList();
-    }
-    catch
-    {
-      return null;
-    }
+    var names = Array.Empty<string>();
+
+    model.PointObj.GetNameList(ref num, ref names);
+    return names.ToList();
   }
 
   public enum CSIConverterSupported

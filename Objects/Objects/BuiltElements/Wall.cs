@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -24,7 +23,7 @@ namespace Objects.BuiltElements
     public Wall(
       double height,
       [SchemaMainParam] ICurve baseLine,
-      [SchemaParamInfo("Any nested elements that this wall might have")] List<Base> elements = null
+      [SchemaParamInfo("Any nested elements that this wall might have")] List<Base>? elements = null
     )
     {
       this.height = height;
@@ -35,7 +34,7 @@ namespace Objects.BuiltElements
     public double height { get; set; }
 
     [DetachProperty]
-    public List<Base> elements { get; set; }
+    public List<Base>? elements { get; set; }
 
     public ICurve baseLine { get; set; }
     public virtual Level? level { get; internal set; }
@@ -84,8 +83,8 @@ namespace Objects.BuiltElements.Revit
       double topOffset = 0,
       bool flipped = false,
       bool structural = false,
-      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null
+      [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -98,7 +97,7 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.topLevel = topLevel;
       this.elements = elements;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     /// <summary>
@@ -127,8 +126,8 @@ namespace Objects.BuiltElements.Revit
       double topOffset = 0,
       bool flipped = false,
       bool structural = false,
-      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -141,7 +140,7 @@ namespace Objects.BuiltElements.Revit
       this.structural = structural;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string family { get; set; }
@@ -158,7 +157,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     public Level topLevel { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 
@@ -173,8 +172,8 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Surface or single face Brep to use"), SchemaMainParam] Brep surface,
       Level level,
       LocationLine locationLine = LocationLine.Interior,
-      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       if (surface.Surfaces.Count == 0)
@@ -195,21 +194,13 @@ namespace Objects.BuiltElements.Revit
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string family { get; set; }
     public string type { get; set; }
 
     public Brep brep { get; set; }
-
-    [Obsolete("Use `Wall.brep` instead", false), SchemaIgnore]
-    public Surface surface
-    {
-      get => brep?.Surfaces.FirstOrDefault();
-      //TODO: This is a simplistic representation of a BREP, may not work in all cases.
-      set => new Brep { Surfaces = new List<Surface> { value } };
-    }
 
     public new Level? level
     {
@@ -218,7 +209,7 @@ namespace Objects.BuiltElements.Revit
     }
 
     public LocationLine locationLine { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 
@@ -234,8 +225,8 @@ namespace Objects.BuiltElements.Revit
       Level level,
       LocationLine locationLine = LocationLine.Interior,
       bool structural = false,
-      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
-      List<Parameter> parameters = null
+      [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base>? elements = null,
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
@@ -245,7 +236,7 @@ namespace Objects.BuiltElements.Revit
       this.structural = structural;
       this.level = level;
       this.elements = elements;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
     }
 
     public string family { get; set; }
@@ -260,7 +251,7 @@ namespace Objects.BuiltElements.Revit
 
     public LocationLine locationLine { get; set; }
     public bool structural { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
   }
 
@@ -306,7 +297,10 @@ namespace Objects.BuiltElements.Archicad
 
     // Element base
     public string? elementType { get; set; } /*APINullabe*/
+
     public List<Classification>? classifications { get; set; } /*APINullabe*/
+    public Base? elementProperties { get; set; }
+    public Base? componentProperties { get; set; }
 
     public override Level? level
     {

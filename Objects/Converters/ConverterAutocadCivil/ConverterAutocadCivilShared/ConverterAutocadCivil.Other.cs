@@ -26,6 +26,7 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.AutocadCivil;
 
@@ -54,83 +55,81 @@ public partial class ConverterAutocadCivil
 
   public ApplicationObject CollectionToNative(Collection collection)
   {
-    // get layer table
-    var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForWrite);
-
-    #region local functions
-    LayerTableRecord GetLayer(string path)
-    {
-      if (layerTable.Has(path))
-      {
-        return (LayerTableRecord)Trans.GetObject(layerTable[path], OpenMode.ForWrite);
-      }
-
-      return null;
-    }
-    LayerTableRecord MakeLayer(string name)
-    {
-      try
-      {
-        LayerTableRecord _layer = new() { Name = name };
-
-        // Append the new layer to the layer table and the transaction
-        layerTable.Add(_layer);
-        Trans.AddNewlyCreatedDBObject(_layer, true);
-
-        return _layer;
-      }
-      catch (Exception e)
-      {
-        return null;
-      }
-    }
-    #endregion
-
     var appObj = new ApplicationObject(collection.id, collection.speckle_type)
     {
       applicationId = collection.applicationId
     };
 
-    // see if this layer already exists in the doc
-    var layerPath = collection["path"] as string;
-    LayerTableRecord existingLayer = GetLayer(layerPath);
+    ApplicationObject.State status = ApplicationObject.State.Unknown;
+    LayerTableRecord layer = null;
 
-    LayerTableRecord layer;
-    ApplicationObject.State status;
-    // update this layer if it exists & receive mode is on update
-    if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
+    if (collection["path"] is string layerPath)
     {
-      layer = existingLayer;
-      status = ApplicationObject.State.Updated;
+      // see if this layer already exists in the doc
+      LayerTableRecord existingLayer = GetLayer(layerPath);
+
+      // update this layer if it exists & receive mode is on update
+      if (existingLayer != null)
+      {
+        if (ReceiveMode == ReceiveMode.Update)
+        {
+          layer = existingLayer;
+          status = ApplicationObject.State.Updated;
+        }
+        else
+        {
+          layerPath += $" - {DateTime.Now.ToString()}";
+        }
+      }
+
+      // otherwise, create this layer
+      if (layer == null)
+      {
+        if (MakeLayer(layerPath, out layer))
+        {
+          status = ApplicationObject.State.Created;
+        }
+        else
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create layer");
+          return appObj;
+        }
+      }
+
+      // get attributes
+      Base styleBase = collection["displayStyle"] is DisplayStyle displayStyle
+        ? displayStyle
+        : collection["renderMaterial"] is RenderMaterial renderMaterial
+          ? renderMaterial
+          : null;
+      if (styleBase is not null)
+      {
+        DisplayStyleToNative(
+          styleBase,
+          out Color color,
+          out Transparency transparency,
+          out LineWeight lineWeight,
+          out ObjectId lineType
+        );
+
+        if (!layer.IsWriteEnabled)
+        {
+          layer.UpgradeOpen();
+        }
+
+        layer.Color = color;
+        layer.Transparency = transparency;
+        layer.LineWeight = lineWeight;
+        layer.LinetypeObjectId = lineType;
+      }
+
+      appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
     }
-    else // create this layer
+    else
     {
-      layer = MakeLayer(layerPath);
-      status = ApplicationObject.State.Created;
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Layer path did not exist on Collection.");
     }
 
-    if (layer == null)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create layer");
-      return appObj;
-    }
-
-    // get attributes
-    var renderMaterial = collection["renderMaterial"] as RenderMaterial;
-    Base styleBase = collection["displayStyle"] is DisplayStyle displayStyle ? displayStyle : renderMaterial;
-    DisplayStyleToNative(
-      styleBase,
-      out Color color,
-      out Transparency transparency,
-      out LineWeight lineWeight,
-      out ObjectId lineType
-    );
-    layer.Color = color;
-    layer.Transparency = transparency;
-    layer.LineWeight = lineWeight;
-    layer.LinetypeObjectId = lineType;
-
-    appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
     return appObj;
   }
 
@@ -361,42 +360,42 @@ public partial class ConverterAutocadCivil
         }
       }
     }
+
     if (loops.Count == 0)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "No loops were successfully created");
-      return appObj;
+      throw new ConversionException("No loops were successfully created");
     }
 
     // add hatch to modelspace
-    var _hatch = new AcadDB.Hatch();
-    modelSpaceRecord.Append(_hatch);
+    var newHatch = new AcadDB.Hatch();
+    modelSpaceRecord.Append(newHatch);
 
-    _hatch.SetDatabaseDefaults();
+    newHatch.SetDatabaseDefaults();
 
     // try get hatch pattern
     var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
     switch (patternCategory)
     {
       case PatPatternCategory.kCustomdef:
-        _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
+        newHatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
         break;
       case PatPatternCategory.kPredef:
       case PatPatternCategory.kISOdef:
-        _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+        newHatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
         break;
       case PatPatternCategory.kUserdef:
-        _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
+        newHatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
         break;
       default:
-        _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
+        newHatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
         break;
     }
-    _hatch.PatternAngle = hatch.rotation;
-    _hatch.PatternScale = hatch.scale;
+    newHatch.PatternAngle = hatch.rotation;
+    newHatch.PatternScale = hatch.scale;
 
     if (hatch["style"] is string style)
     {
-      _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
+      newHatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
     }
 
     // create loops
@@ -405,23 +404,13 @@ public partial class ConverterAutocadCivil
       var loopHandle = entry.Key.Handle.ToString();
       try
       {
-        _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
-        _hatch.EvaluateHatch(true);
-        try
-        {
-          entry.Key.Erase(); // delete created hatch loop curve
-        }
-        catch (Exception e)
-        {
-          appObj.Update(
-            createdId: loopHandle,
-            convertedItem: entry.Key,
-            logItem: $"Could not delete loop {loopHandle}: {e.Message}"
-          );
-        }
+        newHatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
+        newHatch.EvaluateHatch(true);
+        entry.Key.Erase(); // delete created hatch loop curve
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
+        // A hatch loop failed to create, but potentially can still create the rest of the hatch.
         appObj.Update(
           createdId: loopHandle,
           convertedItem: entry.Key,
@@ -473,7 +462,7 @@ public partial class ConverterAutocadCivil
 
     if (definition == null)
     {
-      return null;
+      throw new ConversionException("Could not convert definition.");
     }
 
     var instance = new BlockInstance()
@@ -484,7 +473,7 @@ public partial class ConverterAutocadCivil
     };
 
     // add attributes
-    if (attributes.Any())
+    if (attributes.Count != 0)
     {
       instance["attributes"] = attributes;
     }
@@ -496,46 +485,38 @@ public partial class ConverterAutocadCivil
   {
     var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 
-    // get the definition
+    // convert the definition
     var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
     if (definition == null)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
-      return appObj;
+      throw new ConversionException("Instance did not have a definition");
+    }
+
+    ObjectId definitionId = DefinitionToNativeDB(definition, out List<string> notes);
+    if (notes.Count > 0)
+    {
+      appObj.Update(log: notes);
+      Report.UpdateReportObject(appObj);
+    }
+
+    if (definitionId == ObjectId.Null)
+    {
+      throw new ConversionException("Could not convert instance definition.");
     }
 
     // delete existing objs if any and this is an update
     if (ReceiveMode == ReceiveMode.Update)
     {
-      var existingObjs = GetExistingElementsByApplicationId(instance.applicationId);
-      try
+      List<ObjectId> existingObjs = GetExistingElementsByApplicationId(instance.applicationId);
+
+      foreach (ObjectId existingObjId in existingObjs)
       {
-        foreach (var existingObjId in existingObjs)
+        var existingObj = Trans.GetObject(existingObjId, OpenMode.ForWrite);
+        if (!existingObj.IsErased)
         {
-          var existingObj = Trans.GetObject(existingObjId, OpenMode.ForWrite);
           existingObj.Erase();
         }
       }
-      catch (Exception e)
-      {
-        if (!e.Message.Contains("eWasErased")) // this couldve been previously deleted & received?
-        {
-          appObj.Update(logItem: $"Could not remove one or more existing instances on update: {e.Message}");
-        }
-      }
-    }
-
-    // convert the definition
-    ObjectId definitionId = DefinitionToNativeDB(definition, out List<string> notes);
-    if (notes.Count > 0)
-    {
-      appObj.Update(log: notes);
-    }
-
-    if (definitionId == ObjectId.Null)
-    {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
-      return appObj;
     }
 
     // transform
@@ -559,8 +540,7 @@ public partial class ConverterAutocadCivil
 
     if ((!id.IsValid || id.IsNull) && AppendToModelSpace)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't append instance to model space");
-      return appObj;
+      throw new ConversionException("Couldn't append instance to model space");
     }
 
     // update appobj
@@ -614,9 +594,9 @@ public partial class ConverterAutocadCivil
     // get the definition name
     // var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
     string definitionName = definition is BlockDefinition blockDef
-      ? RemoveInvalidAutocadChars(blockDef.name)
+      ? RemoveInvalidChars(blockDef.name)
       : definition is RevitSymbolElementType revitDef
-        ? RemoveInvalidAutocadChars($"{revitDef.family} - {revitDef.type} - {definition.id}")
+        ? RemoveInvalidChars($"{revitDef.family} - {revitDef.type} - {definition.id}")
         : definition.id;
     if (ReceiveMode == ReceiveMode.Create)
     {
@@ -1280,104 +1260,92 @@ public partial class ConverterAutocadCivil
       case "AlignedDimension":
         if (dimension is not DistanceDimension alignedSpeckle || alignedSpeckle.measured.Count < 2)
         {
-          return null;
+          throw new ConversionException(
+            "Aligned dimension was not a DistanceDimension or measured count was less than 2"
+          );
         }
 
-        try
-        {
-          var alignedStart = PointToNative(alignedSpeckle.measured[0]);
-          var alignedEnd = PointToNative(alignedSpeckle.measured[1]);
-          var alignedDimension = new AlignedDimension(
-            alignedStart,
-            alignedEnd,
-            position,
-            dimension.value,
-            dimensionStyle
-          );
-          Utilities.SetApplicationProps(alignedDimension, typeof(AlignedDimension), sourceAppProps);
-          _dimension = alignedDimension;
-        }
-        catch { }
-        ;
+        Point3d alignedStart = PointToNative(alignedSpeckle.measured[0]);
+        Point3d alignedEnd = PointToNative(alignedSpeckle.measured[1]);
+        var alignedDimension = new AlignedDimension(
+          alignedStart,
+          alignedEnd,
+          position,
+          dimension.value,
+          dimensionStyle
+        );
+        Utilities.SetApplicationProps(alignedDimension, typeof(AlignedDimension), sourceAppProps);
+        _dimension = alignedDimension;
         break;
       case "RotatedDimension":
         if (dimension is not DistanceDimension rotatedSpeckle || rotatedSpeckle.measured.Count < 2)
         {
-          return null;
+          throw new ConversionException(
+            "Rotated dimension was not a DistanceDimension or measured count was less than 2"
+          );
         }
 
         double rotation = sourceAppProps["Rotation"] as double? ?? 0;
-        try
-        {
-          var rotatedStart = PointToNative(rotatedSpeckle.measured[0]);
-          var rotatedEnd = PointToNative(rotatedSpeckle.measured[1]);
-          var rotatedDimension = new RotatedDimension(
-            rotation,
-            rotatedStart,
-            rotatedEnd,
-            position,
-            dimension.value,
-            dimensionStyle
-          );
-          Utilities.SetApplicationProps(rotatedDimension, typeof(RotatedDimension), sourceAppProps);
-          _dimension = rotatedDimension;
-        }
-        catch { }
+        Point3d rotatedStart = PointToNative(rotatedSpeckle.measured[0]);
+        Point3d rotatedEnd = PointToNative(rotatedSpeckle.measured[1]);
+
+        var rotatedDimension = new RotatedDimension(
+          rotation,
+          rotatedStart,
+          rotatedEnd,
+          position,
+          dimension.value,
+          dimensionStyle
+        );
+        Utilities.SetApplicationProps(rotatedDimension, typeof(RotatedDimension), sourceAppProps);
+        _dimension = rotatedDimension;
+
         break;
       case "OrdinateDimension":
-        try
+        var ordinateDimension = DimensionToNative(dimension) as OrdinateDimension;
+        if (ordinateDimension != null)
         {
-          var ordinateDimension = DimensionToNative(dimension) as OrdinateDimension;
-          if (ordinateDimension != null)
-          {
-            Utilities.SetApplicationProps(ordinateDimension, typeof(OrdinateDimension), sourceAppProps);
-          }
-
-          _dimension = ordinateDimension;
+          Utilities.SetApplicationProps(ordinateDimension, typeof(OrdinateDimension), sourceAppProps);
         }
-        catch { }
+
+        _dimension = ordinateDimension;
         break;
       case "RadialDimension":
-        try
+        var radialDimension = DimensionToNative(dimension) as RadialDimension;
+        if (radialDimension != null)
         {
-          var radialDimension = DimensionToNative(dimension) as RadialDimension;
-          if (radialDimension != null)
-          {
-            Utilities.SetApplicationProps(radialDimension, typeof(RadialDimension), sourceAppProps);
-          }
-
-          _dimension = radialDimension;
+          Utilities.SetApplicationProps(radialDimension, typeof(RadialDimension), sourceAppProps);
         }
-        catch { }
+
+        _dimension = radialDimension;
+
         break;
       case "DiametricDimension":
         if (dimension is not LengthDimension diametricSpeckle || diametricSpeckle.measured as Line == null)
         {
-          return null;
+          throw new ConversionException(
+            "Diametric dimension was not a LengthDimension or measured value was not a Line"
+          );
         }
 
-        try
-        {
-          var line = diametricSpeckle.measured as Line;
-          var start = PointToNative(line.start);
-          var end = PointToNative(line.end);
-          double leaderLength = ScaleToNative(sourceAppProps["LeaderLength"] as double? ?? 0, ModelUnits);
-          var diametricDimension = new DiametricDimension(end, start, leaderLength, dimension.value, dimensionStyle);
-          sourceAppProps["LeaderLength"] = leaderLength;
-          Utilities.SetApplicationProps(diametricDimension, typeof(DiametricDimension), sourceAppProps);
-          _dimension = diametricDimension;
-        }
-        catch { }
+        var line = diametricSpeckle.measured as Line;
+        Point3d start = PointToNative(line.start);
+        Point3d end = PointToNative(line.end);
+        double leaderLength = ScaleToNative(sourceAppProps["LeaderLength"] as double? ?? 0, ModelUnits);
+        var diametricDimension = new DiametricDimension(end, start, leaderLength, dimension.value, dimensionStyle);
+        sourceAppProps["LeaderLength"] = leaderLength;
+        Utilities.SetApplicationProps(diametricDimension, typeof(DiametricDimension), sourceAppProps);
+        _dimension = diametricDimension;
         break;
       case "ArcDimension":
         if (dimension is not LengthDimension arcSpeckle || arcSpeckle.measured as Arc == null)
         {
-          return null;
+          throw new ConversionException("Arc dimension was not a LengthDimension or measured value was not an Arc");
         }
 
-        try
+        CircularArc3d arc = ArcToNative(arcSpeckle.measured as Arc);
+        if (arc != null)
         {
-          var arc = ArcToNative(arcSpeckle.measured as Arc);
           var arcDimension = new ArcDimension(
             arc.Center,
             arc.StartPoint,
@@ -1389,33 +1357,25 @@ public partial class ConverterAutocadCivil
           Utilities.SetApplicationProps(arcDimension, typeof(ArcDimension), sourceAppProps);
           _dimension = arcDimension;
         }
-        catch { }
+
         break;
       case "LineAngularDimension2":
-        try
+        var lineAngularDimension = DimensionToNative(dimension) as LineAngularDimension2;
+        if (lineAngularDimension != null)
         {
-          var lineAngularDimension = DimensionToNative(dimension) as LineAngularDimension2;
-          if (lineAngularDimension != null)
-          {
-            Utilities.SetApplicationProps(lineAngularDimension, typeof(LineAngularDimension2), sourceAppProps);
-          }
-
-          _dimension = lineAngularDimension;
+          Utilities.SetApplicationProps(lineAngularDimension, typeof(LineAngularDimension2), sourceAppProps);
         }
-        catch { }
+
+        _dimension = lineAngularDimension;
         break;
       case "Point3AngularDimension":
-        try
+        var pointAngularDimension = DimensionToNative(dimension) as Point3AngularDimension;
+        if (pointAngularDimension != null)
         {
-          var pointAngularDimension = DimensionToNative(dimension) as Point3AngularDimension;
-          if (pointAngularDimension != null)
-          {
-            Utilities.SetApplicationProps(pointAngularDimension, typeof(Point3AngularDimension), sourceAppProps);
-          }
-
-          _dimension = pointAngularDimension;
+          Utilities.SetApplicationProps(pointAngularDimension, typeof(Point3AngularDimension), sourceAppProps);
         }
-        catch { }
+
+        _dimension = pointAngularDimension;
         break;
       default:
         _dimension = DimensionToNative(dimension);
@@ -1431,95 +1391,91 @@ public partial class ConverterAutocadCivil
 
   public AcadDB.Dimension DimensionToNative(Dimension dimension)
   {
-    AcadDB.Dimension _dimension = null;
+    if (dimension.position == null)
+    {
+      throw new ConversionException("Position was null");
+    }
+
+    AcadDB.Dimension autocadDimension = null;
     var style = Doc.Database.Dimstyle;
-    var position = PointToNative(dimension.position);
+    Point3d position = PointToNative(dimension.position);
+    string value = dimension.value ?? "";
     switch (dimension)
     {
       case LengthDimension o:
         switch (o.measured)
         {
           case Arc a:
-            var arcCenter = PointToNative(a.plane.origin);
-            var arcStart = PointToNative(a.startPoint);
-            var arcEnd = PointToNative(a.endPoint);
-            try
+            if (a.plane?.origin == null || a.startPoint == null || a.endPoint == null)
             {
-              var arcDimension = new ArcDimension(arcCenter, arcStart, arcEnd, position, dimension.value, style);
-              _dimension = arcDimension;
+              throw new ConversionException("Arc did not have a plane origin or start point or end point.");
             }
-            catch { }
+
+            Point3d arcCenter = PointToNative(a.plane.origin);
+            Point3d arcStart = PointToNative(a.startPoint);
+            Point3d arcEnd = PointToNative(a.endPoint);
+            var arcDimension = new ArcDimension(arcCenter, arcStart, arcEnd, position, value, style);
+            autocadDimension = arcDimension;
             break;
           case Line l:
-            var radialStart = PointToNative(l.start);
-            var radialEnd = PointToNative(l.end);
+            Point3d radialStart = PointToNative(l.start);
+            Point3d radialEnd = PointToNative(l.end);
             double leaderLength = radialEnd.DistanceTo(position);
-            try
-            {
-              var radialDimension = new RadialDimension(radialStart, radialEnd, leaderLength, dimension.value, style);
-              _dimension = radialDimension;
-            }
-            catch { }
+            var radialDimension = new RadialDimension(radialStart, radialEnd, leaderLength, value, style);
+            autocadDimension = radialDimension;
             break;
         }
         break;
       case AngleDimension o:
-        try
-        {
-          if (o.measured.Count < 2)
-          {
-            break;
-          }
 
-          var line1Start = PointToNative(o.measured[0].start);
-          var line1End = PointToNative(o.measured[0].end);
-          var line2Start = PointToNative(o.measured[1].start);
-          var line2End = PointToNative(o.measured[1].end);
-          _dimension =
-            Math.Round(line1Start.DistanceTo(line2Start), 3) == 0
-              ? new Point3AngularDimension(line1Start, line1End, line2End, position, dimension.value, style)
-              : new LineAngularDimension2(line1Start, line1End, line2Start, line2End, position, dimension.value, style);
-        }
-        catch { }
-        break;
-      case DistanceDimension o:
         if (o.measured.Count < 2)
         {
-          break;
+          throw new ConversionException("Angle dimension had a measured count of less than 2.");
         }
 
-        try
+        Point3d line1Start = PointToNative(o.measured[0].start);
+        Point3d line1End = PointToNative(o.measured[0].end);
+        Point3d line2Start = PointToNative(o.measured[1].start);
+        Point3d line2End = PointToNative(o.measured[1].end);
+        autocadDimension =
+          Math.Round(line1Start.DistanceTo(line2Start), 3) == 0
+            ? new Point3AngularDimension(line1Start, line1End, line2End, position, value, style)
+            : new LineAngularDimension2(line1Start, line1End, line2Start, line2End, position, value, style);
+        break;
+      case DistanceDimension o:
+        if (o.measured.Count < 2 || o.direction is null)
         {
-          var start = PointToNative(o.measured[0]);
-          var end = PointToNative(o.measured[1]);
-          var normal = VectorToNative(o.direction);
-
-          if (o.isOrdinate)
-          {
-            bool useXAxis = normal.IsParallelTo(Vector3d.XAxis);
-            var ordinateDimension = new OrdinateDimension(useXAxis, end, position, dimension.value, style)
-            {
-              Origin = start
-            };
-            _dimension = ordinateDimension;
-          }
-          else
-          {
-            var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
-            var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
-            _dimension = dir.IsParallelTo(normal, Tolerance.Global)
-              ? new AlignedDimension(start, end, position, dimension.value, style)
-              : new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
-          }
+          throw new ConversionException("Distance dimension had no direction or a measured count of less than 2.");
         }
-        catch { }
+
+        Point3d start = PointToNative(o.measured[0]);
+        Point3d end = PointToNative(o.measured[1]);
+        Vector3d normal = VectorToNative(o.direction);
+
+        if (o.isOrdinate)
+        {
+          bool useXAxis = normal.IsParallelTo(Vector3d.XAxis);
+          var ordinateDimension = new OrdinateDimension(useXAxis, end, position, dimension.value, style)
+          {
+            Origin = start
+          };
+          autocadDimension = ordinateDimension;
+        }
+        else
+        {
+          var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
+          var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
+          autocadDimension = dir.IsParallelTo(normal, Tolerance.Global)
+            ? new AlignedDimension(start, end, position, dimension.value, style)
+            : new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
+        }
+
         break;
       default:
         break;
     }
-    //if (_dimension != null)
-    // _dimension.TextPosition = PointToNative(dimension.textPosition);
-    return _dimension;
+
+    return autocadDimension;
   }
 
   private ObjectId GetDimensionStyle(string styleName)

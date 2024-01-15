@@ -14,9 +14,9 @@ public class Steel : StructuralMaterial
   )]
   public Steel(
     string name,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double elasticModulus = 0,
     double yieldStrength = 0,
     double ultimateStrength = 0,
@@ -40,7 +40,6 @@ public class Steel : StructuralMaterial
     this.poissonsRatio = poissonsRatio;
     this.shearModulus = shearModulus;
     this.density = density;
-    thermalExpansivity = thermalExpansivity;
     this.dampingRatio = dampingRatio;
   }
 

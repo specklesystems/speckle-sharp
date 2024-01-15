@@ -61,7 +61,9 @@ namespace Objects.BuiltElements
     /// Retrieves the links for this element
     /// </summary>
     [JsonIgnore]
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type. Reason: obsolete.
     public List<NetworkLink> links => linkIndices.Select(i => network?.links[i]).ToList();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type. Reason: obsolete.
   }
 
   public class NetworkLink : Base
@@ -83,7 +85,9 @@ namespace Objects.BuiltElements
     /// Retrieves the elements for this link
     /// </summary>
     [JsonIgnore]
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type. Reason: obsolete.
     public List<NetworkElement> elements => elementIndices.Select(i => network?.elements[i]).ToList();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type. Reason: obsolete.
   }
 }
 

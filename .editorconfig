@@ -209,16 +209,27 @@ dotnet_diagnostic.ide0007.severity = none # Use var instead of explicit type: Pr
 dotnet_diagnostic.ide0009.severity = none # Add this or Me qualification: Preference
 dotnet_diagnostic.ide0200.severity = none # Remove unnecessary lambda expression: may be performance reasons not to
 dotnet_diagnostic.ide0058.severity = none # Remove unnecessary expression value: Subjective
+dotnet_diagnostic.ide0010.severity = none # Add missing cases to switch statement: Too verbose
+dotnet_diagnostic.ide0200.severity = none # Remove unnecessary lambda expression: may be performance reasons not to
+dotnet_diagnostic.ide0058.severity = none # Remove unnecessary expression value: Subjective
 dotnet_diagnostic.ide0001.severity = suggestion # Name can be simplified: Non enforceable in build
 dotnet_diagnostic.ide0046.severity = suggestion # Use conditional expression for return: Subjective
 dotnet_diagnostic.ide0045.severity = suggestion # Use conditional expression for assignment: Subjective
 dotnet_diagnostic.ide0078.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0260.severity = suggestion # Use pattern matching: Subjective
 dotnet_diagnostic.ide0022.severity = suggestion # Use expression body for method: Subjective
+dotnet_diagnostic.ide0061.severity = suggestion # Use expression body for local functions: Subjective
 dotnet_diagnostic.ide0029.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
 dotnet_diagnostic.ide0042.severity = suggestion # Deconstruct variable declaration: Subjective
+dotnet_diagnostic.ide0039.severity = suggestion # Use local function instead of lambda: Subjective
+dotnet_diagnostic.ide0029.severity = suggestion # Null check can be simplified: Subjective
+dotnet_diagnostic.ide0030.severity = suggestion # Null check can be simplified: Subjective
+dotnet_diagnostic.ide0270.severity = suggestion # Null check can be simplified: Subjective
+dotnet_diagnostic.ide0042.severity = suggestion # Deconstruct variable declaration: Subjective
+dotnet_diagnostic.ide0028.severity = suggestion # Use collection initializers: Subjective
+dotnet_diagnostic.ide0074.severity = suggestion # Use compound assignment: Subjective
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning # Avoid excessive inheritance
@@ -229,20 +240,60 @@ dotnet_diagnostic.ca1507.severity = warning # Use nameof in place of string
 dotnet_diagnostic.ca1508.severity = warning # Avoid dead conditional code
 dotnet_diagnostic.ca1509.severity = warning # Invalid entry in code metrics configuration file
 
-dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists
 
-# Misc
+# Performance rules
+dotnet_diagnostic.ca1849.severity = suggestion # Call async methods when in an async method: May decrease performance
+dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+dotnet_diagnostic.ca1859.severity = suggestion # Use concrete types when possible for improved performance
+
+# Design rule
+dotnet_diagnostic.ca1002.severity = suggestion # Do not expose generic lists
 dotnet_diagnostic.ca1051.severity = warning # Do not declare visible instance fields
 dotnet_diagnostic.ca1056.severity = suggestion # URI properties should not be strings
 dotnet_diagnostic.ca1062.severity = none # Public method must check all parameters for null
+
+# Naming
 dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
-dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+
+# Usage
 dotnet_diagnostic.ca2227.severity = suggestion # Collection props should be read-only
 
 dotnet_code_quality.ca1051.exclude_structs = true # CA1051 is excluded in structs
 dotnet_code_quality.dispose_ownership_transfer_at_constructor = true # CA2000 has a lot of false positives without this
 dotnet_code_quality.dispose_ownership_transfer_at_method_call = true # CA2000 has a lot of false positives without this
 dotnet_code_quality.dispose_analysis_kind = NonExceptionPathsOnlyNotDisposed # CA2000 has a lot of false positives without this
+
+# NUnit
+dotnet_diagnostic.NUnit2001.severity = warning # Consider using Assert.That(expr, Is.False) instead of Assert.False(expr)
+dotnet_diagnostic.NUnit2002.severity = warning # Consider using Assert.That(expr, Is.False) instead of Assert.IsFalse(expr)
+dotnet_diagnostic.NUnit2003.severity = warning # Consider using Assert.That(expr, Is.True) instead of Assert.IsTrue(expr)
+dotnet_diagnostic.NUnit2004.severity = warning # Consider using Assert.That(expr, Is.True) instead of Assert.True(expr)
+dotnet_diagnostic.NUnit2005.severity = warning # Consider using Assert.That(actual, Is.EqualTo(expected)) instead of Assert.AreEqual(expected, actual)
+dotnet_diagnostic.NUnit2006.severity = warning # Consider using Assert.That(actual, Is.Not.EqualTo(expected)) instead of Assert.AreNotEqual(expected, actual)
+
+dotnet_diagnostic.NUnit2010.severity = warning # Use EqualConstraint for better assertion messages in case of failure
+dotnet_diagnostic.NUnit2011.severity = warning # Use ContainsConstraint for better assertion messages in case of failure
+dotnet_diagnostic.NUnit2011.severity = warning # Use StartsWithConstraint for better assertion messages in case of failure
+dotnet_diagnostic.NUnit2011.severity = warning # Use EndsWithConstraint for better assertion messages in case of failure
+dotnet_diagnostic.NUnit2014.severity = warning # Use SomeItemsConstraint for better assertion messages in case of failure
+
+dotnet_diagnostic.NUnit2015.severity = warning # Consider using Assert.That(actual, Is.SameAs(expected)) instead of Assert.AreSame(expected, actual)
+dotnet_diagnostic.NUnit2016.severity = warning # Consider using Assert.That(expr, Is.Null) instead of Assert.Null(expr)
+dotnet_diagnostic.NUnit2017.severity = warning # Consider using Assert.That(expr, Is.Null) instead of Assert.IsNull(expr)
+dotnet_diagnostic.NUnit2018.severity = warning # Consider using Assert.That(expr, Is.Not.Null) instead of Assert.NotNull(expr)
+dotnet_diagnostic.NUnit2028.severity = warning # Consider using Assert.That(actual, Is.GreaterThanOrEqualTo(expected)) instead of Assert.GreaterOrEqual(actual, expected)
+dotnet_diagnostic.NUnit2027.severity = warning # Consider using Assert.That(actual, Is.GreaterThan(expected)) instead of Assert.Greater(actual, expected)
+dotnet_diagnostic.NUnit2029.severity = warning # Consider using Assert.That(actual, Is.LessThan(expected)) instead of Assert.Less(actual, expected)
+dotnet_diagnostic.NUnit2030.severity = warning # Consider using Assert.That(actual, Is.LessThanOrEqualTo(expected)) instead of Assert.LessOrEqual(actual, expected)
+dotnet_diagnostic.NUnit2031.severity = warning # Consider using Assert.That(actual, Is.Not.SameAs(expected)) instead of Assert.AreNotSame(expected, actual)
+dotnet_diagnostic.NUnit2032.severity = warning # Consider using Assert.That(expr, Is.Zero) instead of Assert.Zero(expr)
+dotnet_diagnostic.NUnit2033.severity = warning # Consider using Assert.That(expr, Is.Not.Zero) instead of Assert.NotZero(expr)
+dotnet_diagnostic.NUnit2034.severity = warning # Consider using Assert.That(expr, Is.NaN) instead of Assert.IsNaN(expr)
+dotnet_diagnostic.NUnit2035.severity = warning # Consider using Assert.That(collection, Is.Empty) instead of Assert.IsEmpty(collection)
+dotnet_diagnostic.NUnit2036.severity = warning # Consider using Assert.That(collection, Is.Not.Empty) instead of Assert.IsNotEmpty(collection)
+dotnet_diagnostic.NUnit2037.severity = warning # Consider using Assert.That(collection, Does.Contain(instance)) instead of Assert.Contains(instance, collection)
+dotnet_diagnostic.NUnit2038.severity = warning # Consider using Assert.That(actual, Is.InstanceOf(expected)) instead of Assert.IsInstanceOf(expected, actual)
+dotnet_diagnostic.NUnit2039.severity = warning # Consider using Assert.That(actual, Is.Not.InstanceOf(expected)) instead of Assert.IsNotInstanceOf(expected, actual)
 
 [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
 indent_style = space

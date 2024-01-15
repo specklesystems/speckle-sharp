@@ -112,7 +112,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
           title: Core Unit Tests
-          project: Core/Tests/TestsUnit.csproj
+          project: Core/Tests/Speckle.Core.Tests.Unit/Speckle.Core.Tests.Unit.csproj
       - run-tests:
           title: Objects Unit Tests
           project: Objects/Tests/Tests.csproj
@@ -135,7 +135,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: docker compose -f Core/docker-compose.yml up -d
       - run-tests:
           title: Core Integration Tests
-          project: Core/IntegrationTests/TestsIntegration.csproj
+          project: Core/Tests/Speckle.Core.Tests.Integration/Speckle.Core.Tests.Integration.csproj
       - run-tests:
           title: Automate Integration Tests
           project: Automate/Tests/Speckle.Automate.Sdk.Tests.Integration/Speckle.Automate.Sdk.Tests.Integration.csproj

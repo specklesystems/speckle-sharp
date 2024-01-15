@@ -21,10 +21,10 @@ public class LoadGravity : Load
     "Structural",
     "Loading"
   )]
-  public LoadGravity(LoadCase loadCase, Vector gravityFactors = null, string name = null)
+  public LoadGravity(LoadCase loadCase, Vector? gravityFactors = null, string? name = null)
   {
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
     this.name = name;
   }
 
@@ -41,11 +41,11 @@ public class LoadGravity : Load
     "Structural",
     "Loading"
   )]
-  public LoadGravity(LoadCase loadCase, List<Base> elements, Vector gravityFactors = null, string name = null)
+  public LoadGravity(LoadCase loadCase, List<Base> elements, Vector? gravityFactors = null, string? name = null)
   {
     this.elements = elements;
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
     this.name = name;
   }
 
@@ -67,14 +67,14 @@ public class LoadGravity : Load
     LoadCase loadCase,
     List<Base> elements,
     List<Base> nodes,
-    Vector gravityFactors = null,
-    string name = null
+    Vector? gravityFactors = null,
+    string? name = null
   )
   {
     this.elements = elements;
     this.nodes = nodes;
     this.loadCase = loadCase;
-    this.gravityFactors = gravityFactors == null ? new Vector(0, 0, -1) : gravityFactors;
+    this.gravityFactors = gravityFactors ?? new Vector(0, 0, -1);
     this.name = name;
   }
 

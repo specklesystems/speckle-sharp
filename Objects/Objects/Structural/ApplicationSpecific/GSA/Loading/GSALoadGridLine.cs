@@ -21,8 +21,6 @@ public class GSALoadGridLine : GSALoadGrid
   )
   {
     this.nativeId = nativeId;
-    name = name;
-    loadCase = loadCase;
     this.gridSurface = gridSurface;
     this.loadAxis = loadAxis;
     this.direction = direction;

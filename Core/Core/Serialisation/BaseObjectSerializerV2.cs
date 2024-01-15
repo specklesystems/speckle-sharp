@@ -1,12 +1,11 @@
-#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DoubleNumerics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
-using System.DoubleNumerics;
 using System.Reflection;
 using System.Threading;
 using Speckle.Core.Helpers;
@@ -49,6 +48,12 @@ public class BaseObjectSerializerV2
     CancellationToken = cancellationToken;
   }
 
+  /// <param name="baseObj">The object to serialize</param>
+  /// <returns>The serialized JSON</returns>
+  /// <exception cref="InvalidOperationException">The serializer is busy (already serializing an object)</exception>
+  /// <exception cref="TransportException">Failed to save object in one or more <see cref="WriteTransports"/></exception>
+  /// <exception cref="SpeckleSerializeException">Failed to extract (pre-serialize) properties from the <paramref name="baseObj"/></exception>
+  /// <exception cref="OperationCanceledException">One or more <see cref="WriteTransports"/>'s cancellation token requested cancel</exception>
   public string Serialize(Base baseObj)
   {
     if (_isBusy)
@@ -62,7 +67,15 @@ public class BaseObjectSerializerV2
     {
       _stopwatch.Start();
       _isBusy = true;
-      IDictionary<string, object?> converted = PreserializeBase(baseObj, true)!;
+      IDictionary<string, object?> converted;
+      try
+      {
+        converted = PreserializeBase(baseObj, true)!;
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        throw new SpeckleSerializeException($"Failed to extract (pre-serialize) properties from the {baseObj}");
+      }
       string serialized = Dict2Json(converted);
       StoreObject((string)converted["id"]!, serialized);
       return serialized;
@@ -199,12 +212,11 @@ public class BaseObjectSerializerV2
   )
   {
     // handle circular references
-    if (_parentObjects.Contains(baseObj))
+    bool alreadySerialized = !_parentObjects.Add(baseObj);
+    if (alreadySerialized)
     {
       return null;
     }
-
-    _parentObjects.Add(baseObj);
 
     Dictionary<string, object?> convertedBase = new();
     Dictionary<string, int> closure = new();
@@ -217,7 +229,7 @@ public class BaseObjectSerializerV2
     IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
 
     // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
-    Dictionary<string, (object, PropertyAttributeInfo)> allProperties = new();
+    Dictionary<string, (object?, PropertyAttributeInfo)> allProperties = new();
 
     // Construct `allProperties`: Add typed properties
     foreach ((PropertyInfo propertyInfo, PropertyAttributeInfo detachInfo) in typedProperties)
@@ -234,7 +246,7 @@ public class BaseObjectSerializerV2
         continue;
       }
 
-      object baseValue = baseObj[propName];
+      object? baseValue = baseObj[propName];
       bool isDetachable = propName.StartsWith("@");
       bool isChunkable = false;
       int chunkSize = 1000;
@@ -298,7 +310,7 @@ public class BaseObjectSerializerV2
     return convertedBase;
   }
 
-  private object? PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
+  private object? PreserializeBasePropertyValue(object? baseValue, PropertyAttributeInfo detachInfo)
   {
     // If there are no WriteTransports, keep everything attached.
     if (WriteTransports.Count == 0)

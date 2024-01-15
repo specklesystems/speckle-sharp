@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net7.0-windows;net48</TargetFrameworks>
+    <Title>SpeckleRhino</Title>
+    <Description>Description of SpeckleRhino</Description>
+    <TargetExt>.rhp</TargetExt>
+    <RhinoMacLauncher>/Applications/Rhino 8.app</RhinoMacLauncher>
+    <AssemblyName>SpeckleConnectorRhino</AssemblyName>
+    <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+    <RootNamespace>SpeckleRhino</RootNamespace>
+    <Product>ConnectorRhino8</Product>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+
+    <!--NOTE-->
+    <!--
+    Since Rhino uses mono we build for win-x64 also on mac
+    BUT we then have to manually copy the dylib for Avalonia and Microsoft.Data.Sqlite
+    They are loaded from the nuget mac folder
+    REMEMBER to update its numbers if updating the nugets
+    -->
+    <DefineConstants>$(DefineConstants);RHINO8;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
+    <OutputType>Library</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <UseWpf>true</UseWpf>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
+    <DefineConstants>$(DefineConstants);MAC</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 8\System\Rhino.exe</StartProgram>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
+
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RhinoCommon" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="RhinoWindows" Version="8.3.24009.15001" IncludeAssets="compile; build" PrivateAssets="all" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper8\ConnectorGrasshopper8.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+  </ItemGroup>
+
+  <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
+  <ItemGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
+    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.21/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+</Project>

@@ -15,7 +15,7 @@
       "ConnectorAutocadCivil\\ConnectorCivil2023\\ConnectorCivil2023.csproj",
       "ConnectorAutocadCivil\\ConnectorCivil2024\\ConnectorCivil2024.csproj",
       "Core\\Core\\Core.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",

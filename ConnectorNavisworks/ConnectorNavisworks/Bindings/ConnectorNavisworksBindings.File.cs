@@ -11,10 +11,8 @@ public partial class ConnectorBindingsNavisworks
   /// Writes the list of stream states to the file.
   /// </summary>
   /// <param name="streams">The list of stream states to write.</param>
-  public override void WriteStreamsToFile(List<StreamState> streams)
-  {
+  public override void WriteStreamsToFile(List<StreamState> streams) =>
     SpeckleStreamManager.WriteStreamStateList(s_doc, streams);
-  }
 
   /// <summary>
   /// Retrieves the list of stream states from the file.

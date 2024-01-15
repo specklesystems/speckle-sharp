@@ -1,10 +1,10 @@
+#nullable disable
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Core.Credentials;
 
@@ -27,7 +27,7 @@ public class Account : IEquatable<Account>
           throw new SpeckleException("Incomplete account info: cannot generate id.");
         }
 
-        _id = Utilities.HashString(userInfo.email + serverInfo.url, Utilities.HashingFunctions.MD5).ToUpper();
+        _id = Crypt.Md5(userInfo.email + serverInfo.url, "X2");
       }
       return _id;
     }
@@ -49,11 +49,9 @@ public class Account : IEquatable<Account>
 
   private static string CleanURL(string server)
   {
-    Uri NewUri;
-
-    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+    if (Uri.TryCreate(server, UriKind.Absolute, out Uri newUri))
     {
-      server = NewUri.Authority;
+      server = newUri.Authority;
     }
 
     return server;
@@ -66,13 +64,13 @@ public class Account : IEquatable<Account>
   public string GetHashedEmail()
   {
     string email = userInfo?.email ?? "unknown";
-    return "@" + Crypt.Hash(email);
+    return "@" + Crypt.Md5(email, "X2");
   }
 
   public string GetHashedServer()
   {
     string url = serverInfo?.url ?? AccountManager.DEFAULT_SERVER_URL;
-    return Crypt.Hash(CleanURL(url));
+    return Crypt.Md5(CleanURL(url), "X2");
   }
 
   public async Task<UserInfo> Validate()
@@ -97,4 +95,3 @@ public class Account : IEquatable<Account>
 
   #endregion
 }
-#pragma warning restore CS0659 CA1067

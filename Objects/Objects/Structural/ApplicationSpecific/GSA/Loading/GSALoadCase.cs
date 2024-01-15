@@ -13,21 +13,21 @@ public class GSALoadCase : LoadCase
     string name,
     LoadType loadType,
     LoadDirection2D loadDirection,
-    string source = null,
+    string? source = null,
     ActionType actionType = ActionType.None,
-    string description = null,
-    string include = null,
+    string? description = null,
+    string? include = null,
     bool bridge = false
   )
   {
     this.nativeId = nativeId;
     this.name = name;
     this.loadType = loadType;
-    group = source;
+    group = source ?? "";
     this.actionType = actionType;
-    this.description = description;
+    this.description = description ?? "";
     direction = loadDirection;
-    this.include = include;
+    this.include = include ?? "";
     this.bridge = bridge;
   }
 

@@ -19,7 +19,7 @@ using RH = Rhino.DocObjects;
 using Transform = Rhino.Geometry.Transform;
 using Utilities = Speckle.Core.Models.Utilities;
 
-#if RHINO7
+#if RHINO7_OR_GREATER
 using Rhino.Render;
 #endif
 
@@ -37,7 +37,7 @@ public partial class ConverterRhinoGh
     var colorSource = RH.ObjectColorSource.ColorFromObject;
     if (display["colorSource"] != null)
     {
-      Enum.TryParse(display["colorSource"] as string, out colorSource);
+      _ = Enum.TryParse(display["colorSource"] as string, out colorSource);
     }
 
     attributes.ColorSource = colorSource;
@@ -48,7 +48,7 @@ public partial class ConverterRhinoGh
     var lineSource = RH.ObjectLinetypeSource.LinetypeFromObject;
     if (display["lineSource"] != null)
     {
-      Enum.TryParse(display["lineSource"] as string, out lineSource);
+      _ = Enum.TryParse(display["lineSource"] as string, out lineSource);
     }
 
     attributes.LinetypeSource = lineSource;
@@ -60,7 +60,7 @@ public partial class ConverterRhinoGh
     var weightSource = RH.ObjectPlotWeightSource.PlotWeightFromObject;
     if (display["weightSource"] != null)
     {
-      Enum.TryParse(display["weightSource"] as string, out weightSource);
+      _ = Enum.TryParse(display["weightSource"] as string, out weightSource);
     }
 
     attributes.PlotWeightSource = weightSource;

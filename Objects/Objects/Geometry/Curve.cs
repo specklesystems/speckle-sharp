@@ -22,7 +22,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   /// <param name="poly">The polyline that will be this curve's <see cref="displayValue"/></param>
   /// <param name="units">The units this curve is be modelled in</param>
   /// <param name="applicationId">The unique ID of this curve in a specific application</param>
-  public Curve(Polyline poly, string units = Units.Meters, string applicationId = null)
+  public Curve(Polyline poly, string units = Units.Meters, string? applicationId = null)
   {
     displayValue = poly;
     this.applicationId = applicationId;
@@ -61,7 +61,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval domain { get; set; }
+  public Interval domain { get; set; } = new Interval(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -100,7 +100,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
       closed = closed,
       units = units,
       applicationId = applicationId,
-      domain = domain != null ? new Interval { start = domain.start, end = domain.end } : null
+      domain = domain != null ? new Interval { start = domain.start, end = domain.end } : new Interval(0, 1)
     };
 
     return result;
@@ -135,7 +135,7 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   }
 
   /// <summary>
-  /// Returns the vales of this <see cref="Curve"/> as a list of numbers
+  /// Returns the values of this <see cref="Curve"/> as a list of numbers
   /// </summary>
   /// <returns>A list of values representing the <see cref="Curve"/></returns>
   public List<double> ToList()
@@ -146,8 +146,8 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
     list.Add(curve.periodic ? 1 : 0); // 1
     list.Add(curve.rational ? 1 : 0); // 2
     list.Add(curve.closed ? 1 : 0); // 3
-    list.Add((double)curve.domain.start); // 4
-    list.Add((double)curve.domain.end); // 5
+    list.Add(curve.domain?.start ?? 0); // 4
+    list.Add(curve.domain?.end ?? 1); // 5
 
     list.Add(curve.points.Count); // 6
     list.Add(curve.weights.Count); // 7
@@ -180,12 +180,14 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
       throw new Exception($"Wrong curve type. Expected {CurveTypeEncoding.Curve}, got {list[1]}.");
     }
 
-    var curve = new Curve();
-    curve.degree = (int)list[2];
-    curve.periodic = list[3] == 1;
-    curve.rational = list[4] == 1;
-    curve.closed = list[5] == 1;
-    curve.domain = new Interval(list[6], list[7]);
+    var curve = new Curve
+    {
+      degree = (int)list[2],
+      periodic = list[3] == 1,
+      rational = list[4] == 1,
+      closed = list[5] == 1,
+      domain = new Interval(list[6], list[7])
+    };
 
     var pointsCount = (int)list[8];
     var weightsCount = (int)list[9];

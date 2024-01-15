@@ -9,6 +9,7 @@ using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
@@ -85,12 +86,12 @@ public class SendLocalWorker : WorkerInstance
       var converted = Utilities.DataTreeToNestedLists(data, converter);
       var ObjectToSend = new Base();
       ObjectToSend["@data"] = converted;
-      sentObjectId = Operations.Send(ObjectToSend, disposeTransports: true).Result;
+      sentObjectId = Operations.Send(ObjectToSend).Result;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      Console.WriteLine(e);
-      RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+      SpeckleLog.Logger.Error(ex, "Local send failed");
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, ex.ToFormattedString()));
     }
 
     Done();

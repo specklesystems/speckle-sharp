@@ -25,10 +25,10 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public Mesh(
     List<double> vertices,
     List<int> faces,
-    List<int> colors = null,
-    List<double> texture_coords = null,
+    List<int>? colors = null,
+    List<double>? texture_coords = null,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.vertices = vertices;
@@ -43,12 +43,19 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public Mesh(
     double[] vertices,
     int[] faces,
-    int[] colors = null,
-    double[] texture_coords = null,
+    int[]? colors = null,
+    double[]? texture_coords = null,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
-    : this(vertices.ToList(), faces.ToList(), colors?.ToList(), texture_coords?.ToList(), applicationId, units) { }
+    : this(
+      vertices.ToList(),
+      faces.ToList(),
+      colors?.ToList() ?? new(),
+      texture_coords?.ToList() ?? new(),
+      units,
+      applicationId
+    ) { }
 
   [DetachProperty, Chunkable(31250)]
   public List<double> vertices { get; set; } = new();
@@ -67,7 +74,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   /// The unit's this <see cref="Mesh"/> is in.
   /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <inheritdoc/>
   public double area { get; set; }

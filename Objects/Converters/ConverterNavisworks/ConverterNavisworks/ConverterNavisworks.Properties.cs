@@ -49,19 +49,15 @@ public partial class ConverterNavisworks
     propertiesBase[UseInternalPropertyNames ? internalName : propertyCategoryDisplayName] = propertyCategoryBase;
   }
 
-  private static bool IsCategoryToBeSkipped(PropertyCategory propertyCategory)
-  {
-    return propertyCategory.DisplayName == "Geometry";
-  }
+  private static bool IsCategoryToBeSkipped(PropertyCategory propertyCategory) =>
+    propertyCategory.DisplayName == "Geometry";
 
-  private static string SanitizePropertyName(string name)
-  {
+  private static string SanitizePropertyName(string name) =>
     // Regex pattern from speckle-sharp/Core/Core/Models/DynamicBase.cs IsPropNameValid
-    return name == "Item"
+    name == "Item"
       // Item is a reserved term for Indexed Properties: https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers
       ? "Item_"
       : Regex.Replace(name, @"[\.\/]", "_");
-  }
 
   private static void BuildPropertyCategory(
     PropertyCategory propertyCategory,
@@ -218,10 +214,8 @@ public partial class ConverterNavisworks
     AddInternalProperties(element, (Base)@base["properties"]);
   }
 
-  private static bool ShouldIncludeProperties()
-  {
-    return !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
-  }
+  private static bool ShouldIncludeProperties() =>
+    !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
 
   private static void AddInternalProperties(ModelItem element, Base propertiesBase)
   {

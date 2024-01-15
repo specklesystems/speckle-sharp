@@ -43,19 +43,19 @@ namespace Objects.BuiltElements.Revit
       string type,
       [SchemaMainParam] ICurve baseLine,
       Level level,
-      List<Parameter> parameters = null
+      List<Parameter>? parameters = null
     )
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
-      this.parameters = parameters.ToBase();
+      this.parameters = parameters?.ToBase();
       this.level = level;
     }
 
     public string family { get; set; }
     public string type { get; set; }
-    public Base parameters { get; set; }
+    public Base? parameters { get; set; }
     public string elementId { get; set; }
 
     public new Level? level
@@ -134,7 +134,10 @@ namespace Objects.BuiltElements.Archicad
 
     // Element base
     public string? elementType { get; set; } /*APINullabe*/
+
     public List<Classification>? classifications { get; set; } /*APINullabe*/
+    public Base? elementProperties { get; set; }
+    public Base? componentProperties { get; set; }
 
     public override Level? level
     {

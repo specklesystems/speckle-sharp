@@ -14,10 +14,10 @@ public class Timber : StructuralMaterial
   )]
   public Timber(
     string name,
-    string species = null,
-    string grade = null,
-    string designCode = null,
-    string codeYear = null,
+    string? species = null,
+    string? grade = null,
+    string? designCode = null,
+    string? codeYear = null,
     double strength = 0,
     double elasticModulus = 0,
     double poissonsRatio = 0,
@@ -43,5 +43,5 @@ public class Timber : StructuralMaterial
   }
 
   //missing timber-specific properties? parallel to grain, perpendicular to grain
-  public string species { get; set; }
+  public string? species { get; set; }
 }

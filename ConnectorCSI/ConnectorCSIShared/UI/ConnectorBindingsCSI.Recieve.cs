@@ -5,11 +5,11 @@ using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Serilog.Context;
@@ -107,7 +107,6 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
     return state;
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
   {
     List<ApplicationObject> conversionResults = new();
@@ -141,7 +140,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
           log: conversionResult.Log
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         ConnectorHelpers.LogConversionException(ex);
 

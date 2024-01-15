@@ -88,12 +88,18 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
         return;
       }
 
+      if (string.IsNullOrEmpty(sw))
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Server input cannot be null");
+        return;
+      }
+
       Uri url = null;
       try
       {
         url = new Uri(sw);
       }
-      catch (Exception e)
+      catch (UriFormatException e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Server input is not a valid url: {sw}");
         return;

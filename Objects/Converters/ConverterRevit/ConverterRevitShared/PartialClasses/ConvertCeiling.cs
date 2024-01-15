@@ -3,10 +3,11 @@ using Objects.BuiltElements.Revit;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+
 #if !REVIT2020 && !REVIT2021
 using Ceiling = Objects.BuiltElements.Ceiling;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
 #endif
 
 namespace Objects.Converter.Revit;
@@ -126,8 +127,9 @@ public partial class ConverterRevit
     {
       CreateVoids(revitCeiling, speckleCeiling);
     }
-    catch (Exception ex)
+    catch (Autodesk.Revit.Exceptions.ApplicationException ex)
     {
+      SpeckleLog.Logger.Error(ex, "Could not create openings in ceiling");
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
 

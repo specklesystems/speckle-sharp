@@ -100,7 +100,7 @@ public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IG
     {
       return Utilities.TryConvertItemToNative(item, Converter, true);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       if (ex is AggregateException aggregateException)

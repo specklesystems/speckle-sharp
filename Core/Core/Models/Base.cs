@@ -1,14 +1,15 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -24,17 +25,21 @@ namespace Speckle.Core.Models;
 /// <para>👉 "@" at the start of a property name means it will be detached (when serialised with a transport) (e.g.((dynamic)obj)["@meshEquivalent"] = ...) .</para>
 /// </summary>
 [Serializable]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
+[SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Serialized property names are camelCase by design")]
 public class Base : DynamicBase
 {
-  private static readonly Regex ChunkSyntax = Constants.ChunkPropertyNameRegex;
+  private static readonly Regex s_chunkSyntax = Constants.ChunkPropertyNameRegex;
 
-  private string __type;
+  private string _type;
 
   /// <summary>
   /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
   /// </summary>
   [SchemaIgnore]
   public virtual string id { get; set; }
+
+#nullable enable //Starting nullability syntax here so that `id` null oblivious,
 
   /// <summary>
   /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise.
@@ -46,7 +51,7 @@ public class Base : DynamicBase
   /// Secondary, ideally host application driven, object identifier.
   /// </summary>
   [SchemaIgnore]
-  public string applicationId { get; set; }
+  public string? applicationId { get; set; }
 
   /// <summary>
   /// Holds the type information of this speckle object, derived automatically
@@ -57,7 +62,7 @@ public class Base : DynamicBase
   {
     get
     {
-      if (__type == null)
+      if (_type == null)
       {
         List<string> bases = new();
         Type myType = GetType();
@@ -69,52 +74,41 @@ public class Base : DynamicBase
             bases.Add(myType.FullName);
           }
 
-          myType = myType.BaseType;
+          myType = myType.BaseType!;
         }
 
         if (bases.Count == 0)
         {
-          __type = nameof(Base);
+          _type = nameof(Base);
         }
         else
         {
           bases.Reverse();
-          __type = string.Join(":", bases);
+          _type = string.Join(":", bases);
         }
       }
-      return __type;
+
+      return _type;
     }
   }
 
   /// <summary>
-  /// Gets the id (a unique hash) of this object. ⚠️ This method fully serializes the object, which in the case of large objects (with many sub-objects), has a tangible cost. Avoid using it!
-  /// <para><b>Hint:</b> Objects that are retrieved/pulled from a server/local cache do have an id (hash) property pre-populated.</para>
-  /// <para><b>Note:</b>The hash of a decomposed object differs from the hash of a non-decomposed object.</para>
+  /// Calculates the id (a unique hash) of this object.
   /// </summary>
-  /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
-  /// <returns></returns>
-  public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+  /// <remarks>
+  /// This method fully serialize the object and any referenced objects. This has a tangible cost and should be avoided.<br/>
+  /// Objects retrieved from a <see cref="ITransport"/> already have a <see cref="id"/> property populated<br/>
+  /// The hash of a decomposed object differs from the hash of a non-decomposed object.
+  /// </remarks>
+  /// <param name="decompose">If <see langword="true"/>, will decompose the object in the process of hashing.</param>
+  /// <returns>the resulting id (hash)</returns>
+  public string GetId(bool decompose = false)
   {
-    if (serializerVersion == SerializerVersion.V1)
-    {
-      var (s, t) = Operations.GetSerializerInstance();
-      if (decompose)
-      {
-        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
-      }
+    var transports = decompose ? new[] { new MemoryTransport() } : Array.Empty<ITransport>();
+    var serializer = new BaseObjectSerializerV2(transports);
 
-      var obj = JsonConvert.SerializeObject(this, t);
-      return JObject.Parse(obj).GetValue(nameof(id)).ToString();
-    }
-    else
-    {
-      var serializer = decompose
-        ? new BaseObjectSerializerV2(new[] { new MemoryTransport() })
-        : new BaseObjectSerializerV2();
-
-      string obj = serializer.Serialize(this);
-      return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
-    }
+    string obj = serializer.Serialize(this);
+    return JObject.Parse(obj).GetValue(nameof(id))!.ToString();
   }
 
   /// <summary>
@@ -127,7 +121,7 @@ public class Base : DynamicBase
     return 1 + CountDescendants(this, parsed);
   }
 
-  private static long CountDescendants(Base @base, HashSet<int> parsed)
+  private static long CountDescendants(Base @base, ISet<int> parsed)
   {
     if (parsed.Contains(@base.GetHashCode()))
     {
@@ -148,21 +142,23 @@ public class Base : DynamicBase
       }
 
       var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
-      var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
 
       object value = prop.GetValue(@base);
 
-      if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
+      if (detachAttribute is { Detachable: true })
       {
-        count += HandleObjectCount(value, parsed);
-      }
-      else if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute != null)
-      {
-        // Simplified chunking count handling.
-        var asList = value as IList;
-        if (asList != null)
+        var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
+        if (chunkAttribute == null)
         {
-          count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
+          count += HandleObjectCount(value, parsed);
+        }
+        else
+        {
+          // Simplified chunking count handling.
+          if (value is IList asList)
+          {
+            count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
+          }
         }
       }
     }
@@ -176,11 +172,10 @@ public class Base : DynamicBase
       }
 
       // Simplfied dynamic prop chunking handling
-      if (ChunkSyntax.IsMatch(propName))
+      if (s_chunkSyntax.IsMatch(propName))
       {
-        int chunkSize = -1;
-        var match = ChunkSyntax.Match(propName);
-        int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+        var match = s_chunkSyntax.Match(propName);
+        _ = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out int chunkSize);
 
         if (chunkSize != -1 && @base[propName] is IList asList)
         {
@@ -195,7 +190,7 @@ public class Base : DynamicBase
     return count;
   }
 
-  private static long HandleObjectCount(object value, HashSet<int> parsed)
+  private static long HandleObjectCount(object? value, ISet<int> parsed)
   {
     long count = 0;
     switch (value)
@@ -208,10 +203,10 @@ public class Base : DynamicBase
       {
         foreach (DictionaryEntry kvp in d)
         {
-          if (kvp.Value is Base)
+          if (kvp.Value is Base b)
           {
             count++;
-            count += CountDescendants(kvp.Value as Base, parsed);
+            count += CountDescendants(b, parsed);
           }
           else
           {
@@ -221,14 +216,15 @@ public class Base : DynamicBase
 
         return count;
       }
-      case IEnumerable e when !(value is string):
+      case IEnumerable e
+      and not string:
       {
         foreach (var arrValue in e)
         {
-          if (arrValue is Base)
+          if (arrValue is Base b)
           {
             count++;
-            count += CountDescendants(arrValue as Base, parsed);
+            count += CountDescendants(b, parsed);
           }
           else
           {
@@ -251,7 +247,8 @@ public class Base : DynamicBase
   /// <returns>A shallow copy of the original object.</returns>
   public Base ShallowCopy()
   {
-    var myDuplicate = (Base)Activator.CreateInstance(GetType());
+    Type type = GetType();
+    Base myDuplicate = (Base)Activator.CreateInstance(type);
     myDuplicate.id = id;
     myDuplicate.applicationId = applicationId;
 
@@ -261,8 +258,8 @@ public class Base : DynamicBase
       )
     )
     {
-      var p = GetType().GetProperty(kvp.Key);
-      if (p != null && !p.CanWrite)
+      var propertyInfo = type.GetProperty(kvp.Key);
+      if (propertyInfo is not null && !propertyInfo.CanWrite)
       {
         continue;
       }
@@ -271,77 +268,41 @@ public class Base : DynamicBase
       {
         myDuplicate[kvp.Key] = kvp.Value;
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // avoids any last ditch unsettable or strange props.
+        SpeckleLog.Logger
+          .ForContext("canWrite", propertyInfo?.CanWrite)
+          .ForContext("canRead", propertyInfo?.CanRead)
+          .Warning(
+            "Shallow copy of {type} failed to copy {propertyName} of type {propertyType} with value {valueType}",
+            type,
+            kvp.Key,
+            propertyInfo?.PropertyType,
+            kvp.Value?.GetType()
+          );
       }
     }
 
     return myDuplicate;
   }
-}
 
-public class Blob : Base
-{
-  [JsonIgnore]
-  public static int LocalHashPrefixLength = 20;
-
-  private string _filePath;
-  private string _hash;
-  private bool hashExpired = true;
-
-  public Blob() { }
-
-  public Blob(string filePath)
+  #region Obsolete
+  /// <inheritdoc cref="GetId(bool)"/>
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)", true)]
+  public string GetId(SerializerVersion serializerVersion)
   {
-    this.filePath = filePath;
+    return GetId(false, serializerVersion);
   }
 
-  public string filePath
+  /// <inheritdoc cref="GetId(bool)"/>
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)", true)]
+  public string GetId(bool decompose, SerializerVersion serializerVersion)
   {
-    get => _filePath;
-    set
-    {
-      if (originalPath is null)
-      {
-        originalPath = value;
-      }
-
-      _filePath = value;
-      hashExpired = true;
-    }
+    throw new NotImplementedException(
+      "Overload has been deprecated along with SerializerV1, use other overload (uses SerializerV2)"
+    );
   }
 
-  public string originalPath { get; set; }
-
-  /// <summary>
-  /// For blobs, the id is the same as the file hash. Please note, when deserialising, the id will be set from the original hash generated on sending.
-  /// </summary>
-  public override string id
-  {
-    get => GetFileHash();
-    set => base.id = value;
-  }
-
-  public string GetFileHash()
-  {
-    if ((hashExpired || _hash == null) && filePath != null)
-    {
-      _hash = Utilities.HashFile(filePath);
-    }
-
-    return _hash;
-  }
-
-  [OnDeserialized]
-  internal void OnDeserialized(StreamingContext context)
-  {
-    hashExpired = false;
-  }
-
-  public string getLocalDestinationPath(string blobStorageFolder)
-  {
-    var fileName = Path.GetFileName(filePath);
-    return Path.Combine(blobStorageFolder, $"{id.Substring(0, 10)}-{fileName}");
-  }
+  #endregion
 }

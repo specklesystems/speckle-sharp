@@ -52,7 +52,7 @@ namespace Objects.Other
 
       return traversal
         .Traverse(definition)
-        .Select(tc => tc.current)
+        .Select(tc => tc.Current)
         .Where(b => b is ITransformable || b is Instance)
         .Where(b => b != null);
     }
@@ -180,7 +180,7 @@ namespace Objects.Other.Revit
     protected override IEnumerable<Base> GetTransformableGeometry()
     {
       var allChildren = typedDefinition.elements ?? new List<Base>();
-      if (typedDefinition.displayValue.Any())
+      if (typedDefinition.displayValue.Count != 0)
       {
         allChildren.AddRange(typedDefinition.displayValue);
       }
@@ -194,13 +194,11 @@ namespace Objects.Other.Revit
       var transformed = base.GetTransformedGeometry().ToList();
 
       // add any dynamically attached elements on this instance
-      var elements = (this["elements"] ?? this["@elements"]) as List<object>;
-      if (elements != null)
+      if ((this["elements"] ?? this["@elements"]) is List<object> elements)
       {
         foreach (var element in elements)
         {
-          var display = ((Base)element)["displayValue"] as List<object>;
-          if (display != null)
+          if (((Base)element)["displayValue"] is List<object> display)
           {
             transformed.AddRange(display.Cast<ITransformable>());
           }

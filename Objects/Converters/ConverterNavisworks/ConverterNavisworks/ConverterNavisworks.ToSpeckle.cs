@@ -74,10 +74,7 @@ public partial class ConverterNavisworks
 
   private static readonly int[] s_lowerBounds = new int[1] { 1 };
 
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public List<Base> ConvertToSpeckle(List<object> objects) => throw new NotImplementedException();
 
   public bool CanConvertToSpeckle(object @object)
   {
@@ -107,15 +104,9 @@ public partial class ConverterNavisworks
     return savedViewpoint;
   }
 
-  private static Point ToPoint(InwLPos3f v)
-  {
-    return new Point(v.data1, v.data2, v.data3);
-  }
+  private static Point ToPoint(InwLPos3f v) => new(v.data1, v.data2, v.data3);
 
-  private static Vector ToVector(InwLVec3f v)
-  {
-    return new Vector(v.data1, v.data2, v.data3);
-  }
+  private static Vector ToVector(InwLVec3f v) => new(v.data1, v.data2, v.data3);
 
   private static View3D ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
   {
@@ -213,19 +204,15 @@ public partial class ConverterNavisworks
     return view;
   }
 
-  private static Point ScalePoint(Point cameraPosition, double scaleFactor)
-  {
-    return new Point(cameraPosition.x * scaleFactor, cameraPosition.y * scaleFactor, cameraPosition.z * scaleFactor);
-  }
+  private static Point ScalePoint(Point cameraPosition, double scaleFactor) =>
+    new(cameraPosition.x * scaleFactor, cameraPosition.y * scaleFactor, cameraPosition.z * scaleFactor);
 
-  private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance)
-  {
-    return new Point(
+  private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance) =>
+    new(
       cameraPosition.x + viewDirection.x * focalDistance,
       cameraPosition.y + viewDirection.y * focalDistance,
       cameraPosition.z + viewDirection.z * focalDistance
     );
-  }
 
   private static View3D ViewpointToBase(SavedViewpoint savedViewpoint)
   {
@@ -316,20 +303,16 @@ public partial class ConverterNavisworks
   /// </summary>
   /// <param name="element">The ModelItem element.</param>
   /// <returns>The found category property.</returns>
-  private static DataProperty FindCategoryProperty(ModelItem element)
-  {
-    return element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
-  }
+  private static DataProperty FindCategoryProperty(ModelItem element) =>
+    element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
 
   /// <summary>
   /// Gets the display name of a category property.
   /// </summary>
   /// <param name="categoryProperty">The category property.</param>
   /// <returns>The display name of the category.</returns>
-  private static string GetCategoryDisplayName(DataProperty categoryProperty)
-  {
-    return categoryProperty.Value.ToNamedConstant().DisplayName;
-  }
+  private static string GetCategoryDisplayName(DataProperty categoryProperty) =>
+    categoryProperty.Value.ToNamedConstant().DisplayName;
 
   /// <summary>
   /// Creates a Speckle object based on the ModelItem element and its category type.
@@ -337,14 +320,12 @@ public partial class ConverterNavisworks
   /// <param name="element">The ModelItem element.</param>
   /// <param name="categoryType">The type of the category.</param>
   /// <returns>A Speckle object.</returns>
-  private static Base CreateSpeckleObject(ModelItem element, string categoryType)
-  {
-    return element.HasGeometry ? new GeometryNode() : new Collection { collectionType = categoryType };
-  }
+  private static Base CreateSpeckleObject(ModelItem element, string categoryType) =>
+    element.HasGeometry ? new GeometryNode() : new Collection { collectionType = categoryType };
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
   {
-    var geometry = new NavisworksGeometry(element) { ElevationMode = ElevationMode };
+    var geometry = new NavisworksGeometry(element) { IsUpright = IsUpright };
 
     PopulateModelFragments(geometry);
     var fragmentGeometry = TranslateFragmentGeometry(geometry);

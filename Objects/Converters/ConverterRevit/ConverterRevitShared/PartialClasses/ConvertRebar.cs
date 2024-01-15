@@ -61,27 +61,31 @@ public partial class ConverterRevit
       speckleRebar.shape.rebarType == RebarType.Standard ? RebarStyle.Standard : RebarStyle.StirrupTie;
 
     // get start and end hooks and orientations
-    var speckleStartHook = speckleRebar.startHook as RevitRebarHook;
     RebarHookType startHook = null;
     RebarHookOrientation startHookOrientation = RebarHookOrientation.Right;
-    if (speckleStartHook != null)
+    if (speckleRebar.startHook is RevitRebarHook speckleStartHook)
     {
       startHook = RebarHookToNative(speckleStartHook);
-      Enum.TryParse(speckleStartHook.orientation, out startHookOrientation);
+      if (Enum.TryParse(speckleStartHook.orientation, out RebarHookOrientation localStartHookOrientation))
+      {
+        startHookOrientation = localStartHookOrientation;
+      }
     }
 
-    var speckleEndHook = speckleRebar.endHook as RevitRebarHook;
     RebarHookType endHook = null;
     RebarHookOrientation endHookOrientation = RebarHookOrientation.Right;
-    if (speckleEndHook != null)
+    if (speckleRebar.endHook is RevitRebarHook speckleEndHook)
     {
       endHook = RebarHookToNative(speckleEndHook);
-      Enum.TryParse(speckleEndHook.orientation, out endHookOrientation);
+      if (Enum.TryParse(speckleEndHook.orientation, out RebarHookOrientation localEndHookOrientation))
+      {
+        endHookOrientation = localEndHookOrientation;
+      }
     }
 
     // get the shape curves
     List<DB.Curve> curves = barShape.curves.SelectMany(o => CurveToNative(o).Cast<DB.Curve>()).ToList();
-    if (curves is null || !curves.Any())
+    if (curves is null || curves.Count == 0)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not convert any shape curves");
       return appObj;
@@ -113,7 +117,7 @@ public partial class ConverterRevit
         true
       );
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
       return appObj;

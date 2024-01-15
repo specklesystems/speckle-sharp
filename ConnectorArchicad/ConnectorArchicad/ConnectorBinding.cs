@@ -174,22 +174,14 @@ public partial class ArchicadBinding : ConnectorBindings
         }
       }
     }
-    catch (Exception ex)
+    catch (SpeckleException ex)
     {
-      // log
-      if (ex is not OperationCanceledException)
-      {
-        SpeckleLog.Logger.Error("Conversion to native failed.");
-      }
-
-      // throw
-      switch (ex)
-      {
-        case OperationCanceledException:
-          throw new OperationCanceledException(ex.Message);
-        default:
-          throw new SpeckleException(ex.Message, ex);
-      }
+      SpeckleLog.Logger.Error(ex, "Conversion to native failed.");
+      throw;
+    }
+    catch (OperationCanceledException)
+    {
+      throw;
     }
 
     return state;
@@ -213,7 +205,7 @@ public partial class ArchicadBinding : ConnectorBindings
           throw new InvalidOperationException("Expected selection filter to be non-null");
         }
 
-        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
+        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state, progress);
 
         if (commitObject == null)
         {

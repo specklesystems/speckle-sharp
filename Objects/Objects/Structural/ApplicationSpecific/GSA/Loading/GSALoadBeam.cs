@@ -21,11 +21,11 @@ public class GSALoadBeam : LoadBeam
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false
   )
   {
@@ -56,11 +56,11 @@ public class GSALoadBeam : LoadBeam
     [SchemaParamInfo(
       "A list that represents load magnitude (number of values varies based on load type - Point: 1, Uniform: 1, Linear: 2, Patch: 2, Tri-linear:2)"
     )]
-      List<double> values = null,
+      List<double>? values = null,
     [SchemaParamInfo(
       "A list that represents load locations (number of values varies based on load type - Point: 1, Uniform: null, Linear: null, Patch: 2, Tri-linear: 2)"
     )]
-      List<double> positions = null,
+      List<double>? positions = null,
     bool isProjected = false
   )
   {

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Runtime.InteropServices;
 using Speckle.Core.Api;
