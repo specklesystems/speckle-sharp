@@ -24,7 +24,7 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
   [TearDown]
   public void TearDown()
   {
-    this.Dispose();
+    _sqlite?.Dispose();
     SqliteConnection.ClearAllPools();
     Directory.Delete(s_basePath, true);
     _sqlite = null;
@@ -89,6 +89,42 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
       var postAdd = Sut.GetObject(PAYLOAD_ID);
       Assert.That(postAdd, Is.EqualTo(PAYLOAD_DATA));
     }
+  }
+
+  [Test(
+    Description = "Tests that it is possible to enumerate through all objects of the transport while updating them, without getting stuck in an infinite loop"
+  )]
+  [Timeout(1000)]
+  public void UpdateObject_WhileEnumerating()
+  {
+    //I question if this is the behaviour we want, but AccountManager.GetObjects is relying on being able to do this
+    const string UPDATE_STRING = "_new";
+    Dictionary<string, string> reverseDictionary =
+      new()
+      {
+        { "This is object a", "a" },
+        { "This is object b", "b" },
+        { "This is object c", "c" },
+        { "This is object d", "d" }
+      };
+    int length = reverseDictionary.Keys.First().Length;
+
+    foreach (var (data, key) in reverseDictionary)
+    {
+      _sqlite.SaveObjectSync(key, data);
+    }
+
+    foreach (var o in _sqlite.GetAllObjects())
+    {
+      string newData = o + UPDATE_STRING;
+      string key = $"{o[length - 1]}";
+
+      _sqlite.UpdateObject(key, newData);
+    }
+
+    //Assert that objects were only updated once
+    Assert.That(_sqlite.GetAllObjects().ToList(), Has.All.Contains(UPDATE_STRING));
+    Assert.That(_sqlite.GetAllObjects().ToList(), Has.All.Length.EqualTo(length + UPDATE_STRING.Length));
   }
 
   public void Dispose()
