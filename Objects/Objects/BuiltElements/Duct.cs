@@ -49,7 +49,7 @@ public class Duct : Base, IDisplayValue<List<Mesh>>
     this.velocity = velocity;
   }
 
-  [JsonIgnore, Obsolete("Replaced with baseCurve property", true)]
+  [JsonIgnore, Obsolete("Replaced with baseCurve property")]
   public Line baseLine { get; set; }
 
   public ICurve baseCurve { get; set; }
