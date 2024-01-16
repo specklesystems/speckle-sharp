@@ -12,8 +12,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Primitives;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
