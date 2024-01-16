@@ -396,7 +396,7 @@ public class Receive : NodeModel
         var url = GetInputAs<string>(engine, 0);
         newStream = new StreamWrapper(url);
       }
-      catch(Exception ex) when (!ex.IsFatal())
+      catch (Exception ex) when (!ex.IsFatal())
       {
         // ignored
       }

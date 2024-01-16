@@ -26,9 +26,9 @@ public class SpeckleExtension : IViewExtension
       {
         rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
         Globals.RevitDocument = DocumentManager.Instance
-                                               .GetType()
-                                               .GetProperty("CurrentDBDocument")
-                                               .GetValue(DocumentManager.Instance);
+          .GetType()
+          .GetProperty("CurrentDBDocument")
+          .GetValue(DocumentManager.Instance);
       }
       //sets a read-only property using reflection WatchHandler
       //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);

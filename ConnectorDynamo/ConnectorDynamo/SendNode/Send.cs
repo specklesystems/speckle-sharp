@@ -367,7 +367,7 @@ public class Send : NodeModel
     {
       _data = GetInputAs<object>(engine, 0, true);
     }
-    catch(Exception ex) when (!ex.IsFatal())
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(ex, "Data input is invalid");
       ResetNode(true);

@@ -334,7 +334,7 @@ public class BatchConverter
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      SpeckleLog.Logger.Error("Could not convert {typeName}(id={id}",@base.GetType().Name, @base.id );
+      SpeckleLog.Logger.Error("Could not convert {typeName}(id={id}", @base.GetType().Name, @base.id);
       var spcklError = new SpeckleException($"Could not convert {@base.GetType().Name}(id={@base.id}) to Dynamo.", ex);
       OnError?.Invoke(this, new OnErrorEventArgs(spcklError));
       return null;

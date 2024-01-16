@@ -256,7 +256,9 @@ public static class Stream
     if (account == null)
     {
       Utils.HandleApiExeption(
-        new SpeckleAccountManagerException("No accounts found. Please use the Speckle Manager to manage your accounts on this computer.")
+        new SpeckleAccountManagerException(
+          "No accounts found. Please use the Speckle Manager to manage your accounts on this computer."
+        )
       );
     }
 
