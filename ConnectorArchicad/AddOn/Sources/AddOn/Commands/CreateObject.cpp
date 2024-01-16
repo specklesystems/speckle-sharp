@@ -1,10 +1,13 @@
-#include "APIHelper.hpp"
 #include "CreateObject.hpp"
+
+#include "APIMigrationHelper.hpp"
+#include "APIHelper.hpp"
 #include "LibpartImportManager.hpp"
 #include "ResourceIds.hpp"
 #include "Utility.hpp"
 #include "DGModule.hpp"
 #include "FieldNames.hpp"
+#include "Point.hpp"
 
 #include "ModelInfo.hpp"
 using namespace FieldNames;
@@ -73,7 +76,7 @@ GSErrCode CreateObject::GetElementFromObjectState (const GS::ObjectState& os,
 			Int32 				addParNumDef = 0;
 			API_AddParType		**addParDefault = nullptr;
 
-			err = ACAPI_LibPart_GetParams (libPart.index, nullptr, nullptr, &addParNumDef, &addParDefault);
+			err = ACAPI_LibraryPart_GetParams (libPart.index, nullptr, nullptr, &addParNumDef, &addParDefault);
 			if (err != NoError)
 				return err;
 			

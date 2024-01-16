@@ -133,10 +133,16 @@ archicad:
       requires:
         - get-ci-tools
       name: build-archicad-add-on-26
+  - build-archicad-add-on:
+      archicadversion: "27"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-27
   - build-connector:
       requires:
         - build-archicad-add-on-25
         - build-archicad-add-on-26
+        - build-archicad-add-on-27
       slnname: ConnectorArchicad
       projname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
@@ -157,11 +163,19 @@ archicad:
       name: build-archicad-add-on-26-mac
       slug: archicad
       installername: SpeckleArchicadInstall
+  - build-archicad-add-on-mac:
+      archicadversion: "27"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-27-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
   - build-connector-mac:
       name: archicad-build-mac
       requires:
         - build-archicad-add-on-25-mac
         - build-archicad-add-on-26-mac
+        - build-archicad-add-on-27-mac
       slnname: ConnectorArchicad
       projname: ConnectorArchicad
       slug: archicad
