@@ -43,7 +43,6 @@ public class RevitColumn : Column
     this.topLevel = topLevel;
     this.baseOffset = baseOffset;
     this.topOffset = topOffset;
-    //this.structural = structural;
     this.rotation = rotation;
     this.parameters = parameters?.ToBase();
     this.level = level;
@@ -53,6 +52,11 @@ public class RevitColumn : Column
     SchemaDeprecated,
     SchemaInfo("RevitColumn Slanted (old)", "Creates a slanted Revit Column by curve.", "Revit", "Structure")
   ]
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Style",
+    "IDE0060:Remove unused parameter",
+    Justification = "Obsolete"
+  )]
   public RevitColumn(
     string family,
     string type,
@@ -66,7 +70,6 @@ public class RevitColumn : Column
     this.type = type;
     this.baseLine = baseLine;
     this.level = level;
-    //this.structural = structural;
     isSlanted = true;
     this.parameters = parameters?.ToBase();
   }
@@ -87,7 +90,6 @@ public class RevitColumn : Column
     this.baseLine = baseLine;
     this.level = level;
     this.topLevel = topLevel;
-    //this.structural = structural;
     isSlanted = true;
     this.parameters = parameters?.ToBase();
   }
@@ -102,10 +104,7 @@ public class RevitColumn : Column
   public double baseOffset { get; set; }
   public double topOffset { get; set; }
   public bool facingFlipped { get; set; }
-
   public bool handFlipped { get; set; }
-
-  //public bool structural { get; set; }
   public double rotation { get; set; }
   public bool isSlanted { get; set; }
   public string family { get; set; }

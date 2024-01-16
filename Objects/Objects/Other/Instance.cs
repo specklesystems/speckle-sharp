@@ -39,7 +39,7 @@ public abstract class Instance : Base
     var displayValueRule = TraversalRule
       .NewTraversalRule()
       .When(DefaultTraversal.HasDisplayValue)
-      .ContinueTraversing(_ => DefaultTraversal.displayValueAndElementsPropAliases);
+      .ContinueTraversing(_ => DefaultTraversal.GeometryPropAliases);
 
     var instanceRule = TraversalRule
       .NewTraversalRule()
