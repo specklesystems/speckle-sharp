@@ -383,7 +383,7 @@ public class Receive : NodeModel
         CommitId = inputStream.CommitId
       };
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // ignored
     }
@@ -396,7 +396,7 @@ public class Receive : NodeModel
         var url = GetInputAs<string>(engine, 0);
         newStream = new StreamWrapper(url);
       }
-      catch
+      catch(Exception ex) when (!ex.IsFatal())
       {
         // ignored
       }
