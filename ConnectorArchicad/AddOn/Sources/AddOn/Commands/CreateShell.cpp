@@ -1,4 +1,7 @@
 #include "CreateShell.hpp"
+
+#include "APIMigrationHelper.hpp"
+#include "CreateCommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -227,7 +230,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
-				element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.overridden = true;
+
 				begShapeEdgeOs.Get (Shell::BegShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -237,11 +240,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.extrudedShell.begShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.extrudedShell.begShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -276,7 +279,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
-				element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.overridden = true;
+
 				endShapeEdgeOs.Get (Shell::EndShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -286,11 +289,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField(u.extrudedShell.endShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.extrudedShell.endShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -325,7 +328,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (extrudedEdgeOs1.Contains (Shell::ExtrudedEdgeSideMaterial1)) {
-				element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden = true;
+
 				extrudedEdgeOs1.Get (Shell::ExtrudedEdgeSideMaterial1, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -335,11 +338,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.extrudedShell.extrudedEdgeDatas[0].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.extrudedShell.extrudedEdgeDatas[0].sideMaterial));
 			}
 
 			// Edge type
@@ -374,7 +377,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (extrudedEdgeOs2.Contains (Shell::ExtrudedEdgeSideMaterial1)) {
-				element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden = true;
+
 				extrudedEdgeOs2.Get (Shell::ExtrudedEdgeSideMaterial1, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -384,11 +387,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.extrudedShell.extrudedEdgeDatas[1].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.extrudedShell.extrudedEdgeDatas[1].sideMaterial));
 			}
 
 			// Edge type
@@ -477,7 +480,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
-				element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.overridden = true;
+
 				begShapeEdgeOs.Get (Shell::BegShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -487,11 +490,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.revolvedShell.begShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.revolvedShell.begShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -526,7 +529,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
-				element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.overridden = true;
+
 				endShapeEdgeOs.Get (Shell::EndShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -536,11 +539,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.revolvedShell.endShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.revolvedShell.endShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -575,7 +578,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (revolvedEdgeOs1.Contains (Shell::RevolvedEdgeSideMaterial1)) {
-				element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden = true;
+
 				revolvedEdgeOs1.Get (Shell::RevolvedEdgeSideMaterial1, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -585,11 +588,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.revolvedShell.revolvedEdgeDatas[0].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.revolvedShell.revolvedEdgeDatas[0].sideMaterial));
 			}
 
 			// Edge type
@@ -624,7 +627,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (revolvedEdgeOs2.Contains (Shell::RevolvedEdgeSideMaterial1)) {
-				element.shell.u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.overridden = true;
+
 				revolvedEdgeOs2.Get (Shell::RevolvedEdgeSideMaterial1, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -634,11 +637,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.revolvedShell.revolvedEdgeDatas[1].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.revolvedShell.revolvedEdgeDatas[1].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.revolvedShell.revolvedEdgeDatas[1].sideMaterial));
 			}
 
 			// Edge type
@@ -716,7 +719,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
-				element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.overridden = true;
+
 				begShapeEdgeOs.Get (Shell::BegShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -726,11 +729,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.ruledShell.begShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.ruledShell.begShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.ruledShell.begShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -765,7 +768,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
-				element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.overridden = true;
+
 				endShapeEdgeOs.Get (Shell::EndShapeEdgeSideMaterial, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -775,11 +778,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.ruledShell.endShapeEdgeData.sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.ruledShell.endShapeEdgeData.sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.ruledShell.endShapeEdgeData.sideMaterial));
 			}
 
 			// Edge type
@@ -814,7 +817,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (ruledEdgeOs1.Contains (Shell::RuledEdgeSideMaterial1)) {
-				element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden = true;
+
 				ruledEdgeOs1.Get (Shell::RuledEdgeSideMaterial1, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -824,11 +827,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.ruledShell.ruledEdgeDatas[0].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.ruledShell.ruledEdgeDatas[0].sideMaterial));
 			}
 
 			// Edge type
@@ -863,7 +866,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// Overridden side material
 			if (ruledEdgeOs2.Contains (Shell::RuledEdgeSideMaterial2)) {
-				element.shell.u.ruledShell.ruledEdgeDatas[1].sideMaterial.overridden = true;
+
 				ruledEdgeOs2.Get (Shell::RuledEdgeSideMaterial2, attributeName);
 
 				if (!attributeName.IsEmpty ()) {
@@ -873,11 +876,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute)) {
-						element.shell.u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
-						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (element.shell.u.ruledShell.ruledEdgeDatas[1].sideMaterial, attribute.header.index);
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (u.ruledShell.ruledEdgeDatas[1].sideMaterial));
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (u.ruledShell.ruledEdgeDatas[1].sideMaterial));
 			}
 
 			// Edge type
@@ -1059,23 +1062,15 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sectContLtype);
 	}
 
-	// Override cut fill pen
-	if (os.Contains (Shell::CutFillPen)) {
-		element.shell.shellBase.penOverride.overrideCutFillPen = true;
-		os.Get (Shell::CutFillPen, element.shell.shellBase.penOverride.cutFillPen);
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (os.Contains (Shell::CutFillBackgroundPen)) {
-		element.shell.shellBase.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Shell::CutFillBackgroundPen, element.shell.shellBase.penOverride.cutFillBackgroundPen);
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill and cut fill backgound pens
+	if (CreateCommandHelpers::GetCutFillPens (
+		os,
+		Shell::CutFillPen,
+		Shell::CutFillBackgroundPen,
+		element.shell.shellBase,
+		elementMask)
+		!= NoError)
+		return Error;
 
 	// Outlines
 
@@ -1212,9 +1207,9 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	// Model
 
 	// Overridden materials
-	element.shell.shellBase.topMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.shell.shellBase.topMat);
 	if (os.Contains (Shell::TopMat)) {
-		element.shell.shellBase.topMat.overridden = true;
+
 		os.Get (Shell::TopMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -1224,16 +1219,16 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.shell.shellBase.topMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.shell.shellBase.topMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (shellBase.topMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (shellBase.topMat));
 
-	element.shell.shellBase.sidMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.shell.shellBase.sidMat);
 	if (os.Contains (Shell::SideMat)) {
-		element.shell.shellBase.sidMat.overridden = true;
+
 		os.Get (Shell::SideMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -1243,16 +1238,16 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.shell.shellBase.sidMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.shell.shellBase.sidMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (shellBase.sidMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (shellBase.sidMat));
 
-	element.shell.shellBase.botMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.shell.shellBase.botMat);
 	if (os.Contains (Shell::BotMat)) {
-		element.shell.shellBase.botMat.overridden = true;
+
 		os.Get (Shell::BotMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -1262,12 +1257,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.shell.shellBase.botMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.shell.shellBase.botMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeIndexField (shellBase.botMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, GetAPIOverriddenAttributeBoolField (shellBase.botMat));
 
 	// The overridden materials are chained
 	if (os.Contains (Shell::MaterialsChained)) {

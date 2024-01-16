@@ -1,3 +1,4 @@
+#include "APIMigrationHelper.hpp"
 #include "GetProjectInfo.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
@@ -26,7 +27,7 @@ GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, 
 {
 	API_ProjectInfo projectInfo{};
 
-	const GSErrCode err = ACAPI_Environment (APIEnv_ProjectID, &projectInfo, nullptr);
+	const GSErrCode err = ACAPI_ProjectOperation_Project (&projectInfo);
 	if (err != NoError) {
 		return GS::ObjectState{};
 	}
@@ -41,7 +42,7 @@ GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, 
 	os.Add (FieldNames::ProjectLocation, *projectInfo.projectPath);
 
 	API_WorkingUnitPrefs unitPrefs;
-	ACAPI_Environment (APIEnv_GetPreferencesID, &unitPrefs, (void*) APIPrefs_WorkingUnitsID);
+	ACAPI_ProjectSetting_GetPreferences (&unitPrefs, APIPrefs_WorkingUnitsID);
 	os.Add (FieldNames::ProjectLengthUnits, unitPrefs.lengthUnit);
 	os.Add (FieldNames::ProjectAreaUnits, unitPrefs.areaUnit);
 	os.Add (FieldNames::ProjectVolumeUnits, unitPrefs.volumeUnit);

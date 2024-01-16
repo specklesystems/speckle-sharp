@@ -1,4 +1,5 @@
 #include "GetColumnData.hpp"
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -117,10 +118,10 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 
 			// The extrusion overridden material name
 			int countOverriddenMaterial = 0;
-			if (columnSegment.extrusionSurfaceMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (columnSegment.extrusionSurfaceMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = columnSegment.extrusionSurfaceMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (columnSegment.extrusionSurfaceMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -128,10 +129,10 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The ends overridden material name
-			if (columnSegment.endsMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (columnSegment.endsMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = columnSegment.endsMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (columnSegment.endsMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -195,14 +196,26 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	}
 
 	// Override cut fill pen
+#ifdef ServerMainVers_2700
+	if (elem.column.cutFillPen.hasValue) {
+		os.Add (Column::OverrideCutFillPenIndex, elem.column.cutFillPen.value);
+	}
+#else
 	if (elem.column.penOverride.overrideCutFillPen) {
 		os.Add (Column::OverrideCutFillPenIndex, elem.column.penOverride.cutFillPen);
 	}
+#endif
 
 	// Override cut fill backgound pen
+#ifdef ServerMainVers_2700
+	if (elem.column.cutFillBackgroundPen.hasValue) {
+		os.Add (Column::OverrideCutFillBackgroundPenIndex, elem.column.cutFillBackgroundPen.value);
+	}
+#else
 	if (elem.column.penOverride.overrideCutFillBackgroundPen) {
 		os.Add (Column::OverrideCutFillBackgroundPenIndex, elem.column.penOverride.cutFillBackgroundPen);
 	}
+#endif
 
 	// Floor Plan and Section - Outlines
 	;

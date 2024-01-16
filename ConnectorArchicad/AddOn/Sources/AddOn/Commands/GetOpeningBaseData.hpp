@@ -4,6 +4,7 @@
 // API
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "APIMigrationHelper.hpp"
 
 #include "Objects/Point.hpp"
 #include "FieldNames.hpp"
@@ -135,7 +136,7 @@ GSErrCode GetOpeningBaseData (const T& element, GS::ObjectState& os)
 		BNZeroMemory (&libPart, sizeof (API_LibPart));
 		libPart.index = element.openingBase.libInd;
 
-		err = ACAPI_LibPart_Get (&libPart);
+		err = ACAPI_LibraryPart_Get (&libPart);
 		if (err == NoError)
 			os.Add (OpeningBase::LibraryPart, GS::UniString (libPart.docu_UName));
 	}
