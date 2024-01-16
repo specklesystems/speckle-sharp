@@ -359,10 +359,7 @@ public static class AccountManager
   /// <param name="account">The account for which to retrieve the local identifier.</param>
   /// <returns>The local identifier for the specified account in the form of "SERVER_URL?u=USER_ID".</returns>
   /// <remarks>
-  /// Notice that the generated Uri is not intended to be used as a functioning Uri, but rather as a
-  /// unique identifier for a specific account in a local environment. The format of the Uri, containing a query parameter with the user ID,
-  /// serves this specific purpose. Therefore, it should not be used for forming network requests or
-  /// expecting it to lead to an actual webpage. The primary intent of this Uri is for unique identification in a Uri format.
+  /// <inheritdoc cref="Account.GetLocalIdentifier"/>
   /// </remarks>
   public static Uri? GetLocalIdentifierForAccount(Account account)
   {
