@@ -1,11 +1,9 @@
 using System;
 using System.Drawing;
-using System.Linq;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Extras;
 
@@ -16,12 +14,6 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
   public GH_SpeckleAccountGoo(Account account)
   {
     m_value = account;
-  }
-
-  [Obsolete("Implementation is faulty", true)]
-  public GH_SpeckleAccountGoo(string userId)
-  {
-    m_value = AccountManager.GetAccounts().First(acc => acc.id == userId);
   }
 
   public override bool IsValid => m_value != null;
@@ -40,46 +32,12 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
 
   public override bool CastFrom(object source)
   {
-    var temp = string.Empty;
-    if (source is GH_String ghString)
-    {
-      temp = ghString.Value;
-    }
-    else if (source is string text)
-    {
-      temp = text;
-    }
-
-    if (!string.IsNullOrEmpty(temp))
-    {
-      var searchResult = AccountManager
-        .GetAccounts()
-        .FirstOrDefault(acc => $"{acc.serverInfo.url}?u={acc.userInfo.id}" == temp);
-
-      if (searchResult == null)
-      {
-        SpeckleLog.Logger.Warning("Failed to get local account with same server+id combination as the provided string");
-        SpeckleLog.Logger.Information("Attempting match by ID only for backwards compatibility.");
-
-        searchResult = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == temp);
-      }
-
-      if (searchResult != null)
-      {
-        Value = searchResult;
-        return true;
-      }
-
-      return false;
-    }
-
     if (source is Account account)
     {
       Value = account;
       return true;
     }
 
-    // Last ditch attempt, tries to use the casting logic of the parent.
     return base.CastFrom(source);
   }
 

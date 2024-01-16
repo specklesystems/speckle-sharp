@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
@@ -351,6 +353,44 @@ public static class AccountManager
 
       s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
     }
+  }
+
+  /// <summary>
+  /// Retrieves the local identifier for the specified account.
+  /// </summary>
+  /// <param name="account">The account for which to retrieve the local identifier.</param>
+  /// <returns>The local identifier for the specified account in the form of "SERVER_URL?u=USER_ID".</returns>
+  /// <remarks>
+  /// Notice that the generated Uri is not intended to be used as a functioning Uri, but rather as a
+  /// unique identifier for a specific account in a local environment. The format of the Uri, containing a query parameter with the user ID,
+  /// serves this specific purpose. Therefore, it should not be used for forming network requests or
+  /// expecting it to lead to an actual webpage. The primary intent of this Uri is for unique identification in a Uri format.
+  /// </remarks>
+  public static Uri? GetLocalIdentifierForAccount(Account account)
+  {
+    var identifier = account.GetLocalIdentifier();
+
+    // Validate account is stored locally
+    var searchResult = GetAccountForLocalIdentifier(identifier);
+
+    return searchResult == null ? null : identifier;
+  }
+
+  /// <summary>
+  /// Gets the account that corresponds to the given local identifier.
+  /// </summary>
+  /// <param name="localIdentifier">The local identifier of the account.</param>
+  /// <returns>The account that matches the local identifier, or null if no match is found.</returns>
+  public static Account? GetAccountForLocalIdentifier(Uri localIdentifier)
+  {
+    var searchResult = GetAccounts()
+      .FirstOrDefault(acc =>
+      {
+        var id = acc.GetLocalIdentifier();
+        return id == localIdentifier;
+      });
+
+    return searchResult;
   }
 
   private static string EnsureCorrectServerUrl(string server)
