@@ -353,6 +353,41 @@ public static class AccountManager
     }
   }
 
+  /// <summary>
+  /// Retrieves the local identifier for the specified account.
+  /// </summary>
+  /// <param name="account">The account for which to retrieve the local identifier.</param>
+  /// <returns>The local identifier for the specified account in the form of "SERVER_URL?u=USER_ID".</returns>
+  /// <remarks>
+  /// <inheritdoc cref="Account.GetLocalIdentifier"/>
+  /// </remarks>
+  public static Uri? GetLocalIdentifierForAccount(Account account)
+  {
+    var identifier = account.GetLocalIdentifier();
+
+    // Validate account is stored locally
+    var searchResult = GetAccountForLocalIdentifier(identifier);
+
+    return searchResult == null ? null : identifier;
+  }
+
+  /// <summary>
+  /// Gets the account that corresponds to the given local identifier.
+  /// </summary>
+  /// <param name="localIdentifier">The local identifier of the account.</param>
+  /// <returns>The account that matches the local identifier, or null if no match is found.</returns>
+  public static Account? GetAccountForLocalIdentifier(Uri localIdentifier)
+  {
+    var searchResult = GetAccounts()
+      .FirstOrDefault(acc =>
+      {
+        var id = acc.GetLocalIdentifier();
+        return id == localIdentifier;
+      });
+
+    return searchResult;
+  }
+
   private static string EnsureCorrectServerUrl(string server)
   {
     var localUrl = server;
