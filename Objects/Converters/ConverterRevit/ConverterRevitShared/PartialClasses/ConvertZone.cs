@@ -140,7 +140,7 @@ public partial class ConverterRevit
   /// <returns>The modified or newly created Revit Zone object.</returns>
   private DB.Zone CreateRevitZoneIfNeeded(Space speckleSpace, DB.Zone revitZone, Phase targetPhase, Level level)
   {
-    var zoneName = speckleSpace.zone != null ? speckleSpace.zone.name : speckleSpace.zoneName; // zoneName is the previous property retained here for backwards compatibility.
+    var zoneName = speckleSpace.zone != null ? speckleSpace.zone.name : speckleSpace["zoneName"] as string; // zoneName is the previous property retained here for backwards compatibility.
 
     if (revitZone == null && !string.IsNullOrEmpty(zoneName))
     {
