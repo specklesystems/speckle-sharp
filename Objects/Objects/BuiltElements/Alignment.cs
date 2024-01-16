@@ -8,7 +8,7 @@ namespace Objects.BuiltElements;
 
 public class Alignment : Base, IDisplayValue<Polyline>
 {
-  [JsonIgnore, Obsolete("Use curves property")]
+  [JsonIgnore, Obsolete("Use curves property", true)]
   public ICurve baseCurve { get; set; }
 
   public List<ICurve> curves { get; set; }

@@ -3,9 +3,12 @@ using Objects.Geometry;
 
 namespace Objects.BuiltElements.Revit;
 
+[Obsolete(
+  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion.",
+  true
+)]
 public class RevitNetworkElement : NetworkElement
 {
-  [Obsolete("The RevitNetworkElement class is obsolete because the Network class is now obsolete")]
   public RevitNetworkElement() { }
 
   /// <summary>
@@ -22,6 +25,10 @@ public class RevitNetworkElement : NetworkElement
   public bool isConnectorBased { get; set; }
 }
 
+[Obsolete(
+  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion.",
+  true
+)]
 public class RevitNetworkLink : NetworkLink
 {
   public double height { get; set; }

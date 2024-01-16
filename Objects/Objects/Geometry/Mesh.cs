@@ -39,7 +39,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     this.units = units;
   }
 
-  [Obsolete("Use lists constructor")]
+  [Obsolete("Use lists constructor", true)]
   public Mesh(
     double[] vertices,
     int[] faces,

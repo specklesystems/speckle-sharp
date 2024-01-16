@@ -26,7 +26,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <param name="coordinatesArray">The array of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  [Obsolete("Use list constructor instead")]
+  [Obsolete("Use list constructor instead", true)]
   public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId) { }
 
@@ -63,7 +63,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// Gets the list of points representing the vertices of this polyline.
   /// </summary>
-  [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
+  [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead", true)]
   public List<Point> points => GetPoints();
 
   /// <inheritdoc/>
