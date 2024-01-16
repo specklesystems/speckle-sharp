@@ -259,11 +259,11 @@ public class Send : NodeModel
       {
         @base = converter.ConvertRecursivelyToSpeckle(_data);
       }
-      catch (Exception e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         Message = "Conversion error";
-        Warning(e.ToFormattedString());
-        throw new SpeckleException("Conversion error", e);
+        Warning(ex.ToFormattedString());
+        throw new SpeckleException("Conversion error", ex);
       }
 
       Message = "Sending...";
@@ -312,13 +312,13 @@ public class Send : NodeModel
         Message = "";
       }
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       if (!_cancellationToken.IsCancellationRequested)
       {
         _cancellationToken.Cancel();
-        Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-        throw new SpeckleException(e.Message, e);
+        Message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+        throw new SpeckleException(ex.Message, ex);
       }
     }
     finally
@@ -367,8 +367,9 @@ public class Send : NodeModel
     {
       _data = GetInputAs<object>(engine, 0, true);
     }
-    catch
+    catch(Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Warning(ex, "Data input is invalid");
       ResetNode(true);
       Message = "Data input is invalid";
       return;
@@ -396,16 +397,17 @@ public class Send : NodeModel
       _transports = transportsDict.Keys.ToList();
       _branchNames = transportsDict;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Warning(ex, "Send operation failed");
       //ignored
       ResetNode(true);
-      Warning(e.InnerException?.Message ?? e.Message);
+      Warning(ex.ToFormattedString());
       Message = "Not authorized";
       return;
     }
 
-    if (_transports == null || !_transports.Any())
+    if (_transports == null || _transports.Count == 0)
     {
       ResetNode(true);
       Message = "Stream is invalid";
@@ -417,7 +419,7 @@ public class Send : NodeModel
     {
       _commitMessage = InPorts[2].Connectors.Any() ? GetInputAs<string>(engine, 2) : ""; //IsConnected not working because has default value
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       Message = "Message is invalid, will skip it";
     }

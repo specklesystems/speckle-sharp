@@ -213,7 +213,10 @@ public partial class ConverterDynamo
     {
       l.bbox = BoxToSpeckle(line.BoundingBox, u);
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      // TODO: Should a Line even have a bounding box?
+    }
     return l;
   }
 

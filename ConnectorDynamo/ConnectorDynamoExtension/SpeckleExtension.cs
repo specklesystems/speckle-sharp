@@ -26,16 +26,19 @@ public class SpeckleExtension : IViewExtension
       {
         rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
         Globals.RevitDocument = DocumentManager.Instance
-          .GetType()
-          .GetProperty("CurrentDBDocument")
-          .GetValue(DocumentManager.Instance);
+                                               .GetType()
+                                               .GetProperty("CurrentDBDocument")
+                                               .GetValue(DocumentManager.Instance);
       }
       //sets a read-only property using reflection WatchHandler
       //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
       Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Failed to load Speckle extension");
+    }
   }
 
   private void Rdm_RevitDocumentChanged(object sender, EventArgs e)

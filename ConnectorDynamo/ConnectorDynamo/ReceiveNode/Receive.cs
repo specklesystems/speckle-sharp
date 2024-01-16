@@ -325,15 +325,15 @@ public class Receive : NodeModel
         Message = "";
       }
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       if (!_cancellationToken.IsCancellationRequested)
       {
         _cancellationToken.Cancel();
-        var msg = e.ToFormattedString();
+        var msg = ex.ToFormattedString();
         Message = msg.Contains("401") || msg.Contains("don't have access") ? "Not authorized" : "Error";
         Warning(msg);
-        _errors.Add(e);
+        _errors.Add(ex);
         throw;
       }
     }
@@ -520,7 +520,7 @@ public class Receive : NodeModel
         Message = "Up to date";
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(
         ex,
@@ -547,7 +547,7 @@ public class Receive : NodeModel
       Message = "Updates available";
       _objectCount = count;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(
         ex,
