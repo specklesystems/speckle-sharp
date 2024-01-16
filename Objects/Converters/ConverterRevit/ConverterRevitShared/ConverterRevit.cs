@@ -556,9 +556,9 @@ public partial class ConverterRevit : ISpeckleConverter
         }
       // non revit built elems
       case BE.Alignment o:
-        if (o.curves is null && o["baseCurve"] is ICurve baseCurve) // This is for backwards compatibility for the deprecated basecurve property
+        if (o.curves is null && o.baseCurve is not null) // This is for backwards compatibility for the deprecated basecurve property
         {
-          return ModelCurveToNative(baseCurve);
+          return ModelCurveToNative(o.baseCurve);
         }
 
         return AlignmentToNative(o);

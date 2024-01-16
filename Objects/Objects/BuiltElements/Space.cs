@@ -59,7 +59,7 @@ public class Space : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   // add the zone object for better forward compatibility
   public RevitZone? zone { get; set; }
 
-  [Obsolete("Use zone property instead", true)]
+  [Obsolete("Use zone property instead")]
   public string zoneName { get; internal set; }
   public string units { get; set; }
 

@@ -137,9 +137,9 @@ public partial class ConverterBentley
         segments = alignment.curves
       };
     }
-    else if (alignment["baseCurve"] is ICurve basecurve) // this could be an old alignment using a basecurve
+    else if (alignment.baseCurve is not null) // this could be an old alignment using a basecurve
     {
-      singleBaseCurve = basecurve;
+      singleBaseCurve = alignment.baseCurve;
     }
     else
     {

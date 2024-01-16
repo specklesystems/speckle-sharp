@@ -43,7 +43,7 @@ public partial class ConverterRevit
     }
 
     Element duct = null;
-    if (speckleDuct.baseCurve is Line || speckleDuct["baseLine"] is Line) // this is for old ducts with deprecated baseline field
+    if (speckleDuct.baseCurve is Line || speckleDuct.baseLine is not null) // this is for old ducts with deprecated baseline field
     {
       DuctType ductType = GetElementType<DuctType>(speckleDuct, appObj, out bool _);
       if (ductType == null)
@@ -54,7 +54,7 @@ public partial class ConverterRevit
 
       DB.Line baseLine = speckleDuct.baseCurve is Line baseCurve
         ? LineToNative(baseCurve)
-        : LineToNative(speckleDuct["baseLine"] as Line);
+        : LineToNative(speckleDuct.baseLine);
 
       XYZ startPoint = baseLine.GetEndPoint(0);
       XYZ endPoint = baseLine.GetEndPoint(1);

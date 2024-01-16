@@ -143,7 +143,7 @@ public enum RebarType
 }
 
 #region Obsolete
-[Obsolete("Deprecated in 2.17: Use the RebarGroup class instead", true)]
+[Obsolete("Deprecated in 2.17: Use the RebarGroup class instead")]
 public class Rebar : Base, IHasVolume, IDisplayValue<List<Mesh>>
 {
   public List<ICurve> curves { get; set; } = new();

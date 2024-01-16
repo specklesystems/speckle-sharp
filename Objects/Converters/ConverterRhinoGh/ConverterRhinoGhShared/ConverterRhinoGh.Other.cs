@@ -279,9 +279,9 @@ public partial class ConverterRhinoGh
     {
       curves = hatch.loops.Select(o => CurveToNative(o.Curve)).ToList();
     }
-    else if (hatch["curves"] is List<object> oldCurves) // this could've been an old hatch, using the deprecated loops property
+    else if (hatch.curves is not null) // this could've been an old hatch, using the deprecated loops property
     {
-      curves = oldCurves.Cast<ICurve>()?.ToList().Select(o => CurveToNative(o))?.ToList();
+      curves = hatch.curves.Select(o => CurveToNative(o))?.ToList();
     }
 
     if (curves.Count == 0)
