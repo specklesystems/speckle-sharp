@@ -1,4 +1,6 @@
 #include "GetWallData.hpp"
+
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -174,14 +176,26 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	}
 
 	// Override cut fill pen
+#ifdef ServerMainVers_2700
+	if (wall.cutFillPen.hasValue) {
+		os.Add (Wall::OverrideCutFillPenIndex, wall.cutFillPen.value);
+	}
+#else
 	if (wall.penOverride.overrideCutFillPen) {
 		os.Add (Wall::OverrideCutFillPenIndex, wall.penOverride.cutFillPen);
 	}
+#endif
 
 	// Override cut fill backgound pen
+#ifdef ServerMainVers_2700
+	if (wall.cutFillBackgroundPen.hasValue) {
+		os.Add (Wall::OverrideCutFillBackgroundPenIndex, wall.cutFillBackgroundPen.value);
+	}
+#else
 	if (wall.penOverride.overrideCutFillBackgroundPen) {
 		os.Add (Wall::OverrideCutFillBackgroundPenIndex, wall.penOverride.cutFillBackgroundPen);
 	}
+#endif
 
 	// Floor Plan and Section - Outlines parameters
 
@@ -211,10 +225,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// The reference overridden material name, start and end edge index
 	int countOverriddenMaterial = 0;
-	if (wall.refMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.refMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.refMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.refMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -225,10 +239,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	}
 
 	// The opposite overridden material name, start and end edge index
-	if (wall.oppMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.oppMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.oppMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.oppMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -239,10 +253,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	}
 
 	// The side overridden material name
-	if (wall.sidMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.sidMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.sidMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.sidMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;

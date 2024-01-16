@@ -1,4 +1,6 @@
 #include "GetModelForElements.hpp"
+
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "Sight.hpp"
 #include "ModelInfo.hpp"
@@ -220,13 +222,13 @@ static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelVie
 
 static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>&applicationIds)
 {
-	GSErrCode err = ACAPI_Automate (APIDo_ShowAllIn3DID);
+	GSErrCode err = ACAPI_View_ShowAllIn3D ();
 	if (err != NoError) {
 		return {};
 	}
 
 	Modeler::Sight* sight = nullptr;
-	err = ACAPI_3D_GetCurrentWindowSight ((void**) &sight);
+	err = ACAPI_Sight_GetCurrentWindowSight ((void**) &sight);
 	if (err != NoError || sight == nullptr) {
 		return {};
 	}

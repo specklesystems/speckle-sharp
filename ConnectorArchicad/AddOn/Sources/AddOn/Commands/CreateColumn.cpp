@@ -1,4 +1,7 @@
 #include "CreateColumn.hpp"
+
+#include "APIMigrationHelper.hpp"
+#include "CreateCommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -58,8 +61,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, origoPos.z, element.header.floorInd, element.column.bottomOffset);
-	}
-	else {
+	} else {
 		Utility::SetStoryLevelAndFloor (origoPos.z, element.header.floorInd, element.column.bottomOffset);
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
@@ -224,7 +226,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 			// The extrusion overridden material name
 			if (currentSegment.Contains (Column::ColumnSegment::ExtrusionSurfaceMaterial)) {
-				memo.columnSegments[idx].extrusionSurfaceMaterial.overridden = true;
+
 
 				GS::UniString attrName;
 				currentSegment.Get (Column::ColumnSegment::ExtrusionSurfaceMaterial, attrName);
@@ -237,15 +239,15 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo.columnSegments[idx].extrusionSurfaceMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, extrusionSurfaceMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (memo.columnSegments[idx].extrusionSurfaceMaterial, attrib.header.index);
+					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (extrusionSurfaceMaterial));
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, extrusionSurfaceMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (extrusionSurfaceMaterial));
 			}
 
 			// The ends overridden material name
 			if (currentSegment.Contains (Column::ColumnSegment::EndsSurfaceMaterial)) {
-				memo.columnSegments[idx].endsMaterial.overridden = true;
+
 
 				GS::UniString attrName;
 				currentSegment.Get (Column::ColumnSegment::EndsSurfaceMaterial, attrName);
@@ -258,10 +260,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo.columnSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, endsMaterial.attributeIndex);
+						SetAPIOverriddenAttribute (memo.columnSegments[idx].endsMaterial, attrib.header.index);
+					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (endsMaterial));
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, endsMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (endsMaterial));
 			}
 
 			// The overridden materials are chained
@@ -365,23 +367,15 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, venLineType);
 	}
 
-	// Override cut fill pen
-	element.column.penOverride.overrideCutFillPen = false;
-	if (os.Contains (Column::OverrideCutFillPenIndex)) {
-		element.column.penOverride.overrideCutFillPen = true;
-		os.Get (Column::OverrideCutFillPenIndex, element.column.penOverride.cutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillPen);
-	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillPen);
-
-	// Override cut fill background pen
-	element.column.penOverride.overrideCutFillBackgroundPen = false;
-	if (os.Contains (Column::OverrideCutFillBackgroundPenIndex)) {
-		element.column.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Column::OverrideCutFillBackgroundPenIndex, element.column.penOverride.cutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillBackgroundPen);
-	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillBackgroundPen);
+	// Override cut fill and cut fill backgound pens
+	if (CreateCommandHelpers::GetCutFillPens (
+		os,
+		Column::OverrideCutFillPenIndex,
+		Column::OverrideCutFillBackgroundPenIndex,
+		element.column,
+		elementMask)
+		!= NoError)
+		return Error;
 
 	// Floor Plan and Section - Outlines
 

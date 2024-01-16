@@ -1,5 +1,6 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "APIMigrationHelper.hpp"
 
 #include "DGModule.hpp"
 #include "Process.hpp"
@@ -143,7 +144,7 @@ private:
 	{
 		UShort portNumber = 0;
 		{
-			const auto err = ACAPI_Goodies (APIAny_GetHttpConnectionPortID, &portNumber);
+			const auto err = ACAPI_Command_GetHttpConnectionPort (&portNumber);
 
 			if (err != NoError) {
 				throw GS::IllegalArgumentException ();
@@ -189,39 +190,39 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 
 static GSErrCode RegisterAddOnCommands ()
 {
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementIds> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementTypes> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetDoorData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWindowData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetGridElementData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetShellData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSkylightData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetZoneData> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDoor> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWindow> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateBeam> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateGridElement> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateObject> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateRoof> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateShell> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSkylight> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateZone> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::SelectElements> ()));
-	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::FinishReceiveTransaction> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementIds> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementTypes> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetDoorData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetWindowData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetGridElementData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetObjectData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetRoofData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetShellData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSkylightData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetZoneData> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateDoor> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateWindow> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateBeam> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateGridElement> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateObject> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateRoof> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateShell> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateSkylight> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateZone> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::SelectElements> ()));
+	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::FinishReceiveTransaction> ()));
 
 	return NoError;
 }
@@ -242,7 +243,7 @@ API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 
 GSErrCode __ACDLL_CALL RegisterInterface (void)
 {
-	return ACAPI_Register_Menu (AddOnMenuID, 0, MenuCode_Interoperability, MenuFlag_Default);
+	return ACAPI_MenuItem_RegisterMenu (AddOnMenuID, 0, MenuCode_Interoperability, MenuFlag_Default);
 }
 
 
@@ -250,7 +251,7 @@ GSErrCode __ACENV_CALL Initialize (void)
 {
 	CHECKERROR (RegisterAddOnCommands ());
 
-	return ACAPI_Install_MenuHandler (AddOnMenuID, MenuCommandHandler);
+	return ACAPI_MenuItem_InstallMenuHandler (AddOnMenuID, MenuCommandHandler);
 }
 
 

@@ -1,3 +1,4 @@
+#include "APIMigrationHelper.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "CreateCommand.hpp"
@@ -43,7 +44,7 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 
 	API_StoryInfo storyInfo;
 	BNZeroMemory (&storyInfo, sizeof (API_StoryInfo));
-	ACAPI_Environment(APIEnv_GetStorySettingsID, &storyInfo);
+	ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
 
 	API_StoryCmdType command;
 	
@@ -59,13 +60,13 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 			command.action = APIStory_InsAbove;
 			command.height = level.elevation - actStory.level;
 			command.index = actStory.index;
-			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+			ACAPI_ProjectSetting_ChangeStorySettings (&command);
 
 			BNZeroMemory (&command, sizeof (API_StoryCmdType));
 			command.action = APIStory_SetHeight;
 			command.height = (*storyInfo.data)[i + 1].level - level.elevation;
 			command.index = actStory.index + 1;
-			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+			ACAPI_ProjectSetting_ChangeStorySettings (&command);
 
 			break;
 		} else if (level.elevation < actStory.level - EPS) {
@@ -74,7 +75,7 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 			command.action = APIStory_InsBelow;
 			command.height = actStory.level - level.elevation;
 			command.index = actStory.index;
-			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+			ACAPI_ProjectSetting_ChangeStorySettings (&command);
 
 			break;
 		} else if (i == (storyInfo.lastStory - storyInfo.firstStory) && nextStory.level <= level.elevation) {
@@ -83,7 +84,7 @@ void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const do
 			command.action = APIStory_InsAbove;
 			command.height = level.elevation - actStory.level;
 			command.index = storyInfo.lastStory;
-			ACAPI_Environment (APIEnv_ChangeStorySettingsID, &command);
+			ACAPI_ProjectSetting_ChangeStorySettings (&command);
 		}
 	}
 
