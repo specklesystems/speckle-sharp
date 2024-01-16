@@ -6,7 +6,7 @@ namespace Objects.Other;
 
 public class Hatch : Base
 {
-  [Obsolete("Use Loops instead")]
+  [Obsolete("Use Loops instead", true)]
   public List<ICurve> curves { get; set; }
 
   public List<HatchLoop> loops { get; set; }

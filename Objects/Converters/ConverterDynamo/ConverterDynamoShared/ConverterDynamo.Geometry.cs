@@ -190,7 +190,7 @@ public partial class ConverterDynamo
 
   public CoordinateSystem TransformToNative(Transform transform)
   {
-    return CoordinateSystem.ByMatrix(transform.value).Scale(Units.GetConversionFactor(transform.units, ModelUnits));
+    return CoordinateSystem.ByMatrix(transform.ToArray()).Scale(Units.GetConversionFactor(transform.units, ModelUnits));
   }
 
   #endregion

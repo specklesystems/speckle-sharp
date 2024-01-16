@@ -4,8 +4,7 @@ using Objects.Geometry;
 namespace Objects.BuiltElements.Revit;
 
 [Obsolete(
-  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion.",
-  true
+  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion."
 )]
 public class RevitNetworkElement : NetworkElement
 {
@@ -26,8 +25,7 @@ public class RevitNetworkElement : NetworkElement
 }
 
 [Obsolete(
-  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion.",
-  true
+  "Networks are no longer used to assemble MEP systems in Revit. See the RevitCommitBuilder for MEP systems conversion."
 )]
 public class RevitNetworkLink : NetworkLink
 {
