@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Tests" />
+    <InternalsVisibleTo Include="Objects.Tests.Unit" />
   </ItemGroup>
   
   <ItemGroup>

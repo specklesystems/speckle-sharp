@@ -92,7 +92,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
             $HOME/.dotnet/dotnet --version
       - run: 
           name: Enforce formatting
@@ -115,7 +115,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           project: Core/Tests/Speckle.Core.Tests.Unit/Speckle.Core.Tests.Unit.csproj
       - run-tests:
           title: Objects Unit Tests
-          project: Objects/Tests/Tests.csproj
+          project: Objects/Tests/Objects.Tests.Unit/Objects.Tests.Unit.csproj
       - store_test_results:
           path: TestResults
 
@@ -128,7 +128,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
@@ -286,7 +286,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install dotnet
           command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes

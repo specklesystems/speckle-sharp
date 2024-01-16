@@ -17,7 +17,7 @@
       "Objects\\Converters\\ConverterTeklaStructures\\ConverterTeklaStructuresShared\\ConverterTeklaStructuresShared.shproj",
       "Objects\\Converters\\StructuralUtilities\\PolygonMesher\\PolygonMesher.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

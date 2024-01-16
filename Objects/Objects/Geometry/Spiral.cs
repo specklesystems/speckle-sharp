@@ -31,7 +31,7 @@ public class Spiral : Base, ICurve, IHasBoundingBox, IDisplayValue<Polyline>
 
   public double length { get; set; }
 
-  public Interval? domain { get; set; }
+  public Interval domain { get; set; }
 
   [DetachProperty]
   public Polyline displayValue { get; set; }
