@@ -257,8 +257,10 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   {
     CancellationToken.ThrowIfCancellationRequested();
 
+    using var c = new SqliteConnection(_connectionString);
+    c.Open();
     const string COMMAND_TEXT = "REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
-    using var command = new SqliteCommand(COMMAND_TEXT, Connection);
+    using var command = new SqliteCommand(COMMAND_TEXT, c);
     command.Parameters.AddWithValue("@hash", hash);
     command.Parameters.AddWithValue("@content", serializedObject);
     command.ExecuteNonQuery();
