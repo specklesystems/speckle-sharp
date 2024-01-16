@@ -188,7 +188,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out ITransformable polyline)
+  public bool TransformTo(Transform transform, out ITransformable transformed)
   {
     // transform points
     var transformedPoints = new List<Point>();
@@ -198,7 +198,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
       transformedPoints.Add(transformedPoint);
     }
 
-    polyline = new Polyline
+    transformed = new Polyline
     {
       value = transformedPoints.SelectMany(o => o.ToList()).ToList(),
       closed = closed,
