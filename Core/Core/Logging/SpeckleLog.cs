@@ -138,6 +138,17 @@ public static class SpeckleLog
     var id = GetUserIdFromDefaultAccount();
     s_logger = s_logger.ForContext("id", id);
 
+    // Configure scope after logger created.
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.User = new User { Id = id };
+    });
+
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.SetTag("hostApplication", hostApplicationName);
+    });
+
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
       .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
@@ -241,16 +252,6 @@ public static class SpeckleLog
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
-
-    // Configure scope after logger created.
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.User = new User { Id = id };
-    });
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.SetTag("hostApplication", hostApplicationName);
-    });
 
     if (logConfiguration.LogToFile && !canLogToFile)
     {
