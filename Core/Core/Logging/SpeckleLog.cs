@@ -135,6 +135,8 @@ public static class SpeckleLog
     logConfiguration ??= new SpeckleLogConfiguration();
 
     s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
+    var id = GetUserIdFromDefaultAccount();
+    s_logger = s_logger.ForContext("id", id);
 
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
@@ -166,12 +168,11 @@ public static class SpeckleLog
     var canLogToFile = true;
     s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
     var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
-    var id = GetUserIdFromDefaultAccount();
+
     var fileVersionInfo = GetFileVersionInfo();
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
       .Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
-      .Enrich.WithProperty("id", id)
       .Enrich.WithProperty("version", fileVersionInfo.FileVersion)
       .Enrich.WithProperty("productVersion", fileVersionInfo.ProductVersion)
       .Enrich.WithProperty("hostOs", DetermineHostOsSlug())
