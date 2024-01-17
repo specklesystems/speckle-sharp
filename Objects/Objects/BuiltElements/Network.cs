@@ -39,13 +39,13 @@ public class NetworkElement : Base
 
   public string name { get; set; }
 
-  [DetachProperty]
   /// <summary>
   /// The Base object representing the element in the network (eg Pipe, Duct, etc)
   /// </summary>
   /// <remarks>
   /// Currently named "elements" to assist with receiving in connector flatten method.
   /// </remarks>
+  [DetachProperty]
   public Base elements { get; set; }
 
   /// <summary>

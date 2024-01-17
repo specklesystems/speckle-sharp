@@ -171,7 +171,7 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// Sets the control points of this <see cref="Surface"/>.
   /// </summary>
   /// <param name="value">A 2-dimensional array of <see cref="ControlPoint"/> instances.</param>
-  /// <remarks>The <see cref="value"/> must be ordered following directions "[u][v]"</remarks>
+  /// <remarks>The <paramref name="value"/> must be ordered following directions "[u][v]"</remarks>
   public void SetControlPoints(List<List<ControlPoint>> value)
   {
     List<double> data = new();
