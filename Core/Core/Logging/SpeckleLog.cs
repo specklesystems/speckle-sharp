@@ -136,7 +136,7 @@ public static class SpeckleLog
 
     s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
     var id = GetUserIdFromDefaultAccount();
-    s_logger = s_logger.ForContext("id", id);
+    s_logger = s_logger.ForContext("id", id).ForContext("isMachineId", s_isMachineIdUsed);
 
     // Configure scope after logger created.
     SentrySdk.ConfigureScope(scope =>
@@ -289,7 +289,10 @@ public static class SpeckleLog
       if (defaultAccount != null)
       {
         id = defaultAccount.GetHashedEmail();
-        s_isMachineIdUsed = false;
+      }
+      else
+      {
+        s_isMachineIdUsed = true;
       }
     }
     catch (Exception ex) when (!ex.IsFatal())
