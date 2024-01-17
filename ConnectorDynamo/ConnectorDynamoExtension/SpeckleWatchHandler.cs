@@ -6,6 +6,7 @@ using Dynamo.ViewModels;
 
 using ProtoCore.Mirror;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Extension;
 
@@ -67,7 +68,7 @@ public class SpeckleWatchHandler : IWatchHandler
     {
       return baseHandler.Process(data, preferredDictionaryOrdering, runtimeCore, tag, showRawData, callback);
     }
-    catch (Exception)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return callback(data.Data, preferredDictionaryOrdering, runtimeCore, tag, showRawData);
     }

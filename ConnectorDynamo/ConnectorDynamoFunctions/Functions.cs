@@ -43,7 +43,10 @@ public static class Functions
     {
       totalCount = data?.GetTotalChildrenCount() ?? 0;
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Warning(ex, "Failed to get total children count.");
+    }
 
     if (totalCount == 0)
     {
@@ -104,7 +107,7 @@ public static class Functions
         commitWrappers.Add(wrapper.ToString());
         Analytics.TrackEvent(client.Account, Analytics.Events.Send);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         Utils.HandleApiExeption(ex);
         return null;
@@ -159,9 +162,9 @@ public static class Functions
 
         commit = branch.commits.items[0];
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        throw new SpeckleException("No branch found with name " + stream.BranchName);
+        throw new SpeckleException("No branch found with name " + stream.BranchName, ex);
       }
     }
     else if (stream.Type == StreamWrapperType.Commit)
@@ -170,7 +173,7 @@ public static class Functions
       {
         commit = client.CommitGet(stream.StreamId, stream.CommitId!, cancellationToken).Result;
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         Utils.HandleApiExeption(ex);
         return null;
@@ -209,6 +212,7 @@ public static class Functions
     {
       throw new SpeckleException("Receive operation returned nothing");
     }
+
     try
     {
       client
@@ -223,9 +227,9 @@ public static class Functions
         )
         .Wait();
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // Do nothing!
+      SpeckleLog.Logger.Error(ex, "Failed to register commit receipt");
     }
 
     if (cancellationToken.IsCancellationRequested)
