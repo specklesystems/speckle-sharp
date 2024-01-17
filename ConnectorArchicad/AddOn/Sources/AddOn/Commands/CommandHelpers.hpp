@@ -18,7 +18,7 @@ GSErrCode GetCutfillPens (const T& element, GS::ObjectState& os, const GS::Strin
 	if (element.cutFillPen.hasValue) {
 		os.Add (cutfillPenName, element.cutFillPen.value);
 	}
-#elif ServerMainVers_2600
+#else
 	if (element.penOverride.overrideCutFillPen) {
 		os.Add (cutfillPenName, element.penOverride.cutFillPen);
 	}
@@ -28,7 +28,7 @@ GSErrCode GetCutfillPens (const T& element, GS::ObjectState& os, const GS::Strin
 	if (element.cutFillBackgroundPen.hasValue) {
 		os.Add (backgroundCutfillPenName, element.cutFillBackgroundPen.value);
 }
-#elif ServerMainVers_2600
+#else
 	if (element.penOverride.overrideCutFillBackgroundPen) {
 		os.Add (backgroundCutfillPenName, element.penOverride.cutFillBackgroundPen);
 	}
