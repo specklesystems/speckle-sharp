@@ -10,6 +10,7 @@ using ProtoCore.AST.AssociativeAST;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 using Account = Speckle.Core.Credentials.Account;
 
 namespace Speckle.ConnectorDynamo.CreateStreamNode;
@@ -146,7 +147,7 @@ public class CreateStream : NodeModel
       CreateEnabled = false;
       SelectedUserId = SelectedAccount.userInfo.id;
 
-      this.Name = "Stream Created";
+      Name = "Stream Created";
 
       Analytics.TrackEvent(
         SelectedAccount,
@@ -156,22 +157,10 @@ public class CreateStream : NodeModel
 
       OnNodeModified(true);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      //someone improve this pls :)
-      if (ex.InnerException != null && ex.InnerException.InnerException != null)
-      {
-        Error(ex.InnerException.InnerException.Message);
-      }
-
-      if (ex.InnerException != null)
-      {
-        Error(ex.InnerException.Message);
-      }
-      else
-      {
-        Error(ex.Message);
-      }
+      SpeckleLog.Logger.Error(ex, "Failed to create stream");
+      Error("Failed to create stream: " + ex.ToFormattedString());
     }
   }
 

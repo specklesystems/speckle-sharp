@@ -35,7 +35,10 @@ public class SpeckleExtension : IViewExtension
 
       Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle extension");
+    }
   }
 
   private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
