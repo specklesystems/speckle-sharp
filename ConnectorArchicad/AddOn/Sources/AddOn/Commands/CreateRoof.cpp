@@ -1,7 +1,6 @@
 #include "CreateRoof.hpp"
-
 #include "APIMigrationHelper.hpp"
-#include "CreateCommandHelpers.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -339,7 +338,7 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill and cut fill backgound pens
-	if (CreateCommandHelpers::GetCutFillPens (
+	if (CommandHelpers::SetCutfillPens(
 		os,
 		Roof::CutFillPen,
 		Roof::CutFillBackgroundPen,
@@ -523,7 +522,6 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 
 	ResetAPIOverriddenAttribute (element.roof.shellBase.botMat);
 	if (os.Contains (Roof::BotMat)) {
-		// SetAPIOverriddenAttribute (element.roof.shellBase.botMat, true);
 		os.Get (Roof::BotMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {

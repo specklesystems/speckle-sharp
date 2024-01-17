@@ -1,6 +1,6 @@
 #include "GetShellData.hpp"
-
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
@@ -413,27 +413,8 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Shell::SectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (element.shell.shellBase.cutFillPen.hasValue) {
-		os.Add (Shell::CutFillPen, element.shell.shellBase.cutFillPen.value);
-	}
-#else
-	if (element.shell.shellBase.penOverride.overrideCutFillPen) {
-		os.Add (Shell::CutFillPen, element.shell.shellBase.penOverride.cutFillPen);
-	}
-#endif
-
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (element.shell.shellBase.cutFillBackgroundPen.hasValue) {
-		os.Add (Shell::CutFillBackgroundPen, element.shell.shellBase.cutFillBackgroundPen.value);
-	}
-#else
-	if (element.shell.shellBase.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Shell::CutFillBackgroundPen, element.shell.shellBase.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.shell.shellBase, os, Shell::CutFillPen, Shell::CutFillBackgroundPen);
 
 	// Outlines
 

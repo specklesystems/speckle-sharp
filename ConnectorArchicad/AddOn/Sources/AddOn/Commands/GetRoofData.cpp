@@ -1,5 +1,6 @@
 #include "GetRoofData.hpp"
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -170,27 +171,8 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Roof::SectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (element.roof.shellBase.cutFillPen.hasValue) {
-		os.Add (Roof::CutFillPen, element.roof.shellBase.cutFillPen.value);
-	}
-#else
-	if (element.roof.shellBase.penOverride.overrideCutFillPen) {
-		os.Add (Roof::CutFillPen, element.roof.shellBase.penOverride.cutFillPen);
-	}
-#endif
-
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (element.roof.shellBase.cutFillBackgroundPen.value) {
-		os.Add (Roof::CutFillBackgroundPen, element.roof.shellBase.cutFillBackgroundPen.value);
-	}
-#else
-	if (element.roof.shellBase.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Roof::CutFillBackgroundPen, element.roof.shellBase.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.roof.shellBase, os, Roof::CutFillPen, Roof::CutFillBackgroundPen);
 
 	// Outlines
 

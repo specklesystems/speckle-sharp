@@ -1,5 +1,6 @@
 #include "GetColumnData.hpp"
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -195,30 +196,11 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 			os.Add (Column::VeneerLinetypeName, GS::UniString{attrib.header.name});
 	}
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (elem.column.cutFillPen.hasValue) {
-		os.Add (Column::OverrideCutFillPenIndex, elem.column.cutFillPen.value);
-	}
-#else
-	if (elem.column.penOverride.overrideCutFillPen) {
-		os.Add (Column::OverrideCutFillPenIndex, elem.column.penOverride.cutFillPen);
-	}
-#endif
-
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (elem.column.cutFillBackgroundPen.hasValue) {
-		os.Add (Column::OverrideCutFillBackgroundPenIndex, elem.column.cutFillBackgroundPen.value);
-	}
-#else
-	if (elem.column.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Column::OverrideCutFillBackgroundPenIndex, elem.column.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (elem.column, os, Column::OverrideCutFillPenIndex, Column::OverrideCutFillBackgroundPenIndex);
 
 	// Floor Plan and Section - Outlines
-	;
+
 	// The pen index of column uncut contour line
 	os.Add (Column::UncutLinePenIndex, elem.column.belowViewLinePen);
 
