@@ -81,4 +81,24 @@ public class CredentialInfrastructure
     Assert.That(acc.serverInfo.url, Is.EqualTo("https://sample.com"));
     Assert.That(acc.token, Is.EqualTo("secret"));
   }
+
+  [Test]
+  public void EnsureLocalIdentifiers_AreUniqueAcrossServers()
+  {
+    // Accounts with the same user ID in different servers should always result in different local identifiers.
+    string id = "12345";
+    var acc1 = new Account
+    {
+      serverInfo = new ServerInfo { url = "https://speckle.xyz" },
+      userInfo = new UserInfo { id = id }
+    }.GetLocalIdentifier();
+
+    var acc2 = new Account
+    {
+      serverInfo = new ServerInfo { url = "https://app.speckle.systems" },
+      userInfo = new UserInfo { id = id }
+    }.GetLocalIdentifier();
+
+    Assert.That(acc1, Is.Not.EqualTo(acc2));
+  }
 }
