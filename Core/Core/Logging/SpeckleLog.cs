@@ -178,8 +178,7 @@ public static class SpeckleLog
       .Enrich.WithProperty("hostOsVersion", Environment.OSVersion)
       .Enrich.WithProperty("hostOsArchitecture", RuntimeInformation.ProcessArchitecture.ToString())
       .Enrich.WithProperty("runtime", RuntimeInformation.FrameworkDescription)
-      .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}")
-      .Enrich.FromGlobalLogContext();
+      .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
     if (logConfiguration.EnhancedLogContext)
     {
@@ -288,6 +287,7 @@ public static class SpeckleLog
       if (defaultAccount != null)
       {
         id = defaultAccount.GetHashedEmail();
+        s_isMachineIdUsed = false;
       }
     }
     catch (Exception ex) when (!ex.IsFatal())
