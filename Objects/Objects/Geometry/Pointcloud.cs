@@ -56,7 +56,7 @@ public class Pointcloud : Base, IHasBoundingBox, ITransformable<Pointcloud>
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Pointcloud pointcloud)
+  public bool TransformTo(Transform transform, out Pointcloud transformed)
   {
     // transform points
     var transformedPoints = new List<Point>();
@@ -66,7 +66,7 @@ public class Pointcloud : Base, IHasBoundingBox, ITransformable<Pointcloud>
       transformedPoints.Add(transformedPoint);
     }
 
-    pointcloud = new Pointcloud
+    transformed = new Pointcloud
     {
       units = units,
       points = transformedPoints.SelectMany(o => o.ToList()).ToList(),

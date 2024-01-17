@@ -174,7 +174,7 @@ public static class DefaultTraversal
   [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> geometryPropAliases => GeometryPropAliases;
 
-  [Obsolete("Renamed to " + nameof(GeometryPropAliases))]
+  [Obsolete("Renamed to " + nameof(DisplayValueAndElementsPropAliases))]
   [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Obsolete")]
   public static string[] displayValueAndElementsPropAliases => DisplayValueAndElementsPropAliases;

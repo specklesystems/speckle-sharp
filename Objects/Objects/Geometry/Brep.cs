@@ -442,7 +442,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
   public double volume { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Brep brep)
+  public bool TransformTo(Transform transform, out Brep transformed)
   {
     // transform display values
     var displayValues = new List<Mesh>(displayValue.Count);
@@ -484,7 +484,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
       transformedVertices.Add(transformedVertex);
     }
 
-    brep = new Brep
+    transformed = new Brep
     {
       provenance = provenance,
       units = units,
@@ -504,21 +504,29 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
 
     foreach (var e in Edges)
     {
-      brep.Edges.Add(
-        new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex, e.ProxyCurveIsReversed, e.Domain)
+      transformed.Edges.Add(
+        new BrepEdge(
+          transformed,
+          e.Curve3dIndex,
+          e.TrimIndices,
+          e.StartIndex,
+          e.EndIndex,
+          e.ProxyCurveIsReversed,
+          e.Domain
+        )
       );
     }
 
     foreach (var l in Loops)
     {
-      brep.Loops.Add(new BrepLoop(brep, l.FaceIndex, l.TrimIndices, l.Type));
+      transformed.Loops.Add(new BrepLoop(transformed, l.FaceIndex, l.TrimIndices, l.Type));
     }
 
     foreach (var t in Trims)
     {
-      brep.Trims.Add(
+      transformed.Trims.Add(
         new BrepTrim(
-          brep,
+          transformed,
           t.EdgeIndex,
           t.FaceIndex,
           t.LoopIndex,
@@ -534,7 +542,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
 
     foreach (var f in Faces)
     {
-      brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
+      transformed.Faces.Add(
+        new BrepFace(transformed, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed)
+      );
     }
 
     return success3D;
