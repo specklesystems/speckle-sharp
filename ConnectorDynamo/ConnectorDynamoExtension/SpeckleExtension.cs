@@ -37,7 +37,7 @@ public class SpeckleExtension : IViewExtension
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      SpeckleLog.Logger.Error(ex, "Failed to load Speckle extension");
+      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle extension");
     }
   }
 
