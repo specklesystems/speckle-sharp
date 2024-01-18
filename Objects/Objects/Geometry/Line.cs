@@ -48,7 +48,7 @@ public class Line : Base, ICurve, IHasBoundingBox, ITransformable<Line>
     this.units = units;
   }
 
-  [Obsolete("Use IList constructor")]
+  [Obsolete("Use IList constructor", true)]
   public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId) { }
 

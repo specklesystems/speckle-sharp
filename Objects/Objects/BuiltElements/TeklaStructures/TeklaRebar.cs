@@ -33,6 +33,7 @@ public class Hook : Base
 }
 
 [Obsolete("Deprecated in 2.17: set starthook and endhook to null or refer to hook angle instead")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
 public enum shape
 {
   NO_HOOK = 0,

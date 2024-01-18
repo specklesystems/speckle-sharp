@@ -11,6 +11,11 @@ public class RevitCeiling : Ceiling
   public RevitCeiling() { }
 
   [SchemaDeprecated, SchemaInfo("RevitCeiling", "Creates a Revit ceiling", "Revit", "Architecture")]
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Style",
+    "IDE0060:Remove unused parameter",
+    Justification = "Obsolete"
+  )]
   public RevitCeiling(
     [SchemaMainParam, SchemaParamInfo("Planar boundary curve")] ICurve outline,
     string family,
@@ -29,7 +34,6 @@ public class RevitCeiling : Ceiling
     this.level = level;
     this.slope = slope;
     this.slopeDirection = slopeDirection;
-    this.offset = offset;
     this.voids = voids ?? new();
     this.elements = elements;
   }
@@ -62,7 +66,7 @@ public class RevitCeiling : Ceiling
   public double slope { get; set; }
   public Line? slopeDirection { get; set; }
 
-  [Obsolete("Offset property is now captured in parameters to match the behavior of other Revit objects")]
+  [Obsolete("Offset property is now captured in parameters to match the behavior of other Revit objects", true)]
   public double offset { get; set; }
 
   public Base parameters { get; set; }

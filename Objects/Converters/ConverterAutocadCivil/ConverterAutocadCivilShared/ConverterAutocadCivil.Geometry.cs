@@ -511,9 +511,9 @@ public partial class ConverterAutocadCivil
   public Polyline3d PolylineToNativeDB(Polyline polyline)
   {
     var vertices = new Point3dCollection();
-    for (int i = 0; i < polyline.points.Count; i++)
+    foreach (Point point in polyline.GetPoints())
     {
-      vertices.Add(PointToNative(polyline.points[i]));
+      vertices.Add(PointToNative(point));
     }
 
     return new Polyline3d(Poly3dType.SimplePoly, vertices, polyline.closed);
