@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Objects.Other;
 using Speckle.Newtonsoft.Json;
@@ -22,12 +23,16 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
 
   /// <summary>
   /// OBSOLETE - This is just here for backwards compatibility.
-  /// You should not use this for anything. Access coordinates using X,Y,Z and weight fields.
   /// </summary>
-  [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-  private List<double> value
+  [
+    JsonProperty(NullValueHandling = NullValueHandling.Ignore),
+    Obsolete("Access coordinates using XYZ and weight fields", true)
+  ]
+  private new List<double> value
   {
+#pragma warning disable CS8603 // Possible null reference return. Reason: obsolete.
     get => null;
+#pragma warning restore CS8603 // Possible null reference return. Reason: obsolete.
     set
     {
       x = value[0];
@@ -39,10 +44,17 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
 
   public double weight { get; set; }
 
-  public bool TransformTo(Transform transform, out ControlPoint ctrlPt)
+  public bool TransformTo(Transform transform, out ControlPoint transformed)
   {
     TransformTo(transform, out Point transformedPoint);
-    ctrlPt = new ControlPoint(transformedPoint.x, transformedPoint.y, transformedPoint.z, weight, units, applicationId);
+    transformed = new ControlPoint(
+      transformedPoint.x,
+      transformedPoint.y,
+      transformedPoint.z,
+      weight,
+      units,
+      applicationId
+    );
     return true;
   }
 
@@ -56,7 +68,7 @@ public class ControlPoint : Point, ITransformable<ControlPoint>
     Deconstruct(out x, out y, out z, out weight, out _);
   }
 
-  public void Deconstruct(out double x, out double y, out double z, out double weight, out string units)
+  public void Deconstruct(out double x, out double y, out double z, out double weight, out string? units)
   {
     Deconstruct(out x, out y, out z, out units);
     weight = this.weight;

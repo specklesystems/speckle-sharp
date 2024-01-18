@@ -85,6 +85,8 @@ public partial class ConverterRevit
         return BuiltInCategory.OST_Columns.ToString();
       case BE.Pipe _:
         return BuiltInCategory.OST_PipeSegments.ToString();
+      case BE.RebarGroup<BE.RebarShape> _:
+        return BuiltInCategory.OST_Rebar.ToString();
       case BE.Rebar _:
         return BuiltInCategory.OST_Rebar.ToString();
       case BE.Topography _:

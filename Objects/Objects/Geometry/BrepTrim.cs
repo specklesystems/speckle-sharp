@@ -32,6 +32,8 @@ public class BrepTrim : Base
     IsoStatus = isoStatus;
     TrimType = trimType;
     IsReversed = reversed;
+    StartIndex = startIndex;
+    EndIndex = endIndex;
   }
 
   [JsonIgnore]

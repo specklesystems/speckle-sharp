@@ -68,15 +68,18 @@ public class Plane : Base, ITransformable<Plane>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Plane plane)
+  public bool TransformTo(Transform transform, out Plane transformed)
   {
     origin.TransformTo(transform, out Point transformedOrigin);
-    plane = new Plane
+    normal.TransformTo(transform, out Vector transformedNormal);
+    xdir.TransformTo(transform, out Vector transformedXdir);
+    ydir.TransformTo(transform, out Vector transformedYdir);
+    transformed = new Plane
     {
       origin = transformedOrigin,
-      normal = transform.ApplyToVector(normal),
-      xdir = transform.ApplyToVector(xdir),
-      ydir = transform.ApplyToVector(ydir),
+      normal = transformedNormal,
+      xdir = transformedXdir,
+      ydir = transformedYdir,
       applicationId = applicationId,
       units = units
     };

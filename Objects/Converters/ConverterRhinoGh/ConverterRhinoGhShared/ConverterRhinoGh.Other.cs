@@ -275,10 +275,20 @@ public partial class ConverterRhinoGh
   public Hatch[] HatchToNative(Other.Hatch hatch)
   {
     var curves = new List<Curve>();
-    curves =
-      hatch.loops != null
-        ? hatch.loops.Select(o => CurveToNative(o.Curve)).ToList()
-        : hatch.curves.Select(o => CurveToNative(o)).ToList();
+    if (hatch.loops != null)
+    {
+      curves = hatch.loops.Select(o => CurveToNative(o.Curve)).ToList();
+    }
+    else if (hatch.curves is not null) // this could've been an old hatch, using the deprecated loops property
+    {
+      curves = hatch.curves.Select(o => CurveToNative(o))?.ToList();
+    }
+
+    if (curves.Count == 0)
+    {
+      throw new ArgumentException("Hatch did not contain any loops or curves.");
+    }
+
     var pattern = Doc.HatchPatterns.FindName(hatch.pattern);
     int index;
     if (pattern == null)
