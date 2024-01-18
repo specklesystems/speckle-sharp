@@ -10,14 +10,11 @@ namespace Speckle.Core.Tests.Unit.Logging;
 public class SpeckleLogTests : IDisposable
 {
   private StringWriter _stdOut;
-  private Logger _sut;
 
   [SetUp]
   public virtual void Setup()
   {
-    _sut = SpeckleLog.CreateConfiguredLogger(nameof(SpeckleLogTests), null, SetUp.TestLogConfig);
     _stdOut = new StringWriter();
-    Console.SetOut(_stdOut);
     Console.SetOut(_stdOut);
   }
 
@@ -25,7 +22,6 @@ public class SpeckleLogTests : IDisposable
   public void TearDown()
   {
     _stdOut?.Dispose();
-    _sut?.Dispose();
   }
 
   [OneTimeTearDown]
@@ -46,7 +42,8 @@ public class SpeckleLogTests : IDisposable
   public void LoggerWrites_WithLogEventLevel(LogEventLevel logLevel, bool expectLog)
   {
     const string TEMPLATE = "My log message";
-    _sut.Write(logLevel, TEMPLATE);
+
+    SpeckleLog.Logger.Write(logLevel, TEMPLATE);
 
     string result = _stdOut.ToString();
 
@@ -130,6 +127,5 @@ public class SpeckleLogTests : IDisposable
   public void Dispose()
   {
     _stdOut?.Dispose();
-    _sut?.Dispose();
   }
 }
