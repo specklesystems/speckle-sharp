@@ -1,6 +1,6 @@
 #include "GetSlabData.hpp"
-
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -114,27 +114,9 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Slab::sectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (element.slab.cutFillPen.hasValue) {
-		os.Add (Slab::cutFillPen, element.slab.cutFillPen.value);
-	}
-#else
-	if (element.slab.penOverride.overrideCutFillPen) {
-		os.Add (Slab::cutFillPen, element.slab.penOverride.cutFillPen);
-	}
-#endif
 
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (element.slab.cutFillBackgroundPen.hasValue) {
-		os.Add (Slab::cutFillBackgroundPen, element.slab.cutFillBackgroundPen.value);
-	}
-#else
-	if (element.slab.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Slab::cutFillBackgroundPen, element.slab.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.slab, os, Slab::cutFillPen, Slab::cutFillBackgroundPen);
 
 	// Outlines
 

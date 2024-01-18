@@ -190,7 +190,7 @@ public partial class ConverterDynamo
 
   public CoordinateSystem TransformToNative(Transform transform)
   {
-    return CoordinateSystem.ByMatrix(transform.value).Scale(Units.GetConversionFactor(transform.units, ModelUnits));
+    return CoordinateSystem.ByMatrix(transform.ToArray()).Scale(Units.GetConversionFactor(transform.units, ModelUnits));
   }
 
   #endregion
@@ -213,7 +213,10 @@ public partial class ConverterDynamo
     {
       l.bbox = BoxToSpeckle(line.BoundingBox, u);
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      // TODO: Should a Line even have a bounding box?
+    }
     return l;
   }
 

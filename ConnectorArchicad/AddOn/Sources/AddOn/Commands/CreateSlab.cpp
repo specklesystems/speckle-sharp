@@ -1,7 +1,6 @@
 #include "CreateSlab.hpp"
-
 #include "APIMigrationHelper.hpp"
-#include "CreateCommandHelpers.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -224,7 +223,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill and cut fill backgound pens
-	if (CreateCommandHelpers::GetCutFillPens (
+	if (CommandHelpers::SetCutfillPens(
 		os,
 		Slab::cutFillPen,
 		Slab::cutFillBackgroundPen,

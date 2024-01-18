@@ -1,7 +1,6 @@
 #include "CreateBeam.hpp"
-
 #include "APIMigrationHelper.hpp"
-#include "CreateCommandHelpers.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -444,7 +443,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill and cut fill backgound pens
-	if (CreateCommandHelpers::GetCutFillPens (
+	if (CommandHelpers::SetCutfillPens(
 		os, 
 		Beam::OverrideCutFillPenIndex,
 		Beam::OverrideCutFillBackgroundPenIndex,

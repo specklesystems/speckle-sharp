@@ -1,5 +1,7 @@
 #include "GetBeamData.hpp"
+
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -223,27 +225,8 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 			os.Add (Beam::CutContourLinetypeName, GS::UniString{attrib.header.name});
 	}
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (elem.beam.cutFillPen.hasValue) {
-		os.Add (Beam::OverrideCutFillPenIndex, elem.beam.cutFillPen.value);
-	}
-#else
-	if (elem.beam.penOverride.overrideCutFillPen) {
-		os.Add (Beam::OverrideCutFillPenIndex, elem.beam.penOverride.cutFillPen);
-	}
-#endif
-
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (elem.beam.cutFillBackgroundPen.hasValue) {
-		os.Add (Beam::OverrideCutFillBackgroundPenIndex, elem.beam.cutFillBackgroundPen.value);
-	}
-#else
-	if (elem.beam.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Beam::OverrideCutFillBackgroundPenIndex, elem.beam.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (elem.beam, os, Beam::OverrideCutFillPenIndex, Beam::OverrideCutFillBackgroundPenIndex);
 
 	// Floor Plan and Section - Outlines
 

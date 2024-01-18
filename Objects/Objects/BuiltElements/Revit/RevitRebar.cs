@@ -70,7 +70,7 @@ public class RevitRebarHook : RebarHook
 }
 
 #region Obsolete
-[Obsolete("Deprecated in 2.17: Use RevitRebarGroup class instead", true)]
+[Obsolete("Deprecated in 2.17: Use RevitRebarGroup class instead")]
 public class RevitRebar : Rebar
 {
   public string family { get; set; }

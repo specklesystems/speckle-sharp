@@ -1,7 +1,6 @@
 #include "CreateShell.hpp"
-
 #include "APIMigrationHelper.hpp"
-#include "CreateCommandHelpers.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -1063,7 +1062,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill and cut fill backgound pens
-	if (CreateCommandHelpers::GetCutFillPens (
+	if (CommandHelpers::SetCutfillPens(
 		os,
 		Shell::CutFillPen,
 		Shell::CutFillBackgroundPen,

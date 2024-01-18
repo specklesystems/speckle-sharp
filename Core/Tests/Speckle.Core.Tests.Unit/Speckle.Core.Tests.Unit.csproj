@@ -39,5 +39,4 @@
     <ProjectReference Include="..\..\Core\Core.csproj" />
     <ProjectReference Include="..\..\Transports\DiskTransport\DiskTransport.csproj" />
   </ItemGroup>
-
 </Project>

@@ -1,6 +1,6 @@
 #include "GetWallData.hpp"
-
 #include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -133,7 +133,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	// The reference line location of the wall (outside, center, inside, core outside, core center or core inside)
 	os.Add (Wall::ReferenceLineLocation, referenceLineLocationNames.Get (wall.referenceLineLocation));
 
-	// The offset of the wall’s base line from reference line
+	// The offset of the wallï¿½s base line from reference line
 	if (wall.type != APIWtyp_Poly &&
 		wall.referenceLineLocation != APIWallRefLine_Center &&
 		wall.referenceLineLocation != APIWallRefLine_CoreCenter) {
@@ -163,7 +163,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// Floor Plan and Section - Cut Surfaces parameters
 
-	// The pen index and linetype name of wall’s cut contour line
+	// The pen index and linetype name of wallï¿½s cut contour line
 	if (wall.modelElemStructureType == API_BasicStructure) {
 		os.Add (Wall::CutLinePenIndex, wall.contPen);
 
@@ -175,34 +175,15 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 			os.Add (Wall::CutLinetypeName, GS::UniString{attribute.header.name});
 	}
 
-	// Override cut fill pen
-#ifdef ServerMainVers_2700
-	if (wall.cutFillPen.hasValue) {
-		os.Add (Wall::OverrideCutFillPenIndex, wall.cutFillPen.value);
-	}
-#else
-	if (wall.penOverride.overrideCutFillPen) {
-		os.Add (Wall::OverrideCutFillPenIndex, wall.penOverride.cutFillPen);
-	}
-#endif
-
-	// Override cut fill backgound pen
-#ifdef ServerMainVers_2700
-	if (wall.cutFillBackgroundPen.hasValue) {
-		os.Add (Wall::OverrideCutFillBackgroundPenIndex, wall.cutFillBackgroundPen.value);
-	}
-#else
-	if (wall.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Wall::OverrideCutFillBackgroundPenIndex, wall.penOverride.cutFillBackgroundPen);
-	}
-#endif
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (wall, os, Wall::OverrideCutFillPenIndex, Wall::OverrideCutFillBackgroundPenIndex);
 
 	// Floor Plan and Section - Outlines parameters
 
-	// The pen index of wall’s uncut contour line
+	// The pen index of wallï¿½s uncut contour line
 	os.Add (Wall::UncutLinePenIndex, wall.contPen3D);
 
-	// The linetype name of wall’s uncut contour line
+	// The linetype name of wallï¿½s uncut contour line
 	BNZeroMemory (&attribute, sizeof (API_Attribute));
 	attribute.header.typeID = API_LinetypeID;
 	attribute.header.index = wall.belowViewLineType;
@@ -210,10 +191,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attribute))
 		os.Add (Wall::UncutLinetypeName, GS::UniString{attribute.header.name});
 
-	// The pen index of wall’s overhead contour line
+	// The pen index of wallï¿½s overhead contour line
 	os.Add (Wall::OverheadLinePenIndex, wall.aboveViewLinePen);
 
-	// The linetype name of wall’s overhead contour line
+	// The linetype name of wallï¿½s overhead contour line
 	BNZeroMemory (&attribute, sizeof (API_Attribute));
 	attribute.header.typeID = API_LinetypeID;
 	attribute.header.index = wall.aboveViewLineType;

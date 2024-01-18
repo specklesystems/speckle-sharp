@@ -21,6 +21,8 @@ public class Pipe : Base, IDisplayValue<List<Mesh>>
     this.baseCurve = baseCurve;
     this.length = length;
     this.diameter = diameter;
+    this["flowRate"] = flowrate;
+    this["relativeRoughness"] = relativeRoughness;
   }
 
   public ICurve baseCurve { get; set; }

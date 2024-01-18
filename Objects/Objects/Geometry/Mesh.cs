@@ -39,7 +39,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     this.units = units;
   }
 
-  [Obsolete("Use lists constructor")]
+  [Obsolete("Use lists constructor", true)]
   public Mesh(
     double[] vertices,
     int[] faces,
@@ -101,7 +101,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Mesh mesh)
+  public bool TransformTo(Transform transform, out Mesh transformed)
   {
     // transform vertices
     var transformedVertices = new List<Point>();
@@ -111,7 +111,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
       transformedVertices.Add(transformedVertex);
     }
 
-    mesh = new Mesh
+    transformed = new Mesh
     {
       vertices = transformedVertices.SelectMany(o => o.ToList()).ToList(),
       textureCoordinates = textureCoordinates,
@@ -120,7 +120,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
       colors = colors,
       units = units
     };
-    mesh["renderMaterial"] = this["renderMaterial"];
+    transformed["renderMaterial"] = this["renderMaterial"];
 
     return true;
   }
@@ -173,10 +173,10 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   }
 
   /// <summary>
-  /// Gets a texture coordinate as a <see cref="(T1, T2)"/> by <paramref name="index"/>
+  /// Gets a texture coordinate as a <see cref="ValueTuple{T1, T2}"/> by <paramref name="index"/>
   /// </summary>
   /// <param name="index">The index of the texture coordinate</param>
-  /// <returns>Texture coordinate as a <see cref="(T1, T2)"/></returns>
+  /// <returns>Texture coordinate as a <see cref="ValueTuple{T1, T2}"/></returns>
   public (double, double) GetTextureCoordinate(int index)
   {
     index *= 2;

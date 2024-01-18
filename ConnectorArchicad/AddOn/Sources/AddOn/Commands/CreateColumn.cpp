@@ -1,7 +1,6 @@
 #include "CreateColumn.hpp"
-
 #include "APIMigrationHelper.hpp"
-#include "CreateCommandHelpers.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -225,8 +224,8 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 			ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, venThick);
 
 			// The extrusion overridden material name
+			ResetAPIOverriddenAttribute (memo.columnSegments[idx].extrusionSurfaceMaterial);
 			if (currentSegment.Contains (Column::ColumnSegment::ExtrusionSurfaceMaterial)) {
-
 
 				GS::UniString attrName;
 				currentSegment.Get (Column::ColumnSegment::ExtrusionSurfaceMaterial, attrName);
@@ -238,14 +237,17 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						SetAPIOverriddenAttribute (memo.columnSegments[idx].extrusionSurfaceMaterial, attrib.header.index);
-					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (extrusionSurfaceMaterial));
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (extrusionSurfaceMaterial));
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (extrusionSurfaceMaterial));
 			}
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (extrusionSurfaceMaterial));
+
 
 			// The ends overridden material name
+			ResetAPIOverriddenAttribute (memo.columnSegments[idx].endsMaterial);
 			if (currentSegment.Contains (Column::ColumnSegment::EndsSurfaceMaterial)) {
 
 
@@ -259,12 +261,13 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						SetAPIOverriddenAttribute (memo.columnSegments[idx].endsMaterial, attrib.header.index);
-					ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (endsMaterial));
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeIndexField (endsMaterial));
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (endsMaterial));
 			}
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, GetAPIOverriddenAttributeBoolField (endsMaterial));
 
 			// The overridden materials are chained
 			if (currentSegment.Contains (Column::ColumnSegment::MaterialsChained))
@@ -368,7 +371,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill and cut fill backgound pens
-	if (CreateCommandHelpers::GetCutFillPens (
+	if (CommandHelpers::SetCutfillPens(
 		os,
 		Column::OverrideCutFillPenIndex,
 		Column::OverrideCutFillBackgroundPenIndex,

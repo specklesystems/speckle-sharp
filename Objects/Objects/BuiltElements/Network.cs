@@ -12,11 +12,9 @@ namespace Objects.BuiltElements;
 /// <remarks>
 /// Network <see cref="elements"/> may need to be created first in native applications before they are linked.
 /// </remarks>
+[Obsolete("Networks are no longer used in any connector to assemble MEP systems.")]
 public class Network : Base
 {
-  [Obsolete(
-    "The Network was previously used to assemble MEP systems, but now MEP systems are assembled by the RevitCommitObjectBuilder as MEP elements are converted."
-  )]
   public Network() { }
 
   public string name { get; set; }
@@ -32,20 +30,20 @@ public class Network : Base
   public List<NetworkLink> links { get; set; }
 }
 
+[Obsolete("Networks are no longer used in any connector to assemble MEP systems.")]
 public class NetworkElement : Base
 {
-  [Obsolete("The NetworkElement class is obsolete because the Network class is now obsolete")]
   public NetworkElement() { }
 
   public string name { get; set; }
 
-  [DetachProperty]
   /// <summary>
   /// The Base object representing the element in the network (eg Pipe, Duct, etc)
   /// </summary>
   /// <remarks>
   /// Currently named "elements" to assist with receiving in connector flatten method.
   /// </remarks>
+  [DetachProperty]
   public Base elements { get; set; }
 
   /// <summary>
@@ -65,9 +63,9 @@ public class NetworkElement : Base
 #pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type. Reason: obsolete.
 }
 
+[Obsolete("Networks are no longer used in any connector to assemble MEP systems.")]
 public class NetworkLink : Base
 {
-  [Obsolete("The NetworkLink class is obsolete because the Network class is now obsolete")]
   public NetworkLink() { }
 
   public string name { get; set; }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.Functions;
@@ -91,72 +92,58 @@ public static class Utils
           return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
         }
       }
-      catch (Exception e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
       }
     }
   }
 
-  //My god this function sucks. It took me 20 mins to understand. Why not one that simply deals with one stream wrapper, and then use linq to cast things around?
+  /// <summary>
+  /// Attempts to parse an input object into a list of stream wrapper instances.
+  /// </summary>
+  /// <param name="input"></param>
+  /// <returns>The list of stream wrappers provided as input, or null if the input could not be parsed</returns>
   internal static List<StreamWrapper> InputToStream(object input)
   {
-    try
+    return input switch
     {
-      //it's a list
-      var array = (input as ArrayList)?.ToArray();
+      ArrayList arrayList => InputArrayListToStreams(arrayList),
+      StreamWrapper sw => new List<StreamWrapper> { sw },
+      string s when !string.IsNullOrEmpty(s) => new List<StreamWrapper> { new(s) },
+      _ => null
+    };
+  }
 
-      try
-      {
-        //list of stream wrappers
-        return array.Cast<StreamWrapper>().ToList();
-      }
-      catch
-      {
-        //ignored
-      }
-
-      try
-      {
-        //list of urls
-        return array.Cast<string>().Select(x => new StreamWrapper(x)).ToList();
-      }
-      catch
-      {
-        //ignored
-      }
-    }
-    catch
+  private static List<StreamWrapper> InputArrayListToStreams(ArrayList arrayList)
+  {
+    if (arrayList == null)
     {
-      // ignored
+      return null;
     }
+
+    var array = arrayList.ToArray();
 
     try
     {
-      //single stream wrapper
-      var sw = input as StreamWrapper;
-      if (sw != null)
-      {
-        return new List<StreamWrapper> { sw };
-      }
+      //list of stream wrappers
+      return array.Cast<StreamWrapper>().ToList();
     }
-    catch
+    catch (InvalidCastException)
     {
-      //ignored
+      // List is not comprised of StreamWrapper instances
+      // This failure is expected.
     }
 
     try
     {
-      //single url
-      var s = input as string;
-      if (!string.IsNullOrEmpty(s))
-      {
-        return new List<StreamWrapper> { new(s) };
-      }
+      //list of urls
+      return array.Cast<string>().Select(x => new StreamWrapper(x)).ToList();
     }
-    catch
+    catch (InvalidCastException)
     {
-      //ignored
+      // List is not comprised of string instances
+      // This failure is expected.
     }
 
     return null;
