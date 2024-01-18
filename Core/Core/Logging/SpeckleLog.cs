@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Sentry;
 using Serilog;
-using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -111,6 +110,8 @@ public static class SpeckleLog
 
   private static bool s_initialized;
 
+  private static bool s_isMachineIdUsed;
+
   private static string s_logFolderPath;
 
   /// <summary>
@@ -134,12 +135,19 @@ public static class SpeckleLog
     logConfiguration ??= new SpeckleLogConfiguration();
 
     s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
-    Log.Logger = Logger;
+    var id = GetUserIdFromDefaultAccount();
+    s_logger = s_logger.ForContext("id", id).ForContext("isMachineId", s_isMachineIdUsed);
 
-    AddUserIdToGlobalContextFromDefaultAccount();
-    AddVersionInfoToGlobalContext();
-    AddHostOsInfoToGlobalContext();
-    AddHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
+    // Configure scope after logger created.
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.User = new User { Id = id };
+    });
+
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.SetTag("hostApplication", hostApplicationName);
+    });
 
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
@@ -171,10 +179,18 @@ public static class SpeckleLog
     var canLogToFile = true;
     s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
     var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
+
+    var fileVersionInfo = GetFileVersionInfo();
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
       .Is(logConfiguration.MinimumLevel)
       .Enrich.FromLogContext()
-      .Enrich.FromGlobalLogContext();
+      .Enrich.WithProperty("version", fileVersionInfo.FileVersion)
+      .Enrich.WithProperty("productVersion", fileVersionInfo.ProductVersion)
+      .Enrich.WithProperty("hostOs", DetermineHostOsSlug())
+      .Enrich.WithProperty("hostOsVersion", Environment.OSVersion)
+      .Enrich.WithProperty("hostOsArchitecture", RuntimeInformation.ProcessArchitecture.ToString())
+      .Enrich.WithProperty("runtime", RuntimeInformation.FrameworkDescription)
+      .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
     if (logConfiguration.EnhancedLogContext)
     {
@@ -236,9 +252,15 @@ public static class SpeckleLog
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
+
     if (logConfiguration.LogToFile && !canLogToFile)
     {
       logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
+    }
+
+    if (s_isMachineIdUsed)
+    {
+      logger.Warning("Cannot set user id for the global log context.");
     }
 
     return logger;
@@ -256,7 +278,7 @@ public static class SpeckleLog
     }
   }
 
-  private static void AddUserIdToGlobalContextFromDefaultAccount()
+  private static string GetUserIdFromDefaultAccount()
   {
     var machineName = Environment.MachineName;
     var userName = Environment.UserName;
@@ -268,26 +290,23 @@ public static class SpeckleLog
       {
         id = defaultAccount.GetHashedEmail();
       }
+      else
+      {
+        s_isMachineIdUsed = true;
+      }
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
-      Logger.Warning(ex, "Cannot set user id for the global log context.");
+      // To log it after Logger initialized as deferred action.
+      s_isMachineIdUsed = true;
     }
-    GlobalLogContext.PushProperty("id", id);
-
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.User = new User { Id = id };
-    });
+    return id;
   }
 
-  private static void AddVersionInfoToGlobalContext()
+  private static FileVersionInfo GetFileVersionInfo()
   {
     var assembly = Assembly.GetExecutingAssembly().Location;
-    var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly);
-
-    GlobalLogContext.PushProperty("version", fileVersionInfo.FileVersion);
-    GlobalLogContext.PushProperty("productVersion", fileVersionInfo.ProductVersion);
+    return FileVersionInfo.GetVersionInfo(assembly);
   }
 
   private static string DetermineHostOsSlug()
@@ -308,35 +327,5 @@ public static class SpeckleLog
     }
 
     return RuntimeInformation.OSDescription;
-  }
-
-  private static void AddHostOsInfoToGlobalContext()
-  {
-    var osVersion = Environment.OSVersion;
-    var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-    var osSlug = DetermineHostOsSlug();
-    var runtime = RuntimeInformation.FrameworkDescription;
-    GlobalLogContext.PushProperty("hostOs", osSlug);
-    GlobalLogContext.PushProperty("hostOsVersion", osVersion);
-    GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
-    GlobalLogContext.PushProperty("runtime", runtime);
-
-    Logger.Information(
-      "Executing using {runtime} on {hostOs} {hostOsVersion} {hostOsArchitecture}",
-      runtime,
-      osSlug,
-      osVersion,
-      osArchitecture
-    );
-  }
-
-  private static void AddHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
-  {
-    GlobalLogContext.PushProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
-
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.SetTag("hostApplication", hostApplicationName);
-    });
   }
 }
