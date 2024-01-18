@@ -18,6 +18,7 @@ public class SpeckleLogTests : IDisposable
     _sut = SpeckleLog.CreateConfiguredLogger(nameof(SpeckleLogTests), null, SetUp.TestLogConfig);
     _stdOut = new StringWriter();
     Console.SetOut(_stdOut);
+    Console.SetOut(_stdOut);
   }
 
   [TearDown]
@@ -25,6 +26,14 @@ public class SpeckleLogTests : IDisposable
   {
     _stdOut?.Dispose();
     _sut?.Dispose();
+  }
+
+  [OneTimeTearDown]
+  public void OneTimeTearDown()
+  {
+    var standardOutput = new StreamWriter(Console.OpenStandardOutput());
+    standardOutput.AutoFlush = true;
+    Console.SetOut(standardOutput);
   }
 
   [Test]
