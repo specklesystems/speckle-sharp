@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExampleApp", "Examples\ExampleApp.csproj", "{73BBCC3C-E649-4977-A34A-7CF424D638E6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBTransport", "Transports\MongoDBTransport\MongoDBTransport.csproj", "{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transports", "Transports", "{424ECC59-E693-4678-AFAC-C00F2D8AE735}"
@@ -34,10 +32,6 @@ Global
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
