@@ -29,7 +29,7 @@ public class App : IExtensionApplication
   public RibbonControl ribbon;
 
   #region Initializing and termination
-  
+
   [SuppressMessage(
     "Design",
     "CA1031:Do not catch general exception types",
