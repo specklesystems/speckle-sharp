@@ -745,7 +745,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
             }
           );
         }
-        catch
+        catch (Exception ex) when (!ex.IsFatal())
         {
           // Do nothing!
         }

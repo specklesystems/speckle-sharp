@@ -117,9 +117,9 @@ public partial class ConverterRhinoGh
         {
           userStringsBase[key] = userStrings[key];
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          notes.Add($"Could not attach user string: {e.Message}");
+          notes.Add($"Could not attach user string: {ex.Message}");
         }
       }
 
