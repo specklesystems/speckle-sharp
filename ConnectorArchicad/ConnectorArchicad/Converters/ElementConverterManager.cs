@@ -85,6 +85,7 @@ public sealed partial class ElementConverterManager
     SpeckleLog.Logger.Debug("Conversion started (element types: {0})", SelectedObjects.Count);
 
     progress.Max = SelectedObjects.Sum(x => x.Value.Count());
+    progress.Value = 0;
 
     List<Base> allObjects = new List<Base>();
     foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
@@ -276,8 +277,9 @@ public sealed partial class ElementConverterManager
       applicationObject.Update(status: ApplicationObject.State.Created);
 
       progress.Report.Log(applicationObject);
-      ++progress.Value;
     }
+
+    progress.Value = progress.Value + convertedObjects.Count();
 
     return convertedObjects;
   }
