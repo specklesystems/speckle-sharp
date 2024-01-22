@@ -20,7 +20,7 @@ public static class SpecklePathProvider
 
   private static string s_objectsFolderName = "Objects";
 
-  private static string s_logFolderName = "Logs";
+  private const string LOG_FOLDER_NAME = "Logs";
 
   private static string UserDataPathEnvVar => "SPECKLE_USERDATA_PATH";
   private static string? Path => Environment.GetEnvironmentVariable(UserDataPathEnvVar);
@@ -168,7 +168,7 @@ public static class SpecklePathProvider
   public static string LogFolderPath(string hostApplicationName, string? hostApplicationVersion)
   {
     return EnsureFolderExists(
-      EnsureFolderExists(UserSpeckleFolderPath, s_logFolderName),
+      EnsureFolderExists(UserSpeckleFolderPath, LOG_FOLDER_NAME),
       $"{hostApplicationName}{hostApplicationVersion ?? ""}"
     );
   }

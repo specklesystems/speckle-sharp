@@ -197,10 +197,10 @@ public static class MeshTriangulationHelper
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   private static bool TestPointTriangle(Vector3 v, Vector3 a, Vector3 b, Vector3 c)
   {
-    bool Test(Vector3 _v, Vector3 _a, Vector3 _b)
+    static bool Test(Vector3 v, Vector3 a, Vector3 b)
     {
-      Vector3 crossA = _v.Cross(_a);
-      Vector3 crossB = _v.Cross(_b);
+      Vector3 crossA = v.Cross(a);
+      Vector3 crossB = a.Cross(b);
       double dotWithEpsilon = double.Epsilon + crossA.Dot(crossB);
       return Math.Sign(dotWithEpsilon) != -1;
     }

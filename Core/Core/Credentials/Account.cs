@@ -33,7 +33,7 @@ public class Account : IEquatable<Account>
 
   public string refreshToken { get; set; }
 
-  public bool isDefault { get; set; } = false;
+  public bool isDefault { get; set; }
   public bool isOnline { get; set; } = true;
 
   public ServerInfo serverInfo { get; set; }

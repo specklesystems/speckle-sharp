@@ -11,6 +11,7 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.RhinoGh;
 
@@ -187,7 +188,7 @@ public partial class ConverterRhinoGh
 
       notes.Add($"Attached {schemaObject.speckle_type} schema");
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       notes.Add($"Could not attach {schemaObject.speckle_type} schema: {ex.Message}");
     }
