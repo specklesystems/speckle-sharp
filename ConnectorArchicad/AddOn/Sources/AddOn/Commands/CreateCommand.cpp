@@ -190,8 +190,11 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 					}
 				}
 
-				if (err == NoError)
+				if (err == NoError) {
 					err = ImportClassificationsAndProperties (objectState, element.header.guid);
+					if (err != NoError)
+						err = NoError;  // don't fail because of classification systems
+				}
 			}
 
 			GS::ObjectState applicationObject;

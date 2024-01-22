@@ -30,7 +30,6 @@
 #define GetShellDataCommandName					"GetShellData";
 #define GetSkylightCommandName					"GetSkylightData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
-#define GetSubelementInfoCommandName			"GetSubelementInfo";
 #define CreateDirectShapeCommandName 			"CreateDirectShape";
 #define CreateWallCommandName					"CreateWall";
 #define CreateDoorCommandName					"CreateDoor";
