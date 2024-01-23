@@ -10,6 +10,8 @@ namespace DesktopUI2.Views;
 
 public class MainWindow : ReactiveWindow<MainViewModel>
 {
+  public bool CancelClosing { get; set; } = true;
+
   public MainWindow()
   {
     this.WhenActivated(disposables => { });
@@ -22,8 +24,11 @@ public class MainWindow : ReactiveWindow<MainViewModel>
 
   protected override void OnClosing(CancelEventArgs e)
   {
-    Hide();
-    e.Cancel = true;
+    if (CancelClosing)
+    {
+      Hide();
+      e.Cancel = true;
+    }
     base.OnClosing(e);
   }
 }

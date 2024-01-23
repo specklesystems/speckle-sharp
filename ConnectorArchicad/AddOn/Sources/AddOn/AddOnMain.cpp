@@ -23,7 +23,6 @@
 #include "Commands/GetShellData.hpp"
 #include "Commands/GetSkylightData.hpp"
 #include "Commands/GetProjectInfo.hpp"
-#include "Commands/GetSubElementInfo.hpp"
 #include "Commands/GetZoneData.hpp"
 #include "Commands/CreateWall.hpp"
 #include "Commands/CreateDoor.hpp"
@@ -196,7 +195,6 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetDoorData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetWindowData> ()));
-	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
 	CHECKERROR (ACAPI_AddOnAddOnCommunication_InstallAddOnCommandHandler (NewOwned<AddOnCommands::GetElementBaseData> ()));

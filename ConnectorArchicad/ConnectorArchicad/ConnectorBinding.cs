@@ -216,6 +216,8 @@ public partial class ArchicadBinding : ConnectorBindings
         var context = Archicad.Helpers.Timer.Context.Peek;
         using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
         {
+          progress.Value = 0;
+          progress.Max = 0;
           return await Speckle.Core.Api.Helpers.Send(
             IdentifyStream(state),
             commitObject,

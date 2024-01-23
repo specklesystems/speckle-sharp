@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
@@ -40,19 +37,7 @@ class Program
     Bindings = new ArchicadBinding(archicadVersion);
     Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
 
-    CreateOrFocusSpeckle(args);
-    // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
-  }
-
-  public static void CreateOrFocusSpeckle(string[] args)
-  {
-    if (MainWindow == null)
-    {
-      BuildAvaloniaApp().Start(AppMain, args);
-    }
-
-    MainWindow.Show();
-    MainWindow.Activate();
+    BuildAvaloniaApp().Start(AppMain, args);
   }
 
   public static AppBuilder BuildAvaloniaApp() =>
@@ -77,7 +62,7 @@ class Program
   private static void AppMain(Application app, string[] args)
   {
     var viewModel = new MainViewModel(Bindings);
-    MainWindow = new MainWindow { DataContext = viewModel };
+    MainWindow = new MainWindow { DataContext = viewModel, CancelClosing = false };
 
     app.Run(MainWindow);
   }
