@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ConnectorArchicad.Communication.Commands;
-using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands;
 

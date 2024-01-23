@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using DesktopUI2.ViewModels;
-using Objects.BuiltElements.Archicad;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Beam = Objects.BuiltElements.Beam;
@@ -16,7 +15,6 @@ using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Fenestration = Objects.BuiltElements.Archicad.ArchicadFenestration;
 using Floor = Objects.BuiltElements.Floor;
 using Roof = Objects.BuiltElements.Roof;
-using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
@@ -57,7 +55,7 @@ public sealed partial class ElementConverterManager
   {
     var objectToCommit = new Collection("Archicad model", "model");
 
-    ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+    var conversionOptions = new ConversionOptions(state.Settings);
 
     IEnumerable<string> elementIds = state.Filter.Selection;
     if (state.Filter.Slug == "all")
@@ -87,7 +85,7 @@ public sealed partial class ElementConverterManager
     progress.Max = SelectedObjects.Sum(x => x.Value.Count());
     progress.Value = 0;
 
-    List<Base> allObjects = new List<Base>();
+    List<Base> allObjects = new();
     foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
     {
       SpeckleLog.Logger.Debug("{0}: {1}", element, guids.Count());
@@ -273,7 +271,7 @@ public sealed partial class ElementConverterManager
 
     foreach (Base convertedObject in convertedObjects)
     {
-      ApplicationObject applicationObject = new ApplicationObject(convertedObject.applicationId, elementType.Name);
+      ApplicationObject applicationObject = new(convertedObject.applicationId, elementType.Name);
       applicationObject.Update(status: ApplicationObject.State.Created);
 
       progress.Report.Log(applicationObject);

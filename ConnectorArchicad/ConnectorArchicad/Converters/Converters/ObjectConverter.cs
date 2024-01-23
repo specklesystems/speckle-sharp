@@ -1,13 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
-using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;

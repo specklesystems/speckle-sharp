@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using Archicad.Model;
 using Objects;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using DesktopUI2.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
