@@ -1,8 +1,8 @@
-﻿namespace Speckle.ConnectorNavisworks.Other;
+namespace Speckle.ConnectorNavisworks.Other;
 
 public static class Constants
 {
-  public const string RootNodePseudoId = "___";
+  public const string ROOT_NODE_PSEUDO_ID = "___";
 
   public enum ConversionState
   {

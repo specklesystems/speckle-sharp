@@ -1,3 +1,5 @@
+#nullable disable
+
 using System;
 using System.Linq;
 using System.Reflection;
@@ -7,7 +9,7 @@ using Speckle.Newtonsoft.Json.Converters;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class ConstantCaseEnumConverter : StringEnumConverter
+internal class ConstantCaseEnumConverter : StringEnumConverter
 {
   public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
   {
@@ -26,7 +28,10 @@ public class ConstantCaseEnumConverter : StringEnumConverter
       if (string.IsNullOrEmpty(memberName))
       {
         if (!AllowIntegerValues)
+        {
           throw new JsonSerializationException($"Integer value {value} is not allowed.");
+        }
+
         writer.WriteValue(value);
       }
       else

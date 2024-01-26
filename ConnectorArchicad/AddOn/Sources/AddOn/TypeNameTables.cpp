@@ -26,6 +26,27 @@ const GS::HashTable<API_ElemType, GS::UniString> elementNames
 };
 
 
+GSErrCode GetElementTypeName (const API_ElemType& elementType, GS::UniString& elementTypeName)
+{
+	// check typeID and variationID first
+	if (elementNames.ContainsKey(elementType)) {
+		elementTypeName = elementNames.Get (elementType);
+		return NoError;
+	}
+	
+	// check only typeID
+	for (auto elementNameIt : elementNames)
+	{
+		if (elementNameIt.key->typeID == elementType.typeID) {
+			elementTypeName = *(elementNameIt.value);
+			return NoError;
+		}
+	}
+	
+	return Error;
+}
+
+
 const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames
 {
 	{ API_BasicStructure,			"Basic"},

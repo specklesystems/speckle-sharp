@@ -23,14 +23,16 @@ public partial class ConnectorBindingsNavisworks
 
     var manualFilter = new ManualSelectionFilter();
 
-    if (_doc == null)
+    if (s_doc == null)
+    {
       return filters;
+    }
 
     filters.Add(manualFilter);
 
-    var selectSetsRootItem = _doc.SelectionSets.RootItem;
+    var selectSetsRootItem = s_doc.SelectionSets.RootItem;
 
-    var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).ToList();
+    var savedSelectionSets = selectSetsRootItem?.Children.Select(GetSets).ToList() ?? new List<TreeNode>();
 
     if (savedSelectionSets.Count > 0)
     {
@@ -45,13 +47,11 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(selectionSetsFilter);
     }
 
-    var savedViewsRootItem = _doc.SavedViewpoints.RootItem;
+    var savedViewsRootItem = s_doc.SavedViewpoints.RootItem;
 
-    var savedViews = savedViewsRootItem.Children
-      .Select(GetViews)
-      .Select(RemoveNullNodes)
-      .Where(x => x != null)
-      .ToList();
+    var savedViews =
+      savedViewsRootItem?.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null).ToList()
+      ?? new List<TreeNode>();
 
     if (savedViews.Count > 0)
     {
@@ -68,20 +68,26 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    var clashPlugin = _doc.GetClash();
-    var clashTests = clashPlugin.TestsData;
+    DocumentClash clashPlugin = s_doc.GetClash();
 
-    var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+    var clashTests = clashPlugin?.TestsData;
 
-    if (groupedClashResults?.Count >= 0)
+    if (clashTests != null)
     {
-      //  var clashReportFilter = new TreeSelectionFilter
-      //  {
-      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-      //    Description = "Select group clash test results.",
-      //    Values = groupedClashResults
-      //  };
-      //  filters.Add(clashReportFilter);
+      // var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
+      //
+      // if (groupedClashResults.Count >= 0)
+      // {
+      //
+      //
+      //   var clashReportFilter = new TreeSelectionFilter
+      //   {
+      //     Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+      //     Description = "Select group clash test results.",
+      //     Values = groupedClashResults
+      //   };
+      //   filters.Add(clashReportFilter);
+      // }
     }
 
     filters.Add(allFilter);
@@ -96,22 +102,26 @@ public partial class ConnectorBindingsNavisworks
       DisplayName = savedItem.DisplayName,
       Guid = savedItem.Guid,
       IndexWith = nameof(TreeNode.Guid),
-      Indices = _doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
+      Indices = s_doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
     };
 
     if (!savedItem.IsGroup)
+    {
       return treeNode;
+    }
 
     //iterate the children and output
     foreach (var childItem in ((GroupItem)savedItem).Children)
+    {
       treeNode.Elements.Add(GetSets(childItem));
+    }
 
     return treeNode.Elements.Count > 0 ? treeNode : null;
   }
 
   private static TreeNode GetViews(SavedItem savedItem)
   {
-    var reference = _doc.SavedViewpoints.CreateReference(savedItem);
+    var reference = s_doc.SavedViewpoints.CreateReference(savedItem);
 
     var treeNode = new TreeNode
     {
@@ -132,6 +142,8 @@ public partial class ConnectorBindingsNavisworks
         return null;
       case false:
         return treeNode;
+      default:
+        break; // handles savedItem.IsGroup == true, somewhat redundant
     }
 
     foreach (var childItem in ((GroupItem)savedItem).Children)
@@ -146,15 +158,21 @@ public partial class ConnectorBindingsNavisworks
   private static TreeNode RemoveNullNodes(TreeNode node)
   {
     if (node == null)
+    {
       return null;
+    }
 
-    if (!node.Elements.Any())
+    if (node.Elements.Count == 0)
+    {
       return node;
+    }
 
     var elements = node.Elements.Select(RemoveNullNodes).Where(childNode => childNode != null).ToList();
 
-    if (!elements.Any())
+    if (elements.Count == 0)
+    {
       return null;
+    }
 
     node.Elements = elements;
     return node;
@@ -173,7 +191,9 @@ public partial class ConnectorBindingsNavisworks
 
     //iterate the children and output only grouped clashes
     foreach (var result in clashTest.Children)
+    {
       if (result.IsGroup)
+      {
         treeNode.Elements.Add(
           new TreeNode
           {
@@ -182,6 +202,8 @@ public partial class ConnectorBindingsNavisworks
             IndexWith = nameof(TreeNode.Guid)
           }
         );
+      }
+    }
 
     return treeNode.Elements.Count > 0 ? treeNode : null;
   }

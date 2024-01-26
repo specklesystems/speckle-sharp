@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
-using Serilog.Context;
-using Serilog.Core;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -89,7 +87,10 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
       Dictionary<string, object> inputData = new();
 
       if (Params.Input.Count == 0)
+      {
         return;
+      }
+
       var hasErrors = false;
 
       var duplicateKeys = Params.Input.Select(p => p.NickName).GroupBy(x => x).Count(group => group.Count() > 1);
@@ -108,7 +109,9 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
 
       //TODO: Original node
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Create Object");
+      }
 
       Params.Input.ForEach(ighParam =>
       {
@@ -137,6 +140,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             var values = new List<object>();
             DA.GetDataList(index, values);
             if (!param.Optional)
+            {
               if (values.Count == 0)
               {
                 AddRuntimeMessage(
@@ -145,6 +149,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 );
                 hasErrors = true;
               }
+            }
 
             inputData[key] = values;
             break;
@@ -168,16 +173,23 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
     if (!GetSolveResults(DA, out Base result))
+    {
       // Not running on multi threaded, handle this properly
       return;
+    }
 
     if (result != null)
+    {
       DA.SetData(0, result);
+    }
   }
 
   public async Task<Base> DoWork(Dictionary<string, object> inputData)
@@ -187,7 +199,9 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
       var @base = new Base();
       var hasErrors = false;
       if (inputData == null)
+      {
         @base = null;
+      }
 
       inputData?.Keys
         .ToList()
@@ -195,7 +209,10 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
         {
           var value = inputData[key];
           if (value is SpeckleObjectGroup group)
+          {
             value = group.Value;
+          }
+
           if (value is List<object> list)
           {
             // Value is a list of items, iterate and convert.
@@ -209,7 +226,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 })
                 .ToList();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
@@ -220,7 +237,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             {
               @base[key] = converted;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -234,11 +251,15 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             try
             {
               if (Converter != null)
+              {
                 @base[key] = value == null ? null : Utilities.TryConvertItemToSpeckle(value, Converter);
+              }
               else
+              {
                 @base[key] = value;
+              }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -248,11 +269,13 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
         });
 
       if (hasErrors)
+      {
         @base = null;
+      }
 
       return @base;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
@@ -268,7 +291,10 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
     Params.ParameterChanged += (sender, args) =>
     {
       if (args.ParameterSide != GH_ParameterSide.Input)
+      {
         return;
+      }
+
       switch (args.OriginalArguments.Type)
       {
         case GH_ObjectEventType.NickName:

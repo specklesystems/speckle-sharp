@@ -129,4 +129,16 @@
   <data name="MeshToNative" xml:space="preserve">
     <value>Time: Mesh to native</value>
   </data>
+  <data name="ConvertToSpeckle" xml:space="preserve">
+    <value>Time: Convert to Speckle: {0}</value>
+  </data>
+  <data name="MeshToSpeckle" xml:space="preserve">
+    <value>Time: Mesh to Speckle</value>
+  </data>
+  <data name="ReceiveFromServer" xml:space="preserve">
+    <value>Time: Receive From Server</value>
+  </data>
+  <data name="SendToServer" xml:space="preserve">
+    <value>Time: Send To Server</value>
+  </data>
 </root>

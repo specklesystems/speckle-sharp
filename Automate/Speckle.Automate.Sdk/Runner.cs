@@ -1,9 +1,10 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
 using Speckle.Automate.Sdk.Schema;
-using Speckle.Newtonsoft.Json;
+using Speckle.Core.Logging;
 
 namespace Speckle.Automate.Sdk;
 
@@ -21,23 +22,32 @@ public static class AutomationRunner
   )
     where TInput : struct
   {
-    var automationContext = await AutomationContext.Initialize(automationRunData, speckleToken).ConfigureAwait(false);
+    AutomationContext automationContext = await AutomationContext
+      .Initialize(automationRunData, speckleToken)
+      .ConfigureAwait(false);
 
     try
     {
       await automateFunction(automationContext, inputs).ConfigureAwait(false);
       if (automationContext.RunStatus is not ("FAILED" or "SUCCEEDED"))
+      {
         automationContext.MarkRunSuccess(
           "WARNING: Automate assumed a success status, but it was not marked as so by the function."
         );
+      }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       Console.WriteLine(ex.ToString());
       automationContext.MarkRunFailed("Function error. Check the automation run logs for details.");
     }
     finally
     {
+      if (automationContext.ContextView is null)
+      {
+        automationContext.SetContextView();
+      }
+
       await automationContext.ReportRunStatus().ConfigureAwait(false);
     }
     return automationContext;
@@ -76,7 +86,7 @@ public static class AutomationRunner
   }
 
   /// <summary>
-  /// Main entrypoint to execute an Automate function with input data of type <see cref="TInput"/>
+  /// Main entrypoint to execute an Automate function with input data of type <typeparamref name="TInput"/>.
   /// </summary>
   /// <param name="args">The command line arguments passed into the function by automate</param>
   /// <param name="automateFunction">The automate function to execute</param>
@@ -85,53 +95,43 @@ public static class AutomationRunner
   public static async Task<int> Main<TInput>(string[] args, Func<AutomationContext, TInput, Task> automateFunction)
     where TInput : struct
   {
-    var returnCode = 0; // This is the CLI return code, defaults to 0 (Success), change to 1 to flag a failed run.
+    int returnCode = 0; // This is the CLI return code, defaults to 0 (Success), change to 1 to flag a failed run.
 
-    var speckleProjectDataArg = new Argument<string>(
-      name: "Speckle project data",
-      description: "The values of the project / model / version that triggered this function"
-    );
-    var functionInputsArg = new Argument<string>(
-      name: "Function inputs",
-      description: "The values provided by the function user, matching the function input schema"
-    );
-    var speckleTokenArg = new Argument<string>(
-      name: "Speckle token",
-      description: "A token to talk to the Speckle server with"
-    );
-    var rootCommand = new RootCommand();
-    rootCommand.AddArgument(speckleProjectDataArg);
-    rootCommand.AddArgument(functionInputsArg);
-    rootCommand.AddArgument(speckleTokenArg);
+    Argument<string> pathArg = new(name: "Input Path", description: "A file path to retrieve function inputs");
+    RootCommand rootCommand = new();
+
+    rootCommand.AddArgument(pathArg);
     rootCommand.SetHandler(
-      async (speckleProjectData, functionInputs, speckleToken) =>
+      async (inputPath) =>
       {
-        var automationRunData = JsonConvert.DeserializeObject<AutomationRunData>(speckleProjectData);
-        var functionInputsParsed = JsonConvert.DeserializeObject<TInput>(functionInputs);
+        FunctionRunData<TInput>? data = FunctionRunDataParser.FromPath<TInput>(inputPath);
 
-        var context = await RunFunction(automateFunction, automationRunData, speckleToken, functionInputsParsed)
+        AutomationContext context = await RunFunction(
+            automateFunction,
+            data.AutomationRunData,
+            data.SpeckleToken,
+            data.FunctionInputs
+          )
           .ConfigureAwait(false);
 
         if (context.RunStatus != AutomationStatusMapping.Get(AutomationStatus.Succeeded))
+        {
           returnCode = 1; // Flag run as failed.
+        }
       },
-      speckleProjectDataArg,
-      functionInputsArg,
-      speckleTokenArg
+      pathArg
     );
 
-    var schemaFilePathArg = new Argument<string>(
-      name: "Function inputs file path",
-      description: "A token to talk to the Speckle server with"
-    );
+    Argument<string> schemaFilePathArg =
+      new(name: "Function inputs file path", description: "A token to talk to the Speckle server with");
 
-    var generateSchemaCommand = new Command("generate-schema", "Generate JSON schema for the function inputs");
+    Command generateSchemaCommand = new("generate-schema", "Generate JSON schema for the function inputs");
     generateSchemaCommand.AddArgument(schemaFilePathArg);
     generateSchemaCommand.SetHandler(
-      async (schemaFilePath) =>
+      (schemaFilePath) =>
       {
-        var generator = new JSchemaGenerator { ContractResolver = new CamelCasePropertyNamesContractResolver() };
-        var schema = generator.Generate(typeof(TInput));
+        JSchemaGenerator generator = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+        JSchema schema = generator.Generate(typeof(TInput));
         schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
         File.WriteAllText(schemaFilePath, schema.ToString());
       },

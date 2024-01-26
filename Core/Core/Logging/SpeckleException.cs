@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +10,11 @@ public class SpeckleException : Exception
 {
   public SpeckleException() { }
 
-  public SpeckleException(string? message) : base(message) { }
+  public SpeckleException(string? message)
+    : base(message) { }
 
-  public SpeckleException(string? message, Exception? inner = null) : base(message, inner) { }
+  public SpeckleException(string? message, Exception? inner = null)
+    : base(message, inner) { }
 
   #region obsolete
   [Obsolete("Use any other constructor", true)]
@@ -28,10 +29,10 @@ public class SpeckleException : Exception
   }
 
   [Obsolete("Use any other constructor", true)]
-  public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info) : base(message) { }
+  public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info)
+    : base(message) { }
 
   [Obsolete("Use any other constructor", true)]
   public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
   #endregion
 }
-

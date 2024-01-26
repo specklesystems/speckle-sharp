@@ -1,29 +1,31 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Special;
+using Grasshopper.Kernel.Types;
 using Speckle.Core.Credentials;
 
 namespace ConnectorGrasshopper.Accounts;
 
 public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
 {
-  private string selectedServerUrl;
-
-  private string selectedUserId;
+  private Uri? _selectedAccountUrl;
 
   public AccountListComponent()
   {
     MutableNickName = false;
     //SetAccountList();
     Tracker = new ComponentTracker(null);
+    _selectedAccountUrl = null;
   }
 
   protected override Bitmap Icon => Resources.Accounts;
@@ -56,9 +58,6 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
     ListItems.Clear();
     ListItems.Add(new GH_ValueListItem("No account selected", ""));
     var accounts = AccountManager.GetAccounts().ToList();
-    var defaultAccount = AccountManager.GetDefaultAccount();
-    int index = 0,
-      defaultAccountIndex = 0;
 
     if (accounts.Count == 0)
     {
@@ -70,22 +69,18 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
       return;
     }
 
-    foreach (var account in accounts)
-    {
-      if (defaultAccount != null && account.userInfo.id == defaultAccount.userInfo.id)
-        defaultAccountIndex = index + 1;
-
-      ListItems.Add(new GH_ValueListItem(account.ToString(), $"\"{account.userInfo.id}\""));
-      index++;
-    }
-
     Tracker.TrackNodeRun("Accounts list");
 
-    if (string.IsNullOrEmpty(selectedServerUrl) && string.IsNullOrEmpty(selectedUserId))
-    {
-      // This is a new component, use default account
-      SelectItem(defaultAccountIndex);
+    var valueItems = accounts.Select(
+      account => new GH_ValueListItem(account.ToString(), $"\"{AccountManager.GetLocalIdentifierForAccount(account)}\"")
+    );
+    ListItems.AddRange(valueItems);
 
+    if (_selectedAccountUrl == null)
+    {
+      // This is a new component, use default account + 1 (first item is "No account selected")
+      var defaultAccountIndex = accounts.FindIndex(acc => acc.isDefault);
+      SelectItem(defaultAccountIndex + 1);
       return;
     }
 
@@ -96,27 +91,33 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
 
   private int GetSelectedAccountIndex(List<Account> accounts)
   {
-    //TODO: Refactor this into a method
-    // Check for the specific user ID that was selected before.
-    var acc = accounts.Find(a => a.userInfo.id == selectedUserId);
+    if (_selectedAccountUrl == null)
+    {
+      return -1;
+    }
+
+    var acc = AccountManager.GetAccountForLocalIdentifier(_selectedAccountUrl);
     if (acc != null)
     {
       var accIndex = accounts.IndexOf(acc);
       return accIndex + 1;
     }
-
-    // If the selected account doesn't work, try with another account in the same server
-    acc = accounts.FirstOrDefault(a => a.serverInfo.url == selectedServerUrl);
-    if (acc != null)
+    else
     {
-      var accIndex = accounts.IndexOf(acc);
-      AddRuntimeMessage(
-        GH_RuntimeMessageLevel.Remark,
-        "Account mismatch. Using a different account for the same server."
-      );
+      // If the selected account doesn't work, try with another account in the same server
+      acc = accounts.FirstOrDefault(a => a.serverInfo.url == _selectedAccountUrl.GetLeftPart(UriPartial.Authority));
+      if (acc != null)
+      {
+        var accIndex = accounts.IndexOf(acc);
+        AddRuntimeMessage(
+          GH_RuntimeMessageLevel.Remark,
+          "Account mismatch. Using a different account for the same server."
+        );
 
-      return accIndex + 1;
+        return accIndex + 1;
+      }
     }
+
     // If no accounts exist on the selected server, throw error in node.
     return -1;
   }
@@ -125,48 +126,49 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
   {
     // Set isNew to false, indicating this node already existed in some way. This prevents the `NodeCreate` event from being raised.
     IsNew = false;
-    try
+
+    string? userId = null;
+    string? serverUrl = null;
+    var idSuccess = reader.TryGetString("selectedId", ref userId);
+    var serverSuccess = reader.TryGetString("selectedServer", ref serverUrl);
+
+    var isIdValid = idSuccess && userId != "-";
+    var isServerValid = serverSuccess && serverUrl != "-";
+
+    string? accountUrl = null;
+    var accountUrlSuccess = reader.TryGetString(nameof(FirstSelectedItem), ref accountUrl);
+    var isAccountUrlValid = accountUrlSuccess && !string.IsNullOrEmpty(accountUrl);
+
+    if (isAccountUrlValid)
     {
-      selectedUserId = reader.GetString("selectedId");
-      selectedServerUrl = reader.GetString("selectedServer");
+      _selectedAccountUrl = new(accountUrl);
     }
-    catch (Exception e)
+    else if (isIdValid && isServerValid)
     {
-      Console.WriteLine(e);
+      _selectedAccountUrl = new(serverUrl + "?id=" + userId);
     }
+
     return base.Read(reader);
   }
 
   public override bool Write(GH_IWriter writer)
   {
-    try
-    {
-      var selectedUserId = FirstSelectedItem.Expression?.Trim('"');
-      var selectedAccount = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == selectedUserId);
-      if (selectedAccount != null)
-      {
-        writer.SetString("selectedId", selectedUserId);
-        writer.SetString("selectedServer", selectedAccount.serverInfo.url);
-      }
-      else
-      {
-        writer.SetString("selectedId", "-");
-        writer.SetString("selectedServer", "-");
-      }
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-    }
+    writer.SetString(nameof(FirstSelectedItem), FirstSelectedItem.Expression.Trim('"'));
     return base.Write(writer);
   }
 
+  /// <summary>
+  /// Custom method for collecting volatile data.
+  /// </summary>
   protected override void CollectVolatileData_Custom()
   {
     m_data.ClearData();
-
-    if (FirstSelectedItem.Value != null)
-      m_data.Append(FirstSelectedItem.Value, new GH_Path(0));
+    if (FirstSelectedItem.Value is GH_String strGoo)
+    {
+      var x = AccountManager.GetAccountForLocalIdentifier(new Uri(strGoo.Value));
+      m_data.Append(new GH_SpeckleAccountGoo { Value = x }, new GH_Path(0));
+    }
+    AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "hello");
   }
 
   public override void AddedToDocument(GH_Document document)
@@ -175,6 +177,8 @@ public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
     SetAccountList();
     // If the node is new (i.e. GH has not called Read(...) ) we log the node creation event.
     if (IsNew)
+    {
       Tracker.TrackNodeCreation("Accounts list");
+    }
   }
 }

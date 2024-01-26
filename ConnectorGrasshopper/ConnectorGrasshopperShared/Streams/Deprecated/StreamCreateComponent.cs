@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +16,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamCreateComponent : GH_SpeckleComponent
 {
   public StreamCreateComponent()
@@ -60,7 +66,9 @@ public class StreamCreateComponent : GH_SpeckleComponent
   public override bool Write(GH_IWriter writer)
   {
     if (stream == null)
+    {
       return base.Write(writer);
+    }
 
     var serialisedStreamWrapper = $"{stream.StreamId} {stream.ServerUrl} {stream.UserId}";
     writer.SetString("stream", serialisedStreamWrapper);

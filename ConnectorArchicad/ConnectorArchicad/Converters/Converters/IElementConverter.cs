@@ -5,22 +5,25 @@ using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Archicad.Converters
+namespace Archicad.Converters;
+
+public interface IConverter
 {
-  public interface IConverter
-  {
-    #region --- Properties ---
+  #region --- Properties ---
 
-    Type Type { get; }
+  Type Type { get; }
 
-    #endregion
+  #endregion
 
-    #region --- Functions ---
+  #region --- Functions ---
 
-    Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token);
+  Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions state
+  );
 
-    Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token);
+  Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token);
 
-    #endregion
-  }
+  #endregion
 }

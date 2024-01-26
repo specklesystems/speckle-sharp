@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -8,6 +8,7 @@ using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Conversion;
@@ -21,11 +22,16 @@ public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<stri
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -64,12 +70,17 @@ public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<stri
       // You must place "RunCount == 1" here,
       // because RunCount is reset when "InPreSolve" becomes "false"
       if (RunCount == 1)
+      {
         source = new CancellationTokenSource();
+      }
 
       GH_SpeckleBase item = null;
       DA.GetData(0, ref item);
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
+
       var task = Task.Run(() => DoWork(item, DA), source.Token);
       TaskList.Add(task);
       return;
@@ -87,15 +98,18 @@ public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<stri
   private string DoWork(GH_SpeckleBase item, IGH_DataAccess DA)
   {
     if (item?.Value != null)
+    {
       try
       {
         return Operations.Serialize(item.Value);
       }
-      catch (Exception e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
+        SpeckleLog.Logger.ForContext("speckle_type", item.Value.speckle_type).Error(ex, "Failed to serialise object");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, ex.ToFormattedString());
         return null;
       }
+    }
 
     AddRuntimeMessage(
       GH_RuntimeMessageLevel.Warning,

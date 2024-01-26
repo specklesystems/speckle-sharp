@@ -23,11 +23,16 @@ public class SqliteTransportComponent : GH_SpeckleComponent
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = Exposure;
     };
   }
@@ -90,7 +95,9 @@ public class SqliteTransportComponent : GH_SpeckleComponent
     }
 
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun();
+    }
 
     string basePath = null,
       applicationName = null,

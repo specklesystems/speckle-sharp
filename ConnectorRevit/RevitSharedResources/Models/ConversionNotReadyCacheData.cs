@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+namespace RevitSharedResources.Models;
 
-namespace RevitSharedResources.Models
+public struct ConversionNotReadyCacheData
 {
-  public struct ConversionNotReadyCacheData
+  public ConversionNotReadyCacheData(int numTimesCaught)
   {
-    public ConversionNotReadyCacheData(int numTimesCaught) 
-    { 
-      NumberOfTimesCaught = numTimesCaught;
-    }
-    public int NumberOfTimesCaught;
+    NumberOfTimesCaught = numTimesCaught;
   }
+
+  public int NumberOfTimesCaught;
 }

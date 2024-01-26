@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -54,7 +54,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="point">The point whose coordinates will be used</param>
   /// <param name="applicationId">The unique application ID of the object.</param>
   public Vector(Point point, string? applicationId = null)
-    : this(point.x, point.y, point.z, point.units, applicationId) { }
+    : this(point.x, point.y, point.z, point.units ?? Units.None, applicationId) { }
 
   /// <summary>
   /// Gets or sets the coordinates of the vector
@@ -65,7 +65,9 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   ]
   public List<double> value
   {
+#pragma warning disable CS8603 // Possible null reference return.
     get => null;
+#pragma warning restore CS8603 // Possible null reference return.
     set
     {
       x = value[0];
@@ -78,7 +80,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// The unit's this <see cref="Vector"/> is in.
   /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <summary>
   /// The x coordinate of the vector.
@@ -106,20 +108,20 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Vector vector)
+  public bool TransformTo(Transform transform, out Vector transformed)
   {
     var m = transform.matrix;
     var tX = x * m.M11 + y * m.M12 + z * m.M13;
     var tY = x * m.M21 + y * m.M22 + z * m.M23;
     var tZ = x * m.M31 + y * m.M32 + z * m.M33;
-    vector = new Vector(tX, tY, tZ, units, applicationId);
+    transformed = new Vector(tX, tY, tZ, units, applicationId);
     return true;
   }
 
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out ITransformable transformed)
   {
-    var res = TransformTo(transform, out Vector vec);
+    _ = TransformTo(transform, out Vector vec);
     transformed = vec;
     return true;
   }
@@ -150,10 +152,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector">The vector to divide</param>
   /// <param name="val">The value to divide by</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator /(Vector vector, double val)
-  {
-    return new Vector(vector.x / val, vector.y / val, vector.z / val, vector.units);
-  }
+  public static Vector operator /(Vector vector, double val) =>
+    new(vector.x / val, vector.y / val, vector.z / val, vector.units);
 
   /// <summary>
   /// Multiplies a vector by a numerical value. This will multiply each coordinate by the provided value.
@@ -161,10 +161,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector">The vector to multiply</param>
   /// <param name="val">The value to multiply by</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator *(Vector vector, double val)
-  {
-    return new Vector(vector.x * val, vector.y * val, vector.z * val, vector.units);
-  }
+  public static Vector operator *(Vector vector, double val) =>
+    new(vector.x * val, vector.y * val, vector.z * val, vector.units);
 
   /// <summary>
   /// Adds two vectors by adding each of their coordinates.
@@ -172,10 +170,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector1">The first vector</param>
   /// <param name="vector2">The second vector</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator +(Vector vector1, Vector vector2)
-  {
-    return new Vector(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z, vector1.units);
-  }
+  public static Vector operator +(Vector vector1, Vector vector2) =>
+    new(vector1.x + vector2.x, vector1.y + vector2.y, vector1.z + vector2.z, vector1.units);
 
   /// <summary>
   /// Subtracts two vectors by subtracting each of their coordinates.
@@ -183,10 +179,8 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector1">The first vector</param>
   /// <param name="vector2">The second vector</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator -(Vector vector1, Vector vector2)
-  {
-    return new Vector(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z, vector1.units);
-  }
+  public static Vector operator -(Vector vector1, Vector vector2) =>
+    new(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z, vector1.units);
 
   /// <summary>
   /// Gets the scalar product (dot product) of two given vectors
@@ -221,7 +215,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
     return Math.Acos(DotProduct(u, v) / (u.Length * v.Length));
   }
 
-  [Obsolete("Renamed to " + nameof(Normalize))]
+  [Obsolete("Renamed to " + nameof(Normalize), true)]
   public void Unitize()
   {
     Normalize();

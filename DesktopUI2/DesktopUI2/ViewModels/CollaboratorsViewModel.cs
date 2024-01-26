@@ -46,55 +46,73 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
   {
     AddedUsers = new ObservableCollection<AccountViewModel>();
     foreach (var collab in _stream.Stream.collaborators)
-      //skip myself
-      //if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
-      //  continue;
+    //skip myself
+    //if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
+    //  continue;
+    {
       AddedUsers.Add(new AccountViewModel(collab));
+    }
 
     foreach (var collab in _stream.Stream.pendingCollaborators)
+    {
       AddedUsers.Add(new AccountViewModel(collab));
+    }
 
     this.RaisePropertyChanged(nameof(AddedUsers));
   }
 
   private async void Search()
   {
-    Focus();
-    if (SearchQuery.Length < 3)
-      return;
-
-    if (!await Http.UserHasInternet().ConfigureAwait(true))
+    try
     {
-      Dispatcher.UIThread.Post(
-        () =>
-          MainUserControl.NotificationManager.Show(
-            new PopUpNotificationViewModel
-            {
-              Title = "⚠️ Oh no!",
-              Message = "Could not reach the internet, are you connected?",
-              Type = NotificationType.Error
-            }
-          ),
-        DispatcherPriority.Background
-      );
-
-      return;
-    }
-
-    if (SearchQuery.Contains("@"))
-    {
-      if (Utils.IsValidEmail(SearchQuery))
+      Focus();
+      if (SearchQuery.Length < 3)
       {
-        var emailAcc = new AccountViewModel { Name = SearchQuery };
-        Users = new List<AccountViewModel> { emailAcc };
+        return;
+      }
 
-        ShowProgress = false;
-        DropDownOpen = true;
+      if (!await Http.UserHasInternet().ConfigureAwait(true))
+      {
+        Dispatcher.UIThread.Post(
+          () =>
+            MainUserControl.NotificationManager.Show(
+              new PopUpNotificationViewModel
+              {
+                Title = "⚠️ Oh no!",
+                Message = "Could not reach the internet, are you connected?",
+                Type = NotificationType.Error
+              }
+            ),
+          DispatcherPriority.Background
+        );
+
+        return;
+      }
+
+      if (SearchQuery.Contains("@"))
+      {
+        if (Utils.IsValidEmail(SearchQuery))
+        {
+          var emailAcc = new AccountViewModel { Name = SearchQuery };
+          Users = new List<AccountViewModel> { emailAcc };
+
+          ShowProgress = false;
+          DropDownOpen = true;
+        }
+      }
+      else
+      {
+        userSearchDebouncer();
       }
     }
-    else
+    catch (Exception ex)
     {
-      userSearchDebouncer();
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(Search),
+        ex.Message
+      );
     }
   }
 
@@ -116,24 +134,27 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SearchUsers()
   {
-
     ShowProgress = true;
     try
     {
       //exclude existing ones
       var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
-      x => !AddedUsers.Any(u => u.Id == x.id)
-    );
+        x => !AddedUsers.Any(u => u.Id == x.id)
+      );
       //exclude myself
       users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
 
       Users = users.Select(x => new AccountViewModel(x)).ToList();
     }
-    catch
+    catch (Exception ex)
     {
-      //ignore
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(SearchUsers),
+        ex.Message
+      );
     }
-
 
     ShowProgress = false;
     DropDownOpen = true;
@@ -147,25 +168,42 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       foreach (var user in AddedUsers)
       {
         if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
+        {
           return true;
+        }
+
         if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
         )
+        {
           return true;
+        }
+
         if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
         )
+        {
           return true;
+        }
       }
 
       foreach (var user in _stream.Stream.collaborators)
+      {
         if (!AddedUsers.Any(x => x.Id == user.id))
+        {
           return true;
+        }
+      }
+
       foreach (var user in _stream.Stream.pendingCollaborators)
+      {
         if (!AddedUsers.Any(x => x.Id == user.id))
+        {
           return true;
+        }
+      }
     }
     catch (Exception ex)
     {
@@ -206,10 +244,13 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       {
         //mismatch between roles set within the dropdown and existing ones
         if (!user.Role.StartsWith("stream:"))
+        {
           user.Role = "stream:" + user.Role;
+        }
 
         //invite users by email
         if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
+        {
           try
           {
             await _stream.StreamState.Client
@@ -226,22 +267,20 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Invite Email"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite Email" } }
             );
           }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
           }
+        }
         //add new collaborators
         else if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
         )
+        {
           try
           {
             await _stream.StreamState.Client
@@ -258,22 +297,20 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Invite User"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite User" } }
             );
           }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
           }
+        }
         //update permissions, only if changed
         else if (
-          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
-          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
+          && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
         )
+        {
           try
           {
             await _stream.StreamState.Client
@@ -289,51 +326,46 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Update Permissions"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Update Permissions" } }
             );
           }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
           }
+        }
       }
 
       //remove collaborators
       foreach (var user in _stream.Stream.collaborators)
+      {
         if (!AddedUsers.Any(x => x.Id == user.id))
+        {
           try
           {
             await _stream.StreamState.Client
               .StreamRevokePermission(
-                new StreamRevokePermissionInput
-                {
-                  userId = user.id,
-                  streamId = _stream.StreamState.StreamId
-                }
+                new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
               )
               .ConfigureAwait(true);
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Remove User"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Remove User" } }
             );
           }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
           }
+        }
+      }
 
       //revoke invites
       foreach (var user in _stream.Stream.pendingCollaborators)
+      {
         if (!AddedUsers.Any(x => x.Id == user.id))
+        {
           try
           {
             await _stream.StreamState.Client
@@ -342,17 +374,15 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             Analytics.TrackEvent(
               _stream.StreamState.Client.Account,
               Analytics.Events.DUIAction,
-              new Dictionary<string, object>
-              {
-                {"name", "Stream Share"},
-                {"method", "Cancel Invite"}
-              }
+              new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Cancel Invite" } }
             );
           }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
           }
+        }
+      }
 
       try
       {
@@ -376,9 +406,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       }
 
       if (IsDialog)
+      {
         MainViewModel.RouterInstance.NavigateBack.Execute();
+      }
     }
-
     catch (Exception ex)
     {
       SpeckleLog.Logger.Error(
@@ -405,7 +436,9 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
   private void RemoveSeletedUsersCommand()
   {
     foreach (var item in SelectionModel.SelectedItems.ToList())
+    {
       AddedUsers.Remove(item);
+    }
 
     this.RaisePropertyChanged(nameof(HasSelectedUsers));
     this.RaisePropertyChanged(nameof(AddedUsers));
@@ -417,8 +450,12 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
     if (result != null)
+    {
       foreach (var item in SelectionModel.SelectedItems.ToList())
+      {
         item.Role = "stream:" + result;
+      }
+    }
 
     this.RaisePropertyChanged(nameof(AddedUsers));
   }

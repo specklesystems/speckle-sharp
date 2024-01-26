@@ -7,6 +7,8 @@
 #include "Utility.hpp"
 
 extern const GS::HashTable<API_ElemType, GS::UniString> elementNames;
+GSErrCode GetElementTypeName (const API_ElemType& elementType, GS::UniString& elementTypeName);
+
 extern const GS::HashTable<API_ModelElemStructureType, GS::UniString> structureTypeNames;
 
 extern const GS::HashTable<API_WallTypeID, GS::UniString> wallTypeNames;

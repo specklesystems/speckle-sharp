@@ -14,11 +14,14 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.PlugIns;
 using Rhino.Runtime;
-using Rhino.UI;
 using Serilog.Context;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
+
+#if !MAC
+using Rhino.UI;
+#endif
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 [assembly: NeutralResourcesLanguage("en")]
@@ -50,7 +53,9 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   public void Init()
   {
     if (appBuilder != null)
+    {
       return;
+    }
 #if MAC
       InitAvaloniaMac();
 #else
@@ -122,8 +127,12 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
       // remove any that don't already exist in the current active doc
       foreach (var incomingStream in incomingStreams)
+      {
         if (!ExistingStreams.Contains(incomingStream))
+        {
           RhinoDoc.ActiveDoc.Strings.Delete(SpeckleKey, incomingStream);
+        }
+      }
 
       // skip binding
       return;
@@ -135,7 +144,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         try
         {
           SpeckleCommandMac.CreateOrFocusSpeckle();
-        } catch (Exception ex)
+        } 
+        catch (Exception ex) when (!ex.IsFatal())
         {
           SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
@@ -150,8 +160,10 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   private void RhinoDoc_BeginOpenDocument(object sender, DocumentOpenEventArgs e)
   {
     if (e.Merge) // this is a paste or import event
+    {
       // get existing streams in doc before a paste or import operation to use for cleanup
       ExistingStreams = RhinoDoc.ActiveDoc.Strings.GetEntryNames(SpeckleKey).ToList();
+    }
   }
 
   /// <summary>
@@ -161,12 +173,16 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   {
     try
     {
-      var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+      const bool ENHANCED_LOG_CONTEXT =
+#if MAC
+        false;
+#else
+        true;
+#endif
+      var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
+
       var hostAppName = Utils.AppName;
       var hostAppVersion = Utils.RhinoAppName;
-#if MAC
-        logConfig.enhancedLogContext = false;
-#endif
       SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
       SpeckleLog.Logger.Information(
         "Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}",
@@ -174,7 +190,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         hostAppVersion
       );
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       RhinoApp.CommandLineOut.WriteLine("Failed to init speckle logger: " + e.ToFormattedString());
       return LoadReturnCode.ErrorShowDialog;
@@ -199,7 +215,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     {
       Init();
     }
-    catch (Exception ex)
+    // need investigation in seq of specific excpetions thrown (FileNotFound, TypeInitialization)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
       errorMessage = $"Failed to load Speckle Plugin with {ex.ToFormattedString()}";
@@ -227,12 +244,16 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     var plugin_version = Settings.GetString("PlugInVersion", null);
 
     if (string.IsNullOrEmpty(plugin_version))
+    {
       return;
+    }
 
     // If the version number of the plugin that was last used does not match the
     // version number of this plugin, proceed.
     if (0 == string.Compare(Version, plugin_version, StringComparison.OrdinalIgnoreCase))
+    {
       return;
+    }
 
     // Build a path to the user's staged RUI file.
     var sb = new StringBuilder();
@@ -241,6 +262,8 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
       sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
+#elif RHINO8
+      sb.Append(@"\McNeel\Rhinoceros\8.0\UI\Plug-ins\");
 #endif
     sb.AppendFormat("{0}.rui", Assembly.GetName().Name);
 
@@ -248,17 +271,32 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
 
     using (LogContext.PushProperty("path", path))
     {
-      SpeckleLog.Logger.Debug("Deleting and Updating RUI settings file");
-
       if (File.Exists(path))
+      {
+        SpeckleLog.Logger.Information("Deleting and Updating RUI settings file");
         try
         {
           File.Delete(path);
         }
-        catch (Exception ex)
+        catch (IOException ioEx)
         {
-          SpeckleLog.Logger.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
+          SpeckleLog.Logger.Error(
+            ioEx,
+            "Failed to delete Speckle toolbar .rui file with {exceptionMessage}",
+            ioEx.Message
+          );
+          RhinoApp.CommandLineOut.WriteLine($"Failed to delete Speckle toolbar {path} with {ioEx.ToFormattedString()}");
         }
+        catch (UnauthorizedAccessException uaEx)
+        {
+          SpeckleLog.Logger.Error(
+            uaEx,
+            "Failed to delete Speckle toolbar .rui file with {exceptionMessage}",
+            uaEx.Message
+          );
+          RhinoApp.CommandLineOut.WriteLine($"Failed to delete Speckle toolbar {path} with {uaEx.ToFormattedString()}");
+        }
+      }
     }
 
     // Save the version number of this plugin to our settings file.
@@ -269,14 +307,20 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
   {
     //do not hog rhino, to be refractored a bit
     if (MappingsViewModel.Instance == null)
+    {
       return;
+    }
 
 #if !MAC
     if (!Panels.GetOpenPanelIds().Contains(typeof(MappingsPanel).GUID))
+    {
       return;
+    }
 #else
-      if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
-        return;
+    if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
+    {
+      return;
+    }
 #endif
 
     try
@@ -293,7 +337,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
         MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
       }
     }
-    catch (Exception ex) { }
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   private void RhinoDoc_DeselectObjects(object sender, RhinoObjectSelectionEventArgs e)

@@ -15,7 +15,7 @@ public class BoltPatternProperties : ASBaseProperties<BoltPattern>, IASPropertie
 {
   public override Dictionary<string, ASProperty> BuildedPropertyList()
   {
-    Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
+    Dictionary<string, ASProperty> dictionary = new();
 
     InsertProperty(dictionary, "reference point", nameof(BoltPattern.RefPoint));
     InsertProperty(dictionary, "number of screws", nameof(BoltPattern.NumberOfScrews));

@@ -11,7 +11,7 @@ namespace Objects.Utils;
 public static class MeshTriangulationHelper
 {
   /// <summary>
-  /// Triangulates all faces in <paramref name="Mesh"/>.
+  /// Triangulates all faces in <paramref name="mesh"/>.
   /// </summary>
   /// <param name="mesh">The mesh to triangulate.</param>
   /// <param name="preserveQuads">If <see langword="true"/>, will not triangulate quad faces.</param>
@@ -23,7 +23,9 @@ public static class MeshTriangulationHelper
     {
       int n = mesh.faces[i];
       if (n < 3)
+      {
         n += 3; // 0 -> 3, 1 -> 4
+      }
 
       if (n == 3)
       {
@@ -60,13 +62,13 @@ public static class MeshTriangulationHelper
   }
 
   /// <summary>
-  /// Calculates the triangulation of the face at <paramref name="faceIndex"/> in <paramref name="mesh"/>.
+  /// Calculates the triangulation of the face at <paramref name="faceIndex"/> in <paramref name="faces"/> list.
   /// </summary>
   /// <remarks>
   /// This implementation is based the ear clipping method
   /// Proposed by "Christer Ericson (2005) <i>Real-Time Collision Detection</i>".
   /// </remarks>
-  /// <param name="faceIndex">The index of the face's cardinality indicator <c>n</c> in <paramref name="mesh"/>.<see cref="Mesh.faces"/></param>.
+  /// <param name="faceIndex">The index of the face's cardinality indicator <c>n</c> in <paramref name="faces"/> list</param>.
   /// <param name="faces"></param>
   /// <param name="vertices"></param>
   /// <param name="includeIndicators">if <see langword="true"/>, the returned list will include cardinality indicators for each triangle
@@ -81,7 +83,9 @@ public static class MeshTriangulationHelper
   {
     int n = faces[faceIndex];
     if (n < 3)
+    {
       n += 3; // 0 -> 3, 1 -> 4
+    }
     #region Local Funcitions
     //Converts from relative to absolute index (returns index in mesh.vertices list)
     int AsIndex(int v) => faceIndex + v + 1;
@@ -162,7 +166,10 @@ public static class MeshTriangulationHelper
         int c = faces[AsIndex(prev[i])];
 
         if (includeIndicators)
+        {
           triangleFaces.Add(3);
+        }
+
         triangleFaces.Add(a);
         triangleFaces.Add(b);
         triangleFaces.Add(c);
@@ -190,10 +197,10 @@ public static class MeshTriangulationHelper
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   private static bool TestPointTriangle(Vector3 v, Vector3 a, Vector3 b, Vector3 c)
   {
-    bool Test(Vector3 _v, Vector3 _a, Vector3 _b)
+    static bool Test(Vector3 v, Vector3 a, Vector3 b)
     {
-      Vector3 crossA = _v.Cross(_a);
-      Vector3 crossB = _v.Cross(_b);
+      Vector3 crossA = v.Cross(a);
+      Vector3 crossB = a.Cross(b);
       double dotWithEpsilon = double.Epsilon + crossA.Dot(crossB);
       return Math.Sign(dotWithEpsilon) != -1;
     }
@@ -235,22 +242,16 @@ public static class MeshTriangulationHelper
 
     public static readonly Vector3 Zero = new(0, 0, 0);
 
-    public static Vector3 operator +(Vector3 a, Vector3 b)
-    {
-      return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
-    }
+    public static Vector3 operator +(Vector3 a, Vector3 b) => new(a.x + b.x, a.y + b.y, a.z + b.z);
 
-    public static Vector3 operator -(Vector3 a, Vector3 b)
-    {
-      return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
-    }
+    public static Vector3 operator -(Vector3 a, Vector3 b) => new(a.x - b.x, a.y - b.y, a.z - b.z);
 
-    public double Dot(Vector3 v)
+    public readonly double Dot(Vector3 v)
     {
       return x * v.x + y * v.y + z * v.z;
     }
 
-    public Vector3 Cross(Vector3 v)
+    public readonly Vector3 Cross(Vector3 v)
     {
       var x = this.y * v.z - this.z * v.y;
       var y = this.z * v.x - this.x * v.z;
@@ -259,7 +260,7 @@ public static class MeshTriangulationHelper
       return new Vector3(x, y, z);
     }
 
-    public double SquareSum => x * x + y * y + z * z;
+    public readonly double SquareSum => x * x + y * y + z * z;
 
     public void Normalize()
     {

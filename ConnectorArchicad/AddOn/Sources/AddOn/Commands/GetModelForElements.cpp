@@ -1,4 +1,6 @@
 #include "GetModelForElements.hpp"
+
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "Sight.hpp"
 #include "ModelInfo.hpp"
@@ -79,7 +81,9 @@ static void GetModelInfoForElement (const Modeler::Elem& elem,
 		// edges
 		for (ULong edgeIdx = 0; edgeIdx < body.GetEdgeCount (); ++edgeIdx) {
 			const EDGE& edge = body.GetConstEdge (edgeIdx);
-			modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
+			// send only edges which have no polygons (only 3D lines)
+			if (edge.pgon1 == Brep::MeshBrep::Edge::InvalidPgonIdx && edge.pgon2 == Brep::MeshBrep::Edge::InvalidPgonIdx)
+				modelInfo.AddEdge (ModelInfo::EdgeId (edge.vert1 + vetrexOffset, edge.vert2 + vetrexOffset), ModelInfo::EdgeData (ModelInfo::VisibleEdge, edge.pgon1, edge.pgon2));
 		}
 
 		// polygons
@@ -218,13 +222,13 @@ static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelVie
 
 static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>&applicationIds)
 {
-	GSErrCode err = ACAPI_Automate (APIDo_ShowAllIn3DID);
+	GSErrCode err = ACAPI_View_ShowAllIn3D ();
 	if (err != NoError) {
 		return {};
 	}
 
 	Modeler::Sight* sight = nullptr;
-	err = ACAPI_3D_GetCurrentWindowSight ((void**) &sight);
+	err = ACAPI_Sight_GetCurrentWindowSight ((void**) &sight);
 	if (err != NoError || sight == nullptr) {
 		return {};
 	}

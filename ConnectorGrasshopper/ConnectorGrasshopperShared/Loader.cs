@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
@@ -38,23 +37,28 @@ public class Loader : GH_AssemblyPriority
 
   public override GH_LoadingInstruction PriorityLoad()
   {
-    var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
-    if (RhinoApp.Version.Major == 7)
-      version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+    string version = RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
-    var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+    const bool ENHANCED_LOG_CONTEXT =
 #if MAC
-      logConfig.enhancedLogContext = false;
+        false;
+#else
+      true;
 #endif
+    var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
+
     SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
     try
     {
-      // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
-      typeof(Setup)
-        .GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
-        .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
+      Setup.Init(version, HostApplications.Grasshopper.Slug);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
       // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
@@ -113,18 +117,24 @@ public class Loader : GH_AssemblyPriority
     Instances.DocumentEditor.Load += OnDocumentEditorLoad;
 
     if (canvas == null)
+    {
       return;
+    }
 
     canvas.KeyDown += (s, e) =>
     {
       if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
+      {
         KeyWatcher.TabPressed = true;
+      }
     };
 
     canvas.KeyUp += (s, e) =>
     {
       if (KeyWatcher.TabPressed && e.KeyCode == Keys.Tab)
+      {
         KeyWatcher.TabPressed = false;
+      }
     };
   }
 
@@ -135,7 +145,7 @@ public class Loader : GH_AssemblyPriority
       var mainMenu = Instances.DocumentEditor.MainMenuStrip;
       AddSpeckleMenu(mainMenu);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       ShowLoadErrorMessageBox();
     }
@@ -166,19 +176,27 @@ public class Loader : GH_AssemblyPriority
 
     // Update the check status of all
     foreach (var item in kitMenuItems)
+    {
       if (item is ToolStripMenuItem menuItem)
+      {
         menuItem.CheckState = clickedItem.Text.Trim() == selectedKit.Name ? CheckState.Checked : CheckState.Unchecked;
+      }
+    }
   }
 
   private void AddSpeckleMenu(MenuStrip mainMenu)
   {
     if (MenuHasBeenAdded)
+    {
       return;
+    }
     // Double check that the menu does not exist.
 
     var menuName = "Speckle 2";
     if (mainMenu.Items.ContainsKey(menuName))
+    {
       mainMenu.Items.RemoveByKey(menuName);
+    }
 
     speckleMenu = new ToolStripMenuItem(menuName);
 
@@ -242,11 +260,15 @@ public class Loader : GH_AssemblyPriority
 #endif
 
           if (File.Exists(path) || Directory.Exists(path))
+          {
             Process.Start(path);
+          }
           else
+          {
             Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
+          }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
           SpeckleLog.Logger.Fatal(
             ex,
@@ -259,7 +281,9 @@ public class Loader : GH_AssemblyPriority
     );
 
     if (!MenuHasBeenAdded)
+    {
       mainMenu.Items.Add(speckleMenu);
+    }
 
     MenuHasBeenAdded = true;
   }
@@ -290,7 +314,9 @@ public class Loader : GH_AssemblyPriority
         var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
 
         if (!Directory.Exists(path))
+        {
           Directory.CreateDirectory(path);
+        }
 #if MAC
           Process.Start("file://" + path);
 #else
@@ -351,7 +377,10 @@ public class Loader : GH_AssemblyPriority
               var current = 1;
               menu.DropDown.Items.Remove(loading);
               foreach (var item in kitMenuItems)
+              {
                 menu.DropDown.Items.Insert(current++, item);
+              }
+
               HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
               Instances.DocumentEditor.Refresh();
             }

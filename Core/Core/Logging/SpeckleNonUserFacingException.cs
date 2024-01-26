@@ -1,4 +1,3 @@
-﻿#nullable enable
 using System;
 
 namespace Speckle.Core.Logging;
@@ -10,7 +9,9 @@ public class SpeckleNonUserFacingException : SpeckleException
 {
   public SpeckleNonUserFacingException() { }
 
-  public SpeckleNonUserFacingException(string? message) : base(message) { }
+  public SpeckleNonUserFacingException(string? message)
+    : base(message) { }
 
-  public SpeckleNonUserFacingException(string? message, Exception? innerException) : base(message, innerException) { }
+  public SpeckleNonUserFacingException(string? message, Exception? innerException)
+    : base(message, innerException) { }
 }

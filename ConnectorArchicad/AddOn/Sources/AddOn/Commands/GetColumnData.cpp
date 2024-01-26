@@ -1,4 +1,6 @@
 #include "GetColumnData.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -37,11 +39,6 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (elem, memo, os);
-	if (NoError != err)
-		return err;
-
 	// Positioning - geometry
 	API_StoryType story = Utility::GetStory (elem.column.head.floorInd);
 	os.Add (ElementBase::Level, Objects::Level (story));
@@ -122,10 +119,10 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 
 			// The extrusion overridden material name
 			int countOverriddenMaterial = 0;
-			if (columnSegment.extrusionSurfaceMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (columnSegment.extrusionSurfaceMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = columnSegment.extrusionSurfaceMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (columnSegment.extrusionSurfaceMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -133,10 +130,10 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 			}
 
 			// The ends overridden material name
-			if (columnSegment.endsMaterial.overridden) {
+			if (IsAPIOverriddenAttributeOverridden (columnSegment.endsMaterial)) {
 				BNZeroMemory (&attrib, sizeof (API_Attribute));
 				attrib.header.typeID = API_MaterialID;
-				attrib.header.index = columnSegment.endsMaterial.attributeIndex;
+				attrib.header.index = GetAPIOverriddenAttribute (columnSegment.endsMaterial);
 
 				if (NoError == ACAPI_Attribute_Get (&attrib))
 					countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -199,18 +196,11 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 			os.Add (Column::VeneerLinetypeName, GS::UniString{attrib.header.name});
 	}
 
-	// Override cut fill pen
-	if (elem.column.penOverride.overrideCutFillPen) {
-		os.Add (Column::OverrideCutFillPenIndex, elem.column.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (elem.column.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Column::OverrideCutFillBackgroundPenIndex, elem.column.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (elem.column, os, Column::OverrideCutFillPenIndex, Column::OverrideCutFillBackgroundPenIndex);
 
 	// Floor Plan and Section - Outlines
-	;
+
 	// The pen index of column uncut contour line
 	os.Add (Column::UncutLinePenIndex, elem.column.belowViewLinePen);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Autodesk.Navisworks.Api;
@@ -16,23 +16,20 @@ public partial class ConverterNavisworks
   }
 
   // CAUTION: these strings need to have the same values as in the converter
-  private const string InternalOrigin = "Model Origin (default)";
-  private const string ProxyOrigin = "Project Base Origin";
-  private const string BBoxOrigin = "Boundingbox Origin";
-
+  private const string INTERNAL_ORIGIN = "Model Origin (default)";
+  private const string PROXY_ORIGIN = "Project Base Origin";
+  private const string BBOX_ORIGIN = "Boundingbox Origin";
 
   private static Dictionary<string, string> Settings { get; } = new();
-
 
   private static Vector2D ProjectBasePoint
   {
     get
     {
-      if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate"))
+      if (!Settings.TryGetValue("x-coordinate", out string x) || !Settings.TryGetValue("y-coordinate", out string y))
+      {
         return new Vector2D(0, 0);
-
-      var x = Settings["x-coordinate"];
-      var y = Settings["y-coordinate"];
+      }
 
       return new Vector2D(
         Convert.ToDouble(x, CultureInfo.InvariantCulture),
@@ -45,15 +42,16 @@ public partial class ConverterNavisworks
   {
     get
     {
-      if (!Settings.ContainsKey("reference-point"))
-        return Transforms.Default;
-      var value = Settings["reference-point"];
-
-      return value switch
+      if (!Settings.TryGetValue("reference-point", out string referencePoint))
       {
-        ProxyOrigin => Transforms.ProjectBasePoint,
-        BBoxOrigin => Transforms.BoundingBox,
-        InternalOrigin => Transforms.Default,
+        return Transforms.Default;
+      }
+
+      return referencePoint switch
+      {
+        PROXY_ORIGIN => Transforms.ProjectBasePoint,
+        BBOX_ORIGIN => Transforms.BoundingBox,
+        INTERNAL_ORIGIN => Transforms.Default,
         _ => Transforms.Default
       };
     }
@@ -63,11 +61,12 @@ public partial class ConverterNavisworks
   {
     get
     {
-      if (!Settings.ContainsKey("units"))
+      if (!Settings.TryGetValue("units", out string units))
+      {
         return Units.Meters;
-      var value = Settings["units"];
+      }
 
-      return (Units)Enum.Parse(typeof(Units), value, true);
+      return (Units)Enum.Parse(typeof(Units), units, true);
     }
   }
 
@@ -75,12 +74,12 @@ public partial class ConverterNavisworks
   {
     get
     {
-      if (!Settings.ContainsKey("internal-property-names"))
+      if (!Settings.TryGetValue("internal-property-names", out string useInternalPropertyNames))
+      {
         return false;
+      }
 
-      var value = Settings["internal-property-names"];
-
-      return value == "True";
+      return useInternalPropertyNames == "True";
     }
   }
 }

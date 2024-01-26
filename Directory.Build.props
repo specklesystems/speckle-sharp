@@ -16,36 +16,41 @@
   <PropertyGroup Label="General Config">
     <LangVersion>11</LangVersion>
     <DebugSymbols>true</DebugSymbols>
-    
-    <DebugSymbols>true</DebugSymbols>
+
+    <!-- False if running on CI, will prevent copying of files to local folders -->
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
     
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
     <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-
-    <!-- Ignore some warnings for now -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <!-- Ingored warnings, most aspirational but too noisy for now, some by design.  -->
     <NoWarn>
+      <!--Disabled by design-->
+      CA5399;CA1862;
       <!--XML comment-->
-      CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;
-      CS1711;CS1734;
-      <!--Others we don't want-->
-      CA1815;CA1054;CA5399;
+      CS1591;CS1573;
       <!--Nullability-->
-      CS8618;CS8602;CS8600;
-      CS1998; IDE0007; CS0618;
-      <!-- Globalization rules disabled -->
+      CS8618;
+      <!-- Globalization rules -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
-      $(NoWarn)
+      <!--Others we don't want-->
+      CA1815;CA1054;$(NoWarn)
     </NoWarn>
     
     <WarningsAsErrors>
+      $(WarningsAsErrors);
       <!--Net6 default enabled analysers-->
       CA1416; CA1417; CA1418; CA1831; CA2013; CA2014; CA2015; CA2017;
       CA2018; CA2200; CA2252; CA2247; CA2255; CA2256; CA2257; CA2258;
       <!--Net7 default enabled analysers-->
       CA1420; CA1422; CA2259; CA2260;
+      <!--Net8 default enabled analysers-->
+      CA1856; CA1857; CA2021; CA2261;
       <!--Security analysers -->
       CA2100; CA2119; CA2153; CA2300; CA2301; CA2302; CA2305;
       CA2310; CA2311; CA2312; CA2315; CA2321; CA2322; CA2326; CA2327;
@@ -58,18 +63,43 @@
       CA5376; CA5377; CA5378; CA5379; CA5380; CA5381; CA5382; CA5383;
       CA5384; CA5385; CA5386; CA5387; CA5388; CA5389; CA5390; CA5391;
       CA5392; CA5393; CA5395; CA5396; CA5397; CA5398;
-      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405
+      CA5400; CA5401; CA5402; CA5403; CA5404; CA5405;
+
       <!-- The following security analysers are ommited as errors for the listed reasons -->
       <!--"CA5394: Do not use insecure randomness" - random number generators used for non cryptographic usecases-->
       <!--"CA2109: Review visible event handlers" - threat has not existed since net4.5-->
       <!--"CA3075: Insecure DTD Processing" - we assume loaded XML is trusted-->
       <!--"CA5369: Use XmlReader for Deserialize" - we assume loaded XML is trusted-->
       <!--"CA5399: Enable HttpClient certificate revocation list check" - causes issues with corporate networks that use SSL decryption. HTTPClientHandler does check for invalid SSL certs without this property set true-->
+      
+      <!--Level 1 "Severe Warnings"-->
+      CS0183; CS0184; CS0197; CS0420; CS0465; CS0602; CS0626; CS0657; CS0658; CS0672; CS0684; CS0688;
+      CS1030; CS1058; CS1060; CS1200; CS1201; CS1202; CS1203;
+      CS1522; CS1580; CS1581; CS1584; CS1589; CS1590; CS1592; CS1598;
+      CS1607; CS1616; CS1633; CS1634; CS1635; CS1645; CS1658; CS1682; CS1683; CS1684; CS1685; CS1687; CS1690; CS1691; CS1692; CS1694; CS1695; CS1696; CS1697; CS1699;
+      CS1707; CS1709; CS1720; CS1723; CS1762;
+      CS1911; CS1956; CS1957;
+      CS2002; CS2014; CS2023; CS2029;
+      CS3000; CS3001; CS3002; CS3003; CS3004; CS3005; CS3006; CS3008; CS3009; CS3010; CS3011; CS3012; CS3013; CS3014; CS3015; CS3017; CS3018; CS3022; CS3023; CS3024; CS3026; CS3027;
+      CS5000;
+      
+      <!-- The following Level 1 warnings have violations in our code, all are aspirataional, but not high priority -->
+      <!--"CS0612: 'member' is obsolete"-->
+      <!--"CS0809: Obsolete member 'memberA' overrides non-obsolete member 'memberB'."-->
+      <!--"CS1570: XML comment on 'construct' has badly formed XML — 'reason'"-->
+      <!--"CS1574: XML comment on 'construct' has syntactically incorrect cref attribute 'name'"-->
+      <!--"CS4014: Because this call is not awaited, execution of the current method continues before the call is completed"-->
     </WarningsAsErrors>
-
-    <!-- False if running on CI, will prevent copying of files to local folders -->
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    
     <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(IsDesktopBuild) == 'false'">
+    <WarningsAsErrors>
+      $(WarningsAsErrors);
+      IDE0011;IDE0090;IDE0161;IDE0005;
+      CA1806;CA1806;CA1806;CA1031;
+    </WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Config">

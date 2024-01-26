@@ -18,7 +18,7 @@ public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
   {
-    var unused = Settings.TryGetValue("_Mode", out var mode);
+    var _ = Settings.TryGetValue("_Mode", out var mode);
 
     Base @base;
 
@@ -33,7 +33,7 @@ public partial class ConverterNavisworks
         {
           case string pseudoId:
             element =
-              pseudoId == RootNodePseudoId
+              pseudoId == ROOT_NODE_PSEUDO_ID
                 ? Application.ActiveDocument.Models.RootItems.First
                 : PointerToModelItem(pseudoId);
             break;
@@ -72,15 +72,16 @@ public partial class ConverterNavisworks
     }
   }
 
-  public List<Base> ConvertToSpeckle(List<object> objects)
-  {
-    throw new NotImplementedException();
-  }
+  private static readonly int[] s_lowerBounds = new int[1] { 1 };
+
+  public List<Base> ConvertToSpeckle(List<object> objects) => throw new NotImplementedException();
 
   public bool CanConvertToSpeckle(object @object)
   {
     if (@object is ModelItem modelItem)
+    {
       return CanConvertToSpeckle(modelItem);
+    }
 
     return false;
   }
@@ -97,25 +98,17 @@ public partial class ConverterNavisworks
     {
       var parts = referenceOrGuid.Split(':');
       using var savedItemReference = new SavedItemReference(parts[0], parts[1]);
-      savedViewpoint = parts.Length != 2
-        ? null
-        : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
+      savedViewpoint = parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
     }
 
     return savedViewpoint;
   }
 
-  private static Point ToPoint(InwLPos3f v)
-  {
-    return new Point(v.data1, v.data2, v.data3);
-  }
+  private static Point ToPoint(InwLPos3f v) => new(v.data1, v.data2, v.data3);
 
-  private static Vector ToVector(InwLVec3f v)
-  {
-    return new Vector(v.data1, v.data2, v.data3);
-  }
+  private static Vector ToVector(InwLVec3f v) => new(v.data1, v.data2, v.data3);
 
-  private static Base ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
+  private static View3D ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
   {
     var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
 
@@ -211,21 +204,17 @@ public partial class ConverterNavisworks
     return view;
   }
 
-  private static Point ScalePoint(Point cameraPosition, double scaleFactor)
-  {
-    return new Point(cameraPosition.x * scaleFactor, cameraPosition.y * scaleFactor, cameraPosition.z * scaleFactor);
-  }
+  private static Point ScalePoint(Point cameraPosition, double scaleFactor) =>
+    new(cameraPosition.x * scaleFactor, cameraPosition.y * scaleFactor, cameraPosition.z * scaleFactor);
 
-  private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance)
-  {
-    return new Point(
+  private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance) =>
+    new(
       cameraPosition.x + viewDirection.x * focalDistance,
       cameraPosition.y + viewDirection.y * focalDistance,
       cameraPosition.z + viewDirection.z * focalDistance
     );
-  }
 
-  private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
+  private static View3D ViewpointToBase(SavedViewpoint savedViewpoint)
   {
     var view = ViewpointToBase(savedViewpoint.Viewpoint, savedViewpoint.DisplayName);
 
@@ -235,7 +224,9 @@ public partial class ConverterNavisworks
   private static Base ModelItemToSpeckle(ModelItem element)
   {
     if (IsElementHidden(element))
+    {
       return null;
+    }
 
     var @base = ConvertModelItemToSpeckle(element);
 
@@ -249,9 +240,7 @@ public partial class ConverterNavisworks
       : element.DisplayName;
 
     @base["name"] = string.IsNullOrEmpty(resolvedName)
-      ? (
-        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
-      ).ToString()
+      ? element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon).ToString()
       : GetSanitizedPropertyName(resolvedName);
 
     // Geometry items have no children
@@ -265,17 +254,23 @@ public partial class ConverterNavisworks
 
     // This really shouldn't exist, but is included for the what if arising from arbitrary IFCs
     if (!element.Children.Any())
+    {
       return null;
+    }
 
     // Lookup ahead of time for wasted effort, collection is
     // invalid if it has no children, or no children through hiding
     if (element.Descendants.All(x => x.IsHidden))
+    {
       return null;
+    }
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
     if (!element.Children.Any(CanConvertToSpeckle))
+    {
       return null;
+    }
 
     // ((Collection)@base).elements = elements;
 
@@ -308,20 +303,16 @@ public partial class ConverterNavisworks
   /// </summary>
   /// <param name="element">The ModelItem element.</param>
   /// <returns>The found category property.</returns>
-  private static DataProperty FindCategoryProperty(ModelItem element)
-  {
-    return element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
-  }
+  private static DataProperty FindCategoryProperty(ModelItem element) =>
+    element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
 
   /// <summary>
   /// Gets the display name of a category property.
   /// </summary>
   /// <param name="categoryProperty">The category property.</param>
   /// <returns>The display name of the category.</returns>
-  private static string GetCategoryDisplayName(DataProperty categoryProperty)
-  {
-    return categoryProperty.Value.ToNamedConstant().DisplayName;
-  }
+  private static string GetCategoryDisplayName(DataProperty categoryProperty) =>
+    categoryProperty.Value.ToNamedConstant().DisplayName;
 
   /// <summary>
   /// Creates a Speckle object based on the ModelItem element and its category type.
@@ -329,35 +320,35 @@ public partial class ConverterNavisworks
   /// <param name="element">The ModelItem element.</param>
   /// <param name="categoryType">The type of the category.</param>
   /// <returns>A Speckle object.</returns>
-  private static Base CreateSpeckleObject(ModelItem element, string categoryType)
-  {
-    return element.HasGeometry
-      ? new GeometryNode()
-      : new Collection { collectionType = categoryType };
-  }
+  private static Base CreateSpeckleObject(ModelItem element, string categoryType) =>
+    element.HasGeometry ? new GeometryNode() : new Collection { collectionType = categoryType };
 
   private static void GeometryToSpeckle(ModelItem element, Base @base)
   {
-    var geometry = new NavisworksGeometry(element) { ElevationMode = ElevationMode };
+    var geometry = new NavisworksGeometry(element) { IsUpright = IsUpright };
 
     PopulateModelFragments(geometry);
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
-    if (fragmentGeometry != null && fragmentGeometry.Any())
+    if (fragmentGeometry != null && fragmentGeometry.Count != 0)
+    {
       @base["@displayValue"] = fragmentGeometry;
+    }
   }
 
   private static bool CanConvertToSpeckle(ModelItem item)
   {
     // Only Geometry no children
     if (!item.HasGeometry || item.Children.Any())
+    {
       return true;
+    }
 
-    const PrimitiveTypes allowedTypes =
+    const PrimitiveTypes ALLOWED_TYPES =
       PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
 
     var primitives = item.Geometry.PrimitiveTypes;
-    var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
+    var primitiveTypeSupported = (primitives & ALLOWED_TYPES) == primitives;
 
     return primitiveTypeSupported;
   }
@@ -371,10 +362,7 @@ public partial class ConverterNavisworks
       pathArray = @string
         .ToString()
         .Split('-')
-        .Select(
-          x => int.TryParse(x, out var value)
-            ? value
-            : throw new FormatException("malformed path pseudoId"))
+        .Select(x => int.TryParse(x, out var value) ? value : throw new FormatException("malformed path pseudoId"))
         .ToArray();
     }
     catch (FormatException)
@@ -389,7 +377,7 @@ public partial class ConverterNavisworks
       typeof(int),
       new int[1] { pathArray.Length },
       // ReSharper disable once RedundantExplicitArraySize
-      new int[1] { 1 }
+      s_lowerBounds
     );
 
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);

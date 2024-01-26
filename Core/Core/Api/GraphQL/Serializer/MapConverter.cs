@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using GraphQL;
 using Speckle.Newtonsoft.Json;
@@ -8,7 +9,7 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class MapConverter : JsonConverter<Map>
+internal sealed class MapConverter : JsonConverter<Map>
 {
   public override void WriteJson(JsonWriter writer, Map value, JsonSerializer serializer)
   {
@@ -27,10 +28,18 @@ public class MapConverter : JsonConverter<Map>
   {
     var rootToken = JToken.ReadFrom(reader);
     if (rootToken is JObject)
+    {
       return (Map)ReadDictionary(rootToken, new Map());
+    }
+
     throw new ArgumentException("This converter can only parse when the root element is a JSON Object.");
   }
 
+  [SuppressMessage(
+    "Maintainability",
+    "CA1508:Avoid dead conditional code",
+    Justification = "False positive, see https://github.com/dotnet/roslyn-analyzers/issues/6893"
+  )]
   private object ReadToken(JToken token)
   {
     return token switch
@@ -44,13 +53,16 @@ public class MapConverter : JsonConverter<Map>
       _ => throw new ArgumentOutOfRangeException(nameof(token), $"Invalid token type {token?.Type}")
     };
   }
-  
+
   private Dictionary<string, object> ReadDictionary(JToken element, Dictionary<string, object> to)
   {
     foreach (var property in ((JObject)element).Properties())
     {
       if (IsUnsupportedJTokenType(property.Value.Type))
+      {
         continue;
+      }
+
       to[property.Name] = ReadToken(property.Value);
     }
     return to;
@@ -61,7 +73,10 @@ public class MapConverter : JsonConverter<Map>
     foreach (var item in element)
     {
       if (IsUnsupportedJTokenType(item.Type))
+      {
         continue;
+      }
+
       yield return ReadToken(item);
     }
   }

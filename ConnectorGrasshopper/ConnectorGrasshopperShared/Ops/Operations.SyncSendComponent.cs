@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -13,6 +13,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
@@ -81,11 +82,13 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
     {
       Menu_AppendSeparator(menu);
       foreach (var ow in OutputWrappers)
+      {
         Menu_AppendItem(
           menu,
           $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
           (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
         );
+      }
     }
   }
 
@@ -103,6 +106,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
     var wrappersRaw = reader.GetString("OutputWrappers");
     var wrapperLines = wrappersRaw.Split('\n');
     if (wrapperLines.Length != 0 && wrappersRaw != "")
+    {
       foreach (var line in wrapperLines)
       {
         var pieces = line.Split('\t');
@@ -115,6 +119,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
           }
         );
       }
+    }
 
     return base.Read(reader);
   }
@@ -173,15 +178,17 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
             var transport = data.GetType().GetProperty("Value").GetValue(data);
 
             if (transport is string s)
+            {
               try
               {
                 transport = new StreamWrapper(s);
               }
-              catch (Exception e)
+              catch (Exception e) when (!e.IsFatal())
               {
                 // TODO: Check this with team.
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
               }
+            }
 
             if (transport is StreamWrapper sw)
             {
@@ -203,8 +210,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               {
                 acc = sw.GetAccount().Result;
               }
-              catch (Exception e)
+              catch (SpeckleException e)
               {
+                SpeckleLog.Logger.Warning(e, "Failed to get account from stream wrapper");
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
                 continue;
               }
@@ -242,19 +250,15 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
           }
 
           // Part 3.1: persist the objects
-          var BaseId = await Operations.Send(
-            objectToSend,
-            CancelToken,
-            transports,
-            UseDefaultCache,
-            y => { },
-            (x, z) => { },
-            true
-          );
+          var BaseId = await Operations
+            .Send(objectToSend, CancelToken, transports, UseDefaultCache, y => { }, (x, z) => { }, true)
+            .ConfigureAwait(false);
 
           var message = messageInput; //.get_FirstItem(true).Value;
           if (message == "")
+          {
             message = $"Pushed {totalObjectCount} elements from Grasshopper.";
+          }
 
           var prevCommits = new List<StreamWrapper>();
 
@@ -267,7 +271,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
             }
 
             if (!(transport is ServerTransport))
+            {
               continue; // skip non-server transports (for now)
+            }
 
             try
             {
@@ -288,7 +294,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
                 c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
               );
               if (prevCommit != null)
+              {
                 commitCreateInput.parents = new List<string> { prevCommit.CommitId };
+              }
 
               var commitId = await client.CommitCreate(commitCreateInput, CancelToken);
 
@@ -297,8 +305,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               );
               prevCommits.Add(wrapper);
             }
-            catch (Exception e)
+            catch (Exception e) when (!e.IsFatal())
             {
+              SpeckleLog.Logger.Warning(e, "Failed to send synchronously");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
               return null;
             }

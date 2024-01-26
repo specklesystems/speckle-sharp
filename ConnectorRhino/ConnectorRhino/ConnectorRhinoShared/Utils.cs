@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Point = Rhino.Geometry.Point;
 
@@ -22,23 +21,57 @@ public static class Utils
 #elif RHINO7
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
     public static string AppName = "Rhino";
+#elif RHINO8
+    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
+    public static string AppName = "Rhino";
 #else
   public static string RhinoAppName = HostApplications.Rhino.Name;
   public static string AppName = "Rhino";
 #endif
 
-  public static string invalidRhinoChars = @"{}()";
+  public static string invalidRhinoChars = @"{}()[]";
 
   /// <summary>
-  /// Removes invalid characters for Rhino layer and block names
+  /// Creates a valid name for Rhino layers, blocks, and named views.
   /// </summary>
-  /// <param name="str"></param>
-  /// <returns></returns>
-  public static string RemoveInvalidRhinoChars(string str)
+  /// <param name="str">Layer, block, or named view name</param>
+  /// <returns>The original name if valid, or "@name" if not.</returns>
+  /// <remarks>From trial and error, names cannot begin with invalidRhinoChars. This has been encountered in grasshopper branch syntax.</remarks>
+  public static string MakeValidName(string str)
   {
-    // using this to handle grasshopper branch syntax
-    string cleanStr = str.Replace("{", "").Replace("}", "");
-    return cleanStr;
+    if (string.IsNullOrEmpty(str))
+    {
+      return str;
+    }
+    else
+    {
+      return invalidRhinoChars.Contains(str[0]) ? $"@{str}" : str;
+    }
+  }
+
+  /// <summary>
+  /// Attemps to retrieve a Guid from a string
+  /// </summary>
+  /// <param name="s"></param>
+  /// <returns>Guid on success, null on failure</returns>
+  public static bool GetGuidFromString(string s, out Guid id)
+  {
+    id = Guid.Empty;
+    if (string.IsNullOrEmpty(s))
+    {
+      return false;
+    }
+
+    try
+    {
+      id = Guid.Parse(s);
+    }
+    catch (FormatException)
+    {
+      return false;
+    }
+
+    return true;
   }
 
   /// <summary>
@@ -53,28 +86,24 @@ public static class Utils
   {
     descriptor = string.Empty;
     obj = null;
-    try
-    {
-      Guid guid = new(id); // try to get guid from object id
 
-      RhinoObject geom = doc.Objects.FindId(guid);
-      if (geom != null)
+    if (GetGuidFromString(id, out Guid guid))
+    {
+      if (doc.Objects.FindId(guid) is RhinoObject geom)
       {
         descriptor = Formatting.ObjectDescriptor(geom);
         obj = geom;
       }
       else
       {
-        var layer = doc.Layers.FindId(guid);
-        if (layer != null)
+        if (doc.Layers.FindId(guid) is Layer layer)
         {
           descriptor = "Layer";
           obj = layer;
         }
         else
         {
-          var standardView = doc.Views.Find(guid)?.ActiveViewport;
-          if (standardView != null)
+          if (doc.Views.Find(guid)?.ActiveViewport is RhinoViewport standardView)
           {
             descriptor = "Standard View";
             obj = new ViewInfo(standardView);
@@ -82,7 +111,7 @@ public static class Utils
         }
       }
     }
-    catch // this was a named view name
+    else // this was probably a named view (saved by name, not guid)
     {
       var viewIndex = doc.NamedViews.FindByName(id);
       if (viewIndex != -1)
@@ -92,42 +121,62 @@ public static class Utils
       }
     }
 
-    return obj == null ? false : true;
+    return obj != null;
   }
 
   #region extension methods
+
+  /// <summary>
+  /// Creates a layer from its name and parent
+  /// </summary>
+  /// <param name="doc"></param>
+  /// <param name="path"></param>
+  /// <returns>The new layer</returns>
+  /// <exception cref="ArgumentException">Layer name is invalid.</exception>
+  /// <exception cref="InvalidOperationException">Layer parent could not be set, or a layer with the same name already exists.</exception>
+  public static Layer MakeLayer(this RhinoDoc doc, string name, Layer parentLayer = null)
+  {
+    if (!Layer.IsValidName(name))
+    {
+      throw new ArgumentException("Layer name is invalid.");
+    }
+
+    using Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
+    if (parentLayer != null)
+    {
+      try
+      {
+        newLayer.ParentLayerId = parentLayer.Id;
+      }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        throw new InvalidOperationException("Could not set layer parent id.", e);
+      }
+    }
+
+    int newIndex = doc.Layers.Add(newLayer);
+    if (newIndex is -1)
+    {
+      throw new InvalidOperationException("A layer with the same name already exists.");
+    }
+
+    return newLayer;
+  }
+
   /// <summary>
   /// Finds a layer from its full path
   /// </summary>
   /// <param name="doc"></param>
   /// <param name="path">Full path of layer</param>
-  /// <param name="MakeIfNull">Create the layer if it doesn't already exist</param>
-  /// <returns>Null on failure</returns>
+  /// <param name="makeIfNull">Create the layer if it doesn't already exist</param>
+  /// <returns>The layer on success. On failure, returns null.</returns>
   /// <remarks>Note: The created layer path may be different from the input path, due to removal of invalid chars</remarks>
-  public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
+  public static Layer GetLayer(this RhinoDoc doc, string path, bool makeIfNull = false)
   {
-    Layer MakeLayer(string name, Layer parentLayer = null)
-    {
-      try
-      {
-        Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
-        if (parentLayer != null)
-          newLayer.ParentLayerId = parentLayer.Id;
-        int newIndex = doc.Layers.Add(newLayer);
-        if (newIndex < 0)
-          return null;
-        return doc.Layers.FindIndex(newIndex);
-      }
-      catch (Exception e)
-      {
-        return null;
-      }
-    }
-
-    var cleanPath = RemoveInvalidRhinoChars(path);
+    Layer layer;
+    var cleanPath = MakeValidName(path);
     int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
-    Layer layer = doc.Layers.FindIndex(index);
-    if (layer == null && MakeIfNull)
+    if (index is RhinoMath.UnsetIntIndex && makeIfNull)
     {
       var layerNames = cleanPath.Split(new[] { Layer.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -139,13 +188,49 @@ public static class Utils
         currentLayerPath = i == 0 ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
         currentLayer = doc.GetLayer(currentLayerPath);
         if (currentLayer == null)
-          currentLayer = MakeLayer(layerNames[i], parent);
-        if (currentLayer == null)
-          break;
+        {
+          try
+          {
+            currentLayer = doc.MakeLayer(layerNames[i], parent);
+          }
+          catch (ArgumentException argEx)
+          {
+            SpeckleLog.Logger.Error(
+              argEx,
+              "Failed to create layer {layerPath} with {exceptionMessage}",
+              currentLayerPath,
+              argEx.Message
+            );
+            RhinoApp.CommandLineOut.WriteLine(
+              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {argEx.Message}"
+            );
+            break;
+          }
+          catch (InvalidOperationException ioEx)
+          {
+            SpeckleLog.Logger.Error(
+              ioEx,
+              "Failed to create layer {layerPath} with {exceptionMessage}",
+              currentLayerPath,
+              ioEx.Message
+            );
+            RhinoApp.CommandLineOut.WriteLine(
+              $"Failed to create layer {currentLayerPath} while creating {cleanPath}: {ioEx.Message}"
+            );
+            break;
+          }
+        }
+
         parent = currentLayer;
       }
+
       layer = currentLayer;
     }
+    else
+    {
+      layer = doc.Layers.FindIndex(index);
+    }
+
     return layer;
   }
 
@@ -176,6 +261,7 @@ public static class Utils
 }
 
 #region Preview
+
 public class PreviewConduit : DisplayConduit
 {
   public BoundingBox bbox;
@@ -194,9 +280,15 @@ public class PreviewConduit : DisplayConduit
     foreach (var previewObj in preview)
     {
       var converted = new List<object>();
-      var toBeConverted = previewObj.Convertible
+      List<object> toBeConverted = previewObj.Convertible
         ? previewObj.Converted
-        : previewObj.Fallback.SelectMany(o => o.Converted).ToList();
+        : previewObj.Fallback?.SelectMany(o => o.Converted)?.ToList();
+
+      if (toBeConverted is null)
+      {
+        continue;
+      }
+
       foreach (var obj in toBeConverted)
       {
         switch (obj)
@@ -215,21 +307,27 @@ public class PreviewConduit : DisplayConduit
         converted.Add(obj);
       }
 
-      if (!Preview.ContainsKey(previewObj.OriginalId))
+      if (!Preview.ContainsKey(previewObj.OriginalId) && converted.Count > 0)
+      {
         Preview.Add(previewObj.OriginalId, converted);
+      }
     }
   }
 
-  private Dictionary<string, List<object>> Preview { get; set; } = new();
+  public Dictionary<string, List<object>> Preview { get; set; } = new();
 
   public void SelectPreviewObject(string id, bool unselect = false)
   {
     if (Preview.ContainsKey(id))
     {
       if (unselect)
+      {
         Selected.Remove(id);
+      }
       else if (!Selected.Contains(id))
+      {
         Selected.Add(id);
+      }
     }
   }
 
@@ -256,6 +354,7 @@ public class PreviewConduit : DisplayConduit
       var drawMaterial = material;
       drawMaterial.Diffuse = drawColor;
       foreach (var obj in previewobj.Value)
+      {
         switch (obj)
         {
           case Brep o:
@@ -277,6 +376,7 @@ public class PreviewConduit : DisplayConduit
             display.DrawPointCloud(o, 5, drawColor);
             break;
         }
+      }
     }
   }
 }
@@ -293,14 +393,19 @@ public class MappingsDisplayConduit : DisplayConduit
   {
     base.DrawOverlay(e);
     if (!Enabled)
+    {
       return;
+    }
 
     //e.Display.ZBiasMode = ZBiasMode.TowardsCamera;
 
     foreach (var id in ObjectIds)
     {
       if (id == null)
+      {
         continue;
+      }
+
       var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
       switch (obj.ObjectType)
       {
@@ -329,50 +434,11 @@ public static class Formatting
   public static string ObjectDescriptor(RhinoObject obj)
   {
     if (obj == null)
+    {
       return string.Empty;
+    }
+
     var simpleType = obj.ObjectType.ToString();
     return obj.HasName ? $"{simpleType}" : $"{simpleType} {obj.Name}";
-  }
-
-  public static string TimeAgo(string timestamp)
-  {
-    //TODO: this implementation is almost the same as Speckle.Core.Api.Helpers
-    TimeSpan timeAgo;
-    try
-    {
-      timeAgo = DateTime.Now.Subtract(DateTime.Parse(timestamp));
-    }
-    catch (FormatException e)
-    {
-      Debug.WriteLine("Could not parse the string to a DateTime");
-      return "";
-    }
-
-    if (timeAgo.TotalSeconds < 60)
-      return "less than a minute ago";
-    if (timeAgo.TotalMinutes < 60)
-      return $"about {timeAgo.Minutes} minute{PluralS(timeAgo.Minutes)} ago";
-    if (timeAgo.TotalHours < 24)
-      return $"about {timeAgo.Hours} hour{PluralS(timeAgo.Hours)} ago";
-    if (timeAgo.TotalDays < 7)
-      return $"about {timeAgo.Days} day{PluralS(timeAgo.Days)} ago";
-    if (timeAgo.TotalDays < 30)
-      return $"about {timeAgo.Days / 7} week{PluralS(timeAgo.Days / 7)} ago";
-    if (timeAgo.TotalDays < 365)
-      return $"about {timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
-
-    return $"over {timeAgo.Days / 356} year{PluralS(timeAgo.Days / 356)} ago";
-  }
-
-  public static string PluralS(int num)
-  {
-    return num != 1 ? "s" : "";
-  }
-
-  public static string CommitInfo(string stream, string branch, string commitId)
-  {
-    string formatted = $"{stream}[ {branch} @ {commitId} ]";
-    string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :(
-    return clean;
   }
 }

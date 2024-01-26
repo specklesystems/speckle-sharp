@@ -40,18 +40,24 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
         DisplayModeDescription shaded = DisplayModeDescription.FindByName("Shaded");
         if (shaded != null)
+        {
           speckleCommentView.ActiveViewport.DisplayMode = shaded;
+        }
 
         // Minimized all maximized views.
         IEnumerable<RhinoView> maximizedViews = Doc.Views.Where(v => v.Maximized);
         foreach (RhinoView view in maximizedViews)
+        {
           view.Maximized = false;
+        }
 
         // Maximized speckle comment view.
         speckleCommentView.Maximized = true;
 
         if (Doc.Views.ActiveView.ActiveViewport.Name != "SpeckleCommentView")
+        {
           Doc.Views.ActiveView = speckleCommentView;
+        }
       }
 
       Doc.Views.Redraw();

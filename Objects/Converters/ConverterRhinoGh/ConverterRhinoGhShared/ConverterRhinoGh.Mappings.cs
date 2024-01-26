@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.DoubleNumerics;
 using Rhino.DocObjects;
 using RH = Rhino.Geometry;
 using Speckle.Core.Api;
@@ -12,7 +11,7 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
-using Plane = Objects.Geometry.Plane;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.RhinoGh;
 
@@ -134,18 +133,31 @@ public partial class ConverterRhinoGh
 
         case DirectShape o:
           if (string.IsNullOrEmpty(o.name))
+          {
             o.name = "Speckle Mapper Shape";
+          }
+
           if (@object.Geometry as RH.Brep != null)
+          {
             o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+          }
           else if (@object.Geometry as RH.Mesh != null)
+          {
             o.baseGeometries = new List<Base> { MeshToSpeckle((RH.Mesh)@object.Geometry) };
+          }
+
           break;
 
         case FreeformElement o:
           if (@object.Geometry as RH.Brep != null)
+          {
             o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+          }
           else if (@object.Geometry as RH.Mesh != null)
+          {
             o.baseGeometries = new List<Base> { MeshToSpeckle((RH.Mesh)@object.Geometry) };
+          }
+
           break;
 
         case FamilyInstance o:
@@ -176,7 +188,7 @@ public partial class ConverterRhinoGh
 
       notes.Add($"Attached {schemaObject.speckle_type} schema");
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       notes.Add($"Could not attach {schemaObject.speckle_type} schema: {ex.Message}");
     }
@@ -197,9 +209,14 @@ public partial class ConverterRhinoGh
 
     RH.Curve[] brpCurves = null;
     if (getInterior)
+    {
       brpCurves = brep.DuplicateNakedEdgeCurves(false, true);
+    }
     else
+    {
       brpCurves = brep.DuplicateNakedEdgeCurves(true, false);
+    }
+
     if (getBottom)
     {
       var bottomCrv = brpCurves
@@ -214,15 +231,20 @@ public partial class ConverterRhinoGh
         )
         ?.Aggregate((curMin, o) => curMin == null || o.PointAtStart.Z < curMin.PointAtStart.Z ? o : curMin);
       if (bottomCrv != null)
+      {
         brpCurves = new[] { bottomCrv };
+      }
     }
 
     List<ICurve> outCurves = null;
     if (brpCurves != null && brpCurves.Count() > 0)
+    {
       outCurves =
         brpCurves.Count() == 1
           ? new List<ICurve> { (ICurve)ConvertToSpeckle(brpCurves[0]) }
           : RH.Curve.JoinCurves(brpCurves, tol).Select(o => (ICurve)ConvertToSpeckle(o)).ToList();
+    }
+
     return outCurves;
   }
 }

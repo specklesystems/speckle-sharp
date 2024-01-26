@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,11 +24,16 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -74,15 +79,27 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
       string sw = null;
       string token = null;
       if (!DA.GetData(0, ref sw))
+      {
         return;
+      }
+
       if (!DA.GetData(1, ref token))
+      {
         return;
+      }
+
+      if (string.IsNullOrEmpty(sw))
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Server input cannot be null");
+        return;
+      }
+
       Uri url = null;
       try
       {
         url = new Uri(sw);
       }
-      catch (Exception e)
+      catch (UriFormatException e)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Server input is not a valid url: {sw}");
         return;
@@ -104,9 +121,13 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
     }
 
     if (!GetSolveResults(DA, out var account))
+    {
       return;
+    }
 
     if (account != null)
+    {
       DA.SetData(0, account);
+    }
   }
 }

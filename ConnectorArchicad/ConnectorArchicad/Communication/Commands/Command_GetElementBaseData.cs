@@ -3,47 +3,33 @@ using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using ConnectorArchicad.Communication.Commands;
 
-namespace Archicad.Communication.Commands
+namespace Archicad.Communication.Commands;
+
+sealed internal class GetElementBaseData : GetDataBase, ICommand<IEnumerable<DirectShape>>
 {
-  sealed internal class GetElementBaseData : ICommand<IEnumerable<DirectShape>>
+  [JsonObject(MemberSerialization.OptIn)]
+  private sealed class Result
   {
-    [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Parameters
-    {
-      [JsonProperty("applicationIds")]
-      private IEnumerable<string> ApplicationIds { get; }
+    [JsonProperty("elements")]
+    public IEnumerable<DirectShape> Datas { get; private set; }
+  }
 
-      public Parameters(IEnumerable<string> applicationIds)
-      {
-        ApplicationIds = applicationIds;
-      }
+  public GetElementBaseData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
+
+  public async Task<IEnumerable<DirectShape>> Execute()
+  {
+    Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+      "GetElementBaseData",
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
+    );
+    foreach (var directShape in result.Datas)
+    {
+      directShape.units = Units.Meters;
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    private sealed class Result
-    {
-      [JsonProperty("elements")]
-      public IEnumerable<DirectShape> Datas { get; private set; }
-    }
-
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public GetElementBaseData(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-
-    public async Task<IEnumerable<DirectShape>> Execute()
-    {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
-        "GetElementBaseData",
-        new Parameters(ApplicationIds)
-      );
-      foreach (var directShape in result.Datas)
-        directShape.units = Units.Meters;
-
-      return result.Datas;
-    }
+    return result.Datas;
   }
 }

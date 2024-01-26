@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ConnectorGrasshopper.UpgradeUtilities;
 using Grasshopper.Kernel;
 
@@ -11,13 +11,17 @@ public abstract class SpeckleUpgradeObject<T1, T2> : IGH_UpgradeObject
   public virtual IGH_DocumentObject Upgrade(IGH_DocumentObject target, GH_Document document)
   {
     if (!(target is T1 component))
+    {
       return null; // Ensure the type of the target is correct
+    }
 
     // Upgrade the component
     var upgraded = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
 
     if (!(upgraded is T2 upgradedComponent))
+    {
       return null; // Ensure the type of the upgraded component is correct
+    }
 
     // Run any custom upgrade steps here, such as swapping access type, updating nicknames... etc.
     CustomUpgrade(component, upgradedComponent, document);

@@ -1,4 +1,4 @@
-﻿using Autodesk.Navisworks.Api.Interop;
+using Autodesk.Navisworks.Api.Interop;
 using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
 using static Autodesk.Navisworks.Api.Interop.LcUOption;
 
@@ -25,7 +25,9 @@ public partial class NavisworksOptionsManager
 
     var currentSetting = rootOptions.GetBoolean(optionName);
     if (currentSetting == enable)
+    {
       return;
+    }
 
     optionSetting = currentSetting;
 
@@ -36,64 +38,50 @@ public partial class NavisworksOptionsManager
   /// <summary>
   /// Updates the internal property display setting.
   /// </summary>
-  private void UpdateInternalPropertySetting()
-  {
+  private void UpdateInternalPropertySetting() =>
     UpdateOptionSetting(
       "interface.developer.show_properties",
       ref _internalPropertyDisplaySetting,
       _internalPropertyDisplaySetting
     );
-  }
 
   /// <summary>
   /// Updates the internal property display setting.
   /// </summary>
   /// <param name="enable">A boolean value indicating whether to enable or disable the internal property display.</param>
-  private void UpdateInternalPropertySetting(bool enable)
-  {
+  private void UpdateInternalPropertySetting(bool enable) =>
     UpdateOptionSetting("interface.developer.show_properties", ref _internalPropertyDisplaySetting, enable);
-  }
 
   /// <summary>
   /// Updates the internal property name setting.
   /// </summary>
-  private void UpdateInternalPropertyNameSetting()
-  {
+  private void UpdateInternalPropertyNameSetting() =>
     UpdateOptionSetting(
       "interface.developer.show_property_internal_names",
       ref _useInternalPropertyNamesSetting,
       _useInternalPropertyNamesSetting
     );
-  }
 
   /// <summary>
   /// Updates the internal property name setting.
   /// </summary>
   /// <param name="enable">A boolean value indicating whether to enable or disable the internal property names.</param>
-  private void UpdateInternalPropertyNameSetting(bool enable)
-  {
+  private void UpdateInternalPropertyNameSetting(bool enable) =>
     UpdateOptionSetting(
       "interface.developer.show_property_internal_names",
       ref _useInternalPropertyNamesSetting,
       enable
     );
-  }
 
   /// <summary>
   /// Shows internal properties.
   /// </summary>
-  public void ShowInternalProperties()
-  {
-    UpdateInternalPropertySetting(true);
-  }
+  public void ShowInternalProperties() => UpdateInternalPropertySetting(true);
 
   /// <summary>
   /// Uses internal property names.
   /// </summary>
-  public void UseInternalPropertyNames()
-  {
-    UpdateInternalPropertyNameSetting(true);
-  }
+  public void UseInternalPropertyNames() => UpdateInternalPropertyNameSetting(true);
 
   /// <summary>
   /// Restores the internal properties display to its original state after the send process.

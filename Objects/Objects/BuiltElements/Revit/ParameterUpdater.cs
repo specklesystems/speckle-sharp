@@ -17,5 +17,5 @@ public class ParameterUpdater : Base
   public ParameterUpdater() { }
 
   public string elementId { get; set; }
-  public Base parameters { get; set; }
+  public Base? parameters { get; set; }
 }

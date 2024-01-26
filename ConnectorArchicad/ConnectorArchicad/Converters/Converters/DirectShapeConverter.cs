@@ -6,88 +6,103 @@ using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
-using DynamicData;
-using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Newtonsoft.Json.Linq;
 
-namespace Archicad.Converters
+namespace Archicad.Converters;
+
+public sealed class DirectShape : IConverter
 {
-  public sealed class DirectShape : IConverter
+  #region --- Properties ---
+
+  public Type Type => typeof(Objects.BuiltElements.Archicad.DirectShape);
+
+  #endregion
+
+  #region --- Functions ---
+
+  public async Task<List<ApplicationObject>> ConvertToArchicad(
+    IEnumerable<TraversalContext> elements,
+    CancellationToken token
+  )
   {
-    #region --- Properties ---
+    var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
 
-    public Type Type => typeof(Objects.BuiltElements.Archicad.DirectShape);
-
-    #endregion
-
-    #region --- Functions ---
-
-    public async Task<List<ApplicationObject>> ConvertToArchicad(
-      IEnumerable<TraversalContext> elements,
-      CancellationToken token
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
     )
     {
-      var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
-
-      var context = Archicad.Helpers.Timer.Context.Peek;
-      using (
-        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
-      )
+      foreach (var tc in elements)
       {
-        foreach (var tc in elements)
+        token.ThrowIfCancellationRequested();
+
+        switch (tc.current)
         {
-          token.ThrowIfCancellationRequested();
+          case Objects.BuiltElements.Archicad.DirectShape directShape:
+            // get the geometry
+            MeshModel meshModel = null;
 
-          switch (tc.current)
-          {
-            case Objects.BuiltElements.Archicad.DirectShape directShape:
-              // get the geometry
-              MeshModel meshModel = null;
-
+            {
+              List<Mesh> meshes = null;
+              var m = directShape["displayValue"] ?? directShape["@displayValue"];
+              if (m is List<Mesh>)
               {
-                List<Mesh> meshes = null;
-                var m = directShape["displayValue"] ?? directShape["@displayValue"];
-                if (m is List<Mesh>)
-                  meshes = (List<Mesh>)m;
-                else if (m is List<object>)
-                  meshes = ((List<object>)m).Cast<Mesh>().ToList();
-
-                if (meshes == null)
-                  continue;
-
-                meshModel = ModelConverter.MeshToNative(meshes);
+                meshes = (List<Mesh>)m;
+              }
+              else if (m is List<object>)
+              {
+                meshes = ((List<object>)m).Cast<Mesh>().ToList();
               }
 
-              directShape["model"] = meshModel;
-              directShapes.Add(directShape);
-              break;
-          }
+              if (meshes == null)
+              {
+                continue;
+              }
+
+              meshModel = ModelConverter.MeshToNative(meshes);
+            }
+
+            directShape["model"] = meshModel;
+            directShapes.Add(directShape);
+            break;
         }
       }
-
-      IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShape(directShapes), token);
-      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(
-      IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token
+    IEnumerable<ApplicationObject> result;
+    result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShape(directShapes), token);
+    return result is null ? new List<ApplicationObject>() : result.ToList();
+  }
+
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
+  {
+    var elementModels = elements as ElementModelData[] ?? elements.ToArray();
+    IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetElementBaseData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
+      token
+    );
+
+    var directShapes = new List<Base>();
+    if (data is null)
+    {
+      return directShapes;
+    }
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetElementBaseData(elementModels.Select(e => e.applicationId)),
-        token
-      );
-
-      var directShapes = new List<Base>();
-      if (data is null)
-        return directShapes;
-
       foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
       {
         {
@@ -97,10 +112,10 @@ namespace Archicad.Converters
           directShapes.Add(directShape);
         }
       }
-
-      return directShapes;
     }
 
-    #endregion
+    return directShapes;
   }
+
+  #endregion
 }

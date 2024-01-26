@@ -1,11 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Grasshopper.Kernel;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 
 namespace ConnectorGrasshopper.Collections;
 
@@ -20,7 +18,7 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
       "Collections"
     ) { }
 
-  public override Guid ComponentGuid => new Guid("9E1F4A6B-201C-4E91-AFC2-5F28031E97C1");
+  public override Guid ComponentGuid => new("9E1F4A6B-201C-4E91-AFC2-5F28031E97C1");
   protected override Bitmap Icon => Properties.Resources.FlattenSpeckleCollection;
 
   protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -37,7 +35,9 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
   {
     Collection collection = null;
     if (!DA.GetData(0, ref collection))
+    {
       return;
+    }
 
     var excludeTypeFromFullName = new List<string> { "rhino model" };
     var flattened = FlattenCollection(collection, null, excludeTypeFromFullName);
@@ -58,9 +58,13 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
     foreach (Base e in collection.elements)
     {
       if (e is Collection c)
+      {
         innerCollections.AddRange(FlattenCollection(c, nextPrefix, excludeTypeFromFullName));
+      }
       else
+      {
         elements.Add(e);
+      }
     }
 
     var newCollection = new Collection(collection.name, collection.collectionType)
@@ -80,9 +84,14 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
   {
     var nameParts = new List<string>();
     if (!string.IsNullOrEmpty(fullNamePrefix))
+    {
       nameParts.Add(fullNamePrefix);
+    }
+
     if (excludeTypeFromFullName == null || !excludeTypeFromFullName.Contains(collection.collectionType))
+    {
       nameParts.Add(collection.name);
+    }
 
     var nextPrefix = string.Join("::", nameParts);
     return nextPrefix;

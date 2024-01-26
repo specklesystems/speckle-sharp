@@ -15,6 +15,7 @@ using System.Linq;
 using Speckle.ConnectorTeklaStructures.Util;
 using DesktopUI2.ViewModels;
 using Tekla.Structures.Model;
+
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
@@ -38,7 +39,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //return null;
       }
 
-
       Tracker.TrackPageview(Tracker.STREAM_GET);
       var stream = await state.Client.StreamGet(state.StreamId);
 
@@ -54,7 +54,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
       Commit commit = null;
       if (state.CommitId == "latest")
       {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        var res = await state.Client.BranchGet(
+          progress.CancellationTokenSource.Token,
+          state.StreamId,
+          state.BranchName,
+          1
+        );
         commit = res.commits.items.FirstOrDefault();
       }
       else
@@ -64,18 +69,20 @@ namespace Speckle.ConnectorTeklaStructures.UI
       string referencedObject = commit.referencedObject;
 
       var commitObject = await Operations.Receive(
-                referencedObject,
-                progress.CancellationTokenSource.Token,
-                transport,
-                onProgressAction: dict => progress.Update(dict),
-                onErrorAction: (Action<string, Exception>)((s, e) =>
-                {
-                  progress.Report.LogOperationError(e);
-                  progress.CancellationTokenSource.Cancel();
-                }),
-                //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
-                disposeTransports: true
-                );
+        referencedObject,
+        progress.CancellationTokenSource.Token,
+        transport,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (Action<string, Exception>)(
+          (s, e) =>
+          {
+            progress.Report.LogOperationError(e);
+            progress.CancellationTokenSource.Cancel();
+          }
+        ),
+        //onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+        disposeTransports: true
+      );
 
       if (progress.Report.OperationErrorsCount != 0)
       {
@@ -84,19 +91,20 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       try
       {
-        await state.Client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream?.id,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = ConnectorTeklaStructuresUtils.TeklaStructuresAppName
-        });
+        await state.Client.CommitReceived(
+          new CommitReceivedInput
+          {
+            streamId = stream?.id,
+            commitId = commit?.id,
+            message = commit?.message,
+            sourceApplication = ConnectorTeklaStructuresUtils.TeklaStructuresAppName
+          }
+        );
       }
       catch
       {
         // Do nothing!
       }
-
 
       if (progress.Report.OperationErrorsCount != 0)
       {
@@ -118,15 +126,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
         progress.Update(conversionProgressDict);
       };
 
-
       var commitObjs = FlattenCommitObject(commitObject, converter);
       foreach (var commitObj in commitObjs)
       {
         BakeObject(commitObj, state, converter);
         updateProgressAction?.Invoke();
       }
-
-
 
       try
       {
@@ -144,11 +149,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
       return state;
     }
 
-
-
-
-
-
     /// <summary>
     /// conversion to native
     /// </summary>
@@ -164,14 +164,16 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
       catch (Exception e)
       {
-        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}");
+        var exception = new Exception(
+          $"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}"
+        );
         converter.Report.LogOperationError(exception);
         return;
       }
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it.
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>

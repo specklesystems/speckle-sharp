@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConnectorArchicad": {
+      "commandName": "Project",
+      "commandLineArgs": "19723 888"
+    }
+  }
+}

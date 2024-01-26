@@ -14,7 +14,6 @@ using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using DesktopUI2.Models;
-using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog.Icons;
@@ -23,7 +22,6 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
-using Sentry.Extensibility;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -89,7 +87,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       ClearSavedStreams();
 
       foreach (StreamState stream in streams)
+      {
         SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
+      }
 
       this.RaisePropertyChanged(nameof(SavedStreams));
       this.RaisePropertyChanged(nameof(HasSavedStreams));
@@ -117,7 +117,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       if (_selectedSavedStream != null && !_selectedSavedStream.Progress.IsProgressing)
+      {
         _selectedSavedStream.GetBranchesAndRestoreState();
+      }
     }
     catch (Exception ex)
     {
@@ -138,10 +140,14 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       //saved stream has been edited
       var savedStream = SavedStreams.FirstOrDefault(x => x.StreamState.Id == stream.StreamState.Id);
       if (savedStream != null)
+      {
         savedStream = stream;
+      }
       //it's a new saved stream
       else
+      {
         SavedStreams.Add(stream);
+      }
 
       WriteStreamsToFile();
       this.RaisePropertyChanged(nameof(HasSavedStreams));
@@ -157,7 +163,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       if (!HasAccounts)
+      {
         return;
+      }
 
       InProgress = true;
 
@@ -170,7 +178,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       foreach (var account in Accounts)
       {
         if (StreamGetCancelTokenSource.IsCancellationRequested)
+        {
           return;
+        }
 
         try
         {
@@ -180,25 +190,34 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           if (string.IsNullOrEmpty(SearchQuery))
           {
             if (SelectedFilter == Filter.favorite)
+            {
               result = await account.Client
                 .FavoriteStreamsGet(25, StreamGetCancelTokenSource.Token)
                 .ConfigureAwait(true);
+            }
             else
+            {
               result = await account.Client.StreamsGet(25, StreamGetCancelTokenSource.Token).ConfigureAwait(true);
+            }
           }
           //SEARCH
           else
           {
             //do not search favorite streams, too much hassle
             if (SelectedFilter == Filter.favorite)
+            {
               SelectedFilter = Filter.all;
+            }
+
             result = await account.Client
               .StreamSearch(SearchQuery, 25, StreamGetCancelTokenSource.Token)
               .ConfigureAwait(true);
           }
 
           if (StreamGetCancelTokenSource.IsCancellationRequested)
+          {
             return;
+          }
 
           streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
         }
@@ -209,7 +228,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         catch (Exception ex)
         {
           if (ex.InnerException is TaskCanceledException)
+          {
             return;
+          }
 
           SpeckleLog.Logger.Error(ex, "Could not fetch streams");
 
@@ -229,7 +250,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         }
       }
       if (StreamGetCancelTokenSource.IsCancellationRequested)
+      {
         return;
+      }
 
       Streams = streams.OrderByDescending(x => x.Stream.updatedAt).ToList();
     }
@@ -270,12 +293,16 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         {
           var result = await account.Client.GetAllPendingInvites().ConfigureAwait(true);
           foreach (var r in result)
+          {
             Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
+          }
         }
         catch (Exception e)
         {
           if (e.InnerException is TaskCanceledException)
+          {
             return;
+          }
 
           SpeckleLog.Logger.Error(e, "Could not fetch invites");
         }
@@ -297,7 +324,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   private async void SearchStreams()
   {
     if (await CheckIsOffline().ConfigureAwait(true))
+    {
       return;
+    }
 
     GetStreams().ConfigureAwait(true);
     this.RaisePropertyChanged(nameof(StreamsText));
@@ -335,7 +364,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     try
     {
       if (await CheckIsOffline().ConfigureAwait(true))
+      {
         return;
+      }
 
       //prevent subscriptions from being registered multiple times
       //DISABLED: https://github.com/specklesystems/speckle-sharp/issues/2574
@@ -403,17 +434,26 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       var streamName = Streams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
       if (streamName == null)
+      {
         streamName = SavedStreams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
+      }
+
       if (streamName == null)
+      {
         return;
+      }
 
       var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
       if (svm != null && svm.Stream.id == e.id)
+      {
         MainViewModel.GoHome();
+      }
 
       //remove all saved streams matching this id
       foreach (var stateId in SavedStreams.Where(x => x.Stream.id == e.id).Select(y => y.StreamState.Id).ToList())
+      {
         RemoveSavedStream(stateId);
+      }
 
       GetStreams().ConfigureAwait(true);
 
@@ -436,11 +476,14 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       MenuItemViewModel menu;
 
       if (Accounts.Count > 1)
+      {
         menu = new MenuItemViewModel
         {
           Header = new MaterialIcon { Kind = MaterialIconKind.AccountMultiple, Foreground = Brushes.White }
         };
+      }
       else if (Accounts.Count == 1)
+      {
         menu = new MenuItemViewModel
         {
           Header = new Image
@@ -452,15 +495,19 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             Clip = new EllipseGeometry(new Rect(0, 0, 28, 28))
           }
         };
+      }
       else
+      {
         menu = new MenuItemViewModel
         {
           Header = new MaterialIcon { Kind = MaterialIconKind.AccountWarning, Foreground = Brushes.White }
         };
+      }
 
       menu.Items = new List<MenuItemViewModel>();
 
       foreach (var account in Accounts)
+      {
         menu.Items.Add(
           new MenuItemViewModel
           {
@@ -481,6 +528,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             }
           }
         );
+      }
 
       menu.Items.Add(new MenuItemViewModel(AddAccountCommand, "Add another account", MaterialIconKind.AccountPlus));
       menu.Items.Add(
@@ -512,7 +560,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       var i = SavedStreams.FindIndex(x => x.StreamState.Id == stateId);
       if (i == -1)
+      {
         return;
+      }
+
       SavedStreams[i].Dispose();
       SavedStreams.RemoveAt(i);
 
@@ -578,7 +629,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     var url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}";
 
     if (streamAcc.Account.serverInfo.frontend2)
+    {
       url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/projects/{streamAcc.Stream.id}";
+    }
 
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     Analytics.TrackEvent(
@@ -594,6 +647,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     var result = await dialog.ShowDialog<bool>().ConfigureAwait(true);
 
     if (result)
+    {
       try
       {
         using var client = new Client(dialog.Account);
@@ -627,6 +681,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         SpeckleLog.Logger.Fatal(ex, "Failed to create new stream {exceptionMessage}", ex.Message);
         Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
       }
+    }
   }
 
   [DependsOn(nameof(InProgress))]
@@ -642,13 +697,16 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     Uri uri;
     string defaultText = "";
     if (Uri.TryCreate(clipboard, UriKind.Absolute, out uri))
+    {
       defaultText = clipboard;
+    }
 
     var dialog = new AddFromUrlDialog(defaultText);
 
     var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
     if (result != null)
+    {
       try
       {
         var sw = new StreamWrapper(result);
@@ -683,6 +741,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         SpeckleLog.Logger.Fatal(ex, "Failed to add from url {dialogResult} {exceptionMessage}", result, ex.Message);
         Dialogs.ShowDialog("Something went wrong...", ex.Message, DialogIconKind.Error);
       }
+    }
   }
 
   private Tuple<bool, string> ValidateUrl(string url)
@@ -710,10 +769,14 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   private Tuple<bool, string> ValidateName(string name)
   {
     if (string.IsNullOrEmpty(name))
+    {
       return new Tuple<bool, string>(false, "Streams need a name too!");
+    }
 
     if (name.Trim().Length < 3)
+    {
       return new Tuple<bool, string>(false, "Name is too short.");
+    }
 
     return new Tuple<bool, string>(true, "");
   }
@@ -727,7 +790,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   private async void OpenStreamCommand(object streamAccountWrapper)
   {
     if (await CheckIsOffline().ConfigureAwait(true))
+    {
       return;
+    }
 
     if (streamAccountWrapper != null)
     {
@@ -753,7 +818,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   private async void OpenSavedStreamCommand(object streamViewModel)
   {
     if (await CheckIsOffline().ConfigureAwait(true))
+    {
       return;
+    }
 
     if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
     {
@@ -903,7 +970,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     get
     {
       if (SelectedFilter == Filter.all)
+      {
         return false;
+      }
+
       return true;
     }
   }
@@ -916,7 +986,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       //do not search favourite streams, too much hassle
       if (newValue == Filter.favorite && !string.IsNullOrEmpty(SearchQuery))
+      {
         SearchQuery = "";
+      }
+
       await GetStreams().ConfigureAwait(true);
     }
 
@@ -930,7 +1003,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     get
     {
       if (SelectedFilter == Filter.all || SelectedFilter == Filter.favorite)
+      {
         return Streams;
+      }
+
       return Streams.Where(x => x.Stream.role == $"stream:{SelectedFilter}").ToList();
     }
   }
@@ -955,12 +1031,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       if (string.IsNullOrEmpty(SearchQuery))
       {
         if (UseFe2)
+        {
           return "ALL YOUR PROJECTS:";
+        }
+
         return "ALL YOUR STREAMS:";
       }
 
       if (SearchQuery.Length <= 2)
+      {
         return "TYPE SOME MORE TO SEARCH...";
+      }
 
       return "SEARCH RESULTS:";
     }
@@ -977,7 +1058,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       this.RaiseAndSetIfChanged(ref _searchQuery, value);
       if (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2)
+      {
         return;
+      }
+
       streamSearchDebouncer();
     }
   }

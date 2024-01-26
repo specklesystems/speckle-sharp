@@ -39,11 +39,13 @@ public class SettingsPageViewModel : ReactiveObject, IRoutableViewModel
     var settingData = new Dictionary<string, object> { { "name", "Settings Save" } };
 
     foreach (var setting in Settings)
+    {
       try
       {
         settingData.Add(setting.Setting.Slug, setting.Setting.Selection);
       }
       catch { }
+    }
 
     Analytics.TrackEvent(Analytics.Events.DUIAction, settingData);
   }

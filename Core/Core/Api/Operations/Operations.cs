@@ -10,13 +10,14 @@ namespace Speckle.Core.Api;
 /// <summary>
 /// Exposes several key methods for interacting with Speckle.Core.
 /// <para>Serialize/Deserialize</para>
-/// <para>Push/Pull (methods to serialize & send data to one or more servers)</para>
+/// <para>Push/Pull (methods to serialize and send data to one or more servers)</para>
 /// </summary>
 public static partial class Operations
 {
   /// <summary>
   /// Convenience method to instantiate an instance of the default object serializer and settings pre-populated with it.
   /// </summary>
+  [Obsolete("V1 Serializer is deprecated. Use " + nameof(BaseObjectSerializerV2))]
   public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
   {
     var serializer = new BaseObjectSerializer();
@@ -33,23 +34,29 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Factory for progress actions used internally inside send & receive methods.
+  /// Factory for progress actions used internally inside send and receive methods.
   /// </summary>
-  /// <param name="localProgressDict"></param>
   /// <param name="onProgressAction"></param>
   /// <returns></returns>
-  private static Action<string, int> GetInternalProgressAction(
-    ConcurrentDictionary<string, int> localProgressDict,
-    Action<ConcurrentDictionary<string, int>> onProgressAction = null
+  private static Action<string, int>? GetInternalProgressAction(
+    Action<ConcurrentDictionary<string, int>>? onProgressAction
   )
   {
+    if (onProgressAction is null)
+    {
+      return null;
+    }
+
+    var localProgressDict = new ConcurrentDictionary<string, int>();
+
     return (name, processed) =>
     {
-      if (localProgressDict.ContainsKey(name))
+      if (!localProgressDict.TryAdd(name, processed))
+      {
         localProgressDict[name] += processed;
-      else
-        localProgressDict[name] = processed;
-      onProgressAction?.Invoke(localProgressDict);
+      }
+
+      onProgressAction.Invoke(localProgressDict);
     };
   }
 }

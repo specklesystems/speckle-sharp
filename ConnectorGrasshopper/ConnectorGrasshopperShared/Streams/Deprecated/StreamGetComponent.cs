@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamGetComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -64,7 +70,10 @@ public class StreamGetComponent : GH_SpeckleComponent
     GH_SpeckleStream ghIdWrapper = null;
     DA.DisableGapLogic();
     if (!DA.GetData(0, ref ghIdWrapper))
+    {
       return;
+    }
+
     DA.GetData(1, ref userId);
     var idWrapper = ghIdWrapper.Value;
     var account = string.IsNullOrEmpty(userId)
@@ -101,7 +110,9 @@ public class StreamGetComponent : GH_SpeckleComponent
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       // Run
       Task.Run(async () =>

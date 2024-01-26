@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ConnectorGrasshopper.Ops.Deprecated;
 using ConnectorGrasshopper.UpgradeUtilities;
 using Grasshopper.Kernel;
@@ -11,7 +11,9 @@ public class UpgradeSenderToVariableInput : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     var attributes = new VariableInputSendComponentAttributes(upgradedComponent as GH_Component);
@@ -35,7 +37,9 @@ public class UpgradeReceiverToVariableOutput : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     var attributes = new VariableInputReceiveComponentAttributes(upgradedComponent as GH_Component);
@@ -59,7 +63,9 @@ public class UpgradeSenderToNewDataTree : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     var attributes = new NewVariableInputSendComponentAttributes(upgradedComponent as GH_Component);
@@ -81,7 +87,9 @@ public class UpgradeSyncSenderToSpeckleBase : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     UpgradeUtils.SwapGroups(document, component, upgradedComponent);
@@ -99,7 +107,9 @@ public class UpgradeReceiveSenderToSpeckleBase : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     UpgradeUtils.SwapGroups(document, component, upgradedComponent);

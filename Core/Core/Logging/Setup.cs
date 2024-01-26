@@ -1,3 +1,5 @@
+#nullable disable
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
@@ -10,13 +12,17 @@ namespace Speckle.Core.Logging;
 ///  Anonymous telemetry to help us understand how to make a better Speckle.
 ///  This really helps us to deliver a better open source project and product!
 /// </summary>
+[SuppressMessage(
+  "Naming",
+  "CA1708:Identifiers should differ by more than case",
+  Justification = "Class contains obsolete members that are kept for backwards compatiblity"
+)]
 public static class Setup
 {
-  public static Mutex mutex;
+  public static Mutex Mutex { get; set; }
 
-  private static bool _initialized;
+  private static bool s_initialized;
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   static Setup()
   {
     //Set fallback values
@@ -24,7 +30,7 @@ public static class Setup
     {
       HostApplication = Process.GetCurrentProcess().ProcessName;
     }
-    catch
+    catch (InvalidOperationException)
     {
       HostApplication = "other (.NET)";
     }
@@ -46,7 +52,7 @@ public static class Setup
     SpeckleLogConfiguration logConfiguration = null
   )
   {
-    if (_initialized)
+    if (s_initialized)
     {
       SpeckleLog.Logger
         .ForContext("newVersionedHostApplication", versionedHostApplication)
@@ -59,17 +65,27 @@ public static class Setup
       return;
     }
 
-    _initialized = true;
+    s_initialized = true;
 
     HostApplication = hostApplication;
     VersionedHostApplication = versionedHostApplication;
 
     //start mutex so that Manager can detect if this process is running
-    mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
+    Mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
     SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
 
     foreach (var account in AccountManager.GetAccounts())
+    {
       Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
+    }
+  }
+
+  [Obsolete("Use " + nameof(Mutex))]
+  [SuppressMessage("Style", "IDE1006:Naming Styles")]
+  public static Mutex mutex
+  {
+    get => Mutex;
+    set => Mutex = value;
   }
 }

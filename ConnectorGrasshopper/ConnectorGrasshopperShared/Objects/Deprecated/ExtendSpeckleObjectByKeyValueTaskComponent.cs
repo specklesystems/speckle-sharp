@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -14,7 +15,8 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects;
 
-[Obsolete]
+[Obsolete($"Use {nameof(ExtendSpeckleObjectByKeyValueV2TaskComponent)}")]
+[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Component is obsolete")]
 public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
 {
   public ExtendSpeckleObjectByKeyValueTaskComponent()
@@ -104,7 +106,9 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
       }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Extend Object By Key Value");
+      }
 
       TaskList.Add(Task.Run(() => DoWork(@base.ShallowCopy(), keys, valueTree)));
       return;
@@ -113,16 +117,23 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
     if (!GetSolveResults(DA, out var result))
+    {
       // Normal mode not supported
       return;
+    }
 
     if (result != null)
+    {
       DA.SetData(0, result);
+    }
   }
 
   public Base DoWork(Base @base, List<string> keys, GH_Structure<IGH_Goo> valueTree)
@@ -131,7 +142,9 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
     {
       // 👉 Checking for cancellation!
       if (CancelToken.IsCancellationRequested)
+      {
         return null;
+      }
 
       // Create a path from the current iteration
       var searchPath = new GH_Path(RunCount - 1);
@@ -148,23 +161,31 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
         keys.ForEach(key =>
         {
           if (ind < list.Count)
+          {
             try
             {
               if (Converter != null)
+              {
                 @base[key] = Utilities.TryConvertItemToSpeckle(list[ind], Converter);
+              }
               else
+              {
                 @base[key] = list[ind];
+              }
             }
             catch (Exception e)
             {
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
               hasErrors = true;
             }
+          }
 
           ind++;
         });
         if (hasErrors)
+        {
           @base = null;
+        }
       }
       else
       {
@@ -182,12 +203,19 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
           {
             var objs = new List<object>();
             foreach (var goo in branch)
+            {
               if (Converter != null)
+              {
                 objs.Add(Utilities.TryConvertItemToSpeckle(goo, Converter));
+              }
               else
+              {
                 objs.Add(goo);
+              }
+            }
 
             if (objs.Count > 0)
+            {
               try
               {
                 @base[key] = objs;
@@ -197,13 +225,16 @@ public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableCo
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
                 hasErrors = true;
               }
+            }
           }
 
           index++;
         });
 
         if (hasErrors)
+        {
           @base = null;
+        }
       }
 
       return @base;

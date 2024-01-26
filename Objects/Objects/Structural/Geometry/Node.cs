@@ -67,5 +67,5 @@ public class Node : Base
   [DetachProperty]
   public PropertyDamper? damperProperty { get; set; }
 
-  public string? units { get; set; }
+  public string units { get; set; } = Units.None;
 }

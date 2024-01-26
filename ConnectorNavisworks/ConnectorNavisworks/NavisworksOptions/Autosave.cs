@@ -1,4 +1,4 @@
-﻿using Autodesk.Navisworks.Api.Interop;
+using Autodesk.Navisworks.Api.Interop;
 using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
 using static Autodesk.Navisworks.Api.Interop.LcUOption;
 
@@ -27,7 +27,7 @@ public partial class NavisworksOptionsManager
       case false when currentSetting == false:
         _autosaveSetting = false;
         return;
-      // Autosave was turned on at the time that the send operation was started 
+      // Autosave was turned on at the time that the send operation was started
       case false:
         _autosaveSetting = true;
         rootOptions.SetBoolean("general.autosave.enable", false);
@@ -35,6 +35,10 @@ public partial class NavisworksOptionsManager
       // turn autosave back on if it was on before Send
       case true when _autosaveSetting:
         rootOptions.SetBoolean("general.autosave.enable", true);
+        break;
+      default:
+        // This case is intentionally left empty as all logical scenarios
+        // for a boolean 'enable' are covered above.
         break;
     }
 
@@ -44,16 +48,10 @@ public partial class NavisworksOptionsManager
   /// <summary>
   /// Disables the auto-save feature.
   /// </summary>
-  public void DisableAutoSave()
-  {
-    UpdateAutoSaveSetting(false);
-  }
+  public void DisableAutoSave() => UpdateAutoSaveSetting(false);
 
   /// <summary>
   /// Restores the auto-save setting to its original state after the send process.
   /// </summary>
-  public void RestoreAutoSave()
-  {
-    UpdateAutoSaveSetting(true);
-  }
+  public void RestoreAutoSave() => UpdateAutoSaveSetting(true);
 }

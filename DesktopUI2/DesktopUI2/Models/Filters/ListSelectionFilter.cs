@@ -20,7 +20,10 @@ public class ListSelectionFilter : ISelectionFilter
     get
     {
       if (Selection.Count != 0)
+      {
         return string.Join(", ", Selection);
+      }
+
       return "nothing";
     }
   }

@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using CSiAPIv1;
 
-namespace ConnectorCSIShared.Util
+namespace ConnectorCSIShared.Util;
+
+internal static class ResultUtils
 {
-  internal static class ResultUtils
+  public static List<string> GetNamesOfAllLoadCasesAndCombos(cSapModel sapModel)
   {
-    public static List<string> GetNamesOfAllLoadCasesAndCombos(cSapModel sapModel)
-    {
-      List<string> names = new();
+    List<string> names = new();
 
-      int numberOfLoadCombinations = 0;
-      string[] loadCombinationNames = null;
-      sapModel.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
-      names.AddRange(loadCombinationNames);
+    int numberOfLoadCombinations = 0;
+    string[] loadCombinationNames = Array.Empty<string>();
+    sapModel.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
+    names.AddRange(loadCombinationNames);
 
-      sapModel.LoadCases.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
-      names.AddRange(loadCombinationNames);
+    sapModel.LoadCases.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
+    names.AddRange(loadCombinationNames);
 
-      return names;
-    }
+    return names;
   }
 }

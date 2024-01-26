@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
@@ -17,7 +18,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
 [
   DockPanePlugin(450, 750, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
   Plugin(
-    LaunchSpeckleConnector.Plugin,
+    LaunchSpeckleConnector.PLUGIN,
     "Speckle",
     DisplayName = "Speckle",
     Options = PluginOptions.None,
@@ -25,10 +26,20 @@ namespace Speckle.ConnectorNavisworks.Entry;
     ExtendedToolTip = "Speckle Connector for Navisworks"
   )
 ]
+[SuppressMessage(
+  "design",
+  "CA1812:Avoid uninstantiated internal classes",
+  Justification = "Instantiated by Navisworks"
+)]
 internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
   internal ConnectorBindingsNavisworks Bindings;
 
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Instance of InitAvalonia has unknown Exceptions."
+  )]
   public override Control CreateControlPane()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
@@ -64,7 +75,9 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
   public override void DestroyControlPane(Control pane)
   {
     if (pane is UserControl control)
+    {
       control.Dispose();
+    }
   }
 
   private static AppBuilder BuildAvaloniaApp()
@@ -87,10 +100,7 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     return app;
   }
 
-  private static void InitAvalonia()
-  {
-    BuildAvaloniaApp().SetupWithoutStarting();
-  }
+  private static void InitAvalonia() => BuildAvaloniaApp().SetupWithoutStarting();
 
   private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
@@ -101,7 +111,9 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     var assemblyFile = Path.Combine(path ?? string.Empty, name + ".dll");
 
     if (File.Exists(assemblyFile))
+    {
       a = Assembly.LoadFrom(assemblyFile);
+    }
 
     return a;
   }

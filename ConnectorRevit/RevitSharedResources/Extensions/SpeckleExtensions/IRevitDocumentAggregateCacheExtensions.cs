@@ -4,23 +4,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Interfaces;
 using SCH = RevitSharedResources.Helpers.Categories;
 
-namespace RevitSharedResources.Extensions.SpeckleExtensions
+namespace RevitSharedResources.Extensions.SpeckleExtensions;
+
+public static class IRevitDocumentAggregateCacheExtensions
 {
-  public static class IRevitDocumentAggregateCacheExtensions
+  public static IRevitObjectCache<T> GetOrInitializeWithDefaultFactory<T>(this IRevitDocumentAggregateCache cache)
   {
-    public static IRevitObjectCache<T> GetOrInitializeWithDefaultFactory<T>(this IRevitDocumentAggregateCache cache)
-    {
-      return cache.GetOrInitializeCacheOfType<T>(singleCache =>
+    return cache.GetOrInitializeCacheOfType<T>(
+      singleCache =>
       {
         MethodInfo cacheFactoryMethod = null;
         foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
         {
           var firstParam = method.GetParameters().FirstOrDefault();
-          if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>)) continue;
+          if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>))
+          {
+            continue;
+          }
 
           cacheFactoryMethod = method;
           break;
@@ -28,58 +31,68 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
 
         if (cacheFactoryMethod == null)
         {
-          throw new ArgumentException($"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object");
+          throw new ArgumentException(
+            $"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object"
+          );
         }
 
         cacheFactoryMethod.Invoke(null, new object[] { singleCache, cache.Document });
-      }, out _);
-    }
+      },
+      out _
+    );
+  }
 
-    public static void CacheInitializer(IRevitObjectCache<Category> cache, Document doc)
+  public static void CacheInitializer(IRevitObjectCache<Category> cache, Document doc)
+  {
+    var _categories = new Dictionary<string, Category>();
+
+    foreach (Category category in doc.Settings.Categories)
     {
-      var _categories = new Dictionary<string, Category>();
-
-
-      foreach (Category category in doc.Settings.Categories)
+      if (!Helpers.Extensions.Extensions.IsCategorySupported(category))
       {
-        if (!Helpers.Extensions.Extensions.IsCategorySupported(category))
-          continue;
-
-        //some categories, in other languages (eg DEU) have duplicated names #542
-        if (_categories.ContainsKey(category.Name))
-        {
-          var spec = category.Id.ToString();
-          if (category.Parent != null)
-            spec = category.Parent.Name;
-          _categories.Add($"{category.Name} ({spec})", category);
-        }
-        else
-          _categories.Add(category.Name, category);
+        continue;
       }
 
-      cache.AddMany(_categories);
-    }
-
-    public static void CacheInitializer(IRevitObjectCache<IRevitCategoryInfo> cache, Document doc)
-    {
-      var predefinedCategories = new List<IRevitCategoryInfo>();
-      foreach (var property in typeof(SCH).GetProperties(BindingFlags.Static | BindingFlags.Public))
+      //some categories, in other languages (eg DEU) have duplicated names #542
+      if (_categories.ContainsKey(category.Name))
       {
-        if (property.GetValue(null) is IRevitCategoryInfo categoryInfo)
+        var spec = category.Id.ToString();
+        if (category.Parent != null)
         {
-          predefinedCategories.Add(categoryInfo);
+          spec = category.Parent.Name;
         }
+
+        _categories.Add($"{category.Name} ({spec})", category);
       }
-      cache.AddMany(predefinedCategories, categoryInfo => categoryInfo.CategoryName);
+      else
+      {
+        _categories.Add(category.Name, category);
+      }
     }
 
-    public static void CacheInitializer(IRevitObjectCache<ElementType> cache, Document doc)
+    cache.AddMany(_categories);
+  }
+
+  public static void CacheInitializer(IRevitObjectCache<IRevitCategoryInfo> cache, Document doc)
+  {
+    var predefinedCategories = new List<IRevitCategoryInfo>();
+    foreach (var property in typeof(SCH).GetProperties(BindingFlags.Static | BindingFlags.Public))
     {
-      // don't do any default initialization
+      if (property.GetValue(null) is IRevitCategoryInfo categoryInfo)
+      {
+        predefinedCategories.Add(categoryInfo);
+      }
     }
-    public static void CacheInitializer(IRevitObjectCache<List<ElementType>> cache, Document doc)
-    {
-      // don't do any default initialization
-    }
+    cache.AddMany(predefinedCategories, categoryInfo => categoryInfo.CategoryName);
+  }
+
+  public static void CacheInitializer(IRevitObjectCache<ElementType> cache, Document doc)
+  {
+    // don't do any default initialization
+  }
+
+  public static void CacheInitializer(IRevitObjectCache<List<ElementType>> cache, Document doc)
+  {
+    // don't do any default initialization
   }
 }

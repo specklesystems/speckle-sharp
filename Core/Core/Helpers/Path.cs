@@ -1,8 +1,7 @@
-# nullable enable
-
 using System;
 using System.IO;
 using System.Reflection;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Helpers;
 
@@ -11,20 +10,20 @@ namespace Speckle.Core.Helpers;
 /// </summary>
 public static class SpecklePathProvider
 {
-  private static string _applicationName = "Speckle";
+  private static string s_applicationName = "Speckle";
 
-  private static string _blobFolderName = "Blobs";
+  private static string s_blobFolderName = "Blobs";
 
-  private static string _kitsFolderName = "Kits";
+  private static string s_kitsFolderName = "Kits";
 
-  private static string _accountsFolderName = "Accounts";
+  private static string s_accountsFolderName = "Accounts";
 
-  private static string _objectsFolderName = "Objects";
+  private static string s_objectsFolderName = "Objects";
 
-  private static string _logFolderName = "Logs";
+  private const string LOG_FOLDER_NAME = "Logs";
 
-  private static string _userDataPathEnvVar => "SPECKLE_USERDATA_PATH";
-  private static string? _path => Environment.GetEnvironmentVariable(_userDataPathEnvVar);
+  private static string UserDataPathEnvVar => "SPECKLE_USERDATA_PATH";
+  private static string? Path => Environment.GetEnvironmentVariable(UserDataPathEnvVar);
 
   /// <summary>
   /// Get the installation path.
@@ -37,27 +36,27 @@ public static class SpecklePathProvider
   /// <summary>
   /// Get the path where the Speckle applications should be installed
   /// </summary>
-  public static string InstallSpeckleFolderPath => EnsureFolderExists(InstallApplicationDataPath, _applicationName);
+  public static string InstallSpeckleFolderPath => EnsureFolderExists(InstallApplicationDataPath, s_applicationName);
 
   /// <summary>
   /// Get the folder where the user's Speckle data should be stored.
   /// </summary>
-  public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath(), _applicationName);
+  public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath(), s_applicationName);
 
   /// <summary>
   /// Get the folder where the Speckle kits should be stored.
   /// </summary>
-  public static string KitsFolderPath => EnsureFolderExists(InstallSpeckleFolderPath, _kitsFolderName);
+  public static string KitsFolderPath => EnsureFolderExists(InstallSpeckleFolderPath, s_kitsFolderName);
 
   /// <summary>
   ///
   /// </summary>
-  public static string ObjectsFolderPath => EnsureFolderExists(KitsFolderPath, _objectsFolderName);
+  public static string ObjectsFolderPath => EnsureFolderExists(KitsFolderPath, s_objectsFolderName);
 
   /// <summary>
   /// Get the folder where the Speckle accounts data should be stored.
   /// </summary>
-  public static string AccountsFolderPath => EnsureFolderExists(UserSpeckleFolderPath, _accountsFolderName);
+  public static string AccountsFolderPath => EnsureFolderExists(UserSpeckleFolderPath, s_accountsFolderName);
 
   /// <summary>
   /// Override the global Speckle application name.
@@ -65,7 +64,7 @@ public static class SpecklePathProvider
   /// <param name="applicationName"></param>
   public static void OverrideApplicationName(string applicationName)
   {
-    _applicationName = applicationName;
+    s_applicationName = applicationName;
   }
 
   /// <summary>
@@ -73,7 +72,7 @@ public static class SpecklePathProvider
   /// </summary>
   public static void OverrideApplicationDataPath(string? path)
   {
-    Environment.SetEnvironmentVariable(_userDataPathEnvVar, path);
+    Environment.SetEnvironmentVariable(UserDataPathEnvVar, path);
   }
 
   /// <summary>
@@ -81,7 +80,7 @@ public static class SpecklePathProvider
   /// </summary>
   public static void OverrideBlobStorageFolder(string blobFolderName)
   {
-    _blobFolderName = blobFolderName;
+    s_blobFolderName = blobFolderName;
   }
 
   /// <summary>
@@ -89,7 +88,7 @@ public static class SpecklePathProvider
   /// </summary>
   public static void OverrideKitsFolderName(string kitsFolderName)
   {
-    _kitsFolderName = kitsFolderName;
+    s_kitsFolderName = kitsFolderName;
   }
 
   /// <summary>
@@ -97,7 +96,7 @@ public static class SpecklePathProvider
   /// </summary>
   public static void OverrideAccountsFolderName(string accountsFolderName)
   {
-    _accountsFolderName = accountsFolderName;
+    s_accountsFolderName = accountsFolderName;
   }
 
   /// <summary>
@@ -105,7 +104,7 @@ public static class SpecklePathProvider
   /// </summary>
   public static void OverrideObjectsFolderName(string objectsFolderName)
   {
-    _objectsFolderName = objectsFolderName;
+    s_objectsFolderName = objectsFolderName;
   }
 
   /// <summary>
@@ -114,9 +113,11 @@ public static class SpecklePathProvider
   public static string UserApplicationDataPath()
   {
     // if we have an override, just return that
-    var pathOverride = _path;
+    var pathOverride = Path;
     if (pathOverride != null && !string.IsNullOrEmpty(pathOverride))
+    {
       return pathOverride;
+    }
 
     // on desktop linux and macos we use the appdata.
     // but we might not have write access to the disk
@@ -132,8 +133,11 @@ public static class SpecklePathProvider
         Environment.SpecialFolderOption.Create
       );
     }
-    catch
+    catch (SystemException ex) when (ex is PlatformNotSupportedException or ArgumentException)
     {
+      //Adding this log just so we confidently know which Exception type to catch here.
+      SpeckleLog.Logger.Warning(ex, "Falling back to user profile path");
+
       // on server linux, there might not be a user setup, things can run under root
       // in that case, the appdata variable is most probably not set up
       // we fall back to the value of the home folder
@@ -146,12 +150,12 @@ public static class SpecklePathProvider
   /// </summary>
   public static string BlobStoragePath(string? path = null)
   {
-    return EnsureFolderExists(path ?? UserSpeckleFolderPath, _blobFolderName);
+    return EnsureFolderExists(path ?? UserSpeckleFolderPath, s_blobFolderName);
   }
 
   private static string EnsureFolderExists(string basePath, string folderName)
   {
-    var path = Path.Combine(basePath, folderName);
+    var path = System.IO.Path.Combine(basePath, folderName);
     Directory.CreateDirectory(path);
     return path;
   }
@@ -164,7 +168,7 @@ public static class SpecklePathProvider
   public static string LogFolderPath(string hostApplicationName, string? hostApplicationVersion)
   {
     return EnsureFolderExists(
-      EnsureFolderExists(UserSpeckleFolderPath, _logFolderName),
+      EnsureFolderExists(UserSpeckleFolderPath, LOG_FOLDER_NAME),
       $"{hostApplicationName}{hostApplicationVersion ?? ""}"
     );
   }

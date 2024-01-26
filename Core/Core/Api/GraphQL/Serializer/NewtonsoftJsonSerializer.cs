@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.IO;
 using System.Text;
@@ -11,7 +12,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
+internal sealed class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
 {
   public NewtonsoftJsonSerializer()
     : this(DefaultJsonSerializerSettings) { }
@@ -54,9 +55,9 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
   public GraphQLWebSocketResponse<TResponse> DeserializeToWebsocketResponse<TResponse>(byte[] bytes)
   {
     return JsonConvert.DeserializeObject<GraphQLWebSocketResponse<TResponse>>(
-    Encoding.UTF8.GetString(bytes),
-    JsonSerializerSettings
-  );
+      Encoding.UTF8.GetString(bytes),
+      JsonSerializerSettings
+    );
   }
 
   public Task<GraphQLResponse<TResponse>> DeserializeFromUtf8StreamAsync<TResponse>(
@@ -80,5 +81,4 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
     var serializer = JsonSerializer.Create(JsonSerializerSettings);
     return Task.FromResult(serializer.Deserialize<T>(reader));
   }
-
 }

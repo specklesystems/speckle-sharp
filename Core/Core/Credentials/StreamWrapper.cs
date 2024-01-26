@@ -1,6 +1,7 @@
-#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -26,9 +27,13 @@ public class StreamWrapper
     OriginalInput = streamUrlOrId;
 
     if (!Uri.TryCreate(streamUrlOrId, UriKind.Absolute, out _))
+    {
       StreamWrapperFromId(streamUrlOrId);
+    }
     else
+    {
       StreamWrapperFromUrl(streamUrlOrId);
+    }
   }
 
   /// <summary>
@@ -67,13 +72,19 @@ public class StreamWrapper
     get
     {
       if (!string.IsNullOrEmpty(ObjectId))
+      {
         return StreamWrapperType.Object;
+      }
 
       if (!string.IsNullOrEmpty(CommitId))
+      {
         return StreamWrapperType.Commit;
+      }
 
       if (!string.IsNullOrEmpty(BranchName))
+      {
         return StreamWrapperType.Branch;
+      }
 
       // If we reach here and there is no stream id, it means that the stream is invalid for some reason.
       return !string.IsNullOrEmpty(StreamId) ? StreamWrapperType.Stream : StreamWrapperType.Undefined;
@@ -82,10 +93,12 @@ public class StreamWrapper
 
   private void StreamWrapperFromId(string streamId)
   {
-    Account account = AccountManager.GetDefaultAccount();
+    Account? account = AccountManager.GetDefaultAccount();
 
     if (account == null)
+    {
       throw new SpeckleException("You do not have any account. Please create one or add it to the Speckle Manager.");
+    }
 
     ServerUrl = account.serverInfo.url;
     UserId = account.userInfo.id;
@@ -96,7 +109,7 @@ public class StreamWrapper
   /// The ReGex pattern to determine if a URL's AbsolutePath is a Frontend2 URL or not.
   /// This is used in conjunction with <see cref="ParseFe2ModelValue"/> to extract the correct values into the instance.
   /// </summary>
-  private static readonly Regex Fe2UrlRegex =
+  private static readonly Regex s_fe2UrlRegex =
     new(
       @"/projects/(?<projectId>[\w\d]+)(?:/models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
     );
@@ -104,7 +117,7 @@ public class StreamWrapper
   /// <summary>
   /// Parses a FrontEnd2 URL Regex match and assigns it's data to this StreamWrapper instance.
   /// </summary>
-  /// <param name="match">A regex match coming from <see cref="Fe2UrlRegex"/></param>
+  /// <param name="match">A regex match coming from <see cref="s_fe2UrlRegex"/></param>
   /// <exception cref="SpeckleException">Will throw when the URL is not properly formatted.</exception>
   /// <exception cref="NotSupportedException">Will throw when the URL is correct, but is not currently supported by the StreamWrapper class.</exception>
   private void ParseFe2RegexMatch(Match match)
@@ -114,11 +127,19 @@ public class StreamWrapper
     var additionalModels = match.Groups["additionalModels"];
 
     if (!projectId.Success)
+    {
       throw new SpeckleException("The provided url is not a valid Speckle url");
+    }
+
     if (!model.Success)
+    {
       throw new SpeckleException("The provided url is not pointing to any model in the project.");
+    }
+
     if (additionalModels.Success || model.Value == "all")
+    {
       throw new NotSupportedException("Multi-model urls are not supported yet");
+    }
 
     var modelRes = ParseFe2ModelValue(model.Value);
 
@@ -141,19 +162,25 @@ public class StreamWrapper
   private static (string? branchId, string? commitId, string? objectId) ParseFe2ModelValue(string modelValue)
   {
     if (modelValue.Length == 32)
+    {
       return (null, null, modelValue); // Model value is an ObjectID
+    }
+
     if (!modelValue.Contains('@'))
+    {
       return (modelValue, null, null); // Model has no version attached
+    }
+
     var res = modelValue.Split('@');
     return (res[0], res[1], null); // Model has version attached
   }
 
   private void StreamWrapperFromUrl(string streamUrl)
   {
-    Uri uri = new(streamUrl, true);
+    Uri uri = new(streamUrl);
     ServerUrl = uri.GetLeftPart(UriPartial.Authority);
 
-    var fe2Match = Fe2UrlRegex.Match(uri.AbsolutePath);
+    var fe2Match = s_fe2UrlRegex.Match(uri.AbsolutePath);
     if (fe2Match.Success)
     {
       //NEW FRONTEND URL!
@@ -181,10 +208,14 @@ public class StreamWrapper
       switch (uri.Segments.Length)
       {
         case 3: // ie http://speckle.server/streams/8fecc9aa6d
-          if (uri.Segments[1].ToLowerInvariant() == "streams/")
-            StreamId = uri.Segments[2].Replace("/", "");
-          else
+          if (uri.Segments[1].ToLowerInvariant() != "streams/")
+          {
             throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
+          }
+          else
+          {
+            StreamId = uri.Segments[2].Replace("/", "");
+          }
 
           break;
         case 4: // ie https://speckle.server/streams/0c6ad366c4/globals/
@@ -239,14 +270,14 @@ public class StreamWrapper
   /// Gets a valid account for this stream wrapper.
   /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
   /// </summary>
-  /// <exception cref="Exception">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
+  /// <exception cref="SpeckleException">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
   /// <returns>The valid account object for this stream.</returns>
   public async Task<Account> GetAccount()
   {
-    Exception err = null;
-
     if (_account != null)
+    {
       return _account;
+    }
 
     // Step 1: check if direct account id (?u=)
     if (OriginalInput != null && OriginalInput.Contains("?u="))
@@ -263,35 +294,41 @@ public class StreamWrapper
 
     // Step 2: check the default
     var defAcc = AccountManager.GetDefaultAccount();
+    List<Exception> err = new();
     try
     {
       await ValidateWithAccount(defAcc).ConfigureAwait(false);
       _account = defAcc;
       return defAcc;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      err = e;
+      err.Add(new SpeckleException($"Account {defAcc?.userInfo?.email} failed to auth stream wrapper", ex));
     }
 
     // Step 3: all the rest
     var accs = AccountManager.GetAccounts(ServerUrl).ToList();
     if (accs.Count == 0)
+    {
       throw new SpeckleException($"You don't have any accounts for {ServerUrl}.");
+    }
 
     foreach (var acc in accs)
+    {
       try
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
         _account = acc;
         return acc;
       }
-      catch (Exception e)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        err = e;
+        err.Add(new SpeckleException($"Account {acc} failed to auth stream wrapper", ex));
       }
+    }
 
-    throw err;
+    AggregateException inner = new(null, err);
+    throw new SpeckleException("Failed to validate stream wrapper", inner);
   }
 
   public void SetAccount(Account acc)
@@ -303,9 +340,15 @@ public class StreamWrapper
   public bool Equals(StreamWrapper? wrapper)
   {
     if (wrapper == null)
+    {
       return false;
+    }
+
     if (Type != wrapper.Type)
+    {
       return false;
+    }
+
     return Type == wrapper.Type
         && ServerUrl == wrapper.ServerUrl
         && UserId == wrapper.UserId
@@ -316,14 +359,38 @@ public class StreamWrapper
       || Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId;
   }
 
+  /// <summary>
+  /// Verifies that the state of the stream wrapper represents a valid Speckle resource e.g. points to a valid stream/branch etc.
+  /// </summary>
+  /// <param name="acc">The account to use to verify the current state of the stream wrapper</param>
+  /// <exception cref="ArgumentException">The <see cref="ServerInfo"/> of the provided <paramref name="acc"/> is invalid or does not match the <see cref="StreamWrapper"/>'s <see cref="ServerUrl"/></exception>
+  /// <exception cref="HttpRequestException">You are not connected to the internet</exception>
+  /// <exception cref="SpeckleException">Verification of the current state of the stream wrapper with provided <paramref name="acc"/> was unsuccessful. The <paramref name="acc"/> could be invalid, or lack permissions for the <see cref="StreamId"/>, or the <see cref="StreamId"/> or <see cref="BranchName"/> are invalid</exception>
   public async Task ValidateWithAccount(Account acc)
   {
     if (ServerUrl != acc.serverInfo.url)
-      throw new SpeckleException($"Account is not from server {ServerUrl}");
+    {
+      throw new ArgumentException($"Account is not from server {ServerUrl}", nameof(acc));
+    }
 
-    var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
-    if (!hasInternet)
-      throw new Exception("You are not connected to the internet.");
+    Uri url;
+    try
+    {
+      url = new(ServerUrl);
+    }
+    catch (UriFormatException ex)
+    {
+      throw new ArgumentException("Server Url is improperly formatted", nameof(acc), ex);
+    }
+
+    try
+    {
+      await Http.HttpPing(url).ConfigureAwait(false);
+    }
+    catch (HttpRequestException ex)
+    {
+      throw new HttpRequestException("You are not connected to the internet.", ex);
+    }
 
     using var client = new Client(acc);
     // First check if the stream exists
@@ -331,10 +398,11 @@ public class StreamWrapper
     {
       await client.StreamGet(StreamId).ConfigureAwait(false);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleException(
-        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist."
+        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
+        ex
       );
     }
 
@@ -343,9 +411,11 @@ public class StreamWrapper
     {
       var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
       if (branch == null)
+      {
         throw new SpeckleException(
           $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
+      }
     }
   }
 

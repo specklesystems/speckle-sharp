@@ -1,24 +1,30 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation.SerializationUtilities;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
 using Utilities = Speckle.Core.Models.Utilities;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UseNegatedPatternInIsExpression
+#pragma warning disable IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854
+
 namespace Speckle.Core.Serialisation;
 
 /// <summary>
-/// Json converter that handles base speckle objects. Enables detachment &
+/// Json converter that handles base speckle objects. Enables detachment and
 /// simultaneous transport (persistence) of objects.
 /// </summary>
+[Obsolete("Use " + nameof(BaseObjectSerializerV2))]
 public class BaseObjectSerializer : JsonConverter
 {
   /// <summary>
@@ -74,10 +80,14 @@ public class BaseObjectSerializer : JsonConverter
   public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
   {
     if (CancellationToken.IsCancellationRequested)
+    {
       return null; // Check for cancellation
+    }
 
     if (reader.TokenType == JsonToken.Null)
+    {
       return null;
+    }
 
     // Check if we passed in an array, rather than an object.
     // TODO: Test the following branch. It's not used anywhere at the moment, and the default serializer prevents it from
@@ -90,21 +100,27 @@ public class BaseObjectSerializer : JsonConverter
       foreach (var val in jarr)
       {
         if (CancellationToken.IsCancellationRequested)
+        {
           return null; // Check for cancellation
+        }
 
-        var whatever = SerializationUtilities.HandleValue(val, serializer, CancellationToken);
+        var whatever = BaseObjectSerializationUtilities.HandleValue(val, serializer, CancellationToken);
         list.Add(whatever as Base);
       }
       return list;
     }
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return null; // Check for cancellation
+    }
 
     var jObject = JObject.Load(reader);
 
     if (jObject == null)
+    {
       return null;
+    }
 
     var objType = jObject.GetValue(TypeDiscriminator);
 
@@ -116,15 +132,19 @@ public class BaseObjectSerializer : JsonConverter
       foreach (var val in jObject)
       {
         if (CancellationToken.IsCancellationRequested)
+        {
           return null; // Check for cancellation
+        }
 
-        dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
+        dict[val.Key] = BaseObjectSerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
       }
       return dict;
     }
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return null; // Check for cancellation
+    }
 
     var discriminator = objType.Value<string>();
 
@@ -132,12 +152,11 @@ public class BaseObjectSerializer : JsonConverter
     if (discriminator == "reference")
     {
       var id = jObject.GetValue("referencedId").Value<string>();
-      string str = "";
 
-      if (ReadTransport != null)
-        str = ReadTransport.GetObject(id);
-      else
-        throw new SpeckleException("Cannot resolve reference, no transport is defined.");
+      string str =
+        ReadTransport != null
+          ? ReadTransport.GetObject(id)
+          : throw new SpeckleException("Cannot resolve reference, no transport is defined.");
 
       if (str != null && !string.IsNullOrEmpty(str))
       {
@@ -150,7 +169,7 @@ public class BaseObjectSerializer : JsonConverter
       }
     }
 
-    var type = SerializationUtilities.GetType(discriminator);
+    var type = BaseObjectSerializationUtilities.GetType(discriminator);
     var obj = existingValue ?? Activator.CreateInstance(type);
 
     var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(type);
@@ -161,15 +180,21 @@ public class BaseObjectSerializer : JsonConverter
     jObject.Remove("__closure");
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return null; // Check for cancellation
+    }
 
     foreach (var jProperty in jObject.Properties())
     {
       if (CancellationToken.IsCancellationRequested)
+      {
         return null; // Check for cancellation
+      }
 
       if (used.Contains(jProperty.Name))
+      {
         continue;
+      }
 
       used.Add(jProperty.Name);
 
@@ -180,16 +205,20 @@ public class BaseObjectSerializer : JsonConverter
       {
         if (type == typeof(Abstract) && property.PropertyName == "base")
         {
-          var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(
+          var propertyValue = BaseObjectSerializationUtilities.HandleAbstractOriginalValue(
             jProperty.Value,
-            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string,
-            serializer
+            ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string
           );
           property.ValueProvider.SetValue(obj, propertyValue);
         }
         else
         {
-          var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
+          var val = BaseObjectSerializationUtilities.HandleValue(
+            jProperty.Value,
+            serializer,
+            CancellationToken,
+            property
+          );
           property.ValueProvider.SetValue(obj, val);
         }
       }
@@ -199,19 +228,23 @@ public class BaseObjectSerializer : JsonConverter
         CallSiteCache.SetValue(
           jProperty.Name,
           obj,
-          SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
+          BaseObjectSerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
         );
       }
     }
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return null; // Check for cancellation
+    }
 
     TotalProcessedCount++;
     OnProgressAction?.Invoke("DS", 1);
 
     foreach (var callback in contract.OnDeserializedCallbacks)
+    {
       callback(obj, serializer.Context);
+    }
 
     return obj;
   }
@@ -251,12 +284,18 @@ public class BaseObjectSerializer : JsonConverter
       var parent = Lineage[i];
 
       if (!RefMinDepthTracker.ContainsKey(parent))
+      {
         RefMinDepthTracker[parent] = new Dictionary<string, int>();
+      }
 
       if (!RefMinDepthTracker[parent].ContainsKey(refId))
+      {
         RefMinDepthTracker[parent][refId] = Lineage.Count - i;
+      }
       else if (RefMinDepthTracker[parent][refId] > Lineage.Count - i)
+      {
         RefMinDepthTracker[parent][refId] = Lineage.Count - i;
+      }
     }
   }
 
@@ -271,14 +310,18 @@ public class BaseObjectSerializer : JsonConverter
   {
     writer.Formatting = serializer.Formatting;
     if (CancellationToken.IsCancellationRequested)
+    {
       return; // Check for cancellation
+    }
 
     /////////////////////////////////////
     // Path one: nulls
     /////////////////////////////////////
 
     if (value == null)
+    {
       return;
+    }
 
     /////////////////////////////////////
     // Path two: primitives (string, bool, int, etc)
@@ -300,7 +343,9 @@ public class BaseObjectSerializer : JsonConverter
     if (value is Base && !(value is ObjectReference))
     {
       if (CancellationToken.IsCancellationRequested)
+      {
         return; // Check for cancellation
+      }
 
       var obj = value as Base;
 
@@ -319,41 +364,59 @@ public class BaseObjectSerializer : JsonConverter
       foreach (var prop in propertyNames)
       {
         if (CancellationToken.IsCancellationRequested)
+        {
           return; // Check for cancellation
+        }
         // Ignore properties starting with a double underscore.
         if (prop.StartsWith("__"))
+        {
           continue;
+        }
 
         if (prop == "id")
+        {
           continue;
+        }
 
         var property = contract.Properties.GetClosestMatchProperty(prop);
 
         // Ignore properties decorated with [JsonIgnore].
         if (property != null && property.Ignored)
+        {
           continue;
+        }
 
         // Ignore nulls
         object propValue = obj[prop];
         if (propValue == null)
+        {
           continue;
+        }
 
         // Check if this property is marked for detachment: either by the presence of "@" at the beginning of the name, or by the presence of a DetachProperty attribute on a typed property.
         if (property != null)
         {
           var detachableAttributes = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
           if (detachableAttributes.Count > 0)
+          {
             DetachLineage.Add(((DetachProperty)detachableAttributes[0]).Detachable);
+          }
           else
+          {
             DetachLineage.Add(false);
+          }
 
           var chunkableAttributes = property.AttributeProvider.GetAttributes(typeof(Chunkable), true);
           if (chunkableAttributes.Count > 0)
+          {
             //DetachLineage.Add(true); // NOOPE
             serializer.Context = new StreamingContext(StreamingContextStates.Other, chunkableAttributes[0]);
+          }
           else
+          {
             //DetachLineage.Add(false);
             serializer.Context = new StreamingContext();
+          }
         }
         else if (prop.StartsWith("@")) // Convention check for dynamically added properties.
         {
@@ -363,9 +426,8 @@ public class BaseObjectSerializer : JsonConverter
 
           if (chunkSyntax.IsMatch(prop))
           {
-            int chunkSize;
             var match = chunkSyntax.Match(prop);
-            int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
+            _ = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out int chunkSize);
             serializer.Context = new StreamingContext(
               StreamingContextStates.Other,
               chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable()
@@ -392,10 +454,14 @@ public class BaseObjectSerializer : JsonConverter
           var what = JToken.FromObject(propValue, serializer); // Trigger next.
 
           if (CancellationToken.IsCancellationRequested)
+          {
             return; // Check for cancellation
+          }
 
           if (what == null)
+          {
             return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
+          }
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
@@ -420,11 +486,16 @@ public class BaseObjectSerializer : JsonConverter
         && WriteTransports.Count != 0
         && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1])
       )
+      {
         jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
+      }
 
       var hash = Utilities.HashString(jo.ToString());
       if (!jo.ContainsKey("id"))
+      {
         jo.Add("id", JToken.FromObject(hash));
+      }
+
       jo.WriteTo(writer);
 
       if (
@@ -441,7 +512,9 @@ public class BaseObjectSerializer : JsonConverter
         foreach (var transport in WriteTransports)
         {
           if (CancellationToken.IsCancellationRequested)
+          {
             continue; // Check for cancellation
+          }
 
           transport.SaveObject(objId, objString);
         }
@@ -457,7 +530,9 @@ public class BaseObjectSerializer : JsonConverter
     /////////////////////////////////////
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return; // Check for cancellation
+    }
 
     var type = value.GetType();
 
@@ -494,7 +569,9 @@ public class BaseObjectSerializer : JsonConverter
           if (i == maxCount)
           {
             if (currChunk.data.Count != 0)
+            {
               chunkList.Add(currChunk);
+            }
 
             currChunk = new DataChunk();
             i = 0;
@@ -504,17 +581,24 @@ public class BaseObjectSerializer : JsonConverter
         }
 
         if (currChunk.data.Count != 0)
+        {
           chunkList.Add(currChunk);
+        }
+
         value = chunkList;
       }
 
       foreach (var arrValue in (IEnumerable)value)
       {
         if (CancellationToken.IsCancellationRequested)
+        {
           return; // Check for cancellation
+        }
 
         if (arrValue == null)
+        {
           continue;
+        }
 
         if (
           WriteTransports != null
@@ -538,18 +622,24 @@ public class BaseObjectSerializer : JsonConverter
       }
 
       if (CancellationToken.IsCancellationRequested)
+      {
         return; // Check for cancellation
+      }
 
       arr.WriteTo(writer);
 
       if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a list entry point case?
+      {
         DetachLineage.RemoveAt(0);
+      }
 
       return;
     }
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return; // Check for cancellation
+    }
 
     if (typeof(IDictionary).IsAssignableFrom(type))
     {
@@ -565,10 +655,14 @@ public class BaseObjectSerializer : JsonConverter
       foreach (DictionaryEntry kvp in dict)
       {
         if (CancellationToken.IsCancellationRequested)
+        {
           return; // Check for cancellation
+        }
 
         if (kvp.Value == null)
+        {
           continue;
+        }
 
         JToken jToken;
         if (
@@ -594,10 +688,14 @@ public class BaseObjectSerializer : JsonConverter
       dictJo.WriteTo(writer);
 
       if (CancellationToken.IsCancellationRequested)
+      {
         return; // Check for cancellation
+      }
 
       if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a dictionary entry point case?
+      {
         DetachLineage.RemoveAt(0);
+      }
 
       return;
     }
@@ -607,7 +705,9 @@ public class BaseObjectSerializer : JsonConverter
     /////////////////////////////////////
 
     if (CancellationToken.IsCancellationRequested)
+    {
       return; // Check for cancellation
+    }
 
     FirstEntry = false;
     var lastCall = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer
@@ -616,3 +716,4 @@ public class BaseObjectSerializer : JsonConverter
 
   #endregion
 }
+#pragma warning restore IDE0075, IDE1006, IDE0083, CA1051, CA1502, CA1854

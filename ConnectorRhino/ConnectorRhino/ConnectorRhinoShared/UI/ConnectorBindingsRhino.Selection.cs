@@ -16,11 +16,16 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
 
     if (Converter == null || Doc == null)
+    {
       return objs;
+    }
 
     var selected = Doc.Objects.GetSelectedObjects(true, false).ToList();
     if (selected.Count == 0)
+    {
       return objs;
+    }
+
     var supportedObjs = selected.Where(o => Converter.CanConvertToSpeckle(o))?.ToList();
     var unsupportedObjs = selected.Where(o => Converter.CanConvertToSpeckle(o) == false)?.ToList();
 
@@ -71,32 +76,22 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override void SelectClientObjects(List<string> objs, bool deselect = false)
   {
-    var isPreview = PreviewConduit != null && PreviewConduit.Enabled ? true : false;
+    var isPreview = PreviewConduit != null && PreviewConduit.Enabled;
 
     foreach (var id in objs)
     {
-      RhinoObject obj = null;
-      try
+      if (Utils.GetGuidFromString(id, out Guid guid))
       {
-        obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
-      }
-      catch
-      {
-        continue; // this was a named view!
-      }
-
-      if (obj != null)
-      {
-        if (deselect)
-          obj.Select(false, true, false, true, true, true);
-        else
-          obj.Select(true, true, true, true, true, true);
-      }
-      else if (isPreview)
-      {
-        PreviewConduit.Enabled = false;
-        PreviewConduit.SelectPreviewObject(id, deselect);
-        PreviewConduit.Enabled = true;
+        if (Doc.Objects.FindId(guid) is RhinoObject obj)
+        {
+          obj.Select(!deselect, true, true, true, true, true);
+        }
+        else if (isPreview)
+        {
+          PreviewConduit.Enabled = false;
+          PreviewConduit.SelectPreviewObject(id, deselect);
+          PreviewConduit.Enabled = true;
+        }
       }
     }
 
@@ -126,17 +121,28 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           {
             var layerObjs = Doc.Objects.FindByLayer(layer)?.Select(o => o.Id.ToString());
             if (layerObjs != null)
+            {
               objs.AddRange(layerObjs);
+            }
           }
         }
         break;
       case "project-info":
         if (filter.Selection.Contains("Standard Views"))
+        {
           objs.AddRange(Doc.StandardViews());
+        }
+
         if (filter.Selection.Contains("Named Views"))
+        {
           objs.AddRange(Doc.NamedViews());
+        }
+
         if (filter.Selection.Contains("Layers"))
+        {
           objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()));
+        }
+
         break;
     }
 

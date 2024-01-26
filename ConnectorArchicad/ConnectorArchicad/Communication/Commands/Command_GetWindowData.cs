@@ -1,49 +1,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Core.Kits;
-using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
+using ConnectorArchicad.Communication.Commands;
 
-namespace Archicad.Communication.Commands
+namespace Archicad.Communication.Commands;
+
+sealed internal class GetWindowData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
-  sealed internal class GetWindowData : ICommand<IEnumerable<ArchicadWindow>>
+  public GetWindowData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
+
+  public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
   {
-    [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Parameters
-    {
-      [JsonProperty("applicationIds")]
-      private IEnumerable<string> ApplicationIds { get; }
+    dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
+      "GetWindowData",
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
+    );
 
-      public Parameters(IEnumerable<string> applicationIds)
-      {
-        ApplicationIds = applicationIds;
-      }
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    private sealed class Result
-    {
-      [JsonProperty("windows")]
-      public IEnumerable<ArchicadWindow> Datas { get; private set; }
-    }
-
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public GetWindowData(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-
-    public async Task<IEnumerable<ArchicadWindow>> Execute()
-    {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
-        "GetWindowData",
-        new Parameters(ApplicationIds)
-      );
-      //foreach (var subelement in result.Datas)
-      //subelement.units = Units.Meters;
-
-      return result.Datas;
-    }
+    return (Speckle.Newtonsoft.Json.Linq.JArray)result["windows"];
   }
 }

@@ -21,15 +21,21 @@ public class MenuItemViewModel
 
     MaterialIconKind icon;
     if (Enum.TryParse(item.Icon, out icon))
+    {
       Icon = new MaterialIcon { Kind = icon, Foreground = Brushes.Gray };
+    }
 
     if (item.Action != null)
+    {
       Command = ReactiveCommand.Create(item.Action);
+    }
 
     CommandParameter = commandParameter;
 
     if (item.Items != null)
+    {
       Items = item.Items.Select(x => new MenuItemViewModel(x, commandParameter)).ToList();
+    }
   }
 
   //public MenuItemViewModel(ICommand command, object commandParameter, string header, MaterialIconKind icon)

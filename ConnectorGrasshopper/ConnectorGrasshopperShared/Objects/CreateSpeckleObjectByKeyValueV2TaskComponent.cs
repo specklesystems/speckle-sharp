@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -48,7 +48,9 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
       var keys = new List<string>();
       var values = new List<IGH_Goo>();
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun("Create Object By Key Value");
+      }
 
       DA.GetDataList(0, keys);
       DA.GetDataList(1, values);
@@ -59,17 +61,23 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
       if (Converter != null)
       {
         foreach (var error in Converter.Report.ConversionErrors)
+        {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+        }
 
         Converter.Report.ConversionErrors.Clear();
       }
 
       if (!GetSolveResults(DA, out var result))
+      {
         // Normal mode not supported
         return;
+      }
 
       if (result != null)
+      {
         DA.SetData(0, result);
+      }
     }
   }
 
@@ -79,10 +87,14 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
     {
       // 👉 Checking for cancellation!
       if (CancelToken.IsCancellationRequested)
+      {
         return null;
+      }
 
       if (keys.Count != values.Count)
+      {
         throw new Exception("Keys and Values list do not have the same number of items");
+      }
 
       var speckleObj = new Base();
       for (var i = 0; i < keys.Count; i++)
@@ -92,16 +104,20 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
         try
         {
           if (value is SpeckleObjectGroup group)
+          {
             speckleObj[key] =
               Converter != null
                 ? group.Value.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList()
                 : group.Value;
+          }
           else
+          {
             speckleObj[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
+          }
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
         }
       }
 
@@ -113,7 +129,7 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
 
       return speckleObj;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

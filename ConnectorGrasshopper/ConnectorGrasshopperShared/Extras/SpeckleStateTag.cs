@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using ConnectorGrasshopper.Properties;
@@ -57,12 +57,16 @@ public abstract class SpeckleStateTag : GH_StateTag
   public override void Render(Graphics graphics)
   {
     if (GH_Canvas.ZoomFadeLow < 5)
+    {
       return;
+    }
 
     RenderSpeckleTagBlankIcon(graphics);
     RenderSpeckleTagContents(graphics);
     if (Crossed)
+    {
       RenderRedDiagonalLine(graphics);
+    }
   }
 
   public void RenderSpeckleTagBlankIcon(Graphics graphics)

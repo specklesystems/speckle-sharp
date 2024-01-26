@@ -1,6 +1,6 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api;

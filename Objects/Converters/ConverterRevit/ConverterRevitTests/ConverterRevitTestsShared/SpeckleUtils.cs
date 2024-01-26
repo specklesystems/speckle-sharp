@@ -11,172 +11,181 @@ using Xunit;
 using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
 
-namespace ConverterRevitTests
+namespace ConverterRevitTests;
+
+internal static class SpeckleUtils
 {
-  internal static class SpeckleUtils
+  public static SemaphoreSlim Throttler = new(1, 1);
+
+  internal static async Task<string> RunInTransaction(
+    Action action,
+    DB.Document doc,
+    ConverterRevit converter = null,
+    string transactionName = "transaction",
+    bool ignoreWarnings = false
+  )
   {
-    public static SemaphoreSlim Throttler = new SemaphoreSlim(1, 1);
+    var tcs = new TaskCompletionSource<string>();
 
-    internal async static Task<string> RunInTransaction(
-      Action action,
-      DB.Document doc,
-      ConverterRevit converter = null,
-      string transactionName = "transaction",
-      bool ignoreWarnings = false
-    )
+    await APIContext.Run(() =>
     {
-      var tcs = new TaskCompletionSource<string>();
+      using var transactionManager = new TransactionManager("", doc);
+      transactionManager.Start();
 
-      await APIContext.Run(() =>
+      if (converter != null)
       {
-        using var transactionManager = new TransactionManager("", doc);
-        transactionManager.Start();
+        converter.SetContextDocument(transactionManager);
+      }
 
-        if (converter != null)
+#pragma warning disable CA1031 // Do not catch general exception types
+      try
+      {
+        action.Invoke();
+        transactionManager.Finish();
+      }
+      catch (Exception exception)
+      {
+        tcs.TrySetException(exception);
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
+
+      tcs.TrySetResult("");
+    });
+
+    return await tcs.Task;
+  }
+
+  internal class IgnoreAllWarnings : Autodesk.Revit.DB.IFailuresPreprocessor
+  {
+    public DB.FailureProcessingResult PreprocessFailures(Autodesk.Revit.DB.FailuresAccessor failuresAccessor)
+    {
+      IList<Autodesk.Revit.DB.FailureMessageAccessor> failureMessages = failuresAccessor.GetFailureMessages();
+      foreach (Autodesk.Revit.DB.FailureMessageAccessor item in failureMessages)
+      {
+        failuresAccessor.DeleteWarning(item);
+      }
+
+      return DB.FailureProcessingResult.Continue;
+    }
+  }
+
+  internal static void DeleteElement(object obj)
+  {
+    switch (obj)
+    {
+      case IList list:
+        foreach (var item in list)
         {
-          converter.SetContextDocument(transactionManager);
+          DeleteElement(item);
         }
 
+        break;
+      case ApplicationObject o:
+        foreach (var item in o.Converted)
+        {
+          DeleteElement(item);
+        }
+
+        break;
+      case DB.ViewSchedule _:
+        // don't delete a view schedule since we didn't create it in the first place
+        break;
+      case DB.Element o:
         try
         {
-          action.Invoke();
-          transactionManager.Finish();
+          xru.RunInTransaction(
+              () =>
+              {
+                o.Document.Delete(o.Id);
+              },
+              o.Document
+            )
+            .Wait();
         }
-        catch (Exception exception)
-        {
-          tcs.TrySetException(exception);
-        }
+        // element already deleted, don't worry about it
+        catch (Autodesk.Revit.Exceptions.ArgumentException) { }
+        break;
+      default:
+        throw new Exception("It's not an element!?!?!");
+    }
+  }
 
-        tcs.TrySetResult("");
-      });
+  internal static int GetSpeckleObjectTestNumber(DB.Element element)
+  {
+    var param = element.Parameters
+      .Cast<DB.Parameter>()
+      .Where(el => el.Definition.Name == "SpeckleObjectTestNumber")
+      .FirstOrDefault();
 
-      return await tcs.Task;
+    if (param == null)
+    {
+      //throw new Exception($"Element of type {element.GetType()} with Id {element.Id.IntegerValue} does not have the parameter \"SpeckleObjectTestNumber\". If you are trying to create a new test document, then start from the \"blank.rvt\" file.");
+      return 0;
     }
 
-    internal class IgnoreAllWarnings : Autodesk.Revit.DB.IFailuresPreprocessor
-    {
-      public DB.FailureProcessingResult PreprocessFailures(Autodesk.Revit.DB.FailuresAccessor failuresAccessor)
-      {
-        IList<Autodesk.Revit.DB.FailureMessageAccessor> failureMessages = failuresAccessor.GetFailureMessages();
-        foreach (Autodesk.Revit.DB.FailureMessageAccessor item in failureMessages)
-        {
-          failuresAccessor.DeleteWarning(item);
-        }
+    return param.AsInteger();
+  }
 
-        return DB.FailureProcessingResult.Continue;
+  internal static void CustomAssertions(DB.Element element, Base @base)
+  {
+    var parameters = element.Parameters.Cast<DB.Parameter>().Where(el => el.Definition.Name.StartsWith("ToSpeckle"));
+
+    foreach (var param in parameters)
+    {
+      var parts = param.Definition.Name.Split('-');
+      if (parts.Length != 3)
+      {
+        continue;
       }
-    }
 
-    internal static void DeleteElement(object obj)
-    {
-      switch (obj)
+      var assertionType = parts[1];
+      var prop = parts[2];
+
+      switch (param.StorageType)
       {
-        case IList list:
-          foreach (var item in list)
-            DeleteElement(item);
-          break;
-        case ApplicationObject o:
-          foreach (var item in o.Converted)
-            DeleteElement(item);
-          break;
-        case DB.ViewSchedule _:
-          // don't delete a view schedule since we didn't create it in the first place
-          break;
-        case DB.Element o:
+        case DB.StorageType.String:
+          var baseString = GetBaseValue<string>(@base, prop);
+          var stringAssertionMethod = GetAssertionMethod<string>(assertionType);
           try
           {
-            xru.RunInTransaction(
-                () =>
-                {
-                  o.Document.Delete(o.Id);
-                },
-                o.Document
-              )
-              .Wait();
+            stringAssertionMethod(param.AsValueString(), baseString);
           }
-          // element already deleted, don't worry about it
-          catch { }
+          catch (Autodesk.Revit.Exceptions.ApplicationException)
+          {
+            stringAssertionMethod(param.AsString(), baseString);
+          }
           break;
-        default:
-          throw new Exception("It's not an element!?!?!");
+        case DB.StorageType.Integer:
+          var baseInt = GetBaseValue<int>(@base, prop);
+          var intAssertionMethod = GetAssertionMethod<int>(assertionType);
+          intAssertionMethod(param.AsInteger(), baseInt);
+          break;
+        case DB.StorageType.Double:
+          var baseDouble = GetBaseValue<double>(@base, prop);
+          var doubleAssertionMethod = GetAssertionMethod<double>(assertionType);
+          doubleAssertionMethod(param.AsDouble(), baseDouble);
+          break;
       }
     }
+  }
 
-    internal static int GetSpeckleObjectTestNumber(DB.Element element)
+  private static T GetBaseValue<T>(Base @base, string prop)
+  {
+    var path = prop.Split('.');
+    dynamic value = @base;
+    foreach (var part in path)
     {
-      var param = element.Parameters
-        .Cast<DB.Parameter>()
-        .Where(el => el.Definition.Name == "SpeckleObjectTestNumber")
-        .FirstOrDefault();
-
-      if (param == null)
-      {
-        //throw new Exception($"Element of type {element.GetType()} with Id {element.Id.IntegerValue} does not have the parameter \"SpeckleObjectTestNumber\". If you are trying to create a new test document, then start from the \"blank.rvt\" file.");
-        return 0;
-      }
-
-      return param.AsInteger();
+      value = value[part];
     }
+    return (T)value;
+  }
 
-    internal static void CustomAssertions(DB.Element element, Base @base)
+  private static Action<T, T> GetAssertionMethod<T>(string assertionType)
+  {
+    return assertionType switch
     {
-      var parameters = element.Parameters.Cast<DB.Parameter>().Where(el => el.Definition.Name.StartsWith("ToSpeckle"));
-
-      foreach (var param in parameters)
-      {
-        var parts = param.Definition.Name.Split('-');
-        if (parts.Length != 3)
-          continue;
-
-        var assertionType = parts[1];
-        var prop = parts[2];
-
-        switch (param.StorageType)
-        {
-          case DB.StorageType.String:
-            var baseString = GetBaseValue<string>(@base, prop);
-            var stringAssertionMethod = GetAssertionMethod<string>(assertionType);
-            try
-            {
-              stringAssertionMethod(param.AsValueString(), baseString);
-            }
-            catch (Exception ex)
-            {
-              stringAssertionMethod(param.AsString(), baseString);
-            }
-            break;
-          case DB.StorageType.Integer:
-            var baseInt = GetBaseValue<int>(@base, prop);
-            var intAssertionMethod = GetAssertionMethod<int>(assertionType);
-            intAssertionMethod(param.AsInteger(), baseInt);
-            break;
-          case DB.StorageType.Double:
-            var baseDouble = GetBaseValue<double>(@base, prop);
-            var doubleAssertionMethod = GetAssertionMethod<double>(assertionType);
-            doubleAssertionMethod(param.AsDouble(), baseDouble);
-            break;
-        }
-      }
-    }
-
-    private static T GetBaseValue<T>(Base @base, string prop)
-    {
-      var path = prop.Split('.');
-      dynamic value = @base;
-      foreach (var part in path)
-      {
-        value = value[part];
-      }
-      return (T)value;
-    }
-
-    private static Action<T, T> GetAssertionMethod<T>(string assertionType)
-    {
-      return assertionType switch
-      {
-        "AE" => Assert.Equal,
-        _ => throw new Exception($"Assertion type of \"{assertionType}\" is not recognized")
-      };
-    }
+      "AE" => Assert.Equal,
+      _ => throw new Exception($"Assertion type of \"{assertionType}\" is not recognized")
+    };
   }
 }

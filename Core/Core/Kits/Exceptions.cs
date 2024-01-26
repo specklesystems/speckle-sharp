@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using Speckle.Core.Logging;
 
@@ -26,9 +25,11 @@ public class KitException : Exception
 
   public KitException() { }
 
-  public KitException(string? message) : base(message) { }
+  public KitException(string? message)
+    : base(message) { }
 
-  public KitException(string? message, Exception? innerException) : base(message, innerException) { }
+  public KitException(string? message, Exception? innerException)
+    : base(message, innerException) { }
 }
 
 /// <summary>
@@ -48,9 +49,11 @@ public class ConversionException : SpeckleException
     this.ObjectThatFailed = objectToConvert;
   }
 
-  public ConversionException(string? message, Exception? innerException) : base(message, innerException) { }
+  public ConversionException(string? message, Exception? innerException)
+    : base(message, innerException) { }
 
-  public ConversionException(string? message) : base(message) { }
+  public ConversionException(string? message)
+    : base(message) { }
 
   public ConversionException() { }
 }
@@ -82,9 +85,11 @@ public class ConversionNotSupportedException : ConversionException
   public ConversionNotSupportedException(string? message, object? objectToConvert, Exception? innerException = null)
     : base(message, objectToConvert, innerException) { }
 
-  public ConversionNotSupportedException(string message, Exception innerException) : base(message, innerException) { }
+  public ConversionNotSupportedException(string message, Exception innerException)
+    : base(message, innerException) { }
 
-  public ConversionNotSupportedException(string message) : base(message) { }
+  public ConversionNotSupportedException(string message)
+    : base(message) { }
 
   public ConversionNotSupportedException() { }
 }
@@ -108,9 +113,11 @@ public class ConversionSkippedException : ConversionException
   public ConversionSkippedException(string? message, object? objectToConvert, Exception? innerException = null)
     : base(message, objectToConvert, innerException) { }
 
-  public ConversionSkippedException(string message, Exception innerException) : base(message, innerException) { }
+  public ConversionSkippedException(string message, Exception innerException)
+    : base(message, innerException) { }
 
-  public ConversionSkippedException(string message) : base(message) { }
+  public ConversionSkippedException(string message)
+    : base(message) { }
 
   public ConversionSkippedException() { }
 }
@@ -123,9 +130,11 @@ public class ConversionNotReadyException : ConversionException
   public ConversionNotReadyException(string? message, object? objectToConvert, Exception? innerException = null)
     : base(message, objectToConvert, innerException) { }
 
-  public ConversionNotReadyException(string message, Exception innerException) : base(message, innerException) { }
+  public ConversionNotReadyException(string message, Exception innerException)
+    : base(message, innerException) { }
 
-  public ConversionNotReadyException(string message) : base(message) { }
+  public ConversionNotReadyException(string message)
+    : base(message) { }
 
   public ConversionNotReadyException() { }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -64,12 +63,17 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
 
       //filename is different, might have been renamed or be a different document
       if (_fileName != fileName)
+      {
         _fileStream = null;
+      }
 
       _fileName = fileName;
 
       if (_fileStream == null)
+      {
         _fileStream = await GetOrCreateStreamState().ConfigureAwait(true);
+      }
+
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
       var selection = Bindings.GetSelectedObjects();
@@ -147,9 +151,11 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
     }
 
     if (HomeViewModel.Instance != null)
+    {
       HomeViewModel.Instance.AddSavedStream(
         new StreamViewModel(_fileStream, HostScreen, HomeViewModel.Instance.RemoveSavedStreamCommand)
       );
+    }
   }
 
   private async Task<StreamState> GetOrCreateStreamState()
@@ -163,12 +169,17 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
       .Where(o => o.CachedStream.name == _fileName && o.Client.Account == account)
       ?.FirstOrDefault();
     if (fileStream != null)
+    {
       return fileStream;
+    }
+
     // try to find stream in account
     var foundStream = await SearchStreams(client).ConfigureAwait(true);
 
     if (foundStream != null)
+    {
       return new StreamState(account, foundStream) { BranchName = "main" };
+    }
 
     // create the stream
     string streamId = await client
@@ -215,7 +226,10 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
   private void CloseSendModal()
   {
     if (Progress.IsProgressing)
+    {
       Progress.CancelCommand();
+    }
+
     SendClicked = false;
   }
 
@@ -284,10 +298,21 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
   {
     get
     {
-      var commit = "";
-      if (!string.IsNullOrEmpty(Id))
-        commit = "commits/" + Id;
-      return $"{_fileStream.ServerUrl.TrimEnd('/')}/streams/{_fileStream.StreamId}/{commit}";
+      var account = AccountManager.GetDefaultAccount();
+      if (account.serverInfo.frontend2)
+      {
+        return $"{_fileStream.ServerUrl.TrimEnd('/')}/projects/{_fileStream.StreamId}";
+      }
+      else
+      {
+        var commit = "";
+        if (!string.IsNullOrEmpty(Id))
+        {
+          commit = "commits/" + Id;
+        }
+
+        return $"{_fileStream.ServerUrl.TrimEnd('/')}/streams/{_fileStream.StreamId}/{commit}";
+      }
     }
   }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,16 +29,16 @@ public static class AccountManager
 {
   public const string DEFAULT_SERVER_URL = "https://app.speckle.systems";
 
-  private static readonly SQLiteTransport AccountStorage = new(scope: "Accounts");
-  private static bool _isAddingAccount;
-  private static readonly SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
+  private static readonly SQLiteTransport s_accountStorage = new(scope: "Accounts");
+  private static bool s_isAddingAccount;
+  private static readonly SQLiteTransport s_accountAddLockStorage = new(scope: "AccountAddFlow");
 
   /// <summary>
   /// Gets the basic information about a server.
   /// </summary>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  public static async Task<ServerInfo> GetServerInfo(string server)
+  public static async Task<ServerInfo?> GetServerInfo(string server)
   {
     using var httpClient = Http.GetHttpProxyClient();
 
@@ -53,8 +52,10 @@ public static class AccountManager
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request).ConfigureAwait(false);
 
-    if (response.Errors != null)
+    if (response.Errors is not null)
+    {
       return null;
+    }
 
     response.Data.serverInfo.url = server;
 
@@ -67,7 +68,7 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  public static async Task<UserInfo> GetUserInfo(string token, string server)
+  public static async Task<UserInfo?> GetUserInfo(string token, string server)
   {
     using var httpClient = Http.GetHttpProxyClient();
     Http.AddAuthHeader(httpClient, token);
@@ -82,8 +83,10 @@ public static class AccountManager
 
     var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request).ConfigureAwait(false);
 
-    if (response.Errors != null)
+    if (response.Errors is not null)
+    {
       return null;
+    }
 
     return response.Data.activeUser;
   }
@@ -115,14 +118,16 @@ public static class AccountManager
 
       var res = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
-      if (res.Errors != null && res.Errors.Any())
+      if (res.Errors is not null && res.Errors.Length != 0)
+      {
         throw new SpeckleException(res.Errors[0].Message, res.Errors);
+      }
 
       return res.Data;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get user + server info from {server}", ex);
     }
   }
 
@@ -137,19 +142,24 @@ public static class AccountManager
     // first mechanism, check for local file
     var customServerFile = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "server");
     if (File.Exists(customServerFile))
+    {
       customServerUrl = File.ReadAllText(customServerFile);
+    }
 
     // second mechanism, check ENV VAR
     var customServerEnvVar = Environment.GetEnvironmentVariable("SPECKLE_SERVER");
     if (!string.IsNullOrEmpty(customServerEnvVar))
+    {
       customServerUrl = customServerEnvVar;
+    }
 
     if (!string.IsNullOrEmpty(customServerUrl))
     {
-      Uri url = null;
-      Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
+      Uri.TryCreate(customServerUrl, UriKind.Absolute, out Uri url);
       if (url != null)
+      {
         serverUrl = customServerUrl.TrimEnd('/');
+      }
     }
 
     return serverUrl;
@@ -169,17 +179,21 @@ public static class AccountManager
   /// Gets this environment's default account if any. If there is no default, the first found will be returned and set as default.
   /// </summary>
   /// <returns>The default account or null.</returns>
-  public static Account GetDefaultAccount()
+  public static Account? GetDefaultAccount()
   {
     var defaultAccount = GetAccounts().FirstOrDefault(acc => acc.isDefault);
-    if (defaultAccount == null)
+    if (defaultAccount != null)
     {
-      var firstAccount = GetAccounts().FirstOrDefault();
-      if (firstAccount == null)
-        SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
-      return firstAccount;
+      return defaultAccount;
     }
-    return defaultAccount;
+
+    var firstAccount = GetAccounts().FirstOrDefault();
+    if (firstAccount == null)
+    {
+      SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one");
+    }
+
+    return firstAccount;
   }
 
   /// <summary>
@@ -189,17 +203,21 @@ public static class AccountManager
   /// <returns>Un-enumerated enumerable of accounts</returns>
   public static IEnumerable<Account> GetAccounts()
   {
-    static bool IsInvalid(Account ac) => ac?.userInfo == null || ac.serverInfo == null;
+    static bool IsInvalid(Account ac) => ac.userInfo == null || ac.serverInfo == null;
 
-    var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
+    var sqlAccounts = s_accountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
     var localAccounts = GetLocalAccounts();
 
     foreach (var acc in sqlAccounts)
     {
       if (IsInvalid(acc))
+      {
         RemoveAccount(acc.id);
+      }
       else
+      {
         yield return acc;
+      }
     }
 
     foreach (var acc in localAccounts)
@@ -213,19 +231,22 @@ public static class AccountManager
   /// These are accounts not handled by Manager and are stored in json format in a local directory
   /// </summary>
   /// <returns></returns>
-  private static IEnumerable<Account> GetLocalAccounts()
+  private static IList<Account> GetLocalAccounts()
   {
-    var accounts = new List<Account>();
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
     if (!Directory.Exists(accountsDir))
-      return accounts;
+    {
+      return Array.Empty<Account>();
+    }
 
-    var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
+    var accounts = new List<Account>();
+    string[] files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
+    {
       try
       {
         var json = File.ReadAllText(file);
-        var account = JsonConvert.DeserializeObject<Account>(json);
+        Account? account = JsonConvert.DeserializeObject<Account>(json);
 
         if (
           account is not null
@@ -236,12 +257,15 @@ public static class AccountManager
           && !string.IsNullOrEmpty(account.serverInfo.url)
           && !string.IsNullOrEmpty(account.serverInfo.name)
         )
+        {
           accounts.Add(account);
+        }
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        //ignore it
+        SpeckleLog.Logger.Warning(ex, "Failed to load json account at {filePath}", file);
       }
+    }
 
     return accounts;
   }
@@ -268,7 +292,9 @@ public static class AccountManager
           userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
           if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
+          {
             throw new SpeckleException("Could not refresh token");
+          }
 
           account.token = tokenResponse.token;
           account.refreshToken = tokenResponse.refreshToken;
@@ -280,12 +306,12 @@ public static class AccountManager
         account.serverInfo.url = url;
         account.serverInfo.frontend2 = await IsFrontend2Server(url).ConfigureAwait(false);
       }
-      catch (Exception)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         account.isOnline = false;
       }
 
-      AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+      s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
     }
   }
 
@@ -296,12 +322,14 @@ public static class AccountManager
   public static void RemoveAccount(string id)
   {
     //TODO: reset default account
-    AccountStorage.DeleteObject(id);
+    s_accountStorage.DeleteObject(id);
 
     var accounts = GetAccounts();
-
+    //BUG: Clearly this is a bug bug bug!
     if (accounts.Any() && !accounts.Any(x => x.isDefault))
+    {
       ChangeDefaultAccount(accounts.First().id);
+    }
   }
 
   /// <summary>
@@ -330,15 +358,54 @@ public static class AccountManager
     foreach (var account in GetAccounts())
     {
       if (account.id != id)
+      {
         account.isDefault = false;
+      }
       else
+      {
         account.isDefault = true;
+      }
 
-      AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+      s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
     }
   }
 
-  private static string _ensureCorrectServerUrl(string server)
+  /// <summary>
+  /// Retrieves the local identifier for the specified account.
+  /// </summary>
+  /// <param name="account">The account for which to retrieve the local identifier.</param>
+  /// <returns>The local identifier for the specified account in the form of "SERVER_URL?u=USER_ID".</returns>
+  /// <remarks>
+  /// <inheritdoc cref="Account.GetLocalIdentifier"/>
+  /// </remarks>
+  public static Uri? GetLocalIdentifierForAccount(Account account)
+  {
+    var identifier = account.GetLocalIdentifier();
+
+    // Validate account is stored locally
+    var searchResult = GetAccountForLocalIdentifier(identifier);
+
+    return searchResult == null ? null : identifier;
+  }
+
+  /// <summary>
+  /// Gets the account that corresponds to the given local identifier.
+  /// </summary>
+  /// <param name="localIdentifier">The local identifier of the account.</param>
+  /// <returns>The account that matches the local identifier, or null if no match is found.</returns>
+  public static Account? GetAccountForLocalIdentifier(Uri localIdentifier)
+  {
+    var searchResult = GetAccounts()
+      .FirstOrDefault(acc =>
+      {
+        var id = acc.GetLocalIdentifier();
+        return id == localIdentifier;
+      });
+
+    return searchResult;
+  }
+
+  private static string EnsureCorrectServerUrl(string server)
   {
     var localUrl = server;
     if (string.IsNullOrEmpty(localUrl))
@@ -352,18 +419,18 @@ public static class AccountManager
     return localUrl.TrimEnd('/');
   }
 
-  private static void _ensureGetAccessCodeFlowIsSupported()
+  private static void EnsureGetAccessCodeFlowIsSupported()
   {
     if (!HttpListener.IsSupported)
     {
       SpeckleLog.Logger.Error("HttpListener not supported");
-      throw new Exception("Your operating system is not supported");
+      throw new PlatformNotSupportedException("Your operating system is not supported");
     }
   }
 
-  private static async Task<string> _getAccessCode(string server, string challenge, TimeSpan timeout)
+  private static async Task<string> GetAccessCode(string server, string challenge, TimeSpan timeout)
   {
-    _ensureGetAccessCodeFlowIsSupported();
+    EnsureGetAccessCodeFlowIsSupported();
 
     SpeckleLog.Logger.Debug("Starting auth process for {server}/authn/verify/sca/{challenge}", server, challenge);
 
@@ -385,11 +452,11 @@ public static class AccountManager
 
       accessCode = request.QueryString["access_code"];
       SpeckleLog.Logger.Debug("Got access code {accessCode}", accessCode);
-      var message = "";
-      if (accessCode != null)
-        message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
-      else
-        message = "Oups, something went wrong...!";
+
+      string message =
+        accessCode != null
+          ? "Success!<br/><br/>You can close this window now.<script>window.close();</script>"
+          : "Oups, something went wrong...!";
 
       var responseString =
         $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
@@ -398,7 +465,7 @@ public static class AccountManager
       Stream output = response.OutputStream;
       output.Write(buffer, 0, buffer.Length);
       output.Close();
-      SpeckleLog.Logger.Debug("Processed finished processing the access code.");
+      SpeckleLog.Logger.Debug("Processed finished processing the access code");
       listener.Stop();
       listener.Close();
     });
@@ -433,7 +500,7 @@ public static class AccountManager
     return accessCode;
   }
 
-  private static async Task<Account> _createAccount(string accessCode, string challenge, string server)
+  private static async Task<Account> CreateAccount(string accessCode, string challenge, string server)
   {
     try
     {
@@ -444,7 +511,7 @@ public static class AccountManager
       {
         token = tokenResponse.token,
         refreshToken = tokenResponse.refreshToken,
-        isDefault = GetAccounts().Count() == 0,
+        isDefault = !GetAccounts().Any(),
         serverInfo = userResponse.serverInfo,
         userInfo = userResponse.activeUser
       };
@@ -453,22 +520,24 @@ public static class AccountManager
 
       return account;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       throw new SpeckleAccountManagerException("Failed to create account from access code and challenge", ex);
     }
   }
 
-  private static void _tryLockAccountAddFlow(TimeSpan timespan)
+  private static void TryLockAccountAddFlow(TimeSpan timespan)
   {
     // use a static variable to quickly
     // prevent launching this flow multiple times
-    if (_isAddingAccount)
+    if (s_isAddingAccount)
+    {
       // this should probably throw with an error message
       throw new SpeckleAccountFlowLockedException("The account add flow is already launched.");
+    }
 
     // this uses the SQLite transport to store locks
-    var lockIds = AccountAddLockStorage.GetAllObjects().OrderByDescending(d => d).ToList();
+    var lockIds = s_accountAddLockStorage.GetAllObjects().OrderByDescending(d => d).ToList();
     var now = DateTime.Now;
     foreach (var l in lockIds)
     {
@@ -492,16 +561,18 @@ public static class AccountManager
 
     // using the lock release time as an id and value
     // for ease of deletion and retrieval
-    AccountAddLockStorage.SaveObjectSync(lockId, lockId);
-    _isAddingAccount = true;
+    s_accountAddLockStorage.SaveObjectSync(lockId, lockId);
+    s_isAddingAccount = true;
   }
 
-  private static void _unlockAccountAddFlow()
+  private static void UnlockAccountAddFlow()
   {
-    _isAddingAccount = false;
+    s_isAddingAccount = false;
     // make sure all old locks are removed
-    foreach (var id in AccountAddLockStorage.GetAllObjects())
-      AccountAddLockStorage.DeleteObject(id);
+    foreach (var id in s_accountAddLockStorage.GetAllObjects())
+    {
+      s_accountAddLockStorage.DeleteObject(id);
+    }
   }
 
   /// <summary>
@@ -513,27 +584,27 @@ public static class AccountManager
   {
     SpeckleLog.Logger.Debug("Starting to add account for {serverUrl}", server);
 
-    server = _ensureCorrectServerUrl(server);
+    server = EnsureCorrectServerUrl(server);
 
     // locking for 1 minute
     var timeout = TimeSpan.FromMinutes(1);
     // this is not part of the try finally block
     // we do not want to clean up the existing locks
-    _tryLockAccountAddFlow(timeout);
+    TryLockAccountAddFlow(timeout);
     var challenge = GenerateChallenge();
-
-    var accessCode = "";
 
     try
     {
-      accessCode = await _getAccessCode(server, challenge, timeout).ConfigureAwait(false);
+      string accessCode = await GetAccessCode(server, challenge, timeout).ConfigureAwait(false);
       if (string.IsNullOrEmpty(accessCode))
+      {
         throw new SpeckleAccountManagerException("Access code is invalid");
+      }
 
-      var account = await _createAccount(accessCode, challenge, server).ConfigureAwait(false);
+      var account = await CreateAccount(accessCode, challenge, server).ConfigureAwait(false);
 
       //if the account already exists it will not be added again
-      AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+      s_accountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
       SpeckleLog.Logger.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
     }
     catch (SpeckleAccountManagerException ex)
@@ -542,14 +613,14 @@ public static class AccountManager
       // rethrowing any known errors
       throw;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
       throw new SpeckleAccountManagerException($"Failed to add account: {ex.Message}", ex);
     }
     finally
     {
-      _unlockAccountAddFlow();
+      UnlockAccountAddFlow();
     }
   }
 
@@ -575,9 +646,9 @@ public static class AccountManager
         await response.Content.ReadAsStringAsync().ConfigureAwait(false)
       );
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get authentication token from {server}", ex);
     }
   }
 
@@ -602,9 +673,9 @@ public static class AccountManager
         await response.Content.ReadAsStringAsync().ConfigureAwait(false)
       );
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      throw new SpeckleException(e.Message, e);
+      throw new SpeckleException($"Failed to get refreshed token from {server}", ex);
     }
   }
 
@@ -617,7 +688,8 @@ public static class AccountManager
 
       if (response.Headers.TryGetValues("x-speckle-frontend-2", out IEnumerable<string> values))
       {
-        if (values.Any() && bool.Parse(values.FirstOrDefault()))
+        string? first = values.FirstOrDefault();
+        if (first is not null && bool.Parse(first))
         {
           return true;
         }
@@ -625,7 +697,7 @@ public static class AccountManager
 
       return false;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }
@@ -633,13 +705,11 @@ public static class AccountManager
 
   private static string GenerateChallenge()
   {
-    using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
-    {
-      byte[] challengeData = new byte[32];
-      rng.GetBytes(challengeData);
+    using RNGCryptoServiceProvider rng = new();
+    byte[] challengeData = new byte[32];
+    rng.GetBytes(challengeData);
 
-      //escaped chars like % do not play nice with the server
-      return Regex.Replace(Convert.ToBase64String(challengeData), @"[^\w\.@-]", "");
-    }
+    //escaped chars like % do not play nice with the server
+    return Regex.Replace(Convert.ToBase64String(challengeData), @"[^\w\.@-]", "");
   }
 }

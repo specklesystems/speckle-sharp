@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
@@ -16,10 +16,7 @@ public partial class ConnectorBindingsNavisworks
 
   public override bool CanReceive => false;
 
-  public override List<ReceiveMode> GetReceiveModes()
-  {
-    return null;
-  }
+  public override List<ReceiveMode> GetReceiveModes() => null;
 
   public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
   {

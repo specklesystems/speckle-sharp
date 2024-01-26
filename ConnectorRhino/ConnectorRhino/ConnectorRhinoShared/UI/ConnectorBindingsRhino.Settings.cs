@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models.Settings;
-using Rhino;
-using Rhino.DocObjects.Tables;
 
 namespace SpeckleRhino;
 
@@ -13,7 +11,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override List<ISetting> GetSettings()
   {
-    List<string> meshImportOptions = new List<string>() { defaultValue, mergeCoplanar };
+    List<string> meshImportOptions = new() { defaultValue, mergeCoplanar };
 
     return new List<ISetting>
     {
@@ -37,7 +35,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     var settings = new Dictionary<string, string>();
     foreach (var setting in currentSettings)
+    {
       settings.Add(setting.Slug, setting.Selection);
+    }
+
     return settings;
   }
 }

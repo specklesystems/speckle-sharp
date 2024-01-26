@@ -15,7 +15,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using static Speckle.ConnectorNavisworks.Other.Utilities;
+using static Speckle.ConnectorNavisworks.Other.SpeckleNavisworksUtilities;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -37,19 +37,17 @@ public partial class ConnectorBindingsNavisworks
   private static Collection CommitObject =>
     new()
     {
-      ["units"] = GetUnits(_doc),
+      ["units"] = GetUnits(s_doc),
       collectionType = "Navisworks Model",
-      name = _doc.Title,
+      name = s_doc.Title,
       applicationId = "Root"
     };
 
   // Stub - Preview send is not supported
-  public override async void PreviewSend(StreamState state, ProgressViewModel progress)
-  {
+  public override async void PreviewSend(StreamState state, ProgressViewModel progress) =>
     await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
-    // TODO!
-  }
 
+  // TODO!
   /// <summary>
   /// Sends the stream to Speckle.
   /// </summary>
@@ -81,8 +79,8 @@ public partial class ConnectorBindingsNavisworks
 
         // Reset the cached conversion and commit objects
         CachedConvertedElements = null;
-        _cachedState = state;
-        _cachedCommit = commitObject;
+        s_cachedState = state;
+        s_cachedCommit = commitObject;
 
         Cursor.Current = Cursors.WaitCursor;
 
@@ -108,15 +106,19 @@ public partial class ConnectorBindingsNavisworks
       }
       else
       {
-        commitObject = _cachedCommit as Collection;
+        commitObject = s_cachedCommit as Collection;
         if (commitObject != null)
+        {
           commitObject.elements = CachedConvertedElements;
+        }
       }
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
-      if (_progressViewModel.Report.OperationErrors.Any())
+      if (_progressViewModel.Report.OperationErrors.Count != 0)
+      {
         ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -125,7 +127,7 @@ public partial class ConnectorBindingsNavisworks
       if (PersistCache == false)
       {
         // On success, cancel the conversion and commit object cache
-        _cachedCommit = null;
+        s_cachedCommit = null;
         CachedConvertedElements = null;
       }
     }
@@ -159,9 +161,14 @@ public partial class ConnectorBindingsNavisworks
     var internalPropertyNames = state.Settings.Find(x => x.Slug == "internal-property-names");
 
     if (internalPropertySettings != null && ((CheckBoxSetting)internalPropertySettings).IsChecked)
+    {
       _settingsHandler.ShowInternalProperties();
+    }
+
     if (internalPropertyNames != null && ((CheckBoxSetting)internalPropertyNames).IsChecked)
+    {
       _settingsHandler.UseInternalPropertyNames();
+    }
   }
 
   /// <summary>
@@ -171,16 +178,24 @@ public partial class ConnectorBindingsNavisworks
   private void ValidateBeforeSending(StreamState state)
   {
     if (_progressViewModel == null)
+    {
       throw new ArgumentException("No ProgressViewModel provided.");
+    }
 
-    if (_doc.ActiveSheet == null)
+    if (s_doc.ActiveSheet == null)
+    {
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
+    }
 
     if (state.Filter == null)
+    {
       throw new InvalidOperationException("No filter provided. Nothing to Send.");
+    }
 
     if (state.Filter.Slug == "all" || state.CommitMessage == "Sent everything")
+    {
       throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
+    }
   }
 
   /// <summary>
@@ -226,7 +241,9 @@ public partial class ConnectorBindingsNavisworks
     for (int index = 0; index < modelItemsToConvert.Count; index++)
     {
       if (_progressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -236,7 +253,9 @@ public partial class ConnectorBindingsNavisworks
       conversions.Add(element, new Tuple<Constants.ConversionState, Base>(Constants.ConversionState.ToConvert, null));
 
       if (index % objectInterval == 0 || index == modelItemsToConvert.Count - 1)
+      {
         _progressBar.Update((index + 1) * objectIncrement);
+      }
     }
 
     _progressBar.EndSubOperation();
@@ -256,7 +275,7 @@ public partial class ConnectorBindingsNavisworks
     CurrentSettings = state.Settings;
     var settings = state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
 
-    _navisworksConverter.SetContextDocument(_doc);
+    _navisworksConverter.SetContextDocument(s_doc);
     _navisworksConverter.SetConverterSettings(settings);
     _navisworksConverter.Report.ReportObjects.Clear();
   }
@@ -333,8 +352,10 @@ public partial class ConnectorBindingsNavisworks
   {
     // If the "RemoteTransport" key exists in the dictionary and has a positive value
     if (progressDict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
+    {
       // Update the progress bar proportionally to the remote conversion count
       _progressBar.Update(Math.Min((double)rc / 2 / _convertedCount, 1.0));
+    }
 
     // Update the progress view model with the progress dictionary
     _progressViewModel.Update(progressDict);
@@ -345,11 +366,9 @@ public partial class ConnectorBindingsNavisworks
   /// </summary>
   /// <param name="_">Unused parameter (typically the sender).</param>
   /// <param name="ex">The exception that occurred.</param>
-  private void HandleError(string _, Exception ex)
-  {
+  private void HandleError(string _, Exception ex) =>
     // Add the exception to the report's operation errors
     _progressViewModel.Report.OperationErrors.Add(ex);
-  }
 
   /// <summary>
   /// Sends converted objects to the Speckle server.
@@ -443,9 +462,11 @@ public partial class ConnectorBindingsNavisworks
 
     // Check if any items have been selected
     if (selectionBuilder.Count == 0)
+    {
       throw new InvalidOperationException(
         "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
       );
+    }
 
     try
     {
@@ -458,10 +479,12 @@ public partial class ConnectorBindingsNavisworks
 
     modelItemsToConvert.AddRange(selectionBuilder.ModelItems);
 
-    if (!modelItemsToConvert.Any())
+    if (modelItemsToConvert.Count == 0)
+    {
       throw new InvalidOperationException(
         "Zero objects visible for conversion; send stopped. Please select some objects, or check that your filter can actually select something."
       );
+    }
 
     return modelItemsToConvert;
   }
@@ -494,8 +517,8 @@ public partial class ConnectorBindingsNavisworks
     // Only send current view if we aren't sending other views.
     else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
     {
-      var currentView = _conversionInvoker.Convert(_doc.CurrentViewpoint.ToViewpoint());
-      var homeView = _conversionInvoker.Convert(_doc.HomeView);
+      var currentView = _conversionInvoker.Convert(s_doc.CurrentViewpoint.ToViewpoint());
+      var homeView = _conversionInvoker.Convert(s_doc.HomeView);
 
       if (currentView != null)
       {
@@ -510,8 +533,10 @@ public partial class ConnectorBindingsNavisworks
       }
     }
 
-    if (views.Any())
+    if (views.Count != 0)
+    {
       commitObject["views"] = views;
+    }
   }
 
   /// <summary>
@@ -534,7 +559,9 @@ public partial class ConnectorBindingsNavisworks
     for (var i = 0; i < conversions.Count; i++)
     {
       if (_progressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -595,7 +622,9 @@ public partial class ConnectorBindingsNavisworks
       _progressViewModel.Report.Log(reportObject);
 
       if (i % conversionInterval != 0 && i != conversions.Count)
+      {
         continue;
+      }
 
       double progress = (i + 1) * conversionIncrement;
       _progressBar.Update(progress);

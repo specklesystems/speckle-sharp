@@ -30,12 +30,12 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
+    <DefineConstants>TRACE;RHINO7;RHINO6_OR_GREATER;RHINO7_OR_GREATER</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
+    <DefineConstants>TRACE;RHINO7;RHINO6_OR_GREATER;RHINO7_OR_GREATER</DefineConstants>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 

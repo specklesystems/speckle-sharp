@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -28,7 +28,9 @@ public class Invoker
   private static object InvokeOnUIThreadWithException(Control control, Delegate method, object[] args)
   {
     if (control == null)
+    {
       return null;
+    }
 
     object result = null;
 
@@ -77,10 +79,8 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   /// <param name="fractionOfRemainingTime">Progress in sub op between 0 and 1 maps to fraction of remaining time in main operation.</param>
   /// <param name="message">The message of the sub operation. Defaults to an empty string.</param>
-  internal void BeginSubOperation(double fractionOfRemainingTime, string message = "")
-  {
+  internal void BeginSubOperation(double fractionOfRemainingTime, string message = "") =>
     Invoke(new Action<double, string>(_progressBar.BeginSubOperation), fractionOfRemainingTime, message);
-  }
 
   /// <summary>
   /// Ends the current sub operation.
@@ -88,7 +88,7 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   internal void EndSubOperation()
   {
-    Update(1.0);    
+    Update(1.0);
     Invoke(new Action(_progressBar.EndSubOperation));
   }
 
@@ -123,7 +123,9 @@ public sealed class ProgressInvoker : Invoker
   public void Cancel()
   {
     if (!_progressBar.IsDisposed)
+    {
       Invoke(new Action(_progressBar.Cancel), null);
+    }
   }
 }
 
@@ -148,8 +150,5 @@ public class ConversionInvoker : Invoker
   /// </summary>
   /// <param name="navisworksObject">The object to convert. This can be a ModelItem, View or whichever conversions get added.</param>
   /// <returns>A Speckle Base object.</returns>
-  public Base Convert(object navisworksObject)
-  {
-    return (Base)Invoke(_convertToSpeckle, navisworksObject);
-  }
+  public Base Convert(object navisworksObject) => (Base)Invoke(_convertToSpeckle, navisworksObject);
 }

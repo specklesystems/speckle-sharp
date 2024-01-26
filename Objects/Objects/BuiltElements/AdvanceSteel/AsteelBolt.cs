@@ -12,27 +12,16 @@ public abstract class AsteelBolt : Base, IAsteelObject
   public Base userAttributes { get; set; }
 
   public Base asteelProperties { get; set; }
-
-  public AsteelBolt()
-  {
-
-  }
 }
 
 public class AsteelCircularBolt : AsteelBolt
 {
   //[SchemaInfo("AsteelCircularBolt", "Creates a Advance Steel circular bolt.", "Advance Steel", "Structure")]
-  public AsteelCircularBolt()
-  {
-
-  }
+  public AsteelCircularBolt() { }
 }
 
 public class AsteelRectangularBolt : AsteelBolt
 {
   //[SchemaInfo("AsteelRectangularBolt", "Creates a Advance Steel rectangular bolt.", "Advance Steel", "Structure")]
-  public AsteelRectangularBolt()
-  {
-
-  }
+  public AsteelRectangularBolt() { }
 }

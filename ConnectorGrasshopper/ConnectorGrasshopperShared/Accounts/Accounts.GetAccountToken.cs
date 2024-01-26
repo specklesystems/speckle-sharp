@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using ConnectorGrasshopper.Properties;
@@ -22,11 +22,16 @@ public class Accounts_GetAccountToken : GH_SpeckleComponent
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -63,7 +68,9 @@ public class Accounts_GetAccountToken : GH_SpeckleComponent
   {
     var userId = "";
     if (!DA.GetData(0, ref userId))
+    {
       return;
+    }
 
     var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
 

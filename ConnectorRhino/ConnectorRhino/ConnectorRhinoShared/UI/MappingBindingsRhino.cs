@@ -28,32 +28,47 @@ public class MappingBindingsRhino : MappingsBindings
   {
     try
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-      var result = new List<Schema>();
+      List<RhinoObject> selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false)?.ToList();
+      if (selection is null)
+      {
+        return new MappingSelectionInfo(new List<Schema>(), 0);
+      }
 
+      var result = new List<Schema>();
       foreach (var obj in selection)
       {
-        var schemas = GetObjectSchemas(obj);
+        List<Schema> schemas = GetObjectSchemas(obj);
 
-        if (!result.Any())
+        if (result.Count == 0)
+        {
           result = schemas;
+        }
         else
+        {
           //intersect lists
           //TODO: if some elements already have a schema and values are different
           //we should default to an empty schema, instead of potentially restoring the one with values
-          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+          List<Schema> intersect = result.Where(x => schemas.Any(y => y.Name == x.Name))?.ToList();
+          if (intersect is not null)
+          {
+            result = intersect;
+          }
+        }
 
         //incompatible selection
-        if (!result.Any())
+        if (result.Count == 0)
+        {
           return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+        }
       }
 
       return new MappingSelectionInfo(result, selection.Count);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      // check seq to see if this has ever been thrown
       SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
-      return new MappingSelectionInfo(new List<Schema>(), 0);
+      throw;
     }
   }
 
@@ -68,9 +83,10 @@ public class MappingBindingsRhino : MappingsBindings
 
     try
     {
-      var existingSchema = GetExistingObjectSchema(obj);
-      if (existingSchema != null)
+      if (GetExistingObjectSchema(obj) is Schema existingSchema)
+      {
         result.Add(existingSchema);
+      }
 
       if (obj is InstanceObject)
       {
@@ -78,18 +94,27 @@ public class MappingBindingsRhino : MappingsBindings
         result.Add(new RevitFamilyInstanceViewModel());
       }
       else
+      {
         switch (obj.Geometry)
         {
           case Mesh m:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            {
               result.Add(new DirectShapeFreeformViewModel());
+            }
+
             if (!m.IsClosed)
+            {
               result.Add(new RevitTopographyViewModel());
+            }
+
             break;
 
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            {
               result.Add(new DirectShapeFreeformViewModel());
+            }
 
             var brepSurfaceSchemas = EvaluateBrepSurfaceSchemas(b);
             result.AddRange(brepSurfaceSchemas);
@@ -99,7 +124,10 @@ public class MappingBindingsRhino : MappingsBindings
             result.Add(new DirectShapeFreeformViewModel());
 
             if (e.ProfileCount > 1)
+            {
               break;
+            }
+
             var extrusionBrp = e.ToBrep(false);
             var extrusionSurfaceSchemas = EvaluateBrepSurfaceSchemas(extrusionBrp, true);
             result.AddRange(extrusionSurfaceSchemas);
@@ -136,8 +164,9 @@ public class MappingBindingsRhino : MappingsBindings
             result.Add(new RevitFamilyInstanceViewModel());
             break;
         }
+      }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
     }
@@ -153,7 +182,9 @@ public class MappingBindingsRhino : MappingsBindings
   {
     var schemas = new List<Schema>();
     if (b.Surfaces.Count != 1)
+    {
       return schemas;
+    }
 
     bool IsPlanar(Surface srf, out bool isHorizontal, out bool isVertical)
     {
@@ -245,7 +276,9 @@ public class MappingBindingsRhino : MappingsBindings
     var viewModel = obj.Attributes.GetUserString(SpeckleMappingViewKey);
 
     if (string.IsNullOrEmpty(viewModel))
+    {
       return null;
+    }
 
     try
     {
@@ -253,8 +286,13 @@ public class MappingBindingsRhino : MappingsBindings
 
       return JsonConvert.DeserializeObject<Schema>(viewModel, settings);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(
+        ex,
+        "Could not deserialize Speckle mapping view key into a schema: {exceptionMessage}",
+        ex.Message
+      );
       return null;
     }
   }
@@ -273,16 +311,17 @@ public class MappingBindingsRhino : MappingsBindings
 
   public override void ClearMappings(List<string> ids)
   {
-    foreach (var id in ids)
-      try
+    foreach (string id in ids)
+    {
+      if (Utils.GetGuidFromString(id, out Guid guid))
       {
-        var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
-        if (obj == null)
-          continue;
-        obj.Attributes.DeleteUserString(SpeckleMappingKey);
-        obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
+        if (RhinoDoc.ActiveDoc.Objects.FindId(guid) is RhinoObject obj)
+        {
+          obj.Attributes.DeleteUserString(SpeckleMappingKey);
+          obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
+        }
       }
-      catch { }
+    }
 
     SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
   }
@@ -300,35 +339,38 @@ public class MappingBindingsRhino : MappingsBindings
 
     //add the object id to the schema so we can easily highlight/clear them
     for (var i = 0; i < schemas.Count; i++)
+    {
       schemas[i].ApplicationId = objects[i].Id.ToString();
+    }
 
     return schemas;
   }
 
   public override void HighlightElements(List<string> ids)
   {
-    try
+    if (ids is not null && Display is not null)
     {
       Display.ObjectIds = ids;
-      RhinoDoc.ActiveDoc?.Views.Redraw();
-    }
-    catch (Exception ex)
-    {
-      //fail silently
+      RhinoDoc.ActiveDoc?.Views?.Redraw();
     }
   }
 
   public override void SelectElements(List<string> ids)
   {
-    try
+    if (ids is not null)
     {
-      RhinoDoc.ActiveDoc.Objects.UnselectAll();
-      RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
-      RhinoDoc.ActiveDoc?.Views.Redraw();
-    }
-    catch (Exception ex)
-    {
-      //fail silently
+      RhinoDoc.ActiveDoc?.Objects?.UnselectAll();
+      List<Guid> guids = new();
+      foreach (string id in ids)
+      {
+        if (Utils.GetGuidFromString(id, out Guid guid))
+        {
+          guids.Add(guid);
+        }
+      }
+
+      RhinoDoc.ActiveDoc?.Objects?.Select(guids);
+      RhinoDoc.ActiveDoc?.Views?.Redraw();
     }
   }
 }

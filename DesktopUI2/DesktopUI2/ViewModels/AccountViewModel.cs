@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -80,7 +79,10 @@ public class AccountViewModel : ReactiveObject
     get
     {
       if (HomeViewModel.Instance.Accounts.Any(x => x.Account.userInfo.id == Id))
+      {
         return "You";
+      }
+
       return Name;
     }
   }
@@ -97,6 +99,7 @@ public class AccountViewModel : ReactiveObject
       //if the user manually uploaded their avatar it'll be a base64 string of the image
       //otherwise if linked the account eg via google, it'll be a link
       if (value != null && value.StartsWith("data:"))
+      {
         try
         {
           SetImage(Convert.FromBase64String(value.Split(',')[1]));
@@ -106,13 +109,18 @@ public class AccountViewModel : ReactiveObject
         {
           value = null;
         }
+      }
 
       // only use robohas if it's the first attempt
       // otherwise it'll end up in a loop
       if (value == null && Id != null && _firstDownload)
+      {
         this.RaiseAndSetIfChanged(ref _avatarUrl, $"https://robohash.org/{Id}.png?size=28x28");
+      }
       else
+      {
         this.RaiseAndSetIfChanged(ref _avatarUrl, value);
+      }
 
       TrySetAvatarFromUrl(AvatarUrl);
     }
@@ -127,7 +135,9 @@ public class AccountViewModel : ReactiveObject
   private async void TrySetAvatarFromUrl(string url)
   {
     if (string.IsNullOrEmpty(url))
+    {
       return;
+    }
 
     _firstDownload = false;
 

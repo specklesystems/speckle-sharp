@@ -1,38 +1,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Newtonsoft.Json;
+using ConnectorArchicad.Communication.Commands;
 
-namespace Archicad.Communication.Commands
+namespace Archicad.Communication.Commands;
+
+sealed internal class GetColumnData : GetDataBase, ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
 {
-  sealed internal class GetColumnData : ICommand<Speckle.Newtonsoft.Json.Linq.JArray>
+  public GetColumnData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
+
+  public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
   {
-    [JsonObject(MemberSerialization.OptIn)]
-    public sealed class Parameters
-    {
-      [JsonProperty("applicationIds")]
-      private IEnumerable<string> ApplicationIds { get; }
+    dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
+      "GetColumnData",
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
+    );
 
-      public Parameters(IEnumerable<string> applicationIds)
-      {
-        ApplicationIds = applicationIds;
-      }
-    }
-
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public GetColumnData(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-
-    public async Task<Speckle.Newtonsoft.Json.Linq.JArray> Execute()
-    {
-      dynamic result = await HttpCommandExecutor.Execute<Parameters, dynamic>(
-        "GetColumnData",
-        new Parameters(ApplicationIds)
-      );
-
-      return (Speckle.Newtonsoft.Json.Linq.JArray)result["columns"];
-    }
+    return (Speckle.Newtonsoft.Json.Linq.JArray)result["columns"];
   }
 }

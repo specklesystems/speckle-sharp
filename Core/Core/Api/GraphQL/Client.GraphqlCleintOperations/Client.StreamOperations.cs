@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -144,9 +145,12 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
 
     if (res?.activeUser == null)
+    {
       throw new SpeckleException(
         "User is not authenticated, or the credentials were not valid. Check the provided account is still valid, remove it from manager and add it again."
       );
+    }
+
     return res.activeUser.streams.items;
   }
 
@@ -398,7 +402,10 @@ public partial class Client
   )
   {
     if ((inviteCreateInput.email == null) & (inviteCreateInput.userId == null))
+    {
       throw new ArgumentException("You must provide either an email or a user id to create a stream invite");
+    }
+
     var request = new GraphQLRequest
     {
       Query =

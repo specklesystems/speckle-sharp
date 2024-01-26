@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -24,7 +24,9 @@ public class UpgradeExpandSpeckleObject : IGH_UpgradeObject
   {
     var component = target as IGH_Component;
     if (component == null)
+    {
       return null;
+    }
 
     var upgradedComponent = GH_UpgradeUtil.SwapComponents(component, UpgradeTo);
     var priorParam = upgradedComponent.Params.Input[0];
@@ -36,7 +38,10 @@ public class UpgradeExpandSpeckleObject : IGH_UpgradeObject
       Access = GH_ParamAccess.item
     };
     foreach (var priorParamSource in priorParam.Sources)
+    {
       newParam.Sources.Add(priorParamSource);
+    }
+
     newParam.DataMapping = priorParam.DataMapping;
     newParam.Simplify = priorParam.Simplify;
     newParam.Reverse = priorParam.Reverse;
@@ -143,10 +148,12 @@ public class ExpandSpeckleObjectTaskComponent
       }
 
       if (DA.Iteration == 0)
+      {
         Speckle.Core.Logging.Analytics.TrackEvent(
           Speckle.Core.Logging.Analytics.Events.NodeRun,
           new Dictionary<string, object> { { "name", "Expand Object" } }
         );
+      }
 
       var task = Task.Run(() => DoWork(@base));
       TaskList.Add(task);
@@ -155,15 +162,21 @@ public class ExpandSpeckleObjectTaskComponent
     if (Converter != null)
     {
       foreach (var error in Converter.Report.ConversionErrors)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
+      }
+
       Converter.Report.ConversionErrors.Clear();
     }
 
     if (!GetSolveResults(DA, out Dictionary<string, object> result))
+    {
       // Normal mode not supported
       return;
+    }
 
     if (result != null)
+    {
       foreach (var key in result.Keys)
       {
         var isDetached = key.StartsWith("@");
@@ -197,6 +210,7 @@ public class ExpandSpeckleObjectTaskComponent
           }
         }
       }
+    }
   }
 
   private bool OutputMismatch()
@@ -220,7 +234,9 @@ public class ExpandSpeckleObjectTaskComponent
   {
     var equalLength = outputList.Count == Params.Output.Count;
     if (!equalLength)
+    {
       return false;
+    }
 
     var diffParams = Params.Output.Where(
       param => !outputList.Contains(param.NickName) && !outputList.Contains("@" + param.NickName)
@@ -231,7 +247,9 @@ public class ExpandSpeckleObjectTaskComponent
   private void AutoCreateOutputs()
   {
     if (!OutputMismatch())
+    {
       return;
+    }
 
     RecordUndoEvent("Creating Outputs");
 
@@ -269,7 +287,9 @@ public class ExpandSpeckleObjectTaskComponent
     remove.ForEach(b =>
     {
       if (b != -1 && Params.Output[b].Recipients.Count == 0)
+      {
         Params.UnregisterOutputParameter(Params.Output[b]);
+      }
     });
 
     outputList.Sort();
@@ -291,7 +311,9 @@ public class ExpandSpeckleObjectTaskComponent
         Params.RegisterOutputParam(newParam);
       }
       if (param is GenericAccessParam srParam)
+      {
         srParam.Detachable = isDetached;
+      }
     });
     var paramNames = Params.Output.Select(p => p.Name).ToList();
     paramNames.Sort();
@@ -327,7 +349,9 @@ public class ExpandSpeckleObjectTaskComponent
         .ForEach(prop =>
         {
           if (!fullProps.Contains(prop))
+          {
             fullProps.Add(prop);
+          }
         });
     }
 
@@ -341,7 +365,7 @@ public class ExpandSpeckleObjectTaskComponent
     {
       return CreateOutputDictionary(@base);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
@@ -358,7 +382,10 @@ public class ExpandSpeckleObjectTaskComponent
     // Assign all values to it's corresponding dictionary entry and branch path.
     var obj = @base;
     if (obj == null)
+    {
       return new Dictionary<string, object>();
+    }
+
     foreach (var prop in obj.GetMembers())
     {
       // Convert and add to corresponding output structure
@@ -395,7 +422,9 @@ public class ExpandSpeckleObjectTaskComponent
           {
             IGH_Goo wrapper = new GH_ObjectWrapper();
             foreach (var b in kvp.Value)
+            {
               wrapper = Utilities.TryConvertItemToNative(b, Converter);
+            }
 
             outputDict[prop.Key] = wrapper;
           }

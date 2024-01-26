@@ -1,20 +1,25 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+using System;
+using Speckle.Core.Logging;
 using System.Windows.Forms;
 using CSiAPIv1;
 using SpeckleConnectorCSI;
 
-namespace DriverCSharp
-{
-  class Program
-  {
-    private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
-    private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
-    private const string ProgID_CSiBridge = "CSI.CSiBridge.API.SapObject";
-    private const string ProgID_SAFE = "CSI.SAFE.API.SAFEObject";
+#if DEBUG
+using System.Diagnostics;
+#endif
 
-    static int Main(string[] args)
+namespace DriverCSharp;
+
+class Program
+{
+  private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
+  private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
+  private const string ProgID_CSiBridge = "CSI.CSiBridge.API.SapObject";
+  private const string ProgID_SAFE = "CSI.SAFE.API.SAFEObject";
+
+  static int Main(string[] args)
+  {
+    try
     {
 #if DEBUG
       Debugger.Launch();
@@ -30,73 +35,61 @@ namespace DriverCSharp
       // create API helper object
       cHelper myHelper = null;
 
-      try
-      {
-        myHelper = new Helper();
-      }
-      catch (Exception ex)
-      {
-        MessageBox.Show("Cannot create an instance of the Helper object: " + ex.Message);
-        ret = -1;
-        return ret;
-      }
+      myHelper = new Helper();
 
       // attach to a running program instance
-      try
+
+      // get the active SapObject
+      // determine program type
+      string progID = null;
+      string[] arguments = Environment.GetCommandLineArgs();
+
+      if (arguments.Length > 1)
       {
-        // get the active SapObject
-        // determine program type
-        string progID = null;
-        string[] arguments = Environment.GetCommandLineArgs();
-
-        if (arguments.Count() > 1)
+        string arg = arguments[1];
+        if (string.Equals(arg, "SAP2000", StringComparison.CurrentCultureIgnoreCase))
         {
-          string arg = arguments[1];
-          if (string.Compare(arg, "SAP2000", true) == 0)
-            progID = ProgID_SAP2000;
-          else if (string.Compare(arg, "ETABS", true) == 0)
-            progID = ProgID_ETABS;
-          else if (string.Compare(arg, "SAFE", true) == 0)
-            progID = ProgID_SAFE;
-          else if (string.Compare(arg, "CSiBridge", true) == 0)
-            progID = ProgID_CSiBridge;
+          progID = ProgID_SAP2000;
         }
-
-        if (progID != null)
-          mySapObject = myHelper.GetObject(progID);
-        else
+        else if (string.Equals(arg, "ETABS", StringComparison.CurrentCultureIgnoreCase))
         {
-          // missing/unknown program type, try one by one
-          try
-          {
-            progID = ProgID_SAP2000;
-            mySapObject = myHelper.GetObject(progID);
-          }
-          catch (Exception ex) { }
-
-          if (mySapObject == null)
-          {
-            try
-            {
-              progID = ProgID_ETABS;
-              mySapObject = myHelper.GetObject(progID);
-            }
-            catch (Exception ex) { }
-          }
-          if (mySapObject == null)
-          {
-            try
-            {
-              progID = ProgID_CSiBridge;
-              mySapObject = myHelper.GetObject(progID);
-            }
-            catch (Exception ex) { }
-          }
+          progID = ProgID_ETABS;
+        }
+        else if (string.Equals(arg, "SAFE", StringComparison.CurrentCultureIgnoreCase))
+        {
+          progID = ProgID_SAFE;
+        }
+        else if (string.Equals(arg, "CSiBridge", StringComparison.CurrentCultureIgnoreCase))
+        {
+          progID = ProgID_CSiBridge;
         }
       }
-      catch (Exception ex)
+
+      if (progID != null)
       {
-        MessageBox.Show("No running instance of the program found or failed to attach: " + ex.Message);
+        mySapObject = myHelper.GetObject(progID);
+      }
+      else
+      {
+        // missing/unknown program type, try one by one
+        progID = ProgID_SAP2000;
+        mySapObject = myHelper.GetObject(progID);
+
+        if (mySapObject == null)
+        {
+          progID = ProgID_ETABS;
+          mySapObject = myHelper.GetObject(progID);
+        }
+        if (mySapObject == null)
+        {
+          progID = ProgID_CSiBridge;
+          mySapObject = myHelper.GetObject(progID);
+        }
+      }
+
+      if (mySapObject is null)
+      {
+        MessageBox.Show("No running instance of the program found");
 
         ret = -2;
         return ret;
@@ -106,27 +99,23 @@ namespace DriverCSharp
       cSapModel mySapModel = mySapObject.SapModel;
 
       // call Speckle plugin
-      try
+      cPlugin p = new();
+      cPluginCallback cb = new PluginCallback();
+
+      // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.
+      p.Main(ref mySapModel, ref cb);
+      if (cb.Finished == true)
       {
-        cPlugin p = new cPlugin();
-        cPluginCallback cb = new PluginCallback();
-
-        // DO NOT return from SpeckleConnectorETABS.cPlugin.Main() until all work is done.
-        p.Main(ref mySapModel, ref cb);
-        if (cb.Finished == true)
-        {
-          Environment.Exit(0);
-        }
-
-        return cb.ErrorFlag;
+        Environment.Exit(0);
       }
-      catch (Exception ex)
-      {
-        MessageBox.Show("Failed to call plugin: " + ex.Message);
 
-        ret = -3;
-        return ret;
-      }
+      return cb.ErrorFlag;
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to initialize plugin");
+      MessageBox.Show("Failed to initialize plugin: " + ex.Message);
+      return -3;
     }
   }
 }

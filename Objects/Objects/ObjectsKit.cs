@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +15,7 @@ namespace Objects;
 /// </summary>
 public class ObjectsKit : ISpeckleKit
 {
-  private static string? _objectsFolder;
+  private static string? s_objectsFolder;
 
   private readonly Dictionary<string, Type> _loadedConverters = new();
 
@@ -28,9 +27,9 @@ public class ObjectsKit : ISpeckleKit
   /// </summary>
   public static string ObjectsFolder
   {
-    get => _objectsFolder ??= SpecklePathProvider.ObjectsFolderPath;
+    get => s_objectsFolder ??= SpecklePathProvider.ObjectsFolderPath;
     [Obsolete("Use " + nameof(SpecklePathProvider.OverrideObjectsFolderName), true)]
-    set => _objectsFolder = value;
+    set => s_objectsFolder = value;
   }
 
   /// <inheritdoc/>
@@ -59,7 +58,9 @@ public class ObjectsKit : ISpeckleKit
     {
       _converters = GetAvailableConverters();
       if (_loadedConverters.TryGetValue(app, out Type t))
+      {
         return (ISpeckleConverter)Activator.CreateInstance(t);
+      }
 
       var converterInstance = LoadConverterFromDisk(app);
       _loadedConverters[app] = converterInstance.GetType();
@@ -81,17 +82,25 @@ public class ObjectsKit : ISpeckleKit
 
     //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
     if (!File.Exists(path))
+    {
       path = Path.Combine(ObjectsFolder, $"Objects.Converter.{app}.dll");
+    }
 
     if (!File.Exists(path))
+    {
       throw new FileNotFoundException($"Converter for {app} was not found in kit {basePath}", path);
+    }
 
     AssemblyName assemblyToLoad = AssemblyName.GetAssemblyName(path);
     var objects = Assembly.GetExecutingAssembly().GetName();
 
     //only get assemblies matching the Major and Minor version of Objects
     if (assemblyToLoad.Version.Major != objects.Version.Major || assemblyToLoad.Version.Minor != objects.Version.Minor)
-      throw new SpeckleException($"Mismatch between Objects library v{objects.Version} Converter v{assemblyToLoad.Version}.\nEnsure the same 2.x version of Speckle connectors is installed.");
+    {
+      throw new SpeckleException(
+        $"Mismatch between Objects library v{objects.Version} Converter v{assemblyToLoad.Version}.\nEnsure the same 2.x version of Speckle connectors is installed."
+      );
+    }
 
     var assembly = Assembly.LoadFrom(path);
 
@@ -102,7 +111,9 @@ public class ObjectsKit : ISpeckleKit
       .FirstOrDefault(converter => converter.GetServicedApplications().Contains(app));
 
     if (converterInstance == null)
+    {
       throw new SpeckleException($"No suitable converter instance found for {app}");
+    }
 
     SpeckleLog.Logger
       .ForContext<ObjectsKit>()
@@ -116,11 +127,13 @@ public class ObjectsKit : ISpeckleKit
   public List<string> GetAvailableConverters()
   {
     var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-    var allConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*.dll");
+    var allConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*.dll").ToArray();
 
     //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
-    if (!allConverters.Any())
-      allConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*.dll");
+    if (allConverters.Length == 0)
+    {
+      allConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*.dll").ToArray();
+    }
 
     //only get assemblies matching the Major and Minor version of Objects
     var objects = Assembly.GetExecutingAssembly().GetName();
@@ -129,7 +142,9 @@ public class ObjectsKit : ISpeckleKit
     {
       AssemblyName assemblyName = AssemblyName.GetAssemblyName(converter);
       if (assemblyName.Version.Major == objects.Version.Major && assemblyName.Version.Minor == objects.Version.Minor)
+      {
         availableConverters.Add(converter);
+      }
     }
 
     return availableConverters.Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1)).ToList();

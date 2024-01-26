@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace SpeckleRhino;
@@ -30,6 +31,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var idsToSelect = new List<string>();
     int successful = 0;
     foreach (var id in filterObjs)
+    {
       if (Utils.FindObjectBySelectedId(Doc, id, out object obj, out string descriptor))
       {
         // create applicationObject
@@ -40,12 +42,17 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           case RhinoObject o:
             applicationId = o.Attributes.GetUserString(ApplicationIdKey) ?? id;
             if (converter.CanConvertToSpeckle(obj))
+            {
               reportObj.Update(status: ApplicationObject.State.Created);
+            }
             else
+            {
               reportObj.Update(
                 status: ApplicationObject.State.Failed,
                 logItem: "Object type conversion to Speckle not supported"
               );
+            }
+
             idsToSelect.Add(id);
             successful++;
             break;
@@ -72,9 +79,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           }
         );
       }
+    }
 
     if (successful == 0)
+    {
       throw new InvalidOperationException("No valid objects selected, nothing will be sent!");
+    }
 
     // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
     Doc.Objects.UnselectAll(false);
@@ -134,27 +144,35 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
         }
 
         if (previewObj.Convertible)
+        {
           previewObj.Converted = ConvertObject(storedObj, converter);
+        }
         else
+        {
           foreach (var fallback in previewObj.Fallback)
           {
             var storedFallback = StoredObjects[fallback.OriginalId];
             fallback.Converted = ConvertObject(storedFallback, converter);
           }
+        }
 
         if (previewObj.Converted == null || previewObj.Converted.Count == 0)
         {
           var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
           if (convertedFallback != null && convertedFallback.Count() > 0)
+          {
             previewObj.Update(
               status: ApplicationObject.State.Created,
               logItem: $"Creating with {convertedFallback.Count()} fallback values"
             );
+          }
           else
+          {
             previewObj.Update(
               status: ApplicationObject.State.Failed,
               logItem: "Couldn't convert object or any fallback values"
             );
+          }
         }
         else
         {
@@ -172,20 +190,21 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     else // just generate the log
     {
       foreach (var previewObj in Preview)
+      {
         progress.Report.Log(previewObj);
+      }
     }
 
     // create display conduit
-    try
+    PreviewConduit = new PreviewConduit(Preview);
+    if (PreviewConduit.Preview.Count == 0)
     {
-      PreviewConduit = new PreviewConduit(Preview);
-    }
-    catch (Exception e)
-    {
-      progress.Report.OperationErrors.Add(new Exception($"Could not create preview: {e.Message}"));
+      SpeckleLog.Logger.Information("No previewable geometry was found.");
+      progress.Report.OperationErrors.Add(new Exception($"No previewable objects found."));
       ResetDocument();
       return null;
     }
+
     PreviewConduit.Enabled = true;
     Doc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(PreviewConduit.bbox);
     Doc.Views.Redraw();

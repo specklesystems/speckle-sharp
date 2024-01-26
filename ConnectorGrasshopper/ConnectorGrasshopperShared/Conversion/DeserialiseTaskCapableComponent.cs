@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -8,6 +8,7 @@ using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Speckle.Core.Api;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
@@ -22,11 +23,16 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -63,7 +69,9 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
     if (InPreSolve)
     {
       if (RunCount == 1)
+      {
         source = new CancellationTokenSource();
+      }
 
       string item = null;
       DA.GetData(0, ref item);
@@ -84,17 +92,20 @@ public class DeserializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<Ba
   private Base DoWork(string item, IGH_DataAccess DA)
   {
     if (string.IsNullOrEmpty(item))
+    {
       return null;
+    }
 
     try
     {
       return Operations.Deserialize(item);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "Failed to deserialize object");
       AddRuntimeMessage(
         GH_RuntimeMessageLevel.Warning,
-        $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {e.ToFormattedString()}"
+        $"Cannot deserialize object at path {{{DA.ParameterTargetPath(0)}}}[{DA.ParameterTargetIndex(0)}]: {ex.ToFormattedString()}"
       );
       return null;
     }

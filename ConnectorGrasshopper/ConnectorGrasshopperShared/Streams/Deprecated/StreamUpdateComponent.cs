@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -11,6 +12,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamUpdateComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -64,7 +70,10 @@ public class StreamUpdateComponent : GH_SpeckleComponent
     bool isPublic = false;
 
     if (!DA.GetData(0, ref ghSpeckleStream))
+    {
       return;
+    }
+
     DA.GetData(1, ref name);
     DA.GetData(2, ref description);
     DA.GetData(3, ref isPublic);
@@ -85,7 +94,10 @@ public class StreamUpdateComponent : GH_SpeckleComponent
         return;
       }
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
+
       Message = "Fetching";
       Task.Run(async () =>
       {
@@ -94,18 +106,20 @@ public class StreamUpdateComponent : GH_SpeckleComponent
           var account = streamWrapper.GetAccount().Result;
           var client = new Client(account);
           var input = new StreamUpdateInput();
-          stream = await client.StreamGet(streamWrapper.StreamId);
+          stream = await client.StreamGet(streamWrapper.StreamId).ConfigureAwait(false);
           input.id = streamWrapper.StreamId;
 
           input.name = name ?? stream.name;
           input.description = description ?? stream.description;
 
           if (stream.isPublic != isPublic)
+          {
             input.isPublic = isPublic;
+          }
 
-          await client.StreamUpdate(input);
+          await client.StreamUpdate(input).ConfigureAwait(false);
         }
-        catch (Exception e)
+        catch (SpeckleGraphQLException e)
         {
           error = e;
         }

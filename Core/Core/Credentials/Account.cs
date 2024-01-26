@@ -1,16 +1,11 @@
+#nullable disable
 using System;
 using System.Threading.Tasks;
-using GraphQL;
-using GraphQL.Client.Http;
 using Speckle.Core.Api;
-using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Core.Credentials;
-
-#pragma warning disable CS0659 CA1067 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
 
 public class Account : IEquatable<Account>
 {
@@ -23,8 +18,11 @@ public class Account : IEquatable<Account>
       if (_id == null)
       {
         if (serverInfo == null || userInfo == null)
+        {
           throw new SpeckleException("Incomplete account info: cannot generate id.");
-        _id = Utilities.HashString(userInfo.email + serverInfo.url, Utilities.HashingFunctions.MD5).ToUpper();
+        }
+
+        _id = Crypt.Md5(userInfo.email + serverInfo.url, "X2");
       }
       return _id;
     }
@@ -35,7 +33,7 @@ public class Account : IEquatable<Account>
 
   public string refreshToken { get; set; }
 
-  public bool isDefault { get; set; } = false;
+  public bool isDefault { get; set; }
   public bool isOnline { get; set; } = true;
 
   public ServerInfo serverInfo { get; set; }
@@ -46,10 +44,11 @@ public class Account : IEquatable<Account>
 
   private static string CleanURL(string server)
   {
-    Uri NewUri;
+    if (Uri.TryCreate(server, UriKind.Absolute, out Uri newUri))
+    {
+      server = newUri.Authority;
+    }
 
-    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
-      server = NewUri.Authority;
     return server;
   }
 
@@ -60,13 +59,13 @@ public class Account : IEquatable<Account>
   public string GetHashedEmail()
   {
     string email = userInfo?.email ?? "unknown";
-    return "@" + Crypt.Hash(email);
+    return "@" + Crypt.Md5(email, "X2");
   }
 
   public string GetHashedServer()
   {
     string url = serverInfo?.url ?? AccountManager.DEFAULT_SERVER_URL;
-    return Crypt.Hash(CleanURL(url));
+    return Crypt.Md5(CleanURL(url), "X2");
   }
 
   public async Task<UserInfo> Validate()
@@ -90,5 +89,30 @@ public class Account : IEquatable<Account>
   }
 
   #endregion
+
+  /// <summary>
+  /// Retrieves the local identifier for the current user.
+  /// </summary>
+  /// <returns>
+  /// Returns a <see cref="Uri"/> object representing the local identifier for the current user.
+  /// The local identifier is created by appending the user ID as a query parameter to the server URL.
+  /// </returns>
+  /// <remarks>
+  /// Notice that the generated Uri is not intended to be used as a functioning Uri, but rather as a
+  /// unique identifier for a specific account in a local environment. The format of the Uri, containing a query parameter with the user ID,
+  /// serves this specific purpose. Therefore, it should not be used for forming network requests or
+  /// expecting it to lead to an actual webpage. The primary intent of this Uri is for unique identification in a Uri format.
+  /// </remarks>
+  /// <example>
+  ///   This sample shows how to call the GetLocalIdentifier method.
+  ///   <code>
+  ///     Uri localIdentifier = GetLocalIdentifier();
+  ///     Console.WriteLine(localIdentifier);
+  ///   </code>
+  ///   For a fictional `User ID: 123` and `Server: https://speckle.xyz`, the output might look like this:
+  ///   <code>
+  ///     https://speckle.xyz?id=123
+  ///   </code>
+  /// </example>
+  internal Uri GetLocalIdentifier() => new($"{serverInfo.url}?id={userInfo.id}");
 }
-#pragma warning restore CS0659 CA1067

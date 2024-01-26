@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
+using Speckle.Core.Logging;
 
 namespace SpeckleRhino;
 
@@ -24,6 +25,6 @@ public partial class DuiPanel : UserControl
       DataContext = viewModel;
       AvaloniaHost.Content = new MainUserControl();
     }
-    catch (Exception ex) { }
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 }

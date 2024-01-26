@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
@@ -30,6 +31,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops;
 
+[Obsolete($"Use {nameof(VariableInputReceiveComponent)}")]
 public class ReceiveComponent : SelectKitAsyncComponentBase
 {
   public GH_Structure<IGH_Goo> PrevReceivedData;
@@ -84,6 +86,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
       {
         // Will execute every time a document becomes active (from background or opening file.).
         if (StreamWrapper != null)
+        {
           Task.Run(async () =>
           {
             // Ensure fresh instance of client.
@@ -96,10 +99,13 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
 
             // Compare commit id's. If they don't match, notify user or fetch data if in auto mode
             if (b.commits.items[0].id != ReceivedCommitId)
+            {
               HandleNewCommit();
+            }
 
             OnDisplayExpired(true);
           });
+        }
 
         break;
       }
@@ -125,9 +131,13 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
         delegate
         {
           if (AutoReceive)
+          {
             ExpireSolution(true);
+          }
           else
+          {
             OnDisplayExpired(true);
+          }
         }
     );
   }
@@ -159,7 +169,10 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
 
     var swString = reader.GetString("StreamWrapper");
     if (!string.IsNullOrEmpty(swString))
+    {
       StreamWrapper = new StreamWrapper(swString);
+    }
+
     JustPastedIn = true;
     return base.Read(reader);
   }
@@ -241,6 +254,7 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
     Menu_AppendSeparator(menu);
 
     if (CurrentComponentState == "receiving")
+    {
       Menu_AppendItem(
         menu,
         "Cancel Receive",
@@ -250,16 +264,19 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
           RequestCancellation();
         }
       );
+    }
 
     Menu_AppendSeparator(menu);
 
     if (StreamWrapper != null && !string.IsNullOrEmpty(ReceivedCommitId))
+    {
       Menu_AppendItem(
         menu,
         $"View commit {ReceivedCommitId} @ {StreamWrapper.ServerUrl} online ↗",
         (s, e) =>
           Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}")
       );
+    }
   }
 
   protected override void SolveInstance(IGH_DataAccess DA)
@@ -315,7 +332,9 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
   public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
     if (Workers.Count == 0)
+    {
       return;
+    }
 
     Message = "";
     var total = 0.0;
@@ -356,7 +375,9 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
 
     var ghGoo = DataInput.get_DataItem(0);
     if (ghGoo == null)
+    {
       return;
+    }
 
     var input = ghGoo.GetType().GetProperty("Value")?.GetValue(ghGoo);
 
@@ -420,7 +441,9 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
     }
 
     if (StreamWrapper != null && StreamWrapper.Equals(wrapper) && !JustPastedIn)
+    {
       return;
+    }
 
     StreamWrapper = wrapper;
 
@@ -444,12 +467,19 @@ public class ReceiveComponent : SelectKitAsyncComponentBase
   {
     // Break if wrapper is branch type and branch name is not equal.
     if (StreamWrapper.Type == StreamWrapperType.Branch && e.branchName != StreamWrapper.BranchName)
+    {
       return;
+    }
 
     HandleNewCommit();
   }
 }
 
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class ReceiveComponentWorker : WorkerInstance
 {
   private GH_Structure<IGH_Goo> DataInput;
@@ -490,7 +520,9 @@ public class ReceiveComponentWorker : WorkerInstance
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
         //foreach (var kvp in dict) ReportProgress(kvp.Key, (double)kvp.Value / (TotalObjectCount + 1));
         foreach (var kvp in dict)
+        {
           ReportProgress(kvp.Key, kvp.Value);
+        }
       };
 
       ErrorAction = (transportName, exception) =>
@@ -505,7 +537,9 @@ public class ReceiveComponentWorker : WorkerInstance
         asyncParent.CancellationSources.ForEach(source =>
         {
           if (source.Token != CancellationToken)
+          {
             source.Cancel();
+          }
         });
       };
 
@@ -514,9 +548,10 @@ public class ReceiveComponentWorker : WorkerInstance
       {
         client = new Client(InputWrapper?.GetAccount().Result);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+        SpeckleLog.Logger.Warning(ex, "Failed to get speckle client");
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, ex.ToFormattedString()));
         Done();
         return;
       }
@@ -530,7 +565,9 @@ public class ReceiveComponentWorker : WorkerInstance
       {
         receiveComponent.JustPastedIn = false;
         if (!receiveComponent.ReceiveOnOpen)
+        {
           return;
+        }
 
         receiveComponent.CurrentComponentState = "receiving";
         RhinoApp.InvokeOnUiThread(
@@ -555,12 +592,16 @@ public class ReceiveComponentWorker : WorkerInstance
         );
 
         if (myCommit == null)
+        {
           throw new Exception("Failed to find a valid commit or object to get.");
+        }
 
         ReceivedCommit = myCommit;
 
         if (CancellationToken.IsCancellationRequested)
+        {
           return;
+        }
 
         ReceivedObject = await Operations.Receive(
           myCommit.referencedObject,
@@ -585,13 +626,15 @@ public class ReceiveComponentWorker : WorkerInstance
             }
           );
         }
-        catch
+        catch (Exception)
         {
           // Do nothing!
         }
 
         if (CancellationToken.IsCancellationRequested)
+        {
           return;
+        }
 
         Done();
       });
@@ -634,13 +677,17 @@ public class ReceiveComponentWorker : WorkerInstance
       case StreamWrapperType.Undefined:
         var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1);
         if (mb.commits.totalCount == 0)
+        {
           // TODO: Warn that we're not pulling from the main branch
           OnFail(
             GH_RuntimeMessageLevel.Remark,
             "Main branch was empty. Defaulting to latest commit regardless of branch."
           );
+        }
         else
+        {
           return mb.commits.items[0];
+        }
 
         var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1);
         if (cms.Count == 0)
@@ -666,10 +713,14 @@ public class ReceiveComponentWorker : WorkerInstance
   public override void SetData(IGH_DataAccess DA)
   {
     if (CancellationToken.IsCancellationRequested)
+    {
       return;
+    }
 
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
 
     var parent = (ReceiveComponent)Parent;
 
@@ -688,7 +739,9 @@ public class ReceiveComponentWorker : WorkerInstance
     DA.SetData(1, parent.LastInfoMessage);
 
     if (ReceivedObject == null)
+    {
       return;
+    }
 
     //the active document may have changed
     var converter = parent.Converter;
@@ -783,13 +836,19 @@ public class ReceiveComponentAttributes : GH_ComponentAttributes
   public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
   {
     if (e.Button != MouseButtons.Left)
+    {
       return base.RespondToMouseDown(sender, e);
+    }
 
     if (!((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
+    {
       return base.RespondToMouseDown(sender, e);
+    }
 
     if (((ReceiveComponent)Owner).CurrentComponentState == "receiving")
+    {
       return GH_ObjectResponse.Handled;
+    }
 
     if (((ReceiveComponent)Owner).AutoReceive)
     {

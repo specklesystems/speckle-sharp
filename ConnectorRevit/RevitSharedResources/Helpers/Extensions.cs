@@ -20,13 +20,21 @@ public static class Extensions
   public static bool IsPhysicalElement(this Element e)
   {
     if (e.Category == null)
+    {
       return false;
+    }
+
     if (e.ViewSpecific)
+    {
       return false;
+    }
     // TODO: Should this be filtering using the Supported categories list instead?
     // exclude specific unwanted categories
     if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones)
+    {
       return false;
+    }
+
     return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
   }
 
@@ -39,14 +47,12 @@ public static class Extensions
   /// <remarks>This function will never throw, returning false instead</remarks>
   public static bool HasCategory(this IEnumerable<BuiltInCategory> categories, Category category)
   {
-    try
-    {
-      return categories.Select(x => (int)x).Contains(category.Id.IntegerValue);
-    }
-    catch (Exception e)
+    if (category?.Id?.IntegerValue is not int categoryInt)
     {
       return false;
     }
+
+    return categories.Select(x => (int)x).Contains(categoryInt);
   }
 
   /// <summary>
@@ -57,11 +63,15 @@ public static class Extensions
   /// <returns>True if the CategoryType is Model, AnalyticalModel or Internal</returns>
   public static bool IsCategorySupported(this Category category)
   {
-    if (category.CategoryType == CategoryType.Model ||
-        category.CategoryType == CategoryType.AnalyticalModel ||
-        category.CategoryType == CategoryType.Internal ||
-        category.Id.IntegerValue == -2000220) // Grids
+    if (
+      category.CategoryType == CategoryType.Model
+      || category.CategoryType == CategoryType.AnalyticalModel
+      || category.CategoryType == CategoryType.Internal
+      || category.Id.IntegerValue == -2000220
+    ) // Grids
+    {
       return true;
+    }
 
     return false;
   }
@@ -73,10 +83,10 @@ public static class Extensions
   /// <returns>True if the element's category is supported and if the element is not view dependent</returns>
   public static bool IsElementSupported(this Element e)
   {
-    if (e.Category == null ||
-        e.ViewSpecific ||
-        !IsCategorySupported(e.Category))
+    if (e.Category == null || e.ViewSpecific || !IsCategorySupported(e.Category))
+    {
       return false;
+    }
 
     return true;
   }

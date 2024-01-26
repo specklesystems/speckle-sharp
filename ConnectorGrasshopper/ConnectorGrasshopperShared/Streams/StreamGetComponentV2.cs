@@ -1,10 +1,12 @@
-﻿using System;
+using System;
 using System.Drawing;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams;
 
@@ -53,21 +55,34 @@ public class StreamGetComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrapper
       Account account = null;
       GH_SpeckleStream ghIdWrapper = null;
       if (!DA.GetData(0, ref ghIdWrapper))
+      {
         return;
+      }
+
       if (!DA.GetData(1, ref account))
+      {
         return;
+      }
+
       var idWrapper = ghIdWrapper.Value;
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       TaskList.Add(Task.Run(() => AssignAccountToStream(idWrapper, account), CancelToken));
     }
 
     if (!GetSolveResults(DA, out var data))
+    {
       return;
+    }
+
     if (data != null)
+    {
       DA.SetData(0, new GH_SpeckleStream(data));
+    }
   }
 
   private async Task<StreamWrapper> AssignAccountToStream(StreamWrapper idWrapper, Account account)
@@ -77,7 +92,7 @@ public class StreamGetComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrapper
     {
       await newWrapper.ValidateWithAccount(account).ConfigureAwait(false); // Validates the stream
     }
-    catch (Exception e)
+    catch (Exception e) when (e is SpeckleException or HttpRequestException or ArgumentException)
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
       return null;

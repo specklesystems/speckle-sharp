@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -13,37 +12,38 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
-namespace Archicad.Converters
-{
-  public sealed class Wall : IConverter
-  {
-    public Type Type => typeof(Objects.BuiltElements.Wall);
+namespace Archicad.Converters;
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(
-      IEnumerable<TraversalContext> elements,
-      CancellationToken token
+public sealed class Wall : IConverter
+{
+  public Type Type => typeof(Objects.BuiltElements.Wall);
+
+  public async Task<List<ApplicationObject>> ConvertToArchicad(
+    IEnumerable<TraversalContext> elements,
+    CancellationToken token
+  )
+  {
+    var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
     )
     {
-      var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
-
-      var context = Archicad.Helpers.Timer.Context.Peek;
-      using (
-        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name)
-      )
+      foreach (var tc in elements)
       {
-        foreach (var tc in elements)
+        token.ThrowIfCancellationRequested();
+
+        switch (tc.current)
         {
-          token.ThrowIfCancellationRequested();
+          case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
+            walls.Add(archiWall);
+            break;
+          case Objects.BuiltElements.Wall wall:
+            var baseLine = (Line)wall.baseLine;
 
-          switch (tc.current)
-          {
-            case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
-              walls.Add(archiWall);
-              break;
-            case Objects.BuiltElements.Wall wall:
-              var baseLine = (Line)wall.baseLine;
-
-              ArchicadWall newWall = new Objects.BuiltElements.Archicad.ArchicadWall
+            ArchicadWall newWall =
+              new()
               {
                 id = wall.id,
                 applicationId = wall.applicationId,
@@ -54,33 +54,45 @@ namespace Archicad.Converters
                 flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
               };
 
-              walls.Add(newWall);
-              break;
-          }
+            walls.Add(newWall);
+            break;
         }
       }
-
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
-
-      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(
-      IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token
+    var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
+
+    return result is null ? new List<ApplicationObject>() : result.ToList();
+  }
+
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
+  {
+    var elementModels = elements as ElementModelData[] ?? elements.ToArray();
+
+    Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetWallData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
+      token
+    );
+
+    var walls = new List<Base>();
+    if (jArray is null)
+    {
+      return walls;
+    }
+
+    var context = Archicad.Helpers.Timer.Context.Peek;
+    using (
+      context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-
-      Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
-        token
-      );
-
-      var walls = new List<Base>();
-      if (jArray is null)
-        return walls;
-
       foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
         // convert between DTOs
@@ -94,8 +106,8 @@ namespace Archicad.Converters
         wall.baseLine = new Line(wall.startPoint, wall.endPoint);
         walls.Add(wall);
       }
-
-      return walls;
     }
+
+    return walls;
   }
 }

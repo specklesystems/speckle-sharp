@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Drawing;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Extras;
 
@@ -86,26 +87,30 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
   public override bool CastFrom(object source)
   {
     if (source is GH_String ghStr)
+    {
       try
       {
         Value = new StreamWrapper(ghStr.Value);
         return true;
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return false;
       }
+    }
 
     if (source is string str) // Not sure this is needed?
+    {
       try
       {
         Value = new StreamWrapper(str);
         return true;
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return false;
       }
+    }
 
     if (source is StreamWrapper strWrapper)
     {
@@ -115,7 +120,10 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
 
     var stream = (source as GH_SpeckleStream)?.Value;
     if (stream == null)
+    {
       return false;
+    }
+
     Value = stream;
     return true;
   }

@@ -57,13 +57,24 @@ public class Restraint : Base
   public Restraint(RestraintType restraintType)
   {
     if (restraintType == RestraintType.Free)
+    {
       code = "RRRRRR";
+    }
+
     if (restraintType == RestraintType.Pinned)
+    {
       code = "FFFRRR";
+    }
+
     if (restraintType == RestraintType.Fixed)
+    {
       code = "FFFFFF";
+    }
+
     if (restraintType == RestraintType.Roller)
+    {
       code = "RRFRRR";
+    }
   }
 
   public string code { get; set; } //a string to describe the restraint type for each degree of freedom - ex. FFFRRR (pin) / FFFFFF (fix)

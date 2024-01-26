@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,13 +7,12 @@ using System.Windows;
 
 using Speckle.ConnectorBentley.Entry;
 
-namespace Speckle.ConnectorBentley
+namespace Speckle.ConnectorBentley;
+
+public class Keyins
 {
-  public class Keyins
+  public static void Start(string unparsed)
   {
-    public static void Start(string unparsed)
-    {
-      SpeckleBentleyApp.Instance.Start(unparsed);
-    }
+    SpeckleBentleyApp.Instance.Start(unparsed);
   }
 }

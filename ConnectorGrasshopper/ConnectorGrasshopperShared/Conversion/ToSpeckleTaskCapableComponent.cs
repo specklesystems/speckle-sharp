@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -30,11 +30,16 @@ public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<I
     SpeckleGHSettings.SettingsChanged += (_, args) =>
     {
       if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS)
+      {
         return;
+      }
 
       var proxy = Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
       if (proxy == null)
+      {
         return;
+      }
+
       proxy.Exposure = internalExposure;
     };
   }
@@ -76,12 +81,17 @@ public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<I
       // You must place "RunCount == 1" here,
       // because RunCount is reset when "InPreSolve" becomes "false"
       if (RunCount == 1)
+      {
         source = new CancellationTokenSource();
+      }
 
       object item = null;
       DA.GetData(0, ref item);
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
+
       var task = Task.Run(() => DoWork(item, DA), source.Token);
       TaskList.Add(task);
       return;
@@ -125,11 +135,13 @@ public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<I
       }
 
       if (converted.GetType().IsSimpleType())
+      {
         return Utilities.WrapInGhType(converted);
+      }
 
       return new GH_SpeckleBase { Value = converted as Base };
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

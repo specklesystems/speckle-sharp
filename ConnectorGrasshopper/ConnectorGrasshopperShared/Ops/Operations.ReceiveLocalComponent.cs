@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -57,6 +57,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
     var kits = KitManager.GetKitsWithConvertersForApp(Utilities.GetVersionedAppName());
 
     foreach (var kit in kits)
+    {
       Menu_AppendItem(
         menu,
         $"{kit.Name} ({kit.Description})",
@@ -67,6 +68,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
         true,
         kit.Name == Kit.Name
       );
+    }
 
     base.AppendAdditionalMenuItems(menu);
   }
@@ -80,7 +82,9 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
   public void SetConverterFromKit(string kitName)
   {
     if (kitName == Kit.Name)
+    {
       return;
+    }
 
     Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
     Converter = Kit.LoadConverter(Utilities.GetVersionedAppName());
@@ -104,7 +108,7 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
       Converter.SetContextDocument(Loader.GetCurrentDocument());
       foundKit = true;
     }
-    catch
+    catch (Exception e) when (!e.IsFatal())
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.");
       foundKit = false;
@@ -120,7 +124,9 @@ public class ReceiveLocalComponent : SelectKitAsyncComponentBase
     }
     base.SolveInstance(DA);
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun();
+    }
   }
 }
 
@@ -152,7 +158,7 @@ public class ReceiveLocalWorker : WorkerInstance
       {
         @base = Operations.Receive(localDataId, disposeTransports: true).Result;
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Failed to receive local data."));
         Done();
@@ -161,7 +167,7 @@ public class ReceiveLocalWorker : WorkerInstance
 
       data = Utilities.ConvertToTree(Converter, @base, Parent.AddRuntimeMessage);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
@@ -174,10 +180,14 @@ public class ReceiveLocalWorker : WorkerInstance
   public override void SetData(IGH_DataAccess DA)
   {
     if (data != null)
+    {
       DA.SetDataTree(0, data);
+    }
 
     foreach (var (level, message) in RuntimeMessages)
+    {
       Parent.AddRuntimeMessage(level, message);
+    }
 
     Parent.Message = "Done";
   }

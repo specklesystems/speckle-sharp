@@ -109,7 +109,11 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
               .Any(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
         );
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      // Above code needs refactoring to have more granular exceptions thrown and documented.
+      SpeckleLog.Logger.Error(ex, "Failed to obtain main param for constructor {}", SelectedConstructor.Name);
+    }
 
     var objectItem = schemaConversionHeader.DropDownItems.Add("Convert as Schema object.") as ToolStripMenuItem;
     objectItem.Checked = !UseSchemaTag;
@@ -146,32 +150,47 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
   public override void AddedToDocument(GH_Document document)
   {
     if (readFailed)
+    {
       return;
+    }
 
     // To ensure conversion strategy does not change, we record if the user has modified this schema tag and will keep it as is.
     // If not, schemaTag will be synchronised with the default value every time the document opens.
     if (!UserSetSchemaTag)
+    {
       UseSchemaTag = SpeckleGHSettings.UseSchemaTag;
+    }
 
     if (SelectedConstructor != null)
     {
       base.AddedToDocument(document);
       if (Instances.ActiveCanvas?.Document == null)
+      {
         return;
+      }
+
       var otherSchemaBuilders = Instances.ActiveCanvas?.Document.FindObjects(new List<string> { Name }, 10000);
       foreach (var comp in otherSchemaBuilders)
       {
         if (!(comp is CreateSchemaObject scb))
+        {
           continue;
+        }
+
         if (scb.Seed != Seed)
+        {
           continue;
+        }
+
         Seed = GenerateSeed();
         break;
       }
       (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
 #if RHINO7
-      if(!Instances.RunningHeadless)
+      if (!Instances.RunningHeadless)
+      {
         (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
+      }
 #else
       (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
 #endif
@@ -198,7 +217,10 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       Params.ParameterChanged += (sender, args) =>
       {
         if (args.ParameterSide != GH_ParameterSide.Input)
+        {
           return;
+        }
+
         switch (args.OriginalArguments.Type)
         {
           case GH_ObjectEventType.NickName:
@@ -226,7 +248,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     var props = constructor.GetParameters();
 
     foreach (var p in props)
+    {
       RegisterPropertyAsInputParameter(p, k++);
+    }
 
     UserInterfaceUtils.CreateCanvasDropdownForAllEnumInputs(this, props);
 
@@ -250,7 +274,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     // get property name and value
     Type propType = param.ParameterType;
     if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(Nullable<>))
+    {
       propType = Nullable.GetUnderlyingType(propType);
+    }
 
     string propName = param.Name;
     object propValue = param;
@@ -260,7 +286,10 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     if (param.IsOptional)
     {
       if (!string.IsNullOrEmpty(d))
+      {
         d += ", ";
+      }
+
       var def = param.DefaultValue == null ? "null" : param.DefaultValue.ToString();
       d += "default = " + def;
     }
@@ -274,7 +303,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     newInputParam.Description = $"({propType.Name}) {d}";
     newInputParam.Optional = param.IsOptional;
     if (param.IsOptional)
+    {
       newInputParam.SetPersistentData(param.DefaultValue);
+    }
 
     // check if input needs to be a list or item access
     bool isCollection =
@@ -282,9 +313,13 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       && propType != typeof(string)
       && !propType.Name.ToLower().Contains("dictionary");
     if (isCollection)
+    {
       newInputParam.Access = GH_ParamAccess.list;
+    }
     else
+    {
       newInputParam.Access = GH_ParamAccess.item;
+    }
 
     Params.RegisterInputParam(newInputParam, index);
   }
@@ -300,7 +335,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     valueList.ListItems.Clear();
 
     for (int i = 0; i < values.Count; i++)
+    {
       valueList.ListItems.Add(new GH_ValueListItem(values[i].name, values[i].value.ToString()));
+    }
 
     valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
 
@@ -310,31 +347,25 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
 
   public override bool Read(GH_IReader reader)
   {
+    var constructorName = reader.GetString("SelectedConstructorName");
+    var typeName = reader.GetString("SelectedTypeName");
+
+    reader.TryGetBoolean("UseSchemaTag", ref UseSchemaTag);
+    reader.TryGetBoolean("UserSetSchemaTag", ref UserSetSchemaTag);
+    reader.TryGetString("seed", ref Seed);
+
     try
     {
-      var constructorName = reader.GetString("SelectedConstructorName");
-      var typeName = reader.GetString("SelectedTypeName");
-      try
-      {
-        UseSchemaTag = reader.GetBoolean("UseSchemaTag");
-        UserSetSchemaTag = reader.GetBoolean("UserSetSchemaTag");
-      }
-      catch { }
-
       SelectedConstructor = CSOUtils.FindConstructor(constructorName, typeName);
       if (SelectedConstructor == null)
+      {
         readFailed = true;
+      }
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       readFailed = true;
     }
-
-    try
-    {
-      Seed = reader.GetString("seed");
-    }
-    catch { }
 
     return base.Read(reader);
   }
@@ -383,7 +414,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     }
 
     if (DA.Iteration == 0)
+    {
       Tracker.TrackNodeRun("Create Schema Object", Name);
+    }
 
     var units = Units.GetUnitsFromString(Loader.GetCurrentDocument().ModelUnitSystem.ToString());
 
@@ -407,12 +440,13 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
 
         try
         {
-          inputValues = inputValues.Select(x => ExtractRealInputValue(x)).ToList();
+          inputValues = inputValues.Select(ExtractRealInputValue).ToList();
           objectProp = GetObjectListProp(param, inputValues, cParam.ParameterType);
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+          SpeckleLog.Logger.Error(ex, "Failed to get object property list");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
           return;
         }
       }
@@ -431,7 +465,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
           ?.Where(o => o.AttributeType.IsEquivalentTo(typeof(SchemaMainParam)))
           ?.Count() > 0
       )
+      {
         mainSchemaObj = objectProp;
+      }
     }
 
     object schemaObject = null;
@@ -441,8 +477,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       ((Base)schemaObject).applicationId = $"{Seed}-{SelectedConstructor.DeclaringType.FullName}-{DA.Iteration}";
       ((Base)schemaObject)["units"] = units;
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
+      SpeckleLog.Logger.Error(e, "Failed to obtain create object from constructor");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
       return;
     }
@@ -452,21 +489,21 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     if (UseSchemaTag)
     {
       commitObj = commitObj.ShallowCopy();
-      try
-      {
-        if (mainSchemaObj == null)
-        {
-          UseSchemaTag = false;
-          throw new Exception("Schema tag is not supported for this object type, will return Schema object instead.");
-        }
 
+      if (mainSchemaObj != null)
+      {
         commitObj = ((Base)mainSchemaObj).ShallowCopy();
         commitObj["@SpeckleSchema"] = schemaObject;
         commitObj["units"] = units;
       }
-      catch (Exception e)
+      else
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, e.ToFormattedString());
+        UseSchemaTag = false;
+        ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
+        AddRuntimeMessage(
+          GH_RuntimeMessageLevel.Remark,
+          "Schema tag is not supported for this object type, will return Schema object instead."
+        );
       }
     }
 
@@ -496,7 +533,9 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
   private object ExtractRealInputValue(object inputValue)
   {
     if (inputValue == null)
+    {
       return null;
+    }
 
     if (inputValue is IGH_Goo)
     {
@@ -513,12 +552,16 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
   private object GetObjectListProp(IGH_Param param, List<object> values, Type t)
   {
     if (!values.Any())
+    {
       return null;
+    }
 
     var list = (IList)Activator.CreateInstance(t);
     var listElementType = list.GetType().GetGenericArguments().Single();
     foreach (var value in values)
+    {
       list.Add(ConvertType(listElementType, value, param.Name));
+    }
 
     return list;
   }
@@ -532,30 +575,41 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
   private object ConvertType(Type type, object value, string name)
   {
     if (value == null)
+    {
       return null;
+    }
 
     var typeOfValue = value.GetType();
-    if (value == null || typeOfValue == type || type.IsAssignableFrom(typeOfValue))
+    if (typeOfValue == type || type.IsAssignableFrom(typeOfValue))
+    {
       return value;
+    }
 
     //needs to be before IsSimpleType
     if (type.IsEnum)
+    {
       try
       {
         return Enum.Parse(type, value.ToString());
       }
-      catch { }
+      catch (Exception e) when (e is ArgumentException or OverflowException)
+      {
+        SpeckleLog.Logger.Error(e, "Failed to parse enum value");
+      }
+    }
 
     // int, doubles, etc
     if (value.GetType().IsSimpleType())
+    {
       try
       {
         return Convert.ChangeType(value, type);
       }
-      catch (Exception e)
+      catch (Exception ex) when (ex is FormatException or OverflowException or InvalidCastException)
       {
-        throw new Exception($"Cannot convert {value.GetType()} to {type}");
+        throw new SpeckleException($"Cannot convert {value.GetType()} to {type}", ex);
       }
+    }
 
     if (Converter.CanConvertToSpeckle(value))
     {
@@ -565,14 +619,17 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       //to convert the boxed type, it seems the only valid solution is to use Convert.ChangeType
       //currently, this is to support conversion of Polyline to Polycurve in Objects
       if (converted.GetType() != type && !type.IsAssignableFrom(converted.GetType()))
+      {
         try
         {
           return Convert.ChangeType(converted, type);
         }
-        catch (Exception e)
+        catch (Exception ex)
+          when (ex is InvalidCastException or FormatException or OverflowException or ArgumentNullException)
         {
-          throw new Exception($"Cannot convert {converted.GetType()} to {type}");
+          throw new SpeckleException($"Cannot convert {converted.GetType()} to {type}", ex);
         }
+      }
 
       return converted;
     }
@@ -585,7 +642,10 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
       MethodInfo castIntoMethod = GetType().GetMethod("CastObject").MakeGenericMethod(type);
       return castIntoMethod.Invoke(null, new[] { value });
     }
-    catch { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Failed to cast type");
+    }
 
     AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Unable to set " + name + ".");
     throw new SpeckleException($"Could not covert object to {type}");

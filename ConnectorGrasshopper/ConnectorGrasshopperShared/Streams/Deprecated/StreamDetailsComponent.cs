@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamDetailsComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -88,10 +94,14 @@ public class StreamDetailsComponent : GH_SpeckleComponent
       }
 
       if (ghStreamTree.DataCount >= 20)
+      {
         tooManyItems = true;
+      }
 
       if (DA.Iteration == 0)
+      {
         Tracker.TrackNodeRun();
+      }
 
       Task.Run(async () =>
       {
@@ -105,7 +115,10 @@ public class StreamDetailsComponent : GH_SpeckleComponent
             .ForEach(path =>
             {
               if (count >= 20)
+              {
                 return;
+              }
+
               var branch = ghStreamTree[path];
               var itemCount = 0;
               branch.ForEach(item =>

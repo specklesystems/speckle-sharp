@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using DesktopUI2.Models;
 using DesktopUI2.Views;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -32,11 +31,13 @@ public class CommentViewModel : ReactiveObject
     Bindings = Locator.Current.GetService<ConnectorBindings>();
 
     if (Comment.replies != null)
+    {
       foreach (var r in Comment.replies.items)
       {
         var reply = new CommentViewModel(r, streamId, client);
         Replies.Add(reply);
       }
+    }
   }
 
   public CommentItem Comment { get; set; }
@@ -56,7 +57,10 @@ public class CommentViewModel : ReactiveObject
     get
     {
       if (Comment == null)
+      {
         return "No replies";
+      }
+
       var s = Comment.replies.totalCount == 1 ? "y" : "ies";
       var c = Comment.replies.totalCount == 0 ? "No" : Comment.replies.totalCount.ToString();
       return $"{c} repl{s}";
@@ -112,18 +116,24 @@ public class CommentViewModel : ReactiveObject
   public void OpenComment()
   {
     if (Comment.resources == null || !Comment.resources.Any())
+    {
       return;
+    }
 
     var r0 = Comment.resources[0];
     var overlay = "";
 
     if (Comment.resources.Count > 1)
+    {
       overlay = "&overlay=" + string.Join(",", Comment.resources.Skip(1).Select(x => x.resourceId));
+    }
 
     var url =
       $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
     if (_client.Account.serverInfo.frontend2)
+    {
       url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
+    }
 
     Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Comment View" } });

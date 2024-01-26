@@ -66,7 +66,9 @@ public class TreeSelectionFilter : ISelectionFilter
   {
     Selection.Clear();
     if (SelectedItems != null)
+    {
       Selection.AddRange(SelectedItems.Select(item => item.ToString()).ToList());
+    }
   }
 }
 
@@ -93,7 +95,7 @@ public class TreeNode : DynamicObject
 
   // For applications that record the pointer as successive indexes
   [JsonProperty("Indices")]
-  public int[] Indices { get; set; } = { };
+  public int[] Indices { get; set; } = Array.Empty<int>();
 
   // For applications that record the pointer as a hash
   [JsonProperty("Hash")]
@@ -136,7 +138,10 @@ public class TreeNode : DynamicObject
   {
     var result = new List<TreeNode> { this };
     foreach (var child in Elements.Where(child => child != null))
+    {
       result.AddRange(child.Flatten());
+    }
+
     return result;
   }
 

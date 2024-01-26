@@ -18,7 +18,7 @@ public class SelectionHandler
   private readonly HashSet<ModelItem> _uniqueModelItems;
   private int _descendantProgress;
   private HashSet<ModelItem> _visited;
-  public ProgressInvoker ProgressBar;
+  internal ProgressInvoker ProgressBar;
   private readonly bool _coalesceData;
 
   /// <summary>
@@ -48,24 +48,26 @@ public class SelectionHandler
   {
     switch (_filter.Slug)
     {
-      case FilterTypes.Manual:
+      case FilterTypes.MANUAL:
         _uniqueModelItems.AddRange(GetObjectsFromSelection());
         break;
 
-      case FilterTypes.Sets:
+      case FilterTypes.SETS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedSets());
         break;
 
-      case FilterTypes.Views:
+      case FilterTypes.VIEWS:
         _uniqueModelItems.AddRange(GetObjectsFromSavedViewpoint());
         break;
+      default:
+        throw new ArgumentOutOfRangeException(nameof(_filter.Slug), _filter.Slug, "Unrecognized filter type");
     }
   }
 
   /// <summary>
   /// Retrieves the model items from the selection.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSelection()
+  private HashSet<ModelItem> GetObjectsFromSelection()
   {
     _uniqueModelItems.Clear();
 
@@ -107,29 +109,31 @@ public class SelectionHandler
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
     if (string.IsNullOrEmpty(selection))
+    {
       return Enumerable.Empty<ModelItem>();
+    }
 
     // Resolve the saved viewpoint based on the selection
     // Makes the view active on the main thread.
 
     var success = false;
 
-    new Invoker().Invoke(
-      (Action)(
-        () =>
-        {
-          var savedViewpoint = ResolveSavedViewpoint(selection);
-          if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
-            return;
+    new Invoker().Invoke(() =>
+    {
+      var savedViewpoint = ResolveSavedViewpoint(selection);
+      if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+      {
+        return;
+      }
 
-          Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
-          success = true;
-        }
-      )
-    );
+      Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
+      success = true;
+    });
 
     if (!success)
+    {
       return Enumerable.Empty<ModelItem>();
+    }
 
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
@@ -139,7 +143,9 @@ public class SelectionHandler
       var model = models.ElementAt(i);
       var rootItem = model.RootItem;
       if (!rootItem.IsHidden)
+      {
         _uniqueModelItems.Add(rootItem);
+      }
 
       ProgressBar.Update(i + 1 / (double)models.Count);
     }
@@ -171,13 +177,20 @@ public class SelectionHandler
     );
 
     if (viewPointMatch != null)
+    {
       return ResolveSavedViewpointMatch(savedViewReference);
+    }
+
     {
       foreach (var node in flattenedViewpointList)
       {
         if (node.Guid.ToString() != savedViewReference)
+        {
           if (node.Reference != savedViewReference)
+          {
             continue;
+          }
+        }
 
         viewPointMatch = node;
         break;
@@ -197,9 +210,13 @@ public class SelectionHandler
   private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
   {
     if (Guid.TryParse(savedViewReference, out var guid))
+    {
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
       if (savedViewReference != Guid.Empty.ToString())
+      {
         return (SavedViewpoint)Application.ActiveDocument.SavedViewpoints.ResolveGuid(guid);
+      }
+    }
 
     var savedRef = new SavedItemReference("LcOpSavedViewsElement", savedViewReference);
 
@@ -239,7 +256,7 @@ public class SelectionHandler
     switch (savedItem)
     {
       case SavedViewpoint { ContainsVisibilityOverrides: false }:
-        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility
+        // TODO: Determine whether to return null or an empty TreeNode or based on current visibility. This is another don't send everything safeguard.
         return null;
       case GroupItem groupItem:
         foreach (var childItem in groupItem.Children)
@@ -247,6 +264,10 @@ public class SelectionHandler
           treeNode.IsEnabled = false;
           treeNode.Elements.Add(GetViews(childItem));
         }
+        break;
+      default:
+        // This case is intentionally left empty as all SDK object scenarios are covered above.
+        // and will fall throw with the treeNode for a SavedViewpoint that is not a group and has visibility overrides.
         break;
     }
 
@@ -257,7 +278,7 @@ public class SelectionHandler
   /// <summary>
   /// Retrieves the model items from the saved sets.
   /// </summary>
-  private IEnumerable<ModelItem> GetObjectsFromSavedSets()
+  private HashSet<ModelItem> GetObjectsFromSavedSets()
   {
     _uniqueModelItems.Clear();
 
@@ -266,10 +287,16 @@ public class SelectionHandler
     var savedItems = selections.Select(Application.ActiveDocument.SelectionSets.ResolveGuid).OfType<SelectionSet>();
 
     foreach (var item in savedItems)
+    {
       if (item.HasExplicitModelItems)
+      {
         _uniqueModelItems.AddRange(item.ExplicitModelItems);
+      }
       else if (item.HasSearch)
+      {
         _uniqueModelItems.AddRange(item.Search.FindAll(Application.ActiveDocument, false));
+      }
+    }
 
     return _uniqueModelItems;
   }
@@ -280,8 +307,10 @@ public class SelectionHandler
   /// </summary>
   public void PopulateHierarchyAndOmitHidden()
   {
-    if (_uniqueModelItems == null || !_uniqueModelItems.Any())
+    if (_uniqueModelItems == null || _uniqueModelItems.Count == 0)
+    {
       return;
+    }
 
     var startNodes = _uniqueModelItems.ToList();
 
@@ -301,7 +330,9 @@ public class SelectionHandler
             || Equals(e, firstObjectAncestor)
             || _uniqueModelItems.Contains(firstObjectAncestor)
           )
+          {
             return Enumerable.Empty<ModelItem>();
+          }
 
           var trimmedAncestors = targetFirstObjectChild.Ancestors
             .TakeWhile(ancestor => ancestor != firstObjectAncestor)
@@ -337,7 +368,10 @@ public class SelectionHandler
     ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
 
     foreach (var node in startNodes)
+    {
       TraverseDescendants(node, allDescendants);
+    }
+
     ProgressBar.EndSubOperation();
   }
 
@@ -358,13 +392,19 @@ public class SelectionHandler
     while (stack.Count > 0)
     {
       if (ProgressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
+
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       ModelItem currentNode = stack.Pop();
 
       if (_visited.Contains(currentNode))
+      {
         continue;
+      }
+
       _visited.Add(currentNode);
 
       if (currentNode.IsHidden)
@@ -379,14 +419,21 @@ public class SelectionHandler
       }
 
       if (currentNode.Children.Any())
+      {
         foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
+        {
           stack.Push(child);
+        }
+      }
 
       _uniqueModelItems.AddRange(validDescendants);
 
       int currentPercentile = (int)(_descendantProgress / descendantInterval);
       if (currentPercentile <= lastPercentile)
+      {
         continue;
+      }
+
       double progress = _descendantProgress / (double)totalDescendants;
       ProgressBar.Update(progress);
       lastPercentile = currentPercentile;
@@ -415,16 +462,23 @@ public class SelectionHandler
     for (int i = 0; i < totalCount; i++)
     {
       if (ProgressBar.IsCanceled)
+      {
         _progressViewModel.CancellationTokenSource.Cancel();
+      }
+
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       bool shouldContinue = fn(i);
 
       if (!shouldContinue)
+      {
         break;
+      }
 
       if (i % updateInterval != 0 && i != totalCount)
+      {
         continue;
+      }
 
       double progress = (i + 1) * increment;
       ProgressBar.Update(progress);
@@ -436,9 +490,7 @@ public class SelectionHandler
   /// <summary>
   /// Omits items that are hidden from the starting list of nodes if they are not visible in the model.
   /// </summary>
-  public void ValidateStartNodes()
-  {
+  public void ValidateStartNodes() =>
     // Remove any nodes that are descendants of hidden nodes.
     _uniqueModelItems.RemoveWhere(e => e.AncestorsAndSelf.Any(a => a.IsHidden));
-  }
 }

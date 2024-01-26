@@ -98,7 +98,9 @@ public partial class ConverterRhinoGh
           SetViewParams(viewport, view);
 
           if (view.isOrthogonal)
+          {
             viewport.ChangeToParallelProjection(true);
+          }
 
           var commitInfo = GetCommitInfo();
           bakedViewName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {view.name}" : $"{view.name}";
@@ -135,7 +137,9 @@ public partial class ConverterRhinoGh
         out double far
       )
     )
+    {
       speckleView["frustrum"] = new List<double> { left, right, bottom, top, near, far };
+    }
 
     // crop
     speckleView["cropped"] = bool.FalseString;
@@ -146,40 +150,11 @@ public partial class ConverterRhinoGh
     // lens
     var lens = speckleView["lens"] as double?;
     if (lens != null)
+    {
       viewport.Camera35mmLensLength = (double)lens;
+    }
 
     return viewport;
-  }
-
-  // direct shape
-  public List<object> DirectShapeToNative(RV.DirectShape directShape, out List<string> log)
-  {
-    log = new List<string>();
-    if (directShape.displayValue == null)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because it has no {nameof(directShape.displayValue)}");
-      return null;
-    }
-
-    if (directShape.displayValue.Count == 0)
-    {
-      log.Add($"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} was empty");
-      return null;
-    }
-
-    IEnumerable<object> subObjects = directShape.displayValue.Select(ConvertToNative).Where(e => e != null);
-
-    var nativeObjects = subObjects.ToList();
-
-    if (nativeObjects.Count == 0)
-    {
-      log.Add(
-        $"Skipping DirectShape {directShape.id} because {nameof(directShape.displayValue)} contained no convertable elements"
-      );
-      return null;
-    }
-
-    return nativeObjects;
   }
 
   // level
@@ -225,11 +200,13 @@ public partial class ConverterRhinoGh
     {
       var linetypeIndex = Doc.Linetypes.Find("Dashed");
       if (linetypeIndex >= 0)
+      {
         atts = new ObjectAttributes()
         {
           LinetypeIndex = linetypeIndex,
           LinetypeSource = ObjectLinetypeSource.LinetypeFromObject
         };
+      }
     }
 
     // bake the curve
@@ -247,10 +224,15 @@ public partial class ConverterRhinoGh
     {
       var labelStartId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtStart);
       if (labelStartId != Guid.Empty)
+      {
         appObj.Update(convertedItem: Doc.Objects.FindId(labelStartId), createdId: labelStartId.ToString());
+      }
+
       var labelEndId = Doc.Objects.AddTextDot(gridline.label, curve.PointAtEnd);
       if (labelEndId != Guid.Empty)
+      {
         appObj.Update(convertedItem: Doc.Objects.FindId(labelEndId), createdId: labelEndId.ToString());
+      }
     }
 
     return appObj;
@@ -266,10 +248,14 @@ public partial class ConverterRhinoGh
     {
       var converted = CurveToNative(entity);
       if (converted != null)
+      {
         curves.Add(converted);
+      }
     }
     if (curves.Count == 0)
+    {
       return null;
+    }
 
     // try to join entity curves
     var joined = RH.Curve.JoinCurves(curves);

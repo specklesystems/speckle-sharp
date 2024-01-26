@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamListComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -80,7 +86,9 @@ public class StreamListComponent : GH_SpeckleComponent
         : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
       if (userId == null)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
+      }
 
       if (account == null)
       {
@@ -97,7 +105,7 @@ public class StreamListComponent : GH_SpeckleComponent
 
       Task.Run(async () =>
       {
-        if (!await Http.UserHasInternet())
+        if (!await Http.UserHasInternet().ConfigureAwait(false))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
           Message = "Error";
@@ -107,14 +115,14 @@ public class StreamListComponent : GH_SpeckleComponent
         {
           var client = new Client(account);
           // Save the result
-          var result = await client.StreamsGet(limit);
+          var result = await client.StreamsGet(limit).ConfigureAwait(false);
           streams = result
             .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
             .ToList();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          error = e;
+          error = ex;
         }
         finally
         {
@@ -135,10 +143,14 @@ public class StreamListComponent : GH_SpeckleComponent
       DA.GetData(1, ref limit); // Has default value so will never be empty.
 
       if (limit > 50)
+      {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+      }
 
       if (streams != null)
+      {
         DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
+      }
 
       streams = null;
     }

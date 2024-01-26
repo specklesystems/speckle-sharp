@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,7 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Sentry;
 using Serilog;
-using Serilog.Context;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
@@ -19,7 +16,7 @@ namespace Speckle.Core.Logging;
 /// <summary>
 /// Configuration object for the Speckle logging system.
 /// </summary>
-public class SpeckleLogConfiguration
+public sealed class SpeckleLogConfiguration
 {
   /// <summary>
   /// Flag to enable enhanced log context. This adds the following enrich calls:
@@ -27,37 +24,39 @@ public class SpeckleLogConfiguration
   /// - WithClientIp
   /// - WithExceptionDetails
   /// </summary>
-  public bool enhancedLogContext;
+  public bool EnhancedLogContext { get; }
 
   /// <summary>
   /// Flag to enable console sink
   /// </summary>
-  public bool logToConsole;
+  public bool LogToConsole { get; }
 
   /// <summary>
   /// Flag to enable File sink
   /// </summary>
-  public bool logToFile;
+  public bool LogToFile { get; }
 
   /// <summary>
   /// Flag to enable Sentry sink
   /// </summary>
-  public bool logToSentry;
+  public bool LogToSentry { get; }
 
   /// <summary>
   /// Flag to enable Seq sink
   /// </summary>
-  public bool logToSeq;
+  public bool LogToSeq { get; }
 
   /// <summary>
   /// Log events bellow this level are silently dropped
   /// </summary>
-  public LogEventLevel minimumLevel;
+  public LogEventLevel MinimumLevel { get; }
 
   /// <summary>
   /// Flag to override the default Sentry DNS
   /// </summary>
-  public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
+  public string SentryDns { get; }
+
+  private const string DEFAULT_SENTRY_DNS = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
@@ -75,15 +74,17 @@ public class SpeckleLogConfiguration
     bool logToSeq = true,
     bool logToSentry = true,
     bool logToFile = true,
-    bool enhancedLogContext = true
+    bool enhancedLogContext = true,
+    string sentryDns = DEFAULT_SENTRY_DNS
   )
   {
-    this.minimumLevel = minimumLevel;
-    this.logToConsole = logToConsole;
-    this.logToSeq = logToSeq;
-    this.logToSentry = logToSentry;
-    this.logToFile = logToFile;
-    this.enhancedLogContext = enhancedLogContext;
+    MinimumLevel = minimumLevel;
+    LogToConsole = logToConsole;
+    LogToSeq = logToSeq;
+    LogToSentry = logToSentry;
+    LogToFile = logToFile;
+    EnhancedLogContext = enhancedLogContext;
+    SentryDns = sentryDns;
   }
 }
 
@@ -92,21 +93,26 @@ public class SpeckleLogConfiguration
 /// </summary>
 public static class SpeckleLog
 {
-  private static ILogger? _logger;
+  private static ILogger? s_logger;
 
   public static ILogger Logger
   {
     get
     {
-      if (_logger == null)
+      if (s_logger == null)
+      {
         Initialize("Core", "unknown");
-      return _logger!;
+      }
+
+      return s_logger!;
     }
   }
 
-  private static bool _initialized;
+  private static bool s_initialized;
 
-  private static string _logFolderPath;
+  private static bool s_isMachineIdUsed;
+
+  private static string s_logFolderPath;
 
   /// <summary>
   /// Initialize logger configuration for a global Serilog.Log logger.
@@ -117,9 +123,9 @@ public static class SpeckleLog
     SpeckleLogConfiguration? logConfiguration = null
   )
   {
-    if (_initialized)
+    if (s_initialized)
     {
-      SpeckleLog.Logger
+      Logger
         .ForContext("hostApplicationVersion", hostApplicationVersion)
         .ForContext("hostApplicationName", hostApplicationName)
         .Information("Setup was already initialized");
@@ -128,13 +134,20 @@ public static class SpeckleLog
 
     logConfiguration ??= new SpeckleLogConfiguration();
 
-    _logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
-    Log.Logger = Logger;
+    s_logger = CreateConfiguredLogger(hostApplicationName, hostApplicationVersion, logConfiguration);
+    var id = GetUserIdFromDefaultAccount();
+    s_logger = s_logger.ForContext("id", id).ForContext("isMachineId", s_isMachineIdUsed);
 
-    _addUserIdToGlobalContextFromDefaultAccount();
-    _addVersionInfoToGlobalContext();
-    _addHostOsInfoToGlobalContext();
-    _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
+    // Configure scope after logger created.
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.User = new User { Id = id };
+    });
+
+    SentrySdk.ConfigureScope(scope =>
+    {
+      scope.SetTag("hostApplication", hostApplicationName);
+    });
 
     Logger
       .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
@@ -144,7 +157,7 @@ public static class SpeckleLog
         "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
       );
 
-    _initialized = true;
+    s_initialized = true;
   }
 
   /// <summary>
@@ -164,51 +177,65 @@ public static class SpeckleLog
     // if not, disable file sink, even if its enabled in the config
     // show a warning about that...
     var canLogToFile = true;
-    _logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
-    var logFilePath = Path.Combine(
-      _logFolderPath,
-      "SpeckleCoreLog.txt"
-    );
-    var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
-      .Is(logConfiguration.minimumLevel)
-      .Enrich.FromLogContext()
-      .Enrich.FromGlobalLogContext();
+    s_logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
+    var logFilePath = Path.Combine(s_logFolderPath, "SpeckleCoreLog.txt");
 
-    if (logConfiguration.enhancedLogContext)
+    var fileVersionInfo = GetFileVersionInfo();
+    var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
+      .Is(logConfiguration.MinimumLevel)
+      .Enrich.FromLogContext()
+      .Enrich.WithProperty("version", fileVersionInfo.FileVersion)
+      .Enrich.WithProperty("productVersion", fileVersionInfo.ProductVersion)
+      .Enrich.WithProperty("hostOs", DetermineHostOsSlug())
+      .Enrich.WithProperty("hostOsVersion", Environment.OSVersion)
+      .Enrich.WithProperty("hostOsArchitecture", RuntimeInformation.ProcessArchitecture.ToString())
+      .Enrich.WithProperty("runtime", RuntimeInformation.FrameworkDescription)
+      .Enrich.WithProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
+
+    if (logConfiguration.EnhancedLogContext)
+    {
       serilogLogConfiguration = serilogLogConfiguration.Enrich
         .WithClientAgent()
         .Enrich.WithClientIp()
         .Enrich.WithExceptionDetails();
+    }
 
-    if (logConfiguration.logToFile && canLogToFile)
+    if (logConfiguration.LogToFile && canLogToFile)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
         logFilePath,
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 10
       );
+    }
 
-    if (logConfiguration.logToConsole)
+    if (logConfiguration.LogToConsole)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Console();
+    }
 
-    if (logConfiguration.logToSeq)
+    if (logConfiguration.LogToSeq)
+    {
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
         "https://seq.speckle.systems",
         apiKey: "agZqxG4jQELxQQXh0iZQ"
       );
+    }
 
-    if (logConfiguration.logToSentry)
+    if (logConfiguration.LogToSentry)
     {
-      var env = "production";
-
+      const string ENV =
 #if DEBUG
-      env = "dev";
+        "dev";
+#else
+        "production";
 #endif
 
       serilogLogConfiguration = serilogLogConfiguration.WriteTo.Sentry(o =>
       {
-        o.Dsn = logConfiguration.sentryDns;
+        o.Dsn = logConfiguration.SentryDns;
         o.Debug = false;
-        o.Environment = env;
+        o.Environment = ENV;
         o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
         o.AttachStacktrace = true;
         o.StackTraceMode = StackTraceMode.Enhanced;
@@ -225,8 +252,17 @@ public static class SpeckleLog
     }
 
     var logger = serilogLogConfiguration.CreateLogger();
-    if (logConfiguration.logToFile && !canLogToFile)
+
+    if (logConfiguration.LogToFile && !canLogToFile)
+    {
       logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
+    }
+
+    if (s_isMachineIdUsed)
+    {
+      logger.Warning("Cannot set user id for the global log context.");
+    }
+
     return logger;
   }
 
@@ -234,73 +270,62 @@ public static class SpeckleLog
   {
     try
     {
-      Process.Start(_logFolderPath);
+      Process.Start(s_logFolderPath);
     }
-    catch (Exception ex)
+    catch (FileNotFoundException ex)
     {
-      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", _logFolderPath);
+      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", s_logFolderPath);
     }
   }
 
-  private static void _addUserIdToGlobalContextFromDefaultAccount()
+  private static string GetUserIdFromDefaultAccount()
   {
     var machineName = Environment.MachineName;
     var userName = Environment.UserName;
-    var id = Crypt.Hash($"{machineName}:{userName}");
+    var id = Crypt.Md5($"{machineName}:{userName}", "X2");
     try
     {
       var defaultAccount = AccountManager.GetDefaultAccount();
       if (defaultAccount != null)
+      {
         id = defaultAccount.GetHashedEmail();
+      }
+      else
+      {
+        s_isMachineIdUsed = true;
+      }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      Logger.Warning(ex, "Cannot set user id for the global log context.");
+      // To log it after Logger initialized as deferred action.
+      s_isMachineIdUsed = true;
     }
-    GlobalLogContext.PushProperty("id", id);
-
-    SentrySdk.ConfigureScope(scope =>
-    {
-      scope.User = new User { Id = id };
-    });
+    return id;
   }
 
-  private static void _addVersionInfoToGlobalContext()
+  private static FileVersionInfo GetFileVersionInfo()
   {
     var assembly = Assembly.GetExecutingAssembly().Location;
-    var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly);
-
-    GlobalLogContext.PushProperty("version", fileVersionInfo.FileVersion);
-    GlobalLogContext.PushProperty("productVersion", fileVersionInfo.ProductVersion);
+    return FileVersionInfo.GetVersionInfo(assembly);
   }
 
-  private static string _deterimineHostOsSlug()
+  private static string DetermineHostOsSlug()
   {
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-      return "Windows";
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-      return "MacOS";
-    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-      return "Linux";
-    return RuntimeInformation.OSDescription;
-  }
-
-  private static void _addHostOsInfoToGlobalContext()
-  {
-    var osVersion = Environment.OSVersion;
-    var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
-    GlobalLogContext.PushProperty("hostOs", _deterimineHostOsSlug());
-    GlobalLogContext.PushProperty("hostOsVersion", osVersion);
-    GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
-  }
-
-  private static void _addHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
-  {
-    GlobalLogContext.PushProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
-
-    SentrySdk.ConfigureScope(scope =>
     {
-      scope.SetTag("hostApplication", hostApplicationName);
-    });
+      return "Windows";
+    }
+
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+    {
+      return "MacOS";
+    }
+
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+    {
+      return "Linux";
+    }
+
+    return RuntimeInformation.OSDescription;
   }
 }

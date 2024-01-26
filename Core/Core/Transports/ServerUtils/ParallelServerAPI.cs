@@ -1,13 +1,12 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Serialisation;
+using Speckle.Core.Logging;
+using Speckle.Core.Serialisation.SerializationUtilities;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
@@ -67,23 +66,32 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     List<Task<object?>> tasks = new();
     IReadOnlyList<IReadOnlyList<string>> splitObjectsIds;
     if (objectIds.Count <= 50)
+    {
       splitObjectsIds = new List<IReadOnlyList<string>> { objectIds };
+    }
     else
+    {
       splitObjectsIds = SplitList(objectIds, NumThreads);
+    }
 
     for (int i = 0; i < NumThreads; i++)
     {
       if (splitObjectsIds.Count <= i || splitObjectsIds[i].Count == 0)
+      {
         continue;
+      }
+
       var op = QueueOperation(ServerApiOperation.HasObjects, (streamId, splitObjectsIds[i]));
       tasks.Add(op);
     }
     Dictionary<string, bool> ret = new();
     foreach (var task in tasks)
     {
-      Dictionary<string, bool> taskResult = await task.ConfigureAwait(false) as Dictionary<string, bool>;
+      var taskResult = (IReadOnlyDictionary<string, bool>)(await task.ConfigureAwait(false))!;
       foreach (KeyValuePair<string, bool> kv in taskResult)
+      {
         ret[kv.Key] = kv.Value;
+      }
     }
 
     return ret;
@@ -111,13 +119,18 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     CbObjectDownloaded callbackWrapper = (id, json) =>
     {
       lock (callbackLock)
+      {
         onObjectCallback(id, json);
+      }
     };
 
     for (int i = 0; i < NumThreads; i++)
     {
       if (splitObjectsIds[i].Count == 0)
+      {
         continue;
+      }
+
       Task<object?> op = QueueOperation(
         ServerApiOperation.DownloadObjects,
         (streamId, splitObjectsIds[i], callbackWrapper)
@@ -139,7 +152,9 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     {
       totalSize += json.Length;
       if (totalSize >= 500_000)
+      {
         break;
+      }
     }
     splitObjects =
       totalSize >= 500_000 ? SplitList(objects, NumThreads) : new List<IReadOnlyList<(string, string)>> { objects };
@@ -147,7 +162,10 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     for (int i = 0; i < NumThreads; i++)
     {
       if (splitObjects.Count <= i || splitObjects[i].Count == 0)
+      {
         continue;
+      }
+
       var op = QueueOperation(ServerApiOperation.UploadObjects, (streamId, splitObjects[i]));
       tasks.Add(op);
     }
@@ -172,7 +190,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   {
     EnsureStarted();
     Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
-    var res = (List<string>)await op.ConfigureAwait(false);
+    var res = (List<string>)await op.ConfigureAwait(false)!;
     Debug.Assert(res is not null);
     return res!;
   }
@@ -182,10 +200,11 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   public void EnsureStarted()
   {
     if (Threads.Count == 0)
+    {
       Start();
+    }
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
     using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds);
@@ -193,7 +212,9 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     serialApi.OnBatchSent = (num, size) =>
     {
       lock (_callbackLock)
+      {
         OnBatchSent(num, size);
+      }
     };
     serialApi.CancellationToken = CancellationToken;
     serialApi.CompressPayloads = CompressPayloads;
@@ -202,7 +223,9 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     {
       var (operation, inputValue, tcs) = Tasks.Take();
       if (operation == ServerApiOperation.NoOp || tcs == null)
+      {
         return;
+      }
 
       try
       {
@@ -212,6 +235,11 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
       catch (Exception ex)
       {
         tcs.SetException(ex);
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
     }
   }
@@ -263,9 +291,15 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   {
     List<List<T>> ret = new(parts);
     for (int i = 0; i < parts; i++)
+    {
       ret.Add(new List<T>(list.Count / parts + 1));
+    }
+
     for (int i = 0; i < list.Count; i++)
+    {
       ret[i % parts].Add(list[i]);
+    }
+
     return ret;
   }
 }

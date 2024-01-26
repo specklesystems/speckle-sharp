@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
@@ -19,10 +18,14 @@ public static class Utilities
     var waitTask = Task.Run(async () =>
     {
       while (!condition())
+      {
         await Task.Delay(frequency).ConfigureAwait(false);
+      }
     });
 
     if (waitTask != await Task.WhenAny(waitTask, Task.Delay(timeout)).ConfigureAwait(false))
+    {
       throw new SpeckleException("Process timed out", new TimeoutException());
+    }
   }
 }

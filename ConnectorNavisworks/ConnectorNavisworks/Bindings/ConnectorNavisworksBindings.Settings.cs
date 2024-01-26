@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Models.Settings;
@@ -8,16 +8,16 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 public partial class ConnectorBindingsNavisworks
 {
   // CAUTION: these strings need to have the same values as in the converter
-  private const string InternalOrigin = "Model Origin (default)";
-  private const string ProxyOrigin = "Project Base Origin";
-  private const string BBoxOrigin = "Boundingbox Origin";
+  private const string INTERNAL_ORIGIN = "Model Origin (default)";
+  private const string PROXY_ORIGIN = "Project Base Origin";
+  private const string BBOX_ORIGIN = "Boundingbox Origin";
 
   // used to store the Stream State settings when sending
   private List<ISetting> CurrentSettings { get; set; }
 
   public override List<ISetting> GetSettings()
   {
-    var referencePoints = new List<string> { InternalOrigin, ProxyOrigin, BBoxOrigin };
+    var referencePoints = new List<string> { INTERNAL_ORIGIN, PROXY_ORIGIN, BBOX_ORIGIN };
     var units = new List<string>(Enum.GetNames(typeof(Units)));
 
     return new List<ISetting>
@@ -28,7 +28,7 @@ public partial class ConnectorBindingsNavisworks
         Name = "Reference Point",
         Icon = "LocationSearching",
         Values = referencePoints,
-        Selection = InternalOrigin,
+        Selection = INTERNAL_ORIGIN,
         Description = "Sends or receives stream objects in relation to this document point"
       },
       new NumericSetting

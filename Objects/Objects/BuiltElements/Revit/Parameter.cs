@@ -1,4 +1,3 @@
-#nullable enable
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -34,14 +33,14 @@ public class Parameter : Base
   /// If True it's a Shared Parameter, in which case the ApplicationId field will contain this parameter GUID,
   /// otherwise it will store its BuiltInParameter name
   /// </summary>
-  public bool isShared { get; set; } = false;
+  public bool isShared { get; set; }
 
-  public bool isReadOnly { get; set; } = false;
+  public bool isReadOnly { get; set; }
 
   /// <summary>
   /// True = Type Parameter, False = Instance Parameter
   /// </summary>
-  public bool isTypeParameter { get; set; } = false;
+  public bool isTypeParameter { get; set; }
 
   public string units { get; set; }
 }

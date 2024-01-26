@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
@@ -39,7 +39,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
   {
     base.AddedToDocument(document);
     if (SelectedKitName == null)
+    {
       SelectedKitName = SpeckleGHSettings.SelectedKitName;
+    }
+
     SetConverter();
   }
 
@@ -57,8 +60,9 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
       SetConverterFromKit(SelectedKitName);
       return true;
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "No kit found on this machine.");
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
       return false;
     }
@@ -86,6 +90,7 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
       Menu_AppendSeparator(menu);
       Menu_AppendItem(menu, "Select the converter you want to use:", null, false);
       if (CanDisableConversion)
+      {
         Menu_AppendItem(
           menu,
           "Do Not Convert",
@@ -98,8 +103,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
           true,
           Kit == null
         );
+      }
 
       foreach (var kit in kits)
+      {
         Menu_AppendItem(
           menu,
           $"{kit.Name} ({kit.Description})",
@@ -112,11 +119,13 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
           true,
           kit.Name == Kit?.Name
         );
+      }
 
       Menu_AppendSeparator(menu);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "An error occurred while fetching Kits");
       Menu_AppendItem(menu, "An error occurred while fetching Kits", null, false);
     }
   }
@@ -124,7 +133,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
   public virtual void SetConverterFromKit(string kitName)
   {
     if (kitName == Kit?.Name)
+    {
       return;
+    }
+
     Kit = KitManager.Kits.FirstOrDefault(k => k.Name == kitName);
     SelectedKitName = Kit.Name;
     Converter = Kit.LoadConverter(Utilities.GetVersionedAppName());
@@ -151,9 +163,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
     {
       Converter?.SetContextDocument(Loader.GetCurrentDocument());
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to set document context:\n\t{e.ToFormattedString()}");
+      SpeckleLog.Logger.Error(ex, "Failed to set document context");
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to set document context:\n\t{ex.ToFormattedString()}");
     }
     base.BeforeSolveInstance();
   }
@@ -162,7 +175,10 @@ public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapab
   {
     //Ensure converter document is up to date
     if (Converter == null)
+    {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
+    }
+
     base.ComputeData();
   }
 }

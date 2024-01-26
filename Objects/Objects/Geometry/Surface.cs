@@ -25,7 +25,7 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// </summary>
   /// <param name="units">The units this surface is modeled in</param>
   /// <param name="applicationId">This surface's unique identifier on a specific application</param>
-  public Surface(string units = Units.Meters, string applicationId = null)
+  public Surface(string units = Units.Meters, string? applicationId = null)
   {
     this.applicationId = applicationId;
     this.units = units;
@@ -104,17 +104,19 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Surface surface)
+  public bool TransformTo(Transform transform, out Surface transformed)
   {
     var ptMatrix = GetControlPoints();
     foreach (var ctrlPts in ptMatrix)
+    {
       for (int i = 0; i < ctrlPts.Count; i++)
       {
         ctrlPts[i].TransformTo(transform, out var tPt);
         ctrlPts[i] = tPt;
       }
+    }
 
-    surface = new Surface
+    transformed = new Surface
     {
       degreeU = degreeU,
       degreeV = degreeV,
@@ -129,7 +131,7 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
       knotsV = knotsV,
       units = units
     };
-    surface.SetControlPoints(ptMatrix);
+    transformed.SetControlPoints(ptMatrix);
 
     return true;
   }
@@ -152,7 +154,9 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   {
     var matrix = new List<List<ControlPoint>>();
     for (var i = 0; i < countU; i++)
+    {
       matrix.Add(new List<ControlPoint>());
+    }
 
     for (var i = 0; i < pointData.Count; i += 4)
     {
@@ -167,7 +171,7 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// Sets the control points of this <see cref="Surface"/>.
   /// </summary>
   /// <param name="value">A 2-dimensional array of <see cref="ControlPoint"/> instances.</param>
-  /// <remarks>The <see cref="value"/> must be ordered following directions "[u][v]"</remarks>
+  /// <remarks>The <paramref name="value"/> must be ordered following directions "[u][v]"</remarks>
   public void SetControlPoints(List<List<ControlPoint>> value)
   {
     List<double> data = new();
@@ -226,16 +230,18 @@ public class Surface : Base, IHasBoundingBox, IHasArea, ITransformable<Surface>
   /// <returns>A new <see cref="Surface"/> with the provided values.</returns>
   public static Surface FromList(List<double> list)
   {
-    var srf = new Surface();
-    srf.degreeU = (int)list[0];
-    srf.degreeV = (int)list[1];
-    srf.countU = (int)list[2];
-    srf.countV = (int)list[3];
-    srf.rational = list[4] == 1;
-    srf.closedU = list[5] == 1;
-    srf.closedV = list[6] == 1;
-    srf.domainU = new Interval { start = list[7], end = list[8] };
-    srf.domainV = new Interval { start = list[9], end = list[10] };
+    var srf = new Surface
+    {
+      degreeU = (int)list[0],
+      degreeV = (int)list[1],
+      countU = (int)list[2],
+      countV = (int)list[3],
+      rational = list[4] == 1,
+      closedU = list[5] == 1,
+      closedV = list[6] == 1,
+      domainU = new Interval { start = list[7], end = list[8] },
+      domainV = new Interval { start = list[9], end = list[10] }
+    };
 
     var pointCount = (int)list[11];
     var knotsUCount = (int)list[12];

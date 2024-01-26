@@ -12,8 +12,6 @@ using ComBridge = Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 using Plane = Objects.Geometry.Plane;
 using Vector = Objects.Geometry.Vector;
 
-//
-
 namespace Objects.Converter.Navisworks;
 
 public class PrimitiveProcessor : InwSimplePrimitivesCB
@@ -28,10 +26,10 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
 
   private List<TriangleD> _triangles = new();
 
-  public PrimitiveProcessor(bool elevationMode)
+  public PrimitiveProcessor(bool isUpright)
     : this()
   {
-    ElevationMode = elevationMode;
+    IsUpright = isUpright;
   }
 
   private PrimitiveProcessor()
@@ -43,43 +41,29 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
     SetPoints(new List<PointD>());
   }
 
-
   public IReadOnlyList<double> Coords => _coords.AsReadOnly();
-
 
   private IReadOnlyList<int> Faces => _faces.AsReadOnly();
 
-
   public IReadOnlyList<TriangleD> Triangles => _triangles.AsReadOnly();
-
 
   public IReadOnlyList<LineD> Lines => _lines.AsReadOnly();
 
-
   public IReadOnlyList<PointD> Points => _points.AsReadOnly();
-
 
   public IEnumerable<double> LocalToWorldTransformation { get; set; }
 
-
-  private bool ElevationMode { get; set; }
-
+  private bool IsUpright { get; set; }
 
   public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
   {
     if (v1 == null || v2 == null)
+    {
       return;
+    }
 
-#pragma warning disable CA2000
-    var vD1 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-      ElevationMode
-    );
-    var vD2 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-      ElevationMode
-    );
-#pragma warning restore CA2000
+    var vD1 = TargetUpVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation), IsUpright);
+    var vD2 = TargetUpVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation), IsUpright);
 
     try
     {
@@ -99,11 +83,11 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   public void Point(InwSimpleVertex v1)
   {
     if (v1 == null)
+    {
       return;
-    var vD1 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-      ElevationMode
-    );
+    }
+
+    var vD1 = TargetUpVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation), IsUpright);
 
     AddPoint(new PointD(vD1));
   }
@@ -116,20 +100,13 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   public void Triangle(InwSimpleVertex v1, InwSimpleVertex v2, InwSimpleVertex v3)
   {
     if (v1 == null || v2 == null || v3 == null)
+    {
       return;
+    }
 
-    var vD1 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-      ElevationMode
-    );
-    var vD2 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-      ElevationMode
-    );
-    var vD3 = SetElevationModeVector(
-      ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation),
-      ElevationMode
-    );
+    var vD1 = TargetUpVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation), IsUpright);
+    var vD2 = TargetUpVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation), IsUpright);
+    var vD3 = TargetUpVector(ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation), IsUpright);
 
     var indexPointer = Faces.Count;
     AddFace(3);
@@ -144,60 +121,28 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
     _coords.AddRange(coords);
   }
 
-  private void AddCoords(IEnumerable<double> coords)
-  {
-    _coords.AddRange(coords);
-  }
+  private void AddCoords(IEnumerable<double> coords) => _coords.AddRange(coords);
 
-  private void SetFaces(List<int> faces)
-  {
-    _faces = faces ?? throw new ArgumentNullException(nameof(faces));
-  }
+  private void SetFaces(List<int> faces) => _faces = faces ?? throw new ArgumentNullException(nameof(faces));
 
-  private void AddFace(int face)
-  {
-    _faces.Add(face);
-  }
+  private void AddFace(int face) => _faces.Add(face);
 
-  private void AddFaces(IEnumerable<int> faces)
-  {
-    _faces.AddRange(faces);
-  }
+  private void AddFaces(IEnumerable<int> faces) => _faces.AddRange(faces);
 
-  private void SetTriangles(List<TriangleD> triangles)
-  {
+  private void SetTriangles(List<TriangleD> triangles) =>
     _triangles = triangles ?? throw new ArgumentNullException(nameof(triangles));
-  }
 
-  private void AddTriangle(TriangleD triangle)
-  {
-    _triangles.Add(triangle);
-  }
+  private void AddTriangle(TriangleD triangle) => _triangles.Add(triangle);
 
-  private void SetLines(List<LineD> lines)
-  {
-    _lines = lines ?? throw new ArgumentNullException(nameof(lines));
-  }
+  private void SetLines(List<LineD> lines) => _lines = lines ?? throw new ArgumentNullException(nameof(lines));
 
-  private void AddLine(LineD line)
-  {
-    _lines.Add(line);
-  }
+  private void AddLine(LineD line) => _lines.Add(line);
 
-  private void SetPoints(List<PointD> points)
-  {
-    _points = points ?? throw new ArgumentNullException(nameof(points));
-  }
+  private void SetPoints(List<PointD> points) => _points = points ?? throw new ArgumentNullException(nameof(points));
 
-  private void AddPoint(PointD point)
-  {
-    _points.Add(point);
-  }
+  private void AddPoint(PointD point) => _points.Add(point);
 
-  private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode)
-  {
-    return elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
-  }
+  private static Vector3D TargetUpVector(Vector3D v, bool isUpright) => isUpright ? v : new Vector3D(v.X, -v.Z, v.Y);
 
   private static Vector3D ApplyTransformation(Vector3 vector3, IEnumerable<double> matrixStore)
   {
@@ -213,7 +158,7 @@ public class PrimitiveProcessor : InwSimplePrimitivesCB
   private static Vector3 VectorFromVertex(InwSimpleVertex v)
   {
     var arrayV = (Array)v.coord;
-    return  new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
+    return new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
   }
 }
 
@@ -231,18 +176,13 @@ public class NavisworksGeometry
     Selection = ComBridge.ToInwOpSelection(modelItemCollection);
   }
 
-
   public InwOpSelection Selection { get; set; }
-
 
   public ModelItem ModelItem { get; set; }
 
-
   private IEnumerable<InwOaFragment3> ModelFragments => ModelFragmentStack;
 
-
-  public bool ElevationMode { get; set; }
-
+  public bool IsUpright { get; set; }
 
   public IEnumerable<PrimitiveProcessor> GetUniqueGeometryFragments()
   {
@@ -250,14 +190,16 @@ public class NavisworksGeometry
 
     foreach (InwOaPath path in Selection.Paths())
     {
-      var processor = new PrimitiveProcessor(ElevationMode);
+      var processor = new PrimitiveProcessor(IsUpright);
 
       foreach (var fragment in ModelFragments)
       {
         if (
           !IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(), ((Array)path.ArrayData).ToArray<int>())
         )
+        {
           continue;
+        }
 
         var localToWorldTransform = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
 
@@ -272,19 +214,21 @@ public class NavisworksGeometry
     return processors;
   }
 
-  private static bool IsSameFragmentPath(Array a1, Array a2)
-  {
-    return a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
-  }
+  private static bool IsSameFragmentPath(Array a1, Array a2) =>
+    a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
 
   private static double[] ConvertArrayToDouble(Array arr)
   {
     if (arr.Rank != 1)
+    {
       throw new ArgumentException("The input array must have a rank of 1.");
+    }
 
     var doubleArray = new double[arr.GetLength(0)];
     for (var ix = arr.GetLowerBound(0); ix <= arr.GetUpperBound(0); ++ix)
+    {
       doubleArray[ix - arr.GetLowerBound(0)] = (double)arr.GetValue(ix);
+    }
 
     return doubleArray;
   }
@@ -302,12 +246,9 @@ public class TriangleD
     Vertex3 = v3;
   }
 
-
   public Vector3D Vertex1 { get; set; }
 
-
   public Vector3D Vertex2 { get; set; }
-
 
   public Vector3D Vertex3 { get; set; }
 }
@@ -329,9 +270,7 @@ public class LineD
     Vertex2 = v2;
   }
 
-
   public Vector3D Vertex1 { get; set; }
-
 
   public Vector3D Vertex2 { get; set; }
 }
@@ -354,28 +293,26 @@ public partial class ConverterNavisworks
 {
   private static Vector3D TransformVector3D { get; set; }
 
-
   public Vector SettingOutPoint { get; set; }
-
 
   public Vector TransformVector { get; set; }
 
+  private static readonly Vector3D s_canonicalUp = new(0, 0, 1);
 
   private BoundingBox3D ModelBoundingBox { get; set; }
 
-
   /// <summary>
-  ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
+  ///   IsUpright is the indicator that the model is being handled as an XY ground plane
   ///   with Z as elevation height.
   ///   This is distinct from the typical "handedness" of 3D models.
   /// </summary>
-  private static bool ElevationMode { get; set; }
+  private static bool IsUpright { get; set; }
 
   public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
   {
     var source = Application.ActiveDocument.Units;
-    var target = Units.Meters;
-    var scale = UnitConversion.ScaleFactor(source, target);
+    const Units TARGET_UNITS = Units.Meters;
+    var scale = UnitConversion.ScaleFactor(source, TARGET_UNITS);
 
     var min = boundingBox3D.Min;
     var max = boundingBox3D.Max;
@@ -401,17 +338,7 @@ public partial class ConverterNavisworks
     return boundingBox;
   }
 
-  private static void SetModelOrientationMode()
-  {
-    using var elevationModeUpVector = new Vector3D(0, 0, 1);
-    using var elevationModeRightVector = new Vector3D(1, 0, 0);
-
-    var upMatch = VectorMatch(Doc.UpVector, elevationModeUpVector);
-    var rightMatch = VectorMatch(Doc.RightVector, elevationModeRightVector);
-
-    // TODO: do both need to match or would UP be enough?
-    ElevationMode = upMatch && rightMatch;
-  }
+  private static void SetModelOrientationMode() => IsUpright = VectorMatch(Doc.UpVector, s_canonicalUp);
 
   /// <summary>
   ///   Compares two vectors as identical with an optional tolerance.
@@ -420,12 +347,10 @@ public partial class ConverterNavisworks
   /// <param name="vectorB">The second comparison vector</param>
   /// <param name="tolerance">Default value of 1e-9</param>
   /// <returns>Boolean value indicating match success</returns>
-  private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
-  {
-    return Math.Abs(vectorA.X - vectorB.X) < tolerance
-        && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
-        && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
-  }
+  private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9) =>
+    Math.Abs(vectorA.X - vectorB.X) < tolerance
+    && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
+    && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
 
   private static void PopulateModelFragments(NavisworksGeometry geometry)
   {
@@ -436,12 +361,13 @@ public partial class ConverterNavisworks
       var fragments = path.Fragments();
       foreach (InwOaFragment3 fragment in fragments)
       {
-        var a1 = ((Array)fragment.path.ArrayData).ToArray<int>();
-        var a2 = ((Array)path.ArrayData).ToArray<int>();
-        var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
+        var pathArray1 = ((Array)fragment.path.ArrayData).ToArray<int>();
+        var pathArray2 = ((Array)path.ArrayData).ToArray<int>();
 
-        if (isSame)
+        if (!(pathArray1.Length != pathArray2.Length || !pathArray1.SequenceEqual(pathArray2)))
+        {
           geometry.ModelFragmentStack.Push(fragment);
+        }
 
         GC.KeepAlive(fragments);
       }
@@ -450,7 +376,7 @@ public partial class ConverterNavisworks
     }
   }
 
-  private static IReadOnlyList<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
+  private static List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
   {
     var callbackListeners = navisworksGeometry.GetUniqueGeometryFragments();
 
@@ -497,11 +423,15 @@ public partial class ConverterNavisworks
       }
 
       if (lines == null)
+      {
         continue;
+      }
 
       var lineCount = lines.Count;
       if (lineCount <= 0)
+      {
         continue;
+      }
 
       baseGeometries.AddRange(
         from lineD in lines
@@ -516,10 +446,7 @@ public partial class ConverterNavisworks
     return baseGeometries;
   }
 
-  private void SetModelBoundingBox()
-  {
-    ModelBoundingBox = Doc.GetBoundingBox(false);
-  }
+  private void SetModelBoundingBox() => ModelBoundingBox = Doc.GetBoundingBox(false);
 
   private void SetTransformVector3D()
   {
@@ -548,13 +475,6 @@ public partial class ConverterNavisworks
     TransformVector3D = transform;
   }
 
-  private static IEnumerable<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale)
-  {
-    return new List<double>
-    {
-      (vertex1.X + move.X) * scale,
-      (vertex1.Y + move.Y) * scale,
-      (vertex1.Z + move.Z) * scale
-    };
-  }
+  private static List<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale) =>
+    new() { (vertex1.X + move.X) * scale, (vertex1.Y + move.Y) * scale, (vertex1.Z + move.Z) * scale };
 }
