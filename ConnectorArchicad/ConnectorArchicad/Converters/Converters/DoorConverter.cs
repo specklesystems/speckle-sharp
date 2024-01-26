@@ -4,13 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
-using Archicad.Launcher;
 using Archicad.Model;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
