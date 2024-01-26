@@ -2,24 +2,25 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "Core\\Core\\Core.csproj",
-      "Objects\\Objects\\Objects.csproj",
-      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino7\\ConverterRhino7.csproj",
-      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
-      "Objects\\Converters\\ConverterRevit\\ConverterRevit2020\\ConverterRevit2020.csproj",
-      "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
-      "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
-      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2022\\ConverterAutocad2022.csproj",
-      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2023\\ConverterAutocad2023.csproj",
-      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
-      "ConnectorRhino\\ConnectorRhinoWebUI\\ConnectorRhinoWebUI.csproj",
-      "ConnectorRevit\\RevitDUI3\\Revit2020DUI3\\Revit2020DUI3.csproj",
-      "ConnectorRevit\\RevitDUI3\\Revit2023DUI3\\Revit2023DUI3.csproj",
-      "ConnectorRevit\\RevitDUI3\\RevitDUI3Shared\\RevitDUI3Shared.shproj",
+      "ConnectorArcGIS\\ConnectorArcGIS.csproj",
       "ConnectorAutocadCivil\\AutocadCivilDUI3\\Autocad2022\\ConnectorAutocad2022DUI3.csproj",
       "ConnectorAutocadCivil\\AutocadCivilDUI3\\Autocad2023\\ConnectorAutocad2023DUI3.csproj",
       "ConnectorAutocadCivil\\AutocadCivilDUI3\\AutocadCivilDUI3Shared\\AutocadCivilDUI3Shared.shproj",
-      "DesktopUI3\\DUI3\\DUI3.csproj"
+      "ConnectorRevit\\RevitDUI3\\Revit2020DUI3\\Revit2020DUI3.csproj",
+      "ConnectorRevit\\RevitDUI3\\Revit2023DUI3\\Revit2023DUI3.csproj",
+      "ConnectorRevit\\RevitDUI3\\RevitDUI3Shared\\RevitDUI3Shared.shproj",
+      "ConnectorRhino\\ConnectorRhinoWebUI\\ConnectorRhinoWebUI.csproj",
+      "Core\\Core\\Core.csproj",
+      "DesktopUI3\\DUI3\\DUI3.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2022\\ConverterAutocad2022.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2023\\ConverterAutocad2023.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2020\\ConverterRevit2020.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
+      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino7\\ConverterRhino7.csproj",
+      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
+      "Objects\\Objects\\Objects.csproj"
     ]
   }
 }
