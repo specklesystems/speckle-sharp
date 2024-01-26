@@ -346,7 +346,7 @@ public static class AccountManager
       throw new SpeckleAccountManagerException($"Can only upgrade accounts on speckle.xyz");
 
     account.serverInfo.url = DEFAULT_SERVER_URL;
-    AccountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+    s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
   }
 
   /// <summary>
