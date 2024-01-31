@@ -14,6 +14,7 @@ public partial class Client
   /// <param name="commitId">Id of the commit to get</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.Get"/>
   public async Task<Commit> CommitGet(string streamId, string commitId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -48,6 +49,7 @@ public partial class Client
   /// <param name="limit">Max number of commits to get</param>
   /// <param name="cancellationToken"></param>
   /// <returns>The requested commits</returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.GetVersions"/>
   public async Task<List<Commit>> StreamGetCommits(
     string streamId,
     int limit = 10,
@@ -88,6 +90,7 @@ public partial class Client
   /// </summary>
   /// <param name="commitInput"></param>
   /// <returns>The commit id.</returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.Create"/>
   public async Task<string> CommitCreate(CommitCreateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -106,6 +109,7 @@ public partial class Client
   /// <param name="commitInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.Update"/>
   public async Task<bool> CommitUpdate(CommitUpdateInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -124,6 +128,7 @@ public partial class Client
   /// <param name="commitInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.Delete"/>
   public async Task<bool> CommitDelete(CommitDeleteInput commitInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -143,6 +148,7 @@ public partial class Client
   /// <param name="commitReceivedInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.VersionResource.Received"/>
   public async Task<bool> CommitReceived(
     CommitReceivedInput commitReceivedInput,
     CancellationToken cancellationToken = default

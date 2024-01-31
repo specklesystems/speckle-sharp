@@ -38,6 +38,7 @@ public partial class Client
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
   public async Task<List<Branch>> StreamGetBranches(
     string streamId,
     int branchesLimit = 10,
@@ -86,6 +87,7 @@ public partial class Client
   /// <param name="branchInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns>The branch id.</returns>
+  /// <seealso cref="GraphQL.Resources.ModelResource.Create"/>
   public async Task<string> BranchCreate(BranchCreateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -105,6 +107,8 @@ public partial class Client
   /// <param name="branchName">Name of the branch to get</param>
   /// <param name="cancellationToken"></param>
   /// <returns>The requested branch</returns>
+  /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
+  /// <seealso cref="GraphQL.Resources.ModelResource.GetWithVersions"/>
   public async Task<Branch> BranchGet(
     string streamId,
     string branchName,
@@ -154,6 +158,7 @@ public partial class Client
   /// <param name="projectId">Id of the project to get the model from</param>
   /// <param name="modelId">Id of the model</param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
   public async Task<Branch> ModelGet(string projectId, string modelId, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -190,6 +195,7 @@ public partial class Client
   /// </summary>
   /// <param name="branchInput"></param>
   /// <returns>The stream's id.</returns>
+  /// <seealso cref="GraphQL.Resources.ModelResource.Update"/>
   public async Task<bool> BranchUpdate(BranchUpdateInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -208,6 +214,7 @@ public partial class Client
   /// <param name="branchInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ModelResource.Delete"/>
   public async Task<bool> BranchDelete(BranchDeleteInput branchInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

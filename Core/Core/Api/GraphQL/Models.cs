@@ -468,12 +468,12 @@ public class CommentActivityResponse
 
 public class Connector
 {
-  public List<Version> Versions { get; set; } = new();
+  public List<ConnectorVersion> Versions { get; set; } = new();
 }
 
-public class Version
+public class ConnectorVersion
 {
-  public Version(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
+  public ConnectorVersion(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
   {
     Number = number;
     Url = url;

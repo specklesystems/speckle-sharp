@@ -52,6 +52,8 @@ public partial class Client
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.Get"/>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithModels"/>
   public async Task<Stream> StreamGet(string id, int branchesLimit = 10, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -258,6 +260,7 @@ public partial class Client
   /// <param name="streamInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.Create"/>
   public async Task<string> StreamCreate(StreamCreateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -275,6 +278,7 @@ public partial class Client
   /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
   /// <param name="cancellationToken"></param>
   /// <returns>The stream's id.</returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.Update"/>
   public async Task<bool> StreamUpdate(StreamUpdateInput streamInput, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -294,6 +298,7 @@ public partial class Client
   /// <param name="id">Id of the stream to be deleted</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.Delete"/>
   public async Task<bool> StreamDelete(string id, CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
@@ -336,6 +341,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.UpdateRole"/>
   public async Task<bool> StreamUpdatePermission(
     StreamPermissionInput updatePermissionInput,
     CancellationToken cancellationToken = default
@@ -362,6 +368,7 @@ public partial class Client
   /// <param name="streamId"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithTeam"/>
   public async Task<Stream> StreamGetPendingCollaborators(
     string streamId,
     CancellationToken cancellationToken = default
@@ -396,6 +403,7 @@ public partial class Client
   /// <param name="inviteCreateInput"></param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Create"/>
   public async Task<bool> StreamInviteCreate(
     StreamInviteCreateInput inviteCreateInput,
     CancellationToken cancellationToken = default
@@ -427,6 +435,7 @@ public partial class Client
   /// <param name="inviteId">Id of the invite to cancel</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Cancel"/>
   public async Task<bool> StreamInviteCancel(
     string streamId,
     string inviteId,
@@ -456,6 +465,7 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
+  /// <seealso cref="GraphQL.Resources.ProjectInviteResource.Use"/>
   public async Task<bool> StreamInviteUse(
     string streamId,
     string token,
@@ -482,6 +492,12 @@ public partial class Client
     return (bool)res["streamInviteUse"];
   }
 
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
+  /// <seealso cref="GraphQL.Resources.ProjectResource.GetWithTeam"/>
   public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest

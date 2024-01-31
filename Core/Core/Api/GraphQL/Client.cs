@@ -15,6 +15,7 @@ using Polly.Contrib.WaitAndRetry;
 using Serilog.Context;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -23,7 +24,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public sealed partial class Client : IDisposable
+public sealed partial class Client : ISpeckleClient, IDisposable
 {
   [Obsolete]
   internal Client() { }
