@@ -75,7 +75,7 @@
       <!--Level 1 "Severe Warnings"-->
       CS0183; CS0184; CS0197; CS0420; CS0465; CS0602; CS0626; CS0657; CS0658; CS0672; CS0684; CS0688;
       CS1030; CS1058; CS1060; CS1200; CS1201; CS1202; CS1203;
-      CS1522; CS1580; CS1581; CS1584; CS1589; CS1590; CS1592; CS1598;
+      CS1522; CS1589; CS1590; CS1592; CS1598;
       CS1607; CS1616; CS1633; CS1634; CS1635; CS1645; CS1658; CS1682; CS1683; CS1684; CS1685; CS1687; CS1690; CS1691; CS1692; CS1694; CS1695; CS1696; CS1697; CS1699;
       CS1707; CS1709; CS1720; CS1723; CS1762;
       CS1911; CS1956; CS1957;
@@ -87,6 +87,9 @@
       <!--"CS0612: 'member' is obsolete"-->
       <!--"CS0809: Obsolete member 'memberA' overrides non-obsolete member 'memberB'."-->
       <!--"CS1570: XML comment on 'construct' has badly formed XML — 'reason'"-->
+      <!--"CS1581: Invalid return type in XML comment cref attribute"-->
+      <!--"CS1580: Invalid type for parameter 'parameter number' in XML comment cref attribute"-->
+      <!--"CS1584: XML comment on 'member' has syntactically incorrect cref attribute 'invalid_syntax'"-->
       <!--"CS1574: XML comment on 'construct' has syntactically incorrect cref attribute 'name'"-->
       <!--"CS4014: Because this call is not awaited, execution of the current method continues before the call is completed"-->
     </WarningsAsErrors>
