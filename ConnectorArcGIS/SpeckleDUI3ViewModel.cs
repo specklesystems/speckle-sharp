@@ -28,7 +28,7 @@ namespace ConnectorArcGIS;
 
 internal class SpeckleDUI3ViewModel : ViewStatePane
 {
-  private const string _viewPaneID = "SpeckleDUI3_SpeckleDUI3";
+  private const string VIEW_PANE_ID = "SpeckleDUI3_SpeckleDUI3";
 
   /// <summary>
   /// Consume the passed in CIMView. Call the base constructor to wire up the CIMView.
@@ -43,8 +43,8 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
   {
     // Otherwise crash on SqliteConnection
     SQLitePCL.Batteries.Init();
-    var view = new CIMGenericView { ViewType = _viewPaneID };
-    return FrameworkApplication.Panes.Create(_viewPaneID, new object[] { view }) as SpeckleDUI3ViewModel;
+    var view = new CIMGenericView { ViewType = VIEW_PANE_ID };
+    return FrameworkApplication.Panes.Create(VIEW_PANE_ID, new object[] { view }) as SpeckleDUI3ViewModel;
   }
 
   #region Pane Overrides
@@ -64,7 +64,7 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
   /// <summary>
   /// Called when the pane is initialized.
   /// </summary>
-  protected async override Task InitializeAsync()
+  protected override async Task InitializeAsync()
   {
     await base.InitializeAsync();
   }
@@ -72,7 +72,7 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
   /// <summary>
   /// Called when the pane is uninitialized.
   /// </summary>
-  protected async override Task UninitializeAsync()
+  protected override async Task UninitializeAsync()
   {
     await base.UninitializeAsync();
   }
@@ -83,7 +83,7 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
 /// <summary>
 /// Button implementation to create a new instance of the pane and activate it.
 /// </summary>
-internal class SpeckleDUI3_OpenButton : Button
+internal class SpeckleDUI3OpenButton : Button
 {
   protected override void OnClick()
   {
