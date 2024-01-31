@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -30,7 +31,7 @@ public static class AccountManager
   public const string DEFAULT_SERVER_URL = "https://app.speckle.systems";
 
   private static readonly SQLiteTransport s_accountStorage = new(scope: "Accounts");
-  private static bool s_isAddingAccount;
+  private static volatile bool s_isAddingAccount;
   private static readonly SQLiteTransport s_accountAddLockStorage = new(scope: "AccountAddFlow");
 
   /// <summary>
@@ -38,26 +39,45 @@ public static class AccountManager
   /// </summary>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  public static async Task<ServerInfo?> GetServerInfo(string server)
+  public static async Task<ServerInfo> GetServerInfo(Uri server, CancellationToken cancellationToken = default)
   {
     using var httpClient = Http.GetHttpProxyClient();
 
     using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
+      new GraphQLHttpClientOptions
+      {
+        EndPoint = new Uri(server, "/graphql"),
+        UseWebSocketForQueriesAndMutations = false
+      },
       new NewtonsoftJsonSerializer(),
       httpClient
     );
 
-    var request = new GraphQLRequest { Query = @" query { serverInfo { name company } }" };
+    var request = new GraphQLRequest { Query = " query { serverInfo { name company } }" };
 
-    var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request).ConfigureAwait(false);
+    var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
     if (response.Errors is not null)
     {
-      return null;
+      throw new SpeckleGraphQLException<ServerInfoResponse>(
+        $"GraphQL request {nameof(GetServerInfo)} failed",
+        request,
+        response
+      );
     }
 
-    response.Data.serverInfo.url = server;
+    ServerInfo serverInfo = response.Data.serverInfo;
+    serverInfo.url = server.ToString();
+
+    try
+    {
+      HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;
+      serverInfo.frontend2 = IsFrontend2Server(headers);
+    }
+    catch (ArgumentException ex)
+    {
+      throw new SpeckleException("HTTP Response headers contained an unexpected value", ex);
+    }
 
     return response.Data.serverInfo;
   }
@@ -68,24 +88,32 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  public static async Task<UserInfo?> GetUserInfo(string token, string server)
+  public static async Task<UserInfo> GetUserInfo(
+    string token,
+    Uri server,
+    CancellationToken cancellationToken = default
+  )
   {
     using var httpClient = Http.GetHttpProxyClient();
     Http.AddAuthHeader(httpClient, token);
 
     using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
+      new GraphQLHttpClientOptions { EndPoint = new Uri(server, "/graphql") },
       new NewtonsoftJsonSerializer(),
       httpClient
     );
 
-    var request = new GraphQLRequest { Query = @" query { activeUser { name email id company } }" };
+    var request = new GraphQLRequest { Query = " query { activeUser { name email id company } }" };
 
-    var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request).ConfigureAwait(false);
+    var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
 
-    if (response.Errors is not null)
+    if (response.Errors?.Length != 0)
     {
-      return null;
+      throw new SpeckleGraphQLException<ActiveUserResponse>(
+        $"GraphQL request {nameof(GetUserInfo)} failed",
+        request,
+        response
+      );
     }
 
     return response.Data.activeUser;
@@ -97,7 +125,7 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  private static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, string server)
+  private static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, Uri server)
   {
     try
     {
@@ -105,7 +133,7 @@ public static class AccountManager
       Http.AddAuthHeader(httpClient, token);
 
       using var client = new GraphQLHttpClient(
-        new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
+        new GraphQLHttpClientOptions { EndPoint = new Uri(server, "/graphql") },
         new NewtonsoftJsonSerializer(),
         httpClient
       );
@@ -113,17 +141,31 @@ public static class AccountManager
       var request = new GraphQLRequest
       {
         Query =
-          @"query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
       };
 
-      var res = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
+      var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
-      if (res.Errors is not null && res.Errors.Length != 0)
+      if (response.Errors?.Length != 0)
       {
-        throw new SpeckleException(res.Errors[0].Message, res.Errors);
+        throw new SpeckleGraphQLException<ActiveUserServerInfoResponse>(
+          $"Query {nameof(GetUserServerInfo)} failed",
+          request,
+          response
+        );
       }
 
-      return res.Data;
+      try
+      {
+        HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;
+        response.Data.serverInfo.frontend2 = IsFrontend2Server(headers);
+      }
+      catch (ArgumentException ex)
+      {
+        throw new SpeckleException("HTTP Response headers contained an unexpected value", ex);
+      }
+
+      return response.Data;
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
@@ -278,10 +320,9 @@ public static class AccountManager
   {
     foreach (var account in GetAccounts())
     {
-      var url = account.serverInfo.url;
-
       try
       {
+        Uri url = new(account.serverInfo.url);
         var userServerInfo = await GetUserServerInfo(account.token, url).ConfigureAwait(false);
 
         //the token has expired
@@ -303,8 +344,7 @@ public static class AccountManager
         account.isOnline = true;
         account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
-        account.serverInfo.url = url;
-        account.serverInfo.frontend2 = await IsFrontend2Server(url).ConfigureAwait(false);
+        account.serverInfo.url = url.ToString();
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -488,7 +528,7 @@ public static class AccountManager
     try
     {
       var tokenResponse = await GetToken(accessCode, challenge, server).ConfigureAwait(false);
-      var userResponse = await GetUserServerInfo(tokenResponse.token, server).ConfigureAwait(false);
+      var userResponse = await GetUserServerInfo(tokenResponse.token, new(server)).ConfigureAwait(false);
 
       var account = new Account
       {
@@ -635,7 +675,7 @@ public static class AccountManager
     }
   }
 
-  private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
+  private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, Uri server)
   {
     try
     {
@@ -650,7 +690,7 @@ public static class AccountManager
 
       using var content = new StringContent(JsonConvert.SerializeObject(body));
       content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-      var response = await client.PostAsync($"{server}/auth/token", content).ConfigureAwait(false);
+      var response = await client.PostAsync(new Uri(server, "/auth/token"), content).ConfigureAwait(false);
 
       return JsonConvert.DeserializeObject<TokenExchangeResponse>(
         await response.Content.ReadAsStringAsync().ConfigureAwait(false)
@@ -662,28 +702,31 @@ public static class AccountManager
     }
   }
 
-  private static async Task<bool> IsFrontend2Server(string server)
+  /// <summary>
+  /// Check the <paramref name="headers"/> for a <c>"x-speckle-frontend-2"</c> <see cref="Boolean"/> value
+  /// </summary>
+  /// <param name="headers">HTTP response headers</param>
+  /// <returns><see langword="true"/> if <paramref name="headers"/> contains FE2 header and the value was <see langword="true"/></returns>
+  /// <exception cref="ArgumentException"><paramref name="headers"/> contained FE2 header, but the value was <see langword="null"/>, empty, or not parseable to a <see cref="Boolean"/></exception>
+  private static bool IsFrontend2Server(HttpHeaders headers)
   {
-    try
-    {
-      using var client = Http.GetHttpProxyClient();
-      var response = await client.GetAsync(server).ConfigureAwait(false);
-
-      if (response.Headers.TryGetValues("x-speckle-frontend-2", out IEnumerable<string> values))
-      {
-        string? first = values.FirstOrDefault();
-        if (first is not null && bool.Parse(first))
-        {
-          return true;
-        }
-      }
-
-      return false;
-    }
-    catch (Exception ex) when (!ex.IsFatal())
+    const string HEADER = "x-speckle-frontend-2";
+    if (!headers.TryGetValues(HEADER, out IEnumerable<string> values))
     {
       return false;
     }
+
+    string? headerValue = values.FirstOrDefault();
+
+    if (!bool.TryParse(headerValue, out bool value))
+    {
+      throw new ArgumentException(
+        $"Headers contained {HEADER} header, but value {headerValue} could not be parsed to a bool",
+        nameof(headers)
+      );
+    }
+
+    return value;
   }
 
   private static string GenerateChallenge()
@@ -694,5 +737,45 @@ public static class AccountManager
 
     //escaped chars like % do not play nice with the server
     return Regex.Replace(Convert.ToBase64String(challengeData), @"[^\w\.@-]", "");
+  }
+
+  /// <inheritdoc cref="GetServerInfo(System.Uri,System.Threading.CancellationToken)"/>
+  [Obsolete("Use URI overload (note: that one throws exceptions, this one returns null)")]
+  public static async Task<ServerInfo?> GetServerInfo(string server)
+  {
+    try
+    {
+      return await GetServerInfo(new Uri(server)).ConfigureAwait(false);
+    }
+    catch (SpeckleGraphQLException<ActiveUserResponse> ex)
+    {
+      SpeckleLog.Logger.Warning(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(GetServerInfo),
+        ex.Message
+      );
+      return null;
+    }
+  }
+
+  /// <inheritdoc cref="GetUserInfo(string,System.Uri,System.Threading.CancellationToken)"/>
+  [Obsolete("Use URI overload (note: that one throws exceptions, this one returns null)")]
+  public static async Task<UserInfo?> GetUserInfo(string token, string server)
+  {
+    try
+    {
+      return await GetUserInfo(token, new Uri(server)).ConfigureAwait(false);
+    }
+    catch (SpeckleGraphQLException<ActiveUserResponse> ex)
+    {
+      SpeckleLog.Logger.Warning(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(GetUserInfo),
+        ex.Message
+      );
+      return null;
+    }
   }
 }
