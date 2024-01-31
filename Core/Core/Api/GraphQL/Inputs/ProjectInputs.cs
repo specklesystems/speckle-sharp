@@ -4,7 +4,7 @@ using Speckle.Core.Api.GraphQL.Enums;
 namespace Speckle.Core.Api.GraphQL.Inputs;
 
 public sealed record ProjectCommentsFilter(
-  bool? includeArchived, //TODO: check sensible nullability
+  bool? includeArchived, //TODO: check sensible nullability + which ones should default null (same goes for all the inputs below)
   bool? loadedVersionsOnly, //TODO: check sensible nullability
   string? resourceIdString
 );

@@ -107,6 +107,7 @@ public partial class Client
   /// <param name="branchName">Name of the branch to get</param>
   /// <param name="cancellationToken"></param>
   /// <returns>The requested branch</returns>
+  /// <remarks>Updated to Model.GetWithVersions</remarks>
   /// <seealso cref="GraphQL.Resources.ModelResource.Get"/>
   /// <seealso cref="GraphQL.Resources.ModelResource.GetWithVersions"/>
   public async Task<Branch> BranchGet(
