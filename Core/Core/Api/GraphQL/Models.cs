@@ -400,7 +400,7 @@ public class ServerInfo
 
 public class StreamData
 {
-  public Stream stream { get; set; }\sn
+  public Stream stream { get; set; }
 }
 
 public class StreamsData

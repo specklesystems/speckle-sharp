@@ -83,7 +83,7 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 		GS::ObjectState allSegments;
 
 		GSSize segmentsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
-		DBASSERT (segmentsCount == elem.beam.nSegments);
+		DBASSERT (segmentsCount == (GSSize)elem.beam.nSegments);
 
 		for (GSSize idx = 0; idx < segmentsCount; ++idx) {
 			API_BeamSegmentType beamSegment = memo.beamSegments[idx];

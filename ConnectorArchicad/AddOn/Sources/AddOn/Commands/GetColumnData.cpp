@@ -87,7 +87,7 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 		GS::ObjectState allSegments;
 
 		GSSize segmentsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
-		DBASSERT (segmentsCount == elem.column.nSegments);
+		DBASSERT (segmentsCount == (GSSize)elem.column.nSegments);
 
 		for (GSSize idx = 0; idx < segmentsCount; ++idx) {
 			API_ColumnSegmentType columnSegment = memo.columnSegments[idx];
