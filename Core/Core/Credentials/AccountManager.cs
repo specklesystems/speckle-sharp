@@ -107,7 +107,7 @@ public static class AccountManager
 
     var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
 
-    if (response.Errors?.Length != 0)
+    if (response.Errors != null)
     {
       throw new SpeckleGraphQLException<ActiveUserResponse>(
         $"GraphQL request {nameof(GetUserInfo)} failed",
@@ -146,7 +146,7 @@ public static class AccountManager
 
       var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
-      if (response.Errors?.Length != 0)
+      if (response.Errors != null)
       {
         throw new SpeckleGraphQLException<ActiveUserServerInfoResponse>(
           $"Query {nameof(GetUserServerInfo)} failed",
