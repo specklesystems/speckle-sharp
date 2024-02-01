@@ -385,21 +385,22 @@ public class ServerInfo
 
   /// <remarks>
   /// This field is not returned from the GQL API,
-  /// it should populated on construction from the response headers,
+  /// it should populated on construction from the response headers.
   /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
   /// </remarks>
   public bool frontend2 { get; set; }
 
   /// <remarks>
   /// This field is not returned from the GQL API,
-  /// it should populated on construction
+  /// it should populated on construction.
+  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
   /// </remarks>
   public string url { get; set; }
 }
 
 public class StreamData
 {
-  public Stream stream { get; set; }
+  public Stream stream { get; set; }\sn
 }
 
 public class StreamsData

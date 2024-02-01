@@ -22,6 +22,7 @@ public class UserServerInfoTests
 
     Assert.That(result.url, Is.EqualTo(acc.serverInfo.url));
     Assert.That(result.name, Is.Not.Null);
+    Assert.That(result.company, Is.Not.Null);
     Assert.That(result.frontend2, Is.False);
   }
 
@@ -72,6 +73,7 @@ public class UserServerInfoTests
 
     Assert.That(result.serverInfo.url, Is.EqualTo(acc.serverInfo.url));
     Assert.That(result.serverInfo.name, Is.Not.Null);
+    Assert.That(result.serverInfo.company, Is.Not.Null);
     Assert.That(result.serverInfo.frontend2, Is.False);
 
     Assert.That(result.activeUser.id, Is.EqualTo(acc.userInfo.id));

@@ -53,6 +53,7 @@ public static class AccountManager
       httpClient
     );
 
+    //language=graphql
     var request = new GraphQLRequest { Query = " query { serverInfo { name company } }" };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
@@ -103,6 +104,7 @@ public static class AccountManager
       httpClient
     );
 
+    //language=graphql
     var request = new GraphQLRequest { Query = " query { activeUser { name email id company } }" };
 
     var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request, cancellationToken).ConfigureAwait(false);
@@ -138,6 +140,7 @@ public static class AccountManager
         httpClient
       );
 
+      //language=graphql
       var request = new GraphQLRequest
       {
         Query =
