@@ -63,4 +63,21 @@ public class UserServerInfoTests
       async () => await AccountManager.GetUserInfo("Bearer 08913c3c1e7ac65d779d1e1f11b942a44ad9672ca9", serverUrl)
     );
   }
+
+  [Test]
+  public async Task GetUserServerInfo()
+  {
+    Uri serverUrl = new(acc.serverInfo.url);
+    var result = await AccountManager.GetUserServerInfo(acc.token, serverUrl);
+
+    Assert.That(new Uri(result.serverInfo.url), Is.EqualTo(new Uri(acc.serverInfo.url)));
+    Assert.That(result.serverInfo.name, Is.Not.Null);
+    Assert.That(result.serverInfo.frontend2, Is.False);
+
+    Assert.That(result.activeUser.id, Is.EqualTo(acc.userInfo.id));
+    Assert.That(result.activeUser.name, Is.EqualTo(acc.userInfo.name));
+    Assert.That(result.activeUser.email, Is.EqualTo(acc.userInfo.email));
+    Assert.That(result.activeUser.company, Is.EqualTo(acc.userInfo.company));
+    Assert.That(result.activeUser.avatar, Is.EqualTo(acc.userInfo.avatar));
+  }
 }

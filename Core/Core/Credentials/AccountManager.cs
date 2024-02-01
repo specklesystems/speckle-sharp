@@ -125,7 +125,7 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  private static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, Uri server)
+  internal static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, Uri server)
   {
     try
     {
@@ -155,6 +155,7 @@ public static class AccountManager
         );
       }
 
+      response.Data.serverInfo.url = server.ToString();
       try
       {
         HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;
@@ -344,7 +345,6 @@ public static class AccountManager
         account.isOnline = true;
         account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
-        account.serverInfo.url = url.ToString();
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -539,7 +539,6 @@ public static class AccountManager
         userInfo = userResponse.activeUser
       };
       SpeckleLog.Logger.Information("Successfully created account for {serverUrl}", server);
-      account.serverInfo.url = server;
 
       return account;
     }
