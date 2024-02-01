@@ -67,7 +67,7 @@ public static class AccountManager
     }
 
     ServerInfo serverInfo = response.Data.serverInfo;
-    serverInfo.url = server.ToString();
+    serverInfo.url = server.ToString().TrimEnd('/');
 
     try
     {
@@ -155,7 +155,7 @@ public static class AccountManager
         );
       }
 
-      response.Data.serverInfo.url = server.ToString();
+      response.Data.serverInfo.url = server.ToString().TrimEnd('/');
       try
       {
         HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;

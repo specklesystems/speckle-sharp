@@ -20,7 +20,7 @@ public class UserServerInfoTests
     Uri serverUrl = new(acc.serverInfo.url);
     ServerInfo result = await AccountManager.GetServerInfo(serverUrl);
 
-    Assert.That(new Uri(result.url), Is.EqualTo(new Uri(acc.serverInfo.url)));
+    Assert.That(result.url, Is.EqualTo(acc.serverInfo.url));
     Assert.That(result.name, Is.Not.Null);
     Assert.That(result.frontend2, Is.False);
   }
@@ -70,7 +70,7 @@ public class UserServerInfoTests
     Uri serverUrl = new(acc.serverInfo.url);
     var result = await AccountManager.GetUserServerInfo(acc.token, serverUrl);
 
-    Assert.That(new Uri(result.serverInfo.url), Is.EqualTo(new Uri(acc.serverInfo.url)));
+    Assert.That(result.serverInfo.url, Is.EqualTo(acc.serverInfo.url));
     Assert.That(result.serverInfo.name, Is.Not.Null);
     Assert.That(result.serverInfo.frontend2, Is.False);
 
