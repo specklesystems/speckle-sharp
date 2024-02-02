@@ -419,8 +419,8 @@ GSErrCode GetSegmentData (const API_AssemblySegmentData& segmentData, GS::Object
 	API_Attribute attrib;
 	switch (segmentData.modelElemStructureType) {
 	case API_CompositeStructure:
-		DBASSERT (segment.modelElemStructureType != API_CompositeStructure)
-			break;
+		DBASSERT (segmentData.modelElemStructureType != API_CompositeStructure);
+		break;
 	case API_BasicStructure:
 		BNZeroMemory (&attrib, sizeof (API_Attribute));
 		attrib.header.typeID = API_BuildingMaterialID;
@@ -544,16 +544,16 @@ GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData& schemeData, GS:
 
 GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::ObjectState& out)
 {
-	if (schemeData == nullptr) return Error;
+	if (schemeData == nullptr)
+		return Error;
 
 	GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(schemeData)) / sizeof (API_AssemblySegmentSchemeData);
-	DBASSERT (schemesCount == elem.column.nSchemes)
 
-		for (GSSize idx = 0; idx < schemesCount; ++idx) {
-			GS::ObjectState currentScheme;
-			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
-			out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
-		}
+	for (GSSize idx = 0; idx < schemesCount; ++idx) {
+		GS::ObjectState currentScheme;
+		Utility::GetOneSchemeData (schemeData[idx], currentScheme);
+		out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
+	}
 
 	return NoError;
 }
