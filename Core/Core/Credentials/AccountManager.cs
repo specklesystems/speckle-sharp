@@ -72,8 +72,7 @@ public static class AccountManager
 
     try
     {
-      HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;
-      serverInfo.frontend2 = IsFrontend2Server(headers);
+      serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
     }
     catch (ArgumentException ex)
     {
@@ -161,8 +160,7 @@ public static class AccountManager
       response.Data.serverInfo.url = server.ToString().TrimEnd('/');
       try
       {
-        HttpResponseHeaders headers = response.AsGraphQLHttpResponse().ResponseHeaders;
-        response.Data.serverInfo.frontend2 = IsFrontend2Server(headers);
+        response.Data.serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
       }
       catch (ArgumentException ex)
       {
@@ -705,30 +703,42 @@ public static class AccountManager
   }
 
   /// <summary>
-  /// Check the <paramref name="headers"/> for a <c>"x-speckle-frontend-2"</c> <see cref="Boolean"/> value
+  /// Check the <paramref name="server"/> for having a <c>"x-speckle-frontend-2"</c> <see cref="Boolean"/> header value
   /// </summary>
-  /// <param name="headers">HTTP response headers</param>
-  /// <returns><see langword="true"/> if <paramref name="headers"/> contains FE2 header and the value was <see langword="true"/></returns>
-  /// <exception cref="ArgumentException"><paramref name="headers"/> contained FE2 header, but the value was <see langword="null"/>, empty, or not parseable to a <see cref="Boolean"/></exception>
-  private static bool IsFrontend2Server(HttpHeaders headers)
+  /// <param name="server">Server end point to get header</param>
+  /// <returns><see langword="true"/> if <paramref name="server"/> contains FE2 header and the value was <see langword="true"/></returns>
+  /// <exception cref="ArgumentException"><paramref name="server"/> contained FE2 header, but the value was <see langword="null"/>, empty, or not parseable to a <see cref="Boolean"/></exception>
+  private static async Task<bool> IsFrontend2Server(Uri server)
   {
-    const string HEADER = "x-speckle-frontend-2";
-    if (!headers.TryGetValues(HEADER, out IEnumerable<string> values))
+    using var httpClient = Http.GetHttpProxyClient();
+
+    var response = await Http.HttpPing(server).ConfigureAwait(false);
+
+    if (response.EnsureSuccessStatusCode() != null)
+    {
+      var headers = response.Headers;
+      const string HEADER = "x-speckle-frontend-2";
+      if (!headers.TryGetValues(HEADER, out IEnumerable<string> values))
+      {
+        return false;
+      }
+
+      string? headerValue = values.FirstOrDefault();
+
+      if (!bool.TryParse(headerValue, out bool value))
+      {
+        throw new ArgumentException(
+          $"Headers contained {HEADER} header, but value {headerValue} could not be parsed to a bool",
+          nameof(server)
+        );
+      }
+
+      return value;
+    }
+    else
     {
       return false;
     }
-
-    string? headerValue = values.FirstOrDefault();
-
-    if (!bool.TryParse(headerValue, out bool value))
-    {
-      throw new ArgumentException(
-        $"Headers contained {HEADER} header, but value {headerValue} could not be parsed to a bool",
-        nameof(headers)
-      );
-    }
-
-    return value;
   }
 
   private static string GenerateChallenge()

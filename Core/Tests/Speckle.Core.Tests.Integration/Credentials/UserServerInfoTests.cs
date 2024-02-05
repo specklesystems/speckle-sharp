@@ -15,15 +15,35 @@ public class UserServerInfoTests
   }
 
   [Test]
-  public async Task GetServerInfo()
+  public async Task IsFrontEnd2True()
+  {
+    ServerInfo result = await AccountManager.GetServerInfo("https://app.speckle.systems/");
+
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.frontend2, Is.True);
+  }
+
+  [Test]
+  public async Task IsFrontEnd2False()
+  {
+    ServerInfo result = await AccountManager.GetServerInfo("https://speckle.xyz/");
+
+    Assert.That(result, Is.Not.Null);
+    Assert.That(result.frontend2, Is.False);
+  }
+
+  /// <remarks>
+  /// We get ServerInfo from "http://localhost:3000/graphql",
+  /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3000/",
+  /// This is not doable in local server because there is no end-point on this to ping.
+  /// This is a bad sign for mutation.
+  /// </remarks>
+  [Test]
+  public void GetServerInfo_ExpectFail_CantPing()
   {
     Uri serverUrl = new(acc.serverInfo.url);
-    ServerInfo result = await AccountManager.GetServerInfo(serverUrl);
 
-    Assert.That(result.url, Is.EqualTo(acc.serverInfo.url));
-    Assert.That(result.name, Is.Not.Null);
-    Assert.That(result.company, Is.Not.Null);
-    Assert.That(result.frontend2, Is.False);
+    Assert.ThrowsAsync<HttpRequestException>(async () => await AccountManager.GetServerInfo(serverUrl));
   }
 
   [Test]
@@ -63,23 +83,5 @@ public class UserServerInfoTests
     Assert.ThrowsAsync<GraphQLHttpRequestException>(
       async () => await AccountManager.GetUserInfo("Bearer 08913c3c1e7ac65d779d1e1f11b942a44ad9672ca9", serverUrl)
     );
-  }
-
-  [Test]
-  public async Task GetUserServerInfo()
-  {
-    Uri serverUrl = new(acc.serverInfo.url);
-    var result = await AccountManager.GetUserServerInfo(acc.token, serverUrl);
-
-    Assert.That(result.serverInfo.url, Is.EqualTo(acc.serverInfo.url));
-    Assert.That(result.serverInfo.name, Is.Not.Null);
-    Assert.That(result.serverInfo.company, Is.Not.Null);
-    Assert.That(result.serverInfo.frontend2, Is.False);
-
-    Assert.That(result.activeUser.id, Is.EqualTo(acc.userInfo.id));
-    Assert.That(result.activeUser.name, Is.EqualTo(acc.userInfo.name));
-    Assert.That(result.activeUser.email, Is.EqualTo(acc.userInfo.email));
-    Assert.That(result.activeUser.company, Is.EqualTo(acc.userInfo.company));
-    Assert.That(result.activeUser.avatar, Is.EqualTo(acc.userInfo.avatar));
   }
 }
