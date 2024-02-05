@@ -114,7 +114,8 @@ const GS::HashTable<API_ZoneRelID, GS::UniString> relationToZoneNames
 {
 	{ APIZRel_Boundary,			"Zone Boundary"},
 	{ APIZRel_ReduceArea,		"Reduce Zone Area Only"},
-	{ APIZRel_None,				"No Effect on Zones"}
+	{ APIZRel_None,				"No Effect on Zones"},
+	{ APIZRel_SubtractFromZone,	"Subtract from Zones"}
 };
 
 
