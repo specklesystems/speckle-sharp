@@ -70,7 +70,8 @@ public class Account : IEquatable<Account>
 
   public async Task<UserInfo> Validate()
   {
-    return await AccountManager.GetUserInfo(token, serverInfo.url).ConfigureAwait(false);
+    Uri server = new(serverInfo.url);
+    return await AccountManager.GetUserInfo(token, server).ConfigureAwait(false);
   }
 
   public override string ToString()
