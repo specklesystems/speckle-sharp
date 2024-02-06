@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -40,6 +41,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     RhinoDoc.AddRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -51,6 +53,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -62,6 +65,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -75,7 +79,12 @@ public class SendBinding : ISendBinding, ICancelable
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter>() { new RhinoEverythingFilter(), new RhinoSelectionFilter(), new RhinoLayerFilter() };
+    return new List<ISendFilter>()
+    {
+      new RhinoEverythingFilter(), 
+      new RhinoSelectionFilter() { IsDefault = true }, 
+      new RhinoLayerFilter()
+    };
   }
 
   public List<CardSetting> GetSendSettings()
@@ -133,7 +142,7 @@ public class SendBinding : ISendBinding, ICancelable
       }
 
       // 8 - Create Version
-      Operations.CreateVersion(Parent, model, objectId, "Rhino");
+      Operations.CreateVersion(Parent, model, objectId);
     }
     catch (Exception e)
     {
@@ -187,9 +196,12 @@ public class SendBinding : ISendBinding, ICancelable
       }
 
       count++;
-      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
+      var converted = converter.ConvertToSpeckle(rhinoObject);
+      converted.applicationId = rhinoObject.Id.ToString();
+      convertedObjects.Add(converted);
       double progress = (double)count / rhinoObjects.Count;
       Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+      Thread.Sleep(500);
     }
 
     commitObject["@elements"] = convertedObjects;

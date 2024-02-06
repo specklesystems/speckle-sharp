@@ -22,7 +22,6 @@ public class ModelCard : DiscriminatedObject
   /// </summary>
   public string ProjectId { get; set; }
   public string AccountId { get; set; }
-  public string LastLocalUpdate { get; set; }
-  public bool Expired { get; set; }
+
   public List<CardSetting> Settings { get; set; }
 }

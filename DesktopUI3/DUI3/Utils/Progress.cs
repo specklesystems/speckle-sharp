@@ -10,7 +10,7 @@ public static class Progress
     var args = new ModelCardProgress()
     {
       Id = modelCardId,
-      Status = "Cancelled",
+      Status = "Cancelled", // NOTE: weak link, this is a key word that the FE is looking for to cancel stuff
       Progress = progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
@@ -69,7 +69,7 @@ public static class Progress
     var args = new ModelCardProgress()
     {
       Id = modelCardId,
-      Status = progress == 1 ? "Converting Completed" : "Converting",
+      Status = progress >= 1 ? "Converting Completed" : "Converting",
       Progress = progress
     };
     bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);

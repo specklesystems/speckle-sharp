@@ -36,6 +36,7 @@ public class RhinoLayerFilter : ListValueInput, ISendFilter
 {
   public string Name { get; set; }
   public string Summary { get; set; }
+  public bool IsDefault { get; set; } 
 
   public RhinoLayerFilter()
   {

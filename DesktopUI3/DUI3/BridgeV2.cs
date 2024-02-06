@@ -172,13 +172,10 @@ public class BrowserBridge : IBridge
 
       var resultTyped = method.Invoke(Binding, typedArgs);
 
-      // Was it an async method (in bridgeClass?)
-      var resultTypedTask = resultTyped as Task;
-
       string resultJson;
 
       // Was the method called async?
-      if (resultTypedTask == null)
+      if (resultTyped is not Task resultTypedTask)
       {
         // Regular method: no need to await things
         resultJson = JsonConvert.SerializeObject(resultTyped, _serializerOptions);

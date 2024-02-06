@@ -34,19 +34,14 @@ public static class Operations
     return objectId;
   }
 
-  public static void CreateVersion(IBridge bridge, SenderModelCard model, string objectId, string hostAppName)
+  public static void CreateVersion(IBridge bridge, SenderModelCard model, string objectId)
   {
     bridge.SendToBrowser(
       SendBindingEvents.CreateVersion,
-      new CreateVersion()
+      new CreateVersionArgs()
       {
-        AccountId = model.AccountId,
-        ModelId = model.ModelId,
         ModelCardId = model.Id,
-        ProjectId = model.ProjectId,
-        ObjectId = objectId,
-        Message = "Test",
-        SourceApplication = hostAppName
+        ObjectId = objectId
       }
     );
   }

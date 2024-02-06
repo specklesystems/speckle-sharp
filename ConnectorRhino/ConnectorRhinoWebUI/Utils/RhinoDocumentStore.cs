@@ -11,6 +11,7 @@ public class RhinoDocumentStore : DocumentModelStore
 
   public RhinoDocumentStore()
   {
+    // NOTE: IsDocumentInit setting does not work if rhino starts and opens a blank doc. I've commented out the relevant parts re change detection in the send binding
     RhinoDoc.BeginSaveDocument += (_, _) => WriteToFile();
     RhinoDoc.CloseDocument += (_, _) => WriteToFile();
     RhinoDoc.BeginOpenDocument += (_, _) => IsDocumentInit = false;

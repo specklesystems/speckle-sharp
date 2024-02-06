@@ -58,10 +58,14 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     int index = _store.Models.FindIndex(m => m.Id == model.Id);
     _store.Models.RemoveAt(index);
   }
-
+  
   public void HighlightModel(string modelCardId)
   {
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    if (_store.GetModelById(modelCardId) is not SenderModelCard model)
+    {
+      return;// NOTE: this will need to work for receive cards too...
+    }
+
     List<string> objectsIds = model.SendFilter.GetObjectIds();
     List<RhinoObject> rhinoObjects = objectsIds
       .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
