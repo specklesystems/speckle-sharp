@@ -92,10 +92,15 @@ public class StreamListComponentV2 : GH_SpeckleTaskCapableComponent<List<StreamW
 
   private Task<List<StreamWrapper>> ListStreams(Account account, int limit)
   {
-    var client = new Client(account);
+    using var client = new Client(account);
     var res = client
       .StreamsGet(limit, CancelToken)
-      .Result.Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
+      .Result.Select(stream =>
+      {
+        var s = new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url);
+        s.SetAccount(account);
+        return s;
+      })
       .ToList();
     return Task.FromResult(res);
   }
