@@ -2,14 +2,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using ConverterRevitShared.Models;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
 using Objects.Structural.Properties;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+#if REVIT2020 || REVIT2021 || REVIT2022
+using ConverterRevitShared.Models;
 using Point = Objects.Geometry.Point;
+#endif
 
 namespace Objects.Converter.Revit;
 

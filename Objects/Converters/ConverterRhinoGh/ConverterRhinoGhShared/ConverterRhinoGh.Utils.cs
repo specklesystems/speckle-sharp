@@ -16,18 +16,43 @@ namespace Objects.Converter.RhinoGh;
 
 public partial class ConverterRhinoGh
 {
-  public static string invalidRhinoChars = @"{}()";
+  public static string invalidRhinoChars = @"{}()[]";
 
   /// <summary>
-  /// Removes invalid characters for Rhino layer and block names
+  /// Creates a valid name for Rhino layers, blocks, and named views.
+  /// </summary>
+  /// <param name="str">Layer, block, or named view name</param>
+  /// <returns>The original name if valid, or "@name" if not.</returns>
+  /// <remarks>From trial and error, names cannot begin with invalidRhinoChars. This has been encountered in grasshopper branch syntax.</remarks>
+  public static string MakeValidName(string str)
+  {
+    return string.IsNullOrEmpty(str)
+      ? str
+      : invalidRhinoChars.Contains(str[0])
+        ? $"@{str}"
+        : str;
+  }
+
+  /// <summary>
+  /// Creates a valid path for Rhino layers.
   /// </summary>
   /// <param name="str"></param>
   /// <returns></returns>
-  public static string RemoveInvalidRhinoChars(string str)
+  public static string MakeValidPath(string str)
   {
-    // using this to handle grasshopper branch syntax
-    string cleanStr = str.Replace("{", "").Replace("}", "");
-    return cleanStr;
+    if (string.IsNullOrEmpty(str))
+    {
+      return str;
+    }
+
+    string validPath = "";
+    string[] layerNames = str.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.None);
+    foreach (var item in layerNames)
+    {
+      validPath += string.IsNullOrEmpty(validPath) ? MakeValidName(item) : Layer.PathSeparator + MakeValidName(item);
+    }
+
+    return validPath;
   }
 
   /// <summary>
@@ -92,9 +117,9 @@ public partial class ConverterRhinoGh
         {
           userStringsBase[key] = userStrings[key];
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          notes.Add($"Could not attach user string: {e.Message}");
+          notes.Add($"Could not attach user string: {ex.Message}");
         }
       }
 
@@ -237,7 +262,6 @@ public partial class ConverterRhinoGh
   #endregion
 
   #region Layers
-
   public static Layer GetLayer(RhinoDoc doc, string path, out int index, bool MakeIfNull = false)
   {
     index = doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
@@ -255,7 +279,7 @@ public partial class ConverterRhinoGh
         currentLayer = GetLayer(doc, currentLayerPath, out index);
         if (currentLayer == null)
         {
-          currentLayer = MakeLayer(doc, layerNames[i], out index, parent);
+          currentLayer = MakeLayer(doc, layerNames[i], parent);
         }
 
         if (currentLayer == null)
@@ -270,23 +294,42 @@ public partial class ConverterRhinoGh
     return layer;
   }
 
-  private static Layer MakeLayer(RhinoDoc doc, string name, out int index, Layer parentLayer = null)
+  /// <summary>
+  /// Creates a layer from its name and parent
+  /// </summary>
+  /// <param name="doc"></param>
+  /// <param name="name"></param>
+  /// <param name="parentLayer"></param>
+  /// <returns>The new layer</returns>
+  /// <exception cref="ArgumentException">Layer name is invalid.</exception>
+  /// <exception cref="InvalidOperationException">Layer parent could not be set, or a layer with the same name already exists.</exception>
+  public static Layer MakeLayer(RhinoDoc doc, string name, Layer parentLayer = null)
   {
-    index = -1;
-    Layer newLayer = new() { Color = Color.White, Name = name };
+    if (!Layer.IsValidName(name))
+    {
+      throw new ArgumentException("Layer name is invalid.");
+    }
+
+    Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
     if (parentLayer != null)
     {
-      newLayer.ParentLayerId = parentLayer.Id;
+      try
+      {
+        newLayer.ParentLayerId = parentLayer.Id;
+      }
+      catch (Exception e)
+      {
+        throw new InvalidOperationException("Could not set layer parent id.", e);
+      }
     }
 
     int newIndex = doc.Layers.Add(newLayer);
-    if (newIndex < 0)
+    if (newIndex is -1)
     {
-      return null;
+      throw new InvalidOperationException("A layer with the same name already exists.");
     }
 
-    index = newIndex;
-    return doc.Layers.FindIndex(newIndex);
+    return newLayer;
   }
 
   #endregion

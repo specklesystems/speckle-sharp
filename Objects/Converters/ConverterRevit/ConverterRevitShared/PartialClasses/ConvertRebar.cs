@@ -70,7 +70,10 @@ public partial class ConverterRevit
     if (speckleRebar.startHook is RevitRebarHook speckleStartHook)
     {
       startHook = RebarHookToNative(speckleStartHook);
-      Enum.TryParse(speckleStartHook.orientation, out startHookOrientation);
+      if (Enum.TryParse(speckleStartHook.orientation, out RebarHookOrientation localStartHookOrientation))
+      {
+        startHookOrientation = localStartHookOrientation;
+      }
     }
 
     RebarHookType endHook = null;
@@ -78,12 +81,15 @@ public partial class ConverterRevit
     if (speckleRebar.endHook is RevitRebarHook speckleEndHook)
     {
       endHook = RebarHookToNative(speckleEndHook);
-      Enum.TryParse(speckleEndHook.orientation, out endHookOrientation);
+      if (Enum.TryParse(speckleEndHook.orientation, out RebarHookOrientation localEndHookOrientation))
+      {
+        endHookOrientation = localEndHookOrientation;
+      }
     }
 
     // get the shape curves
     List<DB.Curve> curves = barShape.curves.SelectMany(o => CurveToNative(o).Cast<DB.Curve>()).ToList();
-    if (curves is null || !curves.Any())
+    if (curves is null || curves.Count == 0)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not convert any shape curves");
       return appObj;
@@ -115,7 +121,7 @@ public partial class ConverterRevit
         true
       );
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       appObj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
       return appObj;

@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
-using Serilog.Context;
-using Serilog.Core;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -228,7 +226,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 })
                 .ToList();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
@@ -239,7 +237,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             {
               @base[key] = converted;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -261,7 +259,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
                 @base[key] = value;
               }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!ex.IsFatal())
             {
               SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
@@ -277,7 +275,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
 
       return @base;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

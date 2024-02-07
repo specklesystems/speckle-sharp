@@ -1,4 +1,6 @@
 #include "CreateBeam.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -181,10 +183,8 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 				Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
 
 				// The left overridden material name - in case of circle or profiled segment the left surface is the extrusion surface, but the import does not work properly in API
-				memo.beamSegments[idx].leftMaterial.overridden = false;
+				ResetAPIOverriddenAttribute (memo.beamSegments[idx].leftMaterial);
 				if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
-					memo.beamSegments[idx].leftMaterial.overridden = true;
-
 					GS::UniString attrName;
 					currentSegment.Get (Beam::BeamSegment::LeftMaterial, attrName);
 
@@ -196,18 +196,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						err = ACAPI_Attribute_Get (&attrib);
 
 						if (err == NoError) {
-							memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
-							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
+							SetAPIOverriddenAttribute (memo.beamSegments[idx].leftMaterial, attrib.header.index);
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (leftMaterial));
 						}
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (leftMaterial));
 
 				// The top overridden material name
-				memo.beamSegments[idx].topMaterial.overridden = false;
+				ResetAPIOverriddenAttribute (memo.beamSegments[idx].topMaterial);
 				if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
-					memo.beamSegments[idx].topMaterial.overridden = true;
-
 					GS::UniString attrName;
 					currentSegment.Get (Beam::BeamSegment::TopMaterial, attrName);
 
@@ -219,18 +217,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						err = ACAPI_Attribute_Get (&attrib);
 
 						if (err == NoError) {
-							memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
-							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
+							SetAPIOverriddenAttribute (memo.beamSegments[idx].topMaterial, attrib.header.index);
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (topMaterial));
 						}
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeBoolField (topMaterial));
 
 				// The right overridden material name
-				memo.beamSegments[idx].rightMaterial.overridden = false;
+				ResetAPIOverriddenAttribute (memo.beamSegments[idx].rightMaterial);
 				if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
-					memo.beamSegments[idx].rightMaterial.overridden = true;
-
 					GS::UniString attrName;
 					currentSegment.Get (Beam::BeamSegment::RightMaterial, attrName);
 
@@ -242,18 +238,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						err = ACAPI_Attribute_Get (&attrib);
 
 						if (err == NoError) {
-							memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
-							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
+							SetAPIOverriddenAttribute (memo.beamSegments[idx].rightMaterial, attrib.header.index);
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (rightMaterial));
 						}
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeBoolField (rightMaterial));
 
 				// The bottom overridden material name
-				memo.beamSegments[idx].bottomMaterial.overridden = false;
+				ResetAPIOverriddenAttribute (memo.beamSegments[idx].bottomMaterial);
 				if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
-					memo.beamSegments[idx].bottomMaterial.overridden = true;
-
 					GS::UniString attrName;
 					currentSegment.Get (Beam::BeamSegment::BottomMaterial, attrName);
 
@@ -265,18 +259,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						err = ACAPI_Attribute_Get (&attrib);
 
 						if (err == NoError) {
-							memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
-							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
+							SetAPIOverriddenAttribute (memo.beamSegments[idx].bottomMaterial, attrib.header.index);
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (bottomMaterial));
 						}
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeBoolField (bottomMaterial));
 
 				// The ends overridden material name
-				memo.beamSegments[idx].endsMaterial.overridden = false;
+				ResetAPIOverriddenAttribute (memo.beamSegments[idx].endsMaterial);
 				if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
-					memo.beamSegments[idx].endsMaterial.overridden = true;
-
 					GS::UniString attrName;
 					currentSegment.Get (Beam::BeamSegment::EndsMaterial, attrName);
 
@@ -288,12 +280,12 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						err = ACAPI_Attribute_Get (&attrib);
 
 						if (err == NoError) {
-							memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
-							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
+							SetAPIOverriddenAttribute (memo.beamSegments[idx].endsMaterial, attrib.header.index);
+							ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeIndexField (endsMaterial));
 						}
 					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, GetAPIOverriddenAttributeBoolField (endsMaterial));
 
 				// The overridden materials are chained
 				if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained)) {
@@ -450,21 +442,15 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		}
 	}
 
-	// Override cut fill pen
-	if (os.Contains (Beam::OverrideCutFillPenIndex)) {
-		element.beam.penOverride.overrideCutFillPen = true;
-		os.Get (Beam::OverrideCutFillPenIndex, element.beam.penOverride.cutFillPen);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (os.Contains (Beam::OverrideCutFillBackgroundPenIndex)) {
-		element.beam.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Beam::OverrideCutFillBackgroundPenIndex, element.beam.penOverride.cutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill and cut fill backgound pens
+	if (CommandHelpers::SetCutfillPens(
+		os, 
+		Beam::OverrideCutFillPenIndex,
+		Beam::OverrideCutFillBackgroundPenIndex,
+		element.beam,
+		beamMask)
+		!= NoError)
+		return Error;
 
 	// Floor Plan and Section - Outlines
 

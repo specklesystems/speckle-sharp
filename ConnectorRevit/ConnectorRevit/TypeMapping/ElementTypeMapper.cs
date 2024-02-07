@@ -18,7 +18,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Newtonsoft.Json;
 using DB = Autodesk.Revit.DB;
-using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace ConnectorRevit.TypeMapping;
 
@@ -40,7 +39,7 @@ internal sealed class ElementTypeMapper
   /// <param name="flattenedCommit"></param>
   /// <param name="storedObjects"></param>
   /// <param name="doc"></param>
-  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="SpeckleException"></exception>
   public ElementTypeMapper(
     ISpeckleConverter converter,
     IRevitDocumentAggregateCache revitDocumentAggregateCache,
@@ -53,7 +52,7 @@ internal sealed class ElementTypeMapper
 
     if (converter is not IRevitElementTypeRetriever typeRetriever)
     {
-      throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
+      throw new SpeckleException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
     {
@@ -62,7 +61,7 @@ internal sealed class ElementTypeMapper
 
     if (converter is not IAllRevitCategoriesExposer typeInfoExposer)
     {
-      throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
+      throw new SpeckleException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
     }
     else
     {
@@ -70,7 +69,7 @@ internal sealed class ElementTypeMapper
     }
 
     this.revitDocumentAggregateCache =
-      revitDocumentAggregateCache ?? throw new ArgumentException($"RevitDocumentAggregateCache cannot be null");
+      revitDocumentAggregateCache ?? throw new SpeckleException($"RevitDocumentAggregateCache cannot be null");
 
     var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
     foreach (var appObj in flattenedCommit)
@@ -218,8 +217,9 @@ internal sealed class ElementTypeMapper
       {
         StreamViewModel.HandleCommandException(ex, false, "ImportTypesCommand");
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        SpeckleLog.Logger.LogDefaultError(ex);
         var speckleEx = new SpeckleException(ex.Message, ex);
         StreamViewModel.HandleCommandException(speckleEx, false, "ImportTypesCommand");
       }
@@ -354,9 +354,9 @@ internal sealed class ElementTypeMapper
         previousMappingExists = true;
         return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        // couldn't deserialize so just return null
+        SpeckleLog.Logger.LogDefaultError(ex);
       }
     }
     previousMappingExists = false;

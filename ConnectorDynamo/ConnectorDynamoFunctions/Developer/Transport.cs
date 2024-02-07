@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Dynamo.Graph.Nodes;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -29,7 +28,7 @@ public static class Transport
 
     Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
 
-    return new DiskTransport.DiskTransport(basePath);
+    return new DiskTransport(basePath);
   }
 
   /// <summary>

@@ -79,10 +79,8 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   /// <param name="fractionOfRemainingTime">Progress in sub op between 0 and 1 maps to fraction of remaining time in main operation.</param>
   /// <param name="message">The message of the sub operation. Defaults to an empty string.</param>
-  internal void BeginSubOperation(double fractionOfRemainingTime, string message = "")
-  {
+  internal void BeginSubOperation(double fractionOfRemainingTime, string message = "") =>
     Invoke(new Action<double, string>(_progressBar.BeginSubOperation), fractionOfRemainingTime, message);
-  }
 
   /// <summary>
   /// Ends the current sub operation.
@@ -152,8 +150,5 @@ public class ConversionInvoker : Invoker
   /// </summary>
   /// <param name="navisworksObject">The object to convert. This can be a ModelItem, View or whichever conversions get added.</param>
   /// <returns>A Speckle Base object.</returns>
-  public Base Convert(object navisworksObject)
-  {
-    return (Base)Invoke(_convertToSpeckle, navisworksObject);
-  }
+  public Base Convert(object navisworksObject) => (Base)Invoke(_convertToSpeckle, navisworksObject);
 }

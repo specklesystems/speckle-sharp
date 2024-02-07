@@ -1,11 +1,7 @@
+#nullable disable
 using System;
 using GraphQL;
 using Speckle.Core.Api.SubscriptionModels;
-
-// // public partial class Log
-// // {
-
-// }
 
 namespace Speckle.Core.Api;
 
@@ -16,7 +12,7 @@ public partial class Client
   public delegate void BranchCreatedHandler(object sender, BranchInfo e);
 
   public event BranchCreatedHandler OnBranchCreated;
-  public IDisposable BranchCreatedSubscription;
+  public IDisposable BranchCreatedSubscription { get; private set; }
 
   /// <summary>
   /// Subscribe to events of branch created for a stream
@@ -42,7 +38,7 @@ public partial class Client
   public delegate void BranchUpdatedHandler(object sender, BranchInfo e);
 
   public event BranchUpdatedHandler OnBranchUpdated;
-  public IDisposable BranchUpdatedSubscription;
+  public IDisposable BranchUpdatedSubscription { get; private set; }
 
   /// <summary>
   /// Subscribe to events of branch updated for a stream
@@ -69,7 +65,7 @@ public partial class Client
   public delegate void BranchDeletedHandler(object sender, BranchInfo e);
 
   public event BranchDeletedHandler OnBranchDeleted;
-  public IDisposable BranchDeletedSubscription;
+  public IDisposable BranchDeletedSubscription { get; private set; }
 
   /// <summary>
   /// Subscribe to events of branch deleted for a stream

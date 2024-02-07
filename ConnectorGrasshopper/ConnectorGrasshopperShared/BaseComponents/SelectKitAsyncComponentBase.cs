@@ -54,7 +54,7 @@ public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
     {
       SetConverterFromKit(SelectedKitName);
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
       AddRuntimeMessage(
         GH_RuntimeMessageLevel.Error,
@@ -123,8 +123,9 @@ public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
 
       Menu_AppendSeparator(menu);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.Error(ex, "An error occurred while fetching Kits");
       Menu_AppendItem(menu, "An error occurred while fetching Kits", null, false);
     }
   }

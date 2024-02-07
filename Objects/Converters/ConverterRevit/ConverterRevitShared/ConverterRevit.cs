@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -9,19 +8,16 @@ using Objects.GIS;
 using Objects.Organization;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
 using DB = Autodesk.Revit.DB;
-using GE = Objects.Geometry;
 using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit;
@@ -410,14 +406,9 @@ public partial class ConverterRevit : ISpeckleConverter
       && !(returnObject is Collection)
     )
     {
-      try
+      if (GetElementRenderMaterial(@object as DB.Element) is RenderMaterial material)
       {
-        var material = GetElementRenderMaterial(@object as DB.Element);
         returnObject["renderMaterial"] = material;
-      }
-      catch (Exception e)
-      {
-        // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
       }
     }
 
@@ -569,7 +560,7 @@ public partial class ConverterRevit : ISpeckleConverter
         }
       // non revit built elems
       case BE.Alignment o:
-        if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
+        if (o.curves is null && o.baseCurve is not null) // This is for backwards compatibility for the deprecated basecurve property
         {
           return ModelCurveToNative(o.baseCurve);
         }

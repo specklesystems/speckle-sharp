@@ -1,8 +1,5 @@
-#if GRASSHOPPER
-#endif
 using Objects.Structural.Geometry;
 using RH = Rhino.Geometry;
-using RV = Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.RhinoGh;
 

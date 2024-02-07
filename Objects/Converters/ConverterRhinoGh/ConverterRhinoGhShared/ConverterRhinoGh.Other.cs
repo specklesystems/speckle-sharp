@@ -7,7 +7,6 @@ using Objects.BuiltElements.Revit;
 using Objects.Other;
 using Rhino.Display;
 using Rhino.Geometry;
-using Rhino.Render;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
@@ -19,6 +18,10 @@ using RenderMaterial = Rhino.Render.RenderMaterial;
 using RH = Rhino.DocObjects;
 using Transform = Rhino.Geometry.Transform;
 using Utilities = Speckle.Core.Models.Utilities;
+
+#if RHINO7_OR_GREATER
+using Rhino.Render;
+#endif
 
 namespace Objects.Converter.RhinoGh;
 
@@ -34,7 +37,7 @@ public partial class ConverterRhinoGh
     var colorSource = RH.ObjectColorSource.ColorFromObject;
     if (display["colorSource"] != null)
     {
-      Enum.TryParse(display["colorSource"] as string, out colorSource);
+      _ = Enum.TryParse(display["colorSource"] as string, out colorSource);
     }
 
     attributes.ColorSource = colorSource;
@@ -45,7 +48,7 @@ public partial class ConverterRhinoGh
     var lineSource = RH.ObjectLinetypeSource.LinetypeFromObject;
     if (display["lineSource"] != null)
     {
-      Enum.TryParse(display["lineSource"] as string, out lineSource);
+      _ = Enum.TryParse(display["lineSource"] as string, out lineSource);
     }
 
     attributes.LinetypeSource = lineSource;
@@ -57,7 +60,7 @@ public partial class ConverterRhinoGh
     var weightSource = RH.ObjectPlotWeightSource.PlotWeightFromObject;
     if (display["weightSource"] != null)
     {
-      Enum.TryParse(display["weightSource"] as string, out weightSource);
+      _ = Enum.TryParse(display["weightSource"] as string, out weightSource);
     }
 
     attributes.PlotWeightSource = weightSource;
@@ -272,10 +275,20 @@ public partial class ConverterRhinoGh
   public Hatch[] HatchToNative(Other.Hatch hatch)
   {
     var curves = new List<Curve>();
-    curves =
-      hatch.loops != null
-        ? hatch.loops.Select(o => CurveToNative(o.Curve)).ToList()
-        : hatch.curves.Select(o => CurveToNative(o)).ToList();
+    if (hatch.loops != null)
+    {
+      curves = hatch.loops.Select(o => CurveToNative(o.Curve)).ToList();
+    }
+    else if (hatch.curves is not null) // this could've been an old hatch, using the deprecated loops property
+    {
+      curves = hatch.curves.Select(o => CurveToNative(o))?.ToList();
+    }
+
+    if (curves.Count == 0)
+    {
+      throw new ArgumentException("Hatch did not contain any loops or curves.");
+    }
+
     var pattern = Doc.HatchPatterns.FindName(hatch.pattern);
     int index;
     if (pattern == null)

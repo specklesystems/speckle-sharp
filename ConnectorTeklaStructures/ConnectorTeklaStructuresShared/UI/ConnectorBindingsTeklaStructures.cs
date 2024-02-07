@@ -4,7 +4,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using Speckle.Core.Models;
 using Speckle.ConnectorTeklaStructures.Util;
-using System.Timers;
 using Tekla.Structures.Model;
 using Speckle.Core.Kits;
 

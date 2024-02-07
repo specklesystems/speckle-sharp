@@ -3,17 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Windows.Forms;
-using System.Xml.Linq;
 using Autodesk.DesignScript.Runtime;
-using Sentry;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using static System.Resources.ResXFileRef;
 
 namespace Speckle.ConnectorDynamo.Functions;
 
@@ -47,7 +43,10 @@ public static class Functions
     {
       totalCount = data?.GetTotalChildrenCount() ?? 0;
     }
-    catch (Exception e) { }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Warning(ex, "Failed to get total children count.");
+    }
 
     if (totalCount == 0)
     {
@@ -108,7 +107,7 @@ public static class Functions
         commitWrappers.Add(wrapper.ToString());
         Analytics.TrackEvent(client.Account, Analytics.Events.Send);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         Utils.HandleApiExeption(ex);
         return null;
@@ -163,9 +162,9 @@ public static class Functions
 
         commit = branch.commits.items[0];
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        throw new SpeckleException("No branch found with name " + stream.BranchName);
+        throw new SpeckleException("No branch found with name " + stream.BranchName, ex);
       }
     }
     else if (stream.Type == StreamWrapperType.Commit)
@@ -174,7 +173,7 @@ public static class Functions
       {
         commit = client.CommitGet(stream.StreamId, stream.CommitId!, cancellationToken).Result;
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         Utils.HandleApiExeption(ex);
         return null;
@@ -213,6 +212,7 @@ public static class Functions
     {
       throw new SpeckleException("Receive operation returned nothing");
     }
+
     try
     {
       client
@@ -227,9 +227,9 @@ public static class Functions
         )
         .Wait();
     }
-    catch
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      // Do nothing!
+      SpeckleLog.Logger.Error(ex, "Failed to register commit receipt");
     }
 
     if (cancellationToken.IsCancellationRequested)
@@ -247,7 +247,7 @@ public static class Functions
       Analytics.Events.Receive,
       new Dictionary<string, object>()
       {
-        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
+        { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
         { "sourceHostAppVersion", commit.sourceApplication },
         { "isMultiplayer", commit.authorId != client.Account.userInfo.id }
       }

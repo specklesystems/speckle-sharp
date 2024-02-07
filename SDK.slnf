@@ -2,18 +2,19 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "ConnectorCore\\BatchUploader.OperationDriver\\BatchUploader.OperationDriver.csproj",
-      "ConnectorCore\\BatchUploader.Sdk\\BatchUploader.Sdk.csproj",
       "Automate\\Speckle.Automate.Sdk\\Speckle.Automate.Sdk.csproj",
       "Automate\\Tests\\Speckle.Automate.Sdk.Tests.Integration\\Speckle.Automate.Sdk.Tests.Integration.csproj",
+      "ConnectorCore\\BatchUploader.OperationDriver\\BatchUploader.OperationDriver.csproj",
+      "ConnectorCore\\BatchUploader.Sdk\\BatchUploader.Sdk.csproj",
       "Core\\Core\\Core.csproj",
-      "Core\\IntegrationTests\\TestsIntegration.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Performance\\Speckle.Core.Tests.Performance.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj",
     ]
   }
 }

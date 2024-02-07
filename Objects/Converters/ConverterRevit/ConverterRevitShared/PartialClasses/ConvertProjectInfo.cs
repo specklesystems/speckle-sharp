@@ -1,10 +1,6 @@
-using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using ProjectInfo = Objects.BuiltElements.Revit.ProjectInfo;
 
@@ -28,6 +24,43 @@ public partial class ConverterRevit
       status = revitInfo.Status
     };
     Report.Log($"Converted ProjectInfo");
+
+    Base parameterParent = new();
+    GetAllRevitParamsAndIds(
+      parameterParent,
+      revitInfo,
+      new List<string>
+      {
+        // parameters included in the strongly typed properties
+        "PROJECT_ADDRESS",
+        "PROJECT_AUTHOR",
+        "PROJECT_BUILDING_NAME",
+        "CLIENT_NAME",
+        "PROJECT_ISSUE_DATE",
+        "PROJECT_NUMBER",
+        "PROJECT_ORGANIZATION_DESCRIPTION",
+        "PROJECT_ORGANIZATION_NAME",
+        "PROJECT_NUMBER",
+        "PROJECT_STATUS",
+        // parameters to be excluded entirely
+        "ELEM_CATEGORY_PARAM_MT",
+        "ELEM_CATEGORY_PARAM",
+        "DESIGN_OPTION_ID",
+      }
+    );
+
+    if (parameterParent["parameters"] is Base parameters)
+    {
+      Dictionary<string, object> parameterDict = parameters.GetMembers(DynamicBaseMemberType.Dynamic);
+      foreach (KeyValuePair<string, object> kvp in parameterDict)
+      {
+        if (kvp.Value is Parameter param && param.value is not null)
+        {
+          speckleInfo[param.name] = param.value;
+        }
+      }
+    }
+
     return speckleInfo;
   }
 }

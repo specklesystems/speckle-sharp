@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
 
 namespace SpeckleRhino;
 

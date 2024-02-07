@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using static Speckle.ConnectorAutocadCivil.Utils;
@@ -32,7 +32,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       throw new InvalidOperationException("No Document is open");
     }
 
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(VersionedAppName);
 
     var stream = await state.Client.StreamGet(state.StreamId);
 
@@ -40,7 +40,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     state.LastCommit = commit;
 
     Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-    await ConnectorHelpers.TryCommitReceived(state, commit, Utils.VersionedAppName, progress.CancellationToken);
+    await ConnectorHelpers.TryCommitReceived(state, commit, VersionedAppName, progress.CancellationToken);
 
     // invoke conversions on the main thread via control
     try
@@ -125,15 +125,12 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         }
 
         // delete existing commit layers
-        try
-        {
-          DeleteBlocksWithPrefix(commitPrefix, tr);
-        }
-        catch
+        bool success = DeleteBlocksWithPrefix(commitPrefix, tr, out List<string> failedBlocks);
+        if (!success)
         {
           converter.Report.LogOperationError(
             new Exception(
-              $"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."
+              $"Failed to remove {failedBlocks.Count} existing layers or blocks starting with {commitPrefix} before importing new geometry."
             )
           );
         }
@@ -172,16 +169,18 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           string layer = null;
 
           // try to see if there's a collection object first
-          var collection = commitObjs
-            .Where(o => o.Container == container && o.Descriptor.Contains("Collection"))
-            .FirstOrDefault();
+          var collection = commitObjs.FirstOrDefault(
+            o => o.Container == container && o.Descriptor.Contains("Collection")
+          );
           if (collection != null)
           {
             var storedCollection = StoredObjects[collection.OriginalId];
             storedCollection["path"] = path; // needed by converter
             converter.Report.Log(collection); // Log object so converter can access
-            var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
-            if (convertedCollection != null && convertedCollection.Count > 0)
+            if (
+              converter.ConvertToNative(storedCollection) is List<object> convertedCollection
+              && convertedCollection.Count > 0
+            )
             {
               layer = (convertedCollection.First() as LayerTableRecord)?.Name;
               commitObjs[commitObjs.IndexOf(collection)] = converter.Report.ReportObjects[collection.OriginalId];
@@ -190,7 +189,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           // otherwise create the layer here (old commits before collections implementations, or from apps not supporting collections)
           else
           {
-            if (GetOrMakeLayer(path, tr, out string cleanName))
+            if (Doc.GetOrMakeLayer(path, tr, out string cleanName))
             {
               layer = cleanName;
             }
@@ -210,7 +209,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
 
         // conversion
-        foreach (var commitObj in commitObjs)
+        foreach (ApplicationObject commitObj in commitObjs)
         {
           // handle user cancellation
           if (progress.CancellationToken.IsCancellationRequested)
@@ -221,39 +220,42 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           // convert base (or base fallback values) and store in appobj converted prop
           if (commitObj.Convertible)
           {
-            converter.Report.Log(commitObj); // Log object so converter can access
-            try
+            if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base obj))
             {
-              commitObj.Converted = ConvertObject(commitObj, converter);
+              converter.Report.Log(commitObj); // Log object so converter can access
+              commitObj.Converted = ConvertObject(obj, converter);
             }
-            catch (Exception e)
+            else
             {
-              commitObj.Log.Add($"Failed conversion: {e.Message}");
+              commitObj.Update(status: ApplicationObject.State.Failed, logItem: "Object not found in StoredObjects");
             }
           }
           else
           {
-            foreach (var fallback in commitObj.Fallback)
+            foreach (ApplicationObject fallback in commitObj.Fallback)
             {
-              try
+              if (StoredObjects.TryGetValue(fallback.OriginalId, out Base obj))
               {
-                fallback.Converted = ConvertObject(fallback, converter);
+                converter.Report.Log(fallback); // Log object so converter can access
+                fallback.Converted = ConvertObject(obj, converter);
+                commitObj.Log.AddRange(fallback.Log);
               }
-              catch (Exception e)
+              else
               {
-                commitObj.Log.Add($"Fallback {fallback.applicationId} failed conversion: {e.Message}");
+                commitObj.Log.Add(
+                  $"Fallback object {fallback.OriginalId} not found in StoredObjects and was not converted."
+                );
               }
-              commitObj.Log.AddRange(fallback.Log);
             }
           }
 
           // if the object wasnt converted, log fallback status
-          if (commitObj.Converted == null || commitObj.Converted.Count == 0)
+          if (commitObj.Converted.Count == 0)
           {
-            var convertedFallback = commitObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
-            if (convertedFallback != null && convertedFallback.Count() > 0)
+            var convertedFallbackCount = commitObj.Fallback.Where(o => o.Converted.Count != 0).Count();
+            if (convertedFallbackCount > 0)
             {
-              commitObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+              commitObj.Update(logItem: $"Creating with {convertedFallbackCount} fallback values");
             }
             else
             {
@@ -448,9 +450,14 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     return objectsToConvert;
   }
 
-  private List<object> ConvertObject(ApplicationObject appObj, ISpeckleConverter converter)
+  /// <summary>
+  /// Converts a Base into its Speckle equivalents
+  /// </summary>
+  /// <param name="obj"></param>
+  /// <param name="converter"></param>
+  /// <returns>A list of converted objects, or an empty list if no objects were converted.</returns>
+  private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
   {
-    var obj = StoredObjects[appObj.OriginalId];
     var convertedList = new List<object>();
 
     var converted = converter.ConvertToNative(obj);
@@ -491,57 +498,50 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     var obj = StoredObjects[appObj.OriginalId];
     int bakedCount = 0;
     bool remove =
-      appObj.Status == ApplicationObject.State.Created
-      || appObj.Status == ApplicationObject.State.Updated
-      || appObj.Status == ApplicationObject.State.Failed
-        ? false
-        : true;
+      appObj.Status
+        is not ApplicationObject.State.Created
+          and not ApplicationObject.State.Updated
+          and not ApplicationObject.State.Failed;
 
     foreach (var convertedItem in appObj.Converted)
     {
       switch (convertedItem)
       {
         case Entity o:
-
-          if (o == null)
-          {
-            continue;
-          }
-
           var res = o.Append(layer);
           if (res.IsValid)
           {
             // handle display - fallback to rendermaterial if no displaystyle exists
-            Base display = obj[@"displayStyle"] as Base;
-            if (display == null)
+            if (obj[@"displayStyle"] is not Base display)
             {
               display = obj[@"renderMaterial"] as Base;
             }
 
             if (display != null)
             {
-              Utils.SetStyle(display, o, LineTypeDictionary);
+              SetStyle(display, o, LineTypeDictionary);
             }
 
             // add property sets if this is Civil3D
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
+            if (obj["propertySets"] is IReadOnlyList<object> list)
+            {
+              List<Dictionary<string, object>> propertySets = new();
+              foreach (var listObj in list)
+              {
+                propertySets.Add(listObj as Dictionary<string, object>);
+              }
+
               try
               {
-                if (obj["propertySets"] is IReadOnlyList<object> list)
-                {
-                  var propertySets = new List<Dictionary<string, object>>();
-                  foreach (var listObj in list)
-                  {
-                    propertySets.Add(listObj as Dictionary<string, object>);
-                  }
-
-                  o.SetPropertySets(Doc, propertySets);
-                }
+                o.SetPropertySets(Doc, propertySets);
               }
-              catch (Exception e)
+              catch (Exception e) when (!e.IsFatal())
               {
+                SpeckleLog.Logger.Error(e, "Could not set property sets: {exceptionMessage}");
                 appObj.Log.Add($"Could not attach property sets: {e.Message}");
               }
+            }
 #endif
 
             // set application id
@@ -603,24 +603,11 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       {
         foreach (var objId in toRemove)
         {
-          try
+          DBObject objToRemove = tr.GetObject(objId, OpenMode.ForWrite);
+
+          if (!objToRemove.IsErased)
           {
-            DBObject objToRemove = tr.GetObject(objId, OpenMode.ForWrite);
             objToRemove.Erase();
-          }
-          catch (Exception e)
-          {
-            if (!e.Message.Contains("eWasErased")) // this couldve been previously received and deleted
-            {
-              if (parent != null)
-              {
-                parent.Log.Add(e.Message);
-              }
-              else
-              {
-                appObj.Log.Add(e.Message);
-              }
-            }
           }
         }
         appObj.Status = toRemove.Count > 0 ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -628,48 +615,36 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     }
   }
 
-  private void DeleteBlocksWithPrefix(string prefix, Transaction tr)
+  private bool DeleteBlocksWithPrefix(string prefix, Transaction tr, out List<string> failedBlocks)
   {
-    BlockTable blockTable = tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-    foreach (ObjectId blockId in blockTable)
+    failedBlocks = new List<string>();
+    bool success = true;
+    if (tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) is BlockTable blockTable)
     {
-      BlockTableRecord block = (BlockTableRecord)tr.GetObject(blockId, OpenMode.ForRead);
-      if (block.Name.StartsWith(prefix))
+      foreach (ObjectId blockId in blockTable)
       {
-        block.UpgradeOpen();
-        block.Erase();
+        if (tr.GetObject(blockId, OpenMode.ForRead) is BlockTableRecord block)
+        {
+          if (block.Name.StartsWith(prefix) && !block.IsErased)
+          {
+            try
+            {
+              block.UpgradeOpen();
+              block.Erase();
+            }
+            catch (Exception e) when (!e.IsFatal())
+            {
+              SpeckleLog.Logger.Error(
+                e,
+                $"Could not delete existing block of name {block.Name} before creating new blocks with prefix {prefix}"
+              );
+              failedBlocks.Add(block.Name);
+              success = false;
+            }
+          }
+        }
       }
     }
-  }
-
-  private bool GetOrMakeLayer(string layerName, Transaction tr, out string cleanName)
-  {
-    cleanName = Utils.RemoveInvalidChars(layerName);
-    try
-    {
-      LayerTable layerTable = tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-      if (layerTable.Has(cleanName))
-      {
-        return true;
-      }
-      else
-      {
-        layerTable.UpgradeOpen();
-        var _layer = new LayerTableRecord();
-
-        // Assign the layer properties
-        _layer.Color = Autodesk.AutoCAD.Colors.Color.FromColorIndex(ColorMethod.ByColor, 7); // white
-        _layer.Name = cleanName;
-
-        // Append the new layer to the layer table and the transaction
-        layerTable.Add(_layer);
-        tr.AddNewlyCreatedDBObject(_layer, true);
-      }
-    }
-    catch
-    {
-      return false;
-    }
-    return true;
+    return success;
   }
 }

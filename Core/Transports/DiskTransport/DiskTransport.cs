@@ -6,10 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
-using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
 
-namespace DiskTransport;
+namespace Speckle.Core.Transports;
 
 /// <summary>
 /// Writes speckle objects to disk.
@@ -18,10 +16,7 @@ public class DiskTransport : ICloneable, ITransport
 {
   public DiskTransport(string? basePath = null)
   {
-    if (basePath == null)
-    {
-      basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
-    }
+    basePath ??= Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
 
     RootPath = Path.Combine(basePath);
 
@@ -93,7 +88,15 @@ public class DiskTransport : ICloneable, ITransport
       return;
     }
 
-    File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+    try
+    {
+      File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+    }
+    catch (Exception ex)
+    {
+      throw new TransportException(this, $"Failed to write object {id} to disk", ex);
+    }
+
     SavedObjectCount++;
     OnProgressAction?.Invoke(TransportName, SavedObjectCount);
     stopwatch.Stop();
@@ -117,52 +120,28 @@ public class DiskTransport : ICloneable, ITransport
     SaveObject(id, serializedObject);
   }
 
-  public async Task WriteComplete() { }
+  public Task WriteComplete()
+  {
+    return Task.CompletedTask;
+  }
 
-  public async Task<string> CopyObjectAndChildren(
+  public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
     Action<int>? onTotalChildrenCountKnown = null
   )
   {
-    CancellationToken.ThrowIfCancellationRequested();
-
-    var parent = GetObject(id);
-    if (parent is null)
-    {
-      throw new InvalidOperationException($"Requested id {id} was not found within this transport {TransportName}");
-    }
-
-    targetTransport.SaveObject(id, parent);
-
-    var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
-
-    if (partial?.__closure is null || partial.__closure.Count == 0)
-    {
-      return parent;
-    }
-
-    int i = 0;
-    foreach (var kvp in partial.__closure)
-    {
-      CancellationToken.ThrowIfCancellationRequested();
-
-      var child = GetObject(kvp.Key);
-      if (child is null)
-      {
-        throw new InvalidOperationException(
-          $"Closure id {kvp.Key} was not found within this transport {TransportName}"
-        );
-      }
-
-      targetTransport.SaveObject(kvp.Key, child);
-      OnProgressAction?.Invoke($"{TransportName}", i++);
-    }
-
-    return parent;
+    string res = TransportHelpers.CopyObjectAndChildrenSync(
+      id,
+      this,
+      targetTransport,
+      onTotalChildrenCountKnown,
+      CancellationToken
+    );
+    return Task.FromResult(res);
   }
 
-  public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
+  public Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
     Dictionary<string, bool> ret = new();
     foreach (string objectId in objectIds)
@@ -170,16 +149,11 @@ public class DiskTransport : ICloneable, ITransport
       var filePath = Path.Combine(RootPath, objectId);
       ret[objectId] = File.Exists(filePath);
     }
-    return ret;
+    return Task.FromResult(ret);
   }
 
   public override string ToString()
   {
     return $"Disk Transport @{RootPath}";
-  }
-
-  private sealed class Placeholder
-  {
-    public Dictionary<string, int> __closure { get; set; } = new();
   }
 }

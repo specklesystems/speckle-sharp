@@ -1,4 +1,3 @@
-# nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,18 +23,14 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public partial class Client : IDisposable
+public sealed partial class Client : IDisposable
 {
+  [Obsolete]
   internal Client() { }
 
   public Client(Account account)
   {
-    if (account == null)
-    {
-      throw new SpeckleException("Provided account is null.");
-    }
-
-    Account = account;
+    Account = account ?? throw new SpeckleException("Provided account is null.");
 
     HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
     Http.AddAuthHeader(HttpClient, account.token);
@@ -56,7 +51,6 @@ public partial class Client : IDisposable
         {
           return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
         },
-        OnWebsocketConnected = OnWebSocketConnect
       },
       new NewtonsoftJsonSerializer(),
       HttpClient
@@ -106,12 +100,7 @@ public partial class Client : IDisposable
       CommentActivitySubscription?.Dispose();
       GQLClient?.Dispose();
     }
-    catch { }
-  }
-
-  public Task OnWebSocketConnect(GraphQLHttpClient client)
-  {
-    return Task.CompletedTask;
+    catch (Exception ex) when (!ex.IsFatal()) { }
   }
 
   internal async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)
@@ -132,7 +121,7 @@ public partial class Client : IDisposable
         delay,
         (ex, timeout, context) =>
         {
-          var graphqlEx = ex as SpeckleGraphQLException<T>;
+          var graphqlEx = (SpeckleGraphQLException<T>)ex;
           SpeckleLog.Logger
             .ForContext("graphqlExtensions", graphqlEx.Extensions)
             .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
@@ -149,9 +138,12 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
+  /// <exception cref="SpeckleGraphQLForbiddenException{T}">"FORBIDDEN" on "UNAUTHORIZED" response from server</exception>
+  /// <exception cref="SpeckleGraphQLException{T}">All other request errors</exception>
+  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested a cancel</exception>
   public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
-    using IDisposable context0 = LogContext.Push(_createEnrichers<T>(request));
+    using IDisposable context0 = LogContext.Push(CreateEnrichers<T>(request));
 
     SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
     var timer = new Stopwatch();
@@ -199,7 +191,7 @@ public partial class Client : IDisposable
     }
     // we log and wrap anything that is not a graphql exception.
     // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(
         ex,
@@ -230,7 +222,7 @@ public partial class Client : IDisposable
     // The errors reflect the Apollo server v2 API, which is deprecated. It is bound to change,
     // once we migrate to a newer version.
     var errors = response.Errors;
-    if (errors != null && errors.Any())
+    if (errors != null && errors.Length != 0)
     {
       var errorMessages = errors.Select(e => e.Message);
       if (
@@ -250,8 +242,7 @@ public partial class Client : IDisposable
       if (
         errors.Any(
           e =>
-            e.Extensions != null
-            && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
+            e.Extensions != null && e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
         )
       )
       {
@@ -273,7 +264,7 @@ public partial class Client : IDisposable
     }
   }
 
-  private Dictionary<string, object?> _convertExpandoToDict(ExpandoObject expando)
+  private Dictionary<string, object?> ConvertExpandoToDict(ExpandoObject expando)
   {
     var variables = new Dictionary<string, object?>();
     foreach (KeyValuePair<string, object> kvp in expando)
@@ -281,7 +272,7 @@ public partial class Client : IDisposable
       object value;
       if (kvp.Value is ExpandoObject ex)
       {
-        value = _convertExpandoToDict(ex);
+        value = ConvertExpandoToDict(ex);
       }
       else
       {
@@ -293,12 +284,12 @@ public partial class Client : IDisposable
     return variables;
   }
 
-  private ILogEventEnricher[] _createEnrichers<T>(GraphQLRequest request)
+  private ILogEventEnricher[] CreateEnrichers<T>(GraphQLRequest request)
   {
     // i know this is double  (de)serializing, but we need a recursive convert to
     // dict<str, object> here
     var expando = JsonConvert.DeserializeObject<ExpandoObject>(JsonConvert.SerializeObject(request.Variables));
-    var variables = request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
+    var variables = request.Variables != null && expando != null ? ConvertExpandoToDict(expando) : null;
     return new ILogEventEnricher[]
     {
       new PropertyEnricher("serverUrl", ServerUrl),
@@ -310,7 +301,7 @@ public partial class Client : IDisposable
 
   internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
   {
-    using (LogContext.Push(_createEnrichers<T>(request)))
+    using (LogContext.Push(CreateEnrichers<T>(request)))
     {
       try
       {
@@ -374,7 +365,7 @@ public partial class Client : IDisposable
           }
         );
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.Warning(
           ex,

@@ -3,6 +3,7 @@ using Grasshopper.Kernel.Types;
 #endif
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using Objects.Geometry;
@@ -437,7 +438,7 @@ public partial class ConverterRhinoGh
         //let the converter pick the best type of curve
         myPolyc.Append((RH.Curve)ConvertToNative((Base)segment));
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         notes.Add($"Could not append curve {segment.GetType()} to PolyCurve");
       }
@@ -683,7 +684,7 @@ public partial class ConverterRhinoGh
     return speckleMesh;
   }
 
-#if RHINO7
+#if RHINO7_OR_GREATER
   public Mesh MeshToSpeckle(RH.SubD mesh, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -769,7 +770,7 @@ public partial class ConverterRhinoGh
     }
     m.Faces.CullDegenerateFaces();
 
-#if RHINO7
+#if RHINO7_OR_GREATER
     // get receive mesh setting
     var meshSetting = Settings.ContainsKey("receive-mesh")
       ? Settings["receive-mesh"]
@@ -986,7 +987,7 @@ public partial class ConverterRhinoGh
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
       return joinedMesh;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return null;
     }
@@ -1076,14 +1077,16 @@ public partial class ConverterRhinoGh
 
       return newBrep;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      notes.Add(e.ToFormattedString());
+      notes.Add(ex.ToFormattedString());
       return null;
     }
   }
 
   // TODO: We're no longer creating new extrusions - they are converted as brep. This is here just for backwards compatibility.
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Obsolete")]
+  [Obsolete("Unused")]
   public RH.Extrusion ExtrusionToNative(Extrusion extrusion)
   {
     RH.Curve outerProfile = CurveToNative((Curve)extrusion.profile);

@@ -19,8 +19,8 @@
       "ConnectorRevit\\RevitSharedResources2024\\RevitSharedResources2024.csproj",
       "ConnectorRevit\\RevitSharedResources\\RevitSharedResources.shproj",
       "Core\\Core\\Core.csproj",
-      "Core\\IntegrationTests\\TestsIntegration.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
@@ -38,7 +38,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTestsShared\\ConverterRevitTestsShared.shproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\TestGenerator\\TestGenerator.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

@@ -2,6 +2,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.Windows;
 using Speckle.ConnectorAutocadCivil.UI;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,17 +29,22 @@ public class App : IExtensionApplication
   public RibbonControl ribbon;
 
   #region Initializing and termination
+
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Is top level plugin catch"
+  )]
   public void Initialize()
   {
+    //Advance Steel addon is initialized after ribbon creation
+    bool advanceSteel = false;
+#if ADVANCESTEEL
+    advanceSteel = true;
+#endif
+    ribbon = ComponentManager.Ribbon;
     try
     {
-      //Advance Steel addon is initialized after ribbon creation
-      bool advanceSteel = false;
-#if ADVANCESTEEL
-      advanceSteel = true;
-#endif
-
-      ribbon = ComponentManager.Ribbon;
       if (ribbon != null && !advanceSteel) //the assembly was loaded using netload
       {
         Create();
@@ -63,10 +69,15 @@ public class App : IExtensionApplication
       bindings.RegisterAppEvents();
       SpeckleAutocadCommand.Bindings = bindings;
     }
-    catch (System.Exception e)
+    catch (System.Exception ex)
     {
+      SpeckleLog.Logger.Fatal(
+        ex,
+        "Add-in initialize context (true = application, false = doc): {isApplicationContext}",
+        Application.DocumentManager.IsApplicationContext
+      );
       Forms.MessageBox.Show(
-        $"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}"
+        $"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {ex}"
       );
     }
   }
@@ -133,14 +144,17 @@ public class App : IExtensionApplication
     RibbonButton oneClickSendButton = CreateButton("Send", "SpeckleSend", panel, null, oneClickTip, "send");
 
     // help and resources buttons
-    RibbonSplitButton helpButton = new();
-    helpButton.Text = "Help & Resources";
-    helpButton.Image = LoadPngImgSource("help16.png");
-    helpButton.LargeImage = LoadPngImgSource("help32.png");
-    helpButton.ShowImage = true;
-    helpButton.ShowText = true;
-    helpButton.Size = RibbonItemSize.Large;
-    helpButton.Orientation = Orientation.Vertical;
+    RibbonSplitButton helpButton =
+      new()
+      {
+        Text = "Help & Resources",
+        Image = LoadPngImgSource("help16.png"),
+        LargeImage = LoadPngImgSource("help32.png"),
+        ShowImage = true,
+        ShowText = true,
+        Size = RibbonItemSize.Large,
+        Orientation = Orientation.Vertical
+      };
     panel.Items.Add(helpButton);
 
     RibbonToolTip communityTip = CreateToolTip(
@@ -162,14 +176,12 @@ public class App : IExtensionApplication
   private RibbonTab FindOrMakeTab(string name)
   {
     // check to see if tab exists
-    RibbonTab tab = ribbon.Tabs.Where(o => o.Title.Equals(name)).FirstOrDefault();
+    RibbonTab tab = ribbon.Tabs.FirstOrDefault(o => o.Title.Equals(name));
 
     // if not, create a new one
     if (tab == null)
     {
-      tab = new RibbonTab();
-      tab.Title = name;
-      tab.Id = name;
+      tab = new RibbonTab { Title = name, Id = name };
       ribbon.Tabs.Add(tab);
     }
 
@@ -189,12 +201,14 @@ public class App : IExtensionApplication
 
   private RibbonToolTip CreateToolTip(string title, string content)
   {
-    RibbonToolTip toolTip = new();
-
-    //toolTip.Command = "";
-    toolTip.Title = title;
-    toolTip.Content = content;
-    toolTip.IsHelpEnabled = true; // Without this "Press F1 for help" does not appear in the tooltip
+    RibbonToolTip toolTip =
+      new()
+      {
+        //toolTip.Command = "";
+        Title = title,
+        Content = content,
+        IsHelpEnabled = true // Without this "Press F1 for help" does not appear in the tooltip
+      };
 
     return toolTip;
   }
@@ -208,18 +222,19 @@ public class App : IExtensionApplication
     string imageName = ""
   )
   {
-    var button = new RibbonButton();
-
-    // ribbon panel source info assignment
-    button.Text = name;
-    button.Id = name;
-    button.ShowImage = true;
-    button.ShowText = true;
-    button.ToolTip = tooltip;
-    button.HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html");
-    button.Size = RibbonItemSize.Large;
-    button.Image = LoadPngImgSource(imageName + "16.png");
-    button.LargeImage = LoadPngImgSource(imageName + "32.png");
+    var button = new RibbonButton
+    {
+      // ribbon panel source info assignment
+      Text = name,
+      Id = name,
+      ShowImage = true,
+      ShowText = true,
+      ToolTip = tooltip,
+      HelpSource = new System.Uri("https://speckle.guide/user/autocadcivil.html"),
+      Size = RibbonItemSize.Large,
+      Image = LoadPngImgSource(imageName + "16.png"),
+      LargeImage = LoadPngImgSource(imageName + "32.png")
+    };
 
     // add ribbon button pannel to the ribbon panel source
     if (sourcePanel != null)
@@ -239,21 +254,55 @@ public class App : IExtensionApplication
     return button;
   }
 
+  /// <summary>
+  /// Retrieve the png image source
+  /// </summary>
+  /// <param name="sourceName"></param>
+  /// <returns></returns>
   private ImageSource LoadPngImgSource(string sourceName)
   {
-    try
+    if (!string.IsNullOrEmpty(sourceName) && sourceName.ToLower().EndsWith(".png"))
     {
-      string resource = this.GetType()
-        .Assembly.GetManifestResourceNames()
+      Assembly assembly = Assembly.GetExecutingAssembly();
+      string resource = GetType().Assembly
+        .GetManifestResourceNames()
         .Where(o => o.EndsWith(sourceName))
         .FirstOrDefault();
-      Assembly assembly = Assembly.GetExecutingAssembly();
-      Stream stream = assembly.GetManifestResourceStream(resource);
-      PngBitmapDecoder decoder = new(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
-      ImageSource source = decoder.Frames[0];
-      return source;
+
+      if (string.IsNullOrEmpty(resource))
+      {
+        return null;
+      }
+
+      Stream stream = null;
+      try
+      {
+        stream = assembly.GetManifestResourceStream(resource);
+      }
+      catch (FileLoadException flEx)
+      {
+        SpeckleLog.Logger.Error(flEx, "Could not load app image source: {exceptionMessage}");
+      }
+      catch (FileNotFoundException fnfEx)
+      {
+        SpeckleLog.Logger.Error(fnfEx, "Could not find app image source: {exceptionMessage}");
+      }
+      catch (NotImplementedException niEx)
+      {
+        SpeckleLog.Logger.Error(niEx, "App image source could not be loaded: {exceptionMessage}");
+      }
+
+      if (stream is not null)
+      {
+        PngBitmapDecoder decoder = new(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.Default);
+        if (decoder.Frames.Count > 0)
+        {
+          ImageSource source = decoder.Frames[0];
+          return source;
+        }
+      }
     }
-    catch { }
+
     return null;
   }
 
@@ -272,8 +321,7 @@ public class App : IExtensionApplication
 
     public void Execute(object parameter)
     {
-      RibbonButton btn = parameter as RibbonButton;
-      if (btn != null)
+      if (parameter is RibbonButton)
       {
         switch (commandParameter)
         {
@@ -288,6 +336,8 @@ public class App : IExtensionApplication
             break;
           case "SpeckleDocs":
             SpeckleAutocadCommand.SpeckleDocs();
+            break;
+          default:
             break;
         }
       }

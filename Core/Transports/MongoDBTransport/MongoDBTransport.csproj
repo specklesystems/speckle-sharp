@@ -7,9 +7,15 @@
     <PackageTags>$(PackageTags) mongodb transport</PackageTags>
     <IsPackable>true</IsPackable>
     <Nullable>disable</Nullable>
-
+    <RootNamespace>Speckle.Core.Transports</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Label="Legacy Code Exceptions" Condition="$(IsDesktopBuild) == 'false'">
+    <WarningLevel>0</WarningLevel>
+    <EnableNetAnalyzers>false</EnableNetAnalyzers>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" Version="2.19.2" />
   </ItemGroup>

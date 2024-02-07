@@ -5,9 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements.Archicad;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -56,16 +53,25 @@ public sealed class Skylight : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     // Get subelements
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-    IEnumerable<Objects.BuiltElements.Archicad.ArchicadSkylight> data = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetSkylightData(elementModels.Select(e => e.applicationId))
+    Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
+      new Communication.Commands.GetSkylightData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
+      token
     );
 
-    var openings = new List<Base>();
-    if (data is null)
+    List<Base> openings = new();
+    if (jArray is null)
     {
       return openings;
     }
@@ -75,12 +81,15 @@ public sealed class Skylight : IConverter
       context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToSpeckle, Type.Name)
     )
     {
-      foreach (Objects.BuiltElements.Archicad.ArchicadSkylight subelement in data)
+      foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
-        subelement.displayValue = Operations.ModelConverter.MeshesToSpeckle(
-          elementModels.First(e => e.applicationId == subelement.applicationId).model
+        Objects.BuiltElements.Archicad.ArchicadSkylight skylight =
+          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadSkylight>(jToken);
+
+        skylight.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+          elementModels.First(e => e.applicationId == skylight.applicationId).model
         );
-        openings.Add(subelement);
+        openings.Add(skylight);
       }
     }
 

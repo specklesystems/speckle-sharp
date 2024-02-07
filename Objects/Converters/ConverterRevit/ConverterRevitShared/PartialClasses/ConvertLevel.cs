@@ -187,7 +187,7 @@ public partial class ConverterRevit
     {
       view.Name = name;
     }
-    catch { }
+    catch (Autodesk.Revit.Exceptions.ApplicationException) { }
 
     Report.Log($"Created ViewPlan {view.Id}");
 

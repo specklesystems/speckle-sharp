@@ -1,4 +1,6 @@
 #include "CreateRoof.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -335,23 +337,15 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		}
 	}
 
-	// Override cut fill pen
-	if (os.Contains (Roof::CutFillPen)) {
-		element.roof.shellBase.penOverride.overrideCutFillPen = true;
-		os.Get (Roof::CutFillPen, element.roof.shellBase.penOverride.cutFillPen);
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (os.Contains (Roof::CutFillBackgroundPen)) {
-		element.roof.shellBase.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Roof::CutFillBackgroundPen, element.roof.shellBase.penOverride.cutFillBackgroundPen);
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill and cut fill backgound pens
+	if (CommandHelpers::SetCutfillPens(
+		os,
+		Roof::CutFillPen,
+		Roof::CutFillBackgroundPen,
+		element.roof.shellBase,
+		elementMask)
+		!= NoError)
+		return Error;
 
 	// Outlines
 
@@ -488,9 +482,9 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 	// Model
 
 	// Overridden materials
-	element.roof.shellBase.topMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.roof.shellBase.topMat);
 	if (os.Contains (Roof::TopMat)) {
-		element.roof.shellBase.topMat.overridden = true;
+
 		os.Get (Roof::TopMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -500,16 +494,16 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.roof.shellBase.topMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.topMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.roof.shellBase.topMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeIndexField (shellBase.topMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.topMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeBoolField (shellBase.topMat));
 
-	element.roof.shellBase.sidMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.roof.shellBase.sidMat);
 	if (os.Contains (Roof::SideMat)) {
-		element.roof.shellBase.sidMat.overridden = true;
+
 		os.Get (Roof::SideMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -519,16 +513,15 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.roof.shellBase.sidMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.sidMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.roof.shellBase.sidMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeIndexField (shellBase.sidMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.sidMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeBoolField (shellBase.sidMat));
 
-	element.roof.shellBase.botMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.roof.shellBase.botMat);
 	if (os.Contains (Roof::BotMat)) {
-		element.roof.shellBase.botMat.overridden = true;
 		os.Get (Roof::BotMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -538,12 +531,12 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.roof.shellBase.botMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.botMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.roof.shellBase.botMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeIndexField (shellBase.botMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.botMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, GetAPIOverriddenAttributeBoolField (shellBase.botMat));
 
 	// The overridden materials are chained
 	if (os.Contains (Roof::MaterialsChained)) {

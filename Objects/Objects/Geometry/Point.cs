@@ -13,7 +13,7 @@ namespace Objects.Geometry;
 /// <remarks>
 /// TODO: The Point class does not override the Equality operator, which means that there may be cases where `Equals` is used instead of `==`, as the comparison will be done by reference, not value.
 /// </remarks>
-public class Point : Base, IHasBoundingBox, ITransformable<Point>
+public class Point : Base, ITransformable<Point>
 {
   /// <inheritdoc/>
   public Point() { }
@@ -24,7 +24,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="x">The x coordinate</param>
   /// <param name="y">The y coordinate</param>
   /// <param name="z">The z coordinate</param>
-  /// <param name="units">The units the point's coordinates are in.</param>
+  /// <param name="units">The units of the point's coordinates. Defaults to Meters. </param>
   /// <param name="applicationId">The object's unique application ID</param>
   public Point(double x, double y, double z = 0d, string units = Units.Meters, string? applicationId = null)
   {
@@ -73,26 +73,26 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   public double z { get; set; }
 
   /// <summary>
-  /// The unit's this <see cref="Vector"/> is in.
+  /// The units this <see cref="Point"/> is in.
   /// This should be one of the units specified in <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
-  /// <inheritdoc/>
+  [JsonIgnore, Obsolete("Bounding box no longer applicable to point as of 2.18", true)]
   public Box? bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Point point)
+  public bool TransformTo(Transform transform, out Point transformed)
   {
     var matrix = transform.matrix;
 
-    var unitFactor = units != null ? Units.GetConversionFactor(transform.units, units) : 1; // applied to translation vector
+    var unitFactor = Units.GetConversionFactor(transform.units, units); // applied to translation vector
     var divisor = matrix.M41 + matrix.M42 + matrix.M43 + unitFactor * matrix.M44;
     var x = (this.x * matrix.M11 + this.y * matrix.M12 + this.z * matrix.M13 + unitFactor * matrix.M14) / divisor;
     var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
     var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
 
-    point = new Point(x, y, z) { units = units, applicationId = applicationId };
+    transformed = new Point(x, y, z) { units = units, applicationId = applicationId };
     return true;
   }
 
@@ -131,7 +131,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <param name="y">The y coordinate</param>
   /// <param name="z">The z coordinate</param>
   /// <param name="units">The units the point's coordinates are in.</param>
-  public void Deconstruct(out double x, out double y, out double z, out string units)
+  public void Deconstruct(out double x, out double y, out double z, out string? units)
   {
     Deconstruct(out x, out y, out z);
     units = this.units;
@@ -150,30 +150,20 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     z = this.z;
   }
 
-  public static Point operator +(Point point1, Point point2)
-  {
-    return new Point(point1.x + point2.x, point1.y + point2.y, point1.z + point2.z, point1.units);
-  }
+  public static Point operator +(Point point1, Point point2) =>
+    new(point1.x + point2.x, point1.y + point2.y, point1.z + point2.z, point1.units);
 
-  public static Point operator -(Point point1, Point point2)
-  {
-    return new Point(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z, point1.units);
-  }
+  public static Point operator -(Point point1, Point point2) =>
+    new(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z, point1.units);
 
-  public static Point operator *(Point point1, Point point2)
-  {
-    return new Point(point1.x * point2.x, point1.y * point2.y, point1.z * point2.z, point1.units);
-  }
+  public static Point operator *(Point point1, Point point2) =>
+    new(point1.x * point2.x, point1.y * point2.y, point1.z * point2.z, point1.units);
 
-  public static Point operator *(Point point, double val)
-  {
-    return new Point(point.x * val, point.y * val, point.z * val, point.units);
-  }
+  public static Point operator *(Point point, double val) =>
+    new(point.x * val, point.y * val, point.z * val, point.units);
 
-  public static Point operator /(Point point, double val)
-  {
-    return new Point(point.x / val, point.y / val, point.z / val, point.units);
-  }
+  public static Point operator /(Point point, double val) =>
+    new(point.x / val, point.y / val, point.z / val, point.units);
 
   public static bool operator ==(Point? point1, Point? point2)
   {
@@ -181,8 +171,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     {
       return true;
     }
-
-    if (point1 is null ^ point2 is null)
+    else if (point1 is null || point2 is null)
     {
       return false;
     }
@@ -190,10 +179,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
     return point1.units == point2.units && point1.x == point2.x && point1.y == point2.y && point1.z == point2.z;
   }
 
-  public static bool operator !=(Point? point1, Point? point2)
-  {
-    return !(point1 == point2);
-  }
+  public static bool operator !=(Point? point1, Point? point2) => !(point1 == point2);
 
   /// <summary>
   /// Computes a point equidistant from two points.

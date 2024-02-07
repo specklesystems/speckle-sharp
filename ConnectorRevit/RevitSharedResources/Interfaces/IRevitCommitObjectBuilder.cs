@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Autodesk.Revit.DB;
 using Speckle.Core.Models;
 

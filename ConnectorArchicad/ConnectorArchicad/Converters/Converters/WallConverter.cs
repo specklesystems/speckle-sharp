@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -66,12 +65,20 @@ public sealed class Wall : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
 
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
+      new Communication.Commands.GetWallData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 

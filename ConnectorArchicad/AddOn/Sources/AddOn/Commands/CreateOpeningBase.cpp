@@ -54,7 +54,7 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 		return false;
 
 	// Set its parent
-	API_ElemTypeID elementType = Utility::GetElementType (elem.header).typeID;
+	API_ElemTypeID elementType = Utility::GetElementType (element.header).typeID;
 	if (elementType == API_DoorID) {
 		element.door.owner = parentArchicadId;
 	} else if (elementType == API_WindowID) {

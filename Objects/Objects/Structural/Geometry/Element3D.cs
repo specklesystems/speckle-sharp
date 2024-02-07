@@ -20,7 +20,7 @@ public class Element3D : Base
     Mesh baseMesh,
     Property3D property,
     ElementType3D type,
-    string name = null,
+    string? name = null,
     double orientationAngle = 0
   )
   {
@@ -31,7 +31,7 @@ public class Element3D : Base
     this.orientationAngle = orientationAngle;
   }
 
-  public string name { get; set; }
+  public string? name { get; set; }
   public Mesh baseMesh { get; set; } //rhino - parent mesh? elements (including props/materias) explicitly defined in a list
 
   [DetachProperty]

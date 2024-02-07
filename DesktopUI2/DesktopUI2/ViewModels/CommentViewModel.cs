@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using DesktopUI2.Models;
 using DesktopUI2.Views;
 using ReactiveUI;
 using Speckle.Core.Api;

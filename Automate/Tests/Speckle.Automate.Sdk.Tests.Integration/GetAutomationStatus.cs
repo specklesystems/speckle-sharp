@@ -3,34 +3,34 @@ using Speckle.Core.Api;
 
 namespace Speckle.Automate.Sdk.Tests.Integration;
 
-public class FunctionRun
+public struct FunctionRun
 {
   public string StatusMessage { get; set; }
 }
 
-public class AutomationRun
+public struct AutomationRun
 {
   public string Status { get; set; }
   public IList<FunctionRun> FunctionRuns { get; set; }
 }
 
-public class AutomationStatus
+public struct AutomationStatus
 {
   public string Status { get; set; }
   public IList<AutomationRun> AutomationRuns { get; set; }
 }
 
-public class ModelAutomationStatus
+public struct ModelAutomationStatus
 {
   public AutomationStatus AutomationStatus { get; set; }
 }
 
-public class ProjectAutomationStatus
+public struct ProjectAutomationStatus
 {
   public ModelAutomationStatus Model { get; set; }
 }
 
-public class AutomationStatusResponseModel
+public struct AutomationStatusResponseModel
 {
   public ProjectAutomationStatus Project { get; set; }
 }
@@ -80,7 +80,9 @@ public static class AutomationStatusOperations
         """,
         variables: new { projectId, modelId, }
       );
-    var response = await speckleClient.ExecuteGraphQLRequest<AutomationStatusResponseModel>(query);
+    AutomationStatusResponseModel response = await speckleClient.ExecuteGraphQLRequest<AutomationStatusResponseModel>(
+      query
+    );
     return response.Project.Model.AutomationStatus;
   }
 }

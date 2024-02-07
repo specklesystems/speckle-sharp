@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Objects.BuiltElements;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using Speckle.Core.Models.GraphTraversal;
@@ -77,10 +76,18 @@ public sealed class Roof : IConverter
     return result is null ? new List<ApplicationObject>() : result;
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)),
+      new Communication.Commands.GetRoofData(
+        elements.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -118,7 +125,11 @@ public sealed class Roof : IConverter
     }
 
     jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)),
+      new Communication.Commands.GetShellData(
+        elements.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 

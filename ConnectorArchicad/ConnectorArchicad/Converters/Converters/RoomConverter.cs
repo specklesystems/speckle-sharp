@@ -5,9 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using DynamicData;
 using Objects;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -91,11 +89,19 @@ public sealed class Room : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
     IEnumerable<Archicad.Room> data = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
+      new Communication.Commands.GetRoomData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -126,6 +132,8 @@ public sealed class Room : IConverter
         // Archicad properties
         speckleRoom.elementType = archicadRoom.elementType;
         speckleRoom.classifications = archicadRoom.classifications;
+        speckleRoom.elementProperties = PropertyGroup.ToBase(archicadRoom.elementProperties);
+        speckleRoom.componentProperties = ComponentProperties.ToBase(archicadRoom.componentProperties);
         speckleRoom.archicadLevel = archicadRoom.level;
         speckleRoom.height = archicadRoom.height ?? .0;
         speckleRoom.shape = archicadRoom.shape;
