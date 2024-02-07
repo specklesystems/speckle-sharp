@@ -57,4 +57,26 @@ public class StreamWrapperTests
     var wrapper = new StreamWrapper("https://testing.speckle.dev/streams/0c6ad366c4/globals/abd3787893");
     Assert.That(wrapper.Type, Is.EqualTo(StreamWrapperType.Commit));
   }
+
+  [TestCase("https://testing.speckle.dev/projects/0c6ad366c4/models/abd3787893", StreamWrapperType.Branch)]
+  [TestCase("https://testing.speckle.dev/projects/28dd9ad7ba/models/117eb16f2c@b1b8579d93", StreamWrapperType.Commit)]
+  [TestCase(
+    "https://testing.speckle.dev/projects/28dd9ad7ba/models/6ae9712d6a8bad80a3efd4a29a21c31a",
+    StreamWrapperType.Object
+  )]
+  public void ParseFe2Urls(string speckleUrl, StreamWrapperType expectedType)
+  {
+    var wrapper = new StreamWrapper(speckleUrl);
+    Assert.That(wrapper.Type, Is.EqualTo(expectedType));
+    Assert.That(wrapper.ToString(), Is.EqualTo(speckleUrl));
+  }
+
+  [TestCase(
+    "https://testing.speckle.dev/projects/28dd9ad7ba/models/117eb16f2c@b1b8579d93,abd3787893,6ae9712d6a8bad80a3efd4a29a21c31a",
+    StreamWrapperType.Object
+  )]
+  public void ParseFe2MultiModelUrls_IsNotSupported(string speckleUrl, StreamWrapperType expectedType)
+  {
+    Assert.Throws<NotSupportedException>(() => new StreamWrapper(speckleUrl));
+  }
 }
