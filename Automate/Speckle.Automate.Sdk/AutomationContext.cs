@@ -327,6 +327,11 @@ public class AutomationContext
   {
     string levelString = ObjectResultLevelMapping.Get(level);
     List<string> objectIdList = objectIds.ToList();
+    if (objectIdList.Count == 0)
+    {
+      throw new ArgumentException($"Need at least one object_id to report a(n) {level}");
+    }
+
     Console.WriteLine($"Created new {levelString.ToUpper()} category: {category} caused by: {message}");
 
     ResultCase resultCase =
