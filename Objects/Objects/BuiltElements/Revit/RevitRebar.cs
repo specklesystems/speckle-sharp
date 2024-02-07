@@ -45,6 +45,10 @@ public class RevitRebarGroup : RebarGroup<RevitRebarShape>
 
   public string family { get; set; }
   public string type { get; set; }
+  public string layoutRule { get; set; }
+  public bool barsOnNormalSide { get; set; }
+  public double arrayLength { get; set; }
+  public double spacing { get; set; }
   public int barPositions { get; set; }
   public Vector normal { get; set; }
   public Base parameters { get; set; }
