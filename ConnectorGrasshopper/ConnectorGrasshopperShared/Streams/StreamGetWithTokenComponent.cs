@@ -6,7 +6,6 @@ using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 
 namespace ConnectorGrasshopper.Accounts;
@@ -88,10 +87,15 @@ public class StreamGetWithTokenComponent : GH_TaskCapableComponent<StreamWrapper
       var task = Task.Run(
         () =>
         {
-          var acc = new Account();
-          acc.token = token;
-          acc.serverInfo = new ServerInfo { url = sw.ServerUrl };
-          acc.userInfo = acc.Validate().Result;
+          Uri serverUrl = new(sw.ServerUrl);
+          Account acc =
+            new()
+            {
+              token = token,
+              serverInfo = AccountManager.GetServerInfo(serverUrl).Result,
+              userInfo = AccountManager.GetUserInfo(token, serverUrl).Result
+            };
+
           sw.SetAccount(acc);
           return sw;
         },
