@@ -13,5 +13,5 @@ public class GisTopography : Topography
   public int y_size { get; set; }
   public float x_resolution { get; set; }
   public float y_resolution { get; set; }
-  public List<float> noDataValue { get; set; }
+  public List<float?> noDataValue { get; set; }
 }
