@@ -559,27 +559,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           // assign layer
           attributes.LayerIndex = layer.Index;
 
-          // handle user info, including application id
-          SetUserInfo(obj, attributes, parent);
-
-          // add revit parameters as user strings
-          var paramId = parent != null ? parent.OriginalId : obj.id;
-          if (StoredObjectParams.ContainsKey(paramId))
-          {
-            var parameters = StoredObjectParams[paramId];
-            foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-            {
-              if (member.Value is Base parameter)
-              {
-                var convertedParameter = converter.ConvertToNative(parameter) as Tuple<string, string>;
-                if (convertedParameter is not null)
-                {
-                  var name = $"{convertedParameter.Item1}({member.Key})";
-                  attributes.SetUserString(name, convertedParameter.Item2);
-                }
-              }
-            }
-          }
+          // handle user info, application id, revit parameters
+          SetUserInfo(obj, attributes, converter, parent);
 
           Guid id = Doc.Objects.Add(o, attributes);
           if (id == Guid.Empty)
@@ -624,7 +605,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
         case RhinoObject o: // this was prbly a block instance, baked during conversion
           o.Attributes.LayerIndex = layer.Index; // assign layer
-          SetUserInfo(obj, o.Attributes, parent); // handle user info, including application id
+          SetUserInfo(obj, o.Attributes, converter, parent); // handle user info, including application id
           o.CommitChanges();
           if (parent != null)
           {
@@ -663,7 +644,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
   }
 
-  private void SetUserInfo(Base obj, ObjectAttributes attributes, ApplicationObject parent = null)
+  private void SetUserInfo(
+    Base obj,
+    ObjectAttributes attributes,
+    ISpeckleConverter converter,
+    ApplicationObject parent = null
+  )
   {
     // set user strings
     if (obj[UserStrings] is Base userStrings)
@@ -684,10 +670,29 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
     }
 
+    // set name or label
     var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
     if (name != null)
     {
       attributes.Name = name;
+    }
+
+    // set revit parameters as user strings
+    var paramId = parent != null ? parent.OriginalId : obj.id;
+    if (StoredObjectParams.TryGetValue(paramId, out Base parameters))
+    {
+      foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        if (member.Value is Base parameter)
+        {
+          var convertedParameter = converter.ConvertToNative(parameter) as Tuple<string, string>;
+          if (convertedParameter is not null)
+          {
+            var paramName = $"{convertedParameter.Item1}({member.Key})";
+            attributes.SetUserString(paramName, convertedParameter.Item2);
+          }
+        }
+      }
     }
   }
 
@@ -703,10 +708,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   /// Copies a Base to an ArchivableDictionary
   /// </summary>
   /// <param name="target"></param>
-  /// <param name="dict"></param>
   private void ParseDictionaryToArchivable(ArchivableDictionary target, Base @base)
   {
-    foreach (var prop in @base.GetMemberNames())
+    foreach (var prop in @base.GetMembers().Keys)
     {
       var obj = @base[prop];
       switch (obj)
