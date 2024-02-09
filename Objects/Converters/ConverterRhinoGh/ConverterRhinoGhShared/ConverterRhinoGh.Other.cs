@@ -642,21 +642,9 @@ public partial class ConverterRhinoGh
     // get the transform
     var transform = TransformToNative(instance.transform);
 
-    // get any parameters
-    var parameters = instance["parameters"] as Base;
+    // set attributes
     var attributes = new RH.ObjectAttributes();
-    if (parameters != null)
-    {
-      foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-      {
-        if (member.Value is Parameter parameter)
-        {
-          var convertedParameter = ParameterToNative(parameter);
-          var name = $"{convertedParameter.Item1}({member.Key})";
-          attributes.SetUserString(name, convertedParameter.Item2);
-        }
-      }
-    }
+    SetUserInfo(instance, attributes);
 
     // create the instance
     Guid instanceId = Doc.Objects.AddInstanceObject(instanceDef.Index, transform, attributes);
