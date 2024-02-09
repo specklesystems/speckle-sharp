@@ -695,7 +695,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
               );
               wrapper.CommitId = commitId;
               wrapper.SetAccount(client.Account);
-              
+
               OutputWrappers.Add(wrapper);
             }
             catch (Exception e) when (!e.IsFatal())
