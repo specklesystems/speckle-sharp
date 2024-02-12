@@ -13,6 +13,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using ICancelable = DUI3.Operations.ICancelable;
 
 namespace ConnectorRhinoWebUI.Bindings;
@@ -48,6 +49,16 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       // 2 - Get commit object from server
       Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
 
+      var collections = new List<object>();
+      commitObject.Traverse((obj) =>
+      {
+        if (obj is Speckle.Core.Models.Collection)
+        {
+          collections.Add(obj);
+        }
+        return true;
+      });
+      
       if (cts.IsCancellationRequested)
       {
         return;

@@ -9,18 +9,18 @@ public static class Progress
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = "Cancelled", // NOTE: weak link, this is a key word that the FE is looking for to cancel stuff
       Progress = progress
     };
-    bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
+    bridge.SendToBrowser(SendBindingEvents.SetModelProgress, args);
   }
 
   public static void CancelReceive(IBridge bridge, string modelCardId, double? progress = null)
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = "Cancelled",
       Progress = progress
     };
@@ -36,7 +36,7 @@ public static class Progress
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = progress == 1 ? "Receiving Completed" : "Receiving from Server..",
       Progress = progress
     };
@@ -52,11 +52,11 @@ public static class Progress
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = progress == 1 ? "Completed" : "Sending to Server..",
       Progress = progress
     };
-    bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
+    bridge.SendToBrowser(SendBindingEvents.SetModelProgress, args);
   }
 
   /// <summary>
@@ -68,11 +68,11 @@ public static class Progress
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = progress >= 1 ? "Converting Completed" : "Converting",
       Progress = progress
     };
-    bridge.SendToBrowser(SendBindingEvents.SenderProgress, args);
+    bridge.SendToBrowser(SendBindingEvents.SetModelProgress, args);
   }
 
   /// <summary>
@@ -84,7 +84,7 @@ public static class Progress
   {
     var args = new ModelCardProgress()
     {
-      Id = modelCardId,
+      ModelCardId = modelCardId,
       Status = progress == 1 ? "Completed" : "Constructing",
       Progress = progress
     };

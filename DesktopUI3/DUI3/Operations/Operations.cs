@@ -15,36 +15,38 @@ namespace DUI3.Operations;
 
 public static class Operations
 {
-  public static async Task<string> Send(
-    IBridge bridge,
-    string modelCardId,
-    Base commitObject,
-    List<ITransport> transports,
-    CancellationToken token
-  )
-  {
-    // TODO: Fix send operations haven't succeeded
-    // Pass null progress value to let UI swooshing progress bar
-    Progress.SerializerProgressToBrowser(bridge, modelCardId, null);
-    var objectId = await Speckle.Core.Api.Operations
-      .Send(commitObject, token, transports, disposeTransports: true)
-      .ConfigureAwait(true);
-    // Pass 1 progress value to let UI finish progress
-    Progress.SerializerProgressToBrowser(bridge, modelCardId, 1);
-    return objectId;
-  }
+  // public static async Task<string> Send(
+  //   IBridge bridge,
+  //   string modelCardId,
+  //   Base commitObject,
+  //   List<ITransport> transports,
+  //   CancellationToken token
+  // )
+  // {
+  //   // TODO: Fix send operations haven't succeeded
+  //   // Pass null progress value to let UI swooshing progress bar
+  //   
+  //   Progress.SerializerProgressToBrowser(bridge, modelCardId, null);
+  //   var objectId = await Speckle.Core.Api.Operations
+  //     .Send(commitObject, token, transports, disposeTransports: true)
+  //     .ConfigureAwait(true);
+  //   
+  //   // Pass 1 progress value to let UI finish progress
+  //   Progress.SerializerProgressToBrowser(bridge, modelCardId, 1);
+  //   return objectId;
+  // }
 
-  public static void CreateVersion(IBridge bridge, SenderModelCard model, string objectId)
-  {
-    bridge.SendToBrowser(
-      SendBindingEvents.CreateVersion,
-      new CreateVersionArgs()
-      {
-        ModelCardId = model.Id,
-        ObjectId = objectId
-      }
-    );
-  }
+  // public static void CreateVersion(IBridge bridge, SenderModelCard model, string objectId)
+  // {
+  //   bridge.SendToBrowser(
+  //     SendBindingEvents.SetModelCreatedVersionId,
+  //     new CreateVersionArgs()
+  //     {
+  //       ModelCardId = model.ModelCardId,
+  //       ObjectId = objectId
+  //     }
+  //   );
+  // }
 
   public static async Task<Base> GetCommitBase(
     IBridge parent,
@@ -54,7 +56,7 @@ public static class Operations
   )
   {
     // Pass null progress value to let UI swooshing progress bar
-    Progress.DeserializerProgressToBrowser(parent, modelCard.Id, null);
+    Progress.DeserializerProgressToBrowser(parent, modelCard.ModelCardId, null);
 
     Account account = Accounts.GetAccount(modelCard.AccountId);
     Client client = new(account);
@@ -65,7 +67,7 @@ public static class Operations
       .ConfigureAwait(true);
 
     // Pass 1 progress value to let UI finish progress
-    Progress.DeserializerProgressToBrowser(parent, modelCard.Id, 1);
+    Progress.DeserializerProgressToBrowser(parent, modelCard.ModelCardId, 1);
 
     return commitObject;
   }

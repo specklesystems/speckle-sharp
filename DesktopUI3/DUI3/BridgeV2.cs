@@ -193,7 +193,7 @@ public class BrowserBridge : IBridge
 
       NotifyUIMethodCallResultReady(requestId, resultJson);
     }
-    catch (SpeckleException e)
+    catch (Exception e)
     {
       // TODO: properly log the exeception.
       var serializedError = JsonConvert.SerializeObject(

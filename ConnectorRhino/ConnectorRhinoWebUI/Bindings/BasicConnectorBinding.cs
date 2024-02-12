@@ -49,13 +49,13 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void UpdateModel(ModelCard model)
   {
-    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
     _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)
   {
-    int index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
     _store.Models.RemoveAt(index);
   }
   
@@ -70,8 +70,15 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     List<RhinoObject> rhinoObjects = objectsIds
       .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
       .ToList();
-
+    
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
+
+    if (rhinoObjects.Count == 0)
+    {
+      RhinoDoc.ActiveDoc.Views.Redraw();
+      return;
+    }
+    
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
 
     // Calculate the bounding box of the selected objects

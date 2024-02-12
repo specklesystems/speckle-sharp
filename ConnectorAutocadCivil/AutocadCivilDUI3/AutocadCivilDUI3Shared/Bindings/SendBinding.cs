@@ -123,11 +123,11 @@ public class SendBinding : ISendBinding, ICancelable
       bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.Id);
+        expiredSenderIds.Add(sender.ModelCardId);
       }
     }
 
-    Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
+    Parent.SendToBrowser(SendBindingEvents.SetModelsExpired, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 

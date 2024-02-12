@@ -21,7 +21,6 @@ public static class Notification
         ReceiveBindingEvents.Notify,
         new ModelCardNotification()
         {
-          Id = Guid.NewGuid().ToString(),
           ModelCardId = modelCardId,
           Text = $"Speckle objects ({errors.Count}) are not received successfully.",
           Level = "warning",
@@ -33,7 +32,6 @@ public static class Notification
       ReceiveBindingEvents.Notify,
       new ModelCardNotification()
       {
-        Id = Guid.NewGuid().ToString(),
         ModelCardId = modelCardId,
         Text = $"Speckle objects ({numberOfObject - errors.Count}) are received successfully.",
         Level = "success",
