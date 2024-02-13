@@ -85,7 +85,6 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <inheritdoc />
   public double length { get; set; }
 
-  /// <inheritdoc />
   //public Point center { get; set; }
 
   /// <inheritdoc />

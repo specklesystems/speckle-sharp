@@ -1,4 +1,6 @@
 #include "GetSlabData.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -112,15 +114,9 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Slab::sectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-	if (element.slab.penOverride.overrideCutFillPen) {
-		os.Add (Slab::cutFillPen, element.slab.penOverride.cutFillPen);
-	}
 
-	// Override cut fill backgound pen
-	if (element.slab.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Slab::cutFillBackgroundPen, element.slab.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.slab, os, Slab::cutFillPen, Slab::cutFillBackgroundPen);
 
 	// Outlines
 
@@ -179,10 +175,10 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 
 	// Overridden materials
 	int countOverriddenMaterial = 0;
-	if (element.slab.topMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(element.slab.topMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.slab.topMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(element.slab.topMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -190,10 +186,10 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 		os.Add (Slab::topMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.slab.sideMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(element.slab.sideMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.slab.sideMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(element.slab.sideMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -201,10 +197,10 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 		os.Add (Slab::sideMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.slab.botMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(element.slab.botMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.slab.botMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(element.slab.botMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;

@@ -23,7 +23,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2024\\ConverterRevit2024.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj",
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj",
       "ConnectorRevit\\RevitSharedResources2020\\RevitSharedResources2020.csproj",
       "ConnectorRevit\\RevitSharedResources2021\\RevitSharedResources2021.csproj",
       "ConnectorRevit\\RevitSharedResources2022\\RevitSharedResources2022.csproj",

@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using DesktopUI2.Models.Settings;
-using DesktopUI2.Views.Controls.StreamEditControls;
 using DynamicData;
 using static Archicad.Launcher.ArchicadBinding;
 

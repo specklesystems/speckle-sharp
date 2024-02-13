@@ -554,7 +554,9 @@ public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_Va
         account = new Account
         {
           id = wrapper?.StreamId,
-          serverInfo = new ServerInfo { url = wrapper?.ServerUrl },
+          serverInfo = wrapper?.ServerUrl is not null
+            ? await AccountManager.GetServerInfo(new Uri(wrapper.ServerUrl)).ConfigureAwait(false)
+            : new(),
           token = "",
           refreshToken = ""
         };
@@ -745,7 +747,7 @@ public class VariableInputReceiveComponentWorker : WorkerInstance
             }
           );
         }
-        catch
+        catch (Exception ex) when (!ex.IsFatal())
         {
           // Do nothing!
         }

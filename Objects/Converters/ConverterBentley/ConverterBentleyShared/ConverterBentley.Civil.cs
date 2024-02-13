@@ -129,25 +129,21 @@ public partial class ConverterBentley
   {
     ICurve singleBaseCurve;
 
-    if (alignment.baseCurve is ICurve basecurve)
-    {
-      singleBaseCurve = basecurve;
-    }
-    else if (alignment?.curves?.Any() is null)
-    {
-      return null;
-    }
-    else if (alignment.curves?.Count == 1)
-    {
-      singleBaseCurve = alignment.curves.Single();
-    }
-    else
+    if (alignment.curves?.Count > 0)
     {
       //Not 100% clear on how best to handle the conversion between multiple curves and single element
-      singleBaseCurve = new Polycurve()
+      singleBaseCurve = alignment.curves.Count == 1 ? alignment.curves.Single() : new Polycurve()
       {
         segments = alignment.curves
       };
+    }
+    else if (alignment.baseCurve is not null) // this could be an old alignment using a basecurve
+    {
+      singleBaseCurve = alignment.baseCurve;
+    }
+    else
+    {
+      throw new ArgumentException("Alignment had no usable curves or basecurve");
     }
 
     var nativeCurve = CurveToNative(singleBaseCurve);

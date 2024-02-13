@@ -97,6 +97,39 @@ public partial class ConverterRhinoGh
   private static string UserStrings = "userStrings";
   private static string UserDictionary = "userDictionary";
 
+  private void SetUserInfo(Base obj, ObjectAttributes attributes)
+  {
+    // set user strings
+    if (obj[UserStrings] is Base userStrings)
+    {
+      foreach (var member in userStrings.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        attributes.SetUserString(member.Key, member.Value as string);
+      }
+    }
+
+    // set name or label
+    var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
+    if (name != null)
+    {
+      attributes.Name = name;
+    }
+
+    // set revit parameters as user strings
+    if (obj["parameters"] is Base parameters)
+    {
+      foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+      {
+        if (member.Value is Objects.BuiltElements.Revit.Parameter parameter)
+        {
+          var convertedParameter = ParameterToNative(parameter);
+          var paramName = $"{convertedParameter.Item1}({member.Key})";
+          attributes.SetUserString(paramName, convertedParameter.Item2);
+        }
+      }
+    }
+  }
+
   /// <summary>
   /// Attaches the provided user strings, user dictionaries, and and name to Base
   /// </summary>
@@ -122,9 +155,9 @@ public partial class ConverterRhinoGh
         {
           userStringsBase[key] = userStrings[key];
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          notes.Add($"Could not attach user string: {e.Message}");
+          notes.Add($"Could not attach user string: {ex.Message}");
         }
       }
 

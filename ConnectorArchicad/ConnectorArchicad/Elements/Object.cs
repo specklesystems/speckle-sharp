@@ -1,14 +1,7 @@
 using Objects.Geometry;
 using Objects.BuiltElements.Archicad;
-using Objects.Utils;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Speckle.Newtonsoft.Json;
-using Archicad.Model;
 
 namespace Archicad;
 

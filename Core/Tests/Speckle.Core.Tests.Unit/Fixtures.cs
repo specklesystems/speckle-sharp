@@ -10,10 +10,13 @@ namespace Speckle.Core.Tests.Unit;
 [SetUpFixture]
 public class SetUp
 {
+  public static SpeckleLogConfiguration TestLogConfig { get; } =
+    new(logToFile: false, logToSeq: false, logToSentry: false);
+
   [OneTimeSetUp]
   public void BeforeAll()
   {
-    SpeckleLog.Initialize("Core", "Testing", new SpeckleLogConfiguration(logToFile: false, logToSeq: false));
+    SpeckleLog.Initialize("Core", "Testing", TestLogConfig);
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }
 }

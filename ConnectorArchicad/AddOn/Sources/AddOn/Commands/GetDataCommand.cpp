@@ -196,7 +196,11 @@ GS::ErrCode GetDataCommand::ExportProperties (const API_Element& element, const 
 	UInt32 componentNumber (1);
 	for (auto& componentDefinitions : componentsDefinitions) {
 		GS::Array<API_Property> properties;
+#ifdef ServerMainVers_2700
+		err = ACAPI_Element_GetPropertyValues (componentDefinitions.first, componentDefinitions.second, properties);
+#else
 		err = ACAPI_ElemComponent_GetPropertyValues (componentDefinitions.first, componentDefinitions.second, properties);
+#endif
 		if (err != NoError || properties.IsEmpty ())
 			continue;
 

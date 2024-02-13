@@ -1,4 +1,3 @@
-#nullable enable
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 

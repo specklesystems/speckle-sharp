@@ -27,7 +27,7 @@
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino8\\ConverterRhino8.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

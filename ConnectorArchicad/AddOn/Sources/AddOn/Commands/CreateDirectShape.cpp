@@ -1,4 +1,6 @@
 #include "CreateDirectShape.hpp"
+
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -79,8 +81,7 @@ GSErrCode CreateDirectShape::GetElementFromObjectState (const GS::ObjectState& o
 			API_Attribute materialAttribute;
 			err = attributeManager.GetMaterial (material, materialAttribute);
 			if (NoError == err) {
-				overrideMaterial.attributeIndex = materialAttribute.header.index;
-				overrideMaterial.overridden = true;
+				SetAPIOverriddenAttribute (overrideMaterial, materialAttribute.header.index);
 			}
 		}
 

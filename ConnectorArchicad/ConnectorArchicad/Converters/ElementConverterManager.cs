@@ -5,18 +5,16 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
-using Objects.BuiltElements.Archicad;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Beam = Objects.BuiltElements.Beam;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
+using Fenestration = Objects.BuiltElements.Archicad.ArchicadFenestration;
 using Floor = Objects.BuiltElements.Floor;
 using Roof = Objects.BuiltElements.Roof;
-using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
@@ -57,7 +55,7 @@ public sealed partial class ElementConverterManager
   {
     var objectToCommit = new Collection("Archicad model", "model");
 
-    ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+    var conversionOptions = new ConversionOptions(state.Settings);
 
     IEnumerable<string> elementIds = state.Filter.Selection;
     if (state.Filter.Slug == "all")
@@ -84,32 +82,43 @@ public sealed partial class ElementConverterManager
 
     SpeckleLog.Logger.Debug("Conversion started (element types: {0})", SelectedObjects.Count);
 
+    progress.Max = SelectedObjects.Sum(x => x.Value.Count());
+    progress.Value = 0;
+
+    List<Base> allObjects = new();
     foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
     {
       SpeckleLog.Logger.Debug("{0}: {1}", element, guids.Count());
 
-      var objects = await ConvertOneTypeToSpeckle(
-        guids,
-        ElementTypeProvider.GetTypeByName(element),
-        progress.CancellationToken,
-        conversionOptions
-      ); // Deserialize all objects with given type
+      Type elemenType = ElementTypeProvider.GetTypeByName(element);
+      var objects = await ConvertOneTypeToSpeckle(guids, elemenType, progress, conversionOptions); // Deserialize all objects with given type
+      allObjects.AddRange(objects);
 
-      if (objects.Count() > 0)
+      // subelements translated into "elements" property of the parent
+      if (typeof(Fenestration).IsAssignableFrom(elemenType))
+      {
+        foreach (Base item in objects)
+        {
+          Base parent = allObjects.Find(x => x.applicationId == ((Fenestration)item).parentApplicationId);
+
+          if (parent["elements"] == null)
+          {
+            parent["elements"] = new List<Base>() { item };
+          }
+          else
+          {
+            var elements = parent["elements"] as List<Base>;
+            elements.Add(item);
+          }
+        }
+      }
+      // parents translated as new collections
+      else
       {
         var elementCollection = new Collection(element, "Element Type");
         elementCollection.applicationId = element;
         elementCollection.elements = objects;
         objectToCommit.elements.Add(elementCollection);
-
-        // itermediate solution for the OneClick Send report
-        for (int i = 0; i < objects.Count(); i++)
-        {
-          if (!progress.Report.ReportObjects.ContainsKey(objects[i].applicationId))
-          {
-            progress.Report.ReportObjects.Add(objects[i].applicationId, new ApplicationObject("", ""));
-          }
-        }
       }
     }
 
@@ -248,22 +257,27 @@ public sealed partial class ElementConverterManager
   public async Task<List<Base>?> ConvertOneTypeToSpeckle(
     IEnumerable<string> applicationIds,
     Type elementType,
-    CancellationToken token,
+    ProgressViewModel progress,
     ConversionOptions conversionOptions
   )
   {
-    var rawModels = await GetModelForElements(applicationIds, token); // Model data, like meshes
+    var rawModels = await GetModelForElements(applicationIds, progress.CancellationToken); // Model data, like meshes
     var elementConverter = ElementConverterManager.Instance.GetConverterForElement(elementType, null, false); // Object converter
-    var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, token, conversionOptions); // Deserialization
+    var convertedObjects = await elementConverter.ConvertToSpeckle(
+      rawModels,
+      progress.CancellationToken,
+      conversionOptions
+    ); // Deserialization
 
-    foreach (var convertedObject in convertedObjects)
+    foreach (Base convertedObject in convertedObjects)
     {
-      var subElementsAsBases = await ConvertSubElementsToSpeckle(convertedObject, token, conversionOptions);
-      if (subElementsAsBases.Count() > 0)
-      {
-        convertedObject["elements"] = subElementsAsBases;
-      }
+      ApplicationObject applicationObject = new(convertedObject.applicationId, elementType.Name);
+      applicationObject.Update(status: ApplicationObject.State.Created);
+
+      progress.Report.Log(applicationObject);
     }
+
+    progress.Value = progress.Value + convertedObjects.Count();
 
     return convertedObjects;
   }
@@ -278,102 +292,5 @@ public sealed partial class ElementConverterManager
       token
     );
     return retval;
-  }
-
-  public async Task<List<Base>?> ConvertSubElementsToSpeckle(
-    Base convertedObject,
-    CancellationToken token,
-    ConversionOptions conversionOptions
-  )
-  {
-    var subElementsAsBases = new List<Base>();
-
-    if (
-      convertedObject
-      is not (
-        Objects.BuiltElements.Archicad.ArchicadWall
-        or Objects.BuiltElements.Archicad.ArchicadRoof
-        or Objects.BuiltElements.Archicad.ArchicadShell
-      )
-    )
-    {
-      return subElementsAsBases;
-    }
-
-    var subElements = await GetAllSubElements(convertedObject.applicationId);
-    if (subElements.Count() == 0)
-    {
-      return subElementsAsBases;
-    }
-
-    var subElementsByGuid = await GetElementsType(subElements.Select(e => e.applicationId), token);
-    var mutualSubElements = GetAllMutualSubElements(subElementsByGuid);
-
-    foreach (var (element, guids) in mutualSubElements)
-    {
-      if (guids.Count() == 0)
-      {
-        continue;
-      }
-
-      var convertedSubElements = await ConvertOneTypeToSpeckle(
-        guids,
-        ElementTypeProvider.GetTypeByName(element),
-        token,
-        conversionOptions
-      );
-      subElementsAsBases = subElementsAsBases.Concat(convertedSubElements).ToList(); // Update list with new values
-    }
-    RemoveSubElements(mutualSubElements); // Remove subelements from SelectedObjects (where we stored all selected objects)
-
-    return subElementsAsBases;
-  }
-
-  private async Task<IEnumerable<SubElementData>?> GetAllSubElements(string apllicationId)
-  {
-    IEnumerable<SubElementData>? currentSubElements = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetSubElementInfo(apllicationId),
-      CancellationToken.None
-    );
-
-    return currentSubElements;
-  }
-
-  private Dictionary<string, IEnumerable<string>> GetAllMutualSubElements(
-    Dictionary<string, IEnumerable<string>> allSubElementsByGuid
-  )
-  {
-    Dictionary<string, IEnumerable<string>> mutualSubElements = new();
-
-    foreach (var (element, guids) in allSubElementsByGuid)
-    {
-      mutualSubElements[element] = GetMutualSubElementsByType(element, guids);
-    }
-
-    return mutualSubElements;
-  }
-
-  private IEnumerable<string> GetMutualSubElementsByType(string elementType, IEnumerable<string> applicationIds)
-  {
-    if (!SelectedObjects.ContainsKey(elementType))
-    {
-      return new List<string>();
-    }
-
-    return SelectedObjects[elementType].Where(guid => applicationIds.Contains(guid));
-  }
-
-  public void RemoveSubElements(Dictionary<string, IEnumerable<string>> mutualSubElements)
-  {
-    foreach (var (element, guids) in mutualSubElements)
-    {
-      if (guids.Count() == 0)
-      {
-        continue;
-      }
-
-      var guidsToKeep = SelectedObjects[element].Where(guid => !guids.Contains(guid));
-      SelectedObjects[element] = guidsToKeep.ToList();
-    }
   }
 }

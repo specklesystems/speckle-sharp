@@ -2,6 +2,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.Windows;
 using Speckle.ConnectorAutocadCivil.UI;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -28,6 +29,12 @@ public class App : IExtensionApplication
   public RibbonControl ribbon;
 
   #region Initializing and termination
+
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Is top level plugin catch"
+  )]
   public void Initialize()
   {
     //Advance Steel addon is initialized after ribbon creation
@@ -62,10 +69,15 @@ public class App : IExtensionApplication
       bindings.RegisterAppEvents();
       SpeckleAutocadCommand.Bindings = bindings;
     }
-    catch (System.Exception e)
+    catch (System.Exception ex)
     {
+      SpeckleLog.Logger.Fatal(
+        ex,
+        "Add-in initialize context (true = application, false = doc): {isApplicationContext}",
+        Application.DocumentManager.IsApplicationContext
+      );
       Forms.MessageBox.Show(
-        $"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}"
+        $"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {ex}"
       );
     }
   }

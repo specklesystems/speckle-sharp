@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
-using DynamicData;
-using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters;
 

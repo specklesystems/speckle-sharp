@@ -4,55 +4,8 @@ using Speckle.Core.Models;
 
 namespace Objects.Organization;
 
-#region Removed Classes (2.15)
-/*
-// The Model class was only being used by the Revit conenctor as the base commit object
-// With the new Collection class implementation, this class should be removed
-// The only property in use `ModelInfo` will be dynamically attached to the `Collection` base commit object
 /// <summary>
-/// Represents a model from an authoring application and can be used as the root commit object when sending.
-/// It contains <see cref="ModelInfo"/> and <see cref="Setting"/> objects
-/// </summary>
-public class Model : Collection
-{
-  public Model() { }
-
-  public Model(ModelInfo info, List<Setting>? settings = null)
-  {
-    this.info = info;
-    this.settings = settings;
-  }
-
-  /// <summary>
-  /// General model-wide information stored in a <see cref="ModelInfo"/> object.
-  /// This may include anything from simply a project / file name to specific location information (eg with <see cref="BIMModelInfo"/>)
-  /// </summary>
-  public ModelInfo info { get; set; }
-
-  [System.Obsolete("These are not being used")]
-  public List<Setting>? settings { get; set; }
-}
-
-// This class had 0 references
-public class Setting : Base
-{
-  /// <summary>
-  /// The name of the setting
-  /// </summary>
-  public string name { get; set; }
-
-  /// <summary>
-  /// The objects selected in the setting
-  /// </summary>
-  public List<Base> selection { get; set; }
-}
-
-*/
-
-#endregion
-
-/// <summary>
-/// Basic model info class to be attached to the <see cref="Model.info"/> field on a <see cref="Model"/> object.
+/// Basic model info class
 /// It contains general information about the model and can be extended or subclassed to include more application-specific
 /// information.
 /// </summary>
@@ -73,8 +26,7 @@ public class ModelInfo : Base
 
 //  TODO: not quite sure about this name?
 /// <summary>
-/// Extended <see cref="ModelInfo"/> to be attached to the <see cref="Model.info"/> field on a <see cref="Model"/> object.
-/// This contains additional properties applicable to AEC projects.
+/// Extended <see cref="ModelInfo"/> to contain additional properties applicable to AEC projects.
 /// </summary>
 public class BIMModelInfo : ModelInfo
 {

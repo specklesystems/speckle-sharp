@@ -20,6 +20,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
 using Speckle.Core.Logging;
+using Exception = System.Exception;
 
 #if ADVANCESTEEL
 [assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
@@ -64,6 +65,11 @@ public class SpeckleAutocadCommand
     BuildAvaloniaApp().Start(AppMain, null);
   }
 
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Is top level plugin catch"
+  )]
   public static void CreateOrFocusSpeckle(bool showWindow = true)
   {
     if (MainWindow == null)
@@ -95,7 +101,10 @@ public class SpeckleAutocadCommand
         }
       }
     }
-    catch { }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
+    }
   }
 
   private static void AppMain(Avalonia.Application app, string[] args)

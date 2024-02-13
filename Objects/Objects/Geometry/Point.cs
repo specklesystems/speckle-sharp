@@ -82,7 +82,7 @@ public class Point : Base, ITransformable<Point>
   public Box? bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Point point)
+  public bool TransformTo(Transform transform, out Point transformed)
   {
     var matrix = transform.matrix;
 
@@ -92,7 +92,7 @@ public class Point : Base, ITransformable<Point>
     var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
     var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
 
-    point = new Point(x, y, z) { units = units, applicationId = applicationId };
+    transformed = new Point(x, y, z) { units = units, applicationId = applicationId };
     return true;
   }
 

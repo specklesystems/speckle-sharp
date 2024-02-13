@@ -1,4 +1,6 @@
 #include "CreateSlab.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -220,21 +222,15 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContLtype);
 	}
 
-	// Override cut fill pen
-	if (os.Contains (Slab::cutFillPen)) {
-		element.slab.penOverride.overrideCutFillPen = true;
-		os.Get (Slab::cutFillPen, element.slab.penOverride.cutFillPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (os.Contains (Slab::cutFillBackgroundPen)) {
-		element.slab.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Slab::cutFillBackgroundPen, element.slab.penOverride.cutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill and cut fill backgound pens
+	if (CommandHelpers::SetCutfillPens(
+		os,
+		Slab::cutFillPen,
+		Slab::cutFillBackgroundPen,
+		element.slab,
+		mask)
+		!= NoError)
+		return Error;
 
 	// Outlines
 
@@ -357,9 +353,9 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// Model
 
 	// Overridden materials
-	element.slab.topMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.slab.topMat);
 	if (os.Contains (Slab::topMat)) {
-		element.slab.topMat.overridden = true;
+
 		os.Get (Slab::topMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -369,16 +365,16 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.slab.topMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.slab.topMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeIndexField (topMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeBoolField (topMat));
 
-	element.slab.sideMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.slab.sideMat);
 	if (os.Contains (Slab::sideMat)) {
-		element.slab.sideMat.overridden = true;
+
 		os.Get (Slab::sideMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -388,16 +384,16 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.slab.sideMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.slab.sideMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeIndexField (sideMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeBoolField (sideMat));
 
-	element.slab.botMat.overridden = false;
+	ResetAPIOverriddenAttribute (element.slab.botMat);
 	if (os.Contains (Slab::botMat)) {
-		element.slab.botMat.overridden = true;
+
 		os.Get (Slab::botMat, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -407,12 +403,12 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
-				element.slab.botMat.attributeIndex = attribute.header.index;
-				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
+				SetAPIOverriddenAttribute (element.slab.botMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeIndexField (botMat));
 			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, GetAPIOverriddenAttributeBoolField (botMat));
 
 	// The overridden materials are chained
 	if (os.Contains (Slab::materialsChained)) {

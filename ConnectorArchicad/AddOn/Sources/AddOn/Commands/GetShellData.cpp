@@ -1,4 +1,7 @@
 #include "GetShellData.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -65,10 +68,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 
 				currentEdgeOs.Add (Shell::ShellContourSideTypeName, edgeAngleTypeNames.Get (memo.shellContours[idx].edgeData[iEdge].edgeTrim.sideType));
 				currentEdgeOs.Add (Shell::ShellContourSideAngle, memo.shellContours[idx].edgeData[iEdge].edgeTrim.sideAngle);
-				if (memo.shellContours[idx].edgeData[iEdge].sideMaterial.overridden) {
+				if (IsAPIOverriddenAttributeOverridden (memo.shellContours[idx].edgeData[iEdge].sideMaterial)) {
 					BNZeroMemory (&attribute, sizeof (API_Attribute));
 					attribute.header.typeID = API_MaterialID;
-					attribute.header.index = memo.shellContours[idx].edgeData[iEdge].sideMaterial.attributeIndex;
+					attribute.header.index = GetAPIOverriddenAttribute (memo.shellContours[idx].edgeData[iEdge].sideMaterial);
 
 					if (NoError == ACAPI_Attribute_Get (&attribute))
 						currentEdgeOs.Add (Shell::ShellContourEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -122,10 +125,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Beg shape edge
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.extrudedShell.begShapeEdgeData.edgeTrim.sideType));
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.extrudedShell.begShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				begShapeEdgeOs.Add (Shell::BegShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -137,10 +140,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// End shape edge
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.extrudedShell.endShapeEdgeData.edgeTrim.sideType));
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.extrudedShell.endShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial)){
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				endShapeEdgeOs.Add (Shell::EndShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -152,10 +155,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Side shape edge 1
 		extrudedEdgeOs1.Add (Shell::ExtrudedEdgeTrimSideType1, edgeAngleTypeNames.Get (element.shell.u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideType));
 		extrudedEdgeOs1.Add (Shell::ExtrudedEdgeTrimSideAngle1, element.shell.u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideAngle);
-		if (element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				extrudedEdgeOs1.Add (Shell::ExtrudedEdgeSideMaterial1, GS::UniString{attribute.header.name});
@@ -167,10 +170,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Side shape edge 2
 		extrudedEdgeOs2.Add (Shell::ExtrudedEdgeTrimSideType2, edgeAngleTypeNames.Get (element.shell.u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideType));
 		extrudedEdgeOs2.Add (Shell::ExtrudedEdgeTrimSideAngle2, element.shell.u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideAngle);
-		if (element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				extrudedEdgeOs2.Add (Shell::ExtrudedEdgeSideMaterial2, GS::UniString{attribute.header.name});
@@ -198,10 +201,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Beg shape edge
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.revolvedShell.begShapeEdgeData.edgeTrim.sideType));
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.revolvedShell.begShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				begShapeEdgeOs.Add (Shell::BegShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -213,10 +216,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// End shape edge
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.revolvedShell.endShapeEdgeData.edgeTrim.sideType));
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.revolvedShell.endShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				endShapeEdgeOs.Add (Shell::EndShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -228,10 +231,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Revolved edge 1
 		revolvedEdgeOs1.Add (Shell::RevolvedEdgeTrimSideType1, edgeAngleTypeNames.Get (element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideType));
 		revolvedEdgeOs1.Add (Shell::RevolvedEdgeTrimSideAngle1, element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideAngle);
-		if (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				revolvedEdgeOs1.Add (Shell::RevolvedEdgeSideMaterial1, GS::UniString{attribute.header.name});
@@ -243,10 +246,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Revolved edge 2
 		revolvedEdgeOs2.Add (Shell::RevolvedEdgeTrimSideType2, edgeAngleTypeNames.Get (element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideType));
 		revolvedEdgeOs2.Add (Shell::RevolvedEdgeTrimSideAngle2, element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideAngle);
-		if (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				revolvedEdgeOs2.Add (Shell::RevolvedEdgeSideMaterial2, GS::UniString{attribute.header.name});
@@ -272,10 +275,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Beg shape edge
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.ruledShell.begShapeEdgeData.edgeTrim.sideType));
 		begShapeEdgeOs.Add (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.ruledShell.begShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.ruledShell.begShapeEdgeData.sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.ruledShell.begShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				begShapeEdgeOs.Add (Shell::BegShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -287,10 +290,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// End shape edge
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideType, edgeAngleTypeNames.Get (element.shell.u.ruledShell.endShapeEdgeData.edgeTrim.sideType));
 		endShapeEdgeOs.Add (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.ruledShell.endShapeEdgeData.edgeTrim.sideAngle);
-		if (element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.ruledShell.endShapeEdgeData.sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.ruledShell.endShapeEdgeData.sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				endShapeEdgeOs.Add (Shell::EndShapeEdgeSideMaterial, GS::UniString{attribute.header.name});
@@ -302,10 +305,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Ruled edge 1
 		ruledEdgeOs1.Add (Shell::RuledEdgeTrimSideType1, edgeAngleTypeNames.Get (element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideType));
 		ruledEdgeOs1.Add (Shell::RuledEdgeTrimSideAngle1, element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideAngle);
-		if (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				ruledEdgeOs1.Add (Shell::RuledEdgeSideMaterial1, GS::UniString{attribute.header.name});
@@ -317,10 +320,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		// Ruled edge 2
 		ruledEdgeOs2.Add (Shell::RuledEdgeTrimSideType2, edgeAngleTypeNames.Get (element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideType));
 		ruledEdgeOs2.Add (Shell::RuledEdgeTrimSideAngle2, element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideAngle);
-		if (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden) {
+		if (IsAPIOverriddenAttributeOverridden (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial)) {
 			BNZeroMemory (&attribute, sizeof (API_Attribute));
 			attribute.header.typeID = API_MaterialID;
-			attribute.header.index = element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex;
+			attribute.header.index = GetAPIOverriddenAttribute (element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial);
 
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				ruledEdgeOs2.Add (Shell::RuledEdgeSideMaterial2, GS::UniString{attribute.header.name});
@@ -410,15 +413,8 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Shell::SectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-	if (element.shell.shellBase.penOverride.overrideCutFillPen) {
-		os.Add (Shell::CutFillPen, element.shell.shellBase.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (element.shell.shellBase.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Shell::CutFillBackgroundPen, element.shell.shellBase.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.shell.shellBase, os, Shell::CutFillPen, Shell::CutFillBackgroundPen);
 
 	// Outlines
 
@@ -479,10 +475,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 
 	// Overridden materials
 	int countOverriddenMaterial = 0;
-	if (element.shell.shellBase.topMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.shell.shellBase.topMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.shell.shellBase.topMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.shell.shellBase.topMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -490,10 +486,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		os.Add (Shell::TopMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.shell.shellBase.sidMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.shell.shellBase.sidMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.shell.shellBase.sidMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.shell.shellBase.sidMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -501,10 +497,10 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		os.Add (Shell::SideMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.shell.shellBase.botMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.shell.shellBase.botMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.shell.shellBase.botMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.shell.shellBase.botMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;

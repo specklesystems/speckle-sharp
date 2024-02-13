@@ -9,7 +9,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -216,6 +215,8 @@ public partial class ArchicadBinding : ConnectorBindings
         var context = Archicad.Helpers.Timer.Context.Peek;
         using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
         {
+          progress.Value = 0;
+          progress.Max = 0;
           return await Speckle.Core.Api.Helpers.Send(
             IdentifyStream(state),
             commitObject,

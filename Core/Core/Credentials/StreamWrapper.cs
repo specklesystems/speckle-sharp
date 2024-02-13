@@ -141,6 +141,11 @@ public class StreamWrapper
       throw new NotSupportedException("Multi-model urls are not supported yet");
     }
 
+    if (model.Value.StartsWith("$"))
+    {
+      throw new NotSupportedException("Federation model urls are not supported");
+    }
+
     var modelRes = ParseFe2ModelValue(model.Value);
 
     // INFO: The Branch endpoint is being updated to fallback to checking a branch ID if no name is found.
@@ -419,25 +424,72 @@ public class StreamWrapper
     }
   }
 
-  public override string ToString()
+  public Uri ToServerUri()
   {
-    var url = $"{ServerUrl}/streams/{StreamId}";
+    if (_account != null)
+    {
+      return _account.serverInfo.frontend2 ? ToProjectUri() : ToStreamUri();
+    }
+
+    if (OriginalInput != null)
+    {
+      Uri uri = new(OriginalInput);
+      var fe2Match = s_fe2UrlRegex.Match(uri.AbsolutePath);
+      return fe2Match.Success ? ToProjectUri() : ToStreamUri();
+    }
+
+    // Default to old FE1
+    return ToStreamUri();
+  }
+
+  private Uri ToProjectUri()
+  {
+    var uri = new Uri(ServerUrl);
+
+    // TODO: THis has to be the branch ID or it won't work.
+    var branchID = BranchName;
+    var leftPart = $"projects/{StreamId}/models/";
     switch (Type)
     {
       case StreamWrapperType.Commit:
-        url += $"/commits/{CommitId}";
+        leftPart += $"{BranchName}@{CommitId}";
         break;
       case StreamWrapperType.Branch:
-        url += $"/branches/{BranchName}";
+        leftPart += $"{BranchName}";
         break;
       case StreamWrapperType.Object:
-        url += $"/objects/{ObjectId}";
+        leftPart += $"{ObjectId}";
         break;
     }
-
     var acc = $"{(UserId != null ? "?u=" + UserId : "")}";
-    return url + acc;
+
+    var finalUri = new Uri(uri, leftPart + acc);
+    return finalUri;
   }
+
+  private Uri ToStreamUri()
+  {
+    var uri = new Uri(ServerUrl);
+    var leftPart = $"streams/{StreamId}";
+    switch (Type)
+    {
+      case StreamWrapperType.Commit:
+        leftPart += $"/commits/{CommitId}";
+        break;
+      case StreamWrapperType.Branch:
+        leftPart += $"/branches/{BranchName}";
+        break;
+      case StreamWrapperType.Object:
+        leftPart += $"/objects/{ObjectId}";
+        break;
+    }
+    var acc = $"{(UserId != null ? "?u=" + UserId : "")}";
+
+    var finalUri = new Uri(uri, leftPart + acc);
+    return finalUri;
+  }
+
+  public override string ToString() => ToServerUri().ToString();
 }
 
 public enum StreamWrapperType

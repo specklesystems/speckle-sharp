@@ -65,7 +65,9 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   ]
   public List<double> value
   {
+#pragma warning disable CS8603 // Possible null reference return.
     get => null;
+#pragma warning restore CS8603 // Possible null reference return.
     set
     {
       x = value[0];
@@ -106,13 +108,13 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Vector vector)
+  public bool TransformTo(Transform transform, out Vector transformed)
   {
     var m = transform.matrix;
     var tX = x * m.M11 + y * m.M12 + z * m.M13;
     var tY = x * m.M21 + y * m.M22 + z * m.M23;
     var tZ = x * m.M31 + y * m.M32 + z * m.M33;
-    vector = new Vector(tX, tY, tZ, units, applicationId);
+    transformed = new Vector(tX, tY, tZ, units, applicationId);
     return true;
   }
 
@@ -213,7 +215,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
     return Math.Acos(DotProduct(u, v) / (u.Length * v.Length));
   }
 
-  [Obsolete("Renamed to " + nameof(Normalize))]
+  [Obsolete("Renamed to " + nameof(Normalize), true)]
   public void Unitize()
   {
     Normalize();

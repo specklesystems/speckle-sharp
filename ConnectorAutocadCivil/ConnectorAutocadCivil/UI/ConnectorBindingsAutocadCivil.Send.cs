@@ -84,9 +84,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
       progress.Report.Merge(converter.Report);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      progress.Report.LogOperationError(e);
+      progress.Report.LogOperationError(ex);
     }
 
     if (convertedCount == 0)

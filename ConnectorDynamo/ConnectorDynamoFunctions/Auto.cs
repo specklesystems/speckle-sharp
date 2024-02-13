@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions;
 
@@ -73,18 +75,18 @@ public static class Auto
     Task.Run(() =>
       {
         //try parse as streamWrapper
-        if (stream is StreamWrapper)
+        if (stream is StreamWrapper wrapper)
         {
-          sw = (StreamWrapper)stream;
+          sw = wrapper;
         }
         //try parse as Url
-        else if (stream is string)
+        else if (stream is string s)
         {
           try
           {
-            sw = new StreamWrapper((string)stream);
+            sw = new StreamWrapper(s);
           }
-          catch
+          catch (Exception ex) when (ex is NotSupportedException or SpeckleException)
           {
             // ignored
           }

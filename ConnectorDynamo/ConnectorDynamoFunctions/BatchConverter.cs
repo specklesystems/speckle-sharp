@@ -177,7 +177,7 @@ public class BatchConverter
       {
         return _converter.ConvertToSpeckle(value);
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         var spcklEx = new SpeckleException($"Could not convert {value.GetType().Name} to Speckle:", ex);
         OnError?.Invoke(this, new OnErrorEventArgs(spcklEx));
@@ -332,9 +332,10 @@ public class BatchConverter
     {
       return _converter.ConvertToNative(@base);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      var spcklError = new Exception($"Could not convert {@base.GetType().Name}(id={@base.id}) to Dynamo.", e);
+      SpeckleLog.Logger.Error("Could not convert {typeName}(id={id}", @base.GetType().Name, @base.id);
+      var spcklError = new SpeckleException($"Could not convert {@base.GetType().Name}(id={@base.id}) to Dynamo.", ex);
       OnError?.Invoke(this, new OnErrorEventArgs(spcklError));
       return null;
     }

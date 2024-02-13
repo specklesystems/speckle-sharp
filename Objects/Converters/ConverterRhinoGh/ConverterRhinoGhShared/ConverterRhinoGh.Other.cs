@@ -275,10 +275,20 @@ public partial class ConverterRhinoGh
   public Hatch[] HatchToNative(Other.Hatch hatch)
   {
     var curves = new List<Curve>();
-    curves =
-      hatch.loops != null
-        ? hatch.loops.Select(o => CurveToNative(o.Curve)).ToList()
-        : hatch.curves.Select(o => CurveToNative(o)).ToList();
+    if (hatch.loops != null)
+    {
+      curves = hatch.loops.Select(o => CurveToNative(o.Curve)).ToList();
+    }
+    else if (hatch.curves is not null) // this could've been an old hatch, using the deprecated loops property
+    {
+      curves = hatch.curves.Select(o => CurveToNative(o))?.ToList();
+    }
+
+    if (curves.Count == 0)
+    {
+      throw new ArgumentException("Hatch did not contain any loops or curves.");
+    }
+
     var pattern = Doc.HatchPatterns.FindName(hatch.pattern);
     int index;
     if (pattern == null)
@@ -632,21 +642,9 @@ public partial class ConverterRhinoGh
     // get the transform
     var transform = TransformToNative(instance.transform);
 
-    // get any parameters
-    var parameters = instance["parameters"] as Base;
+    // set attributes
     var attributes = new RH.ObjectAttributes();
-    if (parameters != null)
-    {
-      foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
-      {
-        if (member.Value is Parameter parameter)
-        {
-          var convertedParameter = ParameterToNative(parameter);
-          var name = $"{convertedParameter.Item1}({member.Key})";
-          attributes.SetUserString(name, convertedParameter.Item2);
-        }
-      }
-    }
+    SetUserInfo(instance, attributes);
 
     // create the instance
     Guid instanceId = Doc.Objects.AddInstanceObject(instanceDef.Index, transform, attributes);
