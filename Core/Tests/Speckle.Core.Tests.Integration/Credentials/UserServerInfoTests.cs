@@ -32,6 +32,18 @@ public class UserServerInfoTests
     Assert.That(result.frontend2, Is.False);
   }
 
+  [Test]
+  public async Task GetServerInfo()
+  {
+    Uri serverUrl = new(acc.serverInfo.url);
+    ServerInfo result = await AccountManager.GetServerInfo(serverUrl);
+
+    Assert.That(result.url, Is.EqualTo(acc.serverInfo.url));
+    Assert.That(result.name, Is.Not.Null);
+    Assert.That(result.company, Is.Not.Null);
+    Assert.That(result.frontend2, Is.False);
+  }
+
   /// <remarks>
   /// We get ServerInfo from "http://localhost:3000/graphql",
   /// Then we mutate the `frontend2` property of ServerInfo by trying to fetch header from "http://localhost:3000/",
