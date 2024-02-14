@@ -292,6 +292,17 @@ public class AutomationContext
 
   public void MarkRunSuccess(string? statusMessage) => MarkRun(AutomationStatus.Succeeded, statusMessage);
 
+  /// <summary>
+  /// Add a new error case to the run results.
+  /// If the error cause has already created an error case,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <param name="category">A short tag for the error type.</param>
+  /// <param name="objectIds">A list of objectId's that are causing the error.</param>
+  /// <param name="message">Optional error message.</param>
+  /// <param name="metadata">User provided metadata key value pairs.</param>
+  /// <param name="visualOverrides">Case specific 3D visual overrides.</param>
+  /// <exception cref="ArgumentException">Throws if the provided <paramref name="objectIds"/> input is empty.</exception>
   public void AttachErrorToObjects(
     string category,
     IEnumerable<string> objectIds,
@@ -300,6 +311,12 @@ public class AutomationContext
     Dictionary<string, object>? visualOverrides = null
   ) => AttachResultToObjects(ObjectResultLevel.Error, category, objectIds, message, metadata, visualOverrides);
 
+  /// <summary>
+  /// Add a new warning case to the run results.
+  /// If the warning cause has already created a warning case,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <inheritdoc cref="AttachErrorToObjects"/>
   public void AttachWarningToObjects(
     string category,
     IEnumerable<string> objectIds,
@@ -308,6 +325,12 @@ public class AutomationContext
     Dictionary<string, object>? visualOverrides = null
   ) => AttachResultToObjects(ObjectResultLevel.Warning, category, objectIds, message, metadata, visualOverrides);
 
+  /// <summary>
+  /// Add a new info case to the run results.
+  /// If the info cause has already created an info case,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <inheritdoc cref="AttachErrorToObjects"/>
   public void AttachInfoToObjects(
     string category,
     IEnumerable<string> objectIds,
@@ -316,6 +339,13 @@ public class AutomationContext
     Dictionary<string, object>? visualOverrides = null
   ) => AttachResultToObjects(ObjectResultLevel.Info, category, objectIds, message, metadata, visualOverrides);
 
+  /// <summary>
+  /// Add a new case to the run results.
+  /// If the cause has already created an case with equal level,
+  /// the case will be extended with a new case referring to the causing objects.
+  /// </summary>
+  /// <param name="level">The level assigned to this result.</param>
+  /// <inheritdoc cref="AttachErrorToObjects"/>
   public void AttachResultToObjects(
     ObjectResultLevel level,
     string category,
