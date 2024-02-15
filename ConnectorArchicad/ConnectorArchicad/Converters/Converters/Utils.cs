@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using Archicad.Model;
-using Avalonia.Controls.Primitives;
 using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;

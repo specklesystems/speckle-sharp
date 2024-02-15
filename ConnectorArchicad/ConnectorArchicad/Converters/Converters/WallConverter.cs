@@ -11,7 +11,6 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters;
 

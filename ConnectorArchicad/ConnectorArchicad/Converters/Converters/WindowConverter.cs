@@ -7,7 +7,6 @@ using Archicad.Communication;
 using Archicad.Model;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters;
 
