@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Speckle.Connectors.Utils;
+namespace Speckle.Conversion.Autofac;
 public class Class1
 {
 

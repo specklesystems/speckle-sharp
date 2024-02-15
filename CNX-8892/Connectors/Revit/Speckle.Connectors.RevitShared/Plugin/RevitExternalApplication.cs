@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Autodesk.Revit.UI;
-using Speckle.Connectors.DependencyInjection;
+using Speckle.Autofac.DependencyInjection;
+using Speckle.Autofac.Files;
 
-namespace Speckle.Connectors.RevitShared.RevitPlugin;
+namespace Speckle.Connectors.Revit.Plugin;
 
 internal class RevitExternalApplication : IExternalApplication
 {
   private IRevitPlugin? _revitPlugin = null;
-  private SpeckleDependencyContainer? _container = null;
+  private AutofacContainer? _container = null;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way
@@ -21,13 +22,13 @@ internal class RevitExternalApplication : IExternalApplication
   {
     try
     {
-      _container = new SpeckleDependencyContainer();
+      _container = new AutofacContainer(new StorageInfo());
 
       // *** AUTOFAC MODULES ***
 
       // init DI
       _container
-        .AddDependencies(new string[] { "<paths>" })
+        .LoadAutofacModules(new string[] { "<paths>" })
         .AddInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
         .AddInstance<UIControlledApplication>(application) // inject UIControlledApplication application
         .Build();

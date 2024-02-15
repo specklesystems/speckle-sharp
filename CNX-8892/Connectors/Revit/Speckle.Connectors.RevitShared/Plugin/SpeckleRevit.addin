@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Speckle.Connectors.Revit.Plugin.RevitExternalApplication 2023 - DUI3 (WIP DI, Kits)</Name>
+    <Description>Speckle.Connectors.Revit2023 - DUI3 (WIP)</Description>
+    <Assembly>Speckle.Connectors.Revit2023\Speckle.Connectors.Revit2023.dll</Assembly>
+    <FullClassName>Speckle.Connectors.Revit.Plugin.RevitExternalApplication</FullClassName>
+    <ClientId>27ccff2c-011c-4374-bb79-b93990d0c86a</ClientId>
+    <VendorId>speckle</VendorId>
+    <VendorDescription>Speckle: Empowering your design and construction data. For any problems, visit our community forum https://speckle.community</VendorDescription>
+  </AddIn>
+</RevitAddIns>
