@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using Archicad.Model;
+using Avalonia.Controls.Primitives;
 using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
@@ -151,7 +153,7 @@ public static class Utils
     return shape;
   }
 
-  public static T ConvertDTOs<T>(dynamic jObject)
+  public static T ConvertToSpeckleDTOs<T>(dynamic jObject)
   {
     Objects.BuiltElements.Archicad.ArchicadLevel level = null;
     if (jObject.level != null)
@@ -197,6 +199,26 @@ public static class Utils
     }
 
     return speckleObject;
+  }
+
+  public static T ConvertToArchicadDTOs<T>(dynamic @object)
+  {
+    if (@object.elementProperties != null)
+    {
+      @object.elementProperties = null;
+    }
+
+    if (@object.componentProperties != null)
+    {
+      @object.componentProperties = null;
+    }
+
+    if (@object.GetType().GetProperty("elements") != null)
+    {
+      @object.elements = null;
+    }
+
+    return @object;
   }
 
   public static Objects.BuiltElements.Archicad.ArchicadLevel ConvertLevel(Objects.BuiltElements.Level level)

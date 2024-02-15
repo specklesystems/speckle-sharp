@@ -35,6 +35,9 @@ public sealed class Column : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(
+              archicadColumn
+            );
             columns.Add(archicadColumn);
             break;
           case Objects.BuiltElements.Column column:
@@ -94,7 +97,7 @@ public sealed class Column : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadColumn column =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
 
         column.units = Units.Meters;
         column.displayValue = Operations.ModelConverter.MeshesToSpeckle(

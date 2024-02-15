@@ -11,6 +11,7 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters;
 
@@ -37,6 +38,7 @@ public sealed class Wall : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(archiWall);
             walls.Add(archiWall);
             break;
           case Objects.BuiltElements.Wall wall:
@@ -97,7 +99,7 @@ public sealed class Wall : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadWall wall =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
 
         wall.units = Units.Meters;
         wall.displayValue = Operations.ModelConverter.MeshesToSpeckle(

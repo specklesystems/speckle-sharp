@@ -34,6 +34,7 @@ public sealed class Door : IConverter
         {
           case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
             archicadDoor.parentApplicationId = tc.parent.current.id;
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadDoor>(archicadDoor);
             doors.Add(archicadDoor);
             break;
           //case Objects.BuiltElements.Opening window:
@@ -85,7 +86,7 @@ public sealed class Door : IConverter
       foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
         Objects.BuiltElements.Archicad.ArchicadDoor door =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadDoor>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadDoor>(jToken);
         door.displayValue = Operations.ModelConverter.MeshesToSpeckle(
           elementModels.First(e => e.applicationId == door.applicationId).model
         );

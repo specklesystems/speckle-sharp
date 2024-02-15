@@ -7,6 +7,7 @@ using Archicad.Communication;
 using Archicad.Model;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Archicad.Converters;
 
@@ -34,6 +35,9 @@ public sealed class Window : IConverter
         {
           case Objects.BuiltElements.Archicad.ArchicadWindow archicadWindow:
             archicadWindow.parentApplicationId = tc.parent.current.id;
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadWindow>(
+              archicadWindow
+            );
             windows.Add(archicadWindow);
             break;
           //case Objects.BuiltElements.Opening window:
@@ -84,7 +88,7 @@ public sealed class Window : IConverter
       foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
         Objects.BuiltElements.Archicad.ArchicadWindow window =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWindow>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadWindow>(jToken);
 
         window.displayValue = Operations.ModelConverter.MeshesToSpeckle(
           elementModels.First(e => e.applicationId == window.applicationId).model
