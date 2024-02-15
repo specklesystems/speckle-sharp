@@ -60,10 +60,7 @@ public partial class ConverterRevit
           {
             speckleInfo[param.name] = param.value;
           }
-          catch (InvalidPropNameException)
-          { 
-          
-          }
+          catch (InvalidPropNameException) { }
         }
       }
     }
