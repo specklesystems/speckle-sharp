@@ -35,6 +35,7 @@ public sealed class Beam : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadBeam archiBeam:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(archiBeam);
             beams.Add(archiBeam);
             break;
           case Objects.BuiltElements.Beam beam:
@@ -97,7 +98,7 @@ public sealed class Beam : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadBeam beam =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
 
         // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
         {

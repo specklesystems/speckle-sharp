@@ -35,9 +35,11 @@ public sealed class Roof : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(archiRoof);
             roofs.Add(archiRoof);
             break;
           case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(archiShell);
             shells.Add(archiShell);
             break;
           case Objects.BuiltElements.Roof roof:
@@ -103,7 +105,7 @@ public sealed class Roof : IConverter
         {
           // convert between DTOs
           Objects.BuiltElements.Archicad.ArchicadRoof roof =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
+            Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
 
           roof.units = Units.Meters;
           roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(
@@ -145,7 +147,7 @@ public sealed class Roof : IConverter
         {
           // convert between DTOs
           Objects.BuiltElements.Archicad.ArchicadShell shell =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
+            Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
 
           shell.units = Units.Meters;
           shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(
