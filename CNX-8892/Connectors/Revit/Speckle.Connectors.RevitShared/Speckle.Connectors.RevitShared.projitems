@@ -9,12 +9,18 @@
     <Import_RootNamespace>Speckle.Connectors.Revit</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Plugin\SpeckleRevit.addin" />
-    <None Include="$(MSBuildThisFileDirectory)Plugin\SpeckleRevitCommand.cs" />
+    <Content Include="$(MSBuildThisFileDirectory)Plugin\Speckle.Connectors.Revit2023.addin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)DependencyInjection\" />
   </ItemGroup>
 </Project>

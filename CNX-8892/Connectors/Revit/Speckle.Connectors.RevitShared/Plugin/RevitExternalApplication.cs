@@ -1,6 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
@@ -16,7 +15,20 @@ internal class RevitExternalApplication : IExternalApplication
   //      I am beginning to think the shared project is not the way
   //      and an assembly which is invoked with some specialisation is the right way to go
   //      maybe subclassing, or some hook to inject som configuration
-  private RevitSettings _revitSettings = new RevitSettings { RevitVersionName = "REVIT2023" };
+  private readonly RevitSettings _revitSettings;
+  public static DockablePaneId DoackablePanelId;
+
+  public RevitExternalApplication()
+  {
+    // POC: load from JSON file?
+    _revitSettings = new RevitSettings
+    {
+      RevitTabName = "Speckle",
+      RevitVersionName = "2023",
+      RevitButtonName = "Speckle DUI3 (DI)",
+      RevitButtonText = "Revit Connector"
+    };
+  }
 
   public Result OnStartup(UIControlledApplication application)
   {

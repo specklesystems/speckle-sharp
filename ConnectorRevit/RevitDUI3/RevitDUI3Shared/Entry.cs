@@ -92,10 +92,12 @@ public class App : IExternalApplication
       // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
       BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
 #endif
+
 #if REVIT2023
     CefSharpPanel.Browser.JavascriptObjectRepository.NameConverter = null;
     BindingOptions bindingOptions = BindingOptions.DefaultBinder;
 #endif
+
     CefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
       foreach (BrowserBridge bridge in bridges)
@@ -107,6 +109,7 @@ public class App : IExternalApplication
           bindingOptions
         );
       }
+
 #if  REVIT2020
       // NOTE: Cef65 does not work with DUI3 in yarn dev mode. To test things you need to do `yarn build` and serve the build
       // folder at port 3000 (or change it to something else if you want to). Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
@@ -117,6 +120,7 @@ public class App : IExternalApplication
       CefSharpPanel.Browser.Load("http://localhost:3003");
       CefSharpPanel.Browser.ShowDevTools();
 #endif
+
 #if REVIT2023
       CefSharpPanel.Browser.Load("http://localhost:8082");
 #endif

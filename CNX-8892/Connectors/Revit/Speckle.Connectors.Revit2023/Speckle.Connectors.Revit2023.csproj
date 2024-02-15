@@ -1,6 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  
+  <Target AfterTargets="Clean" Name="CleanAddinFolder">
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2023;$(AppData)\Autodesk\Revit\Addins\2023\Speckle.Connectors.Revit2023;" />
+    <Delete Files="$(AppData)\Autodesk\Revit\Addins\2023\Speckle.Connectors.Revit2023.addin" />
+  </Target>
+  <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <CallTarget Condition="'$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+  </Target>
+  <Target Name="AfterBuildDebug">
+    <ItemGroup>
+      <RevitDLLs Include="$(TargetDir)\**\*.*" Exclude="$(TargetDir)*.addin" />
+      <SourceManifest Include="$(TargetDir)\Plugin\*.addin" />
+    </ItemGroup>
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\2023\Speckle.Connectors.Revit2023\%(RecursiveDir)" SourceFiles="@(RevitDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\2023\" SourceFiles="@(SourceManifest)" />
+  </Target>
+  
   <PropertyGroup>
     <Nullable>Enable</Nullable>
     <LangVersion>10.0</LangVersion>
@@ -147,20 +164,14 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AdWindows, Version=4.0.0.6, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2023.0.0\lib\net48\AdWindows.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="AdWindows, Version=5.0.3.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\AdWindows.dll</HintPath>
     </Reference>
-    <Reference Include="RevitAPI, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2023.0.0\lib\net48\RevitAPI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="RevitAPI, Version=24.0.0.0, Culture=neutral, processorArchitecture=Amd64">
+      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPI.dll</HintPath>
     </Reference>
-    <Reference Include="RevitAPIUI, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2023.0.0\lib\net48\RevitAPIUI.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="RevitAPIUI, Version=24.0.0.0, Culture=neutral, processorArchitecture=Amd64">
+      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPIUI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -170,14 +181,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="UIFramework, Version=23.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2023.0.0\lib\net48\UIFramework.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
+    <Reference Include="UIFramework, Version=24.0.0.0, Culture=neutral, processorArchitecture=Amd64">
+      <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\UIFramework.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Speckle.Autofac\Speckle.Autofac.csproj">
@@ -187,6 +193,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
   <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
