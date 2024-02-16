@@ -56,11 +56,7 @@ public partial class ConverterRevit
       {
         if (kvp.Value is Parameter param && param.value is not null)
         {
-          try
-          {
-            speckleInfo[param.name] = param.value;
-          }
-          catch (InvalidPropNameException) { }
+          speckleInfo[GetCleanBasePropName(param.name)] = param.value;
         }
       }
     }

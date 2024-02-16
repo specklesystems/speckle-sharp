@@ -1417,4 +1417,17 @@ public partial class ConverterRevit
 
     return headOffset;
   }
+
+  public static string GetCleanBasePropName(string propName)
+  {
+    var charsToRemove = new string[] { ".", "/" };
+    foreach (var c in charsToRemove)
+    {
+      if (propName.Contains(c))
+      {
+        propName = propName.Replace(c, string.Empty);
+      }
+    }
+    return propName;
+  }
 }
