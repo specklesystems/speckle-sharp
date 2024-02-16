@@ -2,6 +2,7 @@
     <PropertyGroup>
         <RootNamespace>Speckle.ConnectorAutocadDUI3</RootNamespace>
         <AssemblyName>ConnectorAutocadDUI3</AssemblyName>
+        <UseWPF>true</UseWPF>
         <TargetFramework>net48</TargetFramework>
         <StartAction>Program</StartAction>
         <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>
@@ -40,9 +41,6 @@
       <Reference Include="PresentationCore" />
       <Reference Include="PresentationFramework" />
       <Reference Include="System.Xaml" />
-      <Reference Include="WindowsFormsIntegration">
-        <HintPath>..\..\..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\WindowsFormsIntegration\v4.0_4.0.0.0__31bf3856ad364e35\WindowsFormsIntegration.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
     <Import Project="..\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems" Label="Shared" />
