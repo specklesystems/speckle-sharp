@@ -2,6 +2,7 @@
     <PropertyGroup>
         <RootNamespace>Speckle.ConnectorAutocadDUI3</RootNamespace>
         <AssemblyName>ConnectorAutocadDUI3</AssemblyName>
+        <UseWPF>true</UseWPF>
         <TargetFramework>net48</TargetFramework>
         <StartAction>Program</StartAction>
         <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2022\acad.exe</StartProgram>
