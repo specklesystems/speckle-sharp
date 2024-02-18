@@ -61,7 +61,14 @@ public class AutofacContainer
     return this;
   }
 
-  public AutofacContainer AddInstance<T>(T instance)
+  public AutofacContainer AddModule(Module module)
+  {
+    _builder.RegisterModule(module);
+
+    return this;
+  }
+
+  public AutofacContainer AddSingletonInstance<T>(T instance)
     where T : class
   {
     _builder.RegisterInstance(instance);

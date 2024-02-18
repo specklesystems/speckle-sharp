@@ -14,6 +14,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacUIModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
+      <DependentUpon>CefSharpPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
@@ -21,6 +25,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)DependencyInjection\" />
+    <None Include="$(MSBuildThisFileDirectory)Plugin\Directory.Build.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

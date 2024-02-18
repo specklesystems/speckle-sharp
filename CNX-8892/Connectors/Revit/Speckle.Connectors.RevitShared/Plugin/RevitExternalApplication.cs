@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
+using Speckle.Connectors.Revit.DependencyInjection;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -16,7 +18,8 @@ internal class RevitExternalApplication : IExternalApplication
   //      and an assembly which is invoked with some specialisation is the right way to go
   //      maybe subclassing, or some hook to inject som configuration
   private readonly RevitSettings _revitSettings;
-  public static DockablePaneId DoackablePanelId;
+
+  public static readonly DockablePaneId DoackablePanelId = new(new Guid("{f7b5da7c-366c-4b13-8455-b56f433f461e}"));
 
   public RevitExternalApplication()
   {
@@ -24,6 +27,7 @@ internal class RevitExternalApplication : IExternalApplication
     _revitSettings = new RevitSettings
     {
       RevitTabName = "Speckle",
+      RevitTabTitle = "Speckle DUI3 (DI)",
       RevitVersionName = "2023",
       RevitButtonName = "Speckle DUI3 (DI)",
       RevitButtonText = "Revit Connector"
@@ -36,13 +40,12 @@ internal class RevitExternalApplication : IExternalApplication
     {
       _container = new AutofacContainer(new StorageInfo());
 
-      // *** AUTOFAC MODULES ***
-
       // init DI
       _container
-        .LoadAutofacModules(new string[] { "<paths>" })
-        .AddInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
-        .AddInstance<UIControlledApplication>(application) // inject UIControlledApplication application
+        //.LoadAutofacModules(new string[] { "<paths>" }) // TODO, it's coming
+        .AddModule(new AutofacUIModule())
+        .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
+        .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
         .Build();
 
       // resolve root object
