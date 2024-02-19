@@ -74,7 +74,7 @@ public class BaseObjectSerializerV2
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
-        throw new SpeckleSerializeException($"Failed to extract (pre-serialize) properties from the {baseObj}");
+        throw new SpeckleSerializeException($"Failed to extract (pre-serialize) properties from the {baseObj}", ex);
       }
       string serialized = Dict2Json(converted);
       StoreObject((string)converted["id"]!, serialized);
