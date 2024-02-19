@@ -62,7 +62,7 @@ public static class BaseExtensions
   {
     var stack = new Stack<Base>();
     stack.Push(root);
-
+    
     while (stack.Count > 0)
     {
       Base current = stack.Pop();
@@ -101,7 +101,6 @@ public static class BaseExtensions
                 stack.Push(b);
               }
             }
-
             break;
           }
         }

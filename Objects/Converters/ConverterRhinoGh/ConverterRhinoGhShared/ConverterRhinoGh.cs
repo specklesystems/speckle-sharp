@@ -728,7 +728,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Alignment _:
       case Level _:
       case Dimension _:
-      case Collection c when !c.collectionType.ToLower().Contains("model"):
+      case Collection c when c.collectionType is not null && !c.collectionType.ToLower().Contains("model"):
         return true;
 #endif
 

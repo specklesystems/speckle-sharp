@@ -17,7 +17,6 @@ using Speckle.Core.Transports;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Operations = DUI3.Operations.Operations;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -177,10 +176,10 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    Base commitObject = new();
-  
-    List<Base> convertedObjects = new();
+    var modelWithLayers = new Collection { name = RhinoDoc.ActiveDoc.Name };
     int count = 0;
+    
+    Dictionary<int, Collection> layerCollectionCache = new();
     
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
@@ -189,20 +188,70 @@ public class SendBinding : ISendBinding, ICancelable
         throw new OperationCanceledException(cts.Token);
       }
 
-      count++;
+      // 1. get object layer
+      var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
+      
+      // 2. get or create a nested collection for it
+      var collectionHost = GetAndCreateObjectHostCollection(layerCollectionCache, layer, modelWithLayers);
+      
+      // 3. convert
       var converted = converter.ConvertToSpeckle(rhinoObject);
       converted.applicationId = rhinoObject.Id.ToString();
-      convertedObjects.Add(converted);
-      double progress = (double)count / rhinoObjects.Count;
       
-      SendBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = progress});
+      // 4. add to host
+      collectionHost.elements.Add(converted);
       
-      Thread.Sleep(550);
+      SendBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
+      
+      // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
+      // Thread.Sleep(550); 
     }
+    
+    // 5. profit
+    return modelWithLayers;
+  }
 
-    commitObject["@elements"] = convertedObjects;
-
-    return commitObject;
+  private Collection GetAndCreateObjectHostCollection(Dictionary<int, Collection> layerCollectionCache, Layer layer, Collection modelWithLayers)
+  {
+    if (layerCollectionCache.TryGetValue(layer.Index, out Collection value))
+    {
+      return value;
+    }
+    
+    var names = layer.FullPath.Split(new[] {Layer.PathSeparator}, StringSplitOptions.None);
+    var path = names[0];
+    var index = 0;
+    var previousCollection = modelWithLayers;
+    foreach (var layerName in names)
+    {
+      var existingLayerIndex = RhinoDoc.ActiveDoc.Layers.FindByFullPath(path, -1);
+      Collection childCollection = null;
+      if (layerCollectionCache.ContainsKey(existingLayerIndex))
+      {
+        childCollection = layerCollectionCache[existingLayerIndex];
+      }
+      else
+      {
+        childCollection = new Collection(layerName, "layer")
+        {
+          applicationId = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Id.ToString()
+        };
+        previousCollection.elements.Add(childCollection);
+        layerCollectionCache[existingLayerIndex] = childCollection;
+      }
+          
+      previousCollection = childCollection;
+          
+      if (index < names.Length - 1)
+      {
+        path += Layer.PathSeparator + names[index+1];
+      }
+      index++;
+    }
+    
+    layerCollectionCache[layer.Index] = previousCollection;
+    return previousCollection;
+    // var collectionHost = modelLayers.Traverse(m => m is not Collection).FirstOrDefault(obj => (obj as Collection)?.name == layer.Name) as Collection; // works, but it's better with a cache
   }
 
   private List<RhinoObject> GetObjectsFromDocument(SenderModelCard model)

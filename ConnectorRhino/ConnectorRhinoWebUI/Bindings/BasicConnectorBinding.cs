@@ -61,22 +61,33 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   
   public void HighlightModel(string modelCardId)
   {
-    if (_store.GetModelById(modelCardId) is not SenderModelCard model)
+    var objectIds = new List<string>();
+    var myModel = _store.GetModelById(modelCardId);
+
+    if (myModel is SenderModelCard sender)
     {
-      return;// NOTE: this will need to work for receive cards too...
+      objectIds = sender.SendFilter.GetObjectIds();
     }
 
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    List<RhinoObject> rhinoObjects = objectsIds
-      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
+    if (myModel is ReceiverModelCard receiver)
+    {
+      objectIds = receiver.ReceiveResult.BakedObjectIds;
+    }
+    
+    if (objectIds.Count == 0)
+    {
+      return; // TODO: drop a notification of sorts too
+    }
+    
+    List<RhinoObject> rhinoObjects = objectIds
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(o => o!=null)
       .ToList();
     
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
 
     if (rhinoObjects.Count == 0)
     {
-      RhinoDoc.ActiveDoc.Views.Redraw();
-      return;
+      return; // TODO: drop a notification of sorts too
     }
     
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));

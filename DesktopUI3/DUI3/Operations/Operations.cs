@@ -55,9 +55,6 @@ public static class Operations
     CancellationToken token
   )
   {
-    // Pass null progress value to let UI swooshing progress bar
-    Progress.DeserializerProgressToBrowser(parent, modelCard.ModelCardId, null);
-
     Account account = Accounts.GetAccount(modelCard.AccountId);
     Client client = new(account);
 
@@ -65,10 +62,7 @@ public static class Operations
 
     Base commitObject = await ReceiveCommit(account, modelCard.ProjectId, version.referencedObject, token)
       .ConfigureAwait(true);
-
-    // Pass 1 progress value to let UI finish progress
-    Progress.DeserializerProgressToBrowser(parent, modelCard.ModelCardId, 1);
-
+    
     return commitObject;
   }
 
