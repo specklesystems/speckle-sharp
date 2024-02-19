@@ -694,6 +694,7 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
                 client.Account.serverInfo.url
               );
               wrapper.CommitId = commitId;
+              wrapper.BranchName = branch;
               wrapper.SetAccount(client.Account);
 
               OutputWrappers.Add(wrapper);
