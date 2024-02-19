@@ -585,7 +585,7 @@ public partial class ConverterAutocadCivil
 
     // if offset profile, get offset distance and parent
     speckleProfile.offset = profile.Offset;
-    if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
+    if (profile.ProfileType is ProfileType.OffsetProfile && profile.OffsetParameters.ParentProfileId != ObjectId.Null)
     {
       if (Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) is CivilDB.Profile parent && parent.Name != null)
       {
