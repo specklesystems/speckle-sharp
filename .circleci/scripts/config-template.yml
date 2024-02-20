@@ -219,7 +219,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             Copy-Item "speckle-sharp-ci-tools\SignTool\smksp-x86.dll" -Destination "$($env:WINDIR)\syswow64\smksp.dll"
       - run:
           name: Register KSP
-          command: ci-tools\SignTool\smksp_registrar.exe register
+          command: speckle-sharp-ci-tools\SignTool\smksp_registrar.exe register
 
       - run:
           name: Build Installer
