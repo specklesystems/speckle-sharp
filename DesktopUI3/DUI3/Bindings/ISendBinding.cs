@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using DUI3.Models;
+using DUI3.Models.Card;
 using DUI3.Utils;
 
 namespace DUI3.Bindings;
@@ -21,12 +23,20 @@ public interface ISendBinding : IBinding
   public void CancelSend(string modelCardId);
 }
 
-public static class SendBindingEvents
+public static class SendBindingUiCommands
 {
-  public static readonly string FiltersNeedRefresh = "filtersNeedRefresh";
-  public static readonly string SendersExpired = "sendersExpired";
-  public static readonly string SenderProgress = "senderProgress";
-  public static readonly string CreateVersion = "createVersion";
+  private const string REFRESH_SEND_FILTERS_UI_COMMAND_NAME = "refreshSendFilters";
+  private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
+  private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
+
+  public static void RefreshSendFilters(IBridge bridge) => 
+    bridge.SendToBrowser(REFRESH_SEND_FILTERS_UI_COMMAND_NAME);
+
+  public static void SetModelsExpired(IBridge bridge, IEnumerable<string> expiredModelIds) => 
+    bridge.SendToBrowser(SET_MODELS_EXPIRED_UI_COMMAND_NAME, expiredModelIds);
+
+  public static void SetModelCreatedVersionId(IBridge bridge,string modelCardId, string versionId ) => 
+    bridge.SendToBrowser(SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME, new { modelCardId, versionId });
 }
 
 public class SenderModelCard : ModelCard
@@ -38,7 +48,7 @@ public interface ISendFilter
 {
   public string Name { get; set; }
   public string Summary { get; set; }
-
+  public bool IsDefault { get; set; }
   /// <summary>
   /// Gets the ids of the objects targeted by the filter from the host application.
   /// </summary>
@@ -57,6 +67,7 @@ public abstract class EverythingSendFilter : DiscriminatedObject, ISendFilter
 {
   public string Name { get; set; } = "Everything";
   public string Summary { get; set; } = "All supported objects in the file.";
+  public bool IsDefault { get; set; }
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
 }
@@ -65,18 +76,14 @@ public abstract class DirectSelectionSendFilter : DiscriminatedObject, ISendFilt
 {
   public string Name { get; set; } = "Selection";
   public string Summary { get; set; }
+  public bool IsDefault { get; set; }
   public List<string> SelectedObjectIds { get; set; } = new List<string>();
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
 }
 
-public class CreateVersion
+public class CreateVersionArgs
 {
   public string ModelCardId { get; set; }
-  public string AccountId { get; set; }
-  public string ModelId { get; set; }
-  public string ProjectId { get; set; }
   public string ObjectId { get; set; }
-  public string Message { get; set; }
-  public string SourceApplication { get; set; }
 }

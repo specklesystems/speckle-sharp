@@ -67,7 +67,6 @@ public class CancellationManager
     if (_operationsInProgress.TryGetValue(id, out CancellationTokenSource cts))
     {
       cts.Cancel();
-      cts.Dispose();
       _operationsInProgress.Remove(id);
     }
   }

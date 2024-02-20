@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Speckle.Core.Logging;
-using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using Speckle.Newtonsoft.Json.Serialization;
@@ -43,12 +43,12 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 
     var typeName =
       jsonObject.Value<string>("typeDiscriminator")
-      ?? throw new SpeckleDeserializeException(
+      ?? throw new Speckle.Core.Serialisation.SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed: did not find a typeDiscriminator field."
       );
     var type =
       GetTypeByName(typeName)
-      ?? throw new SpeckleDeserializeException(
+      ?? throw new Speckle.Core.Serialisation.SpeckleDeserializeException(
         "DUI3 Discriminator converter deserialization failed, type not found: " + typeName
       );
     var obj = Activator.CreateInstance(type);
@@ -80,14 +80,21 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
     {
       try
       {
-        var type = assembly.DefinedTypes.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
-        if (type != null)
+        // assembly.
+        var allAssemblyTypes = assembly.DefinedTypes;
+        var assemblyTypesEnumerable = allAssemblyTypes.ToList();
+        if (assemblyTypesEnumerable.Any())
         {
-          s_typeCache[name] = type;
-          return type;
+          var type = assemblyTypesEnumerable.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
+
+          if (type != null)
+          {
+            s_typeCache[name] = type;
+            return type;
+          }
         }
       }
-      catch (SpeckleException e)
+      catch (Exception e) // DO NOT CHANGE THIS TO SPECKLE EXCEPTION
       {
         Debug.WriteLine(e.Message);
       }

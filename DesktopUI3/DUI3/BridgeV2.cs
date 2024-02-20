@@ -251,7 +251,6 @@ public class BrowserBridge : IBridge
   /// <summary>
   /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`.
   /// </summary>
-  /// <param name="eventData"></param>
   public void SendToBrowser(string eventName, object data = null)
   {
     string script;

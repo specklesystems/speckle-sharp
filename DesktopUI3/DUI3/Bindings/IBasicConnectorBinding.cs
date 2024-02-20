@@ -1,4 +1,6 @@
-﻿using DUI3.Models;
+﻿using System;
+using DUI3.Models;
+using DUI3.Models.Card;
 
 namespace DUI3.Bindings;
 
@@ -20,8 +22,17 @@ public interface IBasicConnectorBinding : IBinding
   public void HighlightModel(string modelCardId);
 }
 
-public static class BasicConnectorBindingEvents
+public static class BasicConnectorBindingCommands
 {
-  public static readonly string DisplayToastNotification = "DisplayToastNotification";
-  public static readonly string DocumentChanged = "documentChanged";
+  private const string NOTIFY_DOCUMENT_CHANGED_EVENT_NAME = "documentChanged";
+  private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
+  private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
+
+  public static void NotifyDocumentChanged(IBridge bridge) => bridge.SendToBrowser(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME);
+  
+  public static void SetModelProgress(IBridge bridge,string modelCardId, ModelCardProgress progress) => 
+    bridge.SendToBrowser(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
+  
+  public static void SetModelError(IBridge bridge, string modelCardId, Exception error) =>
+    bridge.SendToBrowser(SET_MODEL_ERROR_UI_COMMAND_NAME, new { modelCardId, error = error.Message });
 }

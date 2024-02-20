@@ -1,9 +1,11 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DUI3.Bindings;
+using DUI3.Models.Card;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -15,63 +17,21 @@ namespace DUI3.Operations;
 
 public static class Operations
 {
-  public static async Task<string> Send(
-    IBridge bridge,
-    string modelCardId,
-    Base commitObject,
-    List<ITransport> transports,
-    CancellationToken token
-  )
-  {
-    // TODO: Fix send operations haven't succeeded
-    // Pass null progress value to let UI swooshing progress bar
-    Progress.SerializerProgressToBrowser(bridge, modelCardId, null);
-    var objectId = await Speckle.Core.Api.Operations
-      .Send(commitObject, token, transports, disposeTransports: true)
-      .ConfigureAwait(true);
-    // Pass 1 progress value to let UI finish progress
-    Progress.SerializerProgressToBrowser(bridge, modelCardId, 1);
-    return objectId;
-  }
-
-  public static void CreateVersion(IBridge bridge, SenderModelCard model, string objectId, string hostAppName)
-  {
-    bridge.SendToBrowser(
-      SendBindingEvents.CreateVersion,
-      new CreateVersion()
-      {
-        AccountId = model.AccountId,
-        ModelId = model.ModelId,
-        ModelCardId = model.Id,
-        ProjectId = model.ProjectId,
-        ObjectId = objectId,
-        Message = "Test",
-        SourceApplication = hostAppName
-      }
-    );
-  }
-
   public static async Task<Base> GetCommitBase(
     IBridge parent,
     ReceiverModelCard modelCard,
-    string versionId,
     CancellationToken token
   )
   {
-    // Pass null progress value to let UI swooshing progress bar
-    Progress.DeserializerProgressToBrowser(parent, modelCard.Id, null);
-
     Account account = Accounts.GetAccount(modelCard.AccountId);
     Client client = new(account);
 
-    Commit version = await client.CommitGet(modelCard.ProjectId, versionId, token).ConfigureAwait(false);
+    Commit version = await client.CommitGet(modelCard.ProjectId, modelCard.SelectedVersionId, token).ConfigureAwait(false);
 
-    Base commitObject = await ReceiveCommit(account, modelCard.ProjectId, version.referencedObject, token)
+    Base commitObject = await ReceiveCommit(account, modelCard.ProjectId, version.referencedObject, parent, token)
       .ConfigureAwait(true);
-
-    // Pass 1 progress value to let UI finish progress
-    Progress.DeserializerProgressToBrowser(parent, modelCard.Id, 1);
-
+    
+    client.Dispose();
     return commitObject;
   }
 
@@ -86,15 +46,14 @@ public static class Operations
     Account account,
     string projectId,
     string referencedObjectId,
+    IBridge parent,
     CancellationToken token
   )
   {
     using ServerTransport transport = new(account, projectId);
 
     Base? commitObject =
-      await Speckle.Core.Api.Operations
-        .Receive(referencedObjectId, cancellationToken: token, remoteTransport: transport)
-        .ConfigureAwait(false)
+      await Speckle.Core.Api.Operations.Receive(referencedObjectId, cancellationToken: token, remoteTransport: transport).ConfigureAwait(false)
       ?? throw new SpeckleException(
         $"Failed to receive commit: {referencedObjectId} objects from server: {nameof(Speckle.Core.Api.Operations)} returned null"
       );
