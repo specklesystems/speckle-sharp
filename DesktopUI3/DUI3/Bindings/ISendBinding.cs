@@ -27,9 +27,7 @@ public static class SendBindingUiCommands
 {
   private const string REFRESH_SEND_FILTERS_UI_COMMAND_NAME = "refreshSendFilters";
   private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
-  private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
-  private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
 
   public static void RefreshSendFilters(IBridge bridge) => 
     bridge.SendToBrowser(REFRESH_SEND_FILTERS_UI_COMMAND_NAME);
@@ -37,22 +35,8 @@ public static class SendBindingUiCommands
   public static void SetModelsExpired(IBridge bridge, IEnumerable<string> expiredModelIds) => 
     bridge.SendToBrowser(SET_MODELS_EXPIRED_UI_COMMAND_NAME, expiredModelIds);
 
-  public static void SetModelProgress(IBridge bridge,string modelCardId, ModelCardProgress progress) => 
-    bridge.SendToBrowser(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
-  
   public static void SetModelCreatedVersionId(IBridge bridge,string modelCardId, string versionId ) => 
     bridge.SendToBrowser(SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME, new { modelCardId, versionId });
-
-  public static void SetModelError(IBridge bridge, string modelCardId, Exception error) =>
-    bridge.SendToBrowser(SET_MODEL_ERROR_UI_COMMAND_NAME, new { modelCardId, error = error.Message });
-}
-
-public static class SendBindingEvents
-{
-  public static readonly string RefreshSendFilters = "refreshSendFilters";
-  public static readonly string SetModelsExpired = "setModelsExpired";
-  public static readonly string SetModelProgress = "setModelProgress";
-  public static readonly string SetModelCreatedVersionId = "setModelCreatedVersionId";
 }
 
 public class SenderModelCard : ModelCard

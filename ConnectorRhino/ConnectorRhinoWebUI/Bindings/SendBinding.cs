@@ -140,12 +140,12 @@ public class SendBinding : ISendBinding, ICancelable
       List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      SendBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
       string objectId = await Speckle.Core.Api.Operations
         .Send(commitObject, cts.Token, transports, disposeTransports: true)
         .ConfigureAwait(true);
       
-      SendBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
       
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
@@ -164,7 +164,7 @@ public class SendBinding : ISendBinding, ICancelable
         return;
       }
 
-      SendBindingUiCommands.SetModelError(Parent, modelCardId, e);
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
@@ -201,7 +201,7 @@ public class SendBinding : ISendBinding, ICancelable
       // 4. add to host
       collectionHost.elements.Add(converted);
       
-      SendBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
       
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
       // Thread.Sleep(550); 

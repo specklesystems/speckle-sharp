@@ -39,7 +39,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public async void Receive(string modelCardId, string versionId, string projectName, string modelName)
+  public async void Receive(string modelCardId)
   {
     try
     {
@@ -49,10 +49,10 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       // 1 - Get receiver card
       ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
       
-      ReceiveBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Downloading" });
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Downloading" });
       
       // 2 - Get commit object from server
-      Base commitObject = await Operations.GetCommitBase(Parent, modelCard, versionId, cts.Token).ConfigureAwait(true);
+      Base commitObject = await Operations.GetCommitBase(Parent, modelCard, cts.Token).ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
@@ -64,7 +64,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       var objectsToConvert = new List<(List<string>,Base)>();
       
-      ReceiveBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Parsing structure" });
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Parsing structure" });
 
       foreach (var (objPath, obj) in commitObject.TraverseWithPath(obj => obj is not Collection && converter.CanConvertToNative(obj))) // note the "obj is not collection" is working around a bug of sorts in the rh converter where we assume collections always have a collectionType; also unsure why collection to layer is in the converter (it's fine, but weird)
       {
@@ -79,7 +79,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         }
       }
 
-      var baseLayerName = $"Project {projectName}: Model {modelName}";
+      var baseLayerName = $"Project {modelCard.ProjectName}: Model {modelCard.ModelName}";
       var convertedIds = BakeObjects(objectsToConvert, baseLayerName, modelCardId, cts, converter);
       
       var receiveResult = new ReceiveResult() { BakedObjectIds = convertedIds, Display = true };
@@ -99,11 +99,11 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         return;
       }
 
-      SendBindingUiCommands.SetModelError(Parent, modelCardId, e); // NOTE: should be a shard UI binding command
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e); // NOTE: should be a shard UI binding command
     }
   }
 
-  public List<string> BakeObjects(List<(List<string>,Base)> objects, string baseLayerName, string modelCardId, CancellationTokenSource cts, ISpeckleConverter converter)
+  private List<string> BakeObjects(List<(List<string>,Base)> objects, string baseLayerName, string modelCardId, CancellationTokenSource cts, ISpeckleConverter converter)
   {
     // LETS FUCK AROUND AND FIND OUT 
     var rootLayerName = baseLayerName;
@@ -141,7 +141,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
       }
       
-      ReceiveBindingUiCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting & creating objects", Progress = (double)++count/objects.Count });
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting & creating objects", Progress = (double)++count/objects.Count });
       
       var converted = converter.ConvertToNative(baseObj);
       if (converted is GeometryBase newObject)
@@ -155,7 +155,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     return newObjectIds;
   }
 
-  public int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
+  private int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
   {
     var currentLayerName = baseLayerName;
     var previousLayer = Doc.Layers.FindName(currentLayerName);

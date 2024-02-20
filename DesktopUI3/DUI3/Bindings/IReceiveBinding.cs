@@ -12,7 +12,7 @@ public interface IReceiveBinding : IBinding
   /// </summary>
   /// <param name="modelCardId"> Model card id</param>
   /// <param name="versionId"> Version id to receive</param>
-  public void Receive(string modelCardId, string versionId, string projectName, string modelName);
+  public void Receive(string modelCardId);
 
   /// <summary>
   /// Instructs the host app to  cancel the receiving for a given model.
@@ -23,21 +23,11 @@ public interface IReceiveBinding : IBinding
 
 public static class ReceiveBindingUiCommands
 {
-  private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME = "setModelReceiveResult";
-  
-  public static void SetModelProgress(IBridge bridge,string modelCardId, ModelCardProgress progress) => 
-    bridge.SendToBrowser(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
   
   public static void SetModelConversionResult(IBridge bridge, string modelCardId, ReceiveResult receiveResult) =>
     bridge.SendToBrowser(SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME, new { modelCardId, receiveResult });
 
-}
-
-public static class ReceiveBindingEvents
-{
-  public static readonly string ReceiverProgress = "receiverProgress";
-  public static readonly string Notify = "notify";
 }
 
 public class ReceiverModelCard : ModelCard
