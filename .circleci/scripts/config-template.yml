@@ -199,6 +199,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Verify KSP is configured properly
           command: certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
       - run:
+          name: Sync Certs
+          command: |
+            & $env:SSM\smksp_cert_sync.exe
+      - run:
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
       - when:
