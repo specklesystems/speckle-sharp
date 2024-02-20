@@ -13,5 +13,9 @@
     "editor.tabSize": 2
   },
   "xml.format.spaceBeforeEmptyCloseTag": false,
-  "dotnet.defaultSolution": "SDK.slnf"
+  "dotnet.defaultSolution": "SDK.slnf",
+  "yaml.schemas": {
+    "*.ergogen.json": "/Users/alan/Downloads/schema.json",
+    "https://json.schemastore.org/circleciconfig.json": "file:///Users/alan/Documents/Speckle/speckle-sharp/.circleci/scripts/config-template.yml"
+  }
 }

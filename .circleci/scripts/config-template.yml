@@ -188,14 +188,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             certutil -decode certificate.txt certificate.p12
             echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
       - run:
-          name: List SMKSP Registrar
-          command: |
-            & $env:SSM\smksp_registrar.exe list
-      - run:
-          name: Register KSP
-          command: |
-            & $env:SSM\smksp_registrar.exe register
-      - run:
           name: Verify KSP is configured properly
           command: certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
       - run:
