@@ -8,12 +8,16 @@ rhino:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: rhino
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: grasshopper
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector-dotnet-mac:
       name: rhino-build-mac
       slnname: ConnectorRhino
@@ -47,7 +51,9 @@ dynamo:
       slnname: ConnectorDynamo
       dllname: SpeckleConnectorDynamo.dll
       slug: dynamo
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 
 revit:
   - build-connector:
@@ -63,66 +69,90 @@ autocadcivil:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: autocad
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: advancesteel
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 bentley:
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 
 teklastructures:
   - build-connector:
       slnname: ConnectorTeklaStructures
       dllname: SpeckleConnectorTeklaStructures.dll
       slug: teklastructures
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 csi:
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: etabs
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 
 archicad:
   - build-archicad-add-on:
@@ -150,7 +180,9 @@ archicad:
       dllname: ConnectorArchicad.dll
       slug: archicad
       build-with-msbuild: false
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
   - build-archicad-add-on-mac:
       archicadversion: "25"
       requires:
@@ -189,4 +221,6 @@ navisworks:
       slnname: ConnectorNavisworks
       dllname: SpeckleConnectorNavisworks.dll
       slug: navisworks
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
