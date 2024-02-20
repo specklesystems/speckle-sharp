@@ -452,10 +452,10 @@ public class StreamWrapper
     switch (Type)
     {
       case StreamWrapperType.Commit:
-        leftPart += $"{BranchName}@{CommitId}";
+        leftPart += $"{branchID}@{CommitId}";
         break;
       case StreamWrapperType.Branch:
-        leftPart += $"{BranchName}";
+        leftPart += $"{branchID}";
         break;
       case StreamWrapperType.Object:
         leftPart += $"{ObjectId}";
