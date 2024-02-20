@@ -9,14 +9,12 @@ rhino:
       dllname: SpeckleConnectorRhino.rhp
       slug: rhino
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: grasshopper
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector-dotnet-mac:
       name: rhino-build-mac
@@ -52,7 +50,6 @@ dynamo:
       dllname: SpeckleConnectorDynamo.dll
       slug: dynamo
       context:
-        - innosetup
         - digicert-signing-connectors-test
 
 revit:
@@ -61,7 +58,6 @@ revit:
       dllname: SpeckleConnectorRevit.dll
       slug: revit
       context:
-        - innosetup
         - digicert-signing-connectors-test
 
 autocadcivil:
@@ -70,21 +66,18 @@ autocadcivil:
       dllname: SpeckleConnectorAutocad.dll
       slug: autocad
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: advancesteel
       context:
-        - innosetup
         - digicert-signing-connectors-test
 bentley:
   - build-connector:
@@ -92,28 +85,24 @@ bentley:
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
       context:
-        - innosetup
         - digicert-signing-connectors-test
 
 teklastructures:
@@ -122,7 +111,6 @@ teklastructures:
       dllname: SpeckleConnectorTeklaStructures.dll
       slug: teklastructures
       context:
-        - innosetup
         - digicert-signing-connectors-test
 csi:
   - build-connector:
@@ -130,28 +118,24 @@ csi:
       dllname: SpeckleConnectorCSI.dll
       slug: etabs
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
       context:
-        - innosetup
         - digicert-signing-connectors-test
 
 archicad:
@@ -181,7 +165,6 @@ archicad:
       slug: archicad
       build-with-msbuild: false
       context:
-        - innosetup
         - digicert-signing-connectors-test
   - build-archicad-add-on-mac:
       archicadversion: "25"
@@ -222,5 +205,4 @@ navisworks:
       dllname: SpeckleConnectorNavisworks.dll
       slug: navisworks
       context:
-        - innosetup
         - digicert-signing-connectors-test
