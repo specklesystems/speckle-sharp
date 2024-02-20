@@ -6,6 +6,7 @@ using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
+using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Settings;
 using Rhino;
@@ -14,6 +15,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using DUI3.Utils;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 
 namespace ConnectorRhinoWebUI.Bindings;
@@ -22,9 +24,7 @@ public class SendBinding : ISendBinding, ICancelable
 {
   public string Name { get; set; } = "sendBinding";
   public IBridge Parent { get; set; }
-
   private readonly DocumentModelStore _store;
-
   public CancellationManager CancellationManager { get; } = new();
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
@@ -32,14 +32,15 @@ public class SendBinding : ISendBinding, ICancelable
   public SendBinding(DocumentModelStore store)
   {
     _store = store;
-
+    
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
-      Parent?.SendToBrowser(SendBindingEvents.FiltersNeedRefresh);
+      SendBindingUiCommands.RefreshSendFilters(Parent);
     };
 
     RhinoDoc.AddRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -51,6 +52,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     RhinoDoc.DeleteRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -62,6 +64,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     RhinoDoc.ReplaceRhinoObject += (_, e) =>
     {
+      // NOTE: This does not work if rhino starts and opens a blank doc;
       if (!_store.IsDocumentInit)
       {
         return;
@@ -75,7 +78,12 @@ public class SendBinding : ISendBinding, ICancelable
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter>() { new RhinoEverythingFilter(), new RhinoSelectionFilter(), new RhinoLayerFilter() };
+    return new List<ISendFilter>()
+    {
+      new RhinoEverythingFilter(), 
+      new RhinoSelectionFilter() { IsDefault = true }, 
+      new RhinoLayerFilter()
+    };
   }
 
   public List<CardSetting> GetSendSettings()
@@ -100,13 +108,22 @@ public class SendBinding : ISendBinding, ICancelable
       CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
-      SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
 
+      if (_store.GetModelById(modelCardId) is not SenderModelCard model)
+      {
+        throw new InvalidOperationException("No publish model card was found.");
+      }
+      
       // 2 - Check account exist
       Account account = Accounts.GetAccount(model.AccountId);
 
-      // 3 - Get elements to convert
+      // 3 - Get elements to convert, throw early if nothing is selected
       List<RhinoObject> rhinoObjects = GetObjectsFromDocument(model);
+
+      if (rhinoObjects.Count == 0)
+      {
+        throw new InvalidOperationException("No objects were found. Please update your send filter!");
+      }
 
       // 4 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(RhinoDoc.ActiveDoc, "Rhino7");
@@ -116,39 +133,135 @@ public class SendBinding : ISendBinding, ICancelable
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 6 - Get transports
       List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      string objectId = await Operations
-        .Send(Parent, modelCardId, commitObject, transports, cts.Token)
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      string objectId = await Speckle.Core.Api.Operations
+        .Send(commitObject, cts.Token, transports, disposeTransports: true)
         .ConfigureAwait(true);
-
-      if (cts.IsCancellationRequested)
+      
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
+      
+      // 8 - Create the version (commit)
+      var apiClient = new Client(account);
+      string versionId = await apiClient.CommitCreate(new CommitCreateInput()
       {
-        return;
-      }
-
-      // 8 - Create Version
-      Operations.CreateVersion(Parent, model, objectId, "Rhino");
+        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = objectId
+      }, cts.Token).ConfigureAwait(true);
+      
+      SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
+      apiClient.Dispose();
     }
+#pragma warning disable CA1031
     catch (Exception e)
+#pragma warning restore CA1031
     {
-      if (e is OperationCanceledException)
+      if (e is OperationCanceledException) // We do not want to display an error, we just stop sending.
       {
-        Progress.CancelSend(Parent, modelCardId);
         return;
       }
-      // TODO: Init here class to handle send errors to report UI, Seq etc..
-      throw;
+
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  private Base ConvertObjects(
+    List<RhinoObject> rhinoObjects,
+    ISpeckleConverter converter,
+    string modelCardId,
+    CancellationTokenSource cts
+  )
+  {
+    var modelWithLayers = new Collection { name = RhinoDoc.ActiveDoc.Name };
+    int count = 0;
+    
+    Dictionary<int, Collection> layerCollectionCache = new();
+    
+    foreach (RhinoObject rhinoObject in rhinoObjects)
+    {
+      if (cts.IsCancellationRequested)
+      {
+        throw new OperationCanceledException(cts.Token);
+      }
 
+      // 1. get object layer
+      var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
+      
+      // 2. get or create a nested collection for it
+      var collectionHost = GetAndCreateObjectHostCollection(layerCollectionCache, layer, modelWithLayers);
+      
+      // 3. convert
+      var converted = converter.ConvertToSpeckle(rhinoObject);
+      converted.applicationId = rhinoObject.Id.ToString();
+      
+      // 4. add to host
+      collectionHost.elements.Add(converted);
+      
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
+      
+      // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
+      // Thread.Sleep(550); 
+    }
+    
+    // 5. profit
+    return modelWithLayers;
+  }
+
+  private Collection GetAndCreateObjectHostCollection(Dictionary<int, Collection> layerCollectionCache, Layer layer, Collection modelWithLayers)
+  {
+    if (layerCollectionCache.TryGetValue(layer.Index, out Collection value))
+    {
+      return value;
+    }
+    
+    var names = layer.FullPath.Split(new[] {Layer.PathSeparator}, StringSplitOptions.None);
+    var path = names[0];
+    var index = 0;
+    var previousCollection = modelWithLayers;
+    foreach (var layerName in names)
+    {
+      var existingLayerIndex = RhinoDoc.ActiveDoc.Layers.FindByFullPath(path, -1);
+      Collection childCollection = null;
+      if (layerCollectionCache.ContainsKey(existingLayerIndex))
+      {
+        childCollection = layerCollectionCache[existingLayerIndex];
+      }
+      else
+      {
+        childCollection = new Collection(layerName, "layer")
+        {
+          applicationId = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Id.ToString()
+        };
+        previousCollection.elements.Add(childCollection);
+        layerCollectionCache[existingLayerIndex] = childCollection;
+      }
+          
+      previousCollection = childCollection;
+          
+      if (index < names.Length - 1)
+      {
+        path += Layer.PathSeparator + names[index+1];
+      }
+      index++;
+    }
+    
+    layerCollectionCache[layer.Index] = previousCollection;
+    return previousCollection;
+    // var collectionHost = modelLayers.Traverse(m => m is not Collection).FirstOrDefault(obj => (obj as Collection)?.name == layer.Name) as Collection; // works, but it's better with a cache
+  }
+
+  private List<RhinoObject> GetObjectsFromDocument(SenderModelCard model)
+  {
+    List<string> objectsIds = model.SendFilter.GetObjectIds();
+    return objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(obj => obj!=null).ToList();
+  }
+  
   private void RunExpirationChecks()
   {
     List<SenderModelCard> senders = _store.GetSenders();
@@ -160,46 +273,10 @@ public class SendBinding : ISendBinding, ICancelable
       bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.Id);
+        expiredSenderIds.Add(sender.ModelCardId);
       }
     }
-    Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
+    SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
-  }
-
-  private Base ConvertObjects(
-    List<RhinoObject> rhinoObjects,
-    ISpeckleConverter converter,
-    string modelCardId,
-    CancellationTokenSource cts
-  )
-  {
-    Base commitObject = new();
-
-    List<Base> convertedObjects = new();
-    int count = 0;
-    foreach (RhinoObject rhinoObject in rhinoObjects)
-    {
-      if (cts.IsCancellationRequested)
-      {
-        Progress.CancelSend(Parent, modelCardId, (double)count / rhinoObjects.Count);
-        break;
-      }
-
-      count++;
-      convertedObjects.Add(converter.ConvertToSpeckle(rhinoObject));
-      double progress = (double)count / rhinoObjects.Count;
-      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
-    }
-
-    commitObject["@elements"] = convertedObjects;
-
-    return commitObject;
-  }
-
-  private List<RhinoObject> GetObjectsFromDocument(SenderModelCard model)
-  {
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    return objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).ToList();
   }
 }

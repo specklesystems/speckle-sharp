@@ -8,8 +8,10 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -86,27 +88,37 @@ public class SendBinding : ISendBinding, ICancelable
       List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      string objectId = await Operations
-        .Send(Parent, modelCardId, commitObject, transports, cts.Token)
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      string objectId = await Speckle.Core.Api.Operations
+        .Send(commitObject, cts.Token, transports, disposeTransports: true)
         .ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 8 - Create Version
-      Operations.CreateVersion(Parent, model, objectId, "Autocad");
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
+      
+      // 8 - Create the version (commit)
+      var apiClient = new Client(account);
+      string versionId = await apiClient.CommitCreate(new CommitCreateInput()
+      {
+        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = objectId
+      }, cts.Token).ConfigureAwait(true);
+      
+      SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
+      apiClient.Dispose();
     }
     catch (Exception e)
     {
       if (e is OperationCanceledException)
       {
-        Progress.CancelSend(Parent, modelCardId);
         return;
       }
-      // TODO: Init here class to handle send errors to report UI, Seq etc..
-      throw;
+      
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
@@ -123,11 +135,11 @@ public class SendBinding : ISendBinding, ICancelable
       bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.Id);
+        expiredSenderIds.Add(sender.ModelCardId);
       }
     }
-
-    Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
+    
+    SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 
@@ -146,8 +158,7 @@ public class SendBinding : ISendBinding, ICancelable
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.CancelSend(Parent, modelCardId, (double)count / dbObjects.Count);
-        break;
+        throw new OperationCanceledException(cts.Token);
       }
       count++;
 
@@ -163,7 +174,7 @@ public class SendBinding : ISendBinding, ICancelable
 
         convertedObjects.Add(converted);
         double progress = (double)count / dbObjects.Count;
-        Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() {Status = "Converting", Progress = progress});
       }
       catch (SpeckleException e)
       {

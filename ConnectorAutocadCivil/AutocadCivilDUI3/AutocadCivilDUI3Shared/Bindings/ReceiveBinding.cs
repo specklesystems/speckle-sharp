@@ -10,6 +10,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using System.Collections;
 using System.Threading;
+using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
 
@@ -33,7 +34,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public async void Receive(string modelCardId, string versionId)
+  public async void Receive(string modelCardId)
   {
     try
     {
@@ -41,14 +42,14 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get receiver card
-      ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
 
       // 2 - Get commit object from server
-      Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+      Base commitObject = await Operations.GetCommitBase(Parent, modelCard, cts.Token).ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 3 - Get converter
@@ -59,15 +60,17 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       // 5 - Convert and Bake objects
       ConvertObjects(objectsToConvert, converter, modelCardId, cts);
+      
+      // TODO: FUCK AROUND AND FIND OUT
+      // Namely, get a receive result in the local state and to the UI
     }
     catch (Exception e)
     {
       if (e is OperationCanceledException)
       {
-        Progress.CancelReceive(Parent, modelCardId);
         return;
       }
-      // throw;
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
@@ -87,21 +90,19 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
         tr.Commit();
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
       count++;
       double progress = (double)count / objectsToConvert.Count;
-      Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() {Status="Converting", Progress = progress});
 
       List<object> objectsToAddBakeList = ConvertObject(objectToConvert, converter);
       objectsToBake.AddRange(objectsToAddBakeList);
     }
     BakeObjects(objectsToBake, tr);
 
-    Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-
+    BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() {Status="Conversion done", Progress = 1});
     tr.Commit();
   }
 

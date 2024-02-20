@@ -36,6 +36,7 @@ public class RhinoLayerFilter : ListValueInput, ISendFilter
 {
   public string Name { get; set; }
   public string Summary { get; set; }
+  public bool IsDefault { get; set; } 
 
   public RhinoLayerFilter()
   {
@@ -43,6 +44,8 @@ public class RhinoLayerFilter : ListValueInput, ISendFilter
     Summary = "How many layers are actually selected. UI should populate this.";
     foreach (var layer in RhinoDoc.ActiveDoc.Layers)
     {
+      if(layer.IsDeleted || layer.Disposed) continue;
+      
       Options.Add(new ListValueItem() { Id = layer.Id.ToString(), Name = layer.FullPath });
     }
   }

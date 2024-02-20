@@ -25,7 +25,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     _store = store;
     _store.DocumentChanged += (_, _) =>
     {
-      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+      BasicConnectorBindingCommands.NotifyDocumentChanged(Parent);
     };
   }
 
@@ -49,25 +49,47 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public void UpdateModel(ModelCard model)
   {
-    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
     _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)
   {
-    int index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
     _store.Models.RemoveAt(index);
   }
-
+  
   public void HighlightModel(string modelCardId)
   {
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
-    List<RhinoObject> rhinoObjects = objectsIds
-      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
-      .ToList();
+    var objectIds = new List<string>();
+    var myModel = _store.GetModelById(modelCardId);
 
+    if (myModel is SenderModelCard sender)
+    {
+      objectIds = sender.SendFilter.GetObjectIds();
+    }
+
+    if (myModel is ReceiverModelCard receiver)
+    {
+      objectIds = receiver.ReceiveResult.BakedObjectIds;
+    }
+    
+    if (objectIds.Count == 0)
+    {
+      return; // TODO: drop a notification of sorts too
+    }
+    
+    List<RhinoObject> rhinoObjects = objectIds
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(o => o!=null)
+      .ToList();
+    
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
+
+    if (rhinoObjects.Count == 0)
+    {
+      return; // TODO: drop a notification of sorts too
+    }
+    
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
 
     // Calculate the bounding box of the selected objects

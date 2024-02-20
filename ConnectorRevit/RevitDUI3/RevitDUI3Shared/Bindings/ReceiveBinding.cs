@@ -6,6 +6,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models.Card;
 using DUI3.Utils;
 using DUI3.Operations;
 using Revit.Async;
@@ -44,14 +45,14 @@ public class ReceiveBinding : IBinding, ICancelable
       CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get receiver card
-      ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
 
       // 2 - Get commit object from server
-      Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+      Base commitObject = await Operations.GetCommitBase(Parent, modelCard, cts.Token).ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 3 - Get converter
@@ -67,10 +68,10 @@ public class ReceiveBinding : IBinding, ICancelable
     {
       if (e is OperationCanceledException)
       {
-        Progress.CancelReceive(Parent, modelCardId);
         return;
       }
-      throw;
+      
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
@@ -95,18 +96,20 @@ public class ReceiveBinding : IBinding, ICancelable
           converter.SetContextDocument(t);
           List<string> errors = new();
           int count = 0;
+          
           foreach (Base objToConvert in objectsToConvert)
           {
             count++;
             if (cts.IsCancellationRequested)
             {
-              Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
-              break;
+              throw new OperationCanceledException(cts.Token);
             }
+            
             try
             {
               double progress = (double)count / objectsToConvert.Count;
-              Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
+              BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = progress});
+              
               object convertedObject = converter.ConvertToNative(objToConvert);
               RefreshView();
             }
@@ -116,8 +119,7 @@ public class ReceiveBinding : IBinding, ICancelable
               Console.WriteLine(e);
             }
           }
-          Notification.ReportReceive(Parent, errors, modelCardId, objectsToConvert.Count);
-
+          
           t.Commit();
 
           if (t.GetStatus() == TransactionStatus.RolledBack)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Rhino;
 
 namespace ConnectorRhinoWebUI.Utils;
@@ -9,7 +10,8 @@ namespace ConnectorRhinoWebUI.Utils;
 /// </summary>
 public static class RhinoIdleManager
 {
-  private static Dictionary<string, Action> s_calls = new();
+  // NOTE: ConcurrentDictionary possibly removing the collection has been modified errors in here
+  private static readonly ConcurrentDictionary<string, Action> s_sCalls = new();
   private static bool s_hasSubscribed;
 
   /// <summary>
@@ -18,8 +20,8 @@ public static class RhinoIdleManager
   /// <param name="action"> Action to call whenever Rhino become Idle.</param>
   public static void SubscribeToIdle(Action action)
   {
-    s_calls[action.Method.Name] = action;
-
+    s_sCalls[action.Method.Name] = action;
+    
     if (s_hasSubscribed)
     {
       return;
@@ -31,13 +33,13 @@ public static class RhinoIdleManager
 
   private static void RhinoAppOnIdle(object sender, EventArgs e)
   {
-    // NOTE: got a random collection was modified while iterating error.
-    // we should probably ensure we don't subscribe to idle while this func does work
-    foreach (KeyValuePair<string, Action> kvp in s_calls)
+    foreach (var kvp in s_sCalls)
     {
       kvp.Value();
     }
-    s_calls = new Dictionary<string, Action>();
+
+    s_sCalls.Clear();
+
     s_hasSubscribed = false;
     RhinoApp.Idle -= RhinoAppOnIdle;
   }
