@@ -170,31 +170,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - attach_workspace:
           at: ./
       - run:
-          name: "Digicert Signing Manager Setup"
-          command: |
-            cd C:\
-            curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
-            msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
-      - run:
-          name: Create Innosetup signing cert
-          command: |
-            echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
-            certutil -decode "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt" "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.pfx"
-      - run:
-          name: Create EV Auth & Signing Cert
-          command: |
-            cd C:\
-            echo $env:SM_CLIENT_CERT_FILE_B64 > certificate.txt
-            certutil -decode certificate.txt certificate.p12
-            echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
-      - run:
-          name: Verify KSP is configured properly
-          command: certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
-      - run:
-          name: Sync Certs
-          command: |
-            & $env:SSM\smksp_cert_sync.exe
-      - run:
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
       - when:
@@ -227,6 +202,23 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      - run:
+          name: "Digicert Signing Manager Setup"
+          command: |
+            cd C:\
+            curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
+            msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
+      - run:
+          name: Create Auth & OV Signing Cert
+          command: |
+            cd C:\
+            echo $env:SM_CLIENT_CERT_FILE_B64 > certificate.txt
+            certutil -decode certificate.txt certificate.p12
+            echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
+      - run:
+          name: Sync Certs
+          command: |
+            & $env:SSM\smksp_cert_sync.exe
       - run:
           name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
