@@ -55,7 +55,7 @@ public partial class ConverterRhinoGh
     };
 
     // see if this layer already exists in the doc
-    var layerPath = MakeValidName(collection["path"] as string);
+    var layerPath = MakeValidPath(collection["path"] as string);
     Layer existingLayer = GetLayer(layerPath);
 
     // update this layer if it exists & receive mode is on update
