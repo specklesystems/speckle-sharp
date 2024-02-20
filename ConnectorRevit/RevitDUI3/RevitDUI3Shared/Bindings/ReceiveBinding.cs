@@ -104,10 +104,12 @@ public class ReceiveBinding : IBinding, ICancelable
             {
               throw new OperationCanceledException(cts.Token);
             }
+            
             try
             {
               double progress = (double)count / objectsToConvert.Count;
               BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = progress});
+              
               object convertedObject = converter.ConvertToNative(objToConvert);
               RefreshView();
             }
