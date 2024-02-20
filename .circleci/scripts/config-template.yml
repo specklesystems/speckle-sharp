@@ -94,7 +94,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
             $HOME/.dotnet/dotnet --version
-      - run: 
+      - run:
           name: Enforce formatting
           command: |
             $HOME/.dotnet/dotnet tool restore
@@ -215,8 +215,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy DLLs
           command: |
-            Copy-Item "ci-tools\SignTool\smksp-x64.dll" -Destination "$($env:WINDIR)\system32\smksp.dll"
-            Copy-Item "ci-tools\SignTool\smksp-x86.dll" -Destination "$($env:WINDIR)\syswow64\smksp.dll"
+            Copy-Item "speckle-sharp-ci-tools\SignTool\smksp-x64.dll" -Destination "$($env:WINDIR)\system32\smksp.dll"
+            Copy-Item "speckle-sharp-ci-tools\SignTool\smksp-x86.dll" -Destination "$($env:WINDIR)\syswow64\smksp.dll"
       - run:
           name: Register KSP
           command: ci-tools\SignTool\smksp_registrar.exe register
