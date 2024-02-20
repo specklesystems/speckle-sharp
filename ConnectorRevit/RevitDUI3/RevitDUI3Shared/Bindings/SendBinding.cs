@@ -6,6 +6,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models.Card;
 using DUI3.Operations;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Kits;
@@ -13,6 +14,8 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Transports;
 using Speckle.Core.Models;
 using DUI3.Utils;
+using Speckle.Core.Api;
+using Operations = DUI3.Operations.Operations;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
@@ -61,15 +64,13 @@ public class SendBinding : ISendBinding, ICancelable
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.CancelSend(Parent, modelCardId, (double)count / elements.Count);
-        // throw new OperationCanceledException(); TBD -> Not sure
-        break;
+        throw new OperationCanceledException();
       }
 
       count++;
       convertedObjects.Add(converter.ConvertToSpeckle(revitElement));
       double progress = (double)count / elements.Count;
-      Progress.SenderProgressToBrowser(Parent, modelCardId, progress);
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() {Status="Converting", Progress = progress});
     }
 
     commitObject["@elements"] = convertedObjects;
@@ -101,41 +102,42 @@ public class SendBinding : ISendBinding, ICancelable
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 6 - Get transports
       List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      string objectId = await Operations
-        .Send(Parent, modelCardId, commitObject, transports, cts.Token)
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      string objectId = await Speckle.Core.Api.Operations
+        .Send(commitObject, cts.Token, transports, disposeTransports: true)
         .ConfigureAwait(true);
-
-      if (cts.IsCancellationRequested)
-      {
-        return;
-      }
-
+      
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
+      
       // 8 - Create Version
-      Operations.CreateVersion(Parent, model, objectId, "Revit");
+      var apiClient = new Client(account);
+      string versionId = await apiClient.CommitCreate(new CommitCreateInput()
+      {
+        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = objectId
+      }, cts.Token).ConfigureAwait(true);
+      
+      SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
+      apiClient.Dispose();
     }
     catch (Exception e)
     {
       if (e is OperationCanceledException)
       {
-        Progress.CancelSend(Parent, modelCardId);
         return;
       }
-      // TODO: Init here class to handle send errors to report UI, Seq etc..
-      throw;
+      
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
-  public void CancelSend(string modelCardId)
-  {
-    CancellationManager.CancelOperation(modelCardId);
-  }
+  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
   /// <summary>
   /// Keeps track of the changed element ids as well as checks if any of them need to trigger
@@ -181,8 +183,7 @@ public class SendBinding : ISendBinding, ICancelable
         expiredSenderIds.Add(sender.ModelCardId);
       }
     }
-
-    Parent.SendToBrowser(SendBindingEvents.SetModelsExpired, expiredSenderIds);
+    SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 }

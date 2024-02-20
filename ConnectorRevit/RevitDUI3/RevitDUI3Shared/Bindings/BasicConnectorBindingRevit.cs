@@ -28,7 +28,7 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     _store = store;
     _store.DocumentChanged += (_, _) =>
     {
-      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+      BasicConnectorBindingCommands.NotifyDocumentChanged(Parent);
     };
   }
 
