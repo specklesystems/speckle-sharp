@@ -254,7 +254,7 @@ public static class Units
   [Pure]
   public static string? GetUnitsFromString(string? unit)
   {
-    if (unit == null)
+    if (string.IsNullOrWhiteSpace(unit))
     {
       return null;
     }
