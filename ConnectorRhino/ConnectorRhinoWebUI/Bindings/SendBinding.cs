@@ -171,6 +171,7 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  
   private Base ConvertObjects(
     List<RhinoObject> rhinoObjects,
     ISpeckleConverter converter,

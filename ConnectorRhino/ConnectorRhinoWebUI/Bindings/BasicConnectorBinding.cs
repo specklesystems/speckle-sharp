@@ -76,7 +76,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     
     if (objectIds.Count == 0)
     {
-      return; // TODO: drop a notification of sorts too
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      return; 
     }
     
     List<RhinoObject> rhinoObjects = objectIds
@@ -87,7 +88,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (rhinoObjects.Count == 0)
     {
-      return; // TODO: drop a notification of sorts too
+      BasicConnectorBindingCommands.SetModelError(Parent,modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      return;
     }
     
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
