@@ -54,7 +54,9 @@ revit:
       slnname: ConnectorRevit
       dllname: SpeckleConnectorRevit.dll
       slug: revit
-      context: innosetup
+      context:
+        - innosetup
+        - digicert-signing-connectors-test
 
 autocadcivil:
   - build-connector:
