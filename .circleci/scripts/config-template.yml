@@ -220,7 +220,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Register KSP
           command: speckle-sharp-ci-tools\SignTool\smksp_registrar.exe register
-
+      - run:
+          name: Verify KSP is configured properly
+          command: certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
       - run:
           name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
