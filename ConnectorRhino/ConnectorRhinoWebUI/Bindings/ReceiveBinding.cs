@@ -1,8 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Threading;
 using DUI3;
 using DUI3.Bindings;
@@ -16,7 +13,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
+
 using ICancelable = DUI3.Operations.ICancelable;
 
 namespace ConnectorRhinoWebUI.Bindings;
@@ -83,9 +80,6 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       var convertedIds = BakeObjects(objectsToConvert, baseLayerName, modelCardId, cts, converter);
       
       var receiveResult = new ReceiveResult() { BakedObjectIds = convertedIds, Display = true };
-      
-      modelCard.ReceiveResult = receiveResult;
-      _store.WriteToFile(); // Update the local state
       
       ReceiveBindingUiCommands.SetModelConversionResult(Parent, modelCardId, receiveResult );
       

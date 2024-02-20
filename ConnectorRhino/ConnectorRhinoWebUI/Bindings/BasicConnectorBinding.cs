@@ -69,7 +69,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
       objectIds = sender.SendFilter.GetObjectIds();
     }
 
-    if (myModel is ReceiverModelCard receiver)
+    if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
     {
       objectIds = receiver.ReceiveResult.BakedObjectIds;
     }
