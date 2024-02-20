@@ -163,6 +163,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       installer:
         type: boolean
         default: false
+    environment:
+      SSM: 'C:\Program Files\DigiCert\DigiCert One Signing Manager Tools'
     steps:
       - cached-checkout
       - attach_workspace:
@@ -201,6 +203,12 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
       - run:
+          name: "Digicert Signing Manager Setup"
+          command: |
+            cd C:\
+            curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
+            msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
+      - run:
           name: Create Innosetup signing cert
           command: |
             echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
@@ -213,13 +221,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             certutil -decode certificate.txt certificate.p12
             echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
       - run:
-          name: Copy DLLs
-          command: |
-            Copy-Item "speckle-sharp-ci-tools\SignTool\smksp-x64.dll" -Destination "$($env:WINDIR)\system32\smksp.dll"
-            Copy-Item "speckle-sharp-ci-tools\SignTool\smksp-x86.dll" -Destination "$($env:WINDIR)\syswow64\smksp.dll"
+          name: List SMKSP Registrar
+          command: $env:SSM\smksp_registrar.exe list
       - run:
           name: Register KSP
-          command: speckle-sharp-ci-tools\SignTool\smksp_registrar.exe register
+          command: $env:SSM\smksp_registrar.exe register
       - run:
           name: Verify KSP is configured properly
           command: certutil.exe -csp "DigiCert Software Trust Manager KSP" -key -user
