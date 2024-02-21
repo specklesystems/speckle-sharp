@@ -70,6 +70,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         SpeckleAutocadCommand.CreateOrFocusSpeckle();
       }
       UpdateSavedStreams?.Invoke(streams);
+      MainViewModel.GoHome();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
