@@ -221,12 +221,14 @@ public static class Utils
 
   public static Objects.BuiltElements.Archicad.ArchicadLevel ConvertLevel(Objects.BuiltElements.Level level)
   {
-    return new Objects.BuiltElements.Archicad.ArchicadLevel
-    {
-      id = level.id,
-      applicationId = level.applicationId,
-      elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
-      name = level.name
-    };
+    return (level == null)
+      ? null
+      : new Objects.BuiltElements.Archicad.ArchicadLevel
+      {
+        id = level.id,
+        applicationId = level.applicationId,
+        elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
+        name = level.name
+      };
   }
 }

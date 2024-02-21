@@ -5,8 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Speckle.Core.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters;
@@ -39,16 +40,24 @@ public sealed class Floor : IConverter
             break;
           case Objects.BuiltElements.Floor floor:
 
-            Objects.BuiltElements.Archicad.ArchicadFloor newFloor =
-              new()
+            {
+              try
               {
-                id = floor.id,
-                applicationId = floor.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
-                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
-              };
-
-            floors.Add(newFloor);
+                floors.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadFloor
+                  {
+                    id = floor.id,
+                    applicationId = floor.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
+                    shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
+                  }
+                );
+              }
+              catch (SpeckleException ex)
+              {
+                SpeckleLog.Logger.Error(ex, "Polycurves conversion failed.");
+              }
+            }
             break;
         }
       }

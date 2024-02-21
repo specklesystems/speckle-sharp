@@ -5,8 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Speckle.Core.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters;
@@ -43,15 +44,25 @@ public sealed class Roof : IConverter
             shells.Add(archiShell);
             break;
           case Objects.BuiltElements.Roof roof:
-            roofs.Add(
-              new Objects.BuiltElements.Archicad.ArchicadRoof
+
+            {
+              try
               {
-                id = roof.id,
-                applicationId = roof.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(roof.level),
-                shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids)
+                roofs.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadRoof
+                  {
+                    id = roof.id,
+                    applicationId = roof.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(roof.level),
+                    shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids)
+                  }
+                );
               }
-            );
+              catch (SpeckleException ex)
+              {
+                SpeckleLog.Logger.Error(ex, "Polycurves conversion failed.");
+              }
+            }
             break;
         }
       }
