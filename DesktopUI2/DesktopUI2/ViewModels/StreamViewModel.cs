@@ -277,9 +277,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (index == -1)
       {
         index = Branches.FindIndex(x => x.name == StreamState.BranchName);
+
+        if (index == -1)
+        {
+          index = 0;
+        }
       }
 
-      SelectedBranch = index == -1 ? BranchesViewModel[0] : BranchesViewModel[index];
+      SelectedBranch = BranchesViewModel[index];
 
       //restore selected filter
       if (StreamState.Filter != null)
