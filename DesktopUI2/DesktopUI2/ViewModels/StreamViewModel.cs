@@ -270,19 +270,16 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
+      // get selected branch
+      // streams added by url stores branches by id, else the branch is stored by name
+      // default to the main branch (index 0) on failure to find branch by id or name
       int index = Branches.FindIndex(x => x.id == StreamState.BranchName);
-
       if (index == -1)
       {
         index = Branches.FindIndex(x => x.name == StreamState.BranchName);
-
-        if (index == -1)
-        {
-          index = 0;
-        }
       }
 
-      SelectedBranch = BranchesViewModel[index];
+      SelectedBranch = index == -1 ? BranchesViewModel[0] : BranchesViewModel[index];
 
       //restore selected filter
       if (StreamState.Filter != null)
