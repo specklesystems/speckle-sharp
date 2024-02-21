@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Autofac;
+using Speckle.ConnectorRevitDUI3.Bindings;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.Revit.Plugin;
 
@@ -20,6 +21,6 @@ class AutofacUIModule : Module
     builder.RegisterType<IBinding>().As<BasicConnectorBindingRevit>().SingleInstance();
     builder.RegisterType<IBinding>().As<SelectionBinding>().SingleInstance();
     builder.RegisterType<IBinding>().As<SendBinding>().SingleInstance();
-    builder.RegisterType<IBinding>().As<receiveBinding>().SingleInstance();
+    builder.RegisterType<IBinding>().As<ReceiveBinding>().SingleInstance();
   }
 }

@@ -15,7 +15,7 @@ using Speckle.Connectors.Revit.HostApp;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
-public class BasicConnectorBindingRevit : IBasicConnectorBinding
+internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
@@ -93,10 +93,8 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();
 
-    // POC: GetElementsFromDocument could be interfaced out
-    List<Element> elements = Elements.GetElementsFromDocument(doc, objectsIds);
-
-    List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
+    // POC: GetElementsFromDocument could be interfaced out, extension is cleaner
+    List<ElementId> elementIds = doc.GetElements(objectsIds).Select(e => e.Id).ToList();
 
     // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
     RevitTask.RunAsync(() =>

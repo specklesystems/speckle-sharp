@@ -14,18 +14,27 @@ using Speckle.Connectors.DUI.Bridge;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
-public class RevitPlugin : IRevitPlugin
+internal class RevitPlugin : IRevitPlugin
 {
   private readonly UIControlledApplication _uIControlledApplication;
   private readonly RevitSettings _revitSettings;
+  private readonly IEnumerable<IBridge> _bridges;
+  private readonly BindingOptions _bindingOptions;
 
-  public RevitPlugin(UIControlledApplication uIControlledApplication, RevitSettings revitSettings)
+  public RevitPlugin(
+    UIControlledApplication uIControlledApplication,
+    RevitSettings revitSettings,
+    IEnumerable<IBridge> bridges,
+    BindingOptions bindingOptions
+  )
   {
     _uIControlledApplication = uIControlledApplication;
     _revitSettings = revitSettings;
+    _bridges = bridges;
+    _bindingOptions = bindingOptions;
   }
 
-  public UIApplication? UiApplication { get; private set; }
+  public UIApplication? UIApplication { get; private set; }
 
   public CefSharpPanel CefSharpPanel { get; private set; }
 
@@ -38,14 +47,14 @@ public class RevitPlugin : IRevitPlugin
 
   public void Shutdown()
   {
-    // POC: should we be cleaning up he RibbonPanel etc...
+    // POC: should we be cleaning up the RibbonPanel etc...
     // Should we be indicating to any active in-flight functions that we are being closed?
   }
 
   // POC: Could be injected but maybe not worthwhile
   private void CreateTabAndRibbonPanel(UIControlledApplication application)
   {
-    // POC: some TL handling and feedback here
+    // POC: some top-level handling and feedback here
     try
     {
       application.CreateRibbonTab(_revitSettings.RevitTabName);
@@ -72,10 +81,10 @@ public class RevitPlugin : IRevitPlugin
     // POC: not sure what this is doing...  could be messing up our Aliasing????
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
-    UiApplication = new UIApplication(sender as Application);
+    UIApplication = new UIApplication(sender as Application);
 
     // POC: might be worth to interface this out, we shall see...
-    RevitTask.Initialize(UiApplication);
+    RevitTask.Initialize(UIApplication);
 
     RegisterPanelAndInitializePlugin();
   }
@@ -113,56 +122,54 @@ public class RevitPlugin : IRevitPlugin
       CefSharpPanel
     );
 
-    
-    IEnumerable<BrowserBridge> bridges = Factory
-      .CreateBindings(RevitDocumentStore)
-      .Select(
-        binding =>
-          new BrowserBridge(
-            CefSharpPanel.Browser,
-            binding,
-            CefSharpPanel.ExecuteScriptAsync,
-            CefSharpPanel.ShowDevTools
-          )
-      );
+    //IEnumerable<BrowserBridge> bridges = Factory
+    //  .CreateBindings(RevitDocumentStore)
+    //  .Select(
+    //    binding =>
+    //      new BrowserBridge(
+    //        CefSharpPanel.Browser,
+    //        binding,
+    //        CefSharpPanel.ExecuteScriptAsync,
+    //        CefSharpPanel.ShowDevTools
+    //      )
+    //  );
+    ///*
 
+    // POC: re-instate, can this be done with some injected class?
 #if REVIT2020
-          // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
-          BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
+              // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
+              BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
 #endif
-
 #if REVIT2023
-        CefSharpPanel.Browser.JavascriptObjectRepository.NameConverter = null;
-        BindingOptions bindingOptions = BindingOptions.DefaultBinder;
+            CefSharpPanel.Browser.JavascriptObjectRepository.NameConverter = null;
+            BindingOptions bindingOptions = BindingOptions.DefaultBinder;
 #endif
-
     CefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      foreach (BrowserBridge bridge in bridges)
+      foreach (IBridge bridge in _bridges)
       {
         CefSharpPanel.Browser.JavascriptObjectRepository.Register(
           bridge.FrontendBoundName,
           bridge,
           true,
-          bindingOptions
+          _bindingOptions
         );
       }
 
+      // POC: not sure where this comes from
 #if REVIT2020
-          // NOTE: Cef65 does not work with DUI3 in yarn dev mode. To test things you need to do `yarn build` and serve the build
-          // folder at port 3000 (or change it to something else if you want to). Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
-          // NOTE: To run the ui from a build, follow these steps:
-          // - run `yarn build` in the DUI3 folder
-          // - run ` PORT=3003  node .output/server/index.mjs` after the build
-
-          CefSharpPanel.Browser.Load("http://localhost:3003");
-          CefSharpPanel.Browser.ShowDevTools();
+              // NOTE: Cef65 does not work with DUI3 in yarn dev mode. To test things you need to do `yarn build` and serve the build
+              // folder at port 3000 (or change it to something else if you want to). Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
+              // NOTE: To run the ui from a build, follow these steps:
+              // - run `yarn build` in the DUI3 folder
+              // - run ` PORT=3003  node .output/server/index.mjs` after the build
+    
+              CefSharpPanel.Browser.Load("http://localhost:3003");
+              CefSharpPanel.Browser.ShowDevTools();
 #endif
-
 #if REVIT2023
-          CefSharpPanel.Browser.Load("http://localhost:8082");
+              CefSharpPanel.Browser.Load("http://localhost:8082");
 #endif
     };
-    */
   }
 }

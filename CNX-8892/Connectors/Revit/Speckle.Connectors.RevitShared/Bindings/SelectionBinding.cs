@@ -1,29 +1,31 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DUI3;
-using DUI3.Bindings;
-using Speckle.ConnectorRevitDUI3.Utils;
+using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.Revit.Plugin;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
-public class SelectionBinding : ISelectionBinding
+internal class SelectionBinding : ISelectionBinding
 {
   public string Name { get; set; } = "selectionBinding";
-  public IBridge Parent { get; set; }
-  private static UIApplication RevitApp { get; set; }
 
-  public SelectionBinding()
+  public IBridge Parent { get; private set; }
+
+  private readonly UIApplication _uiApplication;
+
+  public SelectionBinding(IRevitPlugin revitPlugin)
   {
-    RevitApp = RevitAppProvider.RevitApp;
+    _uiApplication = revitPlugin.UIApplication;
 
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
 #if REVIT2023
-    RevitApp.SelectionChanged += (_,_) => RevitIdleManager.SubscribeToIdle(OnSelectionChanged);
+    _uiApplication.SelectionChanged += (_,_) => RevitIdleManager.SubscribeToIdle(OnSelectionChanged);
 #endif
 
-    RevitApp.ViewActivated += (_, _) =>
+    _uiApplication.ViewActivated += (_, _) =>
     {
       Parent?.SendToBrowser(SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
@@ -37,9 +39,9 @@ public class SelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
-    List<Element> els = RevitApp.ActiveUIDocument.Selection
+    List<Element> els = _uiApplication.ActiveUIDocument.Selection
       .GetElementIds()
-      .Select(id => RevitApp.ActiveUIDocument.Document.GetElement(id))
+      .Select(id => _uiApplication.ActiveUIDocument.Document.GetElement(id))
       .ToList();
     List<string> cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
     List<string> ids = els.Select(el => el.UniqueId.ToString()).ToList();

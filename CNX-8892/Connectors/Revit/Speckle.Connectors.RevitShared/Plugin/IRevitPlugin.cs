@@ -10,5 +10,5 @@ internal interface IRevitPlugin
   void Initialise();
   void Shutdown();
 
-  UIApplication? UiApplication { get; }
+  UIApplication? UIApplication { get; }
 }

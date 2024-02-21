@@ -21,7 +21,7 @@ internal class RevitDocumentStore : DocumentModelStore
   public RevitDocumentStore(IRevitPlugin revitPlugin, JsonSerializerSettings serializerOption)
     : base(serializerOption)
   {
-    _uiApplication = revitPlugin.UiApplication;
+    _uiApplication = revitPlugin.UIApplication;
 
     _uiApplication.ApplicationClosing += (_, _) => WriteToFile();
 
@@ -59,22 +59,22 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    RevitTask.RunAsync(() =>
-    {
-      using Transaction t = new(doc.Document, "Speckle Write State");
-      t.Start();
-      using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
+    RevitTask.RunAsync(() => {
+      // POC: re-instate
+      //using Transaction t = new(doc.Document, "Speckle Write State");
+      //t.Start();
+      //using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
 
-      using Entity stateEntity = new(DocumentModelStoreSchema.GetSchema());
-      string serializedModels = Serialize();
-      stateEntity.Set("contents", serializedModels);
+      //using Entity stateEntity = new(DocumentModelStoreSchema.GetSchema());
+      //string serializedModels = Serialize();
+      //stateEntity.Set("contents", serializedModels);
 
-      using Entity idEntity = new(IdStorageSchema.GetSchema());
-      idEntity.Set("Id", s_revitDocumentStoreId);
+      //using Entity idEntity = new(IdStorageSchema.GetSchema());
+      //idEntity.Set("Id", s_revitDocumentStoreId);
 
-      ds.SetEntity(idEntity);
-      ds.SetEntity(stateEntity);
-      t.Commit();
+      //ds.SetEntity(idEntity);
+      //ds.SetEntity(stateEntity);
+      //t.Commit();
     });
   }
 
@@ -101,45 +101,47 @@ internal class RevitDocumentStore : DocumentModelStore
 
   private static DataStorage GetSettingsDataStorage(Document doc)
   {
-    using FilteredElementCollector collector = new(doc);
-    FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
+    // POC: re-instate
+    //using FilteredElementCollector collector = new(doc);
+    //FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
 
-    foreach (Element element in dataStorages)
-    {
-      DataStorage dataStorage = (DataStorage)element;
-      Entity settingIdEntity = dataStorage.GetEntity(IdStorageSchema.GetSchema());
-      if (!settingIdEntity.IsValid())
-      {
-        continue;
-      }
+    //foreach (Element element in dataStorages)
+    //{
+    //  DataStorage dataStorage = (DataStorage)element;
+    //  Entity settingIdEntity = dataStorage.GetEntity(IdStorageSchema.GetSchema());
+    //  if (!settingIdEntity.IsValid())
+    //  {
+    //    continue;
+    //  }
 
-      Guid id = settingIdEntity.Get<Guid>("Id");
-      if (!id.Equals(s_revitDocumentStoreId))
-      {
-        continue;
-      }
+    //  Guid id = settingIdEntity.Get<Guid>("Id");
+    //  if (!id.Equals(s_revitDocumentStoreId))
+    //  {
+    //    continue;
+    //  }
 
-      return dataStorage;
-    }
+    //  return dataStorage;
+    //}
     return null;
   }
 
   private static Entity GetSpeckleEntity(Document doc)
   {
-    using FilteredElementCollector collector = new(doc);
+    // POC: re-instate
+    //using FilteredElementCollector collector = new(doc);
 
-    FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
-    foreach (Element element in dataStorages)
-    {
-      DataStorage dataStorage = (DataStorage)element;
-      Entity settingEntity = dataStorage.GetEntity(DocumentModelStoreSchema.GetSchema());
-      if (!settingEntity.IsValid())
-      {
-        continue;
-      }
+    //FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
+    //foreach (Element element in dataStorages)
+    //{
+    //  DataStorage dataStorage = (DataStorage)element;
+    //  Entity settingEntity = dataStorage.GetEntity(DocumentModelStoreSchema.GetSchema());
+    //  if (!settingEntity.IsValid())
+    //  {
+    //    continue;
+    //  }
 
-      return settingEntity;
-    }
+    //  return settingEntity;
+    //}
     return null;
   }
 }

@@ -249,7 +249,7 @@
       <Name>Speckle.Autofac</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj">
-      <Project>{97236b6f-cb77-47b6-a917-0b69ded83fc8}</Project>
+      <Project>{d495d104-61d9-4476-b909-1c0e79c3650c}</Project>
       <Name>Speckle.Connectors.Utils</Name>
     </ProjectReference>
   </ItemGroup>

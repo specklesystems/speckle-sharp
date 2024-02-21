@@ -6,6 +6,8 @@ namespace Speckle.Connectors.Revit.HostApp;
 
 public static class Elements
 {
-  public static List<Element> GetElementsFromDocument(Document doc, IEnumerable<string> objectIds) =>
-    objectIds.Select(doc.GetElement).Where(x => x != null).ToList();
+  public static IEnumerable<Element> GetElements(this Document doc, IEnumerable<string> objectIds)
+  {
+    return objectIds.Select(doc.GetElement).Where(x => x != null);
+  }
 }

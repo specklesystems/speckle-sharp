@@ -9,6 +9,9 @@ namespace Speckle.Connectors.DUI.Bridge;
 /// </summary>
 public interface IBridge
 {
+  // POC: documnetation comments
+  string FrontendBoundName { get; }
+
   /// <summary>
   /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.
   /// </summary>

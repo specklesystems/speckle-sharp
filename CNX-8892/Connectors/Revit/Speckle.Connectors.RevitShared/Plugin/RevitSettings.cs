@@ -5,7 +5,7 @@ using Microsoft.SqlServer.Server;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
-public class RevitSettings // POC: need to derive some interface for things that require IHostSettings
+internal class RevitSettings // POC: need to derive some interface for things that require IHostSettings
 {
   public string RevitVersionName { get; set; }
   public string RevitTabName { get; set; }

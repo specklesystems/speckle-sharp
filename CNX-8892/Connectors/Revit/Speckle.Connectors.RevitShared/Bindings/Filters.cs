@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using DUI3.Bindings;
+using Speckle.Connectors.DUI.Bindings;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
