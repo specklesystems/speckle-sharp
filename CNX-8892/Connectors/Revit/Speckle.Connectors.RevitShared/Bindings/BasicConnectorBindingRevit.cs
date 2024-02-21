@@ -1,15 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using DUI3;
-using DUI3.Bindings;
-using DUI3.Models;
 using Revit.Async;
-using Sentry.Reflection;
-using Speckle.ConnectorRevitDUI3.Utils;
-using Speckle.Core.Kits;
+using Speckle.Connectors.Utils.Reflection;
+using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Models;
+using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Revit.HostApp;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
@@ -17,47 +19,52 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
-  private static UIApplication RevitApp { get; set; }
-  private static UIDocument UiDocument => RevitApp.ActiveUIDocument;
-  private static Document Doc => UiDocument.Document;
-  private readonly RevitDocumentStore _store;
 
-  public BasicConnectorBindingRevit(RevitDocumentStore store)
+  private readonly RevitDocumentStore _store;
+  private readonly RevitSettings _revitSettings;
+  private readonly UIApplication _uIApplication;
+
+  public BasicConnectorBindingRevit(RevitDocumentStore store, RevitSettings revitSettings, IRevitPlugin revitPlugin)
   {
-    RevitApp = RevitAppProvider.RevitApp;
     _store = store;
-    _store.DocumentChanged += (_, _) =>
-    {
-      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
-    };
+    _revitSettings = revitSettings;
+    _uIApplication = revitPlugin.UiApplication;
+
+    // POC: event binding
+    //_store.DocumentChanged += (_, _) =>
+    //{
+    //  Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+    //};
   }
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+  public string GetConnectorVersion()
+  {
+    return Assembly.GetAssembly(GetType()).GetVersion();
+  }
 
-  public string GetSourceApplicationName() => HostApplications.Revit.Slug;
+  public string GetSourceApplicationName() => _revitSettings.HostSlug; // POC: maybe not right place but...
 
   public string GetSourceApplicationVersion()
   {
-#if REVIT2020
-    return "2020";
-#endif
-#if REVIT2023
-    return "2023";
-#endif
+    // POC: maybe not right place but...
+    return _revitSettings.HostAppVersion;
   }
 
   public DocumentInfo GetDocumentInfo()
   {
-    if (UiDocument == null)
+    // POC: not sure why this would ever be null, is this needed?
+    if (_uIApplication == null)
     {
       return null;
     }
 
+    var doc = _uIApplication.ActiveUIDocument.Document;
+
     return new DocumentInfo
     {
-      Name = UiDocument.Document.Title,
-      Id = UiDocument.Document.GetHashCode().ToString(),
-      Location = UiDocument.Document.PathName
+      Name = doc.Title,
+      Id = doc.GetHashCode().ToString(),
+      Location = doc.PathName
     };
   }
 
@@ -79,17 +86,23 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 
   public void HighlightModel(string modelCardId)
   {
+    // POC: don't know if we can rely on storing the ActiveUIDocument, hence getting it each time
+    var activeUIDoc = _uIApplication.ActiveUIDocument;
+    var doc = _uIApplication.ActiveUIDocument.Document;
+
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();
-    List<Element> elements = Utils.Elements.GetElementsFromDocument(Doc, objectsIds);
+
+    // POC: GetElementsFromDocument could be interfaced out
+    List<Element> elements = Elements.GetElementsFromDocument(doc, objectsIds);
 
     List<ElementId> elementIds = elements.Select(e => e.Id).ToList();
 
     // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
     RevitTask.RunAsync(() =>
     {
-      UiDocument.Selection.SetElementIds(elementIds);
-      UiDocument.ShowElements(elementIds);
+      activeUIDoc.Selection.SetElementIds(elementIds);
+      activeUIDoc.ShowElements(elementIds);
 
       // Create a BoundingBoxXYZ to encompass the selected elements
       BoundingBoxXYZ selectionBoundingBox = new();
@@ -97,7 +110,7 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 
       foreach (ElementId elementId in elementIds)
       {
-        Element element = Doc.GetElement(elementId);
+        Element element = doc.GetElement(elementId);
 
         if (element != null)
         {
@@ -122,12 +135,12 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
       // Zoom the view to the selection bounding box
       if (!first)
       {
-        View activeView = UiDocument.ActiveView;
+        View activeView = activeUIDoc.ActiveView;
 
-        using Transaction tr = new(Doc, "Zoom to Selection");
+        using Transaction tr = new(doc, "Zoom to Selection");
         tr.Start();
         activeView.CropBox = selectionBoundingBox;
-        Doc.Regenerate();
+        doc.Regenerate();
         tr.Commit();
       }
     });

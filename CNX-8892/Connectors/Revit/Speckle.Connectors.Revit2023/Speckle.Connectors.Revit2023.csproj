@@ -198,6 +198,9 @@
     <Reference Include="RevitAPIUI, Version=24.0.0.0, Culture=neutral, processorArchitecture=Amd64">
       <HintPath>..\..\..\..\packages\Revit_All_Main_Versions_API_x64.2024.0.0\lib\net48\RevitAPIUI.dll</HintPath>
     </Reference>
+    <Reference Include="Speckle.Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\Speckle.Newtonsoft.Json.13.0.2\lib\net45\Speckle.Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -233,9 +236,21 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
+      <Project>{a2c8730a-b605-483e-914e-61f3ed7954d9}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj">
+      <Project>{86E64130-2DCE-4F51-B07C-B87138046E21}</Project>
+      <Name>Speckle.Connectors.DUI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Speckle.Autofac\Speckle.Autofac.csproj">
       <Project>{e854650a-9f2a-43d3-ab70-d9e34b33d2d6}</Project>
       <Name>Speckle.Autofac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj">
+      <Project>{97236b6f-cb77-47b6-a917-0b69ded83fc8}</Project>
+      <Name>Speckle.Connectors.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

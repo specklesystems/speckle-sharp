@@ -10,6 +10,7 @@ using Revit.Async;
 using CefSharp;
 using System.Linq;
 using System.IO;
+using Speckle.Connectors.DUI.Bridge;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -73,10 +74,9 @@ public class RevitPlugin : IRevitPlugin
 
     UiApplication = new UIApplication(sender as Application);
 
-    // POC: might be necessary to interface this out, we shall see...
+    // POC: might be worth to interface this out, we shall see...
     RevitTask.Initialize(UiApplication);
 
-    //
     RegisterPanelAndInitializePlugin();
   }
 
@@ -113,7 +113,7 @@ public class RevitPlugin : IRevitPlugin
       CefSharpPanel
     );
 
-    /*
+    
     IEnumerable<BrowserBridge> bridges = Factory
       .CreateBindings(RevitDocumentStore)
       .Select(
