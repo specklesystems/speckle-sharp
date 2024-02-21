@@ -275,10 +275,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (index == -1)
       {
         index = Branches.FindIndex(x => x.name == StreamState.BranchName);
-      }
-      if (index == -1)
-      {
-        index = 0;
+
+        if (index == -1)
+        {
+          index = 0;
+        }
       }
 
       SelectedBranch = BranchesViewModel[index];
