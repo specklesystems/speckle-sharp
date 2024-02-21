@@ -249,7 +249,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         //receive modes
         ReceiveModes = Bindings.GetReceiveModes();
 
-        if (!ReceiveModes.Any())
+        if (ReceiveModes.Count == 0)
         {
           throw new InvalidOperationException("No Receive Mode is available.");
         }
@@ -262,7 +262,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       //get available settings from our bindings
       Settings = Bindings.GetSettings();
-      HasSettings = Settings.Any();
+      HasSettings = Settings.Count != 0;
 
       //get available filters from our bindings
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
@@ -270,25 +270,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
-      //TODO: Core's API calls and the StreamWrapper class need to be updated to properly support FE2 links
-      //this is a temporary workaround
-      var index = -1;
-      if (UseFe2)
-      {
-        index = Branches.FindIndex(x => x.id == StreamState.BranchName);
-      }
-      else
+      int index = Branches.FindIndex(x => x.id == StreamState.BranchName);
+
+      if (index == -1)
       {
         index = Branches.FindIndex(x => x.name == StreamState.BranchName);
       }
-      if (index != -1)
+      if (index == -1)
       {
-        SelectedBranch = BranchesViewModel[index];
+        index = 0;
       }
-      else
-      {
-        SelectedBranch = BranchesViewModel[0];
-      }
+
+      SelectedBranch = BranchesViewModel[index];
 
       //restore selected filter
       if (StreamState.Filter != null)
