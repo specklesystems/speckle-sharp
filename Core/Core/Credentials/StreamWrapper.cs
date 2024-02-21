@@ -58,6 +58,8 @@ public class StreamWrapper
   public string ServerUrl { get; set; }
   public string StreamId { get; set; }
   public string? CommitId { get; set; }
+
+  /// <remarks>May be an ID instead for FE2 urls</remarks>
   public string? BranchName { get; set; }
   public string? ObjectId { get; set; }
 
