@@ -68,8 +68,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       if (streams.Count > 0)
       {
         SpeckleAutocadCommand.CreateOrFocusSpeckle();
-        UpdateSavedStreams?.Invoke(streams);
       }
+      UpdateSavedStreams?.Invoke(streams);
+      MainViewModel.GoHome();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
