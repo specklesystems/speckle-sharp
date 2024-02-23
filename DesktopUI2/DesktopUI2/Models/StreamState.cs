@@ -100,6 +100,7 @@ public class StreamState
   /// <summary>
   /// The Selected Branch
   /// </summary>
+  /// <remarks>May be an ID instead</remarks>
   [JsonProperty]
   public string BranchName { get; set; }
 

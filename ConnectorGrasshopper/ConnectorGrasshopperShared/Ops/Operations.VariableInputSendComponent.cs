@@ -689,8 +689,14 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
               var commitId = await client.CommitCreate(commitCreateInput, CancellationToken);
 
               var wrapper = new StreamWrapper(
-                $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"
+                ((ServerTransport)transport).StreamId,
+                client.Account.userInfo.id,
+                client.Account.serverInfo.url
               );
+              wrapper.CommitId = commitId;
+              wrapper.BranchName = branch;
+              wrapper.SetAccount(client.Account);
+
               OutputWrappers.Add(wrapper);
             }
             catch (Exception e) when (!e.IsFatal())

@@ -50,6 +50,28 @@ public static class Utils
   }
 
   /// <summary>
+  /// Creates a valid path for Rhino layers.
+  /// </summary>
+  /// <param name="str"></param>
+  /// <returns></returns>
+  public static string MakeValidPath(string str)
+  {
+    if (string.IsNullOrEmpty(str))
+    {
+      return str;
+    }
+
+    string validPath = "";
+    string[] layerNames = str.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.None);
+    foreach (var item in layerNames)
+    {
+      validPath += string.IsNullOrEmpty(validPath) ? MakeValidName(item) : Layer.PathSeparator + MakeValidName(item);
+    }
+
+    return validPath;
+  }
+
+  /// <summary>
   /// Attemps to retrieve a Guid from a string
   /// </summary>
   /// <param name="s"></param>
@@ -141,7 +163,7 @@ public static class Utils
       throw new ArgumentException("Layer name is invalid.");
     }
 
-    using Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
+    Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
     if (parentLayer != null)
     {
       try
@@ -174,7 +196,7 @@ public static class Utils
   public static Layer GetLayer(this RhinoDoc doc, string path, bool makeIfNull = false)
   {
     Layer layer;
-    var cleanPath = MakeValidName(path);
+    var cleanPath = MakeValidPath(path);
     int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
     if (index is RhinoMath.UnsetIntIndex && makeIfNull)
     {

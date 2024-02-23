@@ -35,23 +35,26 @@ public sealed class Beam : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadBeam archiBeam:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(archiBeam);
             beams.Add(archiBeam);
             break;
           case Objects.BuiltElements.Beam beam:
 
             // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
             {
-              var baseLine = (Line)beam.baseLine;
-              var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam
+              if (beam.baseLine is Line baseLine)
               {
-                id = beam.id,
-                applicationId = beam.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(beam.level),
-                begC = Utils.ScaleToNative(baseLine.start),
-                endC = Utils.ScaleToNative(baseLine.end)
-              };
-
-              beams.Add(newBeam);
+                beams.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadBeam
+                  {
+                    id = beam.id,
+                    applicationId = beam.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(beam.level),
+                    begC = Utils.ScaleToNative(baseLine.start),
+                    endC = Utils.ScaleToNative(baseLine.end)
+                  }
+                );
+              }
             }
 
             break;
@@ -97,7 +100,7 @@ public sealed class Beam : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadBeam beam =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadBeam>(jToken);
 
         // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
         {
