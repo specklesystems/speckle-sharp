@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -7,18 +8,25 @@ namespace AutocadCivilDUI3Shared.Utils;
 
 public static class Objects
 {
-  public static List<DBObject> GetObjectsFromDocument(Document doc, IEnumerable<string> objectIds)
+  public static List<(DBObject obj, string layer, string applicationId)> GetObjectsFromDocument(Document doc, IEnumerable<string> objectIds)
   {
     using DocumentLock acLckDoc = doc.LockDocument();
+    var dbObjects = new List<(DBObject, string layer, string applicationId)>();
     using Transaction tr = doc.Database.TransactionManager.StartTransaction();
-    List<DBObject> dbObjects = objectIds.Select(objectId => GetObjectFromDocument(tr, objectId)).ToList();
+    foreach (var objectIdHandle in objectIds)
+    {
+      var handle = new Handle(Convert.ToInt64(objectIdHandle));
+      var objectId = doc.Database.GetObjectId(false, handle, 0);
+      var dbObject = tr.GetObject(objectId, OpenMode.ForRead);
+      if(dbObject == null)
+      {
+        continue;
+      }
+
+      var layer = (dbObject as Entity)?.Layer;
+      dbObjects.Add((dbObject, layer, objectIdHandle));
+    }
     tr.Commit();
     return dbObjects;
-  }
-
-  private static DBObject GetObjectFromDocument(Transaction tr, string objectId)
-  {
-    Utils.GetHandle(objectId, out Handle hn);
-    return hn.GetObject(tr, out string _, out string _, out string _);
   }
 }

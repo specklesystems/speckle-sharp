@@ -1,11 +1,13 @@
+using System.Collections.Generic;
 using Autodesk.AutoCAD.ApplicationServices;
 using DUI3.Models;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
 namespace AutocadCivilDUI3Shared.Utils;
 
 public class AutocadDocumentModelStore : DocumentModelStore
 {
-  private static Document Doc => Application.DocumentManager.MdiActiveDocument;
+  private static Document Doc { get; set; }
   private static string s_previousDocName;
 
   public AutocadDocumentModelStore()
@@ -14,43 +16,66 @@ public class AutocadDocumentModelStore : DocumentModelStore
     {
       IsDocumentInit = true;
     }
-    Application.DocumentManager.MdiActiveDocument.BeginDocumentClose += (_, _) => WriteToFile();
-    Application.DocumentManager.MdiActiveDocument.Editor.Document.Database.BeginSave += (_, _) => WriteToFile();
-    Application.DocumentWindowCollection.DocumentWindowActivated += (sender, e) =>
-      NotifyDocumentChangedIfNeeded(e.DocumentWindow.Document as Document);
-    Application.DocumentManager.DocumentActivated += (sender, e) => NotifyDocumentChangedIfNeeded(e.Document);
+
+    Application.DocumentManager.DocumentToBeDestroyed += (_,_) =>  WriteToFile();
+    Application.DocumentManager.DocumentActivated += (_, e) => OnDocChangeInternal(e.Document);
+    Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated +=
+      (_, args) => OnDocChangeInternal(args.DocumentWindow.Document as Document);
   }
 
-  private void NotifyDocumentChangedIfNeeded(Document doc)
+  /// <summary>
+  /// Tracks whether the doc has been subscribed to save events.
+  /// TODO: two separate docs can have the same name, this is a brittle implementation - should be correlated with file location. 
+  /// </summary>
+  private readonly List<string> _saveToDocSubTracker = new();
+  
+  private void OnDocChangeInternal(Document doc)
   {
-    if (doc == null || Doc == null)
+    Doc = doc;
+    var nullDocName = "Null Doc";
+    var currentDocName = doc != null ? doc.Name : nullDocName;
+    if (s_previousDocName == currentDocName)
     {
       return;
     }
-
-    if (s_previousDocName == doc.Name)
+    
+    s_previousDocName = doc != null ? doc.Name : nullDocName;
+    
+    if (doc!=null && !_saveToDocSubTracker.Contains(doc.Name))
     {
-      return;
+      doc.BeginDocumentClose += (_,_) => WriteToFile();
+      doc.Database.BeginSave += (_,_) => WriteToFile();
+      _saveToDocSubTracker.Add(doc.Name);
     }
-
-    s_previousDocName = doc.Name;
+    
     ReadFromFile();
     OnDocumentChanged();
   }
 
   public override void ReadFromFile()
   {
+    Models = new List<ModelCard>();
+    if (Doc == null)
+    {
+      return;
+    }
+    
     string serializedModelCards = AutocadDocumentManager.ReadModelCards(Doc);
     if (serializedModelCards == null)
     {
-      Models = new System.Collections.Generic.List<ModelCard>();
       return;
     }
+    
     Models = Deserialize(serializedModelCards);
   }
 
   public override void WriteToFile()
   {
+    if (Doc == null)
+    {
+      return;
+    }
+
     string modelCardsString = Serialize();
     AutocadDocumentManager.WriteModelCards(Doc, modelCardsString);
   }

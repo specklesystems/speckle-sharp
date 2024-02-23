@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -17,6 +18,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
 namespace AutocadCivilDUI3Shared.Bindings;
 
@@ -28,56 +30,65 @@ public class SendBinding : ISendBinding, ICancelable
 
   private readonly AutocadDocumentModelStore _store;
 
-  private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+  private Document Doc => Application.DocumentManager.MdiActiveDocument;
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   public SendBinding(AutocadDocumentModelStore store)
   {
     _store = store;
-
-    Database db = HostApplicationServices.WorkingDatabase;
-    db.ObjectAppended += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    db.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
-    db.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+    Application.DocumentManager.DocumentActivated += (sender, args) => SubscribeToObjectChanges(args.Document);
   }
 
-  private void OnChangeChangedObjectIds(DBObject dBObject)
+  private readonly List<string> _docSubsTracker = new();
+  private void SubscribeToObjectChanges(Document doc)
   {
-    if (!_store.IsDocumentInit)
+    if (doc == null || doc.Database == null || _docSubsTracker.Contains(doc.Name))
     {
       return;
     }
 
-    ChangedObjectIds.Add(dBObject.Id.ToString());
-    RunExpirationChecks();
+    _docSubsTracker.Add(doc.Name);
+    doc.Database.ObjectAppended += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+    doc.Database.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+    doc.Database.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
+  }
+  
+  private void OnChangeChangedObjectIds(DBObject dBObject)
+  { 
+    ChangedObjectIds.Add(dBObject.Handle.Value.ToString());
+    AutocadIdleManager.SubscribeToIdle(RunExpirationChecks);
   }
 
   public List<ISendFilter> GetSendFilters() => new() { new AutocadEverythingFilter(), new AutocadSelectionFilter() };
 
   public CancellationManager CancellationManager { get; } = new();
 
-  public async void Send(string modelCardId)
+  public void Send(string modelCardId)
+  {
+    Parent.RunOnMainThread(() => SendInternal(modelCardId));
+  }
+
+  private async void SendInternal(string modelCardId)
   {
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-      // 1 - Get model
-      SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+      // 1 - Setup
+      var model = _store.GetModelById(modelCardId) as SenderModelCard;
+      var account = Accounts.GetAccount(model.AccountId);
+      var converter = Converters.GetConverter(Doc, Utils.Utils.VersionedAppName);
 
-      // 2 - Check account exist
-      Account account = Accounts.GetAccount(model.AccountId);
-
-      // 3 - Get elements to convert
-      List<DBObject> dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
-
-      // 4 - Get converter
-      ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.Utils.VersionedAppName);
-
+      // 2 - Get elements to convert
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
+      if (dbObjects.Count == 0)
+      {
+        throw new InvalidOperationException("No objects were found. Please update your send filter!");
+      }
       // 5 - Convert objects
-      Base commitObject = ConvertObjects(dbObjects, converter, modelCardId, cts);
+      var commitObject = ConvertObjects(dbObjects, converter, modelCardId, cts);
 
       if (cts.IsCancellationRequested)
       {
@@ -111,7 +122,7 @@ public class SendBinding : ISendBinding, ICancelable
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
-    catch (Exception e)
+    catch (Exception e) // NOTE: Always catch everything we can!
     {
       if (e is OperationCanceledException)
       {
@@ -144,48 +155,50 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   private Base ConvertObjects(
-    List<DBObject> dbObjects,
+    List<(DBObject obj, string layer, string applicationId)> dbObjects,
     ISpeckleConverter converter,
     string modelCardId,
     CancellationTokenSource cts
   )
   {
-    Base commitObject = new();
-
-    List<Base> convertedObjects = new();
+    var modelWithLayers = new Collection() { name = Doc.Name, collectionType = "root" };
+    var collectionCache = new Dictionary<string, Collection>();
+    
     int count = 0;
-    foreach (DBObject obj in dbObjects)
+    foreach (var tuple in dbObjects)
     {
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException(cts.Token);
       }
-      count++;
-
       try
       {
-        // convert obj
-        Base converted = converter.ConvertToSpeckle(obj);
+        Base converted = converter.ConvertToSpeckle(tuple.obj);
+        converted.applicationId = tuple.applicationId;
+
         if (converted == null)
         {
-          // TODO: report!
-          continue;
+          // TODO: report, error out, etc.
         }
+        
+        // Create and add a collection for each layer if not done so already.
+        if (!collectionCache.ContainsKey(tuple.layer))
+        {
+          collectionCache[tuple.layer] = new Collection() { name = tuple.layer, collectionType = "layer" };
+          modelWithLayers.elements.Add(collectionCache[tuple.layer]);
+        }
+        
+        collectionCache[tuple.layer].elements.Add(converted);
 
-        convertedObjects.Add(converted);
-        double progress = (double)count / dbObjects.Count;
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() {Status = "Converting", Progress = progress});
+        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count});
       }
-      catch (SpeckleException e)
+      catch (Exception e) // THE FUCK
       {
+        // TODO: Add to report, etc.
         Debug.WriteLine(e.Message);
-        // FIXME: Figure it out why it's happening!
-        continue;
       }
     }
 
-    commitObject["@elements"] = convertedObjects;
-
-    return commitObject;
+    return modelWithLayers;
   }
 }
