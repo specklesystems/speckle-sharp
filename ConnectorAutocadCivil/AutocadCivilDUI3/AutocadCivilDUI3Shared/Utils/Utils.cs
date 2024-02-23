@@ -31,6 +31,15 @@ public static class Utils
 #endif
   public static readonly string InvalidChars = @"<>/\:;""?*|=,‘";
 
+  public static string RemvoeInvalidChars(string str)
+  {
+    foreach (char c in InvalidChars)
+    {
+      str = str.Replace(c.ToString(), string.Empty);
+    }
+
+    return str;
+  }
 
   /// <summary>
   /// Adds an entity to the autocad database model space record

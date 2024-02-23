@@ -84,4 +84,31 @@ public static class Traversal
       }
     }
   }
+  
+  /// <summary>
+  /// Utility function to flatten a conversion result that might have nested lists of objects.
+  /// This happens, for example, in the case of multiple display value fallbacks for a given object.
+  /// </summary>
+  /// <param name="item"></param>
+  /// <returns></returns>
+  public static List<object> FlattenToNativeConversionResult(object item)
+  {
+    var convertedList = new List<object>();
+    void Flatten(object item)
+    {
+      if (item is IList list)
+      {
+        foreach (object child in list)
+        {
+          Flatten(child);
+        }
+      }
+      else
+      {
+        convertedList.Add(item);
+      }
+    }
+    Flatten(item);
+    return convertedList;
+  }
 }
