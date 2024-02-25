@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -13,9 +12,7 @@ using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;

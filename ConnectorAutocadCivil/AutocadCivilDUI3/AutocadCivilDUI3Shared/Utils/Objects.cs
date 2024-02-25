@@ -16,8 +16,13 @@ public static class Objects
     foreach (var objectIdHandle in objectIds)
     {
       var handle = new Handle(Convert.ToInt64(objectIdHandle));
-      var objectId = doc.Database.GetObjectId(false, handle, 0);
-      var dbObject = tr.GetObject(objectId, OpenMode.ForRead);
+      var hasFoundObjectId = doc.Database.TryGetObjectId(handle, out ObjectId myObjectId);
+      if (!hasFoundObjectId)
+      {
+        continue;
+      }
+      
+      var dbObject = tr.GetObject(myObjectId, OpenMode.ForRead);
       if(dbObject == null)
       {
         continue;

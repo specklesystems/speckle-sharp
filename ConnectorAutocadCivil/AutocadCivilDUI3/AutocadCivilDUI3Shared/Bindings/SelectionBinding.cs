@@ -17,12 +17,6 @@ public class SelectionBinding : ISelectionBinding
 
   public SelectionBinding()
   {
-    Application.DocumentManager.MdiActiveDocument.ImpliedSelectionChanged += (_, _) =>
-    {
-      Parent?.RunOnMainThread(OnSelectionChanged);
-    };
-    _visitedDocuments.Add(Application.DocumentManager.MdiActiveDocument);
-
     Application.DocumentManager.DocumentActivated += (sender, e) => OnDocumentChanged(e.Document);
   }
 
