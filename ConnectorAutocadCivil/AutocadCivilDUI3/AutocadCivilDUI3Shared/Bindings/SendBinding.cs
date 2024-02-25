@@ -161,10 +161,10 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    var modelWithLayers = new Collection() { name = Doc.Name, collectionType = "root" };
+    var modelWithLayers = new Collection() { name = Doc.Name.Split( new [] {"\\"}, StringSplitOptions.None).Reverse().First(), collectionType = "root" };
     var collectionCache = new Dictionary<string, Collection>();
-    
     int count = 0;
+
     foreach (var tuple in dbObjects)
     {
       if (cts.IsCancellationRequested)

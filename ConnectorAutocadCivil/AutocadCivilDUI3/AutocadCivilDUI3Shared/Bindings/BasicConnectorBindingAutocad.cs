@@ -81,17 +81,25 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
     {
       return;
     }
-
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    var objectIds = Array.Empty<ObjectId>();
+    
+    var model = _store.GetModelById(modelCardId);
     if (model == null)
     {
       return; // TODO: RECEIVERS
     }
 
-    var objectIds = Array.Empty<ObjectId>();
-    
-    var dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
-    objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    if (model is SenderModelCard senderModelCard)
+    {
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, senderModelCard.SendFilter.GetObjectIds());
+      objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    }
+
+    if (model is ReceiverModelCard { ReceiveResult: { } } receiverModelCard && receiverModelCard.ReceiveResult.BakedObjectIds.Count != 0)
+    {
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, receiverModelCard.ReceiveResult.BakedObjectIds);
+      objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    }
     
     if (objectIds.Length == 0)
     {
@@ -119,7 +127,5 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       tr.Commit();
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     });
-
-    
   }
 }

@@ -31,7 +31,7 @@ public static class Utils
 #endif
   public static readonly string InvalidChars = @"<>/\:;""?*|=,‘";
 
-  public static string RemvoeInvalidChars(string str)
+  public static string RemoveInvalidChars(string str)
   {
     foreach (char c in InvalidChars)
     {
