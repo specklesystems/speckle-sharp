@@ -48,6 +48,7 @@ class AutofacUIModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
     // register UI bindings
+    builder.RegisterType<BrowserSender>().As<IBrowserSender>().SingleInstance();
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
     builder.RegisterType<SelectionBinding>().As<IBinding>().SingleInstance();

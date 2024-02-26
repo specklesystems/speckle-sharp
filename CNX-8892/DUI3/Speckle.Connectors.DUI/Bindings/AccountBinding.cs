@@ -11,6 +11,11 @@ public class AccountBinding : IBinding
   public string Name { get; set; } = "accountsBinding";
   public IBridge Bridge { get; private set; }
 
+  public AccountBinding(IBridge bridge)
+  {
+    Bridge = bridge;
+  }
+
   public Account[] GetAccounts()
   {
     return AccountManager.GetAccounts().ToArray();

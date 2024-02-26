@@ -21,7 +21,7 @@ internal class RevitPlugin : IRevitPlugin
 {
   private readonly UIControlledApplication _uIControlledApplication;
   private readonly RevitSettings _revitSettings;
-  private readonly IEnumerable<Lazy<IBinding>> _bindings;
+  private readonly IEnumerable<Lazy<IBinding>> _bindings; // should be lazy to ensure the bindings are not created too early
   private readonly BindingOptions _bindingOptions;
   private readonly CefSharpPanel _panel;
   private readonly RevitContext _revitContext;
@@ -105,21 +105,11 @@ internal class RevitPlugin : IRevitPlugin
       _panel
     );
 
-    // POC: this is a hack to ensure this is created within the API context
-    var revitStore = _container.Resolve<RevitDocumentStore>();
-
-    //IEnumerable<BrowserBridge> bridges = Factory
-    //  .CreateBindings(RevitDocumentStore)
-    //  .Select(
-    //    binding =>
-    //      new BrowserBridge(
-    //        CefSharpPanel.Browser,
-    //        binding,
-    //        CefSharpPanel.ExecuteScriptAsync,
-    //        CefSharpPanel.ShowDevTools
-    //      )
-    //  );
-    ///*
+    // binding the bindings to each bridge
+    foreach (IBinding binding in _bindings.Select(x => x.Value))
+    {
+      binding.Bridge.Bind(binding);
+    }
 
     _panel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
@@ -127,7 +117,7 @@ internal class RevitPlugin : IRevitPlugin
       {
         IBridge bridge = binding.Bridge;
 
-        //_panel.Browser.JavascriptObjectRepository.Register(bridge.FrontendBoundName, bridge, true, _bindingOptions);
+        _panel.Browser.JavascriptObjectRepository.Register(bridge.FrontendBoundName, bridge, true, _bindingOptions);
       }
 
       // POC: not sure where this comes from

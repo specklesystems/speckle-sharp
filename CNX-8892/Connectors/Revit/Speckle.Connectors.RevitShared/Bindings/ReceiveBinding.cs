@@ -27,10 +27,7 @@ internal class ReceiveBinding : RevitBaseBinding, ICancelable
     IBridge bridge,
     IBrowserSender browserSender
   )
-    : base("receiveBinding", store, bridge, browserSender, revitContext)
-  {
-    int t = -1;
-  }
+    : base("receiveBinding", store, bridge, browserSender, revitContext) { }
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 

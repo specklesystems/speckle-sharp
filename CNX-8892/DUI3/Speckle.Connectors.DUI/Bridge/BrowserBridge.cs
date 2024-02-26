@@ -24,19 +24,38 @@ public class BrowserBridge : IBridge
   /// The name under which we expect the frontend to hoist this bindings class to the global scope.
   /// e.g., `receiveBindings` should be available as `window.receiveBindings`.
   /// </summary>
-  public string FrontendBoundName { get; }
-  public object Browser { get; }
-  public IBinding Binding { get; }
 
-  public Action ShowDevToolsAction { get; set; }
-  private Type BindingType { get; set; }
-
-  private readonly IBrowserSender _browserSender;
-  private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
   private readonly JsonSerializerSettings _serializerOptions;
-  private readonly ActionBlock<RunMethodArgs> _actionBlock;
-  private readonly SynchronizationContext _mainThreadContext;
   private readonly Dictionary<string, string> _resultsStore = new();
+  private readonly SynchronizationContext _mainThreadContext;
+  private readonly IBrowserSender _browserSender;
+
+  private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
+  private ActionBlock<RunMethodArgs> _actionBlock;
+
+  private IBinding _binding;
+  private Type _bindingType;
+
+  // POC: what is this excatly?
+  public Action ShowDevToolsAction { get; set; }
+
+  public string FrontendBoundName { get; private set; }
+
+  public object Browser { get; }
+
+  public IBinding Binding
+  {
+    get => _binding;
+    private set
+    {
+      if (_binding != null)
+      {
+        throw new ArgumentException($"Binding: {FrontendBoundName} is already bound");
+      }
+
+      _binding = value;
+    }
+  }
 
   private struct RunMethodArgs
   {
@@ -49,27 +68,29 @@ public class BrowserBridge : IBridge
   /// Creates a new bridge.
   /// </summary>
   /// <param name="binding">The actual binding class.</param>
-  public BrowserBridge(
-    JsonSerializerSettings jsonSerializerSettings, // is this changed per bridge?
-    IBinding binding // need to consider the relationship between bridges and browsers
-  )
+  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings)
   {
     _serializerOptions = jsonSerializerSettings;
-    FrontendBoundName = binding.Name;
-    Binding = binding;
 
-    BindingType = Binding.GetType();
+    // Capture the main thread's SynchronizationContext
+    _mainThreadContext = SynchronizationContext.Current;
+  }
+
+  public void Bind(IBinding binding)
+  {
+    // set via binding property to ensure explosion if already bound
+    Binding = binding;
+    FrontendBoundName = binding.Name;
+
+    _bindingType = binding.GetType();
     BindingMethodCache = new Dictionary<string, MethodInfo>();
 
     // Note: we need to filter out getter and setter methods here because they are not really nicely
     // supported across browsers, hence the !method.IsSpecialName.
-    foreach (var m in BindingType.GetMethods().Where(method => !method.IsSpecialName))
+    foreach (var m in _bindingType.GetMethods().Where(method => !method.IsSpecialName))
     {
       BindingMethodCache[m.Name] = m;
     }
-
-    // Capture the main thread's SynchronizationContext
-    _mainThreadContext = SynchronizationContext.Current;
 
     // Whenever the ui will call run method inside .net, it will post a message to this action block.
     // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
@@ -147,7 +168,7 @@ public class BrowserBridge : IBridge
       if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
       {
         throw new SpeckleException(
-          $"Cannot find method {methodName} in bindings class {BindingType.AssemblyQualifiedName}."
+          $"Cannot find method {methodName} in bindings class {_bindingType.AssemblyQualifiedName}."
         );
       }
 

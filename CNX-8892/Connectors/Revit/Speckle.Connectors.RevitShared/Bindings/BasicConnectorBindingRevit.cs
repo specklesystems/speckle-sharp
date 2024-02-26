@@ -12,29 +12,30 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Bindings;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
-internal class BasicConnectorBindingRevit : IBasicConnectorBinding
+internal class BasicConnectorBindingRevit : RevitBaseBinding, IBasicConnectorBinding
 {
-  public string Name { get; set; } = "baseBinding";
-  public IBridge Bridge { get; private set; }
-
-  private readonly RevitDocumentStore _store;
   private readonly RevitSettings _revitSettings;
-  private readonly RevitContext _revitContext;
 
-  public BasicConnectorBindingRevit(RevitDocumentStore store, RevitSettings revitSettings, RevitContext revitContext)
+  public BasicConnectorBindingRevit(
+    RevitDocumentStore store,
+    RevitSettings revitSettings,
+    IBridge bridge,
+    RevitContext revitContext,
+    IBrowserSender browserSender
+  )
+    : base("baseBinding", store, bridge, browserSender, revitContext)
   {
-    _store = store;
     _revitSettings = revitSettings;
-    _revitContext = revitContext;
 
     // POC: event binding
-    //_store.DocumentChanged += (_, _) =>
-    //{
-    //  Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
-    //};
+    _store.DocumentChanged += (_, _) =>
+    {
+      browserSender.Send(Name, BasicConnectorBindingEvents.DocumentChanged);
+    };
   }
 
   public string GetConnectorVersion()
