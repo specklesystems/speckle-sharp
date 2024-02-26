@@ -6,6 +6,7 @@ using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -39,10 +40,11 @@ public partial class ConverterRevit
 
             solids.Add(solid);
           }
-          catch (Exception e)
+          catch (Exception ex) when (!ex.IsFatal())
           {
+            SpeckleLog.Logger.LogDefaultError(ex);
             appObj.Update(
-              logItem: $"Could not convert brep to native, falling back to mesh representation: {e.Message}"
+              logItem: $"Could not convert brep to native, falling back to mesh representation: {ex.Message}"
             );
             var brepMeshSolids = GetSolidMeshes(brep.displayValue);
             solids.AddRange(brepMeshSolids);
@@ -72,11 +74,11 @@ public partial class ConverterRevit
     Doc.LoadFamily(tempPath, new FamilyLoadOption(), out var fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
     symbol.Activate();
-    try
+
+    if (File.Exists(tempPath))
     {
       File.Delete(tempPath);
     }
-    catch { }
 
     FamilyInstance freeform;
     if (Doc.IsFamilyDocument)
@@ -107,8 +109,9 @@ public partial class ConverterRevit
 
       solids.Add(solid);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       var meshes = GetSolidMeshes(brep.displayValue);
       solids.AddRange(meshes);
     }
@@ -160,6 +163,7 @@ public partial class ConverterRevit
   {
     var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
     var solids = new List<DB.Solid>();
+
     try
     {
       var solid = BrepToNative(brep, out List<string> brepNotes);
@@ -170,8 +174,9 @@ public partial class ConverterRevit
 
       solids.Add(solid);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       solids.AddRange(GetSolidMeshes(brep.displayValue));
     }
 

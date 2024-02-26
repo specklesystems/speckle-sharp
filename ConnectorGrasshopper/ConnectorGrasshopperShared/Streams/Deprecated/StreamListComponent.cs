@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamListComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -99,7 +105,7 @@ public class StreamListComponent : GH_SpeckleComponent
 
       Task.Run(async () =>
       {
-        if (!await Http.UserHasInternet())
+        if (!await Http.UserHasInternet().ConfigureAwait(false))
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
           Message = "Error";
@@ -109,14 +115,14 @@ public class StreamListComponent : GH_SpeckleComponent
         {
           var client = new Client(account);
           // Save the result
-          var result = await client.StreamsGet(limit);
+          var result = await client.StreamsGet(limit).ConfigureAwait(false);
           streams = result
             .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
             .ToList();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          error = e;
+          error = ex;
         }
         finally
         {

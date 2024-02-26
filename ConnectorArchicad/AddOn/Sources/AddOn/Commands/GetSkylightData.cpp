@@ -26,14 +26,9 @@ API_ElemTypeID GetSkylightData::GetElemTypeID () const
 
 
 GS::ErrCode	GetSkylightData::SerializeElementType (const API_Element& element,
-  const API_ElementMemo& memo,
+  const API_ElementMemo& /*memo*/,
   GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	os.Add (ElementBase::ParentElementId, APIGuidToString (element.skylight.owner));
 
 	os.Add (Skylight::VertexID, element.skylight.vertexID);

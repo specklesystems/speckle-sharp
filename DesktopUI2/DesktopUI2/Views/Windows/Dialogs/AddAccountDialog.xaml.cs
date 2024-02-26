@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using DesktopUI2.ViewModels;
 
 namespace DesktopUI2.Views.Windows.Dialogs;
 

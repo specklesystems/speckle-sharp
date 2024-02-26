@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using DesktopUI2.Models.Settings;
-using DesktopUI2.Views.Controls.StreamEditControls;
+using DynamicData;
+using static Archicad.Launcher.ArchicadBinding;
 
 namespace Archicad;
 
@@ -11,16 +11,27 @@ public class ConversionOptions
   {
     foreach (var setting in settings)
     {
-      if (setting.Slug.Equals("receive - parametric"))
+      switch (settingSlugs.IndexOf(setting.Slug))
       {
-        if (bool.Parse(setting.Selection ?? "False"))
-        {
-          ReceiveParametric = true;
-        }
+        case (int)SettingSlugs.SendProperties:
+          SendProperties = ((CheckBoxSetting)setting).IsChecked;
+          break;
+
+        case (int)SettingSlugs.SendListingParameters:
+          SendListingParameters = ((CheckBoxSetting)setting).IsChecked;
+          break;
+
+        case (int)SettingSlugs.ReceiveParametric:
+          ReceiveParametric = ((CheckBoxSetting)setting).IsChecked;
+          break;
+
+        default:
+          break;
       }
     }
-    ;
   }
 
+  public bool SendProperties { get; set; }
+  public bool SendListingParameters { get; set; }
   public bool ReceiveParametric { get; set; }
 }

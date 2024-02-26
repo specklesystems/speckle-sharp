@@ -7,6 +7,7 @@ using Speckle.BatchUploader.Sdk.CommunicationModels;
 using Speckle.BatchUploader.Sdk.Interfaces;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace Speckle.BatchUploader.OperationDriver;
 
@@ -73,9 +74,11 @@ public sealed class BatchUploadOperationDriver
     var jobDescription = await _client.GetJobDescription(jobId).ConfigureAwait(false);
     await _applicationController.OpenDocument(jobDescription.FilePath).ConfigureAwait(false);
 
+    Account defaultAccount = AccountManager.GetDefaultAccount() ?? throw new SpeckleException("No default account");
+
     var state = new StreamState()
     {
-      Client = new Client(AccountManager.GetDefaultAccount()), //TODO
+      Client = new Client(defaultAccount),
       BranchName = jobDescription.Branch,
       StreamId = jobDescription.Stream,
       Filter = new AllSelectionFilter

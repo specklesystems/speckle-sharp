@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Title>Objects.Converter.Grasshopper7</Title>
+    <PackageId>Speckle.Objects.Converter.Grasshopper8</PackageId>
+    <PackageTags>$(PackageTags) objects converter rhino grasshopper gh</PackageTags>
+    <AssemblyName>Objects.Converter.Grasshopper8</AssemblyName>
+    <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+    <RhinoPluginType>none</RhinoPluginType>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <DefineConstants>$(DefineConstants);RHINO8;GRASSHOPPER;RHINO6_OR_GREATER;RHINO7_OR_GREATER;RHINO8_OR_GREATER</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="8.3.24009.15001" IncludeAssets="compile;build" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build" />
+  </ItemGroup>
+</Project>

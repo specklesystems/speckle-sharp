@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
@@ -76,9 +75,9 @@ public partial class ConverterRevit
               Line.CreateBound(new XYZ(newEnd.X, newEnd.Y, datumLineZ), new XYZ(newStart.X, newStart.Y, datumLineZ))
             );
           }
-          catch (Exception e)
+          catch (Autodesk.Revit.Exceptions.ApplicationException ex)
           {
-            appObj.Update(logItem: $"Error setting grid endpoints: {e.Message}");
+            appObj.Update(logItem: $"Error setting grid endpoints: {ex.Message}");
           }
           isUpdate = true;
         }

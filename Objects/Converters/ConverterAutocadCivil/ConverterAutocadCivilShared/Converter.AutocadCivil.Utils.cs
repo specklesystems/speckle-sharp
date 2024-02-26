@@ -1,17 +1,15 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
+using Speckle.Core.Logging;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Autodesk.Aec.ApplicationServices;
@@ -51,19 +49,15 @@ public static class Utils
     var extensionDictionary = tr.GetObject(source.ExtensionDictionary, OpenMode.ForRead, false) as DBDictionary;
     foreach (var entry in extensionDictionary)
     {
-      var xRecord = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord; // sometimes these can be RXClass objects, in property sets
-      if (xRecord != null)
+      if (tr.GetObject(entry.Value, OpenMode.ForRead) is Xrecord xRecord) // sometimes these can be RXClass objects, in property sets
       {
         var entryBase = new Base();
         foreach (var xEntry in xRecord.Data)
         {
           entryBase[xEntry.TypeCode.ToString()] = xEntry.Value;
         }
-        try
-        {
-          extensionDictionaryBase[$"{entry.Key}"] = entryBase;
-        }
-        catch (Exception e) { }
+
+        extensionDictionaryBase[$"{entry.Key}"] = entryBase;
       }
     }
 
@@ -73,7 +67,7 @@ public static class Utils
 
 public partial class ConverterAutocadCivil
 {
-  public static string invalidAutocadChars = @"<>/\:;""?*|=,‘";
+  private const string INVALID_CHARS = @"<>/\:;""?*|=,‘";
 
   private Dictionary<string, ObjectId> _lineTypeDictionary = new();
   public Dictionary<string, ObjectId> LineTypeDictionary
@@ -98,14 +92,27 @@ public partial class ConverterAutocadCivil
   /// </summary>
   /// <param name="str"></param>
   /// <returns></returns>
-  public static string RemoveInvalidAutocadChars(string str)
+  public static string RemoveInvalidChars(string str)
   {
     // using this to handle rhino nested layer syntax
     // replace "::" layer delimiter with "$" (acad standard)
     string cleanDelimiter = str.Replace("::", "$");
 
     // remove all other invalid chars
-    return Regex.Replace(cleanDelimiter, $"[{invalidAutocadChars}]", string.Empty);
+    return Regex.Replace(cleanDelimiter, $"[{INVALID_CHARS}]", string.Empty);
+  }
+
+  public static void AddNameAndDescriptionProperty(string name, string description, Base @base)
+  {
+    if (!string.IsNullOrEmpty(name))
+    {
+      @base["name"] = name;
+    }
+
+    if (!string.IsNullOrEmpty(description))
+    {
+      @base["description"] = description;
+    }
   }
 
   /// <summary>
@@ -116,14 +123,23 @@ public partial class ConverterAutocadCivil
   public static bool GetHandle(string str, out Handle handle)
   {
     handle = new Handle();
-    try
-    {
-      handle = new Handle(Convert.ToInt64(str, 16));
-    }
-    catch
+    if (string.IsNullOrEmpty(str))
     {
       return false;
     }
+
+    long l;
+    try
+    {
+      l = Convert.ToInt64(str, 16);
+    }
+    catch (Exception ex) when (ex is ArgumentException or FormatException or OverflowException)
+    {
+      return false;
+    }
+
+    handle = new Handle(l);
+
     return true;
   }
 
@@ -137,7 +153,7 @@ public partial class ConverterAutocadCivil
   {
     var ids = new List<ObjectId>();
 
-    if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+    if (applicationId == null || ReceiveMode == ReceiveMode.Create)
     {
       return ids;
     }
@@ -192,7 +208,7 @@ public partial class ConverterAutocadCivil
   public ObjectId GetFromObjectIdCollection(string name, ObjectIdCollection collection, bool useFirstIfNull = false)
   {
     var id = ObjectId.Null;
-    if ((string.IsNullOrEmpty(name) && !useFirstIfNull) || (string.IsNullOrEmpty(name) && collection.Count == 0))
+    if (string.IsNullOrEmpty(name) && !useFirstIfNull || string.IsNullOrEmpty(name) && collection.Count == 0)
     {
       return id;
     }
@@ -223,6 +239,46 @@ public partial class ConverterAutocadCivil
     return id;
   }
 
+  public LayerTableRecord GetLayer(string path, OpenMode mode = OpenMode.ForRead)
+  {
+    if (!string.IsNullOrEmpty(path))
+    {
+      var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead);
+      if (layerTable.Has(path))
+      {
+        return (LayerTableRecord)Trans.GetObject(layerTable[path], mode);
+      }
+    }
+
+    return null;
+  }
+
+  public bool MakeLayer(string name, out LayerTableRecord layer)
+  {
+    layer = null;
+
+    if (!string.IsNullOrEmpty(name))
+    {
+      var layerTable = (LayerTable)Trans.GetObject(Doc.Database.LayerTableId, OpenMode.ForWrite);
+
+      LayerTableRecord newLayer = new() { Name = name };
+      try
+      {
+        layerTable.Add(newLayer);
+        Trans.AddNewlyCreatedDBObject(newLayer, true);
+        layer = newLayer;
+        return true;
+      }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        // Couldn't create a layer, but can use default layer instead.
+        SpeckleLog.Logger.Error(e, $"Could not add new layer {name} to the layer table");
+      }
+    }
+
+    return false;
+  }
+
   #region Reference Point
 
   // CAUTION: these strings need to have the same values as in the connector bindings
@@ -236,9 +292,7 @@ public partial class ConverterAutocadCivil
       if (_transform == null || _transform == new Matrix3d())
       {
         // get from settings
-        var referencePointSetting = Settings.ContainsKey("reference-point")
-          ? Settings["reference-point"]
-          : string.Empty;
+        var referencePointSetting = Settings.TryGetValue("reference-point", out string value) ? value : string.Empty;
         _transform = GetReferencePointTransform(referencePointSetting);
       }
       return _transform;
@@ -411,7 +465,7 @@ public partial class ConverterAutocadCivil
       case UnitsValue.Undefined:
         return Units.None;
       default:
-        throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
+        throw new SpeckleException($"The Unit System \"{units}\" is unsupported.");
     }
   }
 

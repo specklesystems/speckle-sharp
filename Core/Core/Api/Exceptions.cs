@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +11,8 @@ namespace Speckle.Core.Api;
 /// </summary>
 public class SpeckleGraphQLException<T> : SpeckleException
 {
-  private GraphQLRequest _request;
-  public readonly GraphQLResponse<T>? Response;
+  private readonly GraphQLRequest _request;
+  public GraphQLResponse<T>? Response { get; }
 
   public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<T>? response)
     : base(message)

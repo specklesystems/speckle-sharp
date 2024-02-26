@@ -4,7 +4,6 @@ using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;

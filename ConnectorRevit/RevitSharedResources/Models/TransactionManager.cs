@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Autodesk.Revit.DB;
-using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
 
 namespace RevitSharedResources.Models;
@@ -187,9 +186,10 @@ public class TransactionManager : IDisposable
         t.Start();
         result = function();
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
+        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
       }
       finally
       {
@@ -204,9 +204,10 @@ public class TransactionManager : IDisposable
         t.Start();
         result = function();
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
+        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
       }
       finally
       {

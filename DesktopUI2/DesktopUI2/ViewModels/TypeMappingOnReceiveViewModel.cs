@@ -28,7 +28,7 @@ public class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
   {
     Mapping = typeMap;
     hostTypeContainer = container;
-    SelectedCategory = Mapping.Categories.First();
+    SelectedCategory = Mapping.Categories.FirstOrDefault() ?? TypeCatMisc;
 
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Mappings Open" } });
   }

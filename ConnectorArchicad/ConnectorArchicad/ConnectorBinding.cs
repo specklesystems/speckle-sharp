@@ -9,7 +9,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -174,22 +173,14 @@ public partial class ArchicadBinding : ConnectorBindings
         }
       }
     }
-    catch (Exception ex)
+    catch (SpeckleException ex)
     {
-      // log
-      if (ex is not OperationCanceledException)
-      {
-        SpeckleLog.Logger.Error("Conversion to native failed.");
-      }
-
-      // throw
-      switch (ex)
-      {
-        case OperationCanceledException:
-          throw new OperationCanceledException(ex.Message);
-        default:
-          throw new SpeckleException(ex.Message, ex);
-      }
+      SpeckleLog.Logger.Error(ex, "Conversion to native failed.");
+      throw;
+    }
+    catch (OperationCanceledException)
+    {
+      throw;
     }
 
     return state;
@@ -213,7 +204,7 @@ public partial class ArchicadBinding : ConnectorBindings
           throw new InvalidOperationException("Expected selection filter to be non-null");
         }
 
-        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
+        var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state, progress);
 
         if (commitObject == null)
         {
@@ -224,6 +215,8 @@ public partial class ArchicadBinding : ConnectorBindings
         var context = Archicad.Helpers.Timer.Context.Peek;
         using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.SendToServer))
         {
+          progress.Value = 0;
+          progress.Max = 0;
           return await Speckle.Core.Api.Helpers.Send(
             IdentifyStream(state),
             commitObject,

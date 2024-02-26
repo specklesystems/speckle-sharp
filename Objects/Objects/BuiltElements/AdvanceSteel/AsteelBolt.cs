@@ -12,8 +12,6 @@ public abstract class AsteelBolt : Base, IAsteelObject
   public Base userAttributes { get; set; }
 
   public Base asteelProperties { get; set; }
-
-  public AsteelBolt() { }
 }
 
 public class AsteelCircularBolt : AsteelBolt

@@ -27,7 +27,7 @@ public class Box : Base, IHasVolume, IHasArea, IHasBoundingBox
     Interval ySize,
     Interval zSize,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.basePlane = basePlane;

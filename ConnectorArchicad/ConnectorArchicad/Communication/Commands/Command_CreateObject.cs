@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
 using Archicad.Model;
 
 namespace Archicad.Communication.Commands;

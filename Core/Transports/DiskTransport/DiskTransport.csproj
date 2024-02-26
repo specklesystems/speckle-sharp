@@ -10,6 +10,7 @@
     <Platforms>AnyCPU</Platforms>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <RootNamespace>Speckle.Core.Transports</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

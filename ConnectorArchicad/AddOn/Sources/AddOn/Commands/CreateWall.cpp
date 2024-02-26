@@ -1,4 +1,6 @@
 #include "CreateWall.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -71,8 +73,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and bottom offset of the wall
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.wall.bottomOffset);
-	}
-	else {
+	} else {
 		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.wall.bottomOffset);
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
@@ -273,7 +274,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, referenceLineLocation);
 	}
 
-	// The offset of the wall’s base line from reference line
+	// The offset of the wallï¿½s base line from reference line
 	if (os.Contains (Wall::ReferenceLineOffset)) {
 		os.Get (Wall::ReferenceLineOffset, element.wall.offset);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, offset);
@@ -339,13 +340,13 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// Floor Plan and Section - Cut Surfaces parameters
 
-	// The pen index of wall’s cut contour line
+	// The pen index of wallï¿½s cut contour line
 	if (os.Contains (Wall::CutLinePenIndex)) {
 		os.Get (Wall::CutLinePenIndex, element.wall.contPen);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, contPen);
 	}
 
-	// The linetype name of wall’s cut contour line
+	// The linetype name of wallï¿½s cut contour line
 	if (os.Contains (Wall::CutLinetypeName)) {
 
 		os.Get (Wall::CutLinetypeName, attributeName);
@@ -362,31 +363,25 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, contLtype);
 	}
 
-	// Override cut fill pen
-	if (os.Contains (Wall::OverrideCutFillPenIndex)) {
-		element.wall.penOverride.overrideCutFillPen = true;
-		os.Get (Wall::OverrideCutFillPenIndex, element.wall.penOverride.cutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, penOverride.cutFillPen);
-	}
-
-	// Override cut fill background pen
-	if (os.Contains (Wall::OverrideCutFillBackgroundPenIndex)) {
-		element.wall.penOverride.overrideCutFillBackgroundPen = true;
-		os.Get (Wall::OverrideCutFillBackgroundPenIndex, element.wall.penOverride.cutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill and cut fill backgound pens
+	if (CommandHelpers::SetCutfillPens(
+		os,
+		Wall::OverrideCutFillPenIndex,
+		Wall::OverrideCutFillBackgroundPenIndex,
+		element.wall,
+		elementMask)
+		!= NoError)
+		return Error;
 
 	// Floor Plan and Section - Outlines parameters
 
-	// The pen index of wall’s uncut contour line
+	// The pen index of wallï¿½s uncut contour line
 	if (os.Contains (Wall::UncutLinePenIndex)) {
 		os.Get (Wall::UncutLinePenIndex, element.wall.contPen3D);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, contPen3D);
 	}
 
-	// The linetype name of wall’s uncut contour line
+	// The linetype name of wallï¿½s uncut contour line
 	if (os.Contains (Wall::UncutLinetypeName)) {
 
 		os.Get (Wall::UncutLinetypeName, attributeName);
@@ -403,13 +398,13 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, belowViewLineType);
 	}
 
-	// The pen index of wall’s overhead contour line
+	// The pen index of wallï¿½s overhead contour line
 	if (os.Contains (Wall::OverheadLinePenIndex)) {
 		os.Get (Wall::OverheadLinePenIndex, element.wall.aboveViewLinePen);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, aboveViewLinePen);
 	}
 
-	// The linetype name of wall’s overhead contour line
+	// The linetype name of wallï¿½s overhead contour line
 	if (os.Contains (Wall::OverheadLinetypeName)) {
 
 		os.Get (Wall::OverheadLinetypeName, attributeName);
@@ -429,8 +424,9 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// Model - Override Surfaces
 
 	// The reference overridden material name
+	ResetAPIOverriddenAttribute (element.wall.refMat);
 	if (os.Contains (Wall::ReferenceMaterialName)) {
-		element.wall.refMat.overridden = true;
+		//element.wall.refMat.overridden = true;
 		os.Get (Wall::ReferenceMaterialName, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -439,12 +435,13 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
-				element.wall.refMat.attributeIndex = attribute.header.index;
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
+				SetAPIOverriddenAttribute (element.wall.refMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeIndexField (refMat));
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, refMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, refMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeBoolField (refMat));
 
 	// The index of the reference material start and end edge index
 	if (os.Contains (Wall::ReferenceMaterialStartIndex)) {
@@ -458,8 +455,9 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The opposite overridden material name
+	ResetAPIOverriddenAttribute (element.wall.oppMat);
 	if (os.Contains (Wall::OppositeMaterialName)) {
-		element.wall.oppMat.overridden = true;
+		//element.wall.oppMat.overridden = true;
 		os.Get (Wall::OppositeMaterialName, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -468,12 +466,13 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
-				element.wall.oppMat.attributeIndex = attribute.header.index;
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
+				SetAPIOverriddenAttribute (element.wall.oppMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeIndexField (oppMat));
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, oppMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, oppMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeBoolField (oppMat));
 
 	// The index of the opposite material start and end edge index
 	if (os.Contains (Wall::OppositeMaterialStartIndex)) {
@@ -487,8 +486,9 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The side overridden material name
+	ResetAPIOverriddenAttribute (element.wall.sidMat);
 	if (os.Contains (Wall::SideMaterialName)) {
-		element.wall.sidMat.overridden = true;
+		//element.wall.sidMat.overridden = true;
 		os.Get (Wall::SideMaterialName, attributeName);
 
 		if (!attributeName.IsEmpty ()) {
@@ -497,12 +497,13 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
-				element.wall.sidMat.attributeIndex = attribute.header.index;
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
+				SetAPIOverriddenAttribute (element.wall.sidMat, attribute.header.index);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeIndexField  (sidMat));
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, sidMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, sidMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, GetAPIOverriddenAttributeBoolField (sidMat));
 
 	// The overridden materials are chained
 	if (os.Contains (Wall::MaterialsChained)) {

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -11,6 +12,11 @@ using Speckle.Core.Models.Extensions;
 namespace ConnectorGrasshopper.Streams;
 
 [Obsolete]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class StreamUpdateComponent : GH_SpeckleComponent
 {
   private Exception error;
@@ -100,7 +106,7 @@ public class StreamUpdateComponent : GH_SpeckleComponent
           var account = streamWrapper.GetAccount().Result;
           var client = new Client(account);
           var input = new StreamUpdateInput();
-          stream = await client.StreamGet(streamWrapper.StreamId);
+          stream = await client.StreamGet(streamWrapper.StreamId).ConfigureAwait(false);
           input.id = streamWrapper.StreamId;
 
           input.name = name ?? stream.name;
@@ -111,9 +117,9 @@ public class StreamUpdateComponent : GH_SpeckleComponent
             input.isPublic = isPublic;
           }
 
-          await client.StreamUpdate(input);
+          await client.StreamUpdate(input).ConfigureAwait(false);
         }
-        catch (Exception e)
+        catch (SpeckleGraphQLException e)
         {
           error = e;
         }

@@ -1,17 +1,10 @@
 using System;
 using System.Collections.Generic;
 using GE = Objects.Geometry;
-using GES = Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Speckle.Core.Models;
-using BE = Objects.BuiltElements;
-using Objects.BuiltElements.TeklaStructures;
 using System.Linq;
+using Speckle.Core.Kits;
 using Tekla.Structures.Model;
-using Tekla.Structures.Solid;
-using System.Collections;
-using StructuralUtilities.PolygonMesher;
-using Tekla.Structures.Model.UI;
 using Tekla.Structures.Geometry3d;
 using Tekla.Structures.Catalogs;
 
@@ -19,9 +12,23 @@ namespace Objects.Converter.TeklaStructures;
 
 public partial class ConverterTeklaStructures
 {
+  /// <summary>
+  /// Converts a list of Mesh objects to their native representations.
+  /// </summary>
+  /// <param name="object">The base object being converted.</param>
+  /// <param name="displayValues">A list of GE.Mesh objects to be converted.</param>
+  /// <remarks>
+  /// Exception handling is specifically tailored to the process: An ArgumentException indicating
+  /// that "The BRep geometry already exists" is intentionally swallowed, reflecting a scenario
+  /// where a duplicate shape is encountered and can be safely ignored. All other exceptions,
+  /// previously swallowed, are now propagated as ConversionExceptions, signaling a failure in
+  /// conversion or insertion.
+  /// </remarks>
+  /// <exception cref="ConversionException">Thrown for any errors during conversion or insertion,
+  /// except when encountering duplicate BRep geometry.</exception>
   public void MeshToNative(Base @object, List<GE.Mesh> displayValues)
   {
-    int incr = 0;
+    int shapeCounter = 0;
     foreach (var mesh in displayValues)
     {
       FacetedBrep facetedBrep = CreateFacetedBrep(mesh);
@@ -29,7 +36,7 @@ public partial class ConverterTeklaStructures
       // Add shape to catalog
       // Each shape in catalog needs to have a unique name
       string objectName = GetShapeName(@object);
-      string shapeName = "Speckle_" + objectName + (incr > 0 ? "_" + incr.ToString() : "");
+      string shapeName = "Speckle_" + objectName + (shapeCounter > 0 ? "_" + shapeCounter.ToString() : "");
       var shapeItem = new ShapeItem
       {
         Name = shapeName,
@@ -39,13 +46,24 @@ public partial class ConverterTeklaStructures
       // remove possibly pre-existing shape with same name and then insert a Speckle object shape
       // with that name into the catalog
       shapeItem.Delete();
+
       bool result = false;
       try
       {
         result = shapeItem.Insert();
-        // Fails if two shapes exist with different names but same geometry fingerprint
       }
-      catch (Exception ex) { }
+      catch (InvalidOperationException ex)
+      {
+        throw new ConversionException("The converted Mesh could not be inserted.", ex);
+      }
+      catch (ArgumentException ex)
+      {
+        // if the exception message contains "BRep already exists", swallow the error, else rethrow
+        if (!ex.Message.Contains("The BRep geometry already exists"))
+        {
+          throw new ConversionException($"Failed to convert Mesh to Native: {ex.Message} ", ex);
+        }
+      }
 
       if (!result)
       {
@@ -56,23 +74,34 @@ public partial class ConverterTeklaStructures
           shapeName = matchingShape.Name;
           result = true;
         }
+        else
+        {
+          throw new ConversionException(
+            "The Mesh could either not be converted or not be inserted but no internal error occurred."
+          );
+        }
       }
 
       // Insert object in model
       if (result)
       {
-        var brep = new Brep();
-        brep.StartPoint = new Tekla.Structures.Geometry3d.Point(0, 0, 0);
-        brep.EndPoint = new Tekla.Structures.Geometry3d.Point(1000, 0, 0);
-        brep.Profile.ProfileString = shapeName;
-        brep.Material.MaterialString = "TS_Undefined";
-        brep.Position.Depth = Position.DepthEnum.MIDDLE;
-        brep.Position.Plane = Position.PlaneEnum.MIDDLE;
-        brep.Position.Rotation = Position.RotationEnum.TOP;
+        var brep = new Brep
+        {
+          StartPoint = new Tekla.Structures.Geometry3d.Point(0, 0, 0),
+          EndPoint = new Tekla.Structures.Geometry3d.Point(1000, 0, 0),
+          Profile = { ProfileString = shapeName },
+          Material = { MaterialString = "TS_Undefined" },
+          Position =
+          {
+            Depth = Position.DepthEnum.MIDDLE,
+            Plane = Position.PlaneEnum.MIDDLE,
+            Rotation = Position.RotationEnum.TOP
+          }
+        };
         brep.Insert();
       }
 
-      incr++;
+      shapeCounter++;
     }
 
     //var vertex = new[]

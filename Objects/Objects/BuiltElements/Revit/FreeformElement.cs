@@ -19,7 +19,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     "Revit",
     "Families"
   )]
-  public FreeformElement(List<Base> baseGeometries, string subcategory = "", List<Parameter> parameters = null)
+  public FreeformElement(List<Base> baseGeometries, string subcategory = "", List<Parameter>? parameters = null)
   {
     this.baseGeometries = baseGeometries;
     //this.category = category;
@@ -29,12 +29,11 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
     }
 
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
-  public Base parameters { get; set; }
+  public Base? parameters { get; set; }
 
-  //public RevitCategory category { get; set; }
   public string subcategory { get; set; }
 
   public string elementId { get; set; }
@@ -45,6 +44,11 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
   /// It will set the first item on the baseGeometries list, and instantiate a list if necessary.
   /// </summary>
   [JsonIgnore, SchemaIgnore, Obsolete("Use 'baseGeometries' instead", true)]
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Design",
+    "CA1044:Properties should not be write only",
+    Justification = "Obsolete"
+  )]
   public Base baseGeometry
   {
     set
@@ -93,7 +97,12 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       "Families"
     )
   ]
-  public FreeformElement(Base baseGeometry, List<Parameter> parameters = null)
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Usage",
+    "CA2201:Do not raise reserved exception types",
+    Justification = "Obsolete"
+  )]
+  public FreeformElement(Base baseGeometry, List<Parameter>? parameters = null)
   {
     if (!IsValidObject(baseGeometry))
     {
@@ -101,7 +110,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
     }
 
     baseGeometries = new List<Base> { baseGeometry };
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   [
@@ -113,7 +122,12 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       "Families"
     )
   ]
-  public FreeformElement(List<Base> baseGeometries, List<Parameter> parameters = null)
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Usage",
+    "CA2201:Do not raise reserved exception types",
+    Justification = "Obsolete"
+  )]
+  public FreeformElement(List<Base> baseGeometries, List<Parameter>? parameters = null)
   {
     this.baseGeometries = baseGeometries;
     if (!IsValid())
@@ -121,7 +135,7 @@ public class FreeformElement : Base, IDisplayValue<List<Base>>
       throw new Exception("Freeform elements can only be created from BREPs or Meshes");
     }
 
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   #endregion

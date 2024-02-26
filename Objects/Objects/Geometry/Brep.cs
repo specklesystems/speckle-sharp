@@ -34,10 +34,10 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
     Orientation = BrepOrientation.None;
   }
 
-  public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null)
+  public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string? applicationId = null)
     : this(provenance, new List<Mesh> { displayValue }, units, applicationId) { }
 
-  public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string applicationId = null)
+  public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string? applicationId = null)
     : this()
   {
     this.provenance = provenance;
@@ -216,8 +216,8 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
           ints.Add(e.StartIndex);
           ints.Add(e.EndIndex);
           ints.Add(Convert.ToInt32(e.ProxyCurveIsReversed));
-          ints.Add(e.Domain.start);
-          ints.Add(e.Domain.end);
+          ints.Add(e.Domain.start ?? 0);
+          ints.Add(e.Domain.end ?? 1);
           ints.AddRange(e.TrimIndices.Select(Convert.ToDouble).Cast<double?>());
           return ints.Prepend(ints.Count);
         })
@@ -242,11 +242,8 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
         var proxyReversed = Convert.ToBoolean(loopValues[3]);
         var domainStart = loopValues[4];
         var domainEnd = loopValues[5];
-        Interval domain = null;
-        if (domainStart.HasValue && domainEnd.HasValue)
-        {
-          domain = new Interval(domainStart.Value, domainEnd.Value);
-        }
+        Interval domain =
+          domainStart.HasValue && domainEnd.HasValue ? new(domainStart.Value, domainEnd.Value) : new(0, 1);
 
         var trimIndices = loopValues.GetRange(6, loopValues.Count - 6).Select(d => Convert.ToInt32(d)).ToArray();
 
@@ -445,7 +442,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
   public double volume { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Brep brep)
+  public bool TransformTo(Transform transform, out Brep transformed)
   {
     // transform display values
     var displayValues = new List<Mesh>(displayValue.Count);
@@ -487,7 +484,7 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
       transformedVertices.Add(transformedVertex);
     }
 
-    brep = new Brep
+    transformed = new Brep
     {
       provenance = provenance,
       units = units,
@@ -507,21 +504,29 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
 
     foreach (var e in Edges)
     {
-      brep.Edges.Add(
-        new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex, e.ProxyCurveIsReversed, e.Domain)
+      transformed.Edges.Add(
+        new BrepEdge(
+          transformed,
+          e.Curve3dIndex,
+          e.TrimIndices,
+          e.StartIndex,
+          e.EndIndex,
+          e.ProxyCurveIsReversed,
+          e.Domain
+        )
       );
     }
 
     foreach (var l in Loops)
     {
-      brep.Loops.Add(new BrepLoop(brep, l.FaceIndex, l.TrimIndices, l.Type));
+      transformed.Loops.Add(new BrepLoop(transformed, l.FaceIndex, l.TrimIndices, l.Type));
     }
 
     foreach (var t in Trims)
     {
-      brep.Trims.Add(
+      transformed.Trims.Add(
         new BrepTrim(
-          brep,
+          transformed,
           t.EdgeIndex,
           t.FaceIndex,
           t.LoopIndex,
@@ -537,7 +542,9 @@ public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<
 
     foreach (var f in Faces)
     {
-      brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
+      transformed.Faces.Add(
+        new BrepFace(transformed, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed)
+      );
     }
 
     return success3D;

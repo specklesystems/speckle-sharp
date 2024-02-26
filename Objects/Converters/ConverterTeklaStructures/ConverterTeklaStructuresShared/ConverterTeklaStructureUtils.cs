@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Objects.Structural.Geometry;
 using Tekla.Structures.Model;
 using System.Linq;
 using Objects.Geometry;
@@ -14,6 +12,7 @@ using Speckle.Core.Models;
 using Objects.Structural.Properties.Profiles;
 using Tekla.Structures.Datatype;
 using Objects.BuiltElements.TeklaStructures;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.TeklaStructures;
 
@@ -159,9 +158,17 @@ public partial class ConverterTeklaStructures
       {
         paramBase[kv.Key] = kv.Value;
       }
-      catch
+      // The exceptions here are thrown by the DynamicBase class for properties that cannot be set.
+      // The errors themselves are not fatal and should simply be logged.
+      catch (Exception ex) when (ex is InvalidPropNameException or SpeckleException)
       {
-        //ignore
+        string exceptionDetail = ex is InvalidPropNameException ? "due to an invalid name" : "";
+
+        SpeckleLog.Logger.Warning(
+          $"Element {teklaObject.Identifier.GUID} has a "
+            + $"property named {kv.Key} that cannot be set "
+            + $"{exceptionDetail}. Skipping."
+        );
       }
     }
 
@@ -169,7 +176,6 @@ public partial class ConverterTeklaStructures
     {
       speckleElement["parameters"] = paramBase;
     }
-    //speckleElement["elementId"] = revitElement.Id.ToString();
     speckleElement.applicationId = teklaObject.Identifier.GUID.ToString();
     speckleElement["units"] = GetUnitsFromModel();
   }

@@ -19,7 +19,7 @@ public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
     double rotation = 0,
     bool facingFlipped = false,
     bool handFlipped = false,
-    List<Parameter> parameters = null
+    List<Parameter>? parameters = null
   )
   {
     this.basePoint = basePoint;
@@ -30,7 +30,7 @@ public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
     this.facingFlipped = facingFlipped;
     this.handFlipped = handFlipped;
     mirrored = false;
-    this.parameters = parameters.ToBase();
+    this.parameters = parameters?.ToBase();
   }
 
   public Point basePoint { get; set; }
@@ -42,7 +42,7 @@ public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
   public bool facingFlipped { get; set; }
   public bool handFlipped { get; set; }
   public bool mirrored { get; set; }
-  public Base parameters { get; set; }
+  public Base? parameters { get; set; }
   public string elementId { get; set; }
 
   [DetachProperty]

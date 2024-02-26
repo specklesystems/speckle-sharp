@@ -11,8 +11,8 @@ public static class TestAutomateUtils
   public static string RandomString(int length)
   {
     Random rand = new();
-    const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
-    var chars = Enumerable.Range(0, length).Select(_ => pool[rand.Next(0, pool.Length)]);
+    const string POOL = "abcdefghijklmnopqrstuvwxyz0123456789";
+    IEnumerable<char> chars = Enumerable.Range(0, length).Select(_ => POOL[rand.Next(0, POOL.Length)]);
     return new string(chars.ToArray());
   }
 

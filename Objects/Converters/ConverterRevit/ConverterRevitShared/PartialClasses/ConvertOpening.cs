@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -52,15 +53,17 @@ public partial class ConverterRevit
             return appObj;
           }
           Element existingElement;
+
           try
           {
             existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
           }
-          catch (Exception e)
+          catch (Exception ex) when (!ex.IsFatal())
           {
+            SpeckleLog.Logger.LogDefaultError(ex);
             appObj.Update(
               status: ApplicationObject.State.Failed,
-              logItem: $"Could not find the host wall: {e.Message}"
+              logItem: $"Could not find the host wall: {ex.Message}"
             );
             return appObj;
           }

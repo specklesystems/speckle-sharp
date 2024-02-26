@@ -1,13 +1,12 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Serialisation;
+using Speckle.Core.Logging;
+using Speckle.Core.Serialisation.SerializationUtilities;
 
 namespace Speckle.Core.Transports.ServerUtils;
 
@@ -88,7 +87,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     Dictionary<string, bool> ret = new();
     foreach (var task in tasks)
     {
-      Dictionary<string, bool> taskResult = await task.ConfigureAwait(false) as Dictionary<string, bool>;
+      var taskResult = (IReadOnlyDictionary<string, bool>)(await task.ConfigureAwait(false))!;
       foreach (KeyValuePair<string, bool> kv in taskResult)
       {
         ret[kv.Key] = kv.Value;
@@ -191,7 +190,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   {
     EnsureStarted();
     Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
-    var res = (List<string>)await op.ConfigureAwait(false);
+    var res = (List<string>)await op.ConfigureAwait(false)!;
     Debug.Assert(res is not null);
     return res!;
   }
@@ -206,7 +205,6 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     }
   }
 
-  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
     using ServerApi serialApi = new(_baseUri, _authToken, BlobStorageFolder, _timeoutSeconds);
@@ -237,6 +235,11 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
       catch (Exception ex)
       {
         tcs.SetException(ex);
+
+        if (ex.IsFatal())
+        {
+          throw;
+        }
       }
     }
   }

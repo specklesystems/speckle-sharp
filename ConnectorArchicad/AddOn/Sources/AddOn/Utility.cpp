@@ -1,3 +1,4 @@
+#include "APIMigrationHelper.hpp"
 #include "Utility.hpp"
 #include "ObjectState.hpp"
 #include "RealNumber.h"
@@ -137,7 +138,9 @@ GS::ErrCode GetNonLocalizedElementTypeName (const API_Elem_Head& header, GS::Uni
 
 GS::ErrCode GetLocalizedElementTypeName (const API_Elem_Head& header, GS::UniString& typeName)
 {
-#ifdef ServerMainVers_2600
+#ifdef ServerMainVers_2700
+	return ACAPI_Element_GetElemTypeName (header.type, typeName);
+#elif ServerMainVers_2600
 	return ACAPI_Goodies_GetElemTypeName (header.type, typeName);
 #else
 	ResourceStrings::ElementTypeStringItems elementTypeStringItem;
@@ -204,14 +207,14 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_S
 			BNZeroMemory (&libPart, sizeof (API_LibPart));
 
 #ifdef ServerMainVers_2600
-			err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+			err = ACAPI_LibraryPart_GetMarkerParent (element.header.type, libPart);
 #else
 			err = ACAPI_Goodies (APIAny_GetMarkerParentID, &element.header.typeID, &libPart);
 #endif
 			if (err != NoError)
 				return err;
 
-			err = ACAPI_LibPart_Search (&libPart, false, true);
+			err = ACAPI_LibraryPart_Search (&libPart, false, true);
 			if (libPart.location != nullptr)
 				delete libPart.location;
 
@@ -223,7 +226,7 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_S
 			double a = .0, b = .0;
 			Int32 addParNum = 0;
 			API_AddParType** markAddPars;
-			err = ACAPI_LibPart_GetParams (libPart.index, &a, &b, &addParNum, &markAddPars);
+			err = ACAPI_LibraryPart_GetParams (libPart.index, &a, &b, &addParNum, &markAddPars);
 			if (err != NoError)
 				return err;
 
@@ -271,7 +274,7 @@ GS::Array<API_StoryType> GetStoryItems ()
 	GS::Array<API_StoryType> stories;
 
 	API_StoryInfo storyInfo{};
-	GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+	GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo /* , nullptr */);
 	if (err != NoError) {
 		return stories;
 	}
@@ -330,7 +333,7 @@ void SetStoryLevel (const double& inLevel, const short& floorIndex, double& leve
 static API_StoryType GetActualStoryItem ()
 {
 	API_StoryInfo storyInfo{};
-	GSErrCode err = ACAPI_Environment (APIEnv_GetStorySettingsID, &storyInfo, nullptr);
+	GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
 	if (err != NoError) {
 		return API_StoryType{};
 	}
@@ -364,7 +367,7 @@ void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& leve
 
 	API_WindowInfo windowInfo;
 	BNZeroMemory (&windowInfo, sizeof (API_WindowInfo));
-	GSErrCode err = ACAPI_Database (APIDb_GetCurrentWindowID, &windowInfo, nullptr);
+	GSErrCode err = ACAPI_Window_GetCurrentWindow(&windowInfo);
 	if (err == NoError && (windowInfo.typeID != APIWind_FloorPlanID && windowInfo.typeID != APIWind_3DModelID))
 		floorInd += GetActualStoryItem ().index;
 }
@@ -379,19 +382,19 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 	if (elementType == API_WallID) {
 		if (element.wall.hasDoor) {
 			GS::Array<API_Guid> doors;
-			GSErrCode err = ACAPI_Element_GetConnectedElements (element.header.guid, API_DoorID, &doors);
+			GSErrCode err = ACAPI_Grouping_GetConnectedElements (element.header.guid, API_DoorID, &doors);
 			if (err == NoError)
 				result.Append (doors);
 		}
 		if (element.wall.hasWindow) {
 			GS::Array<API_Guid> windows;
-			GSErrCode err = ACAPI_Element_GetConnectedElements (element.header.guid, API_WindowID, &windows);
+			GSErrCode err = ACAPI_Grouping_GetConnectedElements (element.header.guid, API_WindowID, &windows);
 			if (err == NoError)
 				result.Append (windows);
 		}
 	} else if ((elementType == API_RoofID) || (elementType == API_ShellID)) {
 		GS::Array<API_Guid> skylights;
-		GSErrCode err = ACAPI_Element_GetConnectedElements (element.header.guid, API_SkylightID, &skylights);
+		GSErrCode err = ACAPI_Grouping_GetConnectedElements (element.header.guid, API_SkylightID, &skylights);
 		if (err == NoError)
 			result.Append (skylights);
 	}
@@ -416,8 +419,8 @@ GSErrCode GetSegmentData (const API_AssemblySegmentData& segmentData, GS::Object
 	API_Attribute attrib;
 	switch (segmentData.modelElemStructureType) {
 	case API_CompositeStructure:
-		DBASSERT (segment.modelElemStructureType != API_CompositeStructure)
-			break;
+		DBASSERT (segmentData.modelElemStructureType != API_CompositeStructure);
+		break;
 	case API_BasicStructure:
 		BNZeroMemory (&attrib, sizeof (API_Attribute));
 		attrib.header.typeID = API_BuildingMaterialID;
@@ -541,16 +544,16 @@ GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData& schemeData, GS:
 
 GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::ObjectState& out)
 {
-	if (schemeData == nullptr) return Error;
+	if (schemeData == nullptr)
+		return Error;
 
 	GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(schemeData)) / sizeof (API_AssemblySegmentSchemeData);
-	DBASSERT (schemesCount == elem.column.nSchemes)
 
-		for (GSSize idx = 0; idx < schemesCount; ++idx) {
-			GS::ObjectState currentScheme;
-			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
-			out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
-		}
+	for (GSSize idx = 0; idx < schemesCount; ++idx) {
+		GS::ObjectState currentScheme;
+		Utility::GetOneSchemeData (schemeData[idx], currentScheme);
+		out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
+	}
 
 	return NoError;
 }
