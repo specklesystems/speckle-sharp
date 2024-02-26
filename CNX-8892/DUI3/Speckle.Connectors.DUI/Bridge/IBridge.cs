@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -16,7 +18,7 @@ public interface IBridge
   /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.
   /// </summary>
   /// <returns></returns>
-  public string[] GetBindingsMethodNames();
+  public IEnumerable<string> BindingsMethodNames { get; }
 
   /// <summary>
   /// This method is called by the Frontend bridge when invoking any of the wrapped binding's methods.
@@ -32,10 +34,4 @@ public interface IBridge
   /// </summary>
   /// <param name="action"> Action to run on main thread.</param>
   public void RunOnMainThread(Action action);
-
-  /// <summary>
-  /// Sends to the Frontend an event with an optional payload.
-  /// </summary>
-  /// <param name="eventData"></param>
-  public void SendToBrowser(string eventName, object data = null);
 }

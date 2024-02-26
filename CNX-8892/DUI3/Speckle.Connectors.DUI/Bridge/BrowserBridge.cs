@@ -27,13 +27,16 @@ public class BrowserBridge : IBridge
   public string FrontendBoundName { get; }
   public object Browser { get; }
   public IBinding Binding { get; }
-  public Action<string> ExecuteScriptAsync { get; set; }
+
   public Action ShowDevToolsAction { get; set; }
   private Type BindingType { get; set; }
+
+  private readonly IBrowserSender _browserSender;
   private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
   private readonly JsonSerializerSettings _serializerOptions;
   private readonly ActionBlock<RunMethodArgs> _actionBlock;
   private readonly SynchronizationContext _mainThreadContext;
+  private readonly Dictionary<string, string> _resultsStore = new();
 
   private struct RunMethodArgs
   {
@@ -45,20 +48,14 @@ public class BrowserBridge : IBridge
   /// <summary>
   /// Creates a new bridge.
   /// </summary>
-  /// <param name="browser">The host browser instance.</param>
   /// <param name="binding">The actual binding class.</param>
-  /// <param name="executeScriptAsync">A simple action that does the browser's version of executeScriptAsync(string).</param>
   public BrowserBridge(
-    JsonSerializerSettings jsonSerializerSettings,
-    object browser,
-    IBinding binding,
-    Action<string> executeScriptAsync,
-    Action showDevToolsAction
+    JsonSerializerSettings jsonSerializerSettings, // is this changed per bridge?
+    IBinding binding // need to consider the relationship between bridges and browsers
   )
   {
     _serializerOptions = jsonSerializerSettings;
     FrontendBoundName = binding.Name;
-    Browser = browser;
     Binding = binding;
 
     BindingType = Binding.GetType();
@@ -70,11 +67,6 @@ public class BrowserBridge : IBridge
     {
       BindingMethodCache[m.Name] = m;
     }
-
-    Binding.Parent = this;
-
-    ExecuteScriptAsync = executeScriptAsync;
-    ShowDevToolsAction = showDevToolsAction;
 
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
@@ -95,9 +87,9 @@ public class BrowserBridge : IBridge
   /// Used by the Frontend bridge logic to understand which methods are available.
   /// </summary>
   /// <returns></returns>
-  public string[] GetBindingsMethodNames()
+  public IEnumerable<string> BindingsMethodNames
   {
-    return BindingMethodCache.Keys.ToArray();
+    get { return BindingMethodCache.Keys; }
   }
 
   /// <summary>
@@ -152,17 +144,15 @@ public class BrowserBridge : IBridge
     // error that kills Rhino.).
     try
     {
-      if (!BindingMethodCache.ContainsKey(methodName))
+      if (!BindingMethodCache.TryGetValue(methodName, out MethodInfo method))
       {
         throw new SpeckleException(
           $"Cannot find method {methodName} in bindings class {BindingType.AssemblyQualifiedName}."
         );
       }
 
-      var method = BindingMethodCache[methodName];
       var parameters = method.GetParameters();
       var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
-
       if (parameters.Length != jsonArgsArray.Length)
       {
         throw new SpeckleException(
@@ -217,21 +207,6 @@ public class BrowserBridge : IBridge
   }
 
   /// <summary>
-  /// NOTE: This method suffers from a limitation: returning strings to the ui via a script invocation is not the same
-  /// as returning strings from a method. The more reliable approach was the latter. Keeping it here for the sake of
-  /// "do not do things this way" demo.
-  /// </summary>
-  /// <param name="requestId"></param>
-  /// <param name="serializedData"></param>
-  private void ReturnResultToBinding_old(string requestId, string serializedData = null)
-  {
-    string script = $"{FrontendBoundName}.receiveResponse('{requestId}', '{serializedData}')"; // sending the string this way makes for some strange deserialization issues.
-    ExecuteScriptAsync(script);
-  }
-
-  private readonly Dictionary<string, string> _resultsStore = new();
-
-  /// <summary>
   /// Notifies the UI that the method call is ready. We do not give the result back to the ui here via ExecuteScriptAsync
   /// because of limitations we discovered along the way (e.g, / chars need to be escaped).
   /// </summary>
@@ -241,7 +216,7 @@ public class BrowserBridge : IBridge
   {
     _resultsStore[requestId] = serializedData;
     string script = $"{FrontendBoundName}.responseReady('{requestId}')";
-    ExecuteScriptAsync(script);
+    _browserSender.SendRaw(script);
   }
 
   /// <summary>
@@ -254,25 +229,6 @@ public class BrowserBridge : IBridge
     var res = _resultsStore[requestId];
     _resultsStore.Remove(requestId);
     return res;
-  }
-
-  /// <summary>
-  /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`.
-  /// </summary>
-  /// <param name="eventData"></param>
-  public void SendToBrowser(string eventName, object data = null)
-  {
-    string script;
-    if (data != null)
-    {
-      var payload = JsonConvert.SerializeObject(data, _serializerOptions);
-      script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
-    }
-    else
-    {
-      script = $"{FrontendBoundName}.emit('{eventName}')";
-    }
-    ExecuteScriptAsync(script);
   }
 
   /// <summary>

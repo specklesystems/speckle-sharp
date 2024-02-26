@@ -11,6 +11,9 @@ using CefSharp;
 using System.Linq;
 using System.IO;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Bindings;
+using Autofac;
+using Speckle.Connectors.Revit.HostApp;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -18,25 +21,30 @@ internal class RevitPlugin : IRevitPlugin
 {
   private readonly UIControlledApplication _uIControlledApplication;
   private readonly RevitSettings _revitSettings;
-  private readonly IEnumerable<IBridge> _bridges;
+  private readonly IEnumerable<Lazy<IBinding>> _bindings;
   private readonly BindingOptions _bindingOptions;
+  private readonly CefSharpPanel _panel;
+  private readonly RevitContext _revitContext;
+  private readonly IComponentContext _container;
 
   public RevitPlugin(
     UIControlledApplication uIControlledApplication,
     RevitSettings revitSettings,
-    IEnumerable<IBridge> bridges,
-    BindingOptions bindingOptions
+    IEnumerable<Lazy<IBinding>> bindings,
+    BindingOptions bindingOptions,
+    CefSharpPanel panel,
+    RevitContext revitContext,
+    IComponentContext container
   )
   {
     _uIControlledApplication = uIControlledApplication;
     _revitSettings = revitSettings;
-    _bridges = bridges;
+    _bindings = bindings;
     _bindingOptions = bindingOptions;
+    _panel = panel;
+    _revitContext = revitContext;
+    _container = container;
   }
-
-  public UIApplication? UIApplication { get; private set; }
-
-  public CefSharpPanel CefSharpPanel { get; private set; }
 
   public void Initialise()
   {
@@ -78,49 +86,27 @@ internal class RevitPlugin : IRevitPlugin
 
   private void OnApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
   {
-    // POC: not sure what this is doing...  could be messing up our Aliasing????
-    AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
-    UIApplication = new UIApplication(sender as Application);
+    var uiApplication = new UIApplication(sender as Application);
+    _revitContext.UIApplication = uiApplication;
 
     // POC: might be worth to interface this out, we shall see...
-    RevitTask.Initialize(UIApplication);
+    RevitTask.Initialize(uiApplication);
 
     RegisterPanelAndInitializePlugin();
-  }
-
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-  {
-    // POC: tight binding to files
-    // what is this really doing eh?
-    Assembly assembly = null;
-    string name = args.Name.Split(',')[0];
-    string path = Path.GetDirectoryName(typeof(RevitPlugin).Assembly.Location);
-
-    if (path != null)
-    {
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-      {
-        assembly = Assembly.LoadFrom(assemblyFile);
-      }
-    }
-
-    return assembly;
   }
 
   private void RegisterPanelAndInitializePlugin()
   {
     CefSharpSettings.ConcurrentTaskExecution = true;
 
-    CefSharpPanel = new CefSharpPanel();
-
     _uIControlledApplication.RegisterDockablePane(
       RevitExternalApplication.DoackablePanelId,
-      "Speckle DUI3",
-      CefSharpPanel
+      _revitSettings.RevitPanelName,
+      _panel
     );
+
+    // POC: this is a hack to ensure this is created within the API context
+    var revitStore = _container.Resolve<RevitDocumentStore>();
 
     //IEnumerable<BrowserBridge> bridges = Factory
     //  .CreateBindings(RevitDocumentStore)
@@ -135,25 +121,13 @@ internal class RevitPlugin : IRevitPlugin
     //  );
     ///*
 
-    // POC: re-instate, can this be done with some injected class?
-#if REVIT2020
-              // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
-              BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
-#endif
-#if REVIT2023
-            CefSharpPanel.Browser.JavascriptObjectRepository.NameConverter = null;
-            BindingOptions bindingOptions = BindingOptions.DefaultBinder;
-#endif
-    CefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
+    _panel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      foreach (IBridge bridge in _bridges)
+      foreach (IBinding binding in _bindings.Select(x => x.Value))
       {
-        CefSharpPanel.Browser.JavascriptObjectRepository.Register(
-          bridge.FrontendBoundName,
-          bridge,
-          true,
-          _bindingOptions
-        );
+        IBridge bridge = binding.Bridge;
+
+        //_panel.Browser.JavascriptObjectRepository.Register(bridge.FrontendBoundName, bridge, true, _bindingOptions);
       }
 
       // POC: not sure where this comes from

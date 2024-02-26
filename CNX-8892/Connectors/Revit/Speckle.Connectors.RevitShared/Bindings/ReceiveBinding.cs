@@ -7,27 +7,29 @@ using Autodesk.Revit.UI;
 using Revit.Async;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
-namespace Speckle.ConnectorRevitDUI3.Bindings;
+namespace Speckle.Connectors.Revit.Bindings;
 
-internal class ReceiveBinding : IBinding, ICancelable
+internal class ReceiveBinding : RevitBaseBinding, ICancelable
 {
-  public string Name { get; set; } = "receiveBinding";
-
-  public IBridge Parent { get; internal set; }
-
-  private readonly RevitDocumentStore _store;
-
   public CancellationManager CancellationManager { get; } = new();
 
-  public ReceiveBinding(RevitDocumentStore store)
+  public ReceiveBinding(
+    RevitContext revitContext,
+    RevitDocumentStore store,
+    IBridge bridge,
+    IBrowserSender browserSender
+  )
+    : base("receiveBinding", store, bridge, browserSender, revitContext)
   {
-    _store = store;
+    int t = -1;
   }
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);

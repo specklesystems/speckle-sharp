@@ -13,32 +13,23 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Revit.Bindings;
 
-namespace Speckle.ConnectorRevitDUI3.Bindings;
+namespace Speckle.Connectors.Revit.Bindings;
 
-internal class SendBinding : ISendBinding, ICancelable
+internal class SendBinding : RevitBaseBinding, ICancelable
 {
-  public string Name { get; set; } = "sendBinding";
-
-  public IBridge Parent { get; private set; }
-
-  private readonly RevitDocumentStore _store;
-
-  private readonly UIApplication _uiApplication;
-
   // POC: needs injection
   public CancellationManager CancellationManager { get; } = new();
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  public SendBinding(RevitDocumentStore store, IRevitPlugin revitPlugin)
+  public SendBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge, IBrowserSender browserSender)
+    : base("sendBinding", store, bridge, browserSender, revitContext)
   {
-    _uiApplication = revitPlugin.UIApplication;
-    _store = store;
-
     // TODO expiry events
     // TODO filters need refresh events
-    _uiApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
+    revitContext.UIApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -182,7 +173,7 @@ internal class SendBinding : ISendBinding, ICancelable
       }
     }
 
-    Parent.SendToBrowser(SendBindingEvents.SendersExpired, expiredSenderIds);
+    _browserSender.Send(Bridge.FrontendBoundName, SendBindingEvents.SendersExpired, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 }

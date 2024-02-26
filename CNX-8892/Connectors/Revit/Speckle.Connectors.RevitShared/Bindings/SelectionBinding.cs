@@ -4,44 +4,44 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 
-namespace Speckle.ConnectorRevitDUI3.Bindings;
+namespace Speckle.Connectors.Revit.Bindings;
 
-internal class SelectionBinding : ISelectionBinding
+// POC: we need a base a RevitBaseBinding
+internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 {
-  public string Name { get; set; } = "selectionBinding";
-
-  public IBridge Parent { get; private set; }
-
-  private readonly UIApplication _uiApplication;
-
-  public SelectionBinding(IRevitPlugin revitPlugin)
+  public SelectionBinding(
+    RevitContext revitContext,
+    RevitDocumentStore store,
+    IBridge bridge,
+    IBrowserSender browserSender
+  )
+    : base("selectionBinding", store, bridge, browserSender, revitContext)
   {
-    _uiApplication = revitPlugin.UIApplication;
-
+    // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
 #if REVIT2023
     _uiApplication.SelectionChanged += (_,_) => RevitIdleManager.SubscribeToIdle(OnSelectionChanged);
 #endif
 
-    _uiApplication.ViewActivated += (_, _) =>
+    _revitContext.UIApplication.ViewActivated += (_, _) =>
     {
-      Parent?.SendToBrowser(SelectionBindingEvents.SetSelection, new SelectionInfo());
+      _browserSender.Send(Bridge.FrontendBoundName, SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
   }
 
   private void OnSelectionChanged()
   {
-    var selectionInfo = GetSelection();
-    Parent?.SendToBrowser(SelectionBindingEvents.SetSelection, selectionInfo);
+    _browserSender.Send(Bridge.FrontendBoundName, SelectionBindingEvents.SetSelection, GetSelection());
   }
 
   public SelectionInfo GetSelection()
   {
-    List<Element> els = _uiApplication.ActiveUIDocument.Selection
+    List<Element> els = _revitContext.UIApplication.ActiveUIDocument.Selection
       .GetElementIds()
-      .Select(id => _uiApplication.ActiveUIDocument.Document.GetElement(id))
+      .Select(id => _revitContext.UIApplication.ActiveUIDocument.Document.GetElement(id))
       .ToList();
     List<string> cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
     List<string> ids = els.Select(el => el.UniqueId.ToString()).ToList();

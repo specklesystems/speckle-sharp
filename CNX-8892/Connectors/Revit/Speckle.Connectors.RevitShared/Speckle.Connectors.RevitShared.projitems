@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ReceiveBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SelectionBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\SendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
@@ -27,12 +28,10 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Plugin\Directory.Build.props" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml">

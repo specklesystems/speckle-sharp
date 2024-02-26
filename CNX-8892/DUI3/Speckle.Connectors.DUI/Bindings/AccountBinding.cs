@@ -9,7 +9,7 @@ namespace Speckle.Connectors.DUI.Bindings;
 public class AccountBinding : IBinding
 {
   public string Name { get; set; } = "accountsBinding";
-  public IBridge Parent { get; set; }
+  public IBridge Bridge { get; private set; }
 
   public Account[] GetAccounts()
   {

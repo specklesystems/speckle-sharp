@@ -12,23 +12,26 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Revit.HostApp;
 
+// POC: should be interfaced out
 internal class RevitDocumentStore : DocumentModelStore
 {
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
 
-  private readonly UIApplication _uiApplication;
+  private readonly RevitContext _revitContext;
 
-  public RevitDocumentStore(IRevitPlugin revitPlugin, JsonSerializerSettings serializerOption)
-    : base(serializerOption)
+  public RevitDocumentStore(RevitContext revitContext, JsonSerializerSettings serializerSettings)
+    : base(serializerSettings)
   {
-    _uiApplication = revitPlugin.UIApplication;
+    _revitContext = revitContext;
 
-    _uiApplication.ApplicationClosing += (_, _) => WriteToFile();
+    UIApplication uiApplication = _revitContext.UIApplication;
 
-    _uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
-    _uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile();
+    uiApplication.ApplicationClosing += (_, _) => WriteToFile();
 
-    _uiApplication.ViewActivated += (_, e) =>
+    uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
+    uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile();
+
+    uiApplication.ViewActivated += (_, e) =>
     {
       if (e.Document == null)
       {
@@ -45,13 +48,13 @@ internal class RevitDocumentStore : DocumentModelStore
       OnDocumentChanged();
     };
 
-    _uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
-    _uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+    uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
+    uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
   }
 
   public override void WriteToFile()
   {
-    UIDocument doc = _uiApplication.ActiveUIDocument;
+    UIDocument doc = _revitContext.UIApplication.ActiveUIDocument;
 
     // POC: this can happen?
     if (doc == null)
@@ -82,7 +85,7 @@ internal class RevitDocumentStore : DocumentModelStore
   {
     try
     {
-      Entity stateEntity = GetSpeckleEntity(_uiApplication.ActiveUIDocument.Document);
+      Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication.ActiveUIDocument.Document);
       if (stateEntity == null || !stateEntity.IsValid())
       {
         Models = new List<ModelCard>();

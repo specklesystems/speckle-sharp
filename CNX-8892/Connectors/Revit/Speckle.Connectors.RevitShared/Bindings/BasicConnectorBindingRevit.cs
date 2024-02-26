@@ -13,22 +13,22 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit.HostApp;
 
-namespace Speckle.ConnectorRevitDUI3.Bindings;
+namespace Speckle.Connectors.DUI.Bindings;
 
 internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
-  public IBridge Parent { get; set; }
+  public IBridge Bridge { get; private set; }
 
   private readonly RevitDocumentStore _store;
   private readonly RevitSettings _revitSettings;
-  private readonly UIApplication _uIApplication;
+  private readonly RevitContext _revitContext;
 
-  public BasicConnectorBindingRevit(RevitDocumentStore store, RevitSettings revitSettings, IRevitPlugin revitPlugin)
+  public BasicConnectorBindingRevit(RevitDocumentStore store, RevitSettings revitSettings, RevitContext revitContext)
   {
     _store = store;
     _revitSettings = revitSettings;
-    _uIApplication = revitPlugin.UiApplication;
+    _revitContext = revitContext;
 
     // POC: event binding
     //_store.DocumentChanged += (_, _) =>
@@ -53,12 +53,12 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
   public DocumentInfo GetDocumentInfo()
   {
     // POC: not sure why this would ever be null, is this needed?
-    if (_uIApplication == null)
+    if (_revitContext.UIApplication == null)
     {
       return null;
     }
 
-    var doc = _uIApplication.ActiveUIDocument.Document;
+    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     return new DocumentInfo
     {
@@ -87,8 +87,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
   public void HighlightModel(string modelCardId)
   {
     // POC: don't know if we can rely on storing the ActiveUIDocument, hence getting it each time
-    var activeUIDoc = _uIApplication.ActiveUIDocument;
-    var doc = _uIApplication.ActiveUIDocument.Document;
+    var activeUIDoc = _revitContext.UIApplication.ActiveUIDocument;
+    var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();

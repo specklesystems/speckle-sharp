@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Speckle.Connectors.DUI.Bindings;
 
-namespace Speckle.ConnectorRevitDUI3.Bindings;
+namespace Speckle.Connectors.Revit.Bindings;
 
 public class RevitEverythingFilter : EverythingSendFilter
 {
