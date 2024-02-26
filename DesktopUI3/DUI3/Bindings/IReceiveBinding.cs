@@ -43,7 +43,7 @@ public class ReceiveResult : DiscriminatedObject
 {
   public List<string> BakedObjectIds { get; set; }
 
-  public bool Display { get; set; } = true;
+  public bool Display { get; set; } = false;
   
   // TODO/THINK Later: results, reports, etc. ?
 }
