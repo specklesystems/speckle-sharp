@@ -59,7 +59,9 @@ public static class AccountManager
       : string.Empty;
 
     //language=graphql
-    var request = new GraphQLRequest { Query = $" query {{ serverInfo {{ name company  {migrationInclusion} }} }}" };
+    var request = new GraphQLRequest { 
+      Query = $" query {{ serverInfo {{ name company {migrationInclusion} }} }}" 
+    };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
