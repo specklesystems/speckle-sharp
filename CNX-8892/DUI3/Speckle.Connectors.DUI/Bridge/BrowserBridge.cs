@@ -48,9 +48,9 @@ public class BrowserBridge : IBridge
     get => _binding;
     private set
     {
-      if (_binding != null)
+      if (_binding != null || this != value.Parent)
       {
-        throw new ArgumentException($"Binding: {FrontendBoundName} is already bound");
+        throw new ArgumentException($"Binding: {FrontendBoundName} is already bound or does not match bridge");
       }
 
       _binding = value;
@@ -68,9 +68,10 @@ public class BrowserBridge : IBridge
   /// Creates a new bridge.
   /// </summary>
   /// <param name="binding">The actual binding class.</param>
-  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings)
+  public BrowserBridge(IBrowserSender browserSender, JsonSerializerSettings jsonSerializerSettings)
   {
     _serializerOptions = jsonSerializerSettings;
+    _browserSender = browserSender;
 
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
@@ -109,9 +110,9 @@ public class BrowserBridge : IBridge
   /// Used by the Frontend bridge logic to understand which methods are available.
   /// </summary>
   /// <returns></returns>
-  public IEnumerable<string> BindingsMethodNames
+  public string[] GetBindingsMethodNames()
   {
-    get { return BindingMethodCache.Keys; }
+    return BindingMethodCache.Keys.ToArray();
   }
 
   /// <summary>

@@ -97,12 +97,12 @@ internal class RevitPlugin : IRevitPlugin
   private void RegisterPanelAndInitializePlugin()
   {
     var panel = new CefSharpPanel();
+    panel.Browser.JavascriptObjectRepository.NameConverter = null;
     _revitContext.Panel = panel;
-    _browserSender.SetScriptMethod(panel.Browser.ExecuteScriptAsync);
 
     // POC: panel static is a bit meh :D
     SpeckleRevitCommand.Panel = panel;
-    panel.Browser.JavascriptObjectRepository.NameConverter = null;
+    _browserSender.SetScriptMethod(panel.Browser.ExecuteScriptAsync);
 
     CefSharpSettings.ConcurrentTaskExecution = true;
 
