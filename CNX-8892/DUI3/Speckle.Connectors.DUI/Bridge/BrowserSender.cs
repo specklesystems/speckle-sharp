@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Bridge;
@@ -13,19 +12,19 @@ namespace Speckle.Connectors.DUI.Bridge;
 public class BrowserSender : IBrowserSender
 {
   // not keen on this Action<string>
-  private readonly IBrowserScriptExecuter _browserScriptExecuter;
   private readonly JsonSerializerSettings _jsonSerializerSettings;
+  private Action<string>? _scriptMethod = null;
 
-  public BrowserSender(IBrowserScriptExecuter browserScriptExecuter, JsonSerializerSettings jsonSerializerSettings)
+  public BrowserSender(JsonSerializerSettings jsonSerializerSettings)
   {
-    _browserScriptExecuter = browserScriptExecuter;
     _jsonSerializerSettings = jsonSerializerSettings;
   }
 
   public void Send(string frontendBoundName, string eventName)
   {
     var script = $"{frontendBoundName}.emit('{eventName}')";
-    _browserScriptExecuter.Execute(script);
+
+    SendRaw(script);
   }
 
   public void Send<T>(string frontendBoundName, string eventName, T data)
@@ -33,11 +32,23 @@ public class BrowserSender : IBrowserSender
   {
     string payload = JsonConvert.SerializeObject(data, _jsonSerializerSettings);
     var script = $"{frontendBoundName}.emit('{eventName}', '{payload}')";
-    _browserScriptExecuter.Execute(script);
+
+    SendRaw(script);
   }
 
   public void SendRaw(string script)
   {
-    _browserScriptExecuter.Execute(script);
+    // POC: tight coupling here?
+    _scriptMethod!(script);
+  }
+
+  public void SetScriptMethod(Action<string> script)
+  {
+    if (_scriptMethod != null)
+    {
+      throw new InvalidOperationException("BrowserSender.SetScriptMethod() called when script already set");
+    }
+
+    _scriptMethod = script;
   }
 }

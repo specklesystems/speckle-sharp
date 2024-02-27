@@ -12,7 +12,7 @@ internal abstract class RevitBaseBinding : IBinding
 {
   // POC: name and bridge might be possible for them to be protected?
   public string Name { get; protected set; }
-  public IBridge Bridge { get; protected set; }
+  public IBridge Parent { get; protected set; }
 
   protected readonly RevitDocumentStore _store;
   protected readonly IBrowserSender _browserSender;
@@ -27,7 +27,7 @@ internal abstract class RevitBaseBinding : IBinding
   )
   {
     Name = name;
-    Bridge = bridge;
+    Parent = bridge;
     _store = store;
     _browserSender = browserSender;
     _revitContext = revitContext;

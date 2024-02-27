@@ -7,7 +7,9 @@ namespace Speckle.Connectors.Revit.Plugin
 {
   public class RevitContext
   {
-    public UIApplication? _uiApplication;
+    private CefSharpPanel? _panel;
+
+    private UIApplication? _uiApplication;
 
     public UIApplication? UIApplication
     {
@@ -20,6 +22,20 @@ namespace Speckle.Connectors.Revit.Plugin
         }
 
         _uiApplication = value;
+      }
+    }
+
+    public CefSharpPanel? Panel
+    {
+      get => _panel;
+      set
+      {
+        if (_panel != null)
+        {
+          throw new ArgumentException("CefSharpPanel already set");
+        }
+
+        _panel = value;
       }
     }
   }

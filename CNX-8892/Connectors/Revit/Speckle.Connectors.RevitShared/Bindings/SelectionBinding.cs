@@ -31,13 +31,13 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
     _revitContext.UIApplication.ViewActivated += (_, _) =>
     {
-      _browserSender.Send(Bridge.FrontendBoundName, SelectionBindingEvents.SetSelection, new SelectionInfo());
+      _browserSender.Send(Parent.FrontendBoundName, SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
   }
 
   private void OnSelectionChanged()
   {
-    _browserSender.Send(Bridge.FrontendBoundName, SelectionBindingEvents.SetSelection, GetSelection());
+    _browserSender.Send(Parent.FrontendBoundName, SelectionBindingEvents.SetSelection, GetSelection());
   }
 
   public SelectionInfo GetSelection()

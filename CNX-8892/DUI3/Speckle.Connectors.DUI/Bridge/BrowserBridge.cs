@@ -41,7 +41,7 @@ public class BrowserBridge : IBridge
 
   public string FrontendBoundName { get; private set; }
 
-  public object Browser { get; }
+  public object Browser { get; private set; }
 
   public IBinding Binding
   {
@@ -76,11 +76,12 @@ public class BrowserBridge : IBridge
     _mainThreadContext = SynchronizationContext.Current;
   }
 
-  public void Bind(IBinding binding)
+  public void AssociateWithBinding(IBinding binding, object browser)
   {
     // set via binding property to ensure explosion if already bound
     Binding = binding;
     FrontendBoundName = binding.Name;
+    Browser = browser;
 
     _bindingType = binding.GetType();
     BindingMethodCache = new Dictionary<string, MethodInfo>();

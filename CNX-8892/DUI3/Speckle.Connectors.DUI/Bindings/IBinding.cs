@@ -19,5 +19,5 @@ public interface IBinding
   /// to use that bridge to send events to the Frontend, via <see cref="IBridge.SendToBrowser(IHostAppEvent)">SendToBrowser(IHostAppEvent)</see> or <see cref="IBridge.SendToBrowser(string)">SendToBrowser(string)</see>.
   /// TODO: we'll probably need a factory class of sorts to handle the proper wrapping. Currently, on bridge instantiation the parent is set in the bindings class that has been wrapped around. Not vvv elegant.
   /// </summary>
-  public IBridge Bridge { get; }
+  public IBridge Parent { get; }
 }

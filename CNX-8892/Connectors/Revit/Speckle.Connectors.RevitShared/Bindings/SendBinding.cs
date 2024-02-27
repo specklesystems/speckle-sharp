@@ -173,7 +173,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
       }
     }
 
-    _browserSender.Send(Bridge.FrontendBoundName, SendBindingEvents.SendersExpired, expiredSenderIds);
+    _browserSender.Send(Parent.FrontendBoundName, SendBindingEvents.SendersExpired, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 }

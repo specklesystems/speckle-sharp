@@ -1,17 +1,23 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Speckle.Connectors.Revit;
 using Speckle.Connectors.Revit.Plugin;
 
+namespace Speckle.Connectors.Revit.Plugin;
+
 [Transaction(TransactionMode.Manual)]
-internal class SpeckleRevitDui3Command : IExternalCommand
+internal class SpeckleRevitCommand : IExternalCommand
 {
+  // POC: for devtools
+  public static CefSharpPanel Panel;
+
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
     DockablePane panel = commandData.Application.GetDockablePane(RevitExternalApplication.DoackablePanelId);
     panel.Show();
 
-    // App.CefSharpPanel.Browser.ShowDevTools();
+    Panel.ShowDevTools();
     return Result.Succeeded;
   }
 }

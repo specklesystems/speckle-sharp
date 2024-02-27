@@ -62,7 +62,6 @@ internal class RevitExternalApplication : IExternalApplication
       _container
         //.LoadAutofacModules(new string[] { "<paths>" }) // TODO, it's coming
         .AddModule(new AutofacUIModule())
-        .AddSingletonInstance<BindingOptions>(BindingOptions.DefaultBinder) // this is for 2023, POC: re-instate above for 2020
         .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
         .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
         .Build();

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Speckle.Connectors.DUI.Bindings;
 
@@ -15,7 +14,7 @@ public interface IBridge
   // POC: documnetation comments
   string FrontendBoundName { get; }
 
-  void Bind(IBinding binding);
+  void AssociateWithBinding(IBinding binding, object browser);
 
   /// <summary>
   /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.

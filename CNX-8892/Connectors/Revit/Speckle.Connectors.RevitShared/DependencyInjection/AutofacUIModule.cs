@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Autofac;
+using CefSharp;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Utils;
@@ -20,15 +21,8 @@ class AutofacUIModule : Module
   {
     builder.RegisterInstance(new RevitContext());
 
-    // panel
-    var panel = new CefSharpPanel();
-
-    panel.Browser.JavascriptObjectRepository.NameConverter = null;
-    builder.RegisterInstance(panel).SingleInstance();
-    builder
-      .RegisterInstance(new BrowserScriptExecuter(panel.ExecuteScriptAsync))
-      .As<IBrowserScriptExecuter>()
-      .SingleInstance();
+    // POC: different versons for different versions of CEF
+    builder.RegisterInstance<BindingOptions>(BindingOptions.DefaultBinder);
 
     // register my types
     builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
