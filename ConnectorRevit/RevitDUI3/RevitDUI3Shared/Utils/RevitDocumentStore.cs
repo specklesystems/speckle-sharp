@@ -11,6 +11,7 @@ namespace Speckle.ConnectorRevitDUI3.Utils;
 
 public class RevitDocumentStore : DocumentModelStore
 {
+  // POC: statics to come out
   private static UIApplication RevitApp { get; set; }
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
 

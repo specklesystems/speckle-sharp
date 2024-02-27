@@ -27,7 +27,7 @@ internal class BasicConnectorBindingRevit : RevitBaseBinding, IBasicConnectorBin
     RevitContext revitContext,
     IBrowserSender browserSender
   )
-    : base("baseBinding", store, bridge, browserSender, revitContext)
+    : base("baseBinding", store, bridge, browserSender, revitContext) // POC: name maybe should just take class name? i.e. nameof(BasicConnectorBindingRevit)
   {
     _revitSettings = revitSettings;
 

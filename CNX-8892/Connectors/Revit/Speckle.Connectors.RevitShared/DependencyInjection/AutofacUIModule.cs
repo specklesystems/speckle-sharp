@@ -54,6 +54,7 @@ class AutofacUIModule : Module
     builder.RegisterType<SelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<SendBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();

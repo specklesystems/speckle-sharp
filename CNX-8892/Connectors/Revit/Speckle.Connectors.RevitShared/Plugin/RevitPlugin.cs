@@ -14,6 +14,7 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using Autofac;
 using Speckle.Connectors.Revit.HostApp;
+using System.Diagnostics;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -108,6 +109,7 @@ internal class RevitPlugin : IRevitPlugin
     // binding the bindings to each bridge
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
+      Debug.WriteLine(binding.Name);
       binding.Bridge.Bind(binding);
     }
 

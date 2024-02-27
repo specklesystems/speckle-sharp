@@ -30,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitIdleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitSettings.cs" />
   </ItemGroup>

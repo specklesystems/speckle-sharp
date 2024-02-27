@@ -12,19 +12,22 @@ namespace Speckle.Connectors.Revit.Bindings;
 // POC: we need a base a RevitBaseBinding
 internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 {
+  private readonly IRevitIdleManager _revitIdleManager;
+
   public SelectionBinding(
     RevitContext revitContext,
     RevitDocumentStore store,
+    IRevitIdleManager idleManager,
     IBridge bridge,
     IBrowserSender browserSender
   )
     : base("selectionBinding", store, bridge, browserSender, revitContext)
   {
+    _revitIdleManager = idleManager;
+
     // POC: we can inject the solution here
     // TODO: Need to figure it out equivalent of SelectionChanged for Revit2020
-#if REVIT2023
-    _uiApplication.SelectionChanged += (_,_) => RevitIdleManager.SubscribeToIdle(OnSelectionChanged);
-#endif
+    _revitContext.UIApplication.SelectionChanged += (_, _) => _revitIdleManager.SubscribeToIdle(OnSelectionChanged);
 
     _revitContext.UIApplication.ViewActivated += (_, _) =>
     {
