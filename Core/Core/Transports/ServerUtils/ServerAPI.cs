@@ -402,7 +402,7 @@ public sealed class ServerApi : IDisposable, IServerApi
     using HttpRequestMessage message =
       new() { RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative), Method = HttpMethod.Post };
 
-    using MultipartFormDataContent multipart = new();
+    MultipartFormDataContent multipart = new();
 
     int mpId = 0;
     foreach (List<(string, string)> mpData in multipartedObjects)
