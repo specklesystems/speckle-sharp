@@ -8,6 +8,9 @@ namespace DesktopUI2.ViewModels;
 
 public class ActivityViewModel : ReactiveObject
 {
+  //UI Binding
+  public bool UseFe2 => _client?.Account.serverInfo.frontend2 ?? true;
+
   public ActivityViewModel(ActivityItem item, Client client)
   {
     _activity = item;
@@ -31,7 +34,7 @@ public class ActivityViewModel : ReactiveObject
         Margin = new Thickness(10, 10, 10, 0);
         Icon = "Pencil";
         Align = HorizontalAlignment.Center;
-        Message = $"created this stream • {Formatting.TimeAgo(item.time)}";
+        Message = $"created this {Formatting.ReplaceTerminology(UseFe2, "stream")} • {Formatting.TimeAgo(item.time)}";
         break;
     }
 
