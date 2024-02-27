@@ -25,12 +25,16 @@ public static class ConfigManager
       var oldConfig = ConfigStorage.GetObject("config");
       var newConfig = ConfigStorage.GetObject("configDUI");
 
-      if (!string.IsNullOrEmpty(newConfig))
+      Config deserializedConfig = !string.IsNullOrWhiteSpace(newConfig)
+        ? JsonConvert.DeserializeObject<Config>(newConfig)
+        : JsonConvert.DeserializeObject<Config>(oldConfig);
+
+      if (deserializedConfig is not null)
       {
-        return JsonConvert.DeserializeObject<Config>(newConfig);
+        deserializedConfig.UseFe2 = true;
       }
 
-      return JsonConvert.DeserializeObject<Config>(oldConfig);
+      return deserializedConfig;
     }
     catch (Exception e) { }
     return new Config();
