@@ -3,13 +3,21 @@ using Avalonia;
 using Avalonia.Layout;
 using ReactiveUI;
 using Speckle.Core.Api;
+using DesktopUI2.Models;
 
 namespace DesktopUI2.ViewModels;
 
 public class ActivityViewModel : ReactiveObject
 {
   //UI Binding
-  public bool UseFe2 => _client?.Account.serverInfo.frontend2 ?? true;
+  public bool UseFe2
+  {
+    get
+    {
+      Config config = ConfigManager.Load();
+      return config.UseFe2 || _client.Account.serverInfo.frontend2;
+    }
+  }
 
   public ActivityViewModel(ActivityItem item, Client client)
   {

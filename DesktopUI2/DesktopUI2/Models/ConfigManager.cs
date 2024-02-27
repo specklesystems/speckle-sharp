@@ -45,5 +45,5 @@ public class Config
   public bool DarkTheme { set; get; }
   public bool OneClickMode { set; get; } = true;
   public bool ShowImportExportAlert { set; get; } = true;
-  public bool UseFe2 { set; get; } = false;
+  public bool UseFe2 { set; get; } = true;
 }

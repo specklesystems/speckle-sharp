@@ -657,7 +657,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   //UI Binding
   public bool UseFe2
   {
-    get { return Client.Account.serverInfo.frontend2; }
+    get
+    {
+      Config config = ConfigManager.Load();
+      return config.UseFe2 || Client.Account.serverInfo.frontend2;
+    }
   }
 
   public DateTime? LastUsedTime
