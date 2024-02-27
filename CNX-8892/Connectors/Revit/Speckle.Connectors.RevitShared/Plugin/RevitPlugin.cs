@@ -27,6 +27,7 @@ internal class RevitPlugin : IRevitPlugin
   private readonly CefSharpPanel _panel;
   private readonly RevitContext _revitContext;
   private readonly IBrowserSender _browserSender;
+  private readonly CefSharpPanel _cefSharpPanel;
 
   public RevitPlugin(
     UIControlledApplication uIControlledApplication,
@@ -34,7 +35,8 @@ internal class RevitPlugin : IRevitPlugin
     IEnumerable<Lazy<IBinding>> bindings,
     BindingOptions bindingOptions,
     RevitContext revitContext,
-    IBrowserSender browserSender
+    IBrowserSender browserSender,
+    CefSharpPanel cefSharpPanel
   )
   {
     _uIControlledApplication = uIControlledApplication;
@@ -43,6 +45,7 @@ internal class RevitPlugin : IRevitPlugin
     _bindingOptions = bindingOptions;
     _revitContext = revitContext;
     _browserSender = browserSender;
+    _cefSharpPanel = cefSharpPanel;
   }
 
   public void Initialise()
@@ -96,42 +99,37 @@ internal class RevitPlugin : IRevitPlugin
 
   private void RegisterPanelAndInitializePlugin()
   {
-    var panel = new CefSharpPanel();
-    panel.Browser.JavascriptObjectRepository.NameConverter = null;
-    _revitContext.Panel = panel;
-
-    // POC: panel static is a bit meh :D
-    SpeckleRevitCommand.Panel = panel;
-    _browserSender.SetScriptMethod(panel.Browser.ExecuteScriptAsync);
-
     CefSharpSettings.ConcurrentTaskExecution = true;
 
     _uIControlledApplication.RegisterDockablePane(
       RevitExternalApplication.DoackablePanelId,
       _revitSettings.RevitPanelName,
-      panel
+      _cefSharpPanel
     );
 
     // binding the bindings to each bridge
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
       Debug.WriteLine(binding.Name);
-      binding.Parent.AssociateWithBinding(binding, panel);
+      binding.Parent.AssociateWithBinding(binding, _cefSharpPanel);
     }
 
-    panel.Browser.IsBrowserInitializedChanged += (sender, e) =>
+    _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
       // POC dev tools
-      panel.ShowDevTools();
+      _cefSharpPanel.ShowDevTools();
 
       foreach (IBinding binding in _bindings.Select(x => x.Value))
       {
         IBridge bridge = binding.Parent;
 
-        panel.Browser.JavascriptObjectRepository.Register(bridge.FrontendBoundName, bridge, true, _bindingOptions);
+        _cefSharpPanel.Browser.JavascriptObjectRepository.Register(
+          bridge.FrontendBoundName,
+          bridge,
+          true,
+          _bindingOptions
+        );
       }
-
-      int t = -1;
 
       // POC: not sure where this comes from
 #if REVIT2020

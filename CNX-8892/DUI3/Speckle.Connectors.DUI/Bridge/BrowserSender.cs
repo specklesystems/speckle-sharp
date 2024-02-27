@@ -15,9 +15,10 @@ public class BrowserSender : IBrowserSender
   private readonly JsonSerializerSettings _jsonSerializerSettings;
   private Action<string>? _scriptMethod = null;
 
-  public BrowserSender(JsonSerializerSettings jsonSerializerSettings)
+  public BrowserSender(JsonSerializerSettings jsonSerializerSettings, Action<string> scriptMethod)
   {
     _jsonSerializerSettings = jsonSerializerSettings;
+    _scriptMethod = scriptMethod;
   }
 
   public void Send(string frontendBoundName, string eventName)
@@ -40,15 +41,5 @@ public class BrowserSender : IBrowserSender
   {
     // POC: tight coupling here?
     _scriptMethod!(script);
-  }
-
-  public void SetScriptMethod(Action<string> script)
-  {
-    if (_scriptMethod != null)
-    {
-      throw new InvalidOperationException("BrowserSender.SetScriptMethod() called when script already set");
-    }
-
-    _scriptMethod = script;
   }
 }

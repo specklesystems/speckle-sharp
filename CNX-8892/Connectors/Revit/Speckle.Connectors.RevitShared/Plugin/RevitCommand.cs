@@ -9,15 +9,11 @@ namespace Speckle.Connectors.Revit.Plugin;
 [Transaction(TransactionMode.Manual)]
 internal class SpeckleRevitCommand : IExternalCommand
 {
-  // POC: for devtools
-  public static CefSharpPanel Panel;
-
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
     DockablePane panel = commandData.Application.GetDockablePane(RevitExternalApplication.DoackablePanelId);
     panel.Show();
 
-    Panel.ShowDevTools();
     return Result.Succeeded;
   }
 }
