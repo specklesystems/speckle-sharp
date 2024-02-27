@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Speckle.Transports.S3</PackageId>
+    <Product>DiskTransport</Product>
+    <Description>A S3 transport for Speckle</Description>
+    <PackageTags>$(PackageTags) S3 transport</PackageTags>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Speckle.Core.Transports</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.S3" Version="3.7.305.28" />
+  </ItemGroup>
+</Project>

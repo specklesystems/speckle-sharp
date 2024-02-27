@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Unit", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Integration", "Tests\Speckle.Core.Tests.Integration\Speckle.Core.Tests.Integration.csproj", "{51922311-4D42-46DB-BB16-CDEF9337C0BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S3Transport", "Transports\S3Transport\S3Transport.csproj", "{B566277F-7A8A-44B0-83B9-E6A93ABE375C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +50,10 @@ Global
 		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B566277F-7A8A-44B0-83B9-E6A93ABE375C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B566277F-7A8A-44B0-83B9-E6A93ABE375C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B566277F-7A8A-44B0-83B9-E6A93ABE375C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B566277F-7A8A-44B0-83B9-E6A93ABE375C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,6 +63,7 @@ Global
 		{815A9C70-BF5F-4718-AACB-9E50B26F4630} = {424ECC59-E693-4678-AFAC-C00F2D8AE735}
 		{72030F4F-8509-4745-8BF4-01AFEB93EF07} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
 		{51922311-4D42-46DB-BB16-CDEF9337C0BF} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
+		{B566277F-7A8A-44B0-83B9-E6A93ABE375C} = {424ECC59-E693-4678-AFAC-C00F2D8AE735}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1378F8F4-B354-4DB6-8052-A1A69B59BC2C}
