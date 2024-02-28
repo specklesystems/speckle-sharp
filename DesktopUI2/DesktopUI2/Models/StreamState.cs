@@ -42,18 +42,6 @@ public class StreamState
       if (_client == null)
       {
         var account = AccountManager.GetAccounts(ServerUrl).FirstOrDefault(x => x.userInfo.id == UserId);
-        if (account == null)
-        {
-          //try fetching the account without specifying the Sevrer URL
-          //if the user has upgraded from FE1 to FE2 this would be the case
-          account = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == UserId);
-          //replace old URL with the new one
-          if (account != null)
-          {
-            ServerUrl = account.serverInfo.url;
-          }
-        }
-
         if (account != null)
         {
           _client = new Client(account);
