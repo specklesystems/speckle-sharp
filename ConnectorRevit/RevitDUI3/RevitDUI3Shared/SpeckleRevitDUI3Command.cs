@@ -13,7 +13,6 @@ public class SpeckleRevitDui3Command : IExternalCommand
     DockablePane panel = commandData.Application.GetDockablePane(App.PanelId);
     panel.Show();
 
-    App.CefSharpPanel.Browser.ShowDevTools();
     return Result.Succeeded;
   }
 }

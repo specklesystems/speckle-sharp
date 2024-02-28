@@ -12,7 +12,7 @@
     <cefSharp:ChromiumWebBrowser
       Name="Browser"
       Grid.Row="0"
-      Address="http://localhost:8082/" />
+      Address="https://deploy-preview-2076--boisterous-douhua-e3cefb.netlify.app/" />
   </Grid>
 </Page>
 
