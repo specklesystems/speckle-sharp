@@ -493,7 +493,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new Commit
           {
             id = ConnectorHelpers.LatestCommitString,
-            message = $"Always receive the latest version sent to this model."
+            message = "Always receive the latest version sent to this model."
           }
         );
         Commits = branch.commits.items;
@@ -808,7 +808,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       if (!IsReceiver)
       {
-        _branchesViewModel.Add(new BranchViewModel(new Branch { name = $"Add New Model" }, "Plus"));
+        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Model" }, "Plus"));
       }
 
       return _branchesViewModel;
@@ -1227,7 +1227,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new PopUpNotificationViewModel
           {
             Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
-            Message = openOnline ? "Click to view it online" : $"Click open the project",
+            Message = openOnline ? "Click to view it online" : "Click open the project",
             OnClick = () =>
             {
               //if in stream edit open online
@@ -1767,8 +1767,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
         {
-          Title = $"💾 Project Saved",
-          Message = $"This project has been saved to this file",
+          Title = "💾 Project Saved",
+          Message = "This project has been saved to this file",
           Type = NotificationType.Success
         }
       );

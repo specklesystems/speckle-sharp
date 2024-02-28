@@ -195,7 +195,7 @@
       <StackPanel>
         <TextBlock
           IsVisible="{Binding !Commits.Count}"
-          Text="This model has no version. Versions are generated what data is sent to a model in a project.&#x0a;&#x0a;Please select a different model or project."
+          Text="This model has no versions. Versions are generated what data is sent to a model in a project.&#x0a;&#x0a;Please select a different model or project."
           TextWrapping="Wrap" />
         <!--  360 preview and hide logic in Receive.xaml.cs  -->
         <Grid IsVisible="{Binding Commits.Count}">
