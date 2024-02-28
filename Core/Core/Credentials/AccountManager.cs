@@ -54,14 +54,10 @@ public static class AccountManager
     );
 
     var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
-    string migrationInclusion = isFrontEnd2
-      ? "migration { movedFrom movedTo }"
-      : string.Empty;
+    string migrationInclusion = isFrontEnd2 ? "migration { movedFrom movedTo }" : string.Empty;
 
     //language=graphql
-    var request = new GraphQLRequest { 
-      Query = $" query {{ serverInfo {{ name company {migrationInclusion} }} }}" 
-    };
+    var request = new GraphQLRequest { Query = $" query {{ serverInfo {{ name company {migrationInclusion} }} }}" };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -139,9 +135,7 @@ public static class AccountManager
       );
 
       var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
-      string migrationInclusion = isFrontEnd2
-        ? "migration { movedFrom movedTo }"
-        : string.Empty;
+      string migrationInclusion = isFrontEnd2 ? "migration { movedFrom movedTo }" : string.Empty;
 
       //language=graphql
       var request = new GraphQLRequest
