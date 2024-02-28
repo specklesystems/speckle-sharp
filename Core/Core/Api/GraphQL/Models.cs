@@ -397,17 +397,22 @@ public class ServerInfo
   /// </remarks>
   public string url { get; set; }
 
+  public ServerMigration migration { get; set; }
+}
+
+public class ServerMigration
+{
   /// <summary>
   /// One of the base fields for our account upgrade mechanism.
   /// Shows the url that this account now lives at after upgrading to FE2
   /// </summary>
-  public string movedTo { get; set; }
+  public Uri movedTo { get; set; }
 
   /// <summary>
   /// One of the base fields for our account upgrade mechanism.
   /// Shows the url that this account used to live at before being upgraded to FE2
   /// </summary>
-  public string movedFrom { get; set; }
+  public Uri movedFrom { get; set; }
 }
 
 public class StreamData
