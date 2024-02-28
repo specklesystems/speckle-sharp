@@ -653,8 +653,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  public bool UseFe2 => Client.Account.serverInfo.frontend2;
-
   public DateTime? LastUsedTime
   {
     get => StreamState.LastUsed;

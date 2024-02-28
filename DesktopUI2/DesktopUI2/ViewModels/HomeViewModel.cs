@@ -1003,16 +1003,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
   public bool HasStreams => FilteredStreams != null && FilteredStreams.Any();
 
-  //UI Binding
-  public bool UseFe2
-  {
-    get
-    {
-      var config = ConfigManager.Load();
-      return config.UseFe2;
-    }
-  }
-
   public string StreamsText
   {
     get

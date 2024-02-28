@@ -29,11 +29,6 @@ public static class ConfigManager
         ? JsonConvert.DeserializeObject<Config>(newConfig)
         : JsonConvert.DeserializeObject<Config>(oldConfig);
 
-      if (deserializedConfig is not null)
-      {
-        deserializedConfig.UseFe2 = true;
-      }
-
       return deserializedConfig;
     }
     catch (Exception e) { }
@@ -49,5 +44,5 @@ public class Config
   public bool DarkTheme { set; get; }
   public bool OneClickMode { set; get; } = true;
   public bool ShowImportExportAlert { set; get; } = true;
-  public bool UseFe2 { set; get; } = true;
+  public bool UseFe2 { set; get; }
 }
