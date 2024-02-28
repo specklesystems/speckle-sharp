@@ -13,8 +13,6 @@ public static class EditorExtensions
     {
       throw new ArgumentNullException(nameof(editor));
     }
-
-    using Transaction tr = editor.Document.TransactionManager.StartTransaction();
     using ViewTableRecord view = editor.GetCurrentView();
     Matrix3d worldToEye =
       Matrix3d.WorldToPlane(view.ViewDirection)
@@ -25,6 +23,5 @@ public static class EditorExtensions
     view.Height = ext.MaxPoint.Y - ext.MinPoint.Y;
     view.CenterPoint = new Point2d((ext.MaxPoint.X + ext.MinPoint.X) / 2.0, (ext.MaxPoint.Y + ext.MinPoint.Y) / 2.0);
     editor.SetCurrentView(view);
-    tr.Commit();
   }
 }

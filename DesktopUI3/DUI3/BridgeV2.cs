@@ -196,7 +196,7 @@ public class BrowserBridge : IBridge
 
       NotifyUIMethodCallResultReady(requestId, resultJson);
     }
-    catch (SpeckleException e)
+    catch (Exception e) // DO NOT EVER CAPTURE SPECIFIC EXCEPTIONS HERE (unknown ones will slip) - WE DO NOT WANT TO BUBBLE SHIT UP IN CRAZY CONTEXTS; They should be gracefully sent to the UI; THIS COMES FROM "NEVER CRASH THE HOST APP IF POSSIBLE" RULE
     {
       // TODO: properly log the exeception.
       var serializedError = JsonConvert.SerializeObject(
@@ -251,7 +251,6 @@ public class BrowserBridge : IBridge
   /// <summary>
   /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`.
   /// </summary>
-  /// <param name="eventData"></param>
   public void SendToBrowser(string eventName, object data = null)
   {
     string script;

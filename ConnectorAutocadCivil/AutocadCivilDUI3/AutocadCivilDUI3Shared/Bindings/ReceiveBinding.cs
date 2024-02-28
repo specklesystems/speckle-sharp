@@ -8,8 +8,12 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Collections;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.LayerManager;
+using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
 
@@ -33,131 +37,192 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public async void Receive(string modelCardId, string versionId)
+  public async void Receive(string modelCardId)
   {
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get receiver card
-      ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      var modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
 
       // 2 - Get commit object from server
-      Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
+      var commitObject = await Operations.GetCommitBase(Parent, modelCard, cts.Token).ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
 
       // 3 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, Utils.VersionedAppName);
 
       // 4 - Traverse commit object
-      List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Parsing structure" });
+      var objectsToConvert = new List<(List<string>,Base)>();
+      foreach (var (objPath, obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
+      {
+        if (cts.IsCancellationRequested)
+        {
+          throw new OperationCanceledException(cts.Token);
+        }
+        if (obj is not Collection && converter.CanConvertToNative(obj))
+        {
+          objectsToConvert.Add((objPath, obj));
+        }
+      }
 
-      // 5 - Convert and Bake objects
-      ConvertObjects(objectsToConvert, converter, modelCardId, cts);
+      if (objectsToConvert.Count == 0)
+      {
+        throw new Exception("No convertible objects found.");
+      }
+
+      var baseLayerPrefix = $"SPK-{modelCard.ProjectName}-{modelCard.ModelName}-";
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Starting conversion" });
+      
+      using var docLock = Doc.LockDocument();
+      using var transaction = Doc.Database.TransactionManager.StartTransaction();
+      
+      CreateLayerFilter(modelCard.ProjectName, modelCard.ModelName);
+      var convertedObjectIds = BakeObjects(objectsToConvert, baseLayerPrefix, modelCardId, cts, converter);
+
+      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+      ReceiveBindingUiCommands.SetModelConversionResult(Parent, modelCardId, new ReceiveResult() { BakedObjectIds = convertedObjectIds, Display = true });
+      transaction.Commit();
     }
     catch (Exception e)
     {
       if (e is OperationCanceledException)
       {
-        Progress.CancelReceive(Parent, modelCardId);
         return;
       }
-      // throw;
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
 
-  private void ConvertObjects(
-    List<Base> objectsToConvert,
-    ISpeckleConverter converter,
-    string modelCardId,
-    CancellationTokenSource cts
-  )
+  private List<string> BakeObjects(List<(List<string>,Base)> objects, string baseLayerPrefix, string modelCardId, CancellationTokenSource cts, ISpeckleConverter converter)
   {
-    using DocumentLock l = Doc.LockDocument();
-    using Transaction tr = Doc.Database.TransactionManager.StartTransaction();
-    List<object> objectsToBake = new();
-
-    int count = 0;
-    foreach (Base objectToConvert in objectsToConvert)
+    BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting" });
+    var uniqueLayerNames = new HashSet<string>();
+    var handleValues = new List<string>();
+    var count = 0;
+    foreach (var (path, obj) in objects)
     {
       if (cts.IsCancellationRequested)
       {
-        Progress.CancelReceive(Parent, modelCardId, (double)count / objectsToConvert.Count);
-        tr.Commit();
-        return;
+        throw new OperationCanceledException(cts.Token);
       }
-      count++;
-      double progress = (double)count / objectsToConvert.Count;
-      Progress.ReceiverProgressToBrowser(Parent, modelCardId, progress);
-
-      List<object> objectsToAddBakeList = ConvertObject(objectToConvert, converter);
-      objectsToBake.AddRange(objectsToAddBakeList);
-    }
-    BakeObjects(objectsToBake, tr);
-
-    Progress.ReceiverProgressToBrowser(Parent, modelCardId, 1);
-
-    tr.Commit();
-  }
-
-  private void BakeObjects(List<object> convertedItems, Transaction tr)
-  {
-    // int bakedCount = 0;
-    foreach (object convertedItem in convertedItems)
-    {
-      switch (convertedItem)
+      
+      try
       {
-        case Entity o:
-          ObjectId res = o.Append();
-          if (res.IsValid)
-          {
-            tr.TransactionManager.QueueForGraphicsFlush();
-            // bakedCount++;
-          }
-          else
+        var layerFullName = baseLayerPrefix + string.Join("-", path);
+        layerFullName = Utils.RemoveInvalidChars(layerFullName);
+        
+        if (uniqueLayerNames.Add(layerFullName))
+        {
+          CreateLayerOrPurge(layerFullName);
+        }
+        
+        var converted = converter.ConvertToNative(obj);
+        var flattened = Traversal.FlattenToNativeConversionResult(converted);
+        foreach (Entity conversionResult in flattened.Cast<Entity>())
+        {
+          if(conversionResult == null)
           {
             continue;
           }
-          break;
-        default:
-          break;
-      }
-    }
-  }
 
-  // conversion and bake
-  private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
-  {
-    List<object> convertedList = new();
-
-    object converted = converter.ConvertToNative(obj);
-    if (converted == null)
-    {
-      return convertedList;
-    }
-
-    // Iteratively flatten any lists
-    void FlattenConvertedObject(object item)
-    {
-      if (item is IList list)
-      {
-        foreach (object child in list)
-        {
-          FlattenConvertedObject(child);
+          conversionResult.Append(layerFullName);
+          handleValues.Add(conversionResult.Handle.Value.ToString());
+          BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)++count/objects.Count });
         }
       }
-      else
+      catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
-        convertedList.Add(item);
+        // TODO: you know, report, etc.
+        Debug.WriteLine("conversion error happened.");
       }
     }
-    FlattenConvertedObject(converted);
+    return handleValues;
+  }
 
-    return convertedList;
+  /// <summary>
+  /// Will create a layer with the provided name, or, if it finds an existing one, will "purge" all objects from it.
+  /// This ensures we're creating the new objects we've just received rather than overlaying them.
+  /// </summary>
+  /// <param name="layerName"></param>
+  private void CreateLayerOrPurge(string layerName)
+  {
+    using var transaction = Doc.TransactionManager.TopTransaction;
+    
+    var layerTable = transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+    var layerTableRecord = new LayerTableRecord() { Name = layerName };
+
+    var hasLayer = layerTable.Has(layerName);
+    if (hasLayer)
+    {
+      var tvs = new[] { new TypedValue((int)DxfCode.LayerName, layerName) };
+      var selectionFilter = new SelectionFilter(tvs);
+      var selectionResult = Doc.Editor.SelectAll(selectionFilter).Value;
+      if (selectionResult == null)
+      {
+        return;
+      }
+      foreach (SelectedObject selectedObject in selectionResult)
+      {
+        transaction.GetObject(selectedObject.ObjectId, OpenMode.ForWrite).Erase();
+      }
+      
+      return;
+    }
+    
+    layerTable.UpgradeOpen();
+    layerTable.Add(layerTableRecord);
+    transaction.AddNewlyCreatedDBObject(layerTableRecord, true);
+  }
+  
+  /// <summary>
+  /// Creates a layer filter for the just received model, grouped under a top level filter "Speckle". Note: manual close and open of the layer properties panel required (it's an acad thing).
+  /// This comes in handy to quickly access the layers created for this specific model. 
+  /// </summary>
+  /// <param name="projectName"></param>
+  /// <param name="modelName"></param>
+  private void CreateLayerFilter(string projectName, string modelName)
+  {
+    using var docLock = Doc.LockDocument();
+    var filterName = Utils.RemoveInvalidChars($@"{projectName}-{modelName}");
+    var layerFilterTree = Doc.Database.LayerFilters;
+    var layerFilterCollection  = layerFilterTree.Root.NestedFilters;
+    var groupFilterName = "Speckle";
+    LayerFilter groupFilter = null;
+    
+    foreach (LayerFilter existingFilter in layerFilterCollection)
+    {
+      if(existingFilter.Name == groupFilterName)
+      {
+        groupFilter = existingFilter;
+        break;
+      }
+    }
+
+    if (groupFilter == null)
+    {
+      groupFilter = new LayerFilter() { Name = "Speckle", FilterExpression = $"NAME==\"SPK-*\""};
+      layerFilterCollection.Add(groupFilter);
+    }
+    
+    var layerFilterExpression = $"NAME==\"SPK-{filterName}*\"";
+    foreach (LayerFilter lf in groupFilter.NestedFilters)
+    {
+      if (lf.Name == filterName)
+      {
+        lf.FilterExpression = layerFilterExpression;
+        return;
+      }
+    }
+    var layerFilter = new LayerFilter() { Name = filterName, FilterExpression = layerFilterExpression };
+    groupFilter.NestedFilters.Add(layerFilter);
+    Doc.Database.LayerFilters = layerFilterTree;
   }
 }

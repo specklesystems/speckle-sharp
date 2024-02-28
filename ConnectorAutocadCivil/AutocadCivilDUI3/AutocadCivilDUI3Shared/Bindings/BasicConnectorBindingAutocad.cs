@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutocadCivilDUI3Shared.Extensions;
 using AutocadCivilDUI3Shared.Utils;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.EditorInput;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -29,7 +27,7 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
     _store = store;
     _store.DocumentChanged += (_, _) =>
     {
-      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
+      BasicConnectorBindingCommands.NotifyDocumentChanged(Parent);
     };
   }
 
@@ -51,6 +49,7 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
 
   public DocumentInfo GetDocumentInfo()
   {
+    if (Doc == null) return null;
     string name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
     return new DocumentInfo()
     {
@@ -66,35 +65,67 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
 
   public void UpdateModel(ModelCard model)
   {
-    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
     _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)
   {
-    int index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
     _store.Models.RemoveAt(index);
   }
 
   public void HighlightModel(string modelCardId)
   {
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
-    List<DBObject> dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
-    Database database = Doc.Database;
-    Editor editor = Doc.Editor;
-    editor.SetImpliedSelection(Array.Empty<ObjectId>());
-    Transaction tr = database.TransactionManager.StartTransaction();
+    if (Doc == null)
+    {
+      return;
+    }
+    var objectIds = Array.Empty<ObjectId>();
+    
+    var model = _store.GetModelById(modelCardId);
+    if (model == null)
+    {
+      return; // TODO: RECEIVERS
+    }
 
-    ObjectId[] objectIds = dbObjects.Select(dbObject => dbObject.Id).ToArray();
-    editor.SetImpliedSelection(objectIds);
-    editor.UpdateScreen();
+    if (model is SenderModelCard senderModelCard)
+    {
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, senderModelCard.SendFilter.GetObjectIds());
+      objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    }
 
+    if (model is ReceiverModelCard { ReceiveResult: { } } receiverModelCard && receiverModelCard.ReceiveResult.BakedObjectIds.Count != 0)
+    {
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, receiverModelCard.ReceiveResult.BakedObjectIds);
+      objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    }
+    
+    if (objectIds.Length == 0)
+    {
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      return;
+    }
+    
     Parent.RunOnMainThread(() =>
     {
-      editor.Zoom(Extends3dExtensions.FromObjectIds(editor));
-    });
+      Doc.Editor.SetImpliedSelection(Array.Empty<ObjectId>()); // Deselects
+      Doc.Editor.SetImpliedSelection(objectIds); // Selects
+      Doc.Editor.UpdateScreen();
 
-    Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
-    tr.Commit();
+      Extents3d selectedExtents = new();
+      var tr = Doc.TransactionManager.StartTransaction();
+      foreach (ObjectId objectId in objectIds)
+      {
+        Entity entity = tr.GetObject(objectId, OpenMode.ForRead) as Entity;
+        if (entity != null)
+        {
+          selectedExtents.AddExtents(entity.GeometricExtents);
+        }
+      }
+      Doc.Editor.Zoom(selectedExtents);
+      tr.Commit();
+      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
+    });
   }
 }

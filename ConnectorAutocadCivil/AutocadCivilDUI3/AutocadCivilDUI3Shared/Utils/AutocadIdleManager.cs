@@ -1,15 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using Rhino;
+using Autodesk.AutoCAD.ApplicationServices.Core;
 
-namespace ConnectorRhinoWebUI.Utils;
+namespace AutocadCivilDUI3Shared.Utils;
 
-/// <summary>
-/// Rhino Idle Manager is a helper util to manage deferred actions.
-/// </summary>
-public static class RhinoIdleManager
+public static class AutocadIdleManager
 {
-  // NOTE: ConcurrentDictionary possibly removing the collection has been modified errors in here
   private static readonly ConcurrentDictionary<string, Action> s_sCalls = new();
   private static bool s_hasSubscribed;
 
@@ -27,10 +23,10 @@ public static class RhinoIdleManager
     }
 
     s_hasSubscribed = true;
-    RhinoApp.Idle += RhinoAppOnIdle;
+    Application.Idle += OnIdleHandler;
   }
 
-  private static void RhinoAppOnIdle(object sender, EventArgs e)
+  private static void OnIdleHandler(object sender, EventArgs e)
   {
     foreach (var kvp in s_sCalls)
     {
@@ -38,8 +34,7 @@ public static class RhinoIdleManager
     }
 
     s_sCalls.Clear();
-
     s_hasSubscribed = false;
-    RhinoApp.Idle -= RhinoAppOnIdle;
+    Application.Idle -= OnIdleHandler;
   }
 }

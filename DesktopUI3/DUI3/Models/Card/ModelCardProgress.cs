@@ -1,8 +1,10 @@
-﻿namespace DUI3.Models.Card;
+﻿using System;
+
+namespace DUI3.Models.Card;
 
 public class ModelCardProgress
 {
-  public string Id { get; set; }
+  public string ModelCardId { get; set; }
   public string Status { get; set; }
 
   /// <summary>
@@ -11,3 +13,5 @@ public class ModelCardProgress
   /// </summary>
   public double? Progress { get; set; }
 }
+
+
