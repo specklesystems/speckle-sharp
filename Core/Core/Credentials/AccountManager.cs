@@ -53,8 +53,15 @@ public static class AccountManager
       httpClient
     );
 
+    var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
+    string migrationInclusion = isFrontEnd2
+      ? "migration { movedFrom movedTo }"
+      : string.Empty;
+
     //language=graphql
-    var request = new GraphQLRequest { Query = " query { serverInfo { name company } }" };
+    var request = new GraphQLRequest { 
+      Query = $" query {{ serverInfo {{ name company {migrationInclusion} }} }}" 
+    };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -69,7 +76,7 @@ public static class AccountManager
 
     ServerInfo serverInfo = response.Data.serverInfo;
     serverInfo.url = server.ToString().TrimEnd('/');
-    serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
+    serverInfo.frontend2 = isFrontEnd2;
 
     return response.Data.serverInfo;
   }
@@ -131,11 +138,16 @@ public static class AccountManager
         httpClient
       );
 
+      var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
+      string migrationInclusion = isFrontEnd2
+        ? "migration { movedFrom movedTo }"
+        : string.Empty;
+
       //language=graphql
       var request = new GraphQLRequest
       {
         Query =
-          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
+          $"query {{ activeUser {{ id name email company avatar streams {{ totalCount }} commits {{ totalCount }} }} serverInfo {{ name company adminContact description version {migrationInclusion} }} }}"
       };
 
       var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
@@ -151,7 +163,7 @@ public static class AccountManager
 
       ServerInfo serverInfo = response.Data.serverInfo;
       serverInfo.url = server.ToString().TrimEnd('/');
-      serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
+      serverInfo.frontend2 = isFrontEnd2;
 
       return response.Data;
     }
