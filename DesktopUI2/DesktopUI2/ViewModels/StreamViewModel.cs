@@ -493,7 +493,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new Commit
           {
             id = ConnectorHelpers.LatestCommitString,
-            message = "Always receive the latest commit sent to this branch."
+            message = "Always receive the latest version sent to this model."
           }
         );
         Commits = branch.commits.items;
@@ -653,12 +653,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  //UI Binding
-  public bool UseFe2
-  {
-    get { return Client.Account.serverInfo.frontend2; }
-  }
-
   public DateTime? LastUsedTime
   {
     get => StreamState.LastUsed;
@@ -814,7 +808,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       if (!IsReceiver)
       {
-        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
+        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Model" }, "Plus"));
       }
 
       return _branchesViewModel;
@@ -1233,7 +1227,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new PopUpNotificationViewModel
           {
             Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
-            Message = openOnline ? "Click to view it online" : "Click open the stream",
+            Message = openOnline ? "Click to view it online" : "Click open the project",
             OnClick = () =>
             {
               //if in stream edit open online
@@ -1672,7 +1666,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         notificationViewModel = new PopUpNotificationViewModel
         {
           Title = $"😞 {commandPrettyName} Failed!",
-          Message = $"Failed to fetch stream data from server. Reason: {ex.Message}",
+          Message = $"Failed to fetch project data from server. Reason: {ex.Message}",
           Type = NotificationType.Error
         };
         break;
@@ -1773,8 +1767,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
         {
-          Title = "💾 Stream Saved",
-          Message = "This stream has been saved to this file",
+          Title = "💾 Project Saved",
+          Message = "This project has been saved to this file",
           Type = NotificationType.Success
         }
       );
