@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -53,15 +54,23 @@ public static class AccountManager
       httpClient
     );
 
-    var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
-    string migrationInclusion = isFrontEnd2
-      ? "migration { movedFrom movedTo }"
-      : string.Empty;
+    System.Version version = await gqlClient
+      .GetServerVersion(cancellationToken: cancellationToken)
+      .ConfigureAwait(false);
+    System.Version serverMigrationVersion = new(2, 18, 5);
+
+    string queryString;
+    if (version >= serverMigrationVersion)
+    {
+      queryString = "query { serverInfo { name company migration { movedFrom movedTo } } }";
+    }
+    else
+    {
+      queryString = "query { serverInfo { name company } }";
+    }
 
     //language=graphql
-    var request = new GraphQLRequest { 
-      Query = $" query {{ serverInfo {{ name company {migrationInclusion} }} }}" 
-    };
+    var request = new GraphQLRequest { Query = queryString };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -76,7 +85,7 @@ public static class AccountManager
 
     ServerInfo serverInfo = response.Data.serverInfo;
     serverInfo.url = server.ToString().TrimEnd('/');
-    serverInfo.frontend2 = isFrontEnd2;
+    serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
 
     return response.Data.serverInfo;
   }
@@ -138,17 +147,24 @@ public static class AccountManager
         httpClient
       );
 
-      var isFrontEnd2 = await IsFrontend2Server(server).ConfigureAwait(false);
-      string migrationInclusion = isFrontEnd2
-        ? "migration { movedFrom movedTo }"
-        : string.Empty;
+      System.Version version = await client.GetServerVersion().ConfigureAwait(false);
+      System.Version serverMigrationVersion = new(2, 18, 5);
 
-      //language=graphql
-      var request = new GraphQLRequest
+      string queryString;
+      if (version >= serverMigrationVersion)
       {
-        Query =
-          $"query {{ activeUser {{ id name email company avatar streams {{ totalCount }} commits {{ totalCount }} }} serverInfo {{ name company adminContact description version {migrationInclusion} }} }}"
-      };
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version migration { movedFrom movedTo } }";
+      }
+      else
+      {
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }";
+      }
+
+      var request = new GraphQLRequest { Query = queryString };
 
       var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
@@ -163,7 +179,7 @@ public static class AccountManager
 
       ServerInfo serverInfo = response.Data.serverInfo;
       serverInfo.url = server.ToString().TrimEnd('/');
-      serverInfo.frontend2 = isFrontEnd2;
+      serverInfo.frontend2 = await IsFrontend2Server(server).ConfigureAwait(false);
 
       return response.Data;
     }
