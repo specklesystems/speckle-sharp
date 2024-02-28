@@ -14,8 +14,10 @@ namespace DUI3.Models;
 /// </summary>
 public abstract class DocumentModelStore : DiscriminatedObject
 {
+  // POC: public setter?
   public List<ISpeckleHostObject> SpeckleHostObjects { get; set; } = new List<ISpeckleHostObject>();
 
+  // POC: public setter?
   public List<ModelCard> Models { get; set; } = new List<ModelCard>();
 
   private static readonly JsonSerializerSettings s_serializerOptions =

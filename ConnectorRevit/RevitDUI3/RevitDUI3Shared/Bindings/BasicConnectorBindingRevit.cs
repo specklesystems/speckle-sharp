@@ -17,9 +17,12 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
+
+  // POC: statics should go
   private static UIApplication RevitApp { get; set; }
   private static UIDocument UiDocument => RevitApp.ActiveUIDocument;
   private static Document Doc => UiDocument.Document;
+
   private readonly RevitDocumentStore _store;
 
   public BasicConnectorBindingRevit(RevitDocumentStore store)

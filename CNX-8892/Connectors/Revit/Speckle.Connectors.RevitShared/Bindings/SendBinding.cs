@@ -169,7 +169,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
       bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.Id);
+        expiredSenderIds.Add(sender.ModelCardId);
       }
     }
 

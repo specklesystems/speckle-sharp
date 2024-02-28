@@ -75,13 +75,13 @@ internal class BasicConnectorBindingRevit : RevitBaseBinding, IBasicConnectorBin
 
   public void UpdateModel(ModelCard model)
   {
-    int idx = _store.Models.FindIndex(m => model.Id == m.Id);
+    int idx = _store.Models.FindIndex(m => model.ModelCardId == m.ModelCardId);
     _store.Models[idx] = model;
   }
 
   public void RemoveModel(ModelCard model)
   {
-    int index = _store.Models.FindIndex(m => m.Id == model.Id);
+    int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
     _store.Models.RemoveAt(index);
   }
 
