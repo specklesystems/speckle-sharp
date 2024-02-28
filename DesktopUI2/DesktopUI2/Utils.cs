@@ -69,22 +69,6 @@ public static class Dialogs
 
 public static class Formatting
 {
-  // User-facing terminology for streams, branches, and commits
-  public static string ReplaceTerminology(bool replace, string text)
-  {
-    if (replace)
-    {
-      text = text.Replace("stream", "project");
-      text = text.Replace("STREAM", "PROJECT");
-      text = text.Replace("Stream", "Project");
-      text = text.Replace("branch", "model");
-      text = text.Replace("Branch", "Model");
-      text = text.Replace("commit", "version");
-      text = text.Replace("Commit", "Version");
-    }
-    return text;
-  }
-
   /// <inheritdoc cref="Helpers.TimeAgo(DateTime, string)"/>
   [DebuggerStepThrough]
   public static string TimeAgo(DateTime? timestamp)

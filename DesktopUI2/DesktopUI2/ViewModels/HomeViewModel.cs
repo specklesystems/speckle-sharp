@@ -239,7 +239,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               MainUserControl.NotificationManager.Show(
                 new PopUpNotificationViewModel
                 {
-                  Title = $"⚠️ Could not get {Formatting.ReplaceTerminology(UseFe2, "stream")}s",
+                  Title = $"⚠️ Could not get projects",
                   Message =
                     $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n",
                   Type = NotificationType.Error
@@ -420,7 +420,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
         {
-          Title = $"🥳 You have a new {Formatting.ReplaceTerminology(UseFe2, "stream")}!",
+          Title = $"🥳 You have a new project!",
           Message = e.sharedBy == null ? $"You have created '{e.name}'." : $"'{e.name}' has been shared with you."
         }
       );
@@ -460,7 +460,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
         {
-          Title = $"❌ {Formatting.ReplaceTerminology(UseFe2, "Stream")} removed!",
+          Title = $"❌ Project removed!",
           Message = $"'{streamName}' has been deleted or un-shared."
         }
       );
@@ -535,13 +535,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         new MenuItemViewModel(LaunchManagerCommand, "Manage accounts in Manager", MaterialIconKind.AccountCog)
       );
 
-      menu.Items.Add(
-        new MenuItemViewModel(
-          RefreshCommand,
-          $"Refresh {Formatting.ReplaceTerminology(UseFe2, "stream")}s & accounts",
-          MaterialIconKind.Refresh
-        )
-      );
+      menu.Items.Add(new MenuItemViewModel(RefreshCommand, $"Refresh projects & accounts", MaterialIconKind.Refresh));
       menu.Items.Add(
         new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars)
       );
@@ -766,7 +760,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     }
     catch
     {
-      return new Tuple<bool, string>(false, $"URL is not a {Formatting.ReplaceTerminology(UseFe2, "stream")}.");
+      return new Tuple<bool, string>(false, $"URL is not a project.");
     }
 
     return new Tuple<bool, string>(true, "");
@@ -776,7 +770,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     if (string.IsNullOrEmpty(name))
     {
-      return new Tuple<bool, string>(false, $"{Formatting.ReplaceTerminology(UseFe2, "Stream")}s need a name too!");
+      return new Tuple<bool, string>(false, $"Projects need a name too!");
     }
 
     if (name.Trim().Length < 3)
@@ -807,8 +801,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       if (!await streamState.Client.IsStreamAccessible(streamState.StreamId).ConfigureAwait(true))
       {
         Dialogs.ShowDialog(
-          $"{Formatting.ReplaceTerminology(UseFe2, "Stream")} not found",
-          $"Please ensure the {Formatting.ReplaceTerminology(UseFe2, "stream")} exists and that you have access to it.",
+          $"Project not found",
+          $"Please ensure the project exists and that you have access to it.",
           DialogIconKind.Error
         );
         return;
@@ -835,8 +829,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         if (!await svm.Client.IsStreamAccessible(svm.Stream.id).ConfigureAwait(true))
         {
           Dialogs.ShowDialog(
-            $"{Formatting.ReplaceTerminology(UseFe2, "Stream")} not found",
-            $"Please ensure the {Formatting.ReplaceTerminology(UseFe2, "stream")} exists and that you have access to it.",
+            $"Project not found",
+            $"Please ensure the project exists and that you have access to it.",
             DialogIconKind.Error
           );
           return;
@@ -865,17 +859,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     var config = ConfigManager.Load();
     config.DarkTheme = isDark;
     ConfigManager.Save(config);
-  }
-
-  public void ToggleFe2Command()
-  {
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Toggle Fe2" } });
-
-    var config = ConfigManager.Load();
-    config.UseFe2 = !config.UseFe2;
-    ConfigManager.Save(config);
-
-    this.RaisePropertyChanged(nameof(UseFe2));
   }
 
   public void RefreshCommand()
@@ -1036,7 +1019,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       if (string.IsNullOrEmpty(SearchQuery))
       {
-        return $"ALL YOUR {Formatting.ReplaceTerminology(UseFe2, "STREAM")}S:";
+        return $"ALL YOUR PROJECTS:";
       }
 
       if (SearchQuery.Length <= 2)

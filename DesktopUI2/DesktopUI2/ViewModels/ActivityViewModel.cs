@@ -3,22 +3,11 @@ using Avalonia;
 using Avalonia.Layout;
 using ReactiveUI;
 using Speckle.Core.Api;
-using DesktopUI2.Models;
 
 namespace DesktopUI2.ViewModels;
 
 public class ActivityViewModel : ReactiveObject
 {
-  //UI Binding
-  public bool UseFe2
-  {
-    get
-    {
-      Config config = ConfigManager.Load();
-      return config.UseFe2 || _client.Account.serverInfo.frontend2;
-    }
-  }
-
   public ActivityViewModel(ActivityItem item, Client client)
   {
     _activity = item;
@@ -42,7 +31,7 @@ public class ActivityViewModel : ReactiveObject
         Margin = new Thickness(10, 10, 10, 0);
         Icon = "Pencil";
         Align = HorizontalAlignment.Center;
-        Message = $"created this {Formatting.ReplaceTerminology(UseFe2, "stream")} • {Formatting.TimeAgo(item.time)}";
+        Message = $"created this project • {Formatting.TimeAgo(item.time)}";
         break;
     }
 

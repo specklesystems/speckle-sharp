@@ -4,7 +4,6 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
-  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
@@ -12,9 +11,6 @@
   d:DesignHeight="650"
   d:DesignWidth="400"
   mc:Ignorable="d">
-  <UserControl.Resources>
-    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
-  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="icons|MaterialIcon#receive">
       <Setter Property="RenderTransform" Value="rotate(30deg) scaleX(-1)" />
@@ -35,7 +31,7 @@
         VerticalAlignment="Center"
         Classes="SpeckleFont"
         FontWeight="Bold"
-        Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Branch:'}" />
+        Text="Model:" />
 
       <!--<icons:MaterialIcon
         Margin="0"
@@ -49,7 +45,7 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
         Items="{Binding BranchesViewModel}"
-        PlaceholderText="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Select a branch'}"
+        PlaceholderText="Select a model"
         SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
         <ComboBox.ItemsPanel />
         <ComboBox.ItemTemplate>
@@ -95,7 +91,7 @@
             VerticalAlignment="Center"
             Foreground="Gray"
             Kind="InfoCircle"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='A commit is a snapshot in time&#x0a;of a branch.&#x0a;Every time you send to a Speckle branch from a connector,&#x0a;a commit is created.'}" />
+            ToolTip.Tip="A version is a snapshot in time&#x0a;of a model.&#x0a;Every time you send to a Speckle model from a connector,&#x0a;a version is created." />
           <ComboBox
             Grid.Column="3"
             Margin="5,10,0,10"
@@ -152,7 +148,7 @@
             VerticalAlignment="Center"
             Foreground="Gray"
             Kind="InfoCircle"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Automatically receive&#x0a;when this branch is updated.&#x0a;NOTE: use with caution!'}" />
+            ToolTip.Tip="Automatically receive&#x0a;when this model is updated.&#x0a;NOTE: use with caution!" />
           <ToggleSwitch
             Grid.Row="1"
             Grid.Column="1"
@@ -199,7 +195,7 @@
       <StackPanel>
         <TextBlock
           IsVisible="{Binding !Commits.Count}"
-          Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This branch has no commits. Commits are generated what data is sent to a Branch in a Stream.&#x0a;&#x0a;Please select a different Branch or Stream.'}"
+          Text="This model has no version. Versions are generated what data is sent to a model in a project.&#x0a;&#x0a;Please select a different model or project."
           TextWrapping="Wrap" />
         <!--  360 preview and hide logic in Receive.xaml.cs  -->
         <Grid IsVisible="{Binding Commits.Count}">
