@@ -24,8 +24,8 @@ internal class SendBinding : RevitBaseBinding, ICancelable
 
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  public SendBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge, IBrowserSender browserSender)
-    : base("sendBinding", store, bridge, browserSender, revitContext)
+  public SendBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge)
+    : base("sendBinding", store, bridge, revitContext)
   {
     // TODO expiry events
     // TODO filters need refresh events
@@ -173,7 +173,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
       }
     }
 
-    _browserSender.Send(Parent.FrontendBoundName, SendBindingEvents.SendersExpired, expiredSenderIds);
+    SendBindingUICommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 }

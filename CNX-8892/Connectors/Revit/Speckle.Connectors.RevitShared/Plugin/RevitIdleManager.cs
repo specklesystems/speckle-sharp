@@ -12,7 +12,7 @@ internal class RevitIdleManager : IRevitIdleManager
 {
   private readonly UIApplication _uiApplication;
 
-  private readonly ConcurrentDictionary<object, Action> _calls = new();
+  private readonly ConcurrentDictionary<string, Action> _calls = new();
 
   // POC: still not thread safe
   private volatile bool _hasSubscribed = false;
@@ -34,7 +34,7 @@ internal class RevitIdleManager : IRevitIdleManager
     // I want to be called back ONCE when the host app has become idle once more
     // would this work "action.Method.Name" with anonymous function, including the SAME function
     // does this work across class instances? Should it? What about functions of the same name? Fully qualified name might be better
-    _calls[action] = action;
+    _calls[action.Method.Name] = action;
 
     if (_hasSubscribed)
     {
@@ -47,7 +47,7 @@ internal class RevitIdleManager : IRevitIdleManager
 
   private void RevitAppOnIdle(object sender, IdlingEventArgs e)
   {
-    foreach (KeyValuePair<object, Action> kvp in _calls)
+    foreach (KeyValuePair<string, Action> kvp in _calls)
     {
       kvp.Value();
     }

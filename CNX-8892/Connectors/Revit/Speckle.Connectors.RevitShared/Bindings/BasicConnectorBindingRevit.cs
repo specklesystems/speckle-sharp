@@ -16,26 +16,34 @@ using Speckle.Connectors.Revit.Bindings;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
-internal class BasicConnectorBindingRevit : RevitBaseBinding, IBasicConnectorBinding
+internal class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
+  // POC: name and bridge might be better for them to be protected props?
+  public string Name { get; private set; }
+  public IBridge Parent { get; private set; }
+
+  protected readonly RevitDocumentStore _store;
+  protected readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
 
   public BasicConnectorBindingRevit(
     RevitDocumentStore store,
     RevitSettings revitSettings,
-    IBridge bridge,
-    RevitContext revitContext,
-    IBrowserSender browserSender
+    IBridge parent,
+    RevitContext revitContext
   )
-    : base("baseBinding", store, bridge, browserSender, revitContext) // POC: name maybe should just take class name? i.e. nameof(BasicConnectorBindingRevit)
   {
+    Name = "baseBinding";
+    Parent = parent;
+    _store = store;
+    _revitContext = revitContext;
     _revitSettings = revitSettings;
 
     // POC: event binding
-    _store.DocumentChanged += (_, _) =>
-    {
-      browserSender.Send(Name, BasicConnectorBindingEvents.DocumentChanged);
-    };
+    //_store.DocumentChanged += (_, _) =>
+    //{
+    //  browserSender.Send(Name, BasicConnectorBindingEvents.DocumentChanged);
+    //};
   }
 
   public string GetConnectorVersion()
@@ -94,6 +102,7 @@ internal class BasicConnectorBindingRevit : RevitBaseBinding, IBasicConnectorBin
     var activeUIDoc = _revitContext.UIApplication.ActiveUIDocument;
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
+    // POC: as sendermodelcard, surely we should cast here? better to have invalidcast which is the real reason than NRE
     SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
     List<string> objectsIds = model.SendFilter.GetObjectIds();
 

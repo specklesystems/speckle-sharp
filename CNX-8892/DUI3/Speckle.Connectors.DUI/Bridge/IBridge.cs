@@ -1,5 +1,6 @@
 using System;
 using Speckle.Connectors.DUI.Bindings;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -13,7 +14,7 @@ public interface IBridge
   // POC: documnetation comments
   string FrontendBoundName { get; }
 
-  void AssociateWithBinding(IBinding binding, object browser);
+  void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser);
 
   /// <summary>
   /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.
@@ -35,4 +36,9 @@ public interface IBridge
   /// </summary>
   /// <param name="action"> Action to run on main thread.</param>
   public void RunOnMainThread(Action action);
+
+  public void Send(string eventName);
+
+  public void Send<T>(string eventName, T data)
+    where T : class;
 }

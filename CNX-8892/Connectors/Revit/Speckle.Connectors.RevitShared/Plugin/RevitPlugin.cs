@@ -26,7 +26,6 @@ internal class RevitPlugin : IRevitPlugin
   private readonly BindingOptions _bindingOptions;
   private readonly CefSharpPanel _panel;
   private readonly RevitContext _revitContext;
-  private readonly IBrowserSender _browserSender;
   private readonly CefSharpPanel _cefSharpPanel;
 
   public RevitPlugin(
@@ -35,7 +34,6 @@ internal class RevitPlugin : IRevitPlugin
     IEnumerable<Lazy<IBinding>> bindings,
     BindingOptions bindingOptions,
     RevitContext revitContext,
-    IBrowserSender browserSender,
     CefSharpPanel cefSharpPanel
   )
   {
@@ -44,7 +42,6 @@ internal class RevitPlugin : IRevitPlugin
     _bindings = bindings;
     _bindingOptions = bindingOptions;
     _revitContext = revitContext;
-    _browserSender = browserSender;
     _cefSharpPanel = cefSharpPanel;
   }
 
@@ -111,7 +108,7 @@ internal class RevitPlugin : IRevitPlugin
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
       Debug.WriteLine(binding.Name);
-      binding.Parent.AssociateWithBinding(binding, _cefSharpPanel);
+      binding.Parent.AssociateWithBinding(binding, _cefSharpPanel.Browser.ExecuteScriptAsync, _cefSharpPanel);
     }
 
     _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
@@ -130,6 +127,8 @@ internal class RevitPlugin : IRevitPlugin
           _bindingOptions
         );
       }
+
+      _cefSharpPanel.Browser.Load("https://deploy-preview-2076--boisterous-douhua-e3cefb.netlify.app/");
 
       // POC: not sure where this comes from
 #if REVIT2020

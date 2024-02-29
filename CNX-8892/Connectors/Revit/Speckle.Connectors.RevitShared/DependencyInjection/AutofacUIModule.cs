@@ -24,9 +24,6 @@ class AutofacUIModule : Module
     // POC: different versons for different versions of CEF
     builder.RegisterInstance<BindingOptions>(BindingOptions.DefaultBinder);
 
-    // register my types
-    builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
-
     // create JSON Settings
     JsonSerializerSettings settings =
       new()
@@ -40,13 +37,10 @@ class AutofacUIModule : Module
 
     var panel = new CefSharpPanel();
     panel.Browser.JavascriptObjectRepository.NameConverter = null;
-    var browserSender = new BrowserSender(settings, panel.Browser.ExecuteScriptAsync);
+
     builder.RegisterInstance(panel).SingleInstance();
-
-    // POC: panel static is a bit meh :D
-    builder.RegisterInstance(browserSender).As<IBrowserSender>().SingleInstance();
-
     builder.RegisterInstance(settings).SingleInstance();
+    builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
     // register UI bindings

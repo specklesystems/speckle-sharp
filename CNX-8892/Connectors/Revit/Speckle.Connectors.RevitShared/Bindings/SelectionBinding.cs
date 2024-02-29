@@ -18,10 +18,9 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
     RevitContext revitContext,
     RevitDocumentStore store,
     IRevitIdleManager idleManager,
-    IBridge bridge,
-    IBrowserSender browserSender
+    IBridge bridge
   )
-    : base("selectionBinding", store, bridge, browserSender, revitContext)
+    : base("selectionBinding", store, bridge, revitContext)
   {
     _revitIdleManager = idleManager;
 
@@ -31,13 +30,13 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
     _revitContext.UIApplication.ViewActivated += (_, _) =>
     {
-      _browserSender.Send(Parent.FrontendBoundName, SelectionBindingEvents.SetSelection, new SelectionInfo());
+      Parent.Send(SelectionBindingEvents.SetSelection, new SelectionInfo());
     };
   }
 
   private void OnSelectionChanged()
   {
-    _browserSender.Send(Parent.FrontendBoundName, SelectionBindingEvents.SetSelection, GetSelection());
+    Parent.Send(SelectionBindingEvents.SetSelection, GetSelection());
   }
 
   public SelectionInfo GetSelection()

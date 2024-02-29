@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
@@ -68,7 +69,7 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 
   private static readonly Dictionary<string, Type> s_typeCache = new();
 
-  private Type GetTypeByName(string name)
+  private Type? GetTypeByName(string name)
   {
     s_typeCache.TryGetValue(name, out Type myType);
     if (myType != null)
@@ -78,8 +79,12 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 
     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
     {
+      List<TypeInfo>? types;
+
       try
       {
+        types = assembly.DefinedTypes.Where(t => t.FullName != null && t.FullName.Contains(name)).ToList();
+
         var type = assembly.DefinedTypes.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
         if (type != null)
         {
@@ -87,11 +92,17 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
           return type;
         }
       }
-      catch (SpeckleException e)
+      // POC: this Exception pattern is too broad and should be resticted but fixes the above issues
+      // the call above is causing load of all assemblies (which is also possibly not good)
+      // AND it explodes for me loading an exception, so at the last this should
+      // catch System.Reflection.ReflectionTypeLoadException (and anthing else DefinedTypes might throw)
+      catch (Exception ex) when (!ex.IsFatal())
       {
-        Debug.WriteLine(e.Message);
+        Debug.WriteLine(ex.Message);
       }
     }
+
+    // should this throw instead? :/
     return null;
   }
 }

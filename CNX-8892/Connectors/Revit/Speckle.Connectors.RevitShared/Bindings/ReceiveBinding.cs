@@ -21,13 +21,8 @@ internal class ReceiveBinding : RevitBaseBinding, ICancelable
 {
   public CancellationManager CancellationManager { get; } = new();
 
-  public ReceiveBinding(
-    RevitContext revitContext,
-    RevitDocumentStore store,
-    IBridge bridge,
-    IBrowserSender browserSender
-  )
-    : base("receiveBinding", store, bridge, browserSender, revitContext) { }
+  public ReceiveBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge)
+    : base("receiveBinding", store, bridge, revitContext) { }
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 

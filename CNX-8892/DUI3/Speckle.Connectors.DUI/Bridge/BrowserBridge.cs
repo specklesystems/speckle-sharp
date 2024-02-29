@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Speckle.Core.Logging;
 using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
+using System.Diagnostics;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -28,10 +29,10 @@ public class BrowserBridge : IBridge
   private readonly JsonSerializerSettings _serializerOptions;
   private readonly Dictionary<string, string> _resultsStore = new();
   private readonly SynchronizationContext _mainThreadContext;
-  private readonly IBrowserSender _browserSender;
 
   private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
   private ActionBlock<RunMethodArgs> _actionBlock;
+  private Action<string>? _scriptMethod;
 
   private IBinding _binding;
   private Type _bindingType;
@@ -68,21 +69,21 @@ public class BrowserBridge : IBridge
   /// Creates a new bridge.
   /// </summary>
   /// <param name="binding">The actual binding class.</param>
-  public BrowserBridge(IBrowserSender browserSender, JsonSerializerSettings jsonSerializerSettings)
+  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings)
   {
     _serializerOptions = jsonSerializerSettings;
-    _browserSender = browserSender;
 
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
   }
 
-  public void AssociateWithBinding(IBinding binding, object browser)
+  public void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser)
   {
     // set via binding property to ensure explosion if already bound
     Binding = binding;
     FrontendBoundName = binding.Name;
     Browser = browser;
+    _scriptMethod = scriptMethod;
 
     _bindingType = binding.GetType();
     BindingMethodCache = new Dictionary<string, MethodInfo>();
@@ -112,7 +113,9 @@ public class BrowserBridge : IBridge
   /// <returns></returns>
   public string[] GetBindingsMethodNames()
   {
-    return BindingMethodCache.Keys.ToArray();
+    var bindingNames = BindingMethodCache.Keys.ToArray();
+    Debug.WriteLine($"{FrontendBoundName}: " + JsonConvert.SerializeObject(bindingNames, Formatting.Indented));
+    return bindingNames;
   }
 
   /// <summary>
@@ -239,7 +242,7 @@ public class BrowserBridge : IBridge
   {
     _resultsStore[requestId] = serializedData;
     string script = $"{FrontendBoundName}.responseReady('{requestId}')";
-    _browserSender.SendRaw(script);
+    _scriptMethod!(script);
   }
 
   /// <summary>
@@ -265,6 +268,22 @@ public class BrowserBridge : IBridge
 
   public void OpenUrl(string url)
   {
-    System.Diagnostics.Process.Start(url);
+    Process.Start(url);
+  }
+
+  public void Send(string eventName)
+  {
+    var script = $"{FrontendBoundName}.emit('{eventName}')";
+
+    _scriptMethod!(script);
+  }
+
+  public void Send<T>(string eventName, T data)
+    where T : class
+  {
+    string payload = JsonConvert.SerializeObject(data, _serializerOptions);
+    var script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
+
+    _scriptMethod!(script);
   }
 }

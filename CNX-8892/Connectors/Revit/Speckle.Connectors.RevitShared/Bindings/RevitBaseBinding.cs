@@ -10,26 +10,18 @@ namespace Speckle.Connectors.Revit.Bindings;
 
 internal abstract class RevitBaseBinding : IBinding
 {
-  // POC: name and bridge might be possible for them to be protected?
+  // POC: name and bridge might be better for them to be protected props?
   public string Name { get; protected set; }
   public IBridge Parent { get; protected set; }
 
   protected readonly RevitDocumentStore _store;
-  protected readonly IBrowserSender _browserSender;
   protected readonly RevitContext _revitContext;
 
-  public RevitBaseBinding(
-    string name,
-    RevitDocumentStore store,
-    IBridge bridge,
-    IBrowserSender browserSender,
-    RevitContext revitContext
-  )
+  public RevitBaseBinding(string name, RevitDocumentStore store, IBridge bridge, RevitContext revitContext)
   {
     Name = name;
     Parent = bridge;
     _store = store;
-    _browserSender = browserSender;
     _revitContext = revitContext;
   }
 }

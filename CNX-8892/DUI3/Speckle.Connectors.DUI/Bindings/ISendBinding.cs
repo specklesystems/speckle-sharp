@@ -21,14 +21,6 @@ public interface ISendBinding : IBinding
   public void CancelSend(string modelCardId);
 }
 
-public static class SendBindingEvents
-{
-  public static readonly string FiltersNeedRefresh = "filtersNeedRefresh";
-  public static readonly string SendersExpired = "sendersExpired";
-  public static readonly string SenderProgress = "senderProgress";
-  public static readonly string CreateVersion = "createVersion";
-}
-
 public class SenderModelCard : ModelCard
 {
   public ISendFilter SendFilter { get; set; }
@@ -38,6 +30,7 @@ public interface ISendFilter
 {
   public string Name { get; set; }
   public string Summary { get; set; }
+  public bool IsDefault { get; set; }
 
   /// <summary>
   /// Gets the ids of the objects targeted by the filter from the host application.
@@ -57,6 +50,7 @@ public abstract class EverythingSendFilter : DiscriminatedObject, ISendFilter
 {
   public string Name { get; set; } = "Everything";
   public string Summary { get; set; } = "All supported objects in the file.";
+  public bool IsDefault { get; set; }
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
 }
@@ -65,18 +59,14 @@ public abstract class DirectSelectionSendFilter : DiscriminatedObject, ISendFilt
 {
   public string Name { get; set; } = "Selection";
   public string Summary { get; set; }
+  public bool IsDefault { get; set; }
   public List<string> SelectedObjectIds { get; set; } = new List<string>();
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
 }
 
-public class CreateVersion
+public class CreateVersionArgs
 {
   public string ModelCardId { get; set; }
-  public string AccountId { get; set; }
-  public string ModelId { get; set; }
-  public string ProjectId { get; set; }
   public string ObjectId { get; set; }
-  public string Message { get; set; }
-  public string SourceApplication { get; set; }
 }
