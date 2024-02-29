@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Autodesk.Revit.DB;
+﻿using System.Linq;
 using Autodesk.Revit.UI;
 using DUI3;
 using DUI3.Bindings;
@@ -38,17 +36,12 @@ public class SelectionBinding : ISelectionBinding
   public SelectionInfo GetSelection()
   {
     // TODO: filter supported stuff
-    List<Element> els = RevitApp.ActiveUIDocument.Selection
-      .GetElementIds()
-      .Select(id => RevitApp.ActiveUIDocument.Document.GetElement(id))
-      .ToList();
-    List<string> ids = els.Select(el => el.Id.ToString()).ToList();
-    
-    
+    var selectionIds = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id => id.ToString()).ToList()
+      ;
     return new SelectionInfo()
     {
-      SelectedObjectIds = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id=>id.ToString()).ToList(),
-      Summary = $"{els.Count} objects selected."
+      SelectedObjectIds = selectionIds,
+      Summary = $"{selectionIds.Count} objects selected."
     };
   }
 }
