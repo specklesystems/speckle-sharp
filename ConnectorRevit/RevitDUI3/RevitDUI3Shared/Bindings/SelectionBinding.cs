@@ -37,16 +37,18 @@ public class SelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
+    // TODO: filter supported stuff
     List<Element> els = RevitApp.ActiveUIDocument.Selection
       .GetElementIds()
       .Select(id => RevitApp.ActiveUIDocument.Document.GetElement(id))
       .ToList();
-    List<string> cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
-    List<string> ids = els.Select(el => el.UniqueId.ToString()).ToList();
+    List<string> ids = els.Select(el => el.Id.ToString()).ToList();
+    
+    
     return new SelectionInfo()
     {
-      SelectedObjectIds = ids,
-      Summary = $"{els.Count} objects ({string.Join(", ", cats)})"
+      SelectedObjectIds = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id=>id.ToString()).ToList(),
+      Summary = $"{els.Count} objects selected."
     };
   }
 }

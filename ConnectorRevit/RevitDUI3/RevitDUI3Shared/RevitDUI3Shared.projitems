@@ -20,7 +20,7 @@
       <DependentUpon>Panel.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleRevitDUI3Command.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\Elements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\PortedOverStuff.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitAppProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\RevitIdleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils\Schemas.cs" />
