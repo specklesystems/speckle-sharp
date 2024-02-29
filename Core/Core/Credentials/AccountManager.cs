@@ -224,6 +224,30 @@ public static class AccountManager
   }
 
   /// <summary>
+  /// Upgrades an account from the "movedFrom" account
+  /// </summary>
+  /// <param name="id"></param>
+  public static void UpgradeAccount(string id)
+  {
+    var account =
+      GetAccounts().FirstOrDefault(acc => acc.id == id)
+      ?? throw new SpeckleAccountManagerException($"Account {id} not found");
+
+    if (account.serverInfo.migration.movedTo is not Uri upgradeUri)
+    {
+      throw new SpeckleAccountManagerException(
+        $"Server with url {account.serverInfo.url} does not have information about the upgraded server"
+      );
+    }
+
+    account.serverInfo.migration.movedTo = null;
+    account.serverInfo.migration.movedFrom = new Uri(account.serverInfo.url);
+    account.serverInfo.url = upgradeUri.ToString();
+
+    s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+  }
+
+  /// <summary>
   /// Gets all the accounts for a given server.
   /// </summary>
   /// <param name="serverUrl"></param>
