@@ -224,25 +224,6 @@ public static class AccountManager
   }
 
   /// <summary>
-  /// Upgrades an account from https://speckle.xyz to https://app.speckle.systems
-  /// </summary>
-  /// <param name="id"></param>
-  public static void UpgradeAccount(string id)
-  {
-    var account =
-      GetAccounts().FirstOrDefault(acc => acc.id == id)
-      ?? throw new SpeckleAccountManagerException($"Account {id} not found");
-
-    if (!account.serverInfo.url.Contains("https://speckle.xyz"))
-    {
-      throw new SpeckleAccountManagerException($"Can only upgrade accounts on speckle.xyz");
-    }
-
-    account.serverInfo.url = DEFAULT_SERVER_URL;
-    s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
-  }
-
-  /// <summary>
   /// Gets all the accounts for a given server.
   /// </summary>
   /// <param name="serverUrl"></param>
