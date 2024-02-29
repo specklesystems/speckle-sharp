@@ -9,6 +9,7 @@ using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -63,21 +64,27 @@ public sealed class Room : IConverter
           case Objects.BuiltElements.Room speckleRoom:
 
             {
-              Archicad.Room archicadRoom =
-                new()
-                {
-                  // Speckle base properties
-                  id = speckleRoom.id,
-                  applicationId = speckleRoom.applicationId,
-                  // Speckle general properties
-                  name = speckleRoom.name,
-                  number = speckleRoom.number,
-                  // Archicad properties
-                  level = Archicad.Converters.Utils.ConvertLevel(speckleRoom.level),
-                  shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
-                };
-
-              rooms.Add(archicadRoom);
+              try
+              {
+                rooms.Add(
+                  new Archicad.Room
+                  {
+                    // Speckle base properties
+                    id = speckleRoom.id,
+                    applicationId = speckleRoom.applicationId,
+                    // Speckle general properties
+                    name = speckleRoom.name,
+                    number = speckleRoom.number,
+                    // Archicad properties
+                    level = Archicad.Converters.Utils.ConvertLevel(speckleRoom.level),
+                    shape = Utils.PolycurvesToElementShape(speckleRoom.outline, speckleRoom.voids)
+                  }
+                );
+              }
+              catch (SpeckleException ex)
+              {
+                SpeckleLog.Logger.Error(ex, "Polycurves conversion failed.");
+              }
             }
             break;
         }

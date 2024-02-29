@@ -141,7 +141,7 @@ public static class Http
       using var httpClient = GetHttpProxyClient();
       HttpResponseMessage response = await httpClient.GetAsync(uri).ConfigureAwait(false);
       response.EnsureSuccessStatusCode();
-      SpeckleLog.Logger.Warning("Successfully pinged {uri}", uri);
+      SpeckleLog.Logger.Information("Successfully pinged {uri}", uri);
       return response;
     }
     catch (HttpRequestException ex)

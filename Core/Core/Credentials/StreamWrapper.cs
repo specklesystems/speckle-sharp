@@ -58,6 +58,8 @@ public class StreamWrapper
   public string ServerUrl { get; set; }
   public string StreamId { get; set; }
   public string? CommitId { get; set; }
+
+  /// <remarks>May be an ID instead for FE2 urls</remarks>
   public string? BranchName { get; set; }
   public string? ObjectId { get; set; }
 
@@ -452,10 +454,10 @@ public class StreamWrapper
     switch (Type)
     {
       case StreamWrapperType.Commit:
-        leftPart += $"{BranchName}@{CommitId}";
+        leftPart += $"{branchID}@{CommitId}";
         break;
       case StreamWrapperType.Branch:
-        leftPart += $"{BranchName}";
+        leftPart += $"{branchID}";
         break;
       case StreamWrapperType.Object:
         leftPart += $"{ObjectId}";

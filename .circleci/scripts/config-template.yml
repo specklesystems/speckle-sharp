@@ -94,7 +94,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel sts
             $HOME/.dotnet/dotnet --version
-      - run: 
+      - run:
           name: Enforce formatting
           command: |
             $HOME/.dotnet/dotnet tool restore
@@ -163,6 +163,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       installer:
         type: boolean
         default: false
+    environment:
+      SSM: 'C:\Program Files\DigiCert\DigiCert One Signing Manager Tools'
     steps:
       - cached-checkout
       - attach_workspace:
@@ -200,20 +202,41 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Exit if External PR
           shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
-      - run:
-          name: Create Innosetup signing cert
-          command: |
-            echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
-            certutil -decode "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt" "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.pfx"
-      - run:
-          name: Build Installer
-          command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
-          shell: cmd.exe #does not work in powershell
-          environment:
-            SLUG: << parameters.slug >>
-      - when:
+      - unless: # Build installers unsigned on non-tagged builds
           condition: << pipeline.git.tag >>
           steps:
+            - run:
+                name: Build Installer
+                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
+                shell: cmd.exe #does not work in powershell
+                environment:
+                  SLUG: << parameters.slug >>
+      - when: # Setup certificates and build installers signed for tagged builds
+          condition: << pipeline.git.tag >>
+          steps:
+            - run:
+                name: "Digicert Signing Manager Setup"
+                command: |
+                  cd C:\
+                  curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
+                  msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
+            - run:
+                name: Create Auth & OV Signing Cert
+                command: |
+                  cd C:\
+                  echo $env:SM_CLIENT_CERT_FILE_B64 > certificate.txt
+                  certutil -decode certificate.txt certificate.p12
+                  echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
+            - run:
+                name: Sync Certs
+                command: |
+                  & $env:SSM\smksp_cert_sync.exe
+            - run:
+                name: Build Installer
+                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER
+                shell: cmd.exe #does not work in powershell
+                environment:
+                  SLUG: << parameters.slug >>
             - persist_to_workspace:
                 root: ./
                 paths:

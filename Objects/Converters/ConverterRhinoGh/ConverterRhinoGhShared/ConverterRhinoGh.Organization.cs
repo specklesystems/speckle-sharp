@@ -20,67 +20,96 @@ public partial class ConverterRhinoGh
   // layers
   public ApplicationObject CollectionToNative(Collection collection)
   {
+    #region local functions
+    Layer GetLayer(string path)
+    {
+      var index = Doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
+      if (index != RhinoMath.UnsetIntIndex)
+      {
+        return Doc.Layers[index];
+      }
+
+      return null;
+    }
+    Layer MakeLayer(string name, Layer parentLayer = null)
+    {
+      Layer newLayer = new() { Name = name };
+      if (parentLayer != null)
+      {
+        newLayer.ParentLayerId = parentLayer.Id;
+      }
+
+      int newIndex = Doc.Layers.Add(newLayer);
+      if (newIndex < 0)
+      {
+        return null;
+      }
+
+      return Doc.Layers.FindIndex(newIndex);
+    }
+    #endregion
+
     var appObj = new ApplicationObject(collection.id, collection.speckle_type)
     {
       applicationId = collection.applicationId
     };
-    Layer layer = null;
-    var status = ApplicationObject.State.Unknown;
 
-    if (collection["path"] is string path)
+    // see if this layer already exists in the doc
+    var layerPath = MakeValidPath(collection["path"] as string);
+    Layer existingLayer = GetLayer(layerPath);
+
+    // update this layer if it exists & receive mode is on update
+    Layer layer;
+    ApplicationObject.State status;
+    if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
     {
-      string layerPath = MakeValidPath(path);
-
-      // see if this layer already exists in the doc
-      Layer existingLayer = GetLayer(Doc, layerPath, out int _);
-
-      // update this layer if it exists & receive mode is on update
-      if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
+      layer = existingLayer;
+      status = ApplicationObject.State.Updated;
+    }
+    else // create this layer
+    {
+      Layer parent = null;
+      var parentIndex = layerPath.LastIndexOf(Layer.PathSeparator);
+      if (parentIndex != -1)
       {
-        layer = existingLayer;
-        status = ApplicationObject.State.Updated;
-      }
-      else // create this layer
-      {
-        if (GetLayer(Doc, layerPath, out _, true) is Layer newLayer)
+        var parentPath = layerPath.Substring(0, parentIndex);
+        parent = GetLayer(parentPath);
+        if (parent == null)
         {
-          layer = newLayer;
-          status = ApplicationObject.State.Created;
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find layer parent: {parentPath}");
+          return appObj;
         }
       }
-
-      if (layer == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not create layer with path {layerPath}");
-        return appObj;
-      }
-
-      // get attributes and rendermaterial
-      var displayStyle =
-        collection["displayStyle"] as DisplayStyle != null
-          ? DisplayStyleToNative(collection["displayStyle"] as DisplayStyle)
-          : new ObjectAttributes { ObjectColor = Color.AliceBlue };
-      var renderMaterial =
-        collection["renderMaterial"] as RenderMaterial != null
-          ? RenderMaterialToNative(collection["renderMaterial"] as RenderMaterial)
-          : null;
-      layer.Color = displayStyle.ObjectColor;
-      if (renderMaterial != null)
-      {
-        layer.RenderMaterial = renderMaterial;
-      }
-
-      layer.PlotWeight = displayStyle.PlotWeight;
-      layer.LinetypeIndex = displayStyle.LinetypeIndex;
-
-      appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
-      return appObj;
+      layer = MakeLayer(collection.name, parent);
+      status = ApplicationObject.State.Created;
     }
-    else
+
+    if (layer == null)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Collection didn't have a layer path");
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create layer");
       return appObj;
     }
+
+    // get attributes and rendermaterial
+    var displayStyle =
+      collection["displayStyle"] as DisplayStyle != null
+        ? DisplayStyleToNative(collection["displayStyle"] as DisplayStyle)
+        : new ObjectAttributes { ObjectColor = Color.AliceBlue };
+    var renderMaterial =
+      collection["renderMaterial"] as RenderMaterial != null
+        ? RenderMaterialToNative(collection["renderMaterial"] as RenderMaterial)
+        : null;
+    layer.Color = displayStyle.ObjectColor;
+    if (renderMaterial != null)
+    {
+      layer.RenderMaterial = renderMaterial;
+    }
+
+    layer.PlotWeight = displayStyle.PlotWeight;
+    layer.LinetypeIndex = displayStyle.LinetypeIndex;
+
+    appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
+    return appObj;
   }
 
   public Collection LayerToSpeckle(Layer layer)
