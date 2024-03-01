@@ -1,8 +1,8 @@
 using GraphQL;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using GraphQL.Client.Http;
+using System.Linq;
 
 namespace Speckle.Core.Api.GraphQL;
 
@@ -40,8 +40,17 @@ public static class GraphQLHttpClientExtensions
       );
     }
 
+    if (string.IsNullOrWhiteSpace(response.Data.serverInfo.version))
+    {
+      throw new SpeckleGraphQLException<ServerInfoResponse>(
+        $"Query {nameof(GetServerVersion)} did not provide a valid server version",
+        request,
+        response
+      );
+    }
+
     return response.Data.serverInfo.version == "dev"
       ? new System.Version(999, 999, 999)
-      : new System.Version(Regex.Replace(response.Data.serverInfo.version, "[-a-zA-Z]+", ""));
+      : new System.Version(response.Data.serverInfo.version.Split('-').First());
   }
 }
