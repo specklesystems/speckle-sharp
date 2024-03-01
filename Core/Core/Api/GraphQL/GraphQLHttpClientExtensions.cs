@@ -1,5 +1,4 @@
 using GraphQL;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using GraphQL.Client.Http;
