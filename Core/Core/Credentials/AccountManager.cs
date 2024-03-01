@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -53,8 +54,27 @@ public static class AccountManager
       httpClient
     );
 
-    //language=graphql
-    var request = new GraphQLRequest { Query = " query { serverInfo { name company } }" };
+    System.Version version = await gqlClient
+      .GetServerVersion(cancellationToken: cancellationToken)
+      .ConfigureAwait(false);
+
+    // serverMigration property was added in 2.18.5, so only query for it
+    // if the server has been updated past that version
+    System.Version serverMigrationVersion = new(2, 18, 5);
+
+    string queryString;
+    if (version >= serverMigrationVersion)
+    {
+      //language=graphql
+      queryString = "query { serverInfo { name company migration { movedFrom movedTo } } }";
+    }
+    else
+    {
+      //language=graphql
+      queryString = "query { serverInfo { name company } }";
+    }
+
+    var request = new GraphQLRequest { Query = queryString };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -131,12 +151,27 @@ public static class AccountManager
         httpClient
       );
 
-      //language=graphql
-      var request = new GraphQLRequest
+      System.Version version = await client.GetServerVersion().ConfigureAwait(false);
+
+      // serverMigration property was added in 2.18.5, so only query for it
+      // if the server has been updated past that version
+      System.Version serverMigrationVersion = new(2, 18, 5);
+
+      string queryString;
+      if (version >= serverMigrationVersion)
       {
-        Query =
-          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
-      };
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version migration { movedFrom movedTo } } }";
+      }
+      else
+      {
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version } }";
+      }
+
+      var request = new GraphQLRequest { Query = queryString };
 
       var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
 
