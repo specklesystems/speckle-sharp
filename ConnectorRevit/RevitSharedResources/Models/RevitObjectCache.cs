@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using RevitSharedResources.Interfaces;
 
-namespace ConnectorRevit.Storage;
+namespace RevitSharedResources.Models;
 
 /// <summary>
 /// Storage of a single type of object in the <see cref="ConversionOperationCache"/>

@@ -107,8 +107,8 @@ public partial class ConverterRevit : ISpeckleConverter
     Report.Log($"Using converter: {Name} v{ver}");
   }
 
-  private IRevitDocumentAggregateCache revitDocumentAggregateCache;
-  private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
+  private IRevitDocumentAggregateCache revitDocumentAggregateCache { get; set; }
+  private IConvertedObjectsCache<Base, Element> receivedObjectsCache = new ConvertedObjectsCache();
   private TransactionManager transactionManager;
 
   public void SetContextDocument(object doc)
@@ -140,6 +140,7 @@ public partial class ConverterRevit : ISpeckleConverter
     else if (doc is Document document)
     {
       Doc = document;
+      this.revitDocumentAggregateCache ??= new RevitDocumentAggregateCache(document);
       Report.Log($"Using document: {Doc.PathName}");
       Report.Log($"Using units: {ModelUnits}");
     }
