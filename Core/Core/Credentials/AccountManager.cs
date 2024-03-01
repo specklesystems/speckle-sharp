@@ -65,14 +65,15 @@ public static class AccountManager
     string queryString;
     if (version >= serverMigrationVersion)
     {
+      //language=graphql
       queryString = "query { serverInfo { name company migration { movedFrom movedTo } } }";
     }
     else
     {
+      //language=graphql
       queryString = "query { serverInfo { name company } }";
     }
 
-    //language=graphql
     var request = new GraphQLRequest { Query = queryString };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
