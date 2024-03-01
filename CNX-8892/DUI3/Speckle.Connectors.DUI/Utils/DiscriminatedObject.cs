@@ -5,6 +5,7 @@ namespace Speckle.Connectors.DUI.Utils;
 /// - Class inheritance scenario For example, if you have a base class BaseSettings, and from it you create RhinoBaseSettings & AutocadBaseSettings, the BaseSetting class should inherit from this class.
 /// - Interface scenario: you have an ISenderCard interface, which you implement as ReceiverCard and SenderCard. Both ReceiverCard and SenderCard should inherit from this class.
 /// </summary>
+/// POC: should probaby be changed to attribute instead of inheritence? TBC
 public class DiscriminatedObject
 {
   public string TypeDiscriminator

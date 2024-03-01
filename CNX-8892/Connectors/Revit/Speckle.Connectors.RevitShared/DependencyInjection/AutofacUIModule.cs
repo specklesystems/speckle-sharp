@@ -28,6 +28,10 @@ class AutofacUIModule : Module
     JsonSerializerSettings settings =
       new()
       {
+        Error = (object sender, ErrorEventArgs args) =>
+        {
+          Console.WriteLine("*** JSON ERROR: " + args.ErrorContext.ToString());
+        },
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
         NullValueHandling = NullValueHandling.Ignore,
         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,

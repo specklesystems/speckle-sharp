@@ -64,31 +64,38 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       pv.JsonPropertyNames = jsonPropertyNames;
     }
 
+    // POC: cast? throw if null?
     return obj as DiscriminatedObject;
   }
 
-  private static readonly Dictionary<string, Type> s_typeCache = new();
+  // POC: remove, replace with DI
+  private readonly Dictionary<string, Type> _typeCache = new();
 
   private Type? GetTypeByName(string name)
   {
-    s_typeCache.TryGetValue(name, out Type myType);
+    _typeCache.TryGetValue(name, out Type myType);
     if (myType != null)
     {
       return myType;
     }
 
+    // POC: why does this exist like this?
+    // The assemblies within the CurrentDomain are not necessarily loaded
+    // probably we can leverage DI here so we already know the types, possibly DI plus an attribute
+    // then we can cache everything on startup
     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
     {
       List<TypeInfo>? types;
 
       try
       {
-        types = assembly.DefinedTypes.Where(t => t.FullName != null && t.FullName.Contains(name)).ToList();
-
-        var type = assembly.DefinedTypes.FirstOrDefault(t => t.FullName != null && t.FullName.Contains(name));
+        // POC: contains is weak
+        // working by accident, ModelCard is contained within SenderModelCard :O
+        // comparisons :D
+        var type = assembly.DefinedTypes.FirstOrDefault(t => !string.IsNullOrEmpty(t?.Name) && t?.Name == name);
         if (type != null)
         {
-          s_typeCache[name] = type;
+          _typeCache[name] = type;
           return type;
         }
       }
@@ -96,9 +103,10 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
       // the call above is causing load of all assemblies (which is also possibly not good)
       // AND it explodes for me loading an exception, so at the last this should
       // catch System.Reflection.ReflectionTypeLoadException (and anthing else DefinedTypes might throw)
-      catch (Exception ex) when (!ex.IsFatal())
+      catch (ReflectionTypeLoadException ex)
       {
-        Debug.WriteLine(ex.Message);
+        // POC: logging
+        Debug.WriteLine("***" + ex.Message);
       }
     }
 
