@@ -4,7 +4,7 @@ using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 
-namespace ConnectorRevit.Storage;
+namespace RevitSharedResources.Models;
 
 public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
 {

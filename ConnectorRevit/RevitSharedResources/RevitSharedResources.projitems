@@ -27,8 +27,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\APIContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ConversionNotReadyCacheData.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\RevitConverterState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ErrorEater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RevitDocumentAggregateCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RevitObjectCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TransactionManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\UIDocumentProvider.cs" />
   </ItemGroup>
 </Project>

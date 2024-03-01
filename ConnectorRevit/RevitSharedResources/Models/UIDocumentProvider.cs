@@ -1,6 +1,6 @@
 using UI = Autodesk.Revit.UI;
 
-namespace ConnectorRevit.Storage;
+namespace RevitSharedResources.Models;
 
 /// <summary>
 /// Provides the current <see cref="UI.UIDocument"/> to any dependencies which may need it

@@ -6,6 +6,7 @@ using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
 using Timer = System.Timers.Timer;
