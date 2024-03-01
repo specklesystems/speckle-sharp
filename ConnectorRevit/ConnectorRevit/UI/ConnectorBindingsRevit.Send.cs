@@ -73,7 +73,7 @@ public partial class ConnectorBindingsRevit
       );
     }
 
-    //converter.SetContextDocument(revitDocumentAggregateCache);
+    converter.SetContextDocument(revitDocumentAggregateCache);
     converter.SetContextObjects(
       selectedObjects
         .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })

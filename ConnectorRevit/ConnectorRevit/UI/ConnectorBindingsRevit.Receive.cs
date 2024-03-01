@@ -75,12 +75,12 @@ public partial class ConnectorBindingsRevit
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work
     var previousObjects = new StreamStateCache(state);
-    //converter.SetContextDocument(previousObjects);
+    converter.SetContextDocument(previousObjects);
     // needs to be set for openings in floors and roofs to work
     converter.SetContextObjects(Preview);
 
     // share the same revit element cache between the connector and converter
-    //converter.SetContextDocument(revitDocumentAggregateCache);
+    converter.SetContextDocument(revitDocumentAggregateCache);
 
     try
     {
@@ -253,7 +253,7 @@ public partial class ConnectorBindingsRevit
     }
 
     var convertedObjectsCache = new ConvertedObjectsCache();
-    //converter.SetContextDocument(convertedObjectsCache);
+    converter.SetContextDocument(convertedObjectsCache);
 
     var conversionProgressDict = new ConcurrentDictionary<string, int>();
     conversionProgressDict["Conversion"] = 1;
