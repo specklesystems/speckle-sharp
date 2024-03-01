@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Timers;
 using Autodesk.Revit.UI;
-using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
 using RevitSharedResources.Interfaces;
