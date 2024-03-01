@@ -57,19 +57,23 @@ public static class AccountManager
     System.Version version = await gqlClient
       .GetServerVersion(cancellationToken: cancellationToken)
       .ConfigureAwait(false);
+
+    // serverMigration property was added in 2.18.5, so only query for it
+    // if the server has been updated past that version
     System.Version serverMigrationVersion = new(2, 18, 5);
 
     string queryString;
     if (version >= serverMigrationVersion)
     {
+      //language=graphql
       queryString = "query { serverInfo { name company migration { movedFrom movedTo } } }";
     }
     else
     {
+      //language=graphql
       queryString = "query { serverInfo { name company } }";
     }
 
-    //language=graphql
     var request = new GraphQLRequest { Query = queryString };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
@@ -148,6 +152,9 @@ public static class AccountManager
       );
 
       System.Version version = await client.GetServerVersion().ConfigureAwait(false);
+
+      // serverMigration property was added in 2.18.5, so only query for it
+      // if the server has been updated past that version
       System.Version serverMigrationVersion = new(2, 18, 5);
 
       string queryString;

@@ -403,14 +403,12 @@ public class ServerInfo
 public class ServerMigration
 {
   /// <summary>
-  /// One of the base fields for our account upgrade mechanism.
-  /// Shows the url that this account now lives at after upgrading to FE2
+  /// New URI where this server is now deployed
   /// </summary>
   public Uri movedTo { get; set; }
 
   /// <summary>
-  /// One of the base fields for our account upgrade mechanism.
-  /// Shows the url that this account used to live at before being upgraded to FE2
+  /// Previous URI where this server used to be deployed
   /// </summary>
   public Uri movedFrom { get; set; }
 }

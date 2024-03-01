@@ -40,7 +40,7 @@ public static class GraphQLHttpClientExtensions
       );
     }
 
-    return response.Data.serverInfo.version.Contains("dev")
+    return response.Data.serverInfo.version == "dev"
       ? new System.Version(999, 999, 999)
       : new System.Version(Regex.Replace(response.Data.serverInfo.version, "[-a-zA-Z]+", ""));
   }
