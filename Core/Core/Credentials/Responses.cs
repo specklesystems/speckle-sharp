@@ -1,26 +1,12 @@
 #nullable disable
-using System;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Credentials;
-
-[Obsolete("Use activeUser query and ActiveUserServerInfoResponse instead", true)]
-public class UserServerInfoResponse
-{
-  public UserInfo user { get; set; }
-  public ServerInfo serverInfo { get; set; }
-}
 
 public class ActiveUserServerInfoResponse
 {
   public UserInfo activeUser { get; set; }
   public ServerInfo serverInfo { get; set; }
-}
-
-[Obsolete("Use activeUser query and ActiveUserResponse instead", true)]
-public class UserInfoResponse
-{
-  public UserInfo user { get; set; }
 }
 
 public class ActiveUserResponse

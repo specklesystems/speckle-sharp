@@ -1,8 +1,10 @@
-﻿namespace Speckle.Core.Api.GraphQL.Models;
+﻿#nullable disable
+
+namespace Speckle.Core.Api.GraphQL.Models;
 
 public sealed class Comment
 {
-  public Comment? parent { get; set; }
-  public ResourceCollection<Comment> replies { get; set; }
-  public CommentReplyAuthorCollection replyAuthors { get; set; }
+  public Comment parent { get; init; }
+  public ResourceCollection<Comment> replies { get; init; }
+  public CommentReplyAuthorCollection replyAuthors { get; init; }
 }

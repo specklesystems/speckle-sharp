@@ -9,9 +9,9 @@ namespace Speckle.Core.Api.GraphQL.Resources;
 
 public sealed class ModelResource
 {
-  private readonly ISpeckleClient _client;
+  private readonly ISpeckleGraphQLClient _client;
 
-  internal ModelResource(ISpeckleClient client)
+  internal ModelResource(ISpeckleGraphQLClient client)
   {
     _client = client;
   }
@@ -51,6 +51,7 @@ public sealed class ModelResource
     return response.project.model;
   }
 
+  //TODO: can we do this smarter with Skip/Include directives?
   public async Task<Model> GetWithVersions(
     string projectId,
     string modelId,

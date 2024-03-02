@@ -1,8 +1,10 @@
-﻿namespace Speckle.Core.Api.GraphQL.Models;
+﻿#nullable disable
+
+namespace Speckle.Core.Api.GraphQL.Models;
 
 public class ViewerResourceItem
 {
-  public string? modelId { get; set; }
-  public string objectId { get; set; }
-  public string? versionId { get; set; }
+  public string modelId { get; init; }
+  public string objectId { get; init; }
+  public string versionId { get; init; }
 }

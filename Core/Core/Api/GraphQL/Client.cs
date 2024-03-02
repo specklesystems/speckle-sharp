@@ -16,6 +16,7 @@ using Serilog.Context;
 using Serilog.Core;
 using Serilog.Core.Enrichers;
 using Speckle.Core.Api.GraphQL;
+using Speckle.Core.Api.GraphQL.Resources;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -24,66 +25,42 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api;
 
-public sealed partial class Client : ISpeckleClient, IDisposable
+public sealed partial class Client : ISpeckleGraphQLClient, IDisposable
 {
-  [Obsolete]
-  internal Client() { }
-
-  public Client(Account account)
-  {
-    Account = account ?? throw new SpeckleException("Provided account is null.");
-
-    HttpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
-    Http.AddAuthHeader(HttpClient, account.token);
-
-    HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
-    HttpClient.DefaultRequestHeaders.Add(
-      "apollographql-client-version",
-      Assembly.GetExecutingAssembly().GetName().Version.ToString()
-    );
-
-    GQLClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions
-      {
-        EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
-        UseWebSocketForQueriesAndMutations = false,
-        WebSocketProtocol = "graphql-ws",
-        ConfigureWebSocketConnectionInitPayload = _ =>
-        {
-          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
-        },
-      },
-      new NewtonsoftJsonSerializer(),
-      HttpClient
-    );
-
-    GQLClient.WebSocketReceiveErrors.Subscribe(e =>
-    {
-      if (e is WebSocketException we)
-      {
-        Console.WriteLine(
-          $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
-        );
-      }
-      else
-      {
-        Console.WriteLine($"Exception in websocket receive stream: {e}");
-      }
-    });
-  }
+  public ProjectResource Project { get; }
+  public ModelResource Model { get; }
+  public VersionResource Version { get; }
+  public ActiveUserResource ActiveUser { get; }
+  public OtherUserResource OtherUser { get; }
+  public ProjectInviteResource ProjectInvite { get; }
 
   public string ServerUrl => Account.serverInfo.url;
 
   public string ApiToken => Account.token;
 
-  public System.Version? ServerVersion { get; set; }
+  public System.Version? ServerVersion { get; private set; }
 
   [JsonIgnore]
-  public Account Account { get; set; }
+  public Account Account { get; }
+  private HttpClient HttpClient { get; }
 
-  private HttpClient HttpClient { get; set; }
+  public GraphQLHttpClient GQLClient { get; }
 
-  public GraphQLHttpClient GQLClient { get; set; }
+  public Client(Account account)
+  {
+    Account = account ?? throw new SpeckleException("Provided account is null.");
+
+    Project = new(this);
+    Model = new(this);
+    Version = new(this);
+    ActiveUser = new(this);
+    OtherUser = new(this);
+    ProjectInvite = new(this);
+
+    HttpClient = CreateHttpClient(account);
+
+    GQLClient = CreateGraphQLClient(account, HttpClient);
+  }
 
   public void Dispose()
   {
@@ -382,5 +359,51 @@ public sealed partial class Client : ISpeckleClient, IDisposable
         );
       }
     }
+  }
+
+  private static GraphQLHttpClient CreateGraphQLClient(Account account, HttpClient httpClient)
+  {
+    var gQLClient = new GraphQLHttpClient(
+      new GraphQLHttpClientOptions
+      {
+        EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
+        UseWebSocketForQueriesAndMutations = false,
+        WebSocketProtocol = "graphql-ws",
+        ConfigureWebSocketConnectionInitPayload = _ =>
+        {
+          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
+        },
+      },
+      new NewtonsoftJsonSerializer(),
+      httpClient
+    );
+
+    gQLClient.WebSocketReceiveErrors.Subscribe(e =>
+    {
+      if (e is WebSocketException we)
+      {
+        Console.WriteLine(
+          $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
+        );
+      }
+      else
+      {
+        Console.WriteLine($"Exception in websocket receive stream: {e}");
+      }
+    });
+    return gQLClient;
+  }
+
+  private static HttpClient CreateHttpClient(Account account)
+  {
+    var httpClient = Http.GetHttpProxyClient(null, TimeSpan.FromSeconds(30));
+    Http.AddAuthHeader(httpClient, account.token);
+
+    httpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
+    httpClient.DefaultRequestHeaders.Add(
+      "apollographql-client-version",
+      Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    );
+    return httpClient;
   }
 }

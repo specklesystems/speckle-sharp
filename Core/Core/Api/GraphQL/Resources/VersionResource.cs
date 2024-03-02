@@ -11,9 +11,9 @@ namespace Speckle.Core.Api.GraphQL.Resources;
 
 public sealed class VersionResource
 {
-  private readonly ISpeckleClient _client;
+  private readonly ISpeckleGraphQLClient _client;
 
-  internal VersionResource(ISpeckleClient client)
+  internal VersionResource(ISpeckleGraphQLClient client)
   {
     _client = client;
   }

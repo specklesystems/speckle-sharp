@@ -9,9 +9,9 @@ namespace Speckle.Core.Api.GraphQL.Resources;
 
 public sealed class ProjectResource
 {
-  private readonly ISpeckleClient _client;
+  private readonly ISpeckleGraphQLClient _client;
 
-  internal ProjectResource(ISpeckleClient client)
+  internal ProjectResource(ISpeckleGraphQLClient client)
   {
     _client = client;
   }
@@ -177,9 +177,9 @@ public sealed class ProjectResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Project>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["create"];
+    return response.projectMutations.create;
   }
 
   public async Task<Project> Update(ProjectUpdateInput input, CancellationToken cancellationToken = default)
@@ -187,7 +187,7 @@ public sealed class ProjectResource
     //language=graphql
     const string QUERY = """
                          mutation ProjectUpdate($update: ProjectUpdateInput!) {
-                           projectMutations {
+                           data:projectMutations{
                              update(update: $update) {
                                id
                                name
@@ -204,9 +204,9 @@ public sealed class ProjectResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Project>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["update"];
+    return response.projectMutations.update;
   }
 
   public async Task<bool> Delete(string deleteId, CancellationToken cancellationToken = default)
@@ -224,7 +224,7 @@ public sealed class ProjectResource
     var response = await _client
       .ExecuteGraphQLRequest<Dictionary<string, bool>>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["delete"];
+    return response["projectMutations"];
   }
 
   public async Task<Project> UpdateRole(ProjectUpdateRoleInput input, CancellationToken cancellationToken = default)
@@ -293,8 +293,8 @@ public sealed class ProjectResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Project>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<Dictionary<string, dynamic>>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["updateRole"];
+    return response["projectMutations"];
   }
 }

@@ -4,7 +4,7 @@ using GraphQL;
 
 namespace Speckle.Core.Api.GraphQL;
 
-internal interface ISpeckleClient
+internal interface ISpeckleGraphQLClient
 {
   public Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken);
 }

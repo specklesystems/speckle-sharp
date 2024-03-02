@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api;
 
@@ -172,8 +173,8 @@ public class PendingStreamCollaborator
   public string streamName { get; set; }
   public string title { get; set; }
   public string role { get; set; }
-  public User invitedBy { get; set; }
-  public User user { get; set; }
+  public LimitedUser invitedBy { get; set; }
+  public LimitedUser user { get; set; }
   public string token { get; set; }
 }
 
@@ -275,37 +276,6 @@ public class Streams
   public List<Stream> items { get; set; }
 }
 
-public class UserBase
-{
-  public string id { get; set; }
-  public string name { get; set; }
-  public string bio { get; set; }
-  public string company { get; set; }
-  public string avatar { get; set; }
-  public bool verified { get; set; }
-  public string role { get; set; }
-  public Streams streams { get; set; }
-}
-
-public class LimitedUser : UserBase
-{
-  public override string ToString()
-  {
-    return $"Other user profile: ({name} | {id})";
-  }
-}
-
-public class User : UserBase
-{
-  public string email { get; set; }
-  public Streams favoriteStreams { get; set; }
-
-  public override string ToString()
-  {
-    return $"User ({email} | {name} | {id})";
-  }
-}
-
 public class Resource
 {
   public string resourceId { get; set; }
@@ -327,33 +297,6 @@ public class Location
   public double z { get; set; }
 }
 
-public class UserData
-{
-  public User user { get; set; }
-}
-
-/// <summary>
-/// GraphQL DTO model for active user data
-/// </summary>
-public class ActiveUserData
-{
-  /// <summary>
-  ///  User profile of the active user.
-  /// </summary>
-  public User activeUser { get; set; }
-}
-
-/// <summary>
-/// GraphQL DTO model for limited user data. Mostly referring to other user's profile.
-/// </summary>
-public class LimitedUserData
-{
-  /// <summary>
-  /// The limited user profile of another (non active user)
-  /// </summary>
-  public LimitedUser otherUser { get; set; }
-}
-
 public class UserSearchData
 {
   public UserSearch userSearch { get; set; }
@@ -363,15 +306,6 @@ public class UserSearch
 {
   public string cursor { get; set; }
   public List<LimitedUser> items { get; set; }
-}
-
-public class ServerInfoResponse
-{
-  // TODO: server and user models are duplicated here and in Core.Credentials.Responses
-  // a bit weird and unnecessary - shouldn't both Credentials and Api share the same models since they're
-  // all server models that should be consistent? am creating a new obj here as to not reference Credentials in
-  // this file but it should prob be refactored in the futrue
-  public ServerInfo serverInfo { get; set; }
 }
 
 // TODO: prob remove and bring one level up and shared w Core.Credentials

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using Speckle.Core.Api.GraphQL.Enums;
 
@@ -6,31 +7,25 @@ namespace Speckle.Core.Api.GraphQL.Models;
 
 public sealed class Project
 {
-  public bool AllowPublicComments { get; set; }
-  public ProjectCommentCollection commentThreads { get; set; }
-  public DateTime createdAt { get; set; }
-  public string? description { get; set; }
-  public string id { get; set; }
-  public List<PendingStreamCollaborator>? invitedTeam { get; set; }
-  public ResourceCollection<Model> models { get; set; }
-  public string name { get; set; }
-  public List<FileUpload> pendingImportedModels { get; set; }
-  public string role { get; set; }
-  public List<string> sourceApps { get; set; }
-  public List<ProjectCollaborator> team { get; set; }
-  public DateTime updatedAt { get; set; }
-  public ProjectVisibility visibility { get; set; }
+  public bool AllowPublicComments { get; init; }
+  public ProjectCommentCollection commentThreads { get; init; }
+  public DateTime createdAt { get; init; }
+  public string description { get; init; }
+  public string id { get; init; }
+  public List<PendingStreamCollaborator> invitedTeam { get; init; }
+  public ResourceCollection<Model> models { get; init; }
+  public string name { get; init; }
+  public List<FileUpload> pendingImportedModels { get; init; }
+  public string role { get; init; }
+  public List<string> sourceApps { get; init; }
+  public List<ProjectCollaborator> team { get; init; }
+  public DateTime updatedAt { get; init; }
+  public ProjectVisibility visibility { get; init; }
 
-#nullable disable
-
-  // The ones below, we often only need inside the client (to return)
-  // Ideally these "optional ones" we want to keep internal
-  // if its impossible for us to properly nullability syntax them
-
-  internal List<ViewerResourceGroup> viewerResources { get; set; }
-  internal ResourceCollection<Version> versions { get; set; }
-  internal Model model { get; set; }
-  internal List<ModelsTreeItem> modelChildrenTree { get; set; }
-  internal ResourceCollection<ModelsTreeItem> modelsTree { get; set; }
+  public List<ViewerResourceGroup> viewerResources { get; init; }
+  public ResourceCollection<Version> versions { get; init; }
+  public Model model { get; init; }
+  public List<ModelsTreeItem> modelChildrenTree { get; init; }
+  public ResourceCollection<ModelsTreeItem> modelsTree { get; init; }
   // public WebhookCollection webhooks { get; set; } //TODO: do we want this functionality?
 }

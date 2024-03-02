@@ -9,8 +9,9 @@ public sealed record ProjectCommentsFilter(
   string? resourceIdString
 );
 
-public sealed record ProjectCreateInput(string? description, string? name, ProjectVisibility? Visibility);
+public sealed record ProjectCreateInput(string? name, string? description, ProjectVisibility? visibility);
 
+//TODO: what properties are required here? and what are valid roles?
 public sealed record ProjectInviteCreateInput(string? email, string? role, string? serverRole, string? userId);
 
 public sealed record ProjectInviteUseInput(bool accept, string projectId, string token);
@@ -38,4 +39,5 @@ public sealed record ProjectUpdateInput(
   ProjectVisibility? visibility = null
 );
 
-public sealed record ProjectUpdateRoleInput(string projectId, string? role, string userId);
+//TODO: can we enum the role?
+public sealed record ProjectUpdateRoleInput(string userId, string projectId, string? role);

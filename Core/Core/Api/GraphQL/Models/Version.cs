@@ -1,18 +1,20 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
 public sealed class Version
 {
-  public LimitedUser? authorUser { get; set; }
+  public LimitedUser authorUser { get; init; }
 
   //public AutomationStatus? automationStatus { get; set; } //See automate SDK
-  public ResourceCollection<Comment> commentThreads { get; set; }
-  public DateTime createdAt { get; set; }
-  public string id { get; set; }
-  public string? message { get; set; }
-  public required Model model { get; set; }
-  public Uri previewUrl { get; set; } //HACK: not URI type in schema
-  public string referencedObject { get; set; }
-  public string? sourceApplication { get; set; }
+  public ResourceCollection<Comment> commentThreads { get; init; }
+  public DateTime createdAt { get; init; }
+  public string id { get; init; }
+  public string message { get; init; }
+  public Model model { get; init; }
+  public Uri previewUrl { get; init; } //HACK: not URI type in schema
+  public string referencedObject { get; init; }
+  public string sourceApplication { get; init; }
 }

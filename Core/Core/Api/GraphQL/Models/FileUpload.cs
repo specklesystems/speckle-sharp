@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 
 namespace Speckle.Core.Api.GraphQL.Models;
 
@@ -13,20 +15,20 @@ public enum FileUploadConversionStatus
 
 public sealed class FileUpload
 {
-  public string branchName { get; set; }
-  public string? convertedCommitId { get; set; }
-  public DateTime convertedLastUpdate { get; set; }
-  public FileUploadConversionStatus convertedStatus { get; set; }
-  public string? convertedVersionId { get; set; }
-  public string fileName { get; set; }
-  public int fileSize { get; set; }
-  public string fileType { get; set; }
-  public string id { get; set; }
-  public Model? model { get; set; }
-  public string modelName { get; set; }
-  public string projectId { get; set; }
-  public string streamId { get; set; }
-  public bool uploadComplete { get; set; }
-  public DateTime uploadDate { get; set; }
-  public string userId { get; set; }
+  public string branchName { get; init; }
+  public string convertedCommitId { get; init; }
+  public DateTime convertedLastUpdate { get; init; }
+  public FileUploadConversionStatus convertedStatus { get; init; }
+  public string convertedVersionId { get; init; }
+  public string fileName { get; init; }
+  public int fileSize { get; init; }
+  public string fileType { get; init; }
+  public string id { get; init; }
+  public Model model { get; init; }
+  public string modelName { get; init; }
+  public string projectId { get; init; }
+  public string streamId { get; init; }
+  public bool uploadComplete { get; init; }
+  public DateTime uploadDate { get; init; }
+  public string userId { get; init; }
 }

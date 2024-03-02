@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
@@ -10,16 +9,13 @@ namespace Speckle.Core.Api.GraphQL.Resources;
 
 public sealed class ProjectInviteResource
 {
-  private readonly ISpeckleClient _client;
+  private readonly ISpeckleGraphQLClient _client;
 
-  internal ProjectInviteResource(ISpeckleClient client)
+  internal ProjectInviteResource(ISpeckleGraphQLClient client)
   {
     _client = client;
   }
 
-  //TODO: Do we really want to return the entire project here?
-  //previously we returned a bool
-  //but there doesn't appear to be a nice way to return the invite id (assuming we'd want to)
   public async Task<Project> Create(
     string projectId,
     ProjectInviteCreateInput input,
@@ -92,13 +88,13 @@ public sealed class ProjectInviteResource
     GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, input } };
 
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, Project>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<ProjectMutationResponse>(request, cancellationToken)
       .ConfigureAwait(false);
-    return response["create"];
+    return response.projectMutations.invites.create;
   }
 
-  //TODO: what to return...
-  public async Task Use(ProjectInviteUseInput input, CancellationToken cancellationToken = default)
+  //TODO: what is this return...
+  public async Task<bool> Use(ProjectInviteUseInput input, CancellationToken cancellationToken = default)
   {
     //language=graphql
     const string QUERY = """
@@ -112,10 +108,58 @@ public sealed class ProjectInviteResource
                          """;
     GraphQLRequest request = new() { Query = QUERY, Variables = new { input } };
 
+    var response = await _client.ExecuteGraphQLRequest<dynamic>(request, cancellationToken).ConfigureAwait(false);
+    return response["use"]; //TODO: check if this is correct
+  }
+
+  public async Task<PendingStreamCollaborator?> Get(
+    string projectId,
+    string? token,
+    CancellationToken cancellationToken = default
+  )
+  {
+    //language=graphql
+    const string QUERY = """
+                         query ProjectInvite($projectId: String!, $token: String) {
+                           projectInvite(projectId: $projectId, token: $token) {
+                             id
+                             inviteId
+                             invitedBy {
+                               avatar
+                               bio
+                               company
+                               id
+                               name
+                               role
+                               totalOwnedStreamsFavorites
+                               verified
+                             }
+                             projectId
+                             projectName
+                             role
+                             streamId
+                             streamName
+                             title
+                             token
+                             user {
+                               avatar
+                               bio
+                               company
+                               id
+                               name
+                               role
+                               totalOwnedStreamsFavorites
+                               verified
+                             }
+                           }
+                         }
+                         """;
+    GraphQLRequest request = new() { Query = QUERY, Variables = new { projectId, token } };
+
     var response = await _client
-      .ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
+      .ExecuteGraphQLRequest<Dictionary<string, PendingStreamCollaborator?>>(request, cancellationToken)
       .ConfigureAwait(false);
-    throw new NotImplementedException("figure out what to return here");
+    return response["projectInvite"];
   }
 
   //TODO: again, what to return...
