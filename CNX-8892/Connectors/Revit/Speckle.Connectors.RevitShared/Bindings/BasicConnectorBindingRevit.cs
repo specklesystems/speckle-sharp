@@ -40,10 +40,10 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     _revitSettings = revitSettings;
 
     // POC: event binding
-    //_store.DocumentChanged += (_, _) =>
-    //{
-    //  browserSender.Send(Name, BasicConnectorBindingEvents.DocumentChanged);
-    //};
+    _store.DocumentChanged += (_, _) =>
+    {
+      parent.Send(Name, BasicConnectorBindingEvents.DOCUMENT_CHANGED);
+    };
   }
 
   public string GetConnectorVersion()
