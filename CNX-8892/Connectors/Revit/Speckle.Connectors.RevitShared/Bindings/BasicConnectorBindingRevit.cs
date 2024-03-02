@@ -39,7 +39,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     _revitContext = revitContext;
     _revitSettings = revitSettings;
 
-    // POC: event binding
+    // POC: event binding?
     _store.DocumentChanged += (_, _) =>
     {
       parent.Send(Name, BasicConnectorBindingEvents.DOCUMENT_CHANGED);

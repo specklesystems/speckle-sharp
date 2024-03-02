@@ -4,7 +4,12 @@
     "projects": [
       "CNX-8892\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
       "CNX-8892\\Connectors\\Revit\\Speckle.Connectors.RevitShared\\Speckle.Connectors.RevitShared.shproj",
+      "CNX-8892\\Converters\\Revit\\Speckle.Converters.Revit2023\\Speckle.Converters.Revit2023.csproj",
+      "CNX-8892\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
+      "CNX-8892\\Converters\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
       "CNX-8892\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
+      "CNX-8892\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
+      "CNX-8892\\Objects\\Speckle.Objects.Revit\\Speckle.Objects.Revit.csproj",
       "CNX-8892\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "CNX-8892\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "ConnectorRevit\\RevitDUI3\\Revit2023DUI3\\Revit2023DUI3.csproj",
