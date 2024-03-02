@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Objects.Geometry;
 
-namespace Speckle.Objects.ThreeD;
+namespace Speckle.Objects.Utils;
 
 /// <summary>
 /// Generic transform class

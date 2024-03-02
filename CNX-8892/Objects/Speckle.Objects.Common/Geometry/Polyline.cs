@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Objects.Common;
 using Speckle.Objects.Primitives;
-using Speckle.Objects.ThreeD;
+using Speckle.Objects.Utils;
 
 namespace Speckle.Objects.Geometry;
 

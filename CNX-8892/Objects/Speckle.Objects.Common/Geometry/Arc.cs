@@ -5,7 +5,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Objects.Common;
 using Speckle.Objects.Primitives;
-using Speckle.Objects.ThreeD;
+using Speckle.Objects.Utils;
 
 namespace Speckle.Objects.Geometry;
 
