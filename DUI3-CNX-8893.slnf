@@ -12,6 +12,8 @@
       "CNX-8892\\Objects\\Speckle.Objects.Revit\\Speckle.Objects.Revit.csproj",
       "CNX-8892\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "CNX-8892\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
+      "ConnectorRevit\\ConnectorRevit2023\\ConnectorRevit2023.csproj",
+      "ConnectorRevit\\ConnectorRevit\\ConnectorRevitShared.shproj",
       "ConnectorRevit\\RevitDUI3\\Revit2023DUI3\\Revit2023DUI3.csproj",
       "ConnectorRevit\\RevitDUI3\\RevitDUI3Shared\\RevitDUI3Shared.shproj",
       "Core\\Core\\Core.csproj",
