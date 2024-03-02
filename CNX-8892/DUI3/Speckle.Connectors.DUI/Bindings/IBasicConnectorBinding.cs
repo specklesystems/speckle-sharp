@@ -23,6 +23,6 @@ public interface IBasicConnectorBinding : IBinding
 
 public static class BasicConnectorBindingEvents
 {
-  public static readonly string DisplayToastNotification = "DisplayToastNotification";
-  public static readonly string DocumentChanged = "documentChanged";
+  public const string DISPLAY_TOAST_NOTIFICATION = "DisplayToastNotification";
+  public const string DOCUMENT_CHANGED = "documentChanged";
 }

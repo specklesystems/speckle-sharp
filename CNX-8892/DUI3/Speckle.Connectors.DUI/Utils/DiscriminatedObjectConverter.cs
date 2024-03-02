@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Speckle.Core.Logging;
 using Speckle.Core.Serialisation;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -16,6 +15,7 @@ namespace Speckle.Connectors.DUI.Utils;
 /// serialization settings from <see cref="SerializationSettingsFactory.GetSerializerSettings"/>. This converter is intended
 /// for use only with UI bound types, not Speckle Bases.
 /// </summary>
+// POC: automatic registration of compatible objects
 public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 {
   private readonly JsonSerializer _localSerializer =

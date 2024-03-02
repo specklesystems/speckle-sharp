@@ -25,6 +25,7 @@ internal class RevitExternalApplication : IExternalApplication
   //      maybe subclassing, or some hook to inject som configuration
   private readonly RevitSettings _revitSettings;
 
+  // POC: move to somewhere central?
   public static readonly DockablePaneId DoackablePanelId = new(new Guid("{f7b5da7c-366c-4b13-8455-b56f433f461e}"));
 
   public RevitExternalApplication()

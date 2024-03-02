@@ -2687,6 +2687,7 @@ Global
 		Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTestsShared\ConverterRevitTestsShared.projitems*{1d1b6eda-8fd9-4758-9195-c3476db31f4e}*SharedItemsImports = 5
 		ConnectorAutocadCivil\AutocadCivilDUI3\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems*{1e5c7198-1065-4015-acb5-bdfa1dc43589}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{1f21e740-6b05-47bd-8d2a-c9ed5e91c577}*SharedItemsImports = 5
+		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{2113f03b-bb8d-470b-a9a1-97bb9a554a44}*SharedItemsImports = 5
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{21223ba5-c6e8-405d-b581-106c4726edc0}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{2568500e-f1bc-440e-9150-db4820b3fad6}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{2639e37d-80d3-415a-b4d1-20d7f321f27f}*SharedItemsImports = 5

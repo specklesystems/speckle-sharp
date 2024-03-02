@@ -20,9 +20,9 @@ public interface IReceiveBinding : IBinding
 
 public static class ReceiveBindingEvents
 {
-  public static readonly string ReceiversExpired = "receiversExpired";
-  public static readonly string ReceiverProgress = "receiverProgress";
-  public static readonly string Notify = "notify";
+  public const string RECEIVERS_EXPIRED = "receiversExpired";
+  public const string RECEIVERS_PROGRESS = "receiverProgress";
+  public const string NOTIFY = "notify";
 }
 
 public class ReceiverModelCard : ModelCard { }

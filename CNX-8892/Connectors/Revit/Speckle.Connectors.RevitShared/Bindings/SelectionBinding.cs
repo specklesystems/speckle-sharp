@@ -30,13 +30,13 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
     _revitContext.UIApplication.ViewActivated += (_, _) =>
     {
-      Parent.Send(SelectionBindingEvents.SetSelection, new SelectionInfo());
+      Parent.Send(SelectionBindingEvents.SET_SELECTION, new SelectionInfo());
     };
   }
 
   private void OnSelectionChanged()
   {
-    Parent.Send(SelectionBindingEvents.SetSelection, GetSelection());
+    Parent.Send(SelectionBindingEvents.SET_SELECTION, GetSelection());
   }
 
   public SelectionInfo GetSelection()

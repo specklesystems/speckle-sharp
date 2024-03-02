@@ -15,6 +15,7 @@ namespace Speckle.Connectors.Revit.HostApp;
 // POC: should be interfaced out
 internal class RevitDocumentStore : DocumentModelStore
 {
+  // POC: move to somewhere central?
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
 
   private readonly RevitContext _revitContext;
@@ -102,7 +103,7 @@ internal class RevitDocumentStore : DocumentModelStore
     }
   }
 
-  private static DataStorage GetSettingsDataStorage(Document doc)
+  private DataStorage GetSettingsDataStorage(Document doc)
   {
     // POC: re-instate
     //using FilteredElementCollector collector = new(doc);
@@ -128,7 +129,7 @@ internal class RevitDocumentStore : DocumentModelStore
     return null;
   }
 
-  private static Entity GetSpeckleEntity(Document doc)
+  private Entity GetSpeckleEntity(Document doc)
   {
     // POC: re-instate
     //using FilteredElementCollector collector = new(doc);

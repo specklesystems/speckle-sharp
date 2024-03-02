@@ -9,7 +9,7 @@ public interface ISelectionBinding : IBinding
 
 public static class SelectionBindingEvents
 {
-  public static readonly string SetSelection = "setSelection";
+  public const string SET_SELECTION = "setSelection";
 }
 
 public class SelectionInfo
