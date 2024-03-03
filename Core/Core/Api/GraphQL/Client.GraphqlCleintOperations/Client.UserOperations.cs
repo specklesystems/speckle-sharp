@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphQL;
+using Speckle.Core.Api.GraphQL.Models;
 
 namespace Speckle.Core.Api;
 
@@ -12,26 +13,10 @@ public partial class Client
   /// </summary>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  [Obsolete($"Use {nameof(ActiveUser)}")]
   public async Task<User> ActiveUserGet(CancellationToken cancellationToken = default)
   {
-    var request = new GraphQLRequest
-    {
-      Query =
-        @"query User {
-                      activeUser {
-                        id,
-                        email,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        profiles,
-                        role,
-                      }
-                    }"
-    };
-    return (await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false)).activeUser;
+    return await ActiveUser.Get(cancellationToken).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -40,25 +25,10 @@ public partial class Client
   /// <param name="id">Id of the user you are looking for</param>
   /// <param name="cancellationToken"></param>
   /// <returns></returns>
+  [Obsolete($"Use {nameof(OtherUser)}")]
   public async Task<LimitedUser?> OtherUserGet(string id, CancellationToken cancellationToken = default)
   {
-    var request = new GraphQLRequest
-    {
-      Query =
-        @"query LimitedUser($id: String!) {
-                      otherUser(id: $id){
-                        id,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        role,
-                      }
-                    }",
-      Variables = new { id }
-    };
-    return (await ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken).ConfigureAwait(false)).otherUser;
+    return await OtherUser.Get(id, cancellationToken).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -67,33 +37,13 @@ public partial class Client
   /// <param name="query">String to search for. Must be at least 3 characters</param>
   /// <param name="limit">Max number of users to return</param>
   /// <returns></returns>
+  [Obsolete($"Use {nameof(OtherUser)}")]
   public async Task<List<LimitedUser>> UserSearch(
     string query,
     int limit = 10,
     CancellationToken cancellationToken = default
   )
   {
-    var request = new GraphQLRequest
-    {
-      Query =
-        @"query UserSearch($query: String!, $limit: Int!) {
-                      userSearch(query: $query, limit: $limit) {
-                        cursor,
-                        items {
-                          id
-                          name
-                          bio
-                          company
-                          avatar
-                          verified
-                          role
-                        }
-                      }
-                    }",
-      Variables = new { query, limit }
-    };
-    return (await ExecuteGraphQLRequest<UserSearchData>(request, cancellationToken).ConfigureAwait(false))
-      .userSearch
-      .items;
+    return await OtherUser.UserSearch(query, limit, cancellationToken).ConfigureAwait(false);
   }
 }
