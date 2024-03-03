@@ -19,6 +19,8 @@ using Speckle.Connectors.Utils;
 using Autofac.Features.Indexed;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
+using System.Windows.Forms.VisualStyles;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -30,19 +32,23 @@ internal class SendBinding : RevitBaseBinding, ICancelable
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  // POC: do we need all of these or can we look specifically for the revit one?
-  // revit converter name should come from...  attribute?
-  private readonly IIndex<string, IScopedFactory<IHostToSpeckleConverter>> _converters;
+  // In the context of the SEND operation, we're only ever expecting ONE conversion
+  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly ISpeckleConverterToSpeckle _speckleConverterToSpeckle;
+  private readonly IRevitIdleManager _idleManager;
 
   public SendBinding(
-    IIndex<string, IScopedFactory<IHostToSpeckleConverter>> converters,
+    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    IRevitIdleManager idleManager,
     RevitContext revitContext,
     RevitDocumentStore store,
     IBridge bridge
   )
     : base("sendBinding", store, bridge, revitContext)
   {
-    _converters = converters;
+    _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _speckleConverterToSpeckle = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    _idleManager = idleManager;
 
     // TODO expiry events
     // TODO filters need refresh events
@@ -52,6 +58,8 @@ internal class SendBinding : RevitBaseBinding, ICancelable
   public List<ISendFilter> GetSendFilters()
   {
     return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
+
+    _speckleConverterToSpeckle.Convert();
   }
 
   public async void Send(string modelCardId)
@@ -122,8 +130,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
     }
 
     // TODO: CHECK IF ANY OF THE ABOVE ELEMENTS NEED TO TRIGGER A FILTER REFRESH
-    // POC: re-instate
-    //    RevitIdleManager.SubscribeToIdle(RunExpirationChecks);
+    _idleManager.SubscribeToIdle(RunExpirationChecks);
   }
 
   private void RunExpirationChecks()
@@ -142,5 +149,13 @@ internal class SendBinding : RevitBaseBinding, ICancelable
 
     SendBindingUICommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
+  }
+
+  protected override void Disposing(bool isDipsosing, bool disposedState)
+  {
+    if (isDipsosing && !disposedState)
+    {
+      _speckleConverterToSpeckleFactory.Dispose();
+    }
   }
 }

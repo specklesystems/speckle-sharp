@@ -12,8 +12,4 @@
     <ProjectReference Include="..\..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DependencyInjection\" />
-  </ItemGroup>
-
 </Project>

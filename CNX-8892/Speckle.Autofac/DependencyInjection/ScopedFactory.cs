@@ -3,7 +3,7 @@ using Autofac;
 
 namespace Speckle.Autofac.DependencyInjection;
 
-public class ScopedFactory<T> : IScopedFactory<T>, IDisposable
+public class ScopedFactory<T> : IScopedFactory<T>
   where T : class
 {
   private readonly ILifetimeScope _lifetimeScope;
@@ -14,7 +14,7 @@ public class ScopedFactory<T> : IScopedFactory<T>, IDisposable
     _lifetimeScope = lifetimeScope.BeginLifetimeScope();
   }
 
-  public T CreateScopedInstance()
+  public T ResolveScopedInstance()
   {
     return _lifetimeScope.Resolve<T>();
   }
@@ -22,16 +22,22 @@ public class ScopedFactory<T> : IScopedFactory<T>, IDisposable
   public void Dispose()
   {
     Dispose(true);
-
     GC.SuppressFinalize(this);
   }
 
   protected virtual void Dispose(bool disposing)
   {
-    if (!_disposed)
+    if (disposing && !_disposed)
     {
+      // POC: check: but I think dispose will end the scope
       _lifetimeScope.Dispose();
       _disposed = true;
     }
+  }
+
+  // might be needed in future...
+  ~ScopedFactory()
+  {
+    Dispose(false);
   }
 }

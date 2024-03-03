@@ -9,10 +9,6 @@
   <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
   </ItemGroup>
 

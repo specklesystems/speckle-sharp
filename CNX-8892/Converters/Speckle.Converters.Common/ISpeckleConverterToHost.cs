@@ -1,6 +1,6 @@
 namespace Speckle.Converters.Common;
 
-public interface IFromHostConveter
+public interface ISpeckleConverterToHost
 {
   void Convert();
 }

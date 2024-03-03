@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Objects\Speckle.Objects.Common\Speckle.Objects.Common.csproj" />
+    <ProjectReference Include="..\..\..\Speckle.Autofac\Speckle.Autofac.csproj" />
+    <ProjectReference Include="..\..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems" Label="Shared" />
+
+</Project>
