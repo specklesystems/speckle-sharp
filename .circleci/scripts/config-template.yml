@@ -169,6 +169,38 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - cached-checkout
       - attach_workspace:
           at: ./
+      # 2) Download and Unzip eSignerCKA Setup
+      - run:
+          name: Download and Unzip eSignerCKA Setup
+          command: |
+            Invoke-WebRequest -OutFile eSigner_CKA_Setup.zip "https://github.com/SSLcom/eSignerCKA/releases/download/v1.0.6/SSL.COM-eSigner-CKA_1.0.6.zip"
+            Expand-Archive -Force eSigner_CKA_Setup.zip
+            Remove-Item eSigner_CKA_Setup.zip
+            Move-Item -Destination "eSigner_CKA_Installer.exe" -Path "eSigner_CKA_*\*.exe"
+
+      # 3) Install eSignerCKA
+      - run:
+          name: Setup eSignerCKA in Silent Mode
+          command: |
+            mkdir -p "/home/circleci/project/eSignerCKA"
+            Start-Process ".\eSigner_CKA_Installer.exe" -argumentlist '/CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /DIR="/home/circleci/project/eSignerCKA"' -wait
+            Start-Process ".\setup\vc_redist.x86.exe" -argumentlist "/install /q" -wait
+            Start-Process ".\setup\vc_redist.x64.exe" -argumentlist "/install /q" -wait
+            /home/circleci/project/eSignerCKA/RegisterKSP.exe | Out-Null
+            /home/circleci/project/eSignerCKA/eSignerCSP.Config.exe | Out-Null
+
+      # 4) Set SSLcom account information
+      - run:
+          name: Config Account Information on eSignerCKA
+          command: |
+            /home/circleci/project/eSignerCKA/eSignerCKATool.exe config -mode $env:SIGNING_MODE -user "$env:SIGNING_USERNAME" -pass "$env:SIGNING_PASSWORD" -totp "$env:SIGNING_TOTP_SECRET" -key "/home/circleci/project/eSignerCKA/master.key" -r
+
+      # 5) Unload and Load certificate to windows certificate store
+      - run:
+          name: Load Certificate into Windows Store
+          command: |
+            /home/circleci/project/eSignerCKA/eSignerCKATool.exe unload
+            /home/circleci/project/eSignerCKA/eSignerCKATool.exe load
       - run:
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln

@@ -59,6 +59,7 @@ revit:
       slug: revit
       context:
         - digicert-signing-connectors-test
+        - sslcom-signing
 
 autocadcivil:
   - build-connector:
