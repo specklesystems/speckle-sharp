@@ -16,6 +16,7 @@ rhino:
       slug: grasshopper
       context:
         - digicert-signing-connectors-test
+        - sslcom-signing
   - build-connector-dotnet-mac:
       name: rhino-build-mac
       slnname: ConnectorRhino
@@ -59,7 +60,6 @@ revit:
       slug: revit
       context:
         - digicert-signing-connectors-test
-        - sslcom-signing
 
 autocadcivil:
   - build-connector:
