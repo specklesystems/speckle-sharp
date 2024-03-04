@@ -36,8 +36,7 @@ public class SelectionBinding : ISelectionBinding
   public SelectionInfo GetSelection()
   {
     // TODO: filter supported stuff
-    var selectionIds = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id => id.ToString()).ToList()
-      ;
+    var selectionIds = RevitApp.ActiveUIDocument.Selection.GetElementIds().Select(id => id.ToString()).ToList();
     return new SelectionInfo()
     {
       SelectedObjectIds = selectionIds,

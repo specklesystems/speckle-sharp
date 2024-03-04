@@ -131,26 +131,30 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    var commitObject = new Base();
-
-    var convertedObjects = new List<Base>();
     int count = 0;
+    var rootObject = new Collection { name = Doc.PathName.Split('\\').Reverse().First().Split('.').First() };
+    var collectionCache = new Dictionary<string, Collection>();
+    
     foreach (var revitElement in elements)
     {
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException();
       }
-      
+
+      var cat = revitElement.Category.Name;
+      var level = Doc.GetElement(revitElement.LevelId) as Level;
+      var path = new[] { level == null ? "No level": level.Name, cat };
+      var collection = GetAndCreateObjectHostCollection(path, collectionCache, rootObject);
+
       count++;
       try
       {
         var convertedObject = converter.ConvertToSpeckle(revitElement);
         convertedObject.applicationId = revitElement.UniqueId;
-        convertedObjects.Add(convertedObject);
-        double progress = (double)count / elements.Count;
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId,
-          new ModelCardProgress() { Status = "Converting", Progress = progress });
+        collection.elements.Add(convertedObject);
+
+        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)count / elements.Count });
       }
       catch (Exception e)
       {
@@ -159,10 +163,47 @@ public class SendBinding : ISendBinding, ICancelable
       }
       
     }
+    return rootObject;
+  }
 
-    commitObject["@elements"] = convertedObjects;
+  /// <summary>
+  /// Creates and nests collections based on the provided path within the root collection provided. This will not return a new collection each time is called, but an existing one if one is found.
+  /// For example, you can use this to use (or re-use) a new collection for a path of (level, category) as it's currently implemented. 
+  /// </summary>
+  /// <param name="path"></param>
+  /// <param name="cache"></param>
+  /// <param name="root"></param>
+  /// <returns></returns>
+  private Collection GetAndCreateObjectHostCollection(IEnumerable<string> path, Dictionary<string, Collection> cache, Collection root)
+  {
+    string fullPathName = string.Join("", path);
+    if (cache.TryGetValue(fullPathName, out Collection value))
+    {
+      return value;
+    }
+    
+    string flatPathName = "";
+    Collection previousCollection = root;
+    
+    foreach (var pathItem in path)
+    {
+      flatPathName += pathItem;
+      Collection childCollection;
+      if (cache.ContainsKey(flatPathName))
+      {
+        childCollection = cache[flatPathName];
+      }
+      else
+      {
+        childCollection = new Collection(pathItem, "layer");
+        previousCollection.elements.Add(childCollection);
+        cache[flatPathName] = childCollection;
+      }
 
-    return commitObject;
+      previousCollection = childCollection;
+    }
+
+    return previousCollection;
   }
   
   /// <summary>
