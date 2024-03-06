@@ -57,8 +57,6 @@ internal class RevitExternalApplication : IExternalApplication
               BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
 #endif
 
-      //#if REVIT2023
-
       // init DI
       _container
         //.LoadAutofacModules(new string[] { "<paths>" }) // TODO, it's coming

@@ -10,7 +10,7 @@ public class AutofacRevitConverterModule : Module
   protected override void Load(ContainerBuilder builder)
   {
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.RegisterType<RevitConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
+    builder.RegisterType<RevitConverterToSpeckle>().As<ISpeckleConverterToSpeckle>();
 
     //
   }

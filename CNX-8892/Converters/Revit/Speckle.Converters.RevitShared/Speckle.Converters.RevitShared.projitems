@@ -9,7 +9,7 @@
     <Import_RootNamespace>Speckle.Converters.RevitShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\FloorConversion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConverterToSpeckle.cs" />
   </ItemGroup>
 </Project>

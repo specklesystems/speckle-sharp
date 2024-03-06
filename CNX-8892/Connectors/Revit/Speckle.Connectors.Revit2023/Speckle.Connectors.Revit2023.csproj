@@ -186,6 +186,10 @@
       <Project>{a2c8730a-b605-483e-914e-61f3ed7954d9}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Converters\Revit\Speckle.Converters.Revit2023.DependencyInjection\Speckle.Converters.Revit2023.DependencyInjection.csproj">
+      <Project>{81F92B31-C647-4A82-A464-8322814F50E6}</Project>
+      <Name>Speckle.Converters.Revit2023.DependencyInjection</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Converters\Speckle.Converters.Common\Speckle.Converters.Common.csproj">
       <Project>{3217D8B5-AE8F-4364-81CF-8B7C2BEF6445}</Project>
       <Name>Speckle.Converters.Common</Name>
@@ -225,11 +229,23 @@
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
       <Version>7.0.0</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging">
+      <Version>7.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
+      <Version>7.0.0</Version>
+    </PackageReference>
     <PackageReference Include="Revit.Async">
       <Version>2.0.1</Version>
     </PackageReference>
     <PackageReference Include="Revit_All_Main_Versions_API_x64">
       <Version>2024.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog">
+      <Version>2.12.0</Version>
+    </PackageReference>
+    <PackageReference Include="Serilog.Extensions.Logging">
+      <Version>7.0.0</Version>
     </PackageReference>
     <PackageReference Include="Speckle.Newtonsoft.Json">
       <Version>13.0.2</Version>

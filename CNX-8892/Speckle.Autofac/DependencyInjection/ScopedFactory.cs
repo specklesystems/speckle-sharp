@@ -9,9 +9,9 @@ public class ScopedFactory<T> : IScopedFactory<T>
   private readonly ILifetimeScope _lifetimeScope;
   private bool _disposed = false;
 
-  public ScopedFactory(ILifetimeScope lifetimeScope)
+  public ScopedFactory(ILifetimeScope parentScope)
   {
-    _lifetimeScope = lifetimeScope.BeginLifetimeScope();
+    _lifetimeScope = parentScope.BeginLifetimeScope();
   }
 
   public T ResolveScopedInstance()

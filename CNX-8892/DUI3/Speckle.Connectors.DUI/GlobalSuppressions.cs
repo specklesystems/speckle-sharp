@@ -7,15 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage(
   "Performance",
-  "CA1805:Do not initialize unnecessarily",
-  Justification = "<Pending>",
-  Scope = "member",
-  Target = "~F:Speckle.Autofac.DependencyInjection.ScopedFactory`1._disposed"
-)]
-[assembly: SuppressMessage(
-  "Performance",
   "CA1848:Use the LoggerMessage delegates",
   Justification = "<Pending>",
   Scope = "member",
-  Target = "~M:Speckle.Autofac.DependencyInjection.AutofacContainer.Build~Speckle.Autofac.DependencyInjection.AutofacContainer"
+  Target = "~M:Speckle.Connectors.DUI.Bridge.BrowserBridge.AssociateWithBinding(Speckle.Connectors.DUI.Bindings.IBinding,System.Action{System.String},System.Object)"
 )]

@@ -10,6 +10,7 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.DUI.Bindings;
 using System.Threading.Tasks.Dataflow;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -36,6 +37,8 @@ public class BrowserBridge : IBridge
 
   private IBinding _binding;
   private Type _bindingType;
+
+  private readonly ILogger<BrowserBridge> _logger;
 
   // POC: what is this excatly?
   public Action ShowDevToolsAction { get; set; }
@@ -69,9 +72,10 @@ public class BrowserBridge : IBridge
   /// Creates a new bridge.
   /// </summary>
   /// <param name="binding">The actual binding class.</param>
-  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings)
+  public BrowserBridge(JsonSerializerSettings jsonSerializerSettings, ILoggerFactory loggerFactory)
   {
     _serializerOptions = jsonSerializerSettings;
+    _logger = loggerFactory.CreateLogger<BrowserBridge>();
 
     // Capture the main thread's SynchronizationContext
     _mainThreadContext = SynchronizationContext.Current;
@@ -105,6 +109,9 @@ public class BrowserBridge : IBridge
         CancellationToken = new CancellationTokenSource(TimeSpan.FromHours(3)).Token // Not sure we need such a long time.
       }
     );
+
+    //
+    _logger.LogInformation("Bridge bound to front end name {FrontEndName}", binding.Name);
   }
 
   /// <summary>

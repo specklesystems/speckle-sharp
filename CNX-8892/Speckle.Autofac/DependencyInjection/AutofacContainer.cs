@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
 using Module = Autofac.Module;
 
@@ -79,6 +80,13 @@ public class AutofacContainer
   public AutofacContainer Build()
   {
     _container = _builder.Build();
+
+    // POC: we could create the factory on construction of the container and then inject that and store it
+    var logger = _container.Resolve<ILoggerFactory>().CreateLogger<AutofacContainer>();
+
+    // POC: we could probably expand on this
+    List<string> assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(x => x.FullName).ToList();
+    logger.LogInformation("Loaded assemblies: {@Assemblies}", assemblies);
 
     return this;
   }

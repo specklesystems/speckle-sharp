@@ -1,14 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Autofac;
 using CefSharp;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Converters.Common;
+using Speckle.Converters.Revit2023;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -25,10 +31,12 @@ class AutofacUIModule : Module
     builder.RegisterInstance<BindingOptions>(BindingOptions.DefaultBinder);
 
     // create JSON Settings
+    // POC: this could be created through a factory or delegate, maybe delegate factory
+    // https://autofac.readthedocs.io/en/latest/advanced/delegate-factories.html
     JsonSerializerSettings settings =
       new()
       {
-        Error = (object sender, ErrorEventArgs args) =>
+        Error = (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args) =>
         {
           Console.WriteLine("*** JSON ERROR: " + args.ErrorContext.ToString());
         },
@@ -57,5 +65,23 @@ class AutofacUIModule : Module
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
+
+    builder.RegisterModule(new AutofacRevitConverterModule());
+    builder
+      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .InstancePerLifetimeScope();
+
+    // POC: logging factory couldn't be added, which is the recommendation, due to janky dependencies
+    // having a SpeckleLogging service, might be interesting, if a service can listen on a local port or use named pipes
+    var current = Directory.GetCurrentDirectory();
+    var serilogLogger = new LoggerConfiguration().MinimumLevel
+      .Debug()
+      .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+      .CreateLogger();
+
+    ILoggerFactory loggerFactory = new LoggerFactory();
+    var serilog = loggerFactory.AddSerilog(serilogLogger);
+    builder.RegisterInstance(loggerFactory).As<ILoggerFactory>().SingleInstance();
   }
 }
