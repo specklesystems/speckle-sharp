@@ -14,7 +14,6 @@ using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Converters.Common;
-using Speckle.Converters.Revit2023;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -66,7 +65,6 @@ class AutofacUIModule : Module
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
 
-    builder.RegisterModule(new AutofacRevitConverterModule());
     builder
       .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
       .As<IScopedFactory<ISpeckleConverterToSpeckle>>()

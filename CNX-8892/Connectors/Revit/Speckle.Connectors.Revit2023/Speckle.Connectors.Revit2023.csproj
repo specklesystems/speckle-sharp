@@ -186,10 +186,6 @@
       <Project>{a2c8730a-b605-483e-914e-61f3ed7954d9}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\Converters\Revit\Speckle.Converters.Revit2023.DependencyInjection\Speckle.Converters.Revit2023.DependencyInjection.csproj">
-      <Project>{81F92B31-C647-4A82-A464-8322814F50E6}</Project>
-      <Name>Speckle.Converters.Revit2023.DependencyInjection</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\Converters\Speckle.Converters.Common\Speckle.Converters.Common.csproj">
       <Project>{3217D8B5-AE8F-4364-81CF-8B7C2BEF6445}</Project>
       <Name>Speckle.Converters.Common</Name>

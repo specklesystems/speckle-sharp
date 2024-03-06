@@ -5,6 +5,7 @@ using System.Reflection;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Speckle.Autofac.Files;
+using Speckle.Core.Logging;
 using Module = Autofac.Module;
 
 namespace Speckle.Autofac.DependencyInjection;
@@ -12,6 +13,11 @@ namespace Speckle.Autofac.DependencyInjection;
 // POC: wrap the IContainer or expose it?
 public class AutofacContainer
 {
+  public delegate void PreBuildEventHandler(object sender, ContainerBuilder containerBuilder);
+
+  // Declare the event.
+  public event PreBuildEventHandler PreBuildEvent;
+
   private readonly ContainerBuilder _builder;
   private readonly IStorageInfo _storageInfo;
 
@@ -24,38 +30,36 @@ public class AutofacContainer
     _builder = new ContainerBuilder();
   }
 
-  // POC: HOW TO GET TYPES loaded, i.e. kits?
+  // POC: HOW TO GET TYPES loaded, this feels a bit heavy handed and relies on Autofac where we can probably do something different
   public AutofacContainer LoadAutofacModules(IEnumerable<string> dependencyPaths)
   {
     // look for assemblies in these paths that offer autofac modules
     foreach (string path in dependencyPaths)
     {
+      // POC: naming conventions
       // find assemblies
-      var assembliesInPath = _storageInfo.GetFilenamesInDirectory(path, "*.dll");
+      var assembliesInPath = _storageInfo.GetFilenamesInDirectory(path, "Speckle*.dll");
 
-      try
+      foreach (var file in assembliesInPath)
       {
-        // inspect the assemblies for Autofac.Module
-        var assembly = Assembly.ReflectionOnlyLoadFrom(path);
-        var moduleClasses = assembly.GetTypes().Where(x => x == typeof(Module));
+        // POC: ignore already loaded? Or just get that instead of loading it?
 
-        //if(moduleClasses.Any())
-        //{
-        //  // needs loading anyways
-        //  // ?
-        //}
-
-        // create each module
-        foreach (var moduleClass in moduleClasses)
+        try
         {
-          var module = (Module)Activator.CreateInstance(moduleClass);
-          _builder.RegisterModule(module);
+          // inspect the assemblies for Autofac.Module
+          var assembly = Assembly.LoadFrom(file);
+          var moduleClasses = assembly.GetTypes().Where(x => x.BaseType == typeof(Module));
+
+          // create each module
+          // POC: could look for some attribute here
+          foreach (var moduleClass in moduleClasses)
+          {
+            var module = (Module)Activator.CreateInstance(moduleClass);
+            _builder.RegisterModule(module);
+          }
         }
-      }
-      catch (Exception)
-      {
         // POC: catch only certain exceptions
-        throw;
+        catch (Exception ex) when (!ex.IsFatal()) { }
       }
     }
 
@@ -79,6 +83,9 @@ public class AutofacContainer
 
   public AutofacContainer Build()
   {
+    // before we build give some last minute registration options.
+    PreBuildEvent?.Invoke(this, _builder);
+
     _container = _builder.Build();
 
     // POC: we could create the factory on construction of the container and then inject that and store it

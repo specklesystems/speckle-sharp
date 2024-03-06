@@ -515,7 +515,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Objects.Common", "C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Objects.Revit", "CNX-8892\Objects\Speckle.Objects.Revit\Speckle.Objects.Revit.csproj", "{D32342E4-3223-48A0-8DF6-A1475BE27628}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Revit2023.DependencyInjection", "CNX-8892\Converters\Revit\Speckle.Converters.Revit2023.DependencyInjection\Speckle.Converters.Revit2023.DependencyInjection.csproj", "{81F92B31-C647-4A82-A464-8322814F50E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Revit2023.DependencyInjection", "CNX-8892\Converters\Revit\Speckle.Converters.Revit2023.DependencyInjection\Speckle.Converters.Revit2023.DependencyInjection.csproj", "{81F92B31-C647-4A82-A464-8322814F50E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2840,7 +2840,6 @@ Global
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{78573adc-87a5-489f-8134-fb4a435a05f0}*SharedItemsImports = 5
 		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{7ffdab72-145d-4490-9892-fac5f1d72b17}*SharedItemsImports = 13
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{81299d15-5788-414d-a962-1a568c251323}*SharedItemsImports = 5
-		CNX-8892\Converters\Revit\Speckle.Converters.RevitShared\Speckle.Converters.RevitShared.projitems*{81f92b31-c647-4a82-a464-8322814f50e6}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{8581b4bb-a8bc-4328-99fe-d18615af2554}*SharedItemsImports = 5
 		ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{86920221-416e-4a66-a601-3418207e2401}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{88a24c40-74c8-4e20-9051-6be9e6adecfd}*SharedItemsImports = 5

@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Objects\Speckle.Objects.Common\Speckle.Objects.Common.csproj" />
-    <ProjectReference Include="..\..\Objects\Speckle.Objects.Revit\Speckle.Objects.Revit.csproj" />
     <ProjectReference Include="..\..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 

@@ -11,6 +11,8 @@ using CefSharp;
 using CefSharp.DevTools;
 using System.Reflection;
 using System.IO;
+using Autofac;
+using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -38,7 +40,11 @@ internal class RevitExternalApplication : IExternalApplication
       RevitTabTitle = "Speckle DUI3 (DI)",
       RevitVersionName = "2023",
       RevitButtonName = "Speckle DUI3 (DI)",
-      RevitButtonText = "Revit Connector"
+      RevitButtonText = "Revit Connector",
+      ModuleFolders = new string[]
+      {
+        "C:\\Users\\imhaw\\AppData\\Roaming\\Autodesk\\REVIT\\Addins\\2023\\Speckle.Connectors.Revit2023"
+      }
     };
   }
 
@@ -51,6 +57,8 @@ internal class RevitExternalApplication : IExternalApplication
 
       _container = new AutofacContainer(new StorageInfo());
 
+      _container.PreBuildEvent += _container_PreBuildEvent;
+
       // POC: re-instate, can this be done with some injected class?
 #if REVIT2020
               // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
@@ -59,8 +67,7 @@ internal class RevitExternalApplication : IExternalApplication
 
       // init DI
       _container
-        //.LoadAutofacModules(new string[] { "<paths>" }) // TODO, it's coming
-        .AddModule(new AutofacUIModule())
+        .LoadAutofacModules(_revitSettings.ModuleFolders)
         .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
         .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
         .Build();
@@ -76,6 +83,11 @@ internal class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
+  }
+
+  private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
+  {
+    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 
   public Result OnShutdown(UIControlledApplication application)

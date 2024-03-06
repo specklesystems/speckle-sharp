@@ -16,4 +16,5 @@ internal class RevitSettings // POC: need to derive some interface for things th
   public string RevitButtonText { get; set; }
   public string HostSlug { get; set; } // POC: from generic IHostSettings interface
   public string HostAppVersion { get; set; } // POC as HostSlug??
+  public string[] ModuleFolders { get; set; }
 }
