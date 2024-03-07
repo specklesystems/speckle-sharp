@@ -37,14 +37,6 @@ public class Loader : GH_AssemblyPriority
 
   public override GH_LoadingInstruction PriorityLoad()
   {
-    string version = RhinoApp.Version.Major switch
-    {
-      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
-      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
-      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
-      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
-    };
-
     const bool ENHANCED_LOG_CONTEXT =
 #if MAC
         false;
@@ -53,23 +45,8 @@ public class Loader : GH_AssemblyPriority
 #endif
     var logConfig = new SpeckleLogConfiguration(logToSentry: false, enhancedLogContext: ENHANCED_LOG_CONTEXT);
 
-    SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
-    try
-    {
-      Setup.Init(version, HostApplications.Grasshopper.Slug);
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
-      // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
-      // Recommended practice is to assume that our connector would be installed alongside theirs.
-      SpeckleLog.Logger.Error(
-        ex,
-        "Swallowing exception in {methodName}: {exceptionMessage}",
-        nameof(PriorityLoad),
-        ex.Message
-      );
-    }
+    // We initialise with Rhino values. Grasshopper will use it's own tracking class that will override said values in all calls.
+    Setup.Init(GetRhinoHostAppVersion(), HostApplications.Rhino.Slug, logConfig);
 
     Instances.CanvasCreated += OnCanvasCreated;
 #if RHINO7
@@ -87,6 +64,24 @@ public class Loader : GH_AssemblyPriority
     Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
     return GH_LoadingInstruction.Proceed;
   }
+
+  public static string GetRhinoHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Rhino.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Rhino.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Rhino.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
+
+  public static string GetGrasshopperHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Grasshopper.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
   private void OnDocumentAdded(GH_DocumentServer sender, GH_Document doc)
   {

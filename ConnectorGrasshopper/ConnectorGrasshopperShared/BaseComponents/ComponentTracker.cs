@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 
 namespace ConnectorGrasshopper;
 
@@ -13,17 +14,23 @@ public class ComponentTracker
     Parent = parent;
   }
 
+  private static void AppendHostAppInfoToProperties(Dictionary<string, object> properties)
+  {
+    properties["hostAppVersion"] = Loader.GetGrasshopperHostAppVersion();
+    properties["hostApp"] = HostApplications.Grasshopper.Slug;
+  }
+
   public void TrackEvent(Speckle.Core.Logging.Analytics.Events eventName, Dictionary<string, object> properties)
   {
+    AppendHostAppInfoToProperties(properties);
     Speckle.Core.Logging.Analytics.TrackEvent(eventName, properties);
   }
 
   public void TrackNodeCreation(string? name = null)
   {
-    Speckle.Core.Logging.Analytics.TrackEvent(
-      Speckle.Core.Logging.Analytics.Events.NodeCreate,
-      new Dictionary<string, object> { { "name", name ?? Parent?.Name ?? "unset" } }
-    );
+    var properties = new Dictionary<string, object> { { "name", name ?? Parent?.Name ?? "unset" } };
+    AppendHostAppInfoToProperties(properties);
+    Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeCreate, properties);
   }
 
   public void TrackNodeRun(string? name = null, string? node = null)
@@ -33,7 +40,7 @@ public class ComponentTracker
     {
       customProperties.Add("node", node);
     }
-
+    AppendHostAppInfoToProperties(customProperties);
     Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.NodeRun, customProperties);
   }
 
@@ -50,15 +57,14 @@ public class ComponentTracker
       customProperties.Add("sync", sync);
     }
 
+    AppendHostAppInfoToProperties(customProperties);
     Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Send, customProperties);
   }
 
   public void TrackNodeReceive(Account acc, bool auto)
   {
-    Speckle.Core.Logging.Analytics.TrackEvent(
-      acc,
-      Speckle.Core.Logging.Analytics.Events.Receive,
-      new Dictionary<string, object> { { "auto", auto } }
-    );
+    var properties = new Dictionary<string, object> { { "auto", auto } };
+    AppendHostAppInfoToProperties(properties);
+    Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Receive, properties);
   }
 }

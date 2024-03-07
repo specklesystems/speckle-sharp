@@ -221,7 +221,10 @@ public static class Analytics
 
         if (customProperties != null)
         {
-          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          foreach (KeyValuePair<string, object> customProp in customProperties)
+          {
+            properties[customProp.Key] = customProp.Value;
+          }
         }
 
         string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
