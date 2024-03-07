@@ -14,10 +14,8 @@ public static class Conversion
   /// <returns name="base">Base object</returns>
   public static Base ToSpeckle([ArbitraryDimensionArrayImport] object data)
   {
-    Analytics.TrackEvent(
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Convert To Speckle" } }
-    );
+    AnalyticsUtils.TrackNodeRun("Convert To Speckle");
+
     var converter = new BatchConverter();
     converter.OnError += (sender, args) => throw args.Error;
     return converter.ConvertRecursivelyToSpeckle(data);
@@ -30,10 +28,8 @@ public static class Conversion
   /// <returns name="data">Dynamo data</returns>
   public static object ToNative(Base @base)
   {
-    Analytics.TrackEvent(
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Convert To Native" } }
-    );
+    AnalyticsUtils.TrackNodeRun("Convert To Native");
+
     var converter = new BatchConverter();
     converter.OnError += (sender, args) => throw args.Error;
     return converter.ConvertRecursivelyToNative(@base);

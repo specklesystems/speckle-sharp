@@ -105,7 +105,7 @@ public static class Functions
           CommitId = res
         };
         commitWrappers.Add(wrapper.ToString());
-        Analytics.TrackEvent(client.Account, Analytics.Events.Send);
+        AnalyticsUtils.TrackEvent(client.Account, Analytics.Events.Send);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -242,7 +242,7 @@ public static class Functions
 
     var data = converter.ConvertRecursivelyToNative(@base);
 
-    Analytics.TrackEvent(
+    AnalyticsUtils.TrackEvent(
       client.Account,
       Analytics.Events.Receive,
       new Dictionary<string, object>()
