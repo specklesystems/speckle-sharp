@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Dynamo.Graph.Nodes;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
-using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.Functions.Developer;

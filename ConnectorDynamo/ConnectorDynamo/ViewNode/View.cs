@@ -9,7 +9,6 @@ using Dynamo.Utilities;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
 using Speckle.ConnectorDynamo.Functions;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.ViewNode;
 

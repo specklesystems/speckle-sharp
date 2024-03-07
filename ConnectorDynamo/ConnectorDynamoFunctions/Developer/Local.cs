@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Api;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions.Developer;
 

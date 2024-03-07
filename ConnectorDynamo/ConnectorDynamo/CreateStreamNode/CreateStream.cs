@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using Dynamo.Graph.Nodes;
 using Dynamo.Utilities;
 using Newtonsoft.Json;

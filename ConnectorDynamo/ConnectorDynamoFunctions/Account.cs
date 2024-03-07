@@ -4,7 +4,6 @@ using System.Linq;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions;
 
