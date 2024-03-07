@@ -105,7 +105,7 @@ public static class Functions
           CommitId = res
         };
         commitWrappers.Add(wrapper.ToString());
-        AnalyticsUtils.TrackEvent(client.Account, Analytics.Events.Send);
+        AnalyticsUtils.TrackEvent(client.Account, Analytics.Events.Send, new());
       }
       catch (Exception ex) when (!ex.IsFatal())
       {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#nullable enable
+using System.Collections.Generic;
 using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -14,31 +15,31 @@ public static class AnalyticsUtils
 
   public static void TrackNodeRun(string name)
   {
-    TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", name }, });
+    TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object?> { { "name", name }, });
   }
 
   public static void TrackNodeRun(SpeckleAccount account, string name)
   {
-    TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", name }, });
+    TrackEvent(account, Analytics.Events.NodeRun, new Dictionary<string, object?>() { { "name", name }, });
   }
 
   public static void TrackEvent(
     SpeckleAccount account,
     Analytics.Events eventName,
-    Dictionary<string, object> customProperties = null
+    Dictionary<string, object?> customProperties
   )
   {
     AppendHostAppInfoToProperties(customProperties);
     Analytics.TrackEvent(account, eventName, customProperties);
   }
 
-  public static void TrackEvent(Analytics.Events eventName, Dictionary<string, object> customProperties)
+  public static void TrackEvent(Analytics.Events eventName, Dictionary<string, object?> customProperties)
   {
     AppendHostAppInfoToProperties(customProperties);
     Analytics.TrackEvent(eventName, customProperties);
   }
 
-  private static void AppendHostAppInfoToProperties(IDictionary<string, object> properties)
+  private static void AppendHostAppInfoToProperties(IDictionary<string, object?> properties)
   {
     properties["hostAppVersion"] = s_hostAppVersion;
     properties["hostApp"] = s_hostApp;
