@@ -194,7 +194,7 @@ public static class Analytics
       return;
     }
 
-    Task.Run(() =>
+    Task.Run(async () =>
     {
       try
       {
@@ -231,10 +231,10 @@ public static class Analytics
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
 
-        using HttpClient client = Http.GetHttpProxyClient();
+        using HttpClient client = new();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query);
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query).ConfigureAwait(false);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
