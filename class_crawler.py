@@ -119,21 +119,81 @@ def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
     converters = []
     for file in files:
         print(file)
+        replace_from_to = {}
+        classes_convertible = {}
+
         with open(file, encoding="utf-8") as f:
             string = ""
+            cases = []
 
             for line in f.readlines():
                 if not line.startswith("//") and not line.startswith("      //"):
+                    # get replacement pairs
+                    if "using " in line and " = " in line:
+                        replace_from_to.update(
+                            {
+                                line.split("using ")[1]
+                                .split(" = ")[0]: line.split(" = ")[1]
+                                .split(";")[0]
+                            }
+                        )
 
+                    # get actual string
                     if trim_start in line:  # start writing string
                         string += line
                     elif len(string) > 0 and trim_end in line:
                         string += line.split(trim_end)[0]
                         break
                     elif len(string) > 0:  # keep adding lines
+                        for key, val in replace_from_to.items():
+                            if key in line:
+                                line = line.replace(key, val)
+                        if "case " in line:
+                            if "when " not in line:
+                                cases.append(
+                                    [
+                                        line.split("case ")[1]
+                                        .split(":")[0]
+                                        .split(" ")[0],
+                                        1,
+                                    ]
+                                )
+                            else:
+                                cases.append(
+                                    [
+                                        line.split("case ")[1]
+                                        .split(":")[0]
+                                        .split(" ")[0],
+                                        0.5,
+                                    ]
+                                )
+                        elif "return " in line and len(cases) > 0:
+                            for case, condition in cases:
+                                if line.split("return ")[1].split(";")[0] == "true":
+                                    convertable = 1
+                                    if condition != 1:
+                                        convertable = 0.5
+                                else:
+                                    convertable = 0
+                                classes_convertible.update({case: convertable})
+                            cases = []
+                        elif " _ => " in line:
+                            if line.split(" _ => ")[1].split(",")[0] == "true":
+                                convertable = 1
+                                if "when" in line:
+                                    convertable = 0.5
+                            else:
+                                convertable = 0
+                            classes_convertible.update(
+                                {line.split(" _ => ")[0].replace(" ", ""): convertable}
+                            )
+
                         string += line
-        converters.append(string)
+
+        # print(replace_from_to)
+        print(classes_convertible)
         print(string)
+        converters.append(string)
 
     return converters
 
