@@ -6,19 +6,21 @@ from os.path import isfile, join
 import glob
 import pathlib
 
-mypath = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Objects"
 files = []
 all_classes = []
+path_objects = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Objects"
+path_converters = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Converters"
 
 
-def get_files_in_path(mypath, existing_files):
+def get_files_in_path(mypath, existing_files, condition=None):
     """Recursively get all files in folder and subfolders."""
     all_folders = get_folders_in_path(mypath, [])
     for folder in all_folders:
-        local_files = [f for f in listdir(folder) if isfile(join(folder, f))]
-        existing_files.extend(
-            [folder + "\\" + f for f in local_files if f.endswith(".cs")]
-        )
+        if condition is None or condition(folder) is True:
+            local_files = [f for f in listdir(folder) if isfile(join(folder, f))]
+            existing_files.extend(
+                [folder + "\\" + f for f in local_files if f.endswith(".cs")]
+            )
     # for file in existing_files:
     #     print(file)
     return existing_files
@@ -36,7 +38,7 @@ def get_folders_in_path(mypath, existing_folders):
     return existing_folders
 
 
-files = get_files_in_path(mypath, [])
+files = get_files_in_path(path_objects, [])
 
 # get classes from files (assuming 1 class per file)
 for file in files:
@@ -60,3 +62,19 @@ for file in files:
 
 for c in all_classes:
     print(c)
+
+
+# get files for conversions
+def condition(folder_name):
+    if folder_name.endswith("Shared"):
+        return True
+    else:
+        return False
+
+
+files_conversions = get_files_in_path(path_converters, [], condition)
+print(files_conversions)
+
+
+def get_conversion_to_native_bool():
+    keyword = "public bool CanConvertToNative("
