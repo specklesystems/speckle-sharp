@@ -23,7 +23,7 @@ files = []
 result_all_classes = []
 result_all_apps_convertable = {}
 [
-    result_all_apps_convertable.update({app: {"to_native": {}, "to_speckle": {}}})
+    result_all_apps_convertable.update({app: {"to_native": {}, "to_speckle": {"TODO"}}})
     for app in APPS
 ]
 
@@ -129,96 +129,8 @@ files_conversions = get_files_in_path(
     path_converters, [], folder_condition_converter, file_condition_converter
 )
 
-for file in files_conversions:
-    print(file)
-
 
 ################################################## get CanConvertToNative function
-r"""
-def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
-    converters = []
-    for file in files:
-        print(file)
-        replace_from_to = {}
-        classes_convertable = {}
-
-        with open(file, encoding="utf-8") as f:
-            string = ""
-            cases = []
-
-            for line in f.readlines():
-                if not line.startswith("//") and not line.startswith("      //"):
-                    # get replacement pairs
-                    if "using " in line and " = " in line:
-                        replace_from_to.update(
-                            {
-                                line.split("using ")[1]
-                                .split(" = ")[0]: line.split(" = ")[1]
-                                .split(";")[0]
-                            }
-                        )
-
-                    # get actual string
-                    if trim_start in line:  # start writing string
-                        string += line
-                    elif len(string) > 0 and trim_end in line:
-                        string += line.split(trim_end)[0]
-                        break
-                    elif len(string) > 0:  # keep adding lines
-                        for key, val in replace_from_to.items():
-                            if key in line:
-                                line = line.replace(key, val)
-                        if "case " in line:
-                            if "when " not in line:
-                                cases.append(
-                                    [
-                                        line.split("case ")[1]
-                                        .split(":")[0]
-                                        .split(" ")[0],
-                                        1,
-                                    ]
-                                )
-                            else:
-                                cases.append(
-                                    [
-                                        line.split("case ")[1]
-                                        .split(":")[0]
-                                        .split(" ")[0],
-                                        0.5,
-                                    ]
-                                )
-                        elif "return " in line and len(cases) > 0:
-                            for case, condition in cases:
-                                if line.split("return ")[1].split(";")[0] == "true":
-                                    convertable = 1
-                                    if condition != 1:
-                                        convertable = 0.5
-                                else:
-                                    convertable = 0
-                                classes_convertable.update({case: convertable})
-                            cases = []
-                        elif " _ => " in line:
-                            if line.split(" _ => ")[1].split(",")[0] == "true":
-                                convertable = 1
-                                if "when" in line:
-                                    convertable = 0.5
-                            else:
-                                convertable = 0
-                            classes_convertable.update(
-                                {line.split(" _ => ")[0].replace(" ", ""): convertable}
-                            )
-
-                        string += line
-
-        # print(replace_from_to)
-        #print(classes_convertable)
-        #print(string)
-        converters.append(string)
-
-    return converters
-"""
-
-
 def flip_convertable(convertable: float):
     if convertable > 0:
         convertable = 0
@@ -272,19 +184,23 @@ def get_condition(convertable, string, line, app):
             if "#else" in latest_condition.split("#if ")[-1]:  # opposite condition
                 convertable = flip_convertable(convertable)
                 condition_statement = "!" + condition_statement
-                # print("opposite")
             # print(condition_statement)
     return convertable
 
 
 def update_apps_convertables(
-    result_all_apps_convertable, cases, file, line, replace_from_to, string
+    result_all_apps_convertable,
+    cases,
+    file,
+    line,
+    replace_from_to,
+    string,
+    keywords,
+    condition_function,
 ):
     """Get all convertable to native classes per app."""
     apps_in_file = [app for app in APPS if app in file.split("\\")[-1].lower()]
-    for key, val in replace_from_to.items():
-        if key in line:
-            line = line.replace(key, val)
+
     if "case " in line:
         if "when " not in line:
             cases.append(
@@ -301,43 +217,28 @@ def update_apps_convertables(
                 ]
             )
 
-    elif "return " in line and len(cases) > 0:
-        for class_to_convert, condition in cases:
-            if line.split("return ")[1].split(";")[0] == "true":
-                convertable = 1
-                if condition != 1:
-                    convertable = 0.5
-            else:
-                convertable = 0
-            # add a convertable case to every app in file
-            for app in apps_in_file:
-                final_convertable = get_condition(convertable, string, line, app)
-                result_all_apps_convertable[app]["to_native"].update(
-                    {class_to_convert: {"can_convert": final_convertable}}
-                )
-        cases = []
-    elif " _ => " in line:
-        if line.split(" _ => ")[1].split(",")[0] == "true":
-            convertable = 1
-            if "when" in line:
-                convertable = 0.5
-        else:
-            convertable = 0
-        # add a convertable case to every app in file
-        class_to_convert = line.split(" _ => ")[0].replace(" ", "")
-        for app in apps_in_file:
-            final_convertable = get_condition(convertable, string, line, app)
-            result_all_apps_convertable[app]["to_native"].update(
-                {class_to_convert: {"can_convert": final_convertable}}
-            )
+    result_all_apps_convertable, cases, string = condition_function(
+        string,
+        line,
+        replace_from_to,
+        cases,
+        apps_in_file,
+        keywords,
+        result_all_apps_convertable,
+    )
 
     return result_all_apps_convertable, cases, string
 
 
 def get_convert_to_native_classes_per_app(
-    trim_start, trim_end, files, result_all_apps_convertable
+    trim_start,
+    trim_end,
+    files,
+    result_all_apps_convertable,
+    keywords,
+    condition_function,
 ):
-    converters = []
+    strings = []
     for file in files:
         print(file)
         replace_from_to = {}
@@ -373,20 +274,177 @@ def get_convert_to_native_classes_per_app(
                                 line,
                                 replace_from_to,
                                 string,
+                                keywords,
+                                condition_function,
                             )
                         )
-
-        # print(result_all_apps_convertable)
-        # print(string)
-        converters.append(string)
+        strings.append(string)
 
     return result_all_apps_convertable
 
 
-# def get_conversion_to_native_bool():
+def condition_can_convert_to_native(
+    string,
+    line,
+    replace_from_to,
+    cases,
+    apps_in_file,
+    keywords,
+    result_all_apps_convertable,
+):
+    if "return " in line and len(cases) > 0:
+
+        for key, val in replace_from_to.items():
+            if key in line:
+                line = line.replace(key, val)
+            # rename classes to full names
+            for i, (class_to_convert, condition) in enumerate(cases):
+                if key in class_to_convert:
+                    new_class_to_convert = class_to_convert.replace(key, val)
+                    cases[i] = [new_class_to_convert, condition]
+
+        for class_to_convert, condition in cases:
+            if line.split("return ")[1].split(";")[0] == "true":
+                convertable = 1
+                if condition != 1:
+                    convertable = 0.5
+            else:
+                convertable = 0
+            # add a convertable case to every app in file
+            for app in apps_in_file:
+                final_convertable = get_condition(convertable, string, line, app)
+                try:
+                    result_all_apps_convertable[app][keywords[0]][
+                        class_to_convert
+                    ].update({keywords[1]: final_convertable})
+                except KeyError:
+                    result_all_apps_convertable[app][keywords[0]].update(
+                        {class_to_convert: {keywords[1]: final_convertable}}
+                    )
+        cases = []
+    elif " _ => " in line:
+
+        for key, val in replace_from_to.items():
+            if key in line:
+                line = line.replace(key, val)
+            # rename classes to full names
+            for i, (class_to_convert, condition) in enumerate(cases):
+                if key in class_to_convert:
+                    new_class_to_convert = class_to_convert.replace(key, val)
+                    cases[i] = [new_class_to_convert, condition]
+
+        if line.split(" _ => ")[1].split(",")[0] == "true":
+            convertable = 1
+            if "when" in line:
+                convertable = 0.5
+        else:
+            convertable = 0
+        # add a convertable case to every app in file
+        class_to_convert = line.split(" _ => ")[0].replace(" ", "")
+        for app in apps_in_file:
+            final_convertable = get_condition(convertable, string, line, app)
+            try:
+                result_all_apps_convertable[app][keywords[0]][class_to_convert].update(
+                    {keywords[1]: final_convertable}
+                )
+            except KeyError:
+                result_all_apps_convertable[app][keywords[0]].update(
+                    {class_to_convert: {keywords[1]: final_convertable}}
+                )
+
+    return result_all_apps_convertable, cases, string
+
+
+def condition_function_convert_to_native(
+    string,
+    line,
+    replace_from_to,
+    cases,
+    apps_in_file,
+    keywords,
+    result_all_apps_convertable,
+):
+    if len(cases) > 0 and "return " in line:
+        separator = "return "
+    elif len(cases) > 0 and " = " in line:
+        separator = " = "
+    else:
+        return result_all_apps_convertable, cases, string
+
+    if len(string.split(line)) >= 1:
+        search_string = string.split(line)[-2]
+    else:
+        search_string = string.split(line)[-1]
+    if "case " in search_string[-100:]:
+        class_to_convert, condition = cases[-1]
+
+        # rename classes to full names
+        for key, val in replace_from_to.items():
+            if key in class_to_convert:
+                class_to_convert = class_to_convert.replace(key, val)
+
+        func = line.split(separator)[1].split("(")[0]
+        if len(func) > 0:
+            # add a convertable case to every app in file
+            for app in apps_in_file:
+                try:
+                    if (
+                        result_all_apps_convertable[app][keywords[0]][class_to_convert][
+                            "can_convert"
+                        ]
+                        == 0
+                    ):
+                        result_all_apps_convertable[app][keywords[0]][
+                            class_to_convert
+                        ].update({keywords[1]: func})
+                    else:
+                        result_all_apps_convertable[app][keywords[0]][
+                            class_to_convert
+                        ].update({keywords[1]: ""})
+                except KeyError as e:
+
+                    result_all_apps_convertable[app][keywords[0]].update(
+                        {class_to_convert: {keywords[1]: func}}
+                    )
+
+                    result_all_apps_convertable[app][keywords[0]][
+                        class_to_convert
+                    ].update({"can_convert": 1})
+
+            cases = []
+
+    return result_all_apps_convertable, cases, string
+
+
 trim_start = "public bool CanConvertToNative("
 trim_end = "public bool "
+keywords = ["to_native", "can_convert"]
 result_all_apps_convertable = get_convert_to_native_classes_per_app(
-    trim_start, trim_end, files_conversions, result_all_apps_convertable
+    trim_start,
+    trim_end,
+    files_conversions,
+    result_all_apps_convertable,
+    keywords,
+    condition_can_convert_to_native,
 )
-print(result_all_apps_convertable)
+for app in APPS:
+    print("\n")
+    print(app)
+    print(result_all_apps_convertable[app])
+
+trim_start = "public object ConvertToNative("
+trim_end = "public object ConvertToNativeDisplayable"
+keywords = ["to_native", "function"]
+result_all_apps_convertable = get_convert_to_native_classes_per_app(
+    trim_start,
+    trim_end,
+    files_conversions,
+    result_all_apps_convertable,
+    keywords,
+    condition_function_convert_to_native,
+)
+
+for app in APPS:
+    print("\n")
+    print(app)
+    print(result_all_apps_convertable[app])
