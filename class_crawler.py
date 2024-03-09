@@ -6,8 +6,27 @@ from os.path import isfile, join
 import glob
 import pathlib
 
+APPS = [
+    "rhino",
+    "gh",
+    "revit",
+    "tekla",
+    "autocad",
+    "civil",
+    "bentley",
+    "csi",
+    "dynamo",
+    "navisworks",
+]
+
 files = []
 result_all_classes = []
+result_all_apps_convertable = {}
+[
+    result_all_apps_convertable.update({app: {"to_native": {}, "to_speckle": {}}})
+    for app in APPS
+]
+
 path_objects = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Objects"
 path_converters = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Converters"
 
@@ -115,12 +134,13 @@ for file in files_conversions:
 
 
 ################################################## get CanConvertToNative function
+r"""
 def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
     converters = []
     for file in files:
         print(file)
         replace_from_to = {}
-        classes_convertible = {}
+        classes_convertable = {}
 
         with open(file, encoding="utf-8") as f:
             string = ""
@@ -175,7 +195,7 @@ def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
                                         convertable = 0.5
                                 else:
                                     convertable = 0
-                                classes_convertible.update({case: convertable})
+                                classes_convertable.update({case: convertable})
                             cases = []
                         elif " _ => " in line:
                             if line.split(" _ => ")[1].split(",")[0] == "true":
@@ -184,14 +204,120 @@ def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
                                     convertable = 0.5
                             else:
                                 convertable = 0
-                            classes_convertible.update(
+                            classes_convertable.update(
                                 {line.split(" _ => ")[0].replace(" ", ""): convertable}
                             )
 
                         string += line
 
         # print(replace_from_to)
-        print(classes_convertible)
+        #print(classes_convertable)
+        #print(string)
+        converters.append(string)
+
+    return converters
+"""
+
+
+def update_apps_convertables(
+    result_all_apps_convertable, cases, file, line, replace_from_to, string
+):
+    """Get all convertable to native classes per app."""
+    apps_in_file = [app for app in APPS if app in file.split("\\")[-1].lower()]
+    for key, val in replace_from_to.items():
+        if key in line:
+            line = line.replace(key, val)
+    if "case " in line:
+        if "when " not in line:
+            cases.append(
+                [
+                    line.split("case ")[1].split(":")[0].split(" ")[0],
+                    1,
+                ]
+            )
+        else:
+            cases.append(
+                [
+                    line.split("case ")[1].split(":")[0].split(" ")[0],
+                    0.5,
+                ]
+            )
+    elif "return " in line and len(cases) > 0:
+        for class_to_convert, condition in cases:
+            if line.split("return ")[1].split(";")[0] == "true":
+                convertable = 1
+                if condition != 1:
+                    convertable = 0.5
+            else:
+                convertable = 0
+            print(class_to_convert)
+            print(convertable)
+            # add a convertable case to every app in file
+            for app in apps_in_file:
+                result_all_apps_convertable[app]["to_native"].update(
+                    {class_to_convert: {"can_convert": convertable}}
+                )
+        cases = []
+    elif " _ => " in line:
+        if line.split(" _ => ")[1].split(",")[0] == "true":
+            convertable = 1
+            if "when" in line:
+                convertable = 0.5
+        else:
+            convertable = 0
+        # add a convertable case to every app in file
+        class_to_convert = line.split(" _ => ")[0].replace(" ", "")
+        for app in apps_in_file:
+            result_all_apps_convertable[app]["to_native"].update(
+                {class_to_convert: {"can_convert": convertable}}
+            )
+
+    string += line
+    return result_all_apps_convertable, cases, string
+
+
+def get_convert_to_native_classes_per_app(
+    trim_start, trim_end, files, result_all_apps_convertable
+):
+    converters = []
+    for file in files:
+        print(file)
+        replace_from_to = {}
+
+        with open(file, encoding="utf-8") as f:
+            string = ""
+            cases = []
+
+            for line in f.readlines():
+                if not line.startswith("//") and not line.startswith("      //"):
+                    # get replacement pairs
+                    if "using " in line and " = " in line:
+                        replace_from_to.update(
+                            {
+                                line.split("using ")[1]
+                                .split(" = ")[0]: line.split(" = ")[1]
+                                .split(";")[0]
+                            }
+                        )
+                    # get actual string
+                    if trim_start in line:  # start writing string
+                        string += line
+                    elif len(string) > 0 and trim_end in line:
+                        string += line.split(trim_end)[0]
+                        break
+                    elif len(string) > 0:  # keep adding lines
+                        result_all_apps_convertable, cases, string = (
+                            update_apps_convertables(
+                                result_all_apps_convertable,
+                                cases,
+                                file,
+                                line,
+                                replace_from_to,
+                                string,
+                            )
+                        )
+
+        print(result_all_apps_convertable)
         print(string)
         converters.append(string)
 
@@ -201,6 +327,6 @@ def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
 # def get_conversion_to_native_bool():
 trim_start = "public bool CanConvertToNative("
 trim_end = "public bool "
-converters = get_trimmed_strings_multiline_from_files(
-    trim_start, trim_end, files_conversions
+converters = get_convert_to_native_classes_per_app(
+    trim_start, trim_end, files_conversions, result_all_apps_convertable
 )
