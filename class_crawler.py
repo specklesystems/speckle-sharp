@@ -219,6 +219,64 @@ def get_trimmed_strings_multiline_from_files(trim_start, trim_end, files):
 """
 
 
+def flip_convertable(convertable: float):
+    if convertable > 0:
+        convertable = 0
+    else:
+        convertable = 1
+    return convertable
+
+
+# check again for IF statements before
+def get_condition(convertable, string, line, app):
+    separated_strings = string.split(line)
+    if len(separated_strings) <= 1:
+        latest_condition = separated_strings[-1]
+    else:
+        latest_condition = line.join(separated_strings[1:-1])
+    if "#if " in latest_condition:
+        latest_condition = "#if " + latest_condition.split("#if ")[-1]
+        if "#endif" not in latest_condition.split("#if ")[-1]:
+            condition_statement = latest_condition.split("#if ")[-1].split("\n")[0]
+            condition_statement = condition_statement.replace("GRASSHOPPER", "GH")
+            partial_host_app = False
+            suffix = condition_statement.lower().split(app)[-1][:1]
+            if (
+                len(condition_statement.lower().split(app)) == 1
+                or condition_statement.lower() == app
+            ):
+                suffix = " "
+            # print(suffix)
+            if app in condition_statement.lower() and suffix in "0123456789":
+                partial_host_app = True
+
+            # get original condition for the app
+            if partial_host_app is True:  # if specific condition for current app
+                if convertable != 0:
+                    convertable = 0.5
+            elif f"!{app}" in condition_statement.lower():  # if NOT current app
+                convertable = flip_convertable(convertable)
+            elif app in condition_statement.lower():  # keep the app condition
+                pass
+            elif (
+                app not in condition_statement.lower() and "!" in condition_statement
+            ):  # if NOT other_app
+                pass
+            elif (
+                app not in condition_statement.lower()
+                and "!" not in condition_statement
+            ):  # if other app
+                convertable = flip_convertable(convertable)
+
+            # see if ELSE was used to reverse condition
+            if "#else" in latest_condition.split("#if ")[-1]:  # opposite condition
+                convertable = flip_convertable(convertable)
+                condition_statement = "!" + condition_statement
+                # print("opposite")
+            # print(condition_statement)
+    return convertable
+
+
 def update_apps_convertables(
     result_all_apps_convertable, cases, file, line, replace_from_to, string
 ):
@@ -242,6 +300,7 @@ def update_apps_convertables(
                     0.5,
                 ]
             )
+
     elif "return " in line and len(cases) > 0:
         for class_to_convert, condition in cases:
             if line.split("return ")[1].split(";")[0] == "true":
@@ -250,12 +309,11 @@ def update_apps_convertables(
                     convertable = 0.5
             else:
                 convertable = 0
-            print(class_to_convert)
-            print(convertable)
             # add a convertable case to every app in file
             for app in apps_in_file:
+                final_convertable = get_condition(convertable, string, line, app)
                 result_all_apps_convertable[app]["to_native"].update(
-                    {class_to_convert: {"can_convert": convertable}}
+                    {class_to_convert: {"can_convert": final_convertable}}
                 )
         cases = []
     elif " _ => " in line:
@@ -268,11 +326,11 @@ def update_apps_convertables(
         # add a convertable case to every app in file
         class_to_convert = line.split(" _ => ")[0].replace(" ", "")
         for app in apps_in_file:
+            final_convertable = get_condition(convertable, string, line, app)
             result_all_apps_convertable[app]["to_native"].update(
-                {class_to_convert: {"can_convert": convertable}}
+                {class_to_convert: {"can_convert": final_convertable}}
             )
 
-    string += line
     return result_all_apps_convertable, cases, string
 
 
@@ -306,6 +364,7 @@ def get_convert_to_native_classes_per_app(
                         string += line.split(trim_end)[0]
                         break
                     elif len(string) > 0:  # keep adding lines
+                        string += line
                         result_all_apps_convertable, cases, string = (
                             update_apps_convertables(
                                 result_all_apps_convertable,
@@ -317,16 +376,17 @@ def get_convert_to_native_classes_per_app(
                             )
                         )
 
-        print(result_all_apps_convertable)
-        print(string)
+        # print(result_all_apps_convertable)
+        # print(string)
         converters.append(string)
 
-    return converters
+    return result_all_apps_convertable
 
 
 # def get_conversion_to_native_bool():
 trim_start = "public bool CanConvertToNative("
 trim_end = "public bool "
-converters = get_convert_to_native_classes_per_app(
+result_all_apps_convertable = get_convert_to_native_classes_per_app(
     trim_start, trim_end, files_conversions, result_all_apps_convertable
 )
+print(result_all_apps_convertable)
