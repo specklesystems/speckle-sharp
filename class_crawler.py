@@ -368,6 +368,8 @@ def condition_function_convert_to_native(
         separator = "return "
     elif len(cases) > 0 and " = " in line:
         separator = " = "
+    elif len(cases) > 0 and "(o" in line and line.startswith("        "):
+        separator = "        "
     else:
         return result_all_apps_convertable, cases, string
 
