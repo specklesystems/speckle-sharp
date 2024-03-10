@@ -32,12 +32,12 @@ path_converters = f"{pathlib.Path(__file__).parent.resolve()}\\Objects\\Converte
 
 
 def get_files_in_path(
-    mypath, existing_files, folder_condition=None, file_condition=None
+    mypath, existing_files, folder_condition=None, file_condition=None, app_name=""
 ):
     """Recursively get all files in folder and subfolders."""
     all_folders = get_folders_in_path(mypath, [])
     for folder in all_folders:
-        if folder_condition is None or folder_condition(folder) is True:
+        if folder_condition is None or folder_condition(folder, app_name) is True:
 
             for f in listdir(folder):
                 if isfile(join(folder, f)) and (
@@ -106,7 +106,7 @@ for c in result_all_classes:
 
 
 ################################################## get files for conversions
-def folder_condition_converter(folder_name):
+def folder_condition_converter(folder_name, string2):
     if folder_name.endswith("Shared"):
         return True
     else:
@@ -316,10 +316,15 @@ def condition_can_convert_to_native(
                 try:
                     result_all_apps_convertable[app][keywords[0]][
                         class_to_convert
-                    ].update({keywords[1]: final_convertable})
+                    ].update({keywords[1]: final_convertable, "function": ""})
                 except KeyError:
                     result_all_apps_convertable[app][keywords[0]].update(
-                        {class_to_convert: {keywords[1]: final_convertable}}
+                        {
+                            class_to_convert: {
+                                keywords[1]: final_convertable,
+                                "function": "",
+                            }
+                        }
                     )
         cases = []
     elif " _ => " in line:
@@ -345,11 +350,11 @@ def condition_can_convert_to_native(
             final_convertable = get_condition(convertable, string, line, app)
             try:
                 result_all_apps_convertable[app][keywords[0]][class_to_convert].update(
-                    {keywords[1]: final_convertable}
+                    {keywords[1]: final_convertable, "function": ""}
                 )
             except KeyError:
                 result_all_apps_convertable[app][keywords[0]].update(
-                    {class_to_convert: {keywords[1]: final_convertable}}
+                    {class_to_convert: {keywords[1]: final_convertable, "function": ""}}
                 )
 
     return result_all_apps_convertable, cases, string
@@ -446,7 +451,80 @@ result_all_apps_convertable = get_convert_to_native_classes_per_app(
     condition_function_convert_to_native,
 )
 
+
+def folder_condition_apps(folder_name, name_to_match):
+    """Condition to select files for extractig class names."""
+    if name_to_match in folder_name.lower():
+        return True
+    else:
+        return False
+
+
+def get_abbreviations_functions_from_file(file, trim_start, start_line_condition=None):
+    replace_from_to = {}
+    with open(file, encoding="utf-8") as f:
+        string = ""
+        brackets_open = 0
+        brackets_started = 0
+        for line in f.readlines():
+            if not line.startswith("//") and not line.startswith("      //"):
+                # get replacement pairs
+                if "using " in line and " = " in line:
+                    replace_from_to.update(
+                        {
+                            line.split("using ")[1]
+                            .split(" = ")[0]: line.split(" = ")[1]
+                            .split(";")[0]
+                        }
+                    )
+
+                # get actual string
+                if trim_start in line and (
+                    start_line_condition is None or start_line_condition(line) is True
+                ):  # start writing string
+                    string += line
+                elif len(string) > 0 and brackets_open == 0 and brackets_started > 0:
+                    string += line
+                    break
+                elif len(string) > 0:  # keep adding lines
+                    # start counting brackets
+                    brackets_open += line.count("{")
+                    brackets_open -= line.count("}")
+                    if brackets_open > 0:
+                        brackets_started += 1
+                    string += line
+    return string, replace_from_to
+
+
 for app in APPS:
     print("\n")
     print(app)
     print(result_all_apps_convertable[app])
+
+    files = get_files_in_path(
+        path_converters,
+        [],
+        folder_condition=folder_condition_apps,
+        file_condition=file_condition_classes,
+        app_name=app,
+    )
+    for class_name, val in result_all_apps_convertable[app]["to_native"].items():
+        if val["can_convert"] > 0 and val["function"] != "":
+            print(val["function"])
+
+            def start_line_condition(line):
+                key = "(o"
+                if key in line:
+                    return False
+                else:
+                    return True
+
+            for file in files:
+                string, replace_from_to = get_abbreviations_functions_from_file(
+                    file, val["function"], start_line_condition
+                )
+                if len(string) > 0:
+                    print(file)
+                    print(string)
+                    print(replace_from_to)
+    # print(files)
