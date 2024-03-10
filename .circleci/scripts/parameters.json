@@ -1,12 +1,12 @@
 {
   "core": true,
   "rhino": true,
-  "revit": true,
-  "dynamo": true,
-  "csi": true,
-  "autocadcivil": true,
-  "bentley": true,
-  "archicad": true,
-  "teklastructures": true,
-  "navisworks": true
+  "revit": false,
+  "dynamo": false,
+  "csi": false,
+  "autocadcivil": false,
+  "bentley": false,
+  "archicad": false,
+  "teklastructures": false,
+  "navisworks": false
 }
