@@ -112,16 +112,16 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 1 - Get model
 
-      if (_store.GetModelById(modelCardId) is not SenderModelCard model)
+      if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
       {
         throw new InvalidOperationException("No publish model card was found.");
       }
       
       // 2 - Check account exist
-      Account account = Accounts.GetAccount(model.AccountId);
+      Account account = Accounts.GetAccount(modelCard.AccountId);
 
       // 3 - Get elements to convert, throw early if nothing is selected
-      List<RhinoObject> rhinoObjects = GetObjectsFromDocument(model);
+      List<RhinoObject> rhinoObjects = GetObjectsFromDocument(modelCard);
 
       if (rhinoObjects.Count == 0)
       {
@@ -132,10 +132,9 @@ public class SendBinding : ISendBinding, ICancelable
       ISpeckleConverter converter = Converters.GetConverter(RhinoDoc.ActiveDoc, "Rhino7");
 
       // 5 - Convert objects
-      var transport = new ServerTransport(account, model.ProjectId);
-      List<ITransport> transports = new() { transport };
-      
-      Base commitObject = await ConvertObjects(rhinoObjects, converter, modelCardId, cts, transport).ConfigureAwait(true);
+      var transport = new ServerTransport(account, modelCard.ProjectId);
+
+      Base commitObject = ConvertObjects(rhinoObjects, converter, modelCard, cts);
 
       if (cts.IsCancellationRequested)
       {
@@ -144,7 +143,6 @@ public class SendBinding : ISendBinding, ICancelable
       
       // 7 - Serialize and Send objects
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
-      //.Send(converted, transport, true, null, cts.Token)
       var sendResult = await Speckle.Core.Api.Operations
         .Send(commitObject, transport, true, null, true, cts.Token)
         .ConfigureAwait(true);
@@ -153,8 +151,8 @@ public class SendBinding : ISendBinding, ICancelable
       {
         _convertedObjectReferences[kvp.Key] = kvp.Value;
       }
-      
-      ChangedObjectIds = new HashSet<string>();
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      modelCard.ChangedObjectIds = new();
       
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
       
@@ -162,7 +160,7 @@ public class SendBinding : ISendBinding, ICancelable
       var apiClient = new Client(account);
       string versionId = await apiClient.CommitCreate(new CommitCreateInput()
       {
-        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = sendResult.rootObjId
+        streamId = modelCard.ProjectId, branchName = modelCard.ModelId, sourceApplication = "Rhino", objectId = sendResult.rootObjId
       }, cts.Token).ConfigureAwait(true);
       
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
@@ -183,7 +181,7 @@ public class SendBinding : ISendBinding, ICancelable
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
   
-  private async Task<Base> ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts, ITransport transport)
+  private Base ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, SenderModelCard modelCard, CancellationTokenSource cts)
   {
     var modelWithLayers = new Collection { name = RhinoDoc.ActiveDoc.Name };
     int count = 0;
@@ -204,9 +202,11 @@ public class SendBinding : ISendBinding, ICancelable
       var collectionHost = GetAndCreateObjectHostCollection(layerCollectionCache, layer, modelWithLayers);
       var applicationId = rhinoObject.Id.ToString();
       
-      // 3. get from cache or convert
+      // 3. get from cache or convert: 
+      // What we actually do here is check if the object has been previously converted AND has not changed.
+      // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion. 
       Base converted;
-      if (!ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
+      if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
       {
         converted = value;
       }
@@ -218,7 +218,7 @@ public class SendBinding : ISendBinding, ICancelable
       
       // 4. add to host
       collectionHost.elements.Add(converted);
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
+      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCard.ModelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
       
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
       // Thread.Sleep(550); 
@@ -277,21 +277,26 @@ public class SendBinding : ISendBinding, ICancelable
     return objectsIds.Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(obj => obj!=null).ToList();
   }
   
+  /// <summary>
+  /// Checks if any sender model cards contain any of the changed objects. If so, also updates the changed objects hashset for each model card - this last part is important for on send change detection.
+  /// </summary>
   private void RunExpirationChecks()
   {
     List<SenderModelCard> senders = _store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    foreach (SenderModelCard sender in senders)
+    foreach (SenderModelCard modelCard in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
+      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      bool isExpired = intersection.Any();
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId);
+        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
     SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
-    // ChangedObjectIds = new HashSet<string>();
+    ChangedObjectIds = new HashSet<string>();
   }
 }

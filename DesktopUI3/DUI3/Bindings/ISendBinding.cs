@@ -45,7 +45,7 @@ public class SenderModelCard : ModelCard
   public ISendFilter SendFilter { get; set; }
 
   [JsonIgnore]
-  public List<string> ChangedObjectIds { get; set; } = new();
+  public HashSet<string> ChangedObjectIds { get; set; } = new();
 }
 
 public interface ISendFilter
