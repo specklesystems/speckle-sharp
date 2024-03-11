@@ -33,8 +33,18 @@ public class SendBinding : ISendBinding, ICancelable
 
   public CancellationManager CancellationManager { get; } = new();
 
+  /// <summary>
+  /// Used internally to aggregate the changed objects' id.
+  /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
+  /// <summary>
+  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
+  /// </summary>
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
   
+  /// <summary>
+  /// Thingie we ported from the DUI2 Era.
+  /// </summary>
   private static IRevitDocumentAggregateCache revitDocumentAggregateCache;
 
   public SendBinding(RevitDocumentStore store)
@@ -76,36 +86,44 @@ public class SendBinding : ISendBinding, ICancelable
           elements.Add(el);
         }
       }
-      // List<Element> elements = Utils.Elements.GetElementsFromDocument(Doc, modelCard.SendFilter.GetObjectIds());
+      
+      if (elements.Count == 0)
+      {
+        throw new InvalidOperationException("No objects were found. Please update your send filter!");
+      }
 
       // 4 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
       converter.SetContextDocument(revitDocumentAggregateCache);
       
       // 5 - Convert objects
-      Base commitObject = ConvertElements(elements, converter, modelCardId, cts);
+      Base commitObject = ConvertElements(elements, converter, modelCard, cts);
 
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException(cts.Token);
       }
-
-      // 6 - Get transports
-      List<ITransport> transports = new() { new ServerTransport(account, modelCard.ProjectId) };
-
+      
       // 7 - Serialize and Send objects
+      var transport = new ServerTransport(account, modelCard.ProjectId);
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
-      string objectId = await Speckle.Core.Api.Operations
-        .Send(commitObject, cts.Token, transports, disposeTransports: true)
+      var sendResult = await Speckle.Core.Api.Operations
+        .Send(commitObject, transport, true, null, true, cts.Token)
         .ConfigureAwait(true);
       
+      // Update cache of previously converted elements
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key] = kvp.Value;
+      }
+      modelCard.ChangedObjectIds = new();
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
       
       // 8 - Create Version
       var apiClient = new Client(account);
       string versionId = await apiClient.CommitCreate(new CommitCreateInput()
       {
-        streamId = modelCard.ProjectId, branchName = modelCard.ModelId, sourceApplication = "Revit", objectId = objectId
+        streamId = modelCard.ProjectId, branchName = modelCard.ModelId, sourceApplication = "Revit", objectId = sendResult.rootObjId
       }, cts.Token).ConfigureAwait(true);
       
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
@@ -127,7 +145,7 @@ public class SendBinding : ISendBinding, ICancelable
   private Base ConvertElements(
     List<Element> elements,
     ISpeckleConverter converter,
-    string modelCardId,
+    SenderModelCard modelCard,
     CancellationTokenSource cts
   )
   {
@@ -150,11 +168,20 @@ public class SendBinding : ISendBinding, ICancelable
       count++;
       try
       {
-        var convertedObject = converter.ConvertToSpeckle(revitElement);
-        convertedObject.applicationId = revitElement.UniqueId;
-        collection.elements.Add(convertedObject);
-
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)count / elements.Count });
+        Base converted;
+        var applicationId = revitElement.Id.ToString();
+        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
+        {
+          converted = value;
+        }
+        else
+        {
+          converted = converter.ConvertToSpeckle(revitElement);
+          converted.applicationId = applicationId;
+        }
+        
+        collection.elements.Add(converted);
+        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)count / elements.Count });
       }
       catch (Exception e)
       {
@@ -240,13 +267,16 @@ public class SendBinding : ISendBinding, ICancelable
   {
     List<SenderModelCard> senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
-
-    foreach (var sender in senders)
+    string[] objectIdsList = ChangedObjectIds.ToArray();
+    
+    foreach (var modelCard in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      bool isExpired = intersection.Any();
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId);
+        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
     SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
