@@ -15,13 +15,25 @@ public class AccountServerMigrationTests
     Account otherAccount = CreateTestAccount("https://other.example.com", null, null);
 
     List<Account> givenAccounts = new() { oldAccount, newAccount, otherAccount };
-    List<Account> expectedResult = new() { newAccount, oldAccount };
-    yield return new TestCaseData(givenAccounts, "https://new.example.com", expectedResult);
+
+    yield return new TestCaseData(givenAccounts, "https://new.example.com", new[] { newAccount })
+      .SetName("Get New")
+      .SetDescription("When requesting for new account, ensure only this account is returned");
+
+    yield return new TestCaseData(givenAccounts, "https://old.example.com", new[] { newAccount, oldAccount }) //TODO: Maybe we want this without duplicates
+      .SetName("Get New via Old")
+      .SetDescription("When requesting for old account, ensure migrated account is returned first");
+
+    var reversed = Enumerable.Reverse(givenAccounts).ToList();
+
+    yield return new TestCaseData(reversed, "https://old.example.com", new[] { newAccount, oldAccount })
+      .SetName("Get New via Old (Reversed order)")
+      .SetDescription("Account order shouldn't matter");
   }
 
   [Test]
   [TestCaseSource(nameof(MigrationTestCase))]
-  public void TestServerMigration(List<Account> accounts, string requestedUrl, List<Account> expectedSequence)
+  public void TestServerMigration(IList<Account> accounts, string requestedUrl, IList<Account> expectedSequence)
   {
     AddAccounts(accounts);
 
@@ -60,7 +72,7 @@ public class AccountServerMigrationTests
     };
   }
 
-  private void AddAccounts(List<Account> accounts)
+  private void AddAccounts(IEnumerable<Account> accounts)
   {
     foreach (Account account in accounts)
     {
