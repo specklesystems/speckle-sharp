@@ -25,10 +25,7 @@ public class SpeckleExtension : IViewExtension
       if (dynamoViewModel.Model is RevitDynamoModel rdm)
       {
         rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
-        Globals.RevitDocument = DocumentManager.Instance
-          .GetType()
-          .GetProperty("CurrentDBDocument")
-          .GetValue(DocumentManager.Instance);
+        SetCurrentRevitDocumentToGlobals();
       }
       //sets a read-only property using reflection WatchHandler
       //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
@@ -41,12 +38,17 @@ public class SpeckleExtension : IViewExtension
     }
   }
 
-  private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
+  private static void SetCurrentRevitDocumentToGlobals()
   {
     Globals.RevitDocument = DocumentManager.Instance
       .GetType()
       .GetProperty("CurrentDBDocument")
-      .GetValue(DocumentManager.Instance);
+      ?.GetValue(DocumentManager.Instance);
+  }
+
+  private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
+  {
+    SetCurrentRevitDocumentToGlobals();
   }
 
   public void Dispose() { }
@@ -55,10 +57,7 @@ public class SpeckleExtension : IViewExtension
 
   public void Startup(ViewStartupParams p)
   {
-    Globals.RevitDocument = DocumentManager.Instance
-      .GetType()
-      ?.GetProperty("CurrentDBDocument")
-      ?.GetValue(DocumentManager.Instance);
+    SetCurrentRevitDocumentToGlobals();
     InitializeCoreSetup();
   }
 
