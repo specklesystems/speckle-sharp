@@ -7,14 +7,14 @@ namespace Speckle.Core.Tests.Unit.Credentials;
 [TestFixture]
 public class CredentialInfrastructure
 {
-  [SetUp]
+  [OneTimeSetUp]
   public void SetUp()
   {
     _testAccount1 = new Account
     {
       refreshToken = "bla",
       token = "bla",
-      serverInfo = new ServerInfo { url = "bla", company = "bla" },
+      serverInfo = new ServerInfo { url = "https://bla.example.com", company = "bla" },
       userInfo = new UserInfo { email = "one@two.com" }
     };
 
@@ -22,14 +22,14 @@ public class CredentialInfrastructure
     {
       refreshToken = "foo",
       token = "bar",
-      serverInfo = new ServerInfo { url = "baz", company = "qux" },
+      serverInfo = new ServerInfo { url = "https://baz.example.com", company = "qux" },
       userInfo = new UserInfo { email = "three@four.com" }
     };
 
     _testAccount3 = new Account
     {
       token = "secret",
-      serverInfo = new ServerInfo { url = "https://sample.com", name = "qux" },
+      serverInfo = new ServerInfo { url = "https://example.com", name = "qux" },
       userInfo = new UserInfo
       {
         email = "six@five.com",
@@ -62,24 +62,23 @@ public class CredentialInfrastructure
     Assert.That(accs, Has.Count.GreaterThanOrEqualTo(3)); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D
   }
 
+  public static IEnumerable<Account> TestCases => AccountManager.GetAccounts();
+
   [Test]
-  public void GetAccountsForServer()
+  [TestCaseSource(nameof(TestCases))]
+  public void GetAccountsForServer(Account target)
   {
-    var accs = AccountManager.GetAccounts("baz").ToList();
+    var accs = AccountManager.GetAccounts(target.serverInfo.url).ToList();
 
     Assert.That(accs, Has.Count.EqualTo(1));
-    Assert.That(accs[0].serverInfo.company, Is.EqualTo("qux"));
-    Assert.That(accs[0].serverInfo.url, Is.EqualTo("baz"));
-    Assert.That(accs[0].refreshToken, Is.EqualTo("foo"));
-  }
 
-  [Test]
-  public void GetLocalAccount()
-  {
-    var acc = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == "123345");
+    var acc = accs[0];
 
-    Assert.That(acc.serverInfo.url, Is.EqualTo("https://sample.com"));
-    Assert.That(acc.token, Is.EqualTo("secret"));
+    Assert.That(acc, Is.Not.SameAs(target), "We expect new objects (no reference equality)");
+    Assert.That(acc.serverInfo.company, Is.EqualTo(target.serverInfo.company));
+    Assert.That(acc.serverInfo.url, Is.EqualTo(target.serverInfo.url));
+    Assert.That(acc.refreshToken, Is.EqualTo(target.refreshToken));
+    Assert.That(acc.token, Is.EqualTo(target.token));
   }
 
   [Test]
