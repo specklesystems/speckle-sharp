@@ -235,9 +235,9 @@ public static class AccountManager
   }
 
   /// <summary>
-  /// Upgrades an account from the "movedFrom" account
+  /// Upgrades an account from the account.serverInfo.movedFrom account to the account.serverInfo.movedTo account
   /// </summary>
-  /// <param name="id"></param>
+  /// <param name="id">Id of the account to upgrade</param>
   public static void UpgradeAccount(string id)
   {
     var account =
