@@ -25,15 +25,12 @@ public class SpeckleExtension : IViewExtension
       if (dynamoViewModel.Model is RevitDynamoModel rdm)
       {
         rdm.RevitDocumentChanged += Rdm_RevitDocumentChanged;
-        Globals.RevitDocument = DocumentManager.Instance
-          .GetType()
-          .GetProperty("CurrentDBDocument")
-          .GetValue(DocumentManager.Instance);
+        SetCurrentRevitDocumentToGlobals();
       }
       //sets a read-only property using reflection WatchHandler
       //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
-      Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
+      InitializeCoreSetup();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
@@ -41,12 +38,17 @@ public class SpeckleExtension : IViewExtension
     }
   }
 
-  private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
+  private static void SetCurrentRevitDocumentToGlobals()
   {
     Globals.RevitDocument = DocumentManager.Instance
       .GetType()
       .GetProperty("CurrentDBDocument")
-      .GetValue(DocumentManager.Instance);
+      ?.GetValue(DocumentManager.Instance);
+  }
+
+  private void Rdm_RevitDocumentChanged(object sender, EventArgs e)
+  {
+    SetCurrentRevitDocumentToGlobals();
   }
 
   public void Dispose() { }
@@ -55,6 +57,25 @@ public class SpeckleExtension : IViewExtension
 
   public void Startup(ViewStartupParams p)
   {
-    Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox), HostApplications.Dynamo.Slug);
+    SetCurrentRevitDocumentToGlobals();
+    InitializeCoreSetup();
+  }
+
+  private static void InitializeCoreSetup()
+  {
+    var revitHostAppVersion = Utils.GetRevitHostAppVersion();
+    if (revitHostAppVersion.HasValue)
+    {
+      // Always initialize setup with Revit values to ensure analytics are set correctly for the Parent host app.
+      // Use `AnalyticsUtils` in DynamoExtensions to reroute any analytics specific to Dynamo.
+      string versionedHostApplication = HostApplications.Revit.GetVersion(revitHostAppVersion.Value);
+      // Revit has been reporting its versionedHostApplication with a space, so we are ensuring this keeps consistency.
+      Setup.Init(versionedHostApplication.Replace("Revit", "Revit "), HostApplications.Revit.Slug);
+    }
+    else
+    {
+      // Setup dynamo only when it is not running within revit, hence it's RevitHostAppVersion will be null.
+      Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox), HostApplications.Dynamo.Slug);
+    }
   }
 }

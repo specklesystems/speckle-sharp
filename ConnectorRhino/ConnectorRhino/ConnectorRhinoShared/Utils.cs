@@ -15,19 +15,14 @@ namespace SpeckleRhino;
 
 public static class Utils
 {
-#if RHINO6
-  public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
-  public static string AppName = "Rhino";
-#elif RHINO7
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
-    public static string AppName = "Rhino";
-#elif RHINO8
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
-    public static string AppName = "Rhino";
-#else
-  public static string RhinoAppName = HostApplications.Rhino.Name;
-  public static string AppName = "Rhino";
-#endif
+  public static string GetRhinoHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Rhino.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Rhino.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Rhino.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
   public static string invalidRhinoChars = @"{}()[]";
 
