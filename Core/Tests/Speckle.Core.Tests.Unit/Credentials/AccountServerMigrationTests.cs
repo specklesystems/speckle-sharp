@@ -6,27 +6,30 @@ namespace Speckle.Core.Tests.Unit.Credentials;
 
 public class AccountServerMigrationTests
 {
-  private List<Account> _accountsToCleanUp = new();
+  private readonly List<Account> _accountsToCleanUp = new();
 
   public static IEnumerable<TestCaseData> MigrationTestCase()
   {
-    Account oldAccount = CreateTestAccount("https://old.example.com", null, new("https://new.example.com"));
-    Account newAccount = CreateTestAccount("https://new.example.com", new("https://old.example.com"), null);
-    Account otherAccount = CreateTestAccount("https://other.example.com", null, null);
+    const string OLD_URL = "https://old.example.com";
+    const string NEW_URL = "https://new.example.com";
+    const string OTHER_URL = "https://other.example.com";
+    Account oldAccount = CreateTestAccount(OLD_URL, null, new(NEW_URL));
+    Account newAccount = CreateTestAccount(NEW_URL, new(OLD_URL), null);
+    Account otherAccount = CreateTestAccount(OTHER_URL, null, null);
 
     List<Account> givenAccounts = new() { oldAccount, newAccount, otherAccount };
 
-    yield return new TestCaseData(givenAccounts, "https://new.example.com", new[] { newAccount })
+    yield return new TestCaseData(givenAccounts, NEW_URL, new[] { newAccount })
       .SetName("Get New")
       .SetDescription("When requesting for new account, ensure only this account is returned");
 
-    yield return new TestCaseData(givenAccounts, "https://old.example.com", new[] { newAccount, oldAccount }) //TODO: Maybe we want this without duplicates
+    yield return new TestCaseData(givenAccounts, OLD_URL, new[] { newAccount, oldAccount }) //TODO: Maybe we want this without duplicates
       .SetName("Get New via Old")
       .SetDescription("When requesting for old account, ensure migrated account is returned first");
 
     var reversed = Enumerable.Reverse(givenAccounts).ToList();
 
-    yield return new TestCaseData(reversed, "https://old.example.com", new[] { newAccount, oldAccount })
+    yield return new TestCaseData(reversed, OLD_URL, new[] { newAccount, oldAccount })
       .SetName("Get New via Old (Reversed order)")
       .SetDescription("Account order shouldn't matter");
   }
@@ -50,6 +53,7 @@ public class AccountServerMigrationTests
     {
       Fixtures.DeleteAccount(acc);
     }
+    _accountsToCleanUp.Clear();
   }
 
   private static Account CreateTestAccount(string url, Uri movedFrom, Uri movedTo)

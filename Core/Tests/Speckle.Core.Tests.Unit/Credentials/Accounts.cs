@@ -43,7 +43,7 @@ public class CredentialInfrastructure
     Fixtures.SaveLocalAccount(_testAccount3);
   }
 
-  [TearDown]
+  [OneTimeTearDown]
   public void TearDown()
   {
     Fixtures.DeleteLocalAccount(_testAccount1.id);
