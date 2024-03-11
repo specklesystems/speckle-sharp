@@ -55,6 +55,10 @@ public class SpeckleExtension : IViewExtension
 
   public void Startup(ViewStartupParams p)
   {
+    Globals.RevitDocument = DocumentManager.Instance
+      .GetType()
+      ?.GetProperty("CurrentDBDocument")
+      ?.GetValue(DocumentManager.Instance);
     InitializeCoreSetup();
   }
 
@@ -65,7 +69,9 @@ public class SpeckleExtension : IViewExtension
     {
       // Always initialize setup with Revit values to ensure analytics are set correctly for the Parent host app.
       // Use `AnalyticsUtils` in DynamoExtensions to reroute any analytics specific to Dynamo.
-      Setup.Init(HostApplications.Revit.GetVersion(revitHostAppVersion.Value), HostApplications.Revit.Slug);
+      string versionedHostApplication = HostApplications.Revit.GetVersion(revitHostAppVersion.Value);
+      // Revit has been reporting its versionedHostApplication with a space, so we are ensuring this keeps consistency.
+      Setup.Init(versionedHostApplication.Replace("Revit", "Revit "), HostApplications.Revit.Slug);
     }
     else
     {
