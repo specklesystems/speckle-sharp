@@ -47,13 +47,14 @@ public static class NamedTypeInjector
       // first type
       var first = namedTypes[0];
 
-      containerBuilder.RegisterType(first.type).Keyed<T>(first.name).SingleInstance();
+      // POC: may need to be instance per lifecycle scope
+      containerBuilder.RegisterType(first.type).Keyed<T>(first.name).InstancePerLifetimeScope();
 
       // register subsequent types with rank
       namedTypes.RemoveAt(0);
       foreach (var other in namedTypes)
       {
-        containerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").SingleInstance();
+        containerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
       }
     }
 

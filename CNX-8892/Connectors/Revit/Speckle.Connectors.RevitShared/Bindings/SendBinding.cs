@@ -58,8 +58,6 @@ internal class SendBinding : RevitBaseBinding, ICancelable
   public List<ISendFilter> GetSendFilters()
   {
     return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
-
-    _speckleConverterToSpeckle.Convert();
   }
 
   public async void Send(string modelCardId)
