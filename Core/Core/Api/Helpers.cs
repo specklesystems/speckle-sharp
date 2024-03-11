@@ -160,7 +160,7 @@ public static class Helpers
     using ServerTransport transport = new(client.Account, sw.StreamId);
     var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
 
-    var objectId = await Operations.Send(data, transport, useDefaultCache, onProgressAction).ConfigureAwait(false);
+    var objectReference = await Operations.Send(data, transport, useDefaultCache, onProgressAction).ConfigureAwait(false);
 
     Analytics.TrackEvent(client.Account, Analytics.Events.Send);
 
@@ -170,7 +170,7 @@ public static class Helpers
         {
           streamId = sw.StreamId,
           branchName = branchName,
-          objectId = objectId,
+          objectId = objectReference.rootObjId,
           message = message,
           sourceApplication = sourceApplication,
           totalChildrenCount = totalChildrenCount

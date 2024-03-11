@@ -27,11 +27,12 @@ public static partial class Operations
   /// using ServerTransport destination = new(account, streamId);
   /// string objectId = await Send(mySpeckleObject, destination, true);
   /// </code></example>
-  public static async Task<string> Send(
+  public static async Task<(string rootObjId, Dictionary<string,ObjectReference> convertedReferences)> Send(
     Base value,
     ITransport transport,
     bool useDefaultCache,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+    bool trackDetachedChildren = false,
     CancellationToken cancellationToken = default
   )
   {
@@ -47,7 +48,7 @@ public static partial class Operations
       transports.Add(localCache);
     }
 
-    return await Send(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
+    return await Send(value, transports, onProgressAction, trackDetachedChildren, cancellationToken).ConfigureAwait(false);
   }
 
   /// <summary>
@@ -58,16 +59,18 @@ public static partial class Operations
   /// <param name="value">The object you want to send</param>
   /// <param name="transports">Where you want to send them</param>
   /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
+  /// <param name="trackDetachedChildren">Flags to the serializer to keep track of detached children.</param>
   /// <param name="cancellationToken"></param>
   /// <exception cref="ArgumentException">No transports were specified</exception>
   /// <exception cref="ArgumentNullException">The <paramref name="value"/> was <see langword="null"/></exception>
   /// <exception cref="SpeckleException">Serialization or Send operation was unsuccessful</exception>
   /// <exception cref="TransportException">One or more <paramref name="transports"/> failed to send</exception>
   /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested cancellation</exception>
-  public static async Task<string> Send(
+  public static async Task<(string rootObjId, Dictionary<string,ObjectReference> convertedReferences)> Send(
     Base value,
     IReadOnlyCollection<ITransport> transports,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+    bool trackDetachedChildren = false,
     CancellationToken cancellationToken = default
   )
   {
@@ -92,7 +95,7 @@ public static partial class Operations
 
       var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
-      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, cancellationToken);
+      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, trackDetachedChildren, cancellationToken);
 
       foreach (var t in transports)
       {
@@ -101,10 +104,10 @@ public static partial class Operations
         t.BeginWrite();
       }
 
-      string hash;
+      (string rootObjId, Dictionary<string,ObjectReference>) serializerReturnValue;
       try
       {
-        hash = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
+        serializerReturnValue = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -137,14 +140,14 @@ public static partial class Operations
           "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
           transports.Max(t => t.SavedObjectCount),
           sendTimer.Elapsed.TotalSeconds,
-          hash
+          serializerReturnValue.rootObjId
         );
-      return hash;
+      return serializerReturnValue;
     }
   }
 
   /// <returns><inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/></returns>
-  internal static async Task<string> SerializerSend(
+  internal static async Task<(string rootObjectId, Dictionary<string,ObjectReference> convertedReferences)> SerializerSend(
     Base value,
     BaseObjectSerializerV2 serializer,
     CancellationToken cancellationToken = default
@@ -157,12 +160,14 @@ public static partial class Operations
 
     await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
-    JToken? idToken = JObject.Parse(obj).GetValue("id");
+    var parsed = JObject.Parse(obj);
+    JToken? idToken = parsed.GetValue("id");
+    
     if (idToken == null)
     {
       throw new SpeckleException("Failed to get id of serialized object");
     }
-
-    return idToken.ToString();
+    
+    return (idToken.ToString(), serializer.ObjectReferences);
   }
 }

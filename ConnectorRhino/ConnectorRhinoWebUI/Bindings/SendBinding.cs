@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -100,6 +101,8 @@ public class SendBinding : ISendBinding, ICancelable
     };
   }
 
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  
   public async void Send(string modelCardId)
   {
     try
@@ -129,21 +132,29 @@ public class SendBinding : ISendBinding, ICancelable
       ISpeckleConverter converter = Converters.GetConverter(RhinoDoc.ActiveDoc, "Rhino7");
 
       // 5 - Convert objects
-      Base commitObject = ConvertObjects(rhinoObjects, converter, modelCardId, cts);
+      var transport = new ServerTransport(account, model.ProjectId);
+      List<ITransport> transports = new() { transport };
+      
+      Base commitObject = await ConvertObjects(rhinoObjects, converter, modelCardId, cts, transport).ConfigureAwait(true);
 
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException(cts.Token);
       }
-
-      // 6 - Get transports
-      List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
-
+      
       // 7 - Serialize and Send objects
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
-      string objectId = await Speckle.Core.Api.Operations
-        .Send(commitObject, cts.Token, transports, disposeTransports: true)
+      //.Send(converted, transport, true, null, cts.Token)
+      var sendResult = await Speckle.Core.Api.Operations
+        .Send(commitObject, transport, true, null, true, cts.Token)
         .ConfigureAwait(true);
+
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key] = kvp.Value;
+      }
+      
+      ChangedObjectIds = new HashSet<string>();
       
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
       
@@ -151,7 +162,7 @@ public class SendBinding : ISendBinding, ICancelable
       var apiClient = new Client(account);
       string versionId = await apiClient.CommitCreate(new CommitCreateInput()
       {
-        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = objectId
+        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = sendResult.rootObjId
       }, cts.Token).ConfigureAwait(true);
       
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
@@ -172,12 +183,7 @@ public class SendBinding : ISendBinding, ICancelable
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
   
-  private Base ConvertObjects(
-    List<RhinoObject> rhinoObjects,
-    ISpeckleConverter converter,
-    string modelCardId,
-    CancellationTokenSource cts
-  )
+  private async Task<Base> ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, string modelCardId, CancellationTokenSource cts, ITransport transport)
   {
     var modelWithLayers = new Collection { name = RhinoDoc.ActiveDoc.Name };
     int count = 0;
@@ -196,14 +202,22 @@ public class SendBinding : ISendBinding, ICancelable
       
       // 2. get or create a nested collection for it
       var collectionHost = GetAndCreateObjectHostCollection(layerCollectionCache, layer, modelWithLayers);
+      var applicationId = rhinoObject.Id.ToString();
       
-      // 3. convert
-      var converted = converter.ConvertToSpeckle(rhinoObject);
-      converted.applicationId = rhinoObject.Id.ToString();
+      // 3. get from cache or convert
+      Base converted;
+      if (!ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
+      {
+        converted = value;
+      }
+      else
+      {
+        converted = converter.ConvertToSpeckle(rhinoObject);
+        converted.applicationId = applicationId;
+      }
       
       // 4. add to host
       collectionHost.elements.Add(converted);
-      
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress(){ Status = "Converting", Progress = (double)++count / rhinoObjects.Count});
       
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
@@ -278,6 +292,6 @@ public class SendBinding : ISendBinding, ICancelable
       }
     }
     SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
-    ChangedObjectIds = new HashSet<string>();
+    // ChangedObjectIds = new HashSet<string>();
   }
 }

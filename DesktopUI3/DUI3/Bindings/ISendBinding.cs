@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DUI3.Models;
 using DUI3.Models.Card;
 using DUI3.Utils;
+using Speckle.Newtonsoft.Json;
 
 namespace DUI3.Bindings;
 
@@ -42,6 +43,9 @@ public static class SendBindingUiCommands
 public class SenderModelCard : ModelCard
 {
   public ISendFilter SendFilter { get; set; }
+
+  [JsonIgnore]
+  public List<string> ChangedObjectIds { get; set; } = new();
 }
 
 public interface ISendFilter
@@ -80,10 +84,4 @@ public abstract class DirectSelectionSendFilter : DiscriminatedObject, ISendFilt
   public List<string> SelectedObjectIds { get; set; } = new List<string>();
   public abstract List<string> GetObjectIds();
   public abstract bool CheckExpiry(string[] changedObjectIds);
-}
-
-public class CreateVersionArgs
-{
-  public string ModelCardId { get; set; }
-  public string ObjectId { get; set; }
 }

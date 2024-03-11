@@ -26,6 +26,10 @@ public class BaseObjectSerializerV2
   private readonly Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> _typedPropertiesCache = new();
   private readonly Action<string, int>? _onProgressAction;
 
+  private readonly bool _trackDetachedChildren;
+  public Dictionary<string, ObjectReference> ObjectReferences { get; } = new ();
+
+  
   /// <summary>The sync transport. This transport will be used synchronously.</summary>
   public IReadOnlyCollection<ITransport> WriteTransports { get; }
 
@@ -40,12 +44,14 @@ public class BaseObjectSerializerV2
   public BaseObjectSerializerV2(
     IReadOnlyCollection<ITransport> writeTransports,
     Action<string, int>? onProgressAction = null,
+    bool trackDetachedChildren = false,
     CancellationToken cancellationToken = default
   )
   {
     WriteTransports = writeTransports;
     _onProgressAction = onProgressAction;
     CancellationToken = cancellationToken;
+    _trackDetachedChildren = trackDetachedChildren;
   }
 
   /// <param name="baseObj">The object to serialize</param>
@@ -111,6 +117,22 @@ public class BaseObjectSerializerV2
 
     switch (obj)
     {
+      // Start with object references so they're not captured by the Base class case below
+      // Note: this change was needed as we've made the ObjectReference type inherit from Base for 
+      // the purpose of the "do not convert unchanged previously converted objects" POC.
+      case ObjectReference r:
+      {
+        Dictionary<string, object> ret = new() { ["speckle_type"] = r.speckle_type, ["referencedId"] = r.referencedId, ["__closure"] = r.closure };
+        if(r.closure is not null)
+        {
+          foreach (var kvp in r.closure)
+          {
+            UpdateParentClosures(kvp.Key);
+          }
+        }
+        UpdateParentClosures(r.referencedId);
+        return ret;
+      }
       // Complex enough to deserve its own function
       case Base b:
         return PreserializeBase(b, computeClosures, inheritedDetachInfo);
@@ -139,11 +161,6 @@ public class BaseObjectSerializerV2
           ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
         }
 
-        return ret;
-      }
-      case ObjectReference r:
-      {
-        Dictionary<string, object> ret = new() { ["speckle_type"] = r.speckle_type, ["referencedId"] = r.referencedId };
         return ret;
       }
       case Enum:
@@ -204,7 +221,7 @@ public class BaseObjectSerializerV2
         throw new ArgumentException($"Unsupported value in serialization: {obj.GetType()}");
     }
   }
-
+  
   public IDictionary<string, object?>? PreserializeBase(
     Base baseObj,
     bool computeClosures = false,
@@ -301,12 +318,21 @@ public class BaseObjectSerializerV2
       string id = (string)convertedBase["id"]!;
       StoreObject(id, json);
       ObjectReference objRef = new() { referencedId = id };
-      var objRefConverted = (IDictionary<string, object?>?)PreserializeObject(objRef);
+      var objRefConverted = (IDictionary<string, object?>?) PreserializeObject(objRef);
       UpdateParentClosures(id);
       _onProgressAction?.Invoke("S", 1);
+      
+      // add to obj refs to return 
+      if (baseObj.applicationId != null && _trackDetachedChildren)
+      {
+        ObjectReferences[baseObj.applicationId] = new ObjectReference()
+        {
+          referencedId = id, applicationId = baseObj.applicationId, closure = closure
+        };
+      }
+      
       return objRefConverted;
     }
-
     return convertedBase;
   }
 
