@@ -151,6 +151,7 @@ public class SendBinding : ISendBinding, ICancelable
         .Send(commitObject, transport, true, null, true, cts.Token)
         .ConfigureAwait(true);
 
+      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
       {
         _convertedObjectReferences[kvp.Key] = kvp.Value;
@@ -171,7 +172,7 @@ public class SendBinding : ISendBinding, ICancelable
       apiClient.Dispose();
     }
 #pragma warning disable CA1031
-    catch (Exception e)
+    catch (Exception e) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
 #pragma warning restore CA1031
     {
       if (e is OperationCanceledException) // We do not want to display an error, we just stop sending.

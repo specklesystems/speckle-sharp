@@ -129,7 +129,9 @@ public class SendBinding : ISendBinding, ICancelable
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
-    catch (Exception e)
+#pragma warning disable CA1031
+    catch (Exception e) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+#pragma warning restore CA1031
     {
       if (e is OperationCanceledException)
       {
