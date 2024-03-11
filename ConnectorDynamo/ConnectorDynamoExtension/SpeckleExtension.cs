@@ -33,7 +33,7 @@ public class SpeckleExtension : IViewExtension
       //sets a read-only property using reflection WatchHandler
       //typeof(DynamoViewModel).GetProperty("WatchHandler").SetValue(dynamoViewModel, speckleWatchHandler);
 
-      Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit), HostApplications.Dynamo.Slug);
+      InitializeCoreSetup();
     }
     catch (Exception ex) when (!ex.IsFatal())
     {
@@ -55,6 +55,22 @@ public class SpeckleExtension : IViewExtension
 
   public void Startup(ViewStartupParams p)
   {
-    Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox), HostApplications.Dynamo.Slug);
+    InitializeCoreSetup();
+  }
+
+  private static void InitializeCoreSetup()
+  {
+    var revitHostAppVersion = Utils.GetRevitHostAppVersion();
+    if (revitHostAppVersion.HasValue)
+    {
+      // Always initialize setup with Revit values to ensure analytics are set correctly for the Parent host app.
+      // Use `AnalyticsUtils` in DynamoExtensions to reroute any analytics specific to Dynamo.
+      Setup.Init(HostApplications.Revit.GetVersion(revitHostAppVersion.Value), HostApplications.Revit.Slug);
+    }
+    else
+    {
+      // Setup dynamo only when it is not running within revit, hence it's RevitHostAppVersion will be null.
+      Setup.Init(HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox), HostApplications.Dynamo.Slug);
+    }
   }
 }
