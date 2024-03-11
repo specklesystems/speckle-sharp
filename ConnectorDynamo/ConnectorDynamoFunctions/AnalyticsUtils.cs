@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System.Collections.Generic;
-using Autodesk.DesignScript.Runtime;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using SpeckleAccount = Speckle.Core.Credentials.Account;
