@@ -253,9 +253,9 @@ def get_convert_to_native_classes_per_app(
                     if "using " in line and " = " in line:
                         replace_from_to.update(
                             {
-                                line.split("using ")[1]
-                                .split(" = ")[0]: line.split(" = ")[1]
-                                .split(";")[0]
+                                line.split("using ")[1].split(" = ")[0]
+                                + ".": line.split(" = ")[1].split(";")[0]
+                                + "."
                             }
                         )
                     # get actual string
@@ -382,7 +382,8 @@ def condition_function_convert_to_native(
         search_string = string.split(line)[-2]
     else:
         search_string = string.split(line)[-1]
-    if "case " in search_string[-100:]:
+    search_string = search_string.split(";")[-1]
+    if "case " in search_string[-200:] and "Try" not in line:
         class_to_convert, condition = cases[-1]
 
         # rename classes to full names
@@ -391,15 +392,19 @@ def condition_function_convert_to_native(
                 class_to_convert = class_to_convert.replace(key, val)
 
         func = line.split(separator)[1].split("(")[0]
-        if len(func) > 0:
+        if "? " in func:
+            func = func.split("? ")[1]
+        if len(func) > 0 and "To" in func:
             # add a convertable case to every app in file
             for app in apps_in_file:
+                # if app == "autocad":
+                #    pass
                 try:
                     if (
                         result_all_apps_convertable[app][keywords[0]][class_to_convert][
                             "can_convert"
                         ]
-                        == 0
+                        > 0
                     ):
                         result_all_apps_convertable[app][keywords[0]][
                             class_to_convert
@@ -434,10 +439,12 @@ result_all_apps_convertable = get_convert_to_native_classes_per_app(
     keywords,
     condition_can_convert_to_native,
 )
+r"""
 for app in APPS:
     print("\n")
     print(app)
     print(result_all_apps_convertable[app])
+"""
 
 trim_start = "public object ConvertToNative("
 trim_end = "public object ConvertToNativeDisplayable"
@@ -472,9 +479,9 @@ def get_abbreviations_functions_from_file(file, trim_start, start_line_condition
                 if "using " in line and " = " in line:
                     replace_from_to.update(
                         {
-                            line.split("using ")[1]
-                            .split(" = ")[0]: line.split(" = ")[1]
-                            .split(";")[0]
+                            line.split("using ")[1].split(" = ")[0]
+                            + ".": line.split(" = ")[1].split(";")[0]
+                            + "."
                         }
                     )
 
@@ -482,8 +489,14 @@ def get_abbreviations_functions_from_file(file, trim_start, start_line_condition
                 if trim_start in line and (
                     start_line_condition is None or start_line_condition(line) is True
                 ):  # start writing string
+                    for key_replace, val_replace in replace_from_to.items():
+                        if key_replace in line:
+                            line = line.replace(key_replace, val_replace)
                     string += line
                 elif len(string) > 0 and brackets_open == 0 and brackets_started > 0:
+                    for key_replace, val_replace in replace_from_to.items():
+                        if key_replace in line:
+                            line = line.replace(key_replace, val_replace)
                     string += line
                     break
                 elif len(string) > 0:  # keep adding lines
@@ -492,14 +505,17 @@ def get_abbreviations_functions_from_file(file, trim_start, start_line_condition
                     brackets_open -= line.count("}")
                     if brackets_open > 0:
                         brackets_started += 1
+                    for key_replace, val_replace in replace_from_to.items():
+                        if key_replace in line:
+                            line = line.replace(key_replace, val_replace)
                     string += line
-    return string, replace_from_to
+    return string
 
 
 for app in APPS:
     print("\n")
     print(app)
-    print(result_all_apps_convertable[app])
+    # print(result_all_apps_convertable[app])
 
     files = get_files_in_path(
         path_converters,
@@ -509,22 +525,97 @@ for app in APPS:
         app_name=app,
     )
     for class_name, val in result_all_apps_convertable[app]["to_native"].items():
+        all_result_types = []
+        func_names = [val["function"]]
+
         if val["can_convert"] > 0 and val["function"] != "":
-            print(val["function"])
 
             def start_line_condition(line):
-                key = "(o"
-                if key in line:
-                    return False
-                else:
+                if "(o" not in line and "public " in line:
                     return True
+                else:
+                    return False
 
-            for file in files:
-                string, replace_from_to = get_abbreviations_functions_from_file(
-                    file, val["function"], start_line_condition
-                )
-                if len(string) > 0:
-                    print(file)
-                    print(string)
-                    print(replace_from_to)
+            to_repeat_search = True
+            while to_repeat_search is True:
+                to_repeat_search = False
+
+                all_result_types = []
+                for func_name in func_names:
+                    for file in files:
+                        string = get_abbreviations_functions_from_file(
+                            file, " " + func_name, start_line_condition
+                        )
+                        if len(string) > 0:
+                            res_type = string.split("public ")[1].split(
+                                " " + func_name
+                            )[0]
+
+                            if res_type == "void":
+                                # search inside
+                                found_new = False
+                                for line in string.split("\n"):
+                                    if " = new();" in line:
+                                        res_type = line.split(" = new();")[0].split(
+                                            " "
+                                        )[-1]
+                                        # print(file)
+                                        found_new = True
+                                        all_result_types.append(res_type)
+                                        break
+                                    if found_new is False:
+                                        # print(string)
+                                        pass
+                                # print(res_type)
+                                break
+                            elif res_type == "ApplicationObject":
+                                # repeat search
+                                # print(res_type)
+                                func_names = []
+                                for line in string.split("\n"):
+                                    if app == "revit":
+                                        if (
+                                            " = " in line
+                                            and ".Create" in line
+                                            and ": " not in line
+                                        ):
+                                            # keep overwriting till the last available Create
+                                            res_type = line.split(" = ")[1].split(
+                                                ".Create"
+                                            )[0]
+                                            all_result_types.append(res_type)
+                                            # func_names = []
+                                    if res_type == "ApplicationObject":
+                                        if " = " in line and "ToNative(" in line:
+                                            func_names.append(
+                                                line.split(" = ")[1].split("ToNative(")[
+                                                    0
+                                                ]
+                                                + "ToNative"
+                                            )
+                                        elif "return " in line and "ToNative(" in line:
+                                            func_names.append(
+                                                line.split("return ")[1].split(
+                                                    "ToNative("
+                                                )[0]
+                                                + "ToNative"
+                                            )
+                                if len(func_names) > 0:
+                                    # print(string)
+                                    # print(func_names)
+                                    to_repeat_search = True
+                                break
+                            else:
+                                # accept the result
+                                # print(file)
+                                all_result_types.append(res_type)
+                                # print(res_type)
+                                break
+                all_result_types = list(set(all_result_types))
+
+        result_all_apps_convertable[app]["to_native"][class_name].update(
+            {"to_native_classes": all_result_types}
+        )
+    print(result_all_apps_convertable[app]["to_native"])
+
     # print(files)
