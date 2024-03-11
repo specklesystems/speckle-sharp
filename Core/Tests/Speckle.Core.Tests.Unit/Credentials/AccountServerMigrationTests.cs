@@ -30,7 +30,7 @@ public class AccountServerMigrationTests
     Assert.That(result, Is.EquivalentTo(expectedSequence));
   }
 
-  [OneTimeTearDown]
+  [TearDown]
   public void TearDown()
   {
     //Clean up any of the test accounts we made
