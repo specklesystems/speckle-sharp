@@ -99,7 +99,7 @@ public static class Utils
     }
   }
 
-  public static HostAppVersion? GetRevitHostAppVersion()
+  internal static HostAppVersion? GetRevitHostAppVersion()
   {
     if (Globals.RevitDocument == null)
     {
