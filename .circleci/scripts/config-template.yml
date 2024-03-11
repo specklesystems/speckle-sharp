@@ -221,19 +221,18 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   curl.exe -X GET  https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download -H "x-api-key:$env:SM_API_KEY" -o smtools-windows-x64.msi
                   msiexec.exe /i smtools-windows-x64.msi /quiet /qn | Wait-Process
             - run:
-                name: Create Auth & OV Signing Cert
+                name: Setup Digicert ONE Client Cert
                 command: |
                   cd C:\
                   echo $env:SM_CLIENT_CERT_FILE_B64 > certificate.txt
                   certutil -decode certificate.txt certificate.p12
-                  echo $env:SM_OV_PEM_CERT > SpeckleOVCertificate-2024.pem
             - run:
                 name: Sync Certs
                 command: |
                   & $env:SSM\smksp_cert_sync.exe
             - run:
                 name: Build Installer
-                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER
+                command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p /DSIGN_INSTALLER /DCODE_SIGNING_CERT_FINGERPRINT=%SM_CODE_SIGNING_CERT_SHA1_HASH%
                 shell: cmd.exe #does not work in powershell
                 environment:
                   SLUG: << parameters.slug >>
