@@ -253,7 +253,7 @@ public static class AccountManager
 
     account.serverInfo.migration.movedTo = null;
     account.serverInfo.migration.movedFrom = new Uri(account.serverInfo.url);
-    account.serverInfo.url = upgradeUri.ToString();
+    account.serverInfo.url = upgradeUri.ToString().TrimEnd('/');
     account.serverInfo.frontend2 = true;
 
     s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
