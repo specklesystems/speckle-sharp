@@ -267,21 +267,25 @@ public static class AccountManager
   public static IEnumerable<Account> GetAccounts(string serverUrl)
   {
     var accounts = GetAccounts().ToList();
+    List<Account> filtered = new();
+
     foreach (var acc in accounts)
     {
       if (acc.serverInfo?.migration?.movedFrom == new Uri(serverUrl))
       {
-        yield return acc;
+        filtered.Add(acc);
       }
     }
 
     foreach (var acc in accounts)
     {
-      if (acc.serverInfo.url == serverUrl)
+      if (acc.serverInfo.url == serverUrl && !filtered.Any(x => x.id != acc.id))
       {
-        yield return acc;
+        filtered.Add(acc);
       }
     }
+
+    return filtered;
   }
 
   /// <summary>

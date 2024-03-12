@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 
@@ -23,13 +23,13 @@ public class AccountServerMigrationTests
       .SetName("Get New")
       .SetDescription("When requesting for new account, ensure only this account is returned");
 
-    yield return new TestCaseData(givenAccounts, OLD_URL, new[] { newAccount, oldAccount }) //TODO: Maybe we want this without duplicates
+    yield return new TestCaseData(givenAccounts, OLD_URL, new[] { newAccount })
       .SetName("Get New via Old")
       .SetDescription("When requesting for old account, ensure migrated account is returned first");
 
     var reversed = Enumerable.Reverse(givenAccounts).ToList();
 
-    yield return new TestCaseData(reversed, OLD_URL, new[] { newAccount, oldAccount })
+    yield return new TestCaseData(reversed, OLD_URL, new[] { newAccount })
       .SetName("Get New via Old (Reversed order)")
       .SetDescription("Account order shouldn't matter");
   }
