@@ -337,6 +337,7 @@ public partial class ConnectorBindingsRevit
       if (index % 50 == 0)
       {
         transactionManager.Commit();
+        transactionManager.Start();
       }
 
       // Check if parent conversion succeeded or fallback is enabled before attempting the children
