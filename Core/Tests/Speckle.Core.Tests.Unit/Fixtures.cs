@@ -32,7 +32,7 @@ public abstract class Fixtures
 
   public static void UpdateOrSaveAccount(Account account)
   {
-    s_accountStorage.DeleteObject(account.id);
+    DeleteLocalAccount(account.id);
     string serializedObject = JsonConvert.SerializeObject(account);
     s_accountStorage.SaveObjectSync(account.id, serializedObject);
   }

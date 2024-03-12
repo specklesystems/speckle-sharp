@@ -194,7 +194,7 @@ public static class Analytics
       return;
     }
 
-    Task.Run(() =>
+    Task.Run(async () =>
     {
       try
       {
@@ -221,17 +221,21 @@ public static class Analytics
 
         if (customProperties != null)
         {
-          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          foreach (KeyValuePair<string, object> customProp in customProperties)
+          {
+            properties[customProp.Key] = customProp.Value;
+          }
         }
 
         string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
 
-        using HttpClient client = Http.GetHttpProxyClient();
+        using HttpClient client = new();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query);
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query).ConfigureAwait(false);
+        res.EnsureSuccessStatusCode();
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -245,7 +249,7 @@ public static class Analytics
 
   internal static void AddConnectorToProfile(string hashedEmail, string connector)
   {
-    Task.Run(() =>
+    Task.Run(async () =>
     {
       try
       {
@@ -271,10 +275,11 @@ public static class Analytics
         string json = JsonConvert.SerializeObject(data);
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-        HttpClient client = Http.GetHttpProxyClient();
+        using HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MIXPANEL_SERVER + "/engage#profile-union", query);
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/engage#profile-union", query).ConfigureAwait(false);
+        res.EnsureSuccessStatusCode();
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
