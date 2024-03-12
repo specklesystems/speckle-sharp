@@ -188,7 +188,7 @@ public class SendBinding : ISendBinding, ICancelable
   
   private Base ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, SenderModelCard modelCard, CancellationTokenSource cts)
   {
-    var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name };
+    var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
     
     Dictionary<int, Collection> layerCollectionCache = new();
