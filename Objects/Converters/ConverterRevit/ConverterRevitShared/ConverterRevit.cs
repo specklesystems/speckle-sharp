@@ -658,7 +658,11 @@ public partial class ConverterRevit : ISpeckleConverter
         return ProfileWallToNative(o);
 
       case BER.RevitFaceWall o:
+#if REVIT2021 || REVIT2022
+        return FaceWallToNative(o);
+#else
         return FaceWallToNativeV2(o);
+#endif
 
       case BE.Wall o:
         return WallToNative(o);
