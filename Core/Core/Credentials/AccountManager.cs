@@ -253,20 +253,41 @@ public static class AccountManager
 
     account.serverInfo.migration.movedTo = null;
     account.serverInfo.migration.movedFrom = new Uri(account.serverInfo.url);
-    account.serverInfo.url = upgradeUri.ToString();
+    account.serverInfo.url = upgradeUri.ToString().TrimEnd('/');
     account.serverInfo.frontend2 = true;
 
     s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
   }
 
   /// <summary>
-  /// Gets all the accounts for a given server.
+  /// Returns all unique accounts matching the serverUrl provided. If an account exists on more than one server,
+  /// typically because it has been migrated, then only the upgraded account (and therefore server) are returned.
+  /// Accounts are deemed to be the same when the Account.Id matches.
   /// </summary>
   /// <param name="serverUrl"></param>
   /// <returns></returns>
   public static IEnumerable<Account> GetAccounts(string serverUrl)
   {
-    return GetAccounts().Where(acc => acc.serverInfo.url == serverUrl);
+    var accounts = GetAccounts().ToList();
+    List<Account> filtered = new();
+
+    foreach (var acc in accounts)
+    {
+      if (acc.serverInfo?.migration?.movedFrom == new Uri(serverUrl))
+      {
+        filtered.Add(acc);
+      }
+    }
+
+    foreach (var acc in accounts)
+    {
+      if (acc.serverInfo.url == serverUrl && !filtered.Any(x => x.id != acc.id))
+      {
+        filtered.Add(acc);
+      }
+    }
+
+    return filtered;
   }
 
   /// <summary>
