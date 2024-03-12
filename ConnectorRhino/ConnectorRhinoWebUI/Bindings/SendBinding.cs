@@ -154,6 +154,8 @@ public class SendBinding : ISendBinding, ICancelable
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
       {
+        // TODO: Bug in here, we need to encapsulate cache not only by app id, but also by model id (or model card id),
+        // TODO: as otherwise we assume incorrectly that an object exists for a given project (e.g, send box to project 1, send same unchanged box to project 2) 
         _convertedObjectReferences[kvp.Key] = kvp.Value;
       }
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
