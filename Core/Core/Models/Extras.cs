@@ -68,11 +68,6 @@ public class ObjectReference : Base
   public Dictionary<string,int> closure { get; set; }
 }
 
-public class ObjectReferenceWithClosure
-{
-  // TODO
-}
-
 public class ProgressEventArgs : EventArgs
 {
   public ProgressEventArgs(int current, int total, string scope)

@@ -27,8 +27,11 @@ public class BaseObjectSerializerV2
   private readonly Action<string, int>? _onProgressAction;
 
   private readonly bool _trackDetachedChildren;
+  /// <summary>
+  /// Keeps track of all detached children created during serialisation that have an applicationId (provided this serializer instance has been told to track detached children).
+  /// This is currently used to cache previously converted objects and avoid their conversion if they haven't changed. See the DUI3 send bindings in rhino or another host app.
+  /// </summary>
   public Dictionary<string, ObjectReference> ObjectReferences { get; } = new ();
-
   
   /// <summary>The sync transport. This transport will be used synchronously.</summary>
   public IReadOnlyCollection<ITransport> WriteTransports { get; }
@@ -41,6 +44,13 @@ public class BaseObjectSerializerV2
   public BaseObjectSerializerV2()
     : this(Array.Empty<ITransport>()) { }
 
+  /// <summary>
+  /// Creates a new Serializer instance.
+  /// </summary>
+  /// <param name="writeTransports">The transports detached children should be persisted to.</param>
+  /// <param name="onProgressAction">Used to track progress.</param>
+  /// <param name="trackDetachedChildren">Whether to store all detachable objects while serializing. They can be retrieved via <see cref="ObjectReferences"/> post serialization.</param>
+  /// <param name="cancellationToken"></param>
   public BaseObjectSerializerV2(
     IReadOnlyCollection<ITransport> writeTransports,
     Action<string, int>? onProgressAction = null,
@@ -323,7 +333,7 @@ public class BaseObjectSerializerV2
       _onProgressAction?.Invoke("S", 1);
       
       // add to obj refs to return 
-      if (baseObj.applicationId != null && _trackDetachedChildren)
+      if (baseObj.applicationId != null && _trackDetachedChildren) // && baseObj is not DataChunk && baseObj is not Abstract) // not needed, as data chunks will never have application ids, and abstract objs are not really used.
       {
         ObjectReferences[baseObj.applicationId] = new ObjectReference()
         {

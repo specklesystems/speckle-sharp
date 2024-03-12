@@ -162,7 +162,7 @@ public static partial class Operations
       }
       else
       {
-        serializerV2 = new BaseObjectSerializerV2(transports, internalProgressAction, default, cancellationToken);
+        serializerV2 = new BaseObjectSerializerV2(transports, internalProgressAction, false, cancellationToken);
       }
 
       foreach (var t in transports)
