@@ -3,15 +3,4 @@ using ReactiveUI;
 
 namespace DesktopUI2.ViewModels;
 
-public class DialogViewModel : ReactiveObject
-{
-  //UI Binding
-  public bool UseFe2
-  {
-    get
-    {
-      var config = ConfigManager.Load();
-      return config.UseFe2;
-    }
-  }
-}
+public class DialogViewModel : ReactiveObject { }
