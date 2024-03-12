@@ -260,7 +260,9 @@ public static class AccountManager
   }
 
   /// <summary>
-  /// Gets all the accounts for a given server.
+  /// Returns all unique accounts matching the serverUrl provided. If an account exists on more than one server,
+  /// typically because it has been migrated, then only the upgraded account (and therefore server) are returned.
+  /// Accounts are deemed to be the same when the Account.Id matches.
   /// </summary>
   /// <param name="serverUrl"></param>
   /// <returns></returns>
