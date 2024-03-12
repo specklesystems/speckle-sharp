@@ -107,8 +107,8 @@ public class SendBinding : ISendBinding, ICancelable
       // 7 - Serialize and Send objects
       var transport = new ServerTransport(account, modelCard.ProjectId);
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
-      var sendResult = await Speckle.Core.Api.Operations
-        .Send(commitObject, transport, true, null, true, cts.Token)
+      var sendResult = await SendHelper
+        .Send(commitObject, transport, true, null, cts.Token)
         .ConfigureAwait(true);
       
       // Update cache of previously converted elements
