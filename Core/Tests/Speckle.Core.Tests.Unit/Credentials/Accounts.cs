@@ -8,9 +8,9 @@ namespace Speckle.Core.Tests.Unit.Credentials;
 public class CredentialInfrastructure
 {
   [OneTimeSetUp]
-  public void SetUp()
+  public static void SetUp()
   {
-    _testAccount1 = new Account
+    s_testAccount1 = new Account
     {
       refreshToken = "bla",
       token = "bla",
@@ -18,7 +18,7 @@ public class CredentialInfrastructure
       userInfo = new UserInfo { email = "one@two.com" }
     };
 
-    _testAccount2 = new Account
+    s_testAccount2 = new Account
     {
       refreshToken = "foo",
       token = "bar",
@@ -26,7 +26,7 @@ public class CredentialInfrastructure
       userInfo = new UserInfo { email = "three@four.com" }
     };
 
-    _testAccount3 = new Account
+    s_testAccount3 = new Account
     {
       token = "secret",
       serverInfo = new ServerInfo { url = "https://example.com", name = "qux" },
@@ -38,22 +38,22 @@ public class CredentialInfrastructure
       }
     };
 
-    Fixtures.UpdateOrSaveAccount(_testAccount1);
-    Fixtures.UpdateOrSaveAccount(_testAccount2);
-    Fixtures.SaveLocalAccount(_testAccount3);
+    Fixtures.UpdateOrSaveAccount(s_testAccount1);
+    Fixtures.UpdateOrSaveAccount(s_testAccount2);
+    Fixtures.SaveLocalAccount(s_testAccount3);
   }
 
   [OneTimeTearDown]
-  public void TearDown()
+  public static void TearDown()
   {
-    Fixtures.DeleteLocalAccount(_testAccount1.id);
-    Fixtures.DeleteLocalAccount(_testAccount2.id);
+    Fixtures.DeleteLocalAccount(s_testAccount1.id);
+    Fixtures.DeleteLocalAccount(s_testAccount2.id);
     Fixtures.DeleteLocalAccountFile();
   }
 
-  private Account _testAccount1,
-    _testAccount2,
-    _testAccount3;
+  private static Account s_testAccount1,
+    s_testAccount2,
+    s_testAccount3;
 
   [Test]
   public void GetAllAccounts()
@@ -62,7 +62,11 @@ public class CredentialInfrastructure
     Assert.That(accs, Has.Count.GreaterThanOrEqualTo(3)); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D
   }
 
-  public static IEnumerable<Account> TestCases => AccountManager.GetAccounts();
+  public static IEnumerable<Account> TestCases()
+  {
+    SetUp();
+    return new[] { s_testAccount1, s_testAccount2, s_testAccount3 };
+  }
 
   [Test]
   [TestCaseSource(nameof(TestCases))]

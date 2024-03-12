@@ -51,7 +51,7 @@ public class AccountServerMigrationTests
     //Clean up any of the test accounts we made
     foreach (var acc in _accountsToCleanUp)
     {
-      Fixtures.DeleteAccount(acc);
+      Fixtures.DeleteLocalAccount(acc.id);
     }
     _accountsToCleanUp.Clear();
   }
