@@ -30,14 +30,9 @@ public abstract class Fixtures
     "TestAccount.json"
   );
 
-  public static void DeleteAccount(Account account)
-  {
-    s_accountStorage.DeleteObject(account.id);
-  }
-
   public static void UpdateOrSaveAccount(Account account)
   {
-    DeleteAccount(account);
+    DeleteLocalAccount(account.id);
     string serializedObject = JsonConvert.SerializeObject(account);
     s_accountStorage.SaveObjectSync(account.id, serializedObject);
   }
