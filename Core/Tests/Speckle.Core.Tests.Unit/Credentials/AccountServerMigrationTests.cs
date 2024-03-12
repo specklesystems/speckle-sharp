@@ -17,6 +17,9 @@ public class AccountServerMigrationTests
     Account newAccount = CreateTestAccount(NEW_URL, new(OLD_URL), null);
     Account otherAccount = CreateTestAccount(OTHER_URL, null, null);
 
+    // new account user must match old account user id
+    newAccount.userInfo.id = oldAccount.userInfo.id;
+
     List<Account> givenAccounts = new() { oldAccount, newAccount, otherAccount };
 
     yield return new TestCaseData(givenAccounts, NEW_URL, new[] { newAccount })
@@ -69,7 +72,7 @@ public class AccountServerMigrationTests
       },
       userInfo = new UserInfo
       {
-        id = new Guid().ToString(),
+        id = Guid.NewGuid().ToString(),
         email = "user@example.com",
         name = "user"
       }
