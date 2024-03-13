@@ -238,7 +238,7 @@ public static class AccountManager
   /// Upgrades an account from the account.serverInfo.movedFrom account to the account.serverInfo.movedTo account
   /// </summary>
   /// <param name="id">Id of the account to upgrade</param>
-  public static void UpgradeAccount(string id)
+  public static async Task UpgradeAccount(string id)
   {
     var account =
       GetAccounts().FirstOrDefault(acc => acc.id == id)
@@ -259,7 +259,9 @@ public static class AccountManager
     // setting the id to null will force it to be recreated
     account.id = null;
 
-    s_accountStorage.UpdateObject(account.id!, JsonConvert.SerializeObject(account));
+    RemoveAccount(id);
+    s_accountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+    await s_accountStorage.WriteComplete().ConfigureAwait(false);
   }
 
   /// <summary>
