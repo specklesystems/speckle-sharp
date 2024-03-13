@@ -238,7 +238,7 @@ public static class AccountManager
   /// Upgrades an account from the account.serverInfo.movedFrom account to the account.serverInfo.movedTo account
   /// </summary>
   /// <param name="id">Id of the account to upgrade</param>
-  public static void UpgradeAccount(string id)
+  public static async Task UpgradeAccount(string id)
   {
     var account =
       GetAccounts().FirstOrDefault(acc => acc.id == id)
@@ -256,7 +256,12 @@ public static class AccountManager
     account.serverInfo.url = upgradeUri.ToString().TrimEnd('/');
     account.serverInfo.frontend2 = true;
 
-    s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
+    // setting the id to null will force it to be recreated
+    account.id = null;
+
+    RemoveAccount(id);
+    s_accountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+    await s_accountStorage.WriteComplete().ConfigureAwait(false);
   }
 
   /// <summary>
@@ -281,7 +286,9 @@ public static class AccountManager
 
     foreach (var acc in accounts)
     {
-      if (acc.serverInfo.url == serverUrl && !filtered.Any(x => x.id != acc.id))
+      // we use the userInfo to detect the same account rather than the account.id
+      // which should NOT match for essentially the same accounts but on different servers - i.e. FE1 & FE2
+      if (acc.serverInfo.url == serverUrl && !filtered.Any(x => x.userInfo.id == acc.userInfo.id))
       {
         filtered.Add(acc);
       }
