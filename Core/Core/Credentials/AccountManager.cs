@@ -259,7 +259,8 @@ public static class AccountManager
     // setting the id to null will force it to be recreated
     account.id = null;
 
-    s_accountStorage.UpdateObject(account.id!, JsonConvert.SerializeObject(account));
+    RemoveAccount(id);
+    s_accountStorage.SaveObjectSync(account.id, JsonConvert.SerializeObject(account));
   }
 
   /// <summary>
