@@ -15,20 +15,18 @@ namespace DUI3.Operations;
 
 public static class Operations
 {
-  public static async Task<Base> GetCommitBase(
-    IBridge parent,
-    ReceiverModelCard modelCard,
-    CancellationToken token
-  )
+  public static async Task<Base> GetCommitBase(IBridge parent, ReceiverModelCard modelCard, CancellationToken token)
   {
     Account account = Accounts.GetAccount(modelCard.AccountId);
     Client client = new(account);
 
-    Commit version = await client.CommitGet(modelCard.ProjectId, modelCard.SelectedVersionId, token).ConfigureAwait(false);
+    Commit version = await client
+      .CommitGet(modelCard.ProjectId, modelCard.SelectedVersionId, token)
+      .ConfigureAwait(false);
 
     Base commitObject = await ReceiveCommit(account, modelCard.ProjectId, version.referencedObject, parent, token)
       .ConfigureAwait(true);
-    
+
     client.Dispose();
     return commitObject;
   }
@@ -51,7 +49,9 @@ public static class Operations
     using ServerTransport transport = new(account, projectId);
 
     Base? commitObject =
-      await Speckle.Core.Api.Operations.Receive(referencedObjectId, cancellationToken: token, remoteTransport: transport).ConfigureAwait(false)
+      await Speckle.Core.Api.Operations
+        .Receive(referencedObjectId, cancellationToken: token, remoteTransport: transport)
+        .ConfigureAwait(false)
       ?? throw new SpeckleException(
         $"Failed to receive commit: {referencedObjectId} objects from server: {nameof(Speckle.Core.Api.Operations)} returned null"
       );

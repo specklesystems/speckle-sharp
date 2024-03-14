@@ -76,21 +76,28 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
     if (objectIds.Count == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId,
-        new OperationCanceledException("No objects found to highlight."));
+      BasicConnectorBindingCommands.SetModelError(
+        Parent,
+        modelCardId,
+        new OperationCanceledException("No objects found to highlight.")
+      );
       return;
     }
 
     List<RhinoObject> rhinoObjects = objectIds
-      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(o => o != null)
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
+      .Where(o => o != null)
       .ToList();
 
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
 
     if (rhinoObjects.Count == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId,
-        new OperationCanceledException("No objects found to highlight."));
+      BasicConnectorBindingCommands.SetModelError(
+        Parent,
+        modelCardId,
+        new OperationCanceledException("No objects found to highlight.")
+      );
       return;
     }
 

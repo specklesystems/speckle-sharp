@@ -13,5 +13,3 @@ public class ModelCardProgress
   /// </summary>
   public double? Progress { get; set; }
 }
-
-

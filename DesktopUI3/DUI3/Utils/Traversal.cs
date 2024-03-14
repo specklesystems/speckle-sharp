@@ -20,18 +20,21 @@ public static class Traversal
       .Reverse()
       .ToList();
   }
-  
+
   /// <summary>
   /// A variation of the OG Traversal extension from Alan, but with tracking the object path as well.
   /// </summary>
   /// <param name="root"></param>
   /// <param name="recursionBreaker"></param>
   /// <returns></returns>
-  public static IEnumerable<(List<string>,Base)> TraverseWithPath(this Base root, BaseExtensions.BaseRecursionBreaker recursionBreaker)
+  public static IEnumerable<(List<string>, Base)> TraverseWithPath(
+    this Base root,
+    BaseExtensions.BaseRecursionBreaker recursionBreaker
+  )
   {
-    var stack = new Stack<(List<string>,Base)>();
+    var stack = new Stack<(List<string>, Base)>();
     stack.Push((new List<string>(), root));
-    
+
     while (stack.Count > 0)
     {
       (List<string> path, Base current) = stack.Pop();
@@ -84,7 +87,7 @@ public static class Traversal
       }
     }
   }
-  
+
   /// <summary>
   /// Utility function to flatten a conversion result that might have nested lists of objects.
   /// This happens, for example, in the case of multiple display value fallbacks for a given object.

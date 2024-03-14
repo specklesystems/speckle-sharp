@@ -45,9 +45,13 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       // 1 - Get receiver card
       ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
-      
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Downloading" });
-      
+
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress() { Status = "Downloading" }
+      );
+
       // 2 - Get commit object from server
       Base commitObject = await Operations.GetCommitBase(Parent, modelCard, cts.Token).ConfigureAwait(true);
 
@@ -59,17 +63,25 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       // 3 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, "Rhino7");
 
-      var objectsToConvert = new List<(List<string>,Base)>();
-      
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Parsing structure" });
+      var objectsToConvert = new List<(List<string>, Base)>();
 
-      foreach (var (objPath, obj) in commitObject.TraverseWithPath(obj => obj is not Collection && converter.CanConvertToNative(obj))) // note the "obj is not collection" is working around a bug of sorts in the rh converter where we assume collections always have a collectionType; also unsure why collection to layer is in the converter (it's fine, but weird)
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress() { Status = "Parsing structure" }
+      );
+
+      foreach (
+        var (objPath, obj) in commitObject.TraverseWithPath(
+          obj => obj is not Collection && converter.CanConvertToNative(obj)
+        )
+      ) // note the "obj is not collection" is working around a bug of sorts in the rh converter where we assume collections always have a collectionType; also unsure why collection to layer is in the converter (it's fine, but weird)
       {
         if (cts.IsCancellationRequested)
         {
           throw new OperationCanceledException(cts.Token);
         }
-        
+
         if (obj is not Collection && converter.CanConvertToNative(obj))
         {
           objectsToConvert.Add((objPath, obj));
@@ -78,11 +90,11 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       var baseLayerName = $"Project {modelCard.ProjectName}: Model {modelCard.ModelName}";
       var convertedIds = BakeObjects(objectsToConvert, baseLayerName, modelCardId, cts, converter);
-      
+
       var receiveResult = new ReceiveResult() { BakedObjectIds = convertedIds, Display = true };
-      
-      ReceiveBindingUiCommands.SetModelConversionResult(Parent, modelCardId, receiveResult );
-      
+
+      ReceiveBindingUiCommands.SetModelConversionResult(Parent, modelCardId, receiveResult);
+
       // 7 - Redraw the view to render baked objects
       Doc.Views.Redraw();
     }
@@ -97,17 +109,23 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     }
   }
 
-  private List<string> BakeObjects(List<(List<string>,Base)> objects, string baseLayerName, string modelCardId, CancellationTokenSource cts, ISpeckleConverter converter)
+  private List<string> BakeObjects(
+    List<(List<string>, Base)> objects,
+    string baseLayerName,
+    string modelCardId,
+    CancellationTokenSource cts,
+    ISpeckleConverter converter
+  )
   {
-    // LETS FUCK AROUND AND FIND OUT 
+    // LETS FUCK AROUND AND FIND OUT
     var rootLayerName = baseLayerName;
     var rootLayerIndex = Doc.Layers.Find(rootLayerName, true);
-    
+
     if (rootLayerIndex >= 0)
     {
-      foreach ( var layer in RhinoDoc.ActiveDoc.Layers[ rootLayerIndex ].GetChildren() )
+      foreach (var layer in RhinoDoc.ActiveDoc.Layers[rootLayerIndex].GetChildren())
       {
-        RhinoDoc.ActiveDoc.Layers.Purge( layer.Index, false );
+        RhinoDoc.ActiveDoc.Layers.Purge(layer.Index, false);
       }
     }
 
@@ -117,7 +135,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
     var newObjectIds = new List<string>();
     var count = 0;
-    foreach(var (path, baseObj) in objects)
+    foreach (var (path, baseObj) in objects)
     {
       if (cts.IsCancellationRequested)
       {
@@ -129,14 +147,18 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       {
         layerIndex = cache[fullLayerName];
       }
-      
+
       if (layerIndex == -1)
       {
         layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
       }
-      
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting & creating objects", Progress = (double)++count/objects.Count });
-      
+
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress() { Status = "Converting & creating objects", Progress = (double)++count / objects.Count }
+      );
+
       var converted = converter.ConvertToNative(baseObj);
       if (converted is GeometryBase newObject)
       {
@@ -145,7 +167,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       }
       // else something weird happened? a block maybe? also, blocks are treated like $$$ now tbh so i won't dive into them
     }
-    
+
     return newObjectIds;
   }
 
@@ -190,5 +212,4 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         Enum = new List<string>() { "Update", "Create", "Ignore" }
       }
     };
-  
 }

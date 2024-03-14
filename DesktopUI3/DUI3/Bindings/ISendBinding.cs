@@ -30,13 +30,12 @@ public static class SendBindingUiCommands
   private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
   private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
 
-  public static void RefreshSendFilters(IBridge bridge) => 
-    bridge.SendToBrowser(REFRESH_SEND_FILTERS_UI_COMMAND_NAME);
+  public static void RefreshSendFilters(IBridge bridge) => bridge.SendToBrowser(REFRESH_SEND_FILTERS_UI_COMMAND_NAME);
 
-  public static void SetModelsExpired(IBridge bridge, IEnumerable<string> expiredModelIds) => 
+  public static void SetModelsExpired(IBridge bridge, IEnumerable<string> expiredModelIds) =>
     bridge.SendToBrowser(SET_MODELS_EXPIRED_UI_COMMAND_NAME, expiredModelIds);
 
-  public static void SetModelCreatedVersionId(IBridge bridge,string modelCardId, string versionId ) => 
+  public static void SetModelCreatedVersionId(IBridge bridge, string modelCardId, string versionId) =>
     bridge.SendToBrowser(SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME, new { modelCardId, versionId });
 }
 
@@ -53,6 +52,7 @@ public interface ISendFilter
   public string Name { get; set; }
   public string Summary { get; set; }
   public bool IsDefault { get; set; }
+
   /// <summary>
   /// Gets the ids of the objects targeted by the filter from the host application.
   /// </summary>

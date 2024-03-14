@@ -23,10 +23,9 @@ public interface IReceiveBinding : IBinding
 public static class ReceiveBindingUiCommands
 {
   private const string SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME = "setModelReceiveResult";
-  
+
   public static void SetModelConversionResult(IBridge bridge, string modelCardId, ReceiveResult receiveResult) =>
     bridge.SendToBrowser(SET_MODEL_RECEIVE_RESULT_UI_COMMAND_NAME, new { modelCardId, receiveResult });
-
 }
 
 public class ReceiverModelCard : ModelCard
@@ -44,6 +43,6 @@ public class ReceiveResult : DiscriminatedObject
   public List<string> BakedObjectIds { get; set; }
 
   public bool Display { get; set; } = false;
-  
+
   // TODO/THINK Later: results, reports, etc. ?
 }

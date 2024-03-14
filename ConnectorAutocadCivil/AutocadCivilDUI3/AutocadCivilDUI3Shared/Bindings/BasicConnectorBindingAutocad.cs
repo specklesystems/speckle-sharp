@@ -49,7 +49,8 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
 
   public DocumentInfo GetDocumentInfo()
   {
-    if (Doc == null) return null;
+    if (Doc == null)
+      return null;
     string name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
     return new DocumentInfo()
     {
@@ -82,7 +83,7 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       return;
     }
     var objectIds = Array.Empty<ObjectId>();
-    
+
     var model = _store.GetModelById(modelCardId);
     if (model == null)
     {
@@ -95,18 +96,25 @@ public class BasicConnectorBindingAutocad : IBasicConnectorBinding
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
 
-    if (model is ReceiverModelCard { ReceiveResult: { } } receiverModelCard && receiverModelCard.ReceiveResult.BakedObjectIds.Count != 0)
+    if (
+      model is ReceiverModelCard { ReceiveResult: { } } receiverModelCard
+      && receiverModelCard.ReceiveResult.BakedObjectIds.Count != 0
+    )
     {
       var dbObjects = Objects.GetObjectsFromDocument(Doc, receiverModelCard.ReceiveResult.BakedObjectIds);
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
-    
+
     if (objectIds.Length == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      BasicConnectorBindingCommands.SetModelError(
+        Parent,
+        modelCardId,
+        new OperationCanceledException("No objects found to highlight.")
+      );
       return;
     }
-    
+
     Parent.RunOnMainThread(() =>
     {
       Doc.Editor.SetImpliedSelection(Array.Empty<ObjectId>()); // Deselects

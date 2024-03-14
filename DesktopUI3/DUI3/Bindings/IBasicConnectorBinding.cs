@@ -29,10 +29,10 @@ public static class BasicConnectorBindingCommands
   private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
 
   public static void NotifyDocumentChanged(IBridge bridge) => bridge.SendToBrowser(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME);
-  
-  public static void SetModelProgress(IBridge bridge, string modelCardId, ModelCardProgress progress) => 
+
+  public static void SetModelProgress(IBridge bridge, string modelCardId, ModelCardProgress progress) =>
     bridge.SendToBrowser(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });
-  
+
   public static void SetModelError(IBridge bridge, string modelCardId, Exception error) =>
     bridge.SendToBrowser(SET_MODEL_ERROR_UI_COMMAND_NAME, new { modelCardId, error = error.Message });
 }

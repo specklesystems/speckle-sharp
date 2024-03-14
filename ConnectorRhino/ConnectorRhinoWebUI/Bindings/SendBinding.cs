@@ -18,6 +18,7 @@ using Speckle.Core.Transports;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -40,7 +41,7 @@ public class SendBinding : ISendBinding, ICancelable
   public SendBinding(DocumentModelStore store)
   {
     _store = store;
-    
+
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       SendBindingUiCommands.RefreshSendFilters(Parent);
@@ -88,9 +89,8 @@ public class SendBinding : ISendBinding, ICancelable
   {
     return new List<ISendFilter>()
     {
-      new RhinoEverythingFilter(), 
-      new RhinoSelectionFilter() { IsDefault = true }, 
-      new RhinoLayerFilter()
+      new RhinoEverythingFilter(),
+      new RhinoSelectionFilter() { IsDefault = true }
     };
   }
 
@@ -121,7 +121,7 @@ public class SendBinding : ISendBinding, ICancelable
       {
         throw new InvalidOperationException("No publish model card was found.");
       }
-      
+
       // 2 - Check account exist
       Account account = Accounts.GetAccount(modelCard.AccountId);
 
@@ -174,9 +174,7 @@ public class SendBinding : ISendBinding, ICancelable
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
-#pragma warning disable CA1031
-    catch (Exception e) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
-#pragma warning restore CA1031
+    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
       if (e is OperationCanceledException) // We do not want to display an error, we just stop sending.
       {
@@ -188,14 +186,12 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
-  
   private Base ConvertObjects(List<RhinoObject> rhinoObjects, ISpeckleConverter converter, SenderModelCard modelCard, CancellationTokenSource cts)
   {
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
-    
+
     Dictionary<int, Collection> layerCollectionCache = new();
-    
     // TODO: Handle blocks.
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
@@ -206,7 +202,7 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 1. get object layer
       var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
-      
+
       // 2. get or create a nested collection for it
       var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
       var applicationId = rhinoObject.Id.ToString();
@@ -232,11 +228,11 @@ public class SendBinding : ISendBinding, ICancelable
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment 
       // Thread.Sleep(550); 
     }
-    
+
     // 5. profit
     return rootObjectCollection;
   }
-
+  
   /// <summary>
   /// Returns the host collection based on the provided layer. If it's not found, it will be created and hosted within the the rootObjectCollection.
   /// </summary>
@@ -250,8 +246,8 @@ public class SendBinding : ISendBinding, ICancelable
     {
       return value;
     }
-    
-    var names = layer.FullPath.Split(new[] {Layer.PathSeparator}, StringSplitOptions.None);
+
+    var names = layer.FullPath.Split(new[] { Layer.PathSeparator }, StringSplitOptions.None);
     var path = names[0];
     var index = 0;
     var previousCollection = rootObjectCollection;
@@ -272,20 +268,20 @@ public class SendBinding : ISendBinding, ICancelable
         previousCollection.elements.Add(childCollection);
         layerCollectionCache[existingLayerIndex] = childCollection;
       }
-          
+
       previousCollection = childCollection;
-          
+
       if (index < names.Length - 1)
       {
-        path += Layer.PathSeparator + names[index+1];
+        path += Layer.PathSeparator + names[index + 1];
       }
       index++;
     }
-    
+
     layerCollectionCache[layer.Index] = previousCollection;
     return previousCollection;
   }
-
+  
   /// <summary>
   /// Checks if any sender model cards contain any of the changed objects. If so, also updates the changed objects hashset for each model card - this last part is important for on send change detection.
   /// </summary>

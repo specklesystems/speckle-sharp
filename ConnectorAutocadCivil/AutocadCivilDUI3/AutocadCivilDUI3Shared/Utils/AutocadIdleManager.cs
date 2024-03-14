@@ -16,7 +16,7 @@ public static class AutocadIdleManager
   public static void SubscribeToIdle(Action action)
   {
     s_sCalls[action.Method.Name] = action;
-    
+
     if (s_hasSubscribed)
     {
       return;

@@ -13,6 +13,7 @@ using DUI3.Operations;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
@@ -51,6 +52,7 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   private readonly List<string> _docSubsTracker = new();
+
   private void SubscribeToObjectChanges(Document doc)
   {
     if (doc == null || doc.Database == null || _docSubsTracker.Contains(doc.Name))
@@ -63,9 +65,9 @@ public class SendBinding : ISendBinding, ICancelable
     doc.Database.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
     doc.Database.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
   }
-  
+
   private void OnChangeChangedObjectIds(DBObject dBObject)
-  { 
+  {
     ChangedObjectIds.Add(dBObject.Handle.Value.ToString());
     AutocadIdleManager.SubscribeToIdle(RunExpirationChecks);
   }
@@ -126,8 +128,12 @@ public class SendBinding : ISendBinding, ICancelable
       }
 
       // 8 - Create Version
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
-      
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress { Status = "Linking version to model..." }
+      );
+
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
       string versionId = await apiClient.CommitCreate(new CommitCreateInput()
@@ -138,15 +144,13 @@ public class SendBinding : ISendBinding, ICancelable
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
-#pragma warning disable CA1031
-    catch (Exception e) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
-#pragma warning restore CA1031
+    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
       if (e is OperationCanceledException)
       {
         return;
       }
-      
+
       BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
@@ -169,7 +173,7 @@ public class SendBinding : ISendBinding, ICancelable
         modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
-    
+
     SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
@@ -181,7 +185,11 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    var modelWithLayers = new Collection() { name = Doc.Name.Split( new [] {"\\"}, StringSplitOptions.None).Reverse().First(), collectionType = "root" };
+    var modelWithLayers = new Collection()
+    {
+      name = Doc.Name.Split(new[] { "\\" }, StringSplitOptions.None).Reverse().First(),
+      collectionType = "root"
+    };
     var collectionCache = new Dictionary<string, Collection>();
     int count = 0;
 
@@ -212,12 +220,12 @@ public class SendBinding : ISendBinding, ICancelable
           collectionCache[tuple.layer] = new Collection() { name = tuple.layer, collectionType = "layer" };
           modelWithLayers.elements.Add(collectionCache[tuple.layer]);
         }
-        
-        collectionCache[tuple.layer].elements.Add(converted);
 
+        collectionCache[tuple.layer].elements.Add(converted);
+        
         BasicConnectorBindingCommands.SetModelProgress(Parent, modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count});
       }
-      catch (Exception e) 
+      catch (Exception e) when (!e.IsFatal())
       {
         // TODO: Add to report, etc.
         Debug.WriteLine(e.Message);

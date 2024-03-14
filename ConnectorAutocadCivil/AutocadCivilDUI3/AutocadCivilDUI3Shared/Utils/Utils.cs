@@ -88,5 +88,4 @@ public static class Utils
   {
     return (BlockTableRecord)SymbolUtilityServices.GetBlockModelSpaceId(db).GetObject(mode);
   }
-  
 }
