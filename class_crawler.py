@@ -1,9 +1,7 @@
-import os
-import sys
+
 from os import listdir
 from os.path import isfile, join
 
-import glob
 import pathlib
 
 APPS = [
@@ -619,3 +617,4 @@ for app in APPS:
     print(result_all_apps_convertable[app]["to_native"])
 
     # print(files)
+
