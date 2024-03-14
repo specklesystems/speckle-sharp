@@ -115,7 +115,7 @@ public class SendBinding : ISendBinding, ICancelable
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
       {
-        _convertedObjectReferences[kvp.Key] = kvp.Value;
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
       }
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
@@ -196,7 +196,7 @@ public class SendBinding : ISendBinding, ICancelable
         Base converted;
         var applicationId = tuple.applicationId;
         
-        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
+        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value))
         {
           converted = value;
         }

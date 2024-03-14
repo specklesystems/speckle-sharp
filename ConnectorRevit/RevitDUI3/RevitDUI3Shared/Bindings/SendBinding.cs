@@ -114,7 +114,7 @@ public class SendBinding : ISendBinding, ICancelable
       // Update cache of previously converted elements
       foreach (var kvp in sendResult.convertedReferences)
       {
-        _convertedObjectReferences[kvp.Key] = kvp.Value;
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
       }
       modelCard.ChangedObjectIds = new();
       BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
@@ -172,7 +172,7 @@ public class SendBinding : ISendBinding, ICancelable
       {
         Base converted;
         var applicationId = revitElement.Id.ToString();
-        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId, out ObjectReference value))
+        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value))
         {
           converted = value;
         }
