@@ -70,7 +70,7 @@ public class ReceiveBinding : IBinding, ICancelable
       {
         return;
       }
-      
+
       BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
@@ -96,7 +96,7 @@ public class ReceiveBinding : IBinding, ICancelable
           converter.SetContextDocument(t);
           List<string> errors = new();
           int count = 0;
-          
+
           foreach (Base objToConvert in objectsToConvert)
           {
             count++;
@@ -104,12 +104,16 @@ public class ReceiveBinding : IBinding, ICancelable
             {
               throw new OperationCanceledException(cts.Token);
             }
-            
+
             try
             {
               double progress = (double)count / objectsToConvert.Count;
-              BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = progress});
-              
+              BasicConnectorBindingCommands.SetModelProgress(
+                Parent,
+                modelCardId,
+                new ModelCardProgress() { Status = "Converting", Progress = progress }
+              );
+
               object convertedObject = converter.ConvertToNative(objToConvert);
               RefreshView();
             }
@@ -119,7 +123,7 @@ public class ReceiveBinding : IBinding, ICancelable
               Console.WriteLine(e);
             }
           }
-          
+
           t.Commit();
 
           if (t.GetStatus() == TransactionStatus.RolledBack)

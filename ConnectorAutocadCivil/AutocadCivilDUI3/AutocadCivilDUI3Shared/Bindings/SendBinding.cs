@@ -38,6 +38,7 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   private readonly List<string> _docSubsTracker = new();
+
   private void SubscribeToObjectChanges(Document doc)
   {
     if (doc == null || doc.Database == null || _docSubsTracker.Contains(doc.Name))
@@ -50,9 +51,9 @@ public class SendBinding : ISendBinding, ICancelable
     doc.Database.ObjectErased += (_, e) => OnChangeChangedObjectIds(e.DBObject);
     doc.Database.ObjectModified += (_, e) => OnChangeChangedObjectIds(e.DBObject);
   }
-  
+
   private void OnChangeChangedObjectIds(DBObject dBObject)
-  { 
+  {
     ChangedObjectIds.Add(dBObject.Handle.Value.ToString());
     AutocadIdleManager.SubscribeToIdle(RunExpirationChecks);
   }
@@ -96,7 +97,11 @@ public class SendBinding : ISendBinding, ICancelable
       List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
 
       // 7 - Serialize and Send objects
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress { Status = "Uploading..." }
+      );
       string objectId = await Speckle.Core.Api.Operations
         .Send(commitObject, cts.Token, transports, disposeTransports: true)
         .ConfigureAwait(true);
@@ -107,15 +112,27 @@ public class SendBinding : ISendBinding, ICancelable
       }
 
       // 8 - Create Version
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
-      
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress { Status = "Linking version to model..." }
+      );
+
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
-      string versionId = await apiClient.CommitCreate(new CommitCreateInput()
-      {
-        streamId = model.ProjectId, branchName = model.ModelId, sourceApplication = "Rhino", objectId = objectId
-      }, cts.Token).ConfigureAwait(true);
-      
+      string versionId = await apiClient
+        .CommitCreate(
+          new CommitCreateInput()
+          {
+            streamId = model.ProjectId,
+            branchName = model.ModelId,
+            sourceApplication = "Rhino",
+            objectId = objectId
+          },
+          cts.Token
+        )
+        .ConfigureAwait(true);
+
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
@@ -125,7 +142,7 @@ public class SendBinding : ISendBinding, ICancelable
       {
         return;
       }
-      
+
       BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, e);
     }
   }
@@ -146,7 +163,7 @@ public class SendBinding : ISendBinding, ICancelable
         expiredSenderIds.Add(sender.ModelCardId);
       }
     }
-    
+
     SendBindingUiCommands.SetModelsExpired(Parent, expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
@@ -158,7 +175,11 @@ public class SendBinding : ISendBinding, ICancelable
     CancellationTokenSource cts
   )
   {
-    var modelWithLayers = new Collection() { name = Doc.Name.Split( new [] {"\\"}, StringSplitOptions.None).Reverse().First(), collectionType = "root" };
+    var modelWithLayers = new Collection()
+    {
+      name = Doc.Name.Split(new[] { "\\" }, StringSplitOptions.None).Reverse().First(),
+      collectionType = "root"
+    };
     var collectionCache = new Dictionary<string, Collection>();
     int count = 0;
 
@@ -177,17 +198,21 @@ public class SendBinding : ISendBinding, ICancelable
         {
           // TODO: report, error out, etc.
         }
-        
+
         // Create and add a collection for each layer if not done so already.
         if (!collectionCache.ContainsKey(tuple.layer))
         {
           collectionCache[tuple.layer] = new Collection() { name = tuple.layer, collectionType = "layer" };
           modelWithLayers.elements.Add(collectionCache[tuple.layer]);
         }
-        
+
         collectionCache[tuple.layer].elements.Add(converted);
 
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count});
+        BasicConnectorBindingCommands.SetModelProgress(
+          Parent,
+          modelCardId,
+          new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
+        );
       }
       catch (Exception e) // THE FUCK
       {

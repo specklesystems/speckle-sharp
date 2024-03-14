@@ -20,7 +20,7 @@ public static class RhinoIdleManager
   public static void SubscribeToIdle(Action action)
   {
     s_sCalls[action.Method.Name] = action;
-    
+
     if (s_hasSubscribed)
     {
       return;

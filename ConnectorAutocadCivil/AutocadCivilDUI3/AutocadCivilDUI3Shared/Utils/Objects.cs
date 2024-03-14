@@ -8,7 +8,10 @@ namespace AutocadCivilDUI3Shared.Utils;
 
 public static class Objects
 {
-  public static List<(DBObject obj, string layer, string applicationId)> GetObjectsFromDocument(Document doc, IEnumerable<string> objectIds)
+  public static List<(DBObject obj, string layer, string applicationId)> GetObjectsFromDocument(
+    Document doc,
+    IEnumerable<string> objectIds
+  )
   {
     using DocumentLock acLckDoc = doc.LockDocument();
     var dbObjects = new List<(DBObject, string layer, string applicationId)>();
@@ -21,9 +24,9 @@ public static class Objects
       {
         continue;
       }
-      
+
       var dbObject = tr.GetObject(myObjectId, OpenMode.ForRead);
-      if(dbObject == null)
+      if (dbObject == null)
       {
         continue;
       }

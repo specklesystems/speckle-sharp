@@ -45,7 +45,6 @@ public class SelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
-    
     Document doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
     if (doc != null)
@@ -57,7 +56,9 @@ public class SelectionBinding : ISelectionBinding
         foreach (SelectedObject obj in selection.Value)
         {
           var dbObject = tr.GetObject(obj.ObjectId, OpenMode.ForRead);
-          if (dbObject == null /*|| !dbObject.Visible()*/ )
+          if (
+            dbObject == null /*|| !dbObject.Visible()*/
+          )
           {
             continue;
           }

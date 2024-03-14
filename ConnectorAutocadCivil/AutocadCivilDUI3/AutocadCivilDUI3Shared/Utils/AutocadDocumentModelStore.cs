@@ -17,18 +17,18 @@ public class AutocadDocumentModelStore : DocumentModelStore
       IsDocumentInit = true;
     }
 
-    Application.DocumentManager.DocumentToBeDestroyed += (_,_) =>  WriteToFile();
+    Application.DocumentManager.DocumentToBeDestroyed += (_, _) => WriteToFile();
     Application.DocumentManager.DocumentActivated += (_, e) => OnDocChangeInternal(e.Document);
-    Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated +=
-      (_, args) => OnDocChangeInternal(args.DocumentWindow.Document as Document);
+    Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated += (_, args) =>
+      OnDocChangeInternal(args.DocumentWindow.Document as Document);
   }
 
   /// <summary>
   /// Tracks whether the doc has been subscribed to save events.
-  /// TODO: two separate docs can have the same name, this is a brittle implementation - should be correlated with file location. 
+  /// TODO: two separate docs can have the same name, this is a brittle implementation - should be correlated with file location.
   /// </summary>
   private readonly List<string> _saveToDocSubTracker = new();
-  
+
   private void OnDocChangeInternal(Document doc)
   {
     Doc = doc;
@@ -38,16 +38,16 @@ public class AutocadDocumentModelStore : DocumentModelStore
     {
       return;
     }
-    
+
     s_previousDocName = doc != null ? doc.Name : nullDocName;
-    
-    if (doc!=null && !_saveToDocSubTracker.Contains(doc.Name))
+
+    if (doc != null && !_saveToDocSubTracker.Contains(doc.Name))
     {
-      doc.BeginDocumentClose += (_,_) => WriteToFile();
-      doc.Database.BeginSave += (_,_) => WriteToFile();
+      doc.BeginDocumentClose += (_, _) => WriteToFile();
+      doc.Database.BeginSave += (_, _) => WriteToFile();
       _saveToDocSubTracker.Add(doc.Name);
     }
-    
+
     ReadFromFile();
     OnDocumentChanged();
   }
@@ -59,13 +59,13 @@ public class AutocadDocumentModelStore : DocumentModelStore
     {
       return;
     }
-    
+
     string serializedModelCards = AutocadDocumentManager.ReadModelCards(Doc);
     if (serializedModelCards == null)
     {
       return;
     }
-    
+
     Models = Deserialize(serializedModelCards);
   }
 

@@ -6,7 +6,5 @@ using System.Threading.Tasks;
 
 namespace Speckle.Connectors.Revit2023
 {
-    public class Class1
-    {
-    }
+  public class Class1 { }
 }
