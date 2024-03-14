@@ -13,6 +13,7 @@ using DUI3.Operations;
 using DUI3.Utils;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
@@ -29,12 +30,25 @@ public class SendBinding : ISendBinding, ICancelable
 
   private Document Doc => Application.DocumentManager.MdiActiveDocument;
 
+  /// <summary>
+  /// Used internally to aggregate the changed objects' id.
+  /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
+
+  /// <summary>
+  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
+  /// </summary>
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public SendBinding(AutocadDocumentModelStore store)
   {
     _store = store;
     Application.DocumentManager.DocumentActivated += (sender, args) => SubscribeToObjectChanges(args.Document);
+    if (Application.DocumentManager.CurrentDocument != null)
+    {
+      // NOTE: catches the case when autocad just opens up with a blank new doc
+      SubscribeToObjectChanges(Application.DocumentManager.CurrentDocument);
+    }
   }
 
   private readonly List<string> _docSubsTracker = new();
@@ -75,36 +89,40 @@ public class SendBinding : ISendBinding, ICancelable
       var cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Setup
-      var model = _store.GetModelById(modelCardId) as SenderModelCard;
-      var account = Accounts.GetAccount(model.AccountId);
+      var modelCard = _store.GetModelById(modelCardId) as SenderModelCard;
+      var account = Accounts.GetAccount(modelCard.AccountId);
       var converter = Converters.GetConverter(Doc, Utils.Utils.VersionedAppName);
 
       // 2 - Get elements to convert
-      var dbObjects = Objects.GetObjectsFromDocument(Doc, model.SendFilter.GetObjectIds());
+      var dbObjects = Objects.GetObjectsFromDocument(Doc, modelCard.SendFilter.GetObjectIds());
       if (dbObjects.Count == 0)
       {
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
       }
       // 5 - Convert objects
-      var commitObject = ConvertObjects(dbObjects, converter, modelCardId, cts);
+      var commitObject = ConvertObjects(dbObjects, converter, modelCard, cts);
 
       if (cts.IsCancellationRequested)
       {
         return;
       }
 
-      // 6 - Get transports
-      List<ITransport> transports = new() { new ServerTransport(account, model.ProjectId) };
-
       // 7 - Serialize and Send objects
+      var transport = new ServerTransport(account, modelCard.ProjectId);
       BasicConnectorBindingCommands.SetModelProgress(
         Parent,
         modelCardId,
         new ModelCardProgress { Status = "Uploading..." }
       );
-      string objectId = await Speckle.Core.Api.Operations
-        .Send(commitObject, cts.Token, transports, disposeTransports: true)
-        .ConfigureAwait(true);
+      var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
+
+      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      }
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      modelCard.ChangedObjectIds = new();
 
       if (cts.IsCancellationRequested)
       {
@@ -124,10 +142,10 @@ public class SendBinding : ISendBinding, ICancelable
         .CommitCreate(
           new CommitCreateInput()
           {
-            streamId = model.ProjectId,
-            branchName = model.ModelId,
+            streamId = modelCard.ProjectId,
+            branchName = modelCard.ModelId,
             sourceApplication = "Rhino",
-            objectId = objectId
+            objectId = sendResult.rootObjId
           },
           cts.Token
         )
@@ -136,7 +154,7 @@ public class SendBinding : ISendBinding, ICancelable
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
-    catch (Exception e) // NOTE: Always catch everything we can!
+    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
       if (e is OperationCanceledException)
       {
@@ -155,12 +173,14 @@ public class SendBinding : ISendBinding, ICancelable
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    foreach (SenderModelCard sender in senders)
+    foreach (SenderModelCard modelCard in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(objectIdsList);
+      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      bool isExpired = intersection.Any();
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId);
+        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 
@@ -171,7 +191,7 @@ public class SendBinding : ISendBinding, ICancelable
   private Base ConvertObjects(
     List<(DBObject obj, string layer, string applicationId)> dbObjects,
     ISpeckleConverter converter,
-    string modelCardId,
+    SenderModelCard modelCard,
     CancellationTokenSource cts
   )
   {
@@ -191,12 +211,20 @@ public class SendBinding : ISendBinding, ICancelable
       }
       try
       {
-        Base converted = converter.ConvertToSpeckle(tuple.obj);
-        converted.applicationId = tuple.applicationId;
+        Base converted;
+        var applicationId = tuple.applicationId;
 
-        if (converted == null)
+        if (
+          !modelCard.ChangedObjectIds.Contains(applicationId)
+          && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
+        )
         {
-          // TODO: report, error out, etc.
+          converted = value;
+        }
+        else
+        {
+          converted = converter.ConvertToSpeckle(tuple.obj);
+          converted.applicationId = applicationId;
         }
 
         // Create and add a collection for each layer if not done so already.
@@ -210,11 +238,11 @@ public class SendBinding : ISendBinding, ICancelable
 
         BasicConnectorBindingCommands.SetModelProgress(
           Parent,
-          modelCardId,
+          modelCard.ModelCardId,
           new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
         );
       }
-      catch (Exception e) // THE FUCK
+      catch (Exception e) when (!e.IsFatal())
       {
         // TODO: Add to report, etc.
         Debug.WriteLine(e.Message);

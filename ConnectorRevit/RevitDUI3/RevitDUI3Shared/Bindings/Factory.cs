@@ -12,7 +12,8 @@ public static class Factory
     BasicConnectorBindingRevit baseBinding = new(store);
     SelectionBinding selectionBinding = new();
     SendBinding sendBinding = new(store);
-    ReceiveBinding receiveBinding = new(store);
+    // TODO: Revit receive is very flaky right now, removing
+    // ReceiveBinding receiveBinding = new(store);
     List<IBinding> bindingsList =
       new()
       {
@@ -22,7 +23,7 @@ public static class Factory
         baseBinding,
         selectionBinding,
         sendBinding,
-        receiveBinding
+        // receiveBinding // See above note on receives
       };
 
     return bindingsList;

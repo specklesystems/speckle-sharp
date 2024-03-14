@@ -4,11 +4,11 @@ using DUI3.Bindings;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
+// TODO: implement properly
 public class RevitEverythingFilter : EverythingSendFilter
 {
   public override List<string> GetObjectIds()
   {
-    // TODO
     return new List<string>();
   }
 
