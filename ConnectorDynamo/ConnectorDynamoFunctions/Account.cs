@@ -4,7 +4,6 @@ using System.Linq;
 using Autodesk.DesignScript.Runtime;
 using Dynamo.Graph.Nodes;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorDynamo.Functions;
 
@@ -14,7 +13,7 @@ public static class Account
   public static Core.Credentials.Account GetById(string id)
   {
     var acc = AccountManager.GetAccounts().FirstOrDefault(x => x.userInfo.id == id);
-    Analytics.TrackEvent(acc, Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Account Get" } });
+    AnalyticsUtils.TrackNodeRun(acc, "Account Get");
     return acc;
   }
 
@@ -30,11 +29,7 @@ public static class Account
       Utils.HandleApiExeption(new WarningException("Provided account was invalid."));
     }
 
-    Analytics.TrackEvent(
-      account,
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Account Details" } }
-    );
+    AnalyticsUtils.TrackNodeRun(account, "Account Details");
 
     return new Dictionary<string, object>
     {

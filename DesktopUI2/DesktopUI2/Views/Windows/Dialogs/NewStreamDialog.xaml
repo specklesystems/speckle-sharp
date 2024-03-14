@@ -19,14 +19,11 @@
 
 
   </UserControl.Styles>
-  <UserControl.Resources>
-    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
-  </UserControl.Resources>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"
       Classes="Subtitle1"
-      Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Create a new Stream'}"
+      Text="Create a new project"
       TextTrimming="CharacterEllipsis" />
     <ComboBox
       Name="accounts"
@@ -66,7 +63,7 @@
       Name="name"
       Grid.Row="2"
       Margin="15,5"
-      Watermark="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Stream Name (optional)'}" />
+      Watermark="Project Name (optional)" />
 
     <TextBox
       Name="description"

@@ -105,9 +105,8 @@ GSErrCode CreateCommand::GetElementBaseFromObjectState (const GS::ObjectState& o
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_LayerID;
 		attribute.header.uniStringNamePtr = &layer;
-		err = ACAPI_Attribute_Get (&attribute);
 
-		if (err == NoError) {
+		if (NoError == ACAPI_Attribute_Get (&attribute)) {
 			element.header.layer = attribute.header.index;
 			ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, layer);
 		}

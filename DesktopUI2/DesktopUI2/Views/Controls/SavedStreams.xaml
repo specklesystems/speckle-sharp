@@ -18,7 +18,6 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:OpacityValueConverter x:Key="OpacityValueConverter" />
-    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
   </UserControl.Resources>
 
   <ItemsRepeater Background="Transparent" Items="{Binding SavedStreams}">
@@ -94,13 +93,13 @@
                       Classes="StreamCard"
                       IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                       Kind="Heart"
-                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This is a favorite stream'}" />
+                      ToolTip.Tip="This is a favorite project" />
                     <icons:MaterialIcon
                       Grid.Column="1"
                       Classes="StreamCard"
                       IsVisible="{Binding StreamState.SchedulerEnabled}"
                       Kind="ClockCheck"
-                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Scheduler is enabled on this stream'}" />
+                      ToolTip.Tip="Scheduler is enabled on this project" />
                     <icons:MaterialIcon
                       Grid.Column="2"
                       Margin="0,0,5,0"
@@ -144,14 +143,14 @@
                       Classes="StreamCard"
                       IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                       Kind="Heart"
-                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This is a favorite stream'}" />
+                      ToolTip.Tip="This is a favorite project" />
                     <icons:MaterialIcon
                       Grid.Column="1"
                       VerticalAlignment="Center"
                       Classes="StreamCard"
                       IsVisible="{Binding StreamState.AutoReceive}"
                       Kind="CallReceived"
-                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Auto Receive is ON for this stream'}" />
+                      ToolTip.Tip="Auto Receive is ON for this project" />
                     <icons:MaterialIcon
                       Grid.Column="2"
                       Margin="0,0,2,0"
@@ -226,7 +225,7 @@
                     Classes="Mini"
                     Command="{Binding AskRemoveSavedStreamCommand}"
                     IsEnabled="{Binding !Progress.IsProgressing}"
-                    ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Remove this stream'}">
+                    ToolTip.Tip="Remove this project">
                     <Button.Content>
                       <icons:MaterialIcon
                         Width="15"
@@ -259,7 +258,7 @@
               Command="{Binding AskRemoveSavedStreamCommand}"
               IsEnabled="{Binding !IsRemovingStream}"
               IsVisible="{Binding NoAccess}"
-              ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Remove this stream'}">
+              ToolTip.Tip="Remove this project">
               <Button.Content>
                 <icons:MaterialIcon
                   Width="15"

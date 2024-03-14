@@ -19,7 +19,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 {
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
     converter.SetContextDocument(Doc);
 
     // set converter settings
@@ -251,7 +251,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       objectId = objectId,
       branchName = state.BranchName,
       message = state.CommitMessage ?? $"Sent {objCount} elements from Rhino.",
-      sourceApplication = Utils.RhinoAppName
+      sourceApplication = Utils.GetRhinoHostAppVersion()
     };
 
     if (state.PreviousCommitId != null)

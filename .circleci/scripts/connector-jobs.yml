@@ -8,12 +8,14 @@ rhino:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: rhino
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: grasshopper
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector-dotnet-mac:
       name: rhino-build-mac
       slnname: ConnectorRhino
@@ -47,80 +49,94 @@ dynamo:
       slnname: ConnectorDynamo
       dllname: SpeckleConnectorDynamo.dll
       slug: dynamo
-      context: innosetup
+      context:
+        - digicert-keylocker
 
 revit:
   - build-connector:
       slnname: ConnectorRevit
       dllname: SpeckleConnectorRevit.dll
       slug: revit
-      context: innosetup
+      context:
+        - digicert-keylocker
 
 autocadcivil:
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: autocad
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: advancesteel
-      context: innosetup
+      context:
+        - digicert-keylocker
 bentley:
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
-      context: innosetup
+      context:
+        - digicert-keylocker
 
 teklastructures:
   - build-connector:
       slnname: ConnectorTeklaStructures
       dllname: SpeckleConnectorTeklaStructures.dll
       slug: teklastructures
-      context: innosetup
+      context:
+        - digicert-keylocker
 csi:
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: etabs
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
-      context: innosetup
+      context:
+        - digicert-keylocker
 
 archicad:
   - build-archicad-add-on:
@@ -148,7 +164,8 @@ archicad:
       dllname: ConnectorArchicad.dll
       slug: archicad
       build-with-msbuild: false
-      context: innosetup
+      context:
+        - digicert-keylocker
   - build-archicad-add-on-mac:
       archicadversion: "25"
       requires:
@@ -187,4 +204,5 @@ navisworks:
       slnname: ConnectorNavisworks
       dllname: SpeckleConnectorNavisworks.dll
       slug: navisworks
-      context: innosetup
+      context:
+        - digicert-keylocker

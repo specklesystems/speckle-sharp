@@ -15,19 +15,14 @@ namespace SpeckleRhino;
 
 public static class Utils
 {
-#if RHINO6
-  public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
-  public static string AppName = "Rhino";
-#elif RHINO7
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
-    public static string AppName = "Rhino";
-#elif RHINO8
-    public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v8);
-    public static string AppName = "Rhino";
-#else
-  public static string RhinoAppName = HostApplications.Rhino.Name;
-  public static string AppName = "Rhino";
-#endif
+  public static string GetRhinoHostAppVersion() =>
+    RhinoApp.Version.Major switch
+    {
+      6 => HostApplications.Rhino.GetVersion(HostAppVersion.v6),
+      7 => HostApplications.Rhino.GetVersion(HostAppVersion.v7),
+      8 => HostApplications.Rhino.GetVersion(HostAppVersion.v8),
+      _ => throw new NotSupportedException($"Version {RhinoApp.Version.Major} of Rhino is not supported"),
+    };
 
   public static string invalidRhinoChars = @"{}()[]";
 
@@ -47,6 +42,28 @@ public static class Utils
     {
       return invalidRhinoChars.Contains(str[0]) ? $"@{str}" : str;
     }
+  }
+
+  /// <summary>
+  /// Creates a valid path for Rhino layers.
+  /// </summary>
+  /// <param name="str"></param>
+  /// <returns></returns>
+  public static string MakeValidPath(string str)
+  {
+    if (string.IsNullOrEmpty(str))
+    {
+      return str;
+    }
+
+    string validPath = "";
+    string[] layerNames = str.Split(new string[] { Layer.PathSeparator }, StringSplitOptions.None);
+    foreach (var item in layerNames)
+    {
+      validPath += string.IsNullOrEmpty(validPath) ? MakeValidName(item) : Layer.PathSeparator + MakeValidName(item);
+    }
+
+    return validPath;
   }
 
   /// <summary>
@@ -141,7 +158,7 @@ public static class Utils
       throw new ArgumentException("Layer name is invalid.");
     }
 
-    using Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
+    Layer newLayer = new() { Color = Color.AliceBlue, Name = name };
     if (parentLayer != null)
     {
       try
@@ -174,7 +191,7 @@ public static class Utils
   public static Layer GetLayer(this RhinoDoc doc, string path, bool makeIfNull = false)
   {
     Layer layer;
-    var cleanPath = MakeValidName(path);
+    var cleanPath = MakeValidPath(path);
     int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
     if (index is RhinoMath.UnsetIntIndex && makeIfNull)
     {

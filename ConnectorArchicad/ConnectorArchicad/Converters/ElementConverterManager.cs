@@ -97,25 +97,42 @@ public sealed partial class ElementConverterManager
       // subelements translated into "elements" property of the parent
       if (typeof(Fenestration).IsAssignableFrom(elemenType))
       {
+        Collection elementCollection = null;
+
         foreach (Base item in objects)
         {
           Base parent = allObjects.Find(x => x.applicationId == ((Fenestration)item).parentApplicationId);
 
-          if (parent["elements"] == null)
+          if (parent == null)
           {
-            parent["elements"] = new List<Base>() { item };
+            // parent skipped, so add to collection
+            if (elementCollection == null)
+            {
+              elementCollection = new Collection(element, "Element Type");
+              elementCollection.applicationId = element;
+              objectToCommit.elements.Add(elementCollection);
+            }
+
+            elementCollection.elements.Add(item);
           }
           else
           {
-            var elements = parent["elements"] as List<Base>;
-            elements.Add(item);
+            if (parent["elements"] == null)
+            {
+              parent["elements"] = new List<Base>() { item };
+            }
+            else
+            {
+              var elements = parent["elements"] as List<Base>;
+              elements.Add(item);
+            }
           }
         }
       }
       // parents translated as new collections
       else
       {
-        var elementCollection = new Collection(element, "Element Type");
+        Collection elementCollection = new(element, "Element Type");
         elementCollection.applicationId = element;
         elementCollection.elements = objects;
         objectToCommit.elements.Add(elementCollection);

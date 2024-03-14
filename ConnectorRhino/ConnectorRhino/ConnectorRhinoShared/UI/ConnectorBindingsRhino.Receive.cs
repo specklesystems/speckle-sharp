@@ -32,7 +32,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   /// <returns></returns>
   public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
   {
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
     converter.SetContextDocument(Doc);
     converter.ReceiveMode = state.ReceiveMode;
 
@@ -59,7 +59,12 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     if (Preview.Count == 0)
     {
       commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(state, commit, Utils.RhinoAppName, progress.CancellationToken);
+      await ConnectorHelpers.TryCommitReceived(
+        state,
+        commit,
+        Utils.GetRhinoHostAppVersion(),
+        progress.CancellationToken
+      );
     }
 
     // get commit layer name

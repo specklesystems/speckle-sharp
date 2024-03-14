@@ -34,6 +34,9 @@ public sealed class Skylight : IConverter
         {
           case Objects.BuiltElements.Archicad.ArchicadSkylight archicadSkylight:
             archicadSkylight.parentApplicationId = tc.parent.current.id;
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadSkylight>(
+              archicadSkylight
+            );
             skylights.Add(archicadSkylight);
             break;
           //case Objects.BuiltElements.Opening skylight:
@@ -84,7 +87,7 @@ public sealed class Skylight : IConverter
       foreach (Speckle.Newtonsoft.Json.Linq.JToken jToken in jArray)
       {
         Objects.BuiltElements.Archicad.ArchicadSkylight skylight =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadSkylight>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadSkylight>(jToken);
 
         skylight.displayValue = Operations.ModelConverter.MeshesToSpeckle(
           elementModels.First(e => e.applicationId == skylight.applicationId).model

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
+using Speckle.Core.Api.GraphQL;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -53,8 +54,27 @@ public static class AccountManager
       httpClient
     );
 
-    //language=graphql
-    var request = new GraphQLRequest { Query = " query { serverInfo { name company } }" };
+    System.Version version = await gqlClient
+      .GetServerVersion(cancellationToken: cancellationToken)
+      .ConfigureAwait(false);
+
+    // serverMigration property was added in 2.18.5, so only query for it
+    // if the server has been updated past that version
+    System.Version serverMigrationVersion = new(2, 18, 5);
+
+    string queryString;
+    if (version >= serverMigrationVersion)
+    {
+      //language=graphql
+      queryString = "query { serverInfo { name company migration { movedFrom movedTo } } }";
+    }
+    else
+    {
+      //language=graphql
+      queryString = "query { serverInfo { name company } }";
+    }
+
+    var request = new GraphQLRequest { Query = queryString };
 
     var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request, cancellationToken).ConfigureAwait(false);
 
@@ -118,7 +138,11 @@ public static class AccountManager
   /// <param name="token"></param>
   /// <param name="server">Server URL</param>
   /// <returns></returns>
-  internal static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(string token, Uri server)
+  internal static async Task<ActiveUserServerInfoResponse> GetUserServerInfo(
+    string token,
+    Uri server,
+    CancellationToken ct = default
+  )
   {
     try
     {
@@ -131,14 +155,29 @@ public static class AccountManager
         httpClient
       );
 
-      //language=graphql
-      var request = new GraphQLRequest
-      {
-        Query =
-          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
-      };
+      System.Version version = await client.GetServerVersion(ct).ConfigureAwait(false);
 
-      var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request).ConfigureAwait(false);
+      // serverMigration property was added in 2.18.5, so only query for it
+      // if the server has been updated past that version
+      System.Version serverMigrationVersion = new(2, 18, 5);
+
+      string queryString;
+      if (version >= serverMigrationVersion)
+      {
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version migration { movedFrom movedTo } } }";
+      }
+      else
+      {
+        //language=graphql
+        queryString =
+          "query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version } }";
+      }
+
+      var request = new GraphQLRequest { Query = queryString };
+
+      var response = await client.SendQueryAsync<ActiveUserServerInfoResponse>(request, ct).ConfigureAwait(false);
 
       if (response.Errors != null)
       {
@@ -196,13 +235,66 @@ public static class AccountManager
   }
 
   /// <summary>
-  /// Gets all the accounts for a given server.
+  /// Upgrades an account from the account.serverInfo.movedFrom account to the account.serverInfo.movedTo account
+  /// </summary>
+  /// <param name="id">Id of the account to upgrade</param>
+  public static async Task UpgradeAccount(string id)
+  {
+    var account =
+      GetAccounts().FirstOrDefault(acc => acc.id == id)
+      ?? throw new SpeckleAccountManagerException($"Account {id} not found");
+
+    if (account.serverInfo.migration.movedTo is not Uri upgradeUri)
+    {
+      throw new SpeckleAccountManagerException(
+        $"Server with url {account.serverInfo.url} does not have information about the upgraded server"
+      );
+    }
+
+    account.serverInfo.migration.movedTo = null;
+    account.serverInfo.migration.movedFrom = new Uri(account.serverInfo.url);
+    account.serverInfo.url = upgradeUri.ToString().TrimEnd('/');
+    account.serverInfo.frontend2 = true;
+
+    // setting the id to null will force it to be recreated
+    account.id = null;
+
+    RemoveAccount(id);
+    s_accountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+    await s_accountStorage.WriteComplete().ConfigureAwait(false);
+  }
+
+  /// <summary>
+  /// Returns all unique accounts matching the serverUrl provided. If an account exists on more than one server,
+  /// typically because it has been migrated, then only the upgraded account (and therefore server) are returned.
+  /// Accounts are deemed to be the same when the Account.Id matches.
   /// </summary>
   /// <param name="serverUrl"></param>
   /// <returns></returns>
   public static IEnumerable<Account> GetAccounts(string serverUrl)
   {
-    return GetAccounts().Where(acc => acc.serverInfo.url == serverUrl);
+    var accounts = GetAccounts().ToList();
+    List<Account> filtered = new();
+
+    foreach (var acc in accounts)
+    {
+      if (acc.serverInfo?.migration?.movedFrom == new Uri(serverUrl))
+      {
+        filtered.Add(acc);
+      }
+    }
+
+    foreach (var acc in accounts)
+    {
+      // we use the userInfo to detect the same account rather than the account.id
+      // which should NOT match for essentially the same accounts but on different servers - i.e. FE1 & FE2
+      if (acc.serverInfo.url == serverUrl && !filtered.Any(x => x.userInfo.id == acc.userInfo.id))
+      {
+        filtered.Add(acc);
+      }
+    }
+
+    return filtered;
   }
 
   /// <summary>
@@ -304,21 +396,23 @@ public static class AccountManager
   /// Refetches user and server info for each account
   /// </summary>
   /// <returns></returns>
-  public static async Task UpdateAccounts()
+  public static async Task UpdateAccounts(CancellationToken ct = default)
   {
-    foreach (var account in GetAccounts())
+    // need to ToList() the GetAccounts call or the UpdateObject call at the end of this method
+    // will not work because sqlite does not support concurrent db calls
+    foreach (var account in GetAccounts().ToList())
     {
       try
       {
         Uri url = new(account.serverInfo.url);
-        var userServerInfo = await GetUserServerInfo(account.token, url).ConfigureAwait(false);
+        var userServerInfo = await GetUserServerInfo(account.token, url, ct).ConfigureAwait(false);
 
         //the token has expired
         //TODO: once we get a token expired exception from the server use that instead
         if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
         {
           var tokenResponse = await GetRefreshedToken(account.refreshToken, url).ConfigureAwait(false);
-          userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
+          userServerInfo = await GetUserServerInfo(tokenResponse.token, url, ct).ConfigureAwait(false);
 
           if (userServerInfo?.activeUser == null || userServerInfo.serverInfo == null)
           {
@@ -333,11 +427,16 @@ public static class AccountManager
         account.userInfo = userServerInfo.activeUser;
         account.serverInfo = userServerInfo.serverInfo;
       }
+      catch (OperationCanceledException)
+      {
+        throw;
+      }
       catch (Exception ex) when (!ex.IsFatal())
       {
         account.isOnline = false;
       }
 
+      ct.ThrowIfCancellationRequested();
       s_accountStorage.UpdateObject(account.id, JsonConvert.SerializeObject(account));
     }
   }

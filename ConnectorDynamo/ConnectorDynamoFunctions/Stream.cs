@@ -55,11 +55,7 @@ public static class Stream
         Core.Api.Stream res = Task.Run(async () => await client.StreamGet(s.StreamId)).Result;
         s.UserId = accountToUse.userInfo.id;
 
-        Analytics.TrackEvent(
-          accountToUse,
-          Analytics.Events.NodeRun,
-          new Dictionary<string, object>() { { "name", "Stream Get" } }
-        );
+        AnalyticsUtils.TrackNodeRun(accountToUse, "Stream Get");
       }
     }
     catch (Exception ex) when (!ex.IsFatal())
@@ -136,11 +132,7 @@ public static class Stream
       input.isPublic = (bool)isPublic;
     }
 
-    Analytics.TrackEvent(
-      account,
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Stream Update" } }
-    );
+    AnalyticsUtils.TrackNodeRun(account, "Stream Update");
 
     try
     {
@@ -221,11 +213,7 @@ public static class Stream
         Utils.HandleApiExeption(ex);
         return details;
       }
-      Analytics.TrackEvent(
-        account,
-        Analytics.Events.NodeRun,
-        new Dictionary<string, object>() { { "name", "Stream Details" } }
-      );
+      AnalyticsUtils.TrackNodeRun(account, "Stream Details");
     }
 
     if (details.Count() == 1)
@@ -278,11 +266,7 @@ public static class Stream
       Utils.HandleApiExeption(ex);
     }
 
-    Analytics.TrackEvent(
-      account,
-      Analytics.Events.NodeRun,
-      new Dictionary<string, object>() { { "name", "Stream List" } }
-    );
+    AnalyticsUtils.TrackNodeRun(account, "Stream List");
 
     return streamWrappers;
   }

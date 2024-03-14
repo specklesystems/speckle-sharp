@@ -108,6 +108,12 @@ public partial class ConverterRhinoGh
       }
     }
 
+    // set application id
+    if (!string.IsNullOrWhiteSpace(obj.applicationId))
+    {
+      attributes.SetUserString(ApplicationIdKey, obj.applicationId);
+    }
+
     // set name or label
     var name = obj["name"] as string ?? obj["label"] as string; // gridlines have a "label" prop instead of name?
     if (name != null)

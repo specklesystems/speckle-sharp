@@ -122,7 +122,7 @@ public partial class ConnectorBindingsRevit
 
           if (state.ReceiveMode == ReceiveMode.Update)
           {
-            DeleteObjects(previousObjects, convertedObjects);
+            DeleteObjects(previousObjects, convertedObjects, transactionManager);
           }
 
           previousObjects.AddConvertedElements(convertedObjects);
@@ -159,10 +159,12 @@ public partial class ConnectorBindingsRevit
   //delete previously sent object that are no more in this stream
   private void DeleteObjects(
     IReceivedObjectIdMap<Base, Element> previousObjects,
-    IConvertedObjectsCache<Base, Element> convertedObjects
+    IConvertedObjectsCache<Base, Element> convertedObjects,
+    TransactionManager transactionManager
   )
   {
     var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
+    transactionManager.StartSubtransaction();
     for (var i = previousAppIds.Count - 1; i >= 0; i--)
     {
       var appId = previousAppIds[i];
@@ -193,6 +195,8 @@ public partial class ConnectorBindingsRevit
         previousObjects.RemoveConvertedId(appId);
       }
     }
+
+    transactionManager.CommitSubtransaction();
   }
 
   private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(
@@ -333,6 +337,7 @@ public partial class ConnectorBindingsRevit
       if (index % 50 == 0)
       {
         transactionManager.Commit();
+        transactionManager.Start();
       }
 
       // Check if parent conversion succeeded or fallback is enabled before attempting the children

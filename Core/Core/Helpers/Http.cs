@@ -134,14 +134,14 @@ public static class Http
   /// </summary>
   /// <param name="uri">The URI that should be pinged</param>
   /// <exception cref="HttpRequestException">Request to <paramref name="uri"/> failed</exception>
-  internal static async Task<HttpResponseMessage> HttpPing(Uri uri)
+  public static async Task<HttpResponseMessage> HttpPing(Uri uri)
   {
     try
     {
       using var httpClient = GetHttpProxyClient();
       HttpResponseMessage response = await httpClient.GetAsync(uri).ConfigureAwait(false);
       response.EnsureSuccessStatusCode();
-      SpeckleLog.Logger.Warning("Successfully pinged {uri}", uri);
+      SpeckleLog.Logger.Information("Successfully pinged {uri}", uri);
       return response;
     }
     catch (HttpRequestException ex)

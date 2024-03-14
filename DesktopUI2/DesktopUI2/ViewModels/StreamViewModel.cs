@@ -249,7 +249,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         //receive modes
         ReceiveModes = Bindings.GetReceiveModes();
 
-        if (!ReceiveModes.Any())
+        if (ReceiveModes.Count == 0)
         {
           throw new InvalidOperationException("No Receive Mode is available.");
         }
@@ -262,7 +262,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       //get available settings from our bindings
       Settings = Bindings.GetSettings();
-      HasSettings = Settings.Any();
+      HasSettings = Settings.Count != 0;
 
       //get available filters from our bindings
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
@@ -270,25 +270,21 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       Branches = await Client.StreamGetBranchesWithLimitRetry(Stream.id, 0).ConfigureAwait(true);
 
-      //TODO: Core's API calls and the StreamWrapper class need to be updated to properly support FE2 links
-      //this is a temporary workaround
-      var index = -1;
-      if (UseFe2)
-      {
-        index = Branches.FindIndex(x => x.id == StreamState.BranchName);
-      }
-      else
+      // get selected branch
+      // streams added by url stores branches by id, else the branch is stored by name
+      // default to the main branch (index 0) on failure to find branch by id or name
+      int index = Branches.FindIndex(x => x.id == StreamState.BranchName);
+      if (index == -1)
       {
         index = Branches.FindIndex(x => x.name == StreamState.BranchName);
+
+        if (index == -1)
+        {
+          index = 0;
+        }
       }
-      if (index != -1)
-      {
-        SelectedBranch = BranchesViewModel[index];
-      }
-      else
-      {
-        SelectedBranch = BranchesViewModel[0];
-      }
+
+      SelectedBranch = BranchesViewModel[index];
 
       //restore selected filter
       if (StreamState.Filter != null)
@@ -497,7 +493,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new Commit
           {
             id = ConnectorHelpers.LatestCommitString,
-            message = "Always receive the latest commit sent to this branch."
+            message = "Always receive the latest version sent to this model."
           }
         );
         Commits = branch.commits.items;
@@ -657,12 +653,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
-  //UI Binding
-  public bool UseFe2
-  {
-    get { return Client.Account.serverInfo.frontend2; }
-  }
-
   public DateTime? LastUsedTime
   {
     get => StreamState.LastUsed;
@@ -818,7 +808,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       if (!IsReceiver)
       {
-        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
+        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Model" }, "Plus"));
       }
 
       return _branchesViewModel;
@@ -1237,7 +1227,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           new PopUpNotificationViewModel
           {
             Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
-            Message = openOnline ? "Click to view it online" : "Click open the stream",
+            Message = openOnline ? "Click to view it online" : "Click open the project",
             OnClick = () =>
             {
               //if in stream edit open online
@@ -1676,7 +1666,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         notificationViewModel = new PopUpNotificationViewModel
         {
           Title = $"😞 {commandPrettyName} Failed!",
-          Message = $"Failed to fetch stream data from server. Reason: {ex.Message}",
+          Message = $"Failed to fetch project data from server. Reason: {ex.Message}",
           Type = NotificationType.Error
         };
         break;
@@ -1777,8 +1767,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
         {
-          Title = "💾 Stream Saved",
-          Message = "This stream has been saved to this file",
+          Title = "💾 Project Saved",
+          Message = "This project has been saved to this file",
           Type = NotificationType.Success
         }
       );

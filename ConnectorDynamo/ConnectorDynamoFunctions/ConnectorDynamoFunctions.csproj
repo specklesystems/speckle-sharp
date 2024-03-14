@@ -9,6 +9,10 @@
         <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SpeckleConnectorDynamoExtension" />
+    <InternalsVisibleTo Include="SpeckleConnectorDynamo" />
+  </ItemGroup>
     <ItemGroup>
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="System.Net.Http" />

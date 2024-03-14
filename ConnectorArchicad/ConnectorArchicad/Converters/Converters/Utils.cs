@@ -151,7 +151,7 @@ public static class Utils
     return shape;
   }
 
-  public static T ConvertDTOs<T>(dynamic jObject)
+  public static T ConvertToSpeckleDTOs<T>(dynamic jObject)
   {
     Objects.BuiltElements.Archicad.ArchicadLevel level = null;
     if (jObject.level != null)
@@ -199,14 +199,36 @@ public static class Utils
     return speckleObject;
   }
 
+  public static T ConvertToArchicadDTOs<T>(dynamic @object)
+  {
+    if (@object.elementProperties != null)
+    {
+      @object.elementProperties = null;
+    }
+
+    if (@object.componentProperties != null)
+    {
+      @object.componentProperties = null;
+    }
+
+    if (@object.GetType().GetProperty("elements") != null)
+    {
+      @object.elements = null;
+    }
+
+    return @object;
+  }
+
   public static Objects.BuiltElements.Archicad.ArchicadLevel ConvertLevel(Objects.BuiltElements.Level level)
   {
-    return new Objects.BuiltElements.Archicad.ArchicadLevel
-    {
-      id = level.id,
-      applicationId = level.applicationId,
-      elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
-      name = level.name
-    };
+    return (level == null)
+      ? null
+      : new Objects.BuiltElements.Archicad.ArchicadLevel
+      {
+        id = level.id,
+        applicationId = level.applicationId,
+        elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
+        name = level.name
+      };
   }
 }
