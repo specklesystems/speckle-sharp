@@ -100,6 +100,7 @@ public class App : IExternalApplication
 
     CefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
+      // TODO: check if it is actually initialised or not
       foreach (BrowserBridge bridge in bridges)
       {
         CefSharpPanel.Browser.JavascriptObjectRepository.Register(

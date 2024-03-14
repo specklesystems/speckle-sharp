@@ -58,7 +58,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     int index = _store.Models.FindIndex(m => m.ModelCardId == model.ModelCardId);
     _store.Models.RemoveAt(index);
   }
-  
+
   public void HighlightModel(string modelCardId)
   {
     var objectIds = new List<string>();
@@ -73,25 +73,27 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     {
       objectIds = receiver.ReceiveResult.BakedObjectIds;
     }
-    
+
     if (objectIds.Count == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, new OperationCanceledException("No objects found to highlight.") );
-      return; 
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId,
+        new OperationCanceledException("No objects found to highlight."));
+      return;
     }
-    
+
     List<RhinoObject> rhinoObjects = objectIds
-      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(o => o!=null)
+      .Select((id) => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id))).Where(o => o != null)
       .ToList();
-    
+
     RhinoDoc.ActiveDoc.Objects.UnselectAll();
 
     if (rhinoObjects.Count == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent,modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId,
+        new OperationCanceledException("No objects found to highlight."));
       return;
     }
-    
+
     RhinoDoc.ActiveDoc.Objects.Select(rhinoObjects.Select(o => o.Id));
 
     // Calculate the bounding box of the selected objects

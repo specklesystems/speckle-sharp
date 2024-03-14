@@ -1,3 +1,4 @@
+﻿#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,11 +13,16 @@ using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json.Linq;
 
-namespace Speckle.Core.Api;
+namespace DUI3.Operations;
 
-public static partial class Operations
+/// <summary>
+/// NOTE: Contains copy pasted code from the OG Send operations in Core (the non-obsolete ones). 
+/// </summary>
+public static class SendHelper
 {
+  
   /// <summary>
+  /// IMPORTANT: Copy pasted function from Operations.Send in Core, but this time returning the converted references from the serializer.
   /// Sends a Speckle Object to the provided <paramref name="transport"/> and (optionally) the default local cache
   /// </summary>
   /// <remarks/>
@@ -27,7 +33,7 @@ public static partial class Operations
   /// using ServerTransport destination = new(account, streamId);
   /// string objectId = await Send(mySpeckleObject, destination, true);
   /// </code></example>
-  public static async Task<string> Send(
+  public static async Task<(string rootObjId, Dictionary<string,ObjectReference> convertedReferences)> Send(
     Base value,
     ITransport transport,
     bool useDefaultCache,
@@ -49,27 +55,25 @@ public static partial class Operations
 
     return await Send(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
   }
-
+  
   /// <summary>
-  /// Sends a Speckle Object to the provided <paramref name="transports"/>
+  /// IMPORTANT: Copy pasted function from Operations.Send in Core, but this time returning the converted references from the serializer.
+  /// It's marked as private as DUI3 only uses the one above.
+  /// Note that this should be structured better in the future - this is here to minimise core changes coming from DUI3. 
   /// </summary>
-  /// <remarks>Only sends to the specified transports, the default local cache won't be used unless you also pass it in</remarks>
-  /// <returns>The id (hash) of the object sent</returns>
-  /// <param name="value">The object you want to send</param>
-  /// <param name="transports">Where you want to send them</param>
-  /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports)</param>
+  /// <param name="value"></param>
+  /// <param name="transports"></param>
+  /// <param name="onProgressAction"></param>
   /// <param name="cancellationToken"></param>
-  /// <exception cref="ArgumentException">No transports were specified</exception>
-  /// <exception cref="ArgumentNullException">The <paramref name="value"/> was <see langword="null"/></exception>
-  /// <exception cref="SpeckleException">Serialization or Send operation was unsuccessful</exception>
-  /// <exception cref="TransportException">One or more <paramref name="transports"/> failed to send</exception>
-  /// <exception cref="OperationCanceledException">The <paramref name="cancellationToken"/> requested cancellation</exception>
-  public static async Task<string> Send(
+  /// <returns></returns>
+  /// <exception cref="ArgumentNullException"></exception>
+  /// <exception cref="ArgumentException"></exception>
+  /// <exception cref="SpeckleException"></exception>
+  private static async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
     Base value,
     IReadOnlyCollection<ITransport> transports,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
-    CancellationToken cancellationToken = default
-  )
+    CancellationToken cancellationToken = default)
   {
     if (value is null)
     {
@@ -92,7 +96,7 @@ public static partial class Operations
 
       var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
-      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, false, cancellationToken);
+      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, trackDetachedChildren: true, cancellationToken);
 
       foreach (var t in transports)
       {
@@ -101,10 +105,10 @@ public static partial class Operations
         t.BeginWrite();
       }
 
-      string hash;
+      (string rootObjId, Dictionary<string,ObjectReference>) serializerReturnValue;
       try
       {
-        hash = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
+        serializerReturnValue = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -137,14 +141,13 @@ public static partial class Operations
           "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
           transports.Max(t => t.SavedObjectCount),
           sendTimer.Elapsed.TotalSeconds,
-          hash
+          serializerReturnValue.rootObjId
         );
-      return hash;
+      return serializerReturnValue;
     }
   }
-
-  /// <returns><inheritdoc cref="Send(Base, IReadOnlyCollection{ITransport}, Action{ConcurrentDictionary{string, int}}?, CancellationToken)"/></returns>
-  internal static async Task<string> SerializerSend(
+  
+  internal static async Task<(string rootObjectId, Dictionary<string,ObjectReference> convertedReferences)> SerializerSend(
     Base value,
     BaseObjectSerializerV2 serializer,
     CancellationToken cancellationToken = default
@@ -157,12 +160,42 @@ public static partial class Operations
 
     await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
-    JToken? idToken = JObject.Parse(obj).GetValue("id");
+    var parsed = JObject.Parse(obj);
+    JToken? idToken = parsed.GetValue("id");
+    
     if (idToken == null)
     {
       throw new SpeckleException("Failed to get id of serialized object");
     }
-
-    return idToken.ToString();
+    
+    return (idToken.ToString(), serializer.ObjectReferences);
   }
+  
+  /// <summary>
+  /// Factory for progress actions used internally inside send and receive methods.
+  /// </summary>
+  /// <param name="onProgressAction"></param>
+  /// <returns></returns>
+  private static Action<string, int>? GetInternalProgressAction(
+    Action<ConcurrentDictionary<string, int>>? onProgressAction
+  )
+  {
+    if (onProgressAction is null)
+    {
+      return null;
+    }
+
+    var localProgressDict = new ConcurrentDictionary<string, int>();
+
+    return (name, processed) =>
+    {
+      if (!localProgressDict.TryAdd(name, processed))
+      {
+        localProgressDict[name] += processed;
+      }
+
+      onProgressAction.Invoke(localProgressDict);
+    };
+  }
+  
 }

@@ -37,7 +37,7 @@ public class ReceiveBinding : IBinding, ICancelable
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public async void Receive(string modelCardId, string versionId)
+  public async void Receive(string modelCardId)
   {
     try
     {
