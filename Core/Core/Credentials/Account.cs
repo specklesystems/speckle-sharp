@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
@@ -7,6 +8,8 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials;
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class Account : IEquatable<Account>
 {
   private string _id { get; set; }
