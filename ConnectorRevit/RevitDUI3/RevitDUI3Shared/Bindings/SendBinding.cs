@@ -37,11 +37,12 @@ public class SendBinding : ISendBinding, ICancelable
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
+
   /// <summary>
   /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
   /// </summary>
   private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
-  
+
   /// <summary>
   /// Thingie we ported from the DUI2 Era.
   /// </summary>
@@ -51,14 +52,14 @@ public class SendBinding : ISendBinding, ICancelable
   {
     s_revitApp = RevitAppProvider.RevitApp;
     _store = store;
-    
+
     s_revitApp.Application.DocumentChanged += (_, e) => StoreChangedElementIdsAndScheduleExpiryCheck(e);
     revitDocumentAggregateCache = new RevitDocumentAggregateCache(new UIDocumentProvider(s_revitApp));
   }
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter> { new RevitSelectionFilter() {IsDefault = true} };
+    return new List<ISendFilter> { new RevitSelectionFilter() { IsDefault = true } };
   }
 
   private Base ConvertElements(
@@ -118,7 +119,7 @@ public class SendBinding : ISendBinding, ICancelable
           elements.Add(el);
         }
       }
-      
+
       if (elements.Count == 0)
       {
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
@@ -127,7 +128,7 @@ public class SendBinding : ISendBinding, ICancelable
       // 4 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
       converter.SetContextDocument(revitDocumentAggregateCache);
-      
+
       // 5 - Convert objects
       Base commitObject = ConvertElements(elements, converter, modelCard, cts);
 
@@ -135,7 +136,7 @@ public class SendBinding : ISendBinding, ICancelable
       {
         throw new OperationCanceledException(cts.Token);
       }
-      
+
       // 7 - Serialize and Send objects
       BasicConnectorBindingCommands.SetModelProgress(
         Parent,
@@ -184,7 +185,7 @@ public class SendBinding : ISendBinding, ICancelable
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
-  
+
   private Base ConvertElements(
     List<Element> elements,
     ISpeckleConverter converter,
@@ -195,7 +196,7 @@ public class SendBinding : ISendBinding, ICancelable
     int count = 0;
     var rootObject = new Collection { name = Doc.PathName.Split('\\').Reverse().First().Split('.').First() };
     var collectionCache = new Dictionary<string, Collection>();
-    
+
     foreach (var revitElement in elements)
     {
       if (cts.IsCancellationRequested)
@@ -205,7 +206,7 @@ public class SendBinding : ISendBinding, ICancelable
 
       var cat = revitElement.Category.Name;
       var level = Doc.GetElement(revitElement.LevelId) as Level;
-      var path = new[] { level == null ? "No level": level.Name, cat };
+      var path = new[] { level == null ? "No level" : level.Name, cat };
       var collection = GetAndCreateObjectHostCollection(path, collectionCache, rootObject);
 
       count++;
@@ -213,7 +214,10 @@ public class SendBinding : ISendBinding, ICancelable
       {
         Base converted;
         var applicationId = revitElement.Id.ToString();
-        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value))
+        if (
+          !modelCard.ChangedObjectIds.Contains(applicationId)
+          && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
+        )
         {
           converted = value;
         }
@@ -222,39 +226,46 @@ public class SendBinding : ISendBinding, ICancelable
           converted = converter.ConvertToSpeckle(revitElement);
           converted.applicationId = applicationId;
         }
-        
+
         collection.elements.Add(converted);
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)count / elements.Count });
+        BasicConnectorBindingCommands.SetModelProgress(
+          Parent,
+          modelCard.ModelCardId,
+          new ModelCardProgress() { Status = "Converting", Progress = (double)count / elements.Count }
+        );
       }
       catch (Exception e)
       {
         // TODO: Add to report, etc.
         Debug.WriteLine(e.Message);
       }
-      
     }
     return rootObject;
   }
 
   /// <summary>
   /// Creates and nests collections based on the provided path within the root collection provided. This will not return a new collection each time is called, but an existing one if one is found.
-  /// For example, you can use this to use (or re-use) a new collection for a path of (level, category) as it's currently implemented. 
+  /// For example, you can use this to use (or re-use) a new collection for a path of (level, category) as it's currently implemented.
   /// </summary>
   /// <param name="path"></param>
   /// <param name="cache"></param>
   /// <param name="root"></param>
   /// <returns></returns>
-  private Collection GetAndCreateObjectHostCollection(IEnumerable<string> path, Dictionary<string, Collection> cache, Collection root)
+  private Collection GetAndCreateObjectHostCollection(
+    IEnumerable<string> path,
+    Dictionary<string, Collection> cache,
+    Collection root
+  )
   {
     string fullPathName = string.Join("", path);
     if (cache.TryGetValue(fullPathName, out Collection value))
     {
       return value;
     }
-    
+
     string flatPathName = "";
     Collection previousCollection = root;
-    
+
     foreach (var pathItem in path)
     {
       flatPathName += pathItem;
@@ -275,7 +286,7 @@ public class SendBinding : ISendBinding, ICancelable
 
     return previousCollection;
   }
-  
+
   /// <summary>
   /// Keeps track of the changed element ids as well as checks if any of them need to trigger
   /// a filter refresh (e.g., views being added).
@@ -312,7 +323,7 @@ public class SendBinding : ISendBinding, ICancelable
     List<SenderModelCard> senders = _store.GetSenders();
     List<string> expiredSenderIds = new();
     string[] objectIdsList = ChangedObjectIds.ToArray();
-    
+
     foreach (var modelCard in senders)
     {
       var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();

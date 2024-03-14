@@ -9,7 +9,6 @@ public class RevitEverythingFilter : EverythingSendFilter
 {
   public override List<string> GetObjectIds()
   {
-    
     return new List<string>();
   }
 

@@ -93,13 +93,17 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     var senderModelCard = _store.GetModelById(modelCardId) as SenderModelCard;
 
     var elementIds = senderModelCard.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
-    
+
     if (elementIds.Count == 0)
     {
-      BasicConnectorBindingCommands.SetModelError(Parent, modelCardId, new OperationCanceledException("No objects found to highlight.") );
+      BasicConnectorBindingCommands.SetModelError(
+        Parent,
+        modelCardId,
+        new OperationCanceledException("No objects found to highlight.")
+      );
       return;
     }
-    
+
     RevitTask.RunAsync(() =>
     {
       UiDocument.Selection.SetElementIds(elementIds);

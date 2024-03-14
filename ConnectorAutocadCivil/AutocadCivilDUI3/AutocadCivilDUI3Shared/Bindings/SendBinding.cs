@@ -34,11 +34,11 @@ public class SendBinding : ISendBinding, ICancelable
   /// Used internally to aggregate the changed objects' id.
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
+
   /// <summary>
   /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
   /// </summary>
   private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
-
 
   public SendBinding(AutocadDocumentModelStore store)
   {
@@ -109,11 +109,13 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 7 - Serialize and Send objects
       var transport = new ServerTransport(account, modelCard.ProjectId);
-      BasicConnectorBindingCommands.SetModelProgress(Parent, modelCardId, new ModelCardProgress { Status = "Uploading..." });
-      var sendResult = await SendHelper
-        .Send(commitObject, transport, true, null, cts.Token)
-        .ConfigureAwait(true);
-      
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress { Status = "Uploading..." }
+      );
+      var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
+
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
       {
@@ -121,7 +123,7 @@ public class SendBinding : ISendBinding, ICancelable
       }
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
-      
+
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException(cts.Token);
@@ -136,11 +138,19 @@ public class SendBinding : ISendBinding, ICancelable
 
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
-      string versionId = await apiClient.CommitCreate(new CommitCreateInput()
-      {
-        streamId = modelCard.ProjectId, branchName = modelCard.ModelId, sourceApplication = "Rhino", objectId = sendResult.rootObjId
-      }, cts.Token).ConfigureAwait(true);
-      
+      string versionId = await apiClient
+        .CommitCreate(
+          new CommitCreateInput()
+          {
+            streamId = modelCard.ProjectId,
+            branchName = modelCard.ModelId,
+            sourceApplication = "Rhino",
+            objectId = sendResult.rootObjId
+          },
+          cts.Token
+        )
+        .ConfigureAwait(true);
+
       SendBindingUiCommands.SetModelCreatedVersionId(Parent, modelCardId, versionId);
       apiClient.Dispose();
     }
@@ -203,8 +213,11 @@ public class SendBinding : ISendBinding, ICancelable
       {
         Base converted;
         var applicationId = tuple.applicationId;
-        
-        if (!modelCard.ChangedObjectIds.Contains(applicationId) && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value))
+
+        if (
+          !modelCard.ChangedObjectIds.Contains(applicationId)
+          && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
+        )
         {
           converted = value;
         }
@@ -222,8 +235,12 @@ public class SendBinding : ISendBinding, ICancelable
         }
 
         collectionCache[tuple.layer].elements.Add(converted);
-        
-        BasicConnectorBindingCommands.SetModelProgress(Parent, modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count});
+
+        BasicConnectorBindingCommands.SetModelProgress(
+          Parent,
+          modelCard.ModelCardId,
+          new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
+        );
       }
       catch (Exception e) when (!e.IsFatal())
       {

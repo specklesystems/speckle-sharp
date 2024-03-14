@@ -16,11 +16,10 @@ using Speckle.Newtonsoft.Json.Linq;
 namespace DUI3.Operations;
 
 /// <summary>
-/// NOTE: Contains copy pasted code from the OG Send operations in Core (the non-obsolete ones). 
+/// NOTE: Contains copy pasted code from the OG Send operations in Core (the non-obsolete ones).
 /// </summary>
 public static class SendHelper
 {
-  
   /// <summary>
   /// IMPORTANT: Copy pasted function from Operations.Send in Core, but this time returning the converted references from the serializer.
   /// Sends a Speckle Object to the provided <paramref name="transport"/> and (optionally) the default local cache
@@ -33,7 +32,7 @@ public static class SendHelper
   /// using ServerTransport destination = new(account, streamId);
   /// string objectId = await Send(mySpeckleObject, destination, true);
   /// </code></example>
-  public static async Task<(string rootObjId, Dictionary<string,ObjectReference> convertedReferences)> Send(
+  public static async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
     Base value,
     ITransport transport,
     bool useDefaultCache,
@@ -55,11 +54,11 @@ public static class SendHelper
 
     return await Send(value, transports, onProgressAction, cancellationToken).ConfigureAwait(false);
   }
-  
+
   /// <summary>
   /// IMPORTANT: Copy pasted function from Operations.Send in Core, but this time returning the converted references from the serializer.
   /// It's marked as private as DUI3 only uses the one above.
-  /// Note that this should be structured better in the future - this is here to minimise core changes coming from DUI3. 
+  /// Note that this should be structured better in the future - this is here to minimise core changes coming from DUI3.
   /// </summary>
   /// <param name="value"></param>
   /// <param name="transports"></param>
@@ -73,7 +72,8 @@ public static class SendHelper
     Base value,
     IReadOnlyCollection<ITransport> transports,
     Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
-    CancellationToken cancellationToken = default)
+    CancellationToken cancellationToken = default
+  )
   {
     if (value is null)
     {
@@ -96,7 +96,8 @@ public static class SendHelper
 
       var internalProgressAction = GetInternalProgressAction(onProgressAction);
 
-      BaseObjectSerializerV2 serializerV2 = new(transports, internalProgressAction, trackDetachedChildren: true, cancellationToken);
+      BaseObjectSerializerV2 serializerV2 =
+        new(transports, internalProgressAction, trackDetachedChildren: true, cancellationToken);
 
       foreach (var t in transports)
       {
@@ -105,7 +106,7 @@ public static class SendHelper
         t.BeginWrite();
       }
 
-      (string rootObjId, Dictionary<string,ObjectReference>) serializerReturnValue;
+      (string rootObjId, Dictionary<string, ObjectReference>) serializerReturnValue;
       try
       {
         serializerReturnValue = await SerializerSend(value, serializerV2, cancellationToken).ConfigureAwait(false);
@@ -146,12 +147,11 @@ public static class SendHelper
       return serializerReturnValue;
     }
   }
-  
-  internal static async Task<(string rootObjectId, Dictionary<string,ObjectReference> convertedReferences)> SerializerSend(
-    Base value,
-    BaseObjectSerializerV2 serializer,
-    CancellationToken cancellationToken = default
-  )
+
+  internal static async Task<(
+    string rootObjectId,
+    Dictionary<string, ObjectReference> convertedReferences
+  )> SerializerSend(Base value, BaseObjectSerializerV2 serializer, CancellationToken cancellationToken = default)
   {
     string obj = serializer.Serialize(value);
     Task[] transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToArray();
@@ -162,15 +162,15 @@ public static class SendHelper
 
     var parsed = JObject.Parse(obj);
     JToken? idToken = parsed.GetValue("id");
-    
+
     if (idToken == null)
     {
       throw new SpeckleException("Failed to get id of serialized object");
     }
-    
+
     return (idToken.ToString(), serializer.ObjectReferences);
   }
-  
+
   /// <summary>
   /// Factory for progress actions used internally inside send and receive methods.
   /// </summary>
@@ -197,5 +197,4 @@ public static class SendHelper
       onProgressAction.Invoke(localProgressDict);
     };
   }
-  
 }

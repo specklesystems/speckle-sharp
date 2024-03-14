@@ -64,8 +64,8 @@ public class ObjectReference : Base
   public new string speckle_type = "reference";
 
   public string referencedId { get; set; }
-  
-  public Dictionary<string,int> closure { get; set; }
+
+  public Dictionary<string, int> closure { get; set; }
 }
 
 public class ProgressEventArgs : EventArgs

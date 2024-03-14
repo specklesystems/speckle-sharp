@@ -32,8 +32,6 @@ public class UIDocumentProvider
   }
 }
 
-
-
 /// <summary>
 /// Simple conversion cache to store elements that are retrieved and may be needed again throughout the conversion operation
 /// </summary>
