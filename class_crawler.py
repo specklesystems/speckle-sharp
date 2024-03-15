@@ -1,6 +1,16 @@
-
 from os import listdir
 from os.path import isfile, join
+from typing import List
+
+import plotly
+from class_data import (
+    CLASSES_PYTHON,
+    get_detailed_classes_from_files,
+    get_function_from_file,
+    get_speckle_class_full_name,
+    get_trimmed_strings_per_line_from_files,
+)
+from plot_builder import plot_flowchart
 
 import pathlib
 
@@ -66,38 +76,32 @@ def file_condition_classes(file_name):
 
 
 files = get_files_in_path(path_objects, [], file_condition=file_condition_classes)
-
-
-###################################### get classes from files (assuming 1 class per file)
-def get_trimmed_strings_per_line_from_files(
-    trim_0_start, trim_0_end, trim_1_start, trim_1_end, files
-):
-    all_classes = []
-    for file in files:
-        with open(file) as f:
-            start_str = None
-            end_str = None
-
-            for line in f.readlines():
-                if not line.startswith("//") and not line.startswith("      //"):
-
-                    if trim_0_start in line and trim_0_end in line:
-                        start_str = line.split(trim_0_start)[1].split(trim_0_end)[0]
-                    elif trim_1_start in line and trim_1_end in line:
-                        end_str = line.split(trim_1_start)[1].split(trim_1_end)[0]
-
-                    if start_str and end_str:
-                        all_classes.append(start_str + "." + end_str)
-                        break
-
-    return all_classes
-
-
-result_all_classes.extend(
-    get_trimmed_strings_per_line_from_files(
-        "namespace ", ";", "public class ", " :", files
-    )
+all_cl, all_f = get_trimmed_strings_per_line_from_files(
+    "namespace ", ";", ["public class ", "public abstract class "], " :", files
 )
+result_all_classes = all_cl
+
+
+# get very detailed classes composition
+all_classes_dict = get_detailed_classes_from_files(all_cl, all_f, result_all_classes)
+
+
+def add_subclasses_from_parent_class(class_edit, all_classes_dict):
+    parent = all_classes_dict[class_edit]["parent"]
+    if parent == "Base":
+        return
+    existing_subclasses = all_classes_dict[class_edit]["subclasses"]
+    subclasses_to_add: dict[str, list] = all_classes_dict[parent]["subclasses"]
+    for key, val in subclasses_to_add.items():
+        all_classes_dict[class_edit]["subclasses"].update({key: val})
+
+
+for class_edit, _ in all_classes_dict.items():
+    add_subclasses_from_parent_class(class_edit, all_classes_dict)
+
+result_all_classes.extend(CLASSES_PYTHON)
+result_all_classes = list(set(result_all_classes))
+result_all_classes.sort()
 
 for c in result_all_classes:
     print(c)
@@ -465,51 +469,6 @@ def folder_condition_apps(folder_name, name_to_match):
         return False
 
 
-def get_abbreviations_functions_from_file(file, trim_start, start_line_condition=None):
-    replace_from_to = {}
-    with open(file, encoding="utf-8") as f:
-        string = ""
-        brackets_open = 0
-        brackets_started = 0
-        for line in f.readlines():
-            if not line.startswith("//") and not line.startswith("      //"):
-                # get replacement pairs
-                if "using " in line and " = " in line:
-                    replace_from_to.update(
-                        {
-                            line.split("using ")[1].split(" = ")[0]
-                            + ".": line.split(" = ")[1].split(";")[0]
-                            + "."
-                        }
-                    )
-
-                # get actual string
-                if trim_start in line and (
-                    start_line_condition is None or start_line_condition(line) is True
-                ):  # start writing string
-                    for key_replace, val_replace in replace_from_to.items():
-                        if key_replace in line:
-                            line = line.replace(key_replace, val_replace)
-                    string += line
-                elif len(string) > 0 and brackets_open == 0 and brackets_started > 0:
-                    for key_replace, val_replace in replace_from_to.items():
-                        if key_replace in line:
-                            line = line.replace(key_replace, val_replace)
-                    string += line
-                    break
-                elif len(string) > 0:  # keep adding lines
-                    # start counting brackets
-                    brackets_open += line.count("{")
-                    brackets_open -= line.count("}")
-                    if brackets_open > 0:
-                        brackets_started += 1
-                    for key_replace, val_replace in replace_from_to.items():
-                        if key_replace in line:
-                            line = line.replace(key_replace, val_replace)
-                    string += line
-    return string
-
-
 for app in APPS:
     print("\n")
     print(app)
@@ -541,8 +500,8 @@ for app in APPS:
                 all_result_types = []
                 for func_name in func_names:
                     for file in files:
-                        string = get_abbreviations_functions_from_file(
-                            file, " " + func_name, start_line_condition
+                        string = get_function_from_file(
+                            file, [" " + func_name], start_line_condition
                         )
                         if len(string) > 0:
                             res_type = string.split("public ")[1].split(
@@ -618,3 +577,22 @@ for app in APPS:
 
     # print(files)
 
+
+for app_receive in APPS:
+    print(app_receive)
+    class_send = []
+    class_sp = []
+    condition_1 = []
+    class_receive = []
+    condition_2 = []
+    for key, val in result_all_apps_convertable[app_receive]["to_native"].items():
+        class_receive.extend(val["to_native_classes"])
+        class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
+        if len(val["to_native_classes"]) == 0:
+            class_sp.append(key)
+            class_receive.append("NA")
+    fig = plot_flowchart(
+        class_send, class_sp, condition_1, class_receive, condition_2, title=app_receive
+    )
+    if fig is not None:
+        plotly.offline.plot(fig, filename=f"flowchart_{app_receive}.html")

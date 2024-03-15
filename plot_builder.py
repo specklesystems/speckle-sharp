@@ -11,7 +11,7 @@ from itertools import cycle
 import plotly.graph_objects as go
 
 
-def plot_flowchart(all_sub_groups_sent, all_sub_groups_received):
+def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_received, condition_2, title: str = "Title"):
 
     cols = 2
     rows = 1
@@ -38,14 +38,12 @@ def plot_flowchart(all_sub_groups_sent, all_sub_groups_received):
     receive_set.sort()
     receive_set.reverse()
 
+    if len(send_set) == 0 or len(receive_set) == 0:
+        return
+
     groups_send_labels = [gr for gr in send_set]
     groups_receive_labels = [gr for gr in receive_set]
     groups_first_labels = ["__" for _ in send_set]
-
-    print(all_sub_groups_sent)
-    print(all_sub_groups_received)
-    print(groups_send_labels)
-    print(groups_receive_labels)
 
     # for k, _ in enumerate([1]):
     any_connection_in_subgroup = 0
@@ -89,17 +87,6 @@ def plot_flowchart(all_sub_groups_sent, all_sub_groups_received):
             groups_colors.append("white")
 
     #########################################
-    # insert invisible connection for an extra column
-    for k in range(len(groups_send_labels)):
-        groups_send.append(2 * len(groups_send_labels) + k)
-        groups_receive.append(100)
-        groups_values.append(1)
-        groups_colors.append("white")
-
-    print(groups_send)
-    print(groups_receive)
-    print(groups_values)
-    print(groups_colors)
 
     groups_indices = [
         0.01 * (j + 1) if c == "white" else j + 1 for j, c in enumerate(groups_colors)
@@ -130,18 +117,13 @@ def plot_flowchart(all_sub_groups_sent, all_sub_groups_received):
         y_axis3[-1] = 0.999
     y_axis3.reverse()
     y_axis = y_axis12 + y_axis12 + y_axis3
-    # y_axis.insert(0, 0.001)
-    y_axis.append(0.999)
 
     #### x-axis
     x_axis = (
         [0.001 for _ in groups_first_labels]
-        + [0.25 for _ in groups_send_labels]
-        + [0.75 for _ in groups_receive_labels]
-        + [0.999]
+        + [0.35 for _ in groups_send_labels]
+        + [0.999 for _ in groups_receive_labels]
     )
-    print(x_axis)
-    print(y_axis)
 
     mynode = dict(
         pad=15,
@@ -159,24 +141,25 @@ def plot_flowchart(all_sub_groups_sent, all_sub_groups_received):
         color=groups_colors,
     )
     fig1 = go.Figure(data=[go.Sankey(arrangement="snap", node=mynode, link=mylink)])
-    fig1.update_layout(title_text="Basic Sankey Diagram", font_size=50)
+    fig1.update_layout(title_text="Basic Sankey Diagram", font_size=20)
 
     fig.add_trace(fig1.data[0], row=1, col=1)
 
-    fig.update_layout(title="Multi receive per server: subgroups and apps")
+    fig.update_layout(title=title)
 
-    width = 1800
+    width = 3600
     fig.update_layout(
         autosize=False,
         width=width,
         font_size=20,
-        height=1 * width / cols * rows,
+        height=int(0.2 * width * max(len(groups_send_labels) / 15, 1)),
     )
 
     fig.update_yaxes(range=[0, 30], col=1)
     fig.update_xaxes(range=[0, 31 * 4], col=1)
 
-    plotly.offline.plot(fig, filename="flowchart.html")
+    return(fig)
+    #plotly.offline.plot(fig, filename=f"flowchart_{title}.html")
 
 
-plot_flowchart(["1", "2", "1", "4", "5"], ["11", "22", "33", "11", "88"])
+# plot_flowchart(["1", "2", "1", "4", "5"], ["11", "22", "33", "11", "88"])
