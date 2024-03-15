@@ -12,7 +12,6 @@ using DUI3.Operations;
 using Speckle.ConnectorRevitDUI3.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
 using Speckle.Core.Models;
 using DUI3.Utils;
 using RevitSharedResources.Interfaces;
@@ -143,8 +142,20 @@ public class SendBinding : ISendBinding, ICancelable
         modelCardId,
         new ModelCardProgress { Status = "Uploading..." }
       );
+
+      throw new InvalidOperationException(
+        "The next method does not know about the variable transports - string objectId = await Speckle.Core.Api.Operations"
+          + "\r\n.Send(commitObject, cts.Token, transports, disposeTransports: true)\r\n"
+          + ".ConfigureAwait(true);\r\n"
+      );
+
       string objectId = await Speckle.Core.Api.Operations
-        .Send(commitObject, cts.Token, transports, disposeTransports: true)
+        .Send(
+          commitObject,
+          cts.Token, /* transports*/
+          null,
+          disposeTransports: true
+        )
         .ConfigureAwait(true);
 
       BasicConnectorBindingCommands.SetModelProgress(
@@ -159,8 +170,8 @@ public class SendBinding : ISendBinding, ICancelable
         .CommitCreate(
           new CommitCreateInput()
           {
-            streamId = model.ProjectId,
-            branchName = model.ModelId,
+            streamId = modelCard.ProjectId,
+            branchName = modelCard.ModelId,
             sourceApplication = "Rhino",
             objectId = objectId
           },

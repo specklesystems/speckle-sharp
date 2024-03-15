@@ -9,6 +9,7 @@
     <Description>Speckle Automate SDK</Description>
     <PackageTags>$(PackageTags) speckle automation</PackageTags>
     <RootNamespace>Speckle.Automate.Sdk</RootNamespace>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
