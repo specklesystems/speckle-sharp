@@ -1,19 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Revit.Async;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 

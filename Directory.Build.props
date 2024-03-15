@@ -40,7 +40,7 @@
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;CA2101;
       NU1701;
       <!--Others we don't want-->
-      CA1815;CA1054;$(NoWarn)
+      CA1815;CA1054;CA1852;CA1812;CA1003;$(NoWarn)
     </NoWarn>
     
     <WarningsAsErrors>

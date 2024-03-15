@@ -1,5 +1,4 @@
 using Autodesk.Revit.DB;
-using Autofac.Features.Indexed;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -20,6 +19,6 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   {
     var objectConverter = _toSpeckle.ResolveInstance(nameof(Floor));
 
-    int t = -1;
+    _ = -1;
   }
 }

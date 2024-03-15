@@ -1,26 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
-using Speckle.Core.Kits;
-using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
-using Speckle.Core.Models;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Connectors.Revit.Bindings;
 using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
-using Autofac.Features.Indexed;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
-using Speckle.Converters.Common.Objects;
-using System.Windows.Forms.VisualStyles;
 
 namespace Speckle.Connectors.Revit.Bindings;
 

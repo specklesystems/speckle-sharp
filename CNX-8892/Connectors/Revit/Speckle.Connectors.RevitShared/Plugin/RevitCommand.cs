@@ -1,8 +1,6 @@
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.Connectors.Revit;
-using Speckle.Connectors.Revit.Plugin;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

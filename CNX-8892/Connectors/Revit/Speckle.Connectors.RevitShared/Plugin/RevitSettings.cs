@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Media.Converters;
-using Microsoft.SqlServer.Server;
-
 namespace Speckle.Connectors.Revit.Plugin;
 
 internal class RevitSettings // POC: need to derive some interface for things that require IHostSettings

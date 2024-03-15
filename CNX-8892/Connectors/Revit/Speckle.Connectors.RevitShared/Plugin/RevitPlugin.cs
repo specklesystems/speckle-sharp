@@ -1,19 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Reflection;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.ApplicationServices;
-using Autodesk.Revit.DB.Events;
 using Revit.Async;
 using CefSharp;
 using System.Linq;
-using System.IO;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
-using Autofac;
-using Speckle.Connectors.Revit.HostApp;
 using System.Diagnostics;
 
 namespace Speckle.Connectors.Revit.Plugin;

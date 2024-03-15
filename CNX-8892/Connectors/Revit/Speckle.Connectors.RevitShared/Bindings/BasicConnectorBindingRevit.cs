@@ -1,18 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using Revit.Async;
 using Speckle.Connectors.Utils.Reflection;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit.HostApp;
-using Speckle.Connectors.Revit.Bindings;
 
 namespace Speckle.Connectors.DUI.Bindings;
 

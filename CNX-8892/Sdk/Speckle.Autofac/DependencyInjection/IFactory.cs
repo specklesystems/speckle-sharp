@@ -5,8 +5,8 @@ namespace Speckle.Autofac.DependencyInjection;
 // Interceptors?
 
 // POC: this might be somehting that could go in a wholly converter agnostic project
-public interface IFactory<K, T>
-  where T : class
+public interface IFactory<in TKey, out TValue>
+  where TValue : class
 {
-  T ResolveInstance(K strongName);
+  TValue ResolveInstance(TKey strongName);
 }
