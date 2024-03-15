@@ -5,7 +5,6 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWpf>true</UseWpf>
     <Nullable>enable</Nullable>
-    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <Import Project="..\Speckle.Connectors.RevitShared\Speckle.Connectors.RevitShared.projitems" Label="Shared" />
