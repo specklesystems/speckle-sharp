@@ -1,14 +1,7 @@
 using System;
-using System.Linq;
-using System.Windows.Threading;
-using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.DependencyInjection;
-using CefSharp;
-using CefSharp.DevTools;
 using System.Reflection;
 using System.IO;
 using Autofac;
@@ -76,7 +69,7 @@ internal class RevitExternalApplication : IExternalApplication
       _revitPlugin = _container.Resolve<IRevitPlugin>();
       _revitPlugin.Initialise();
     }
-    catch (Exception ex)
+    catch (Exception)
     {
       // POC: feedback?
       return Result.Failed;
@@ -99,7 +92,7 @@ internal class RevitExternalApplication : IExternalApplication
       // need to look for commonality
       _revitPlugin.Shutdown();
     }
-    catch (Exception ex)
+    catch (Exception)
     {
       // POC: feedback?
       return Result.Failed;

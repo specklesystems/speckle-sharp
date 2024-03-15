@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Events;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

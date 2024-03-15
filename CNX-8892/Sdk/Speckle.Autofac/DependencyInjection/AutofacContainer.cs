@@ -13,10 +13,8 @@ namespace Speckle.Autofac.DependencyInjection;
 // POC: wrap the IContainer or expose it?
 public class AutofacContainer
 {
-  public delegate void PreBuildEventHandler(object sender, ContainerBuilder containerBuilder);
-
   // Declare the event.
-  public event PreBuildEventHandler PreBuildEvent;
+  public event EventHandler<ContainerBuilder> PreBuildEvent;
 
   private readonly ContainerBuilder _builder;
   private readonly IStorageInfo _storageInfo;

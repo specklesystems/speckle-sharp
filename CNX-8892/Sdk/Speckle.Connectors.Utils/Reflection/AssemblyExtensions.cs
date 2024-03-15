@@ -8,9 +8,7 @@ public static class AssemblyExtensions
   public static string GetVersion(this Assembly assembly)
   {
     // this is adapted from Serilog extension method, but we might find the fallback is enough: assembly.GetName()?.Version?.ToString();
-    var attribute =
-      assembly.GetCustomAttributes().FirstOrDefault(x => x.GetType() == typeof(AssemblyInformationalVersionAttribute))
-      as AssemblyInformationalVersionAttribute;
+    var attribute = assembly.GetCustomAttributes().OfType<AssemblyInformationalVersionAttribute>().FirstOrDefault();
     if (attribute != null)
     {
       return attribute.InformationalVersion;

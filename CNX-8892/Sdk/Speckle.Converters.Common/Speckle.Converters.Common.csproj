@@ -1,14 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LangVersion>10.0</LangVersion>
-    <Nullable>enable</Nullable>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Objects\Speckle.Objects.Common\Speckle.Objects.Common.csproj" />
-    <ProjectReference Include="..\..\Speckle.Autofac\Speckle.Autofac.csproj" />
   </ItemGroup>
 
 </Project>
