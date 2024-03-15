@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Connectors", "Connectors", "{DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LegacyConnectors", "LegacyConnectors", "{DD7DA7E3-FBB7-4216-852B-A4A5BF3AB9AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dynamo", "Dynamo", "{CB6F8F77-4487-469B-896A-1EEEC4451A04}"
 EndProject
