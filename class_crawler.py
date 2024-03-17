@@ -648,7 +648,10 @@ for app_receive in APPS:
                         break
 
             if len(classes_branching_receive) == 0:
-                for search_classes in [v for _, v in subclasses.items()]:
+                search_class_props = [k for k, _ in subclasses.items()]
+                for ind, search_classes in enumerate(
+                    [v for _, v in subclasses.items()]
+                ):
                     for search_class in search_classes:
                         if (
                             search_class
@@ -661,12 +664,21 @@ for app_receive in APPS:
                             ]["to_native"][search_class]
                             resulted_native_classes = val_item["to_native_classes"]
                             if len(resulted_native_classes) > 0:
-                                tree += "->" + search_class
+                                tree += (
+                                    "."
+                                    + search_class_props[ind]
+                                    + "<br>("
+                                    + search_class
+                                    + ")"
+                                )
                                 for native_cl in resulted_native_classes:
                                     classes_branching_receive.update(
                                         {key: {tree: native_cl}}
                                     )
                                 break
+            if len(classes_branching_receive) == 0:
+                class_sp.append(key)
+                class_receive.append("NA")
 
     fig = plot_flowchart(
         class_send,
