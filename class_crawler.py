@@ -10,7 +10,7 @@ from class_data import (
     get_speckle_class_full_name,
     get_trimmed_strings_per_line_from_files,
 )
-from plot_builder import plot_flowchart
+from plot_builder import full_flowchart, plot_flowchart
 
 import pathlib
 
@@ -606,7 +606,7 @@ for app, val in result_all_apps_convertable.items():
                     {new_cl: val2.copy()}
                 )
 
-
+traces = {}
 for app_receive in APPS:
     print(app_receive)
     class_send = []
@@ -680,7 +680,7 @@ for app_receive in APPS:
                 class_receive.append("NA")
                 condition_1.append(val["can_convert"])
 
-    fig = plot_flowchart(
+    trace = plot_flowchart(
         class_send,
         class_sp,
         condition_1,
@@ -689,5 +689,8 @@ for app_receive in APPS:
         classes_branching_receive,
         title=app_receive,
     )
-    if fig is not None:
-        plotly.offline.plot(fig, filename=f"flowchart_{app_receive}.html")
+    traces.update({app_receive: {app_receive: trace}})
+
+fig = full_flowchart(traces)
+if fig is not None:
+    plotly.offline.plot(fig, filename="flowchart_full.html")

@@ -7,12 +7,49 @@ import math
 import colorsys
 from itertools import cycle
 
-############################ flowchart detailed
-import plotly.graph_objects as go
+
+def full_flowchart(
+    traces_per_app: dict, label_from: str = "rhino", label_to: str = "rhino"
+):
+    ############################ https://stackoverflow.com/questions/59406167/plotly-how-to-filter-a-pandas-dataframe-using-a-dropdown-menu
+    fig = go.Figure()
+
+    # set up ONE trace
+    trace1 = traces_per_app[label_from][label_to]
+    fig.add_trace(trace1)
+
+    updatemenu = []
+    buttons_from = []
+    buttons_to = []
+
+    # button with one option for each dataframe
+    for from_app, val in traces_per_app.items():
+        for to_app, graph in val.items():
+            buttons_to.append(
+                dict(
+                    method="restyle",
+                    label=to_app,
+                    visible=True,
+                    args=[graph, [0]],
+                )
+            )
+
+    # some adjustments to the updatemenus
+    updatemenu = []
+    your_menu = dict()
+    updatemenu.append(your_menu)
+
+    updatemenu[0]["buttons"] = buttons_to
+    updatemenu[0]["direction"] = "down"
+    updatemenu[0]["showactive"] = True
+
+    # add dropdown menus to the figure
+    fig.update_layout(showlegend=False, updatemenus=updatemenu)
+    return fig
 
 
 def plot_flowchart(
-    class_send,
+    all_out_classes,
     all_sub_groups_sent,
     condition_1,
     all_sub_groups_received,
@@ -177,7 +214,8 @@ def plot_flowchart(
         value=groups_values + groups_extra_values + groups_extra_values,
         color=groups_colors + groups_extra_colors + groups_extra_colors,
     )
-    fig1 = go.Figure(data=[go.Sankey(arrangement="snap", node=mynode, link=mylink)])
+    trace1 = go.Sankey(arrangement="snap", node=mynode, link=mylink)
+    fig1 = go.Figure(data=[trace1])
     fig1.update_layout(title_text="Basic Sankey Diagram", font_size=20)
 
     fig.add_trace(fig1.data[0], row=1, col=1)
@@ -195,7 +233,7 @@ def plot_flowchart(
     fig.update_yaxes(range=[0, 30], col=1)
     fig.update_xaxes(range=[0, 31 * 4], col=1)
 
-    return fig
+    return trace1
     # plotly.offline.plot(fig, filename=f"flowchart_{title}.html")
 
 
