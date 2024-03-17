@@ -624,11 +624,10 @@ for app_receive in APPS:
         #    for k_item in key_full:
         class_receive.extend(val["to_native_classes"])
         class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
+        condition_1.extend([val["can_convert"] for _ in val["to_native_classes"]])
 
         # if not convertible:
         if len(val["to_native_classes"]) == 0:
-            # class_sp.append(k)
-            # class_receive.append("NA")
             parent_classes: list = all_classes_dict[key]["all_parents"]
             subclasses: dict = all_classes_dict[key]["subclasses"]
             tree: str = ""
@@ -679,6 +678,7 @@ for app_receive in APPS:
             if len(classes_branching_receive) == 0:
                 class_sp.append(key)
                 class_receive.append("NA")
+                condition_1.append(val["can_convert"])
 
     fig = plot_flowchart(
         class_send,

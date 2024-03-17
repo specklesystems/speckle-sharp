@@ -112,7 +112,7 @@ def plot_flowchart(
             groups_send.append(send_index)
             groups_receive.append(rec_index)
             groups_values.append(1)
-            groups_colors.append("rgba(10,132,255,0.7)")
+            groups_colors.append(f"rgba(10,132,255,{0.7*condition_1[i]})")
 
     # extra columns
     for i, class_send in enumerate(extra_send):
