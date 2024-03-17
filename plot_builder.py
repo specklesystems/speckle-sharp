@@ -11,7 +11,15 @@ from itertools import cycle
 import plotly.graph_objects as go
 
 
-def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_received, condition_2, title: str = "Title"):
+def plot_flowchart(
+    class_send,
+    all_sub_groups_sent,
+    condition_1,
+    all_sub_groups_received,
+    condition_2,
+    extra_receives: dict[str, dict[str, str]],
+    title: str = "Title",
+):
 
     cols = 2
     rows = 1
@@ -45,7 +53,6 @@ def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_
     groups_receive_labels = [gr for gr in receive_set]
     groups_first_labels = ["__" for _ in send_set]
 
-    # for k, _ in enumerate([1]):
     any_connection_in_subgroup = 0
 
     for j in range(len(groups_first_labels)):
@@ -68,7 +75,7 @@ def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_
         exists = 0
         for k, _ in enumerate(groups_send):
             if send_index == groups_send[k] and rec_index == groups_receive[k]:
-                groups_values[k] += 1
+                # groups_values[k] += 1
                 exists += 1
                 break
         if exists == 0:
@@ -129,7 +136,7 @@ def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_
         pad=15,
         thickness=2,
         line=dict(color="black", width=0.5),
-        label=groups_first_labels + groups_send_labels + groups_receive_labels + [""],
+        label=groups_first_labels + groups_send_labels + groups_receive_labels,
         x=x_axis,
         y=y_axis,
         color="darkblue",
@@ -158,8 +165,8 @@ def plot_flowchart(class_send, all_sub_groups_sent, condition_1, all_sub_groups_
     fig.update_yaxes(range=[0, 30], col=1)
     fig.update_xaxes(range=[0, 31 * 4], col=1)
 
-    return(fig)
-    #plotly.offline.plot(fig, filename=f"flowchart_{title}.html")
+    return fig
+    # plotly.offline.plot(fig, filename=f"flowchart_{title}.html")
 
 
 # plot_flowchart(["1", "2", "1", "4", "5"], ["11", "22", "33", "11", "88"])

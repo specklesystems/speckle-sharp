@@ -95,9 +95,11 @@ def get_trimmed_strings_per_line_from_files(
     return all_classes, all_files
 
 
-def get_speckle_class_full_name(short_name: str, all_classes: List[str]):
+def get_speckle_class_full_name(short_name1: str, all_classes: List[str]):
     long_name = None
-    short_name = short_name.split(".")[-1]
+    if short_name1 == "Base":
+        return [short_name1]
+    short_name = short_name1.split(".")[-1]
     if len(short_name) > 1 and short_name not in [
         "string",
         "bool",
@@ -128,7 +130,7 @@ def get_detailed_classes_from_files(all_cl, all_f, result_all_classes):
     all_classes_dict = {}
     for i, file in enumerate(all_f):
         short_name = all_cl[i].split(".")[-1]
-        if short_name == "RebarGroup":
+        if short_name == "FreeformElement":
             pass
 
         def condition(line):

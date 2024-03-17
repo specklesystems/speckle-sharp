@@ -591,7 +591,20 @@ for app in APPS:
         )
     print(result_all_apps_convertable[app]["to_native"])
 
-    # print(files)
+
+result_all_apps_convertable_full_names = {}
+for app, val in result_all_apps_convertable.items():
+    result_all_apps_convertable_full_names.update(
+        {app: {"to_native": {}, "to_speckle": "TODO"}}
+    )
+
+    for cl, val2 in val["to_native"].items():
+        full_cl_name = get_speckle_class_full_name(cl, result_all_classes)
+        if full_cl_name is not None:
+            for new_cl in full_cl_name:
+                result_all_apps_convertable_full_names[app]["to_native"].update(
+                    {new_cl: val2.copy()}
+                )
 
 
 for app_receive in APPS:
@@ -601,17 +614,68 @@ for app_receive in APPS:
     condition_1 = []
     class_receive = []
     condition_2 = []
-    for key, val in result_all_apps_convertable[app_receive]["to_native"].items():
-        key_full = get_speckle_class_full_name(key, result_all_classes)
-        if key_full is not None:
-            for k in key_full:
-                class_receive.extend(val["to_native_classes"])
-                class_sp.extend([k for _ in range(len(val["to_native_classes"]))])
-                if len(val["to_native_classes"]) == 0:
-                    class_sp.append(k)
-                    class_receive.append("NA")
+    classes_branching_receive = {}
+    for key, val in result_all_apps_convertable_full_names[app_receive][
+        "to_native"
+    ].items():
+
+        # key_full = get_speckle_class_full_name(key, result_all_classes)
+        # if key_full is not None:
+        #    for k_item in key_full:
+        class_receive.extend(val["to_native_classes"])
+        class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
+
+        # if not convertible:
+        if len(val["to_native_classes"]) == 0:
+            # class_sp.append(k)
+            # class_receive.append("NA")
+            parent_classes: list = all_classes_dict[key]["all_parents"]
+            subclasses: dict = all_classes_dict[key]["subclasses"]
+            tree: str = ""
+            for search_class in parent_classes:
+                if (
+                    search_class
+                    in result_all_apps_convertable_full_names[app_receive]["to_native"]
+                ):
+                    val_item = result_all_apps_convertable_full_names[app_receive][
+                        "to_native"
+                    ][search_class]
+                    resulted_native_classes = val_item["to_native_classes"]
+                    if len(resulted_native_classes) > 0:
+                        tree += "->" + search_class
+                        for native_cl in resulted_native_classes:
+                            classes_branching_receive.update({key: {tree: native_cl}})
+                        break
+
+            if len(classes_branching_receive) == 0:
+                for search_classes in [v for _, v in subclasses.items()]:
+                    for search_class in search_classes:
+                        if (
+                            search_class
+                            in result_all_apps_convertable_full_names[app_receive][
+                                "to_native"
+                            ]
+                        ):
+                            val_item = result_all_apps_convertable_full_names[
+                                app_receive
+                            ]["to_native"][search_class]
+                            resulted_native_classes = val_item["to_native_classes"]
+                            if len(resulted_native_classes) > 0:
+                                tree += "->" + search_class
+                                for native_cl in resulted_native_classes:
+                                    classes_branching_receive.update(
+                                        {key: {tree: native_cl}}
+                                    )
+                                break
+
     fig = plot_flowchart(
-        class_send, class_sp, condition_1, class_receive, condition_2, title=app_receive
+        class_send,
+        class_sp,
+        condition_1,
+        class_receive,
+        condition_2,
+        classes_branching_receive,
+        title=app_receive,
     )
     if fig is not None:
         plotly.offline.plot(fig, filename=f"flowchart_{app_receive}.html")
