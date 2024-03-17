@@ -79,6 +79,10 @@ files = get_files_in_path(path_objects, [], file_condition=file_condition_classe
 all_cl, all_f = get_trimmed_strings_per_line_from_files(
     "namespace ", ";", ["public class ", "public abstract class "], " :", files
 )
+for cl in all_cl:
+    print(cl)
+
+########## all correct till now
 result_all_classes = all_cl
 
 
@@ -86,16 +90,28 @@ result_all_classes = all_cl
 all_classes_dict = get_detailed_classes_from_files(all_cl, all_f, result_all_classes)
 
 
-def add_subclasses_from_parent_class(class_edit, all_classes_dict):
-    parent = all_classes_dict[class_edit]["parent"]
-    if parent == "Base":
+def add_subclasses_from_parent_class(class_edit, all_classes_dict, current_class=None):
+    """Recursively add subclasses up class inheritance line."""
+    if current_class:
+        parent = all_classes_dict[current_class]["parent"]
+    else:
+        parent = all_classes_dict[class_edit]["parent"]
+    if parent == "Base" or parent.endswith(".Collection"):
         return
-    existing_subclasses = all_classes_dict[class_edit]["subclasses"]
+
+    existing_subclasses = all_classes_dict[class_edit][
+        "subclasses"
+    ]  # just for debugging info
+    all_classes_dict[class_edit]["all_parents"].append(parent)
     subclasses_to_add: dict[str, list] = all_classes_dict[parent]["subclasses"]
     for key, val in subclasses_to_add.items():
         all_classes_dict[class_edit]["subclasses"].update({key: val})
+    add_subclasses_from_parent_class(class_edit, all_classes_dict, parent)
+    return
 
 
+for class_edit, _ in all_classes_dict.items():
+    add_subclasses_from_parent_class(class_edit, all_classes_dict)
 for class_edit, _ in all_classes_dict.items():
     add_subclasses_from_parent_class(class_edit, all_classes_dict)
 
@@ -586,11 +602,14 @@ for app_receive in APPS:
     class_receive = []
     condition_2 = []
     for key, val in result_all_apps_convertable[app_receive]["to_native"].items():
-        class_receive.extend(val["to_native_classes"])
-        class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
-        if len(val["to_native_classes"]) == 0:
-            class_sp.append(key)
-            class_receive.append("NA")
+        key_full = get_speckle_class_full_name(key, result_all_classes)
+        if key_full is not None:
+            for k in key_full:
+                class_receive.extend(val["to_native_classes"])
+                class_sp.extend([k for _ in range(len(val["to_native_classes"]))])
+                if len(val["to_native_classes"]) == 0:
+                    class_sp.append(k)
+                    class_receive.append("NA")
     fig = plot_flowchart(
         class_send, class_sp, condition_1, class_receive, condition_2, title=app_receive
     )

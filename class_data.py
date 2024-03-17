@@ -65,26 +65,39 @@ def get_trimmed_strings_per_line_from_files(
 
             for line in f.readlines():
                 if not line.startswith("//") and not line.startswith("      //"):
-                    if "public abstract class " in line:
+                    if "ModelInfo" in line:
                         pass
 
                     for trim_1_start in trim_1_startss:
-                        if trim_0_start in line and trim_0_end in line:
+                        if (
+                            trim_0_start in line
+                            and trim_0_end in line
+                            and start_str is None
+                        ):
                             start_str = line.split(trim_0_start)[1].split(trim_0_end)[0]
                         elif trim_1_start in line and trim_1_end in line:
-                            end_str = line.split(trim_1_start)[1].split(trim_1_end)[0]
+                            end_str = (
+                                line.split(trim_1_start)[1]
+                                .split(trim_1_end)[0]
+                                .split("<")[0]
+                            )
                         if start_str and end_str:
                             all_classes.append(start_str + "." + end_str)
                             all_files.append(file)
-                            break
+                            # start_str = None
+                            end_str = None
+                            # break
                     if start_str and end_str:
-                        break
+                        # start_str = None
+                        end_str = None
+                        # break
 
     return all_classes, all_files
 
 
 def get_speckle_class_full_name(short_name: str, all_classes: List[str]):
     long_name = None
+    short_name = short_name.split(".")[-1]
     if len(short_name) > 1 and short_name not in [
         "string",
         "bool",
@@ -115,6 +128,8 @@ def get_detailed_classes_from_files(all_cl, all_f, result_all_classes):
     all_classes_dict = {}
     for i, file in enumerate(all_f):
         short_name = all_cl[i].split(".")[-1]
+        if short_name == "RebarGroup":
+            pass
 
         def condition(line):
             if " : " in line:
@@ -123,21 +138,28 @@ def get_detailed_classes_from_files(all_cl, all_f, result_all_classes):
 
         function_str = get_function_from_file(
             file,
-            ["public class " + short_name, "public abstract class " + short_name],
+            [f"public class {short_name} ", f"public abstract class {short_name} "],
             condition,
         )
+        if len(function_str) < 3:
+            function_str = get_function_from_file(
+                file,
+                [f"public class {short_name}<", f"public abstract class {short_name}<"],
+                condition,
+            )
         start = 0
-        all_classes_dict.update({all_cl[i]: {"parent": "", "subclasses": {}}})
+        all_classes_dict.update(
+            {all_cl[i]: {"parent": "", "all_parents": [], "subclasses": {}}}
+        )
 
         for line in function_str.split("\n"):
             if len(line) < 3:
                 continue
-            elif (
-                f"public class {short_name} : " in line
-                or f"public abstract class {short_name} : " in line
+            elif (f"public class {short_name}" in line and " : " in line) or (
+                f"public abstract class {short_name}" in line and " : " in line
             ):
-                parent = line.split(" : ")[-1].split(",")[0].split(" ")[0]
-                if parent != "Base":
+                parent = line.split(" : ")[-1].split(",")[0].split(" ")[0].split("<")[0]
+                if parent != "Base" and not parent.endswith(".Collection"):
                     parent = get_speckle_class_full_name(parent, result_all_classes)
                     if parent is not None:
                         all_classes_dict[all_cl[i]]["parent"] = parent[0]
@@ -179,6 +201,8 @@ def get_detailed_classes_from_files(all_cl, all_f, result_all_classes):
                         if "List<" in cl_type:
                             cl_name += "[]"
                             cl_type = cl_type.replace("List<", "").replace(">", "")
+                        # if "RevitInstance" in line:
+                        #    pass
                         cl_type = get_speckle_class_full_name(
                             cl_type, result_all_classes
                         )
