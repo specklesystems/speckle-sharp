@@ -28,7 +28,7 @@ public static class BasicConnectorBindingCommands
   private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
 
-  public static void NotifyDocumentChanged(IBridge bridge) => bridge.SendToBrowser(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME);
+  public static void NotifyDocumentChanged(IBridge bridge) => bridge.SendToBrowser(NOTIFY_DOCUMENT_CHANGED_EVENT_NAME); // NOTE: this throws non-critically in Revit on startup, but should be fixed
 
   public static void SetModelProgress(IBridge bridge, string modelCardId, ModelCardProgress progress) =>
     bridge.SendToBrowser(SET_MODEL_PROGRESS_UI_COMMAND_NAME, new { modelCardId, progress });

@@ -143,10 +143,22 @@ public class SendBinding : ISendBinding, ICancelable
         modelCardId,
         new ModelCardProgress { Status = "Uploading..." }
       );
-      string objectId = await Speckle.Core.Api.Operations
-        .Send(commitObject, cts.Token, transports, disposeTransports: true)
-        .ConfigureAwait(true);
-
+      
+      var transport = new ServerTransport(account, modelCard.ProjectId);
+      var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
+      
+      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        // NOTE: Object cache needs to be encapsulated by project id, as objects are unique by project. Otherwise we 
+        // can assume incorrectly that an object exists for a given project when actually it is not (e.g., send box to 
+        // a model in project 1, send same unchanged box to a different model in project 2). 
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      }
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      // NOTE: ChangedObjectIds is currently JsonIgnored, but could actually be useful for highlighting changes in host app.
+      modelCard.ChangedObjectIds = new();
+      
       BasicConnectorBindingCommands.SetModelProgress(
         Parent,
         modelCardId,
@@ -159,10 +171,10 @@ public class SendBinding : ISendBinding, ICancelable
         .CommitCreate(
           new CommitCreateInput()
           {
-            streamId = model.ProjectId,
-            branchName = model.ModelId,
-            sourceApplication = "Rhino",
-            objectId = objectId
+            streamId = modelCard.ProjectId,
+            branchName = modelCard.ModelId,
+            sourceApplication = "Revit",
+            objectId = sendResult.rootObjId
           },
           cts.Token
         )
@@ -314,8 +326,7 @@ public class SendBinding : ISendBinding, ICancelable
     }
 
     // TODO: CHECK IF ANY OF THE ABOVE ELEMENTS NEED TO TRIGGER A FILTER REFRESH
-    // POC: re-instate
-    // RevitIdleManager.SubscribeToIdle(RunExpirationChecks);
+    RevitIdleManager.SubscribeToIdle(RunExpirationChecks);
   }
 
   private void RunExpirationChecks()
