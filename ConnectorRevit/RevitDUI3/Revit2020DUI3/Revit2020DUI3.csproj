@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
     <RootNamespace>Speckle.ConnectorRevitDUI3</RootNamespace>
     <AssemblyName>SpeckleConnectorRevitDUI3</AssemblyName>
@@ -13,7 +14,7 @@
     <UseWPF>true</UseWPF>
     <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Platforms>AnyCPU;x64</Platforms>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <PlatformTarget>x64</PlatformTarget>
