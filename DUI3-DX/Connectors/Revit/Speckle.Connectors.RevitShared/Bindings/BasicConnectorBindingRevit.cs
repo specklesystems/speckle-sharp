@@ -34,7 +34,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     _store = store;
     _revitContext = revitContext;
     _revitSettings = revitSettings;
-
+    Commands = new BasicConnectorBindingCommands(parent);
     // POC: event binding?
     _store.DocumentChanged += (_, _) =>
     {
@@ -152,4 +152,6 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
       }
     });
   }
+
+  public BasicConnectorBindingCommands Commands { get; }
 }

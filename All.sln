@@ -483,7 +483,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects.Tests.Unit", "Objec
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DUI3-DX", "DUI3-DX", "{9DB74760-01DE-4AC1-A81B-BC7784351D22}"
 	ProjectSection(SolutionItems) = preProject
-		CNX-8892\Directory.Build.Props = CNX-8892\Directory.Build.Props
+		DUI3-DX\Directory.Build.Props = DUI3-DX\Directory.Build.Props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{4838C66E-8677-4FBD-9609-25376042E981}"
