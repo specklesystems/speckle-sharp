@@ -11,6 +11,7 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using System.Threading.Tasks;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -50,7 +51,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
   }
 
-  public async void Send(string modelCardId)
+  public Task Send(string modelCardId)
   {
     SpeckleTopLevelExceptionHandler.Run(
       () => HandleSend(modelCardId),
@@ -58,6 +59,8 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
       HandleUnexpectedException,
       HandleFatalException
     );
+
+    return Task.CompletedTask;
   }
 
   public void CancelSend(string modelCardId)

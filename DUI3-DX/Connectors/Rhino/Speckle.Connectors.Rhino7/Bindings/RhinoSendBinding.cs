@@ -22,6 +22,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
+using System.Threading.Tasks;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -138,7 +139,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
-  public async void Send(string modelCardId)
+  public async Task Send(string modelCardId)
   {
     try
     {
