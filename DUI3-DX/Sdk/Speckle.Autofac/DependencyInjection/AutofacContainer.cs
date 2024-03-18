@@ -41,7 +41,6 @@ public class AutofacContainer
       foreach (var file in assembliesInPath)
       {
         // POC: ignore already loaded? Or just get that instead of loading it?
-
         try
         {
           // inspect the assemblies for Autofac.Module

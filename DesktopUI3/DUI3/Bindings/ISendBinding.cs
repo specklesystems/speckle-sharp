@@ -42,6 +42,8 @@ public static class SendBindingUiCommands
 public class SenderModelCard : ModelCard
 {
   public ISendFilter SendFilter { get; set; }
+  public string ProjectId { get; set; }
+  public string ModelId { get; set; }
 
   [JsonIgnore]
   public HashSet<string> ChangedObjectIds { get; set; } = new();

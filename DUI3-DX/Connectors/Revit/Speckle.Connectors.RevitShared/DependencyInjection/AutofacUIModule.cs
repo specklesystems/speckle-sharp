@@ -18,7 +18,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
 // POC: should interface out things that are not
-class AutofacUIModule : Module
+public class AutofacUIModule : Module
 {
   protected override void Load(ContainerBuilder builder)
   {

@@ -5,8 +5,6 @@ namespace Speckle.Connectors.Revit.Plugin;
 
 public class RevitContext
 {
-  private CefSharpPanel? _panel;
-
   private UIApplication? _uiApplication;
 
   public UIApplication? UIApplication
