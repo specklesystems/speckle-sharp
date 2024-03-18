@@ -11,6 +11,7 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Rhino7.Bindings;
+using Speckle.Connectors.Rhino7.Filters;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;
@@ -52,6 +53,12 @@ public class AutofacRhinoModule : Module
       .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
       .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
       .InstancePerLifetimeScope();
+
+    // I can't find where the selection filter is being assigned. I'm guessing this is happening in DUI3
+    // somewhere? Not sure why this "instancePerDependency" is actually working. Where is the state being
+    // stored?
+    builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
+    builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

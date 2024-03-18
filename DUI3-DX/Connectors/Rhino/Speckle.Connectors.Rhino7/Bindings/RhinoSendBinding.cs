@@ -39,6 +39,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
   private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly ISpeckleConverterToSpeckle _toSpeckleConverter;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly List<ISendFilter> _sendFilters;
 
   public CancellationManager CancellationManager { get; } = new();
 
@@ -59,6 +60,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IBasicConnectorBinding basicConnectorBinding,
     IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    IEnumerable<ISendFilter> sendFilters,
     RhinoContext rhinoContext
   )
   {
@@ -69,6 +71,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     _rhinoContext = rhinoContext;
     _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    _sendFilters = sendFilters.ToList();
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -116,14 +119,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
-  public List<ISendFilter> GetSendFilters()
-  {
-    return new List<ISendFilter>
-    {
-      new RhinoEverythingFilter(),
-      new RhinoSelectionFilter { IsDefault = true }
-    };
-  }
+  public List<ISendFilter> GetSendFilters() => _sendFilters;
 
   public List<CardSetting> GetSendSettings()
   {
