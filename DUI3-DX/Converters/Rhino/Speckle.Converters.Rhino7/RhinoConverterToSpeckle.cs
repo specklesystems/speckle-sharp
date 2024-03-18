@@ -1,7 +1,7 @@
 ﻿using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Objects.Geometry;
+using Point = Speckle.Objects.Geometry.Point;
 
 namespace Speckle.Converters.Rhino7;
 
