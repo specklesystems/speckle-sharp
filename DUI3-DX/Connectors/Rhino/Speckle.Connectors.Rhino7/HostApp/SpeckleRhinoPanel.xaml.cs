@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Connectors.DUI.Bridge;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
