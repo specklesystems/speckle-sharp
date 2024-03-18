@@ -19,7 +19,8 @@ workflows:
           requires:
             - get-ci-tools
   build-dui3:
-    jobs: build-dui3
+    jobs:
+      - build-dui3-job
   nuget:
     jobs:
       - build-sdk:
@@ -86,7 +87,7 @@ commands:
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
-  build-dui3:
+  build-dui3-job:
     executor:
       name: win/default
       shell: bash.exe
