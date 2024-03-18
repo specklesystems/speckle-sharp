@@ -3,7 +3,7 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Common.ToSpeckle;
+namespace Speckle.Converters.Common;
 
 // POC: reminder - writing classes and creating interfaces is a bit like organising your space
 // if you have a structure for organising things, your interfaces, then finding your stuff, your classes & methods, becomes easy

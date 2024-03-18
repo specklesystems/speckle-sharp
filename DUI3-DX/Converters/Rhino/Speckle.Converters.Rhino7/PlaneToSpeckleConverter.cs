@@ -1,4 +1,5 @@
 ﻿using Rhino.Geometry;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Objects.Geometry;
@@ -7,6 +8,8 @@ using Point = Speckle.Objects.Geometry.Point;
 
 namespace Speckle.Converters.Rhino7;
 
+// POC: not sure I like the place of the default rank
+[NameAndRankValue(nameof(Rhino.Geometry.Plane), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Plane, Objects.Geometry.Plane>
 {
   private readonly IRawConversion<Vector3d, Vector> _vectorConverter;
