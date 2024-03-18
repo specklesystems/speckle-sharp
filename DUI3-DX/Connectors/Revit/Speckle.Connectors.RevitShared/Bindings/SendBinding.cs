@@ -14,7 +14,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
-internal class SendBinding : RevitBaseBinding, ICancelable
+internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 {
   // POC:does it need injecting?
   public CancellationManager CancellationManager { get; } = new();
@@ -39,7 +39,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     _speckleConverterToSpeckle = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
     _idleManager = idleManager;
-
+    Commands = new SendBindingUICommands(bridge);
     // TODO expiry events
     // TODO filters need refresh events
     revitContext.UIApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
@@ -64,6 +64,8 @@ internal class SendBinding : RevitBaseBinding, ICancelable
   {
     CancellationManager.CancelOperation(modelCardId);
   }
+
+  public SendBindingUICommands Commands { get; }
 
   private void HandleSend(string modelCardId)
   {
@@ -135,7 +137,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable
       }
     }
 
-    SendBindingUICommands.SetModelsExpired(Parent, expiredSenderIds);
+    Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
 

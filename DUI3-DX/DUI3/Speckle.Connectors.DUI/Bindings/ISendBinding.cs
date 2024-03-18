@@ -19,6 +19,8 @@ public interface ISendBinding : IBinding
   /// </summary>
   /// <param name="modelCardId"></param>
   public void CancelSend(string modelCardId);
+
+  public SendBindingUICommands Commands { get; }
 }
 
 public class SenderModelCard : ModelCard
