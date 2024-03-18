@@ -12,7 +12,7 @@ namespace Speckle.Connectors.Rhino7.HostApp;
 public partial class SpeckleRhinoPanel : UserControl
 {
   private readonly IEnumerable<Lazy<IBinding>> _bindings;
-  
+
   public SpeckleRhinoPanel(IEnumerable<Lazy<IBinding>> bindings)
   {
     _bindings = bindings;
@@ -42,6 +42,5 @@ public partial class SpeckleRhinoPanel : UserControl
       Console.WriteLine();
       Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
     }
-    
   }
 }

@@ -20,13 +20,11 @@ public class RhinoPlugin : IRhinoPlugin
     _settings = settings;
     _idleManager = idleManager;
   }
+
   public void Initialise()
   {
     _idleManager.SubscribeToIdle(() => RhinoApp.RunScript(SpeckleConnectorsRhino7Command.Instance.EnglishName, false));
   }
-  
-  public void Shutdown()
-  {
-    
-  }
+
+  public void Shutdown() { }
 }
