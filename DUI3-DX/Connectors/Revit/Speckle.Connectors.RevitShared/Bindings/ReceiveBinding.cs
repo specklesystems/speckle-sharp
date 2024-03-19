@@ -3,6 +3,7 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -42,7 +43,7 @@ internal class ReceiveBinding : RevitBaseBinding, ICancelable
       //// 5 - Bake objects
       //BakeObjects(objectsToConvert, converter, modelCardId, cts);
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       //if (e is OperationCanceledException)
       //{
