@@ -169,16 +169,17 @@ public class Curve : Base, ICurve, IHasBoundingBox, IHasArea, ITransformable<Cur
   /// </summary>
   /// <param name="list">The list of values representing this <see cref="Curve"/></param>
   /// <returns>A new <see cref="Curve"/> with the provided values.</returns>
+  /// <exception cref="ArgumentException">Throws when list is incorrectly formatted or the curve encoding is not <see cref="CurveTypeEncoding.Curve"/></exception>
   public static Curve FromList(List<double> list)
   {
     if (list[0] != list.Count - 1)
     {
-      throw new Exception($"Incorrect length. Expected {list[0]}, got {list.Count}.");
+      throw new ArgumentException($"Incorrect length. Expected {list[0]}, got {list.Count}.");
     }
 
     if (list[1] != CurveTypeEncoding.Curve)
     {
-      throw new Exception($"Wrong curve type. Expected {CurveTypeEncoding.Curve}, got {list[1]}.");
+      throw new ArgumentException($"Wrong curve type. Expected {CurveTypeEncoding.Curve}, got {list[1]}.");
     }
 
     var curve = new Curve

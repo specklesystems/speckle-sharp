@@ -78,9 +78,6 @@ public class Point : Base, ITransformable<Point>
   /// </summary>
   public string units { get; set; } = Units.None;
 
-  [JsonIgnore, Obsolete("Bounding box no longer applicable to point as of 2.18", true)]
-  public Box? bbox { get; set; }
-
   /// <inheritdoc/>
   public bool TransformTo(Transform transform, out Point transformed)
   {
@@ -232,7 +229,7 @@ public class Point : Base, ITransformable<Point>
       return true;
     }
 
-    if (ReferenceEquals(obj, null))
+    if (obj is null)
     {
       return false;
     }

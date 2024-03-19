@@ -179,8 +179,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// <param name="vector1">The first vector</param>
   /// <param name="vector2">The second vector</param>
   /// <returns>The resulting <see cref="Vector"/></returns>
-  public static Vector operator -(Vector vector1, Vector vector2) =>
-    new(vector1.x - vector2.x, vector1.y - vector2.y, vector1.z - vector2.z, vector1.units);
+  public static Vector operator -(Vector vector1, Vector vector2) => Subtract(vector1, vector2);
 
   /// <summary>
   /// Gets the scalar product (dot product) of two given vectors
@@ -254,8 +253,6 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
     return this / Length;
   }
 
-  public static Vector Divide(Vector left, Vector right)
-  {
-    throw new NotImplementedException();
-  }
+  public static Vector Subtract(Vector left, Vector right) =>
+    new(left.x - right.x, left.y - right.y, left.z - right.z, left.units);
 }

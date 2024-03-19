@@ -47,7 +47,7 @@ public static class CurveArrayEncodingExtensions
           list.AddRange(p.ToList());
           break;
         default:
-          throw new Exception($"Unkown curve type: {curve.GetType()}.");
+          throw new ArgumentException($"Unkown curve type: {curve.GetType()}.");
       }
     }
 

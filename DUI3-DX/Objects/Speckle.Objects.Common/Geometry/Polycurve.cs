@@ -108,7 +108,7 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
         length = polyline.length
       };
 
-    var points = polyline.GetPoints();
+    var points = polyline.points;
     for (var i = 0; i < points.Count - 1; i++)
     {
       var line = new Line(points[i], points[i + 1], polyline.units);
@@ -131,8 +131,8 @@ public class Polycurve : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
   {
     var list = new List<double>();
     list.Add(closed ? 1 : 0);
-    list.Add(domain?.start ?? 0);
-    list.Add(domain?.end ?? 1);
+    list.Add(domain.start);
+    list.Add(domain.end);
 
     var crvs = CurveArrayEncodingExtensions.ToArray(segments);
     list.Add(crvs.Count);
