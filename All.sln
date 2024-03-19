@@ -524,13 +524,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Common",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{9584AEE5-CD59-46E6-93E6-2DC2B5285B75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Connectors.Rhino7", "DUI3-DX\Connectors\Rhino\Speckle.Connectors.Rhino7\Speckle.Connectors.Rhino7.csproj", "{1E2644A9-6B31-4350-8772-CEAAD6EE0B21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Rhino7", "DUI3-DX\Connectors\Rhino\Speckle.Connectors.Rhino7\Speckle.Connectors.Rhino7.csproj", "{1E2644A9-6B31-4350-8772-CEAAD6EE0B21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{34C2C062-E43F-4FB5-B839-64BC044CCEF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Rhino7", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj", "{65A2F556-F14A-49F3-8A92-7F2E1E7ED3B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Rhino7", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj", "{65A2F556-F14A-49F3-8A92-7F2E1E7ED3B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Rhino7.DependencyInjection", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj", "{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Rhino7.DependencyInjection", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj", "{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.ArcGIS3", "DUI3-DX\Connectors\ArcGIS\Speckle.Connectors.ArcGIS3\Speckle.Connectors.ArcGIS3.csproj", "{A97F7177-86C7-4B38-A6ED-DA51BF762471}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2638,6 +2640,22 @@ Global
 		{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}.Release|x64.ActiveCfg = Release|Any CPU
 		{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}.Release|x64.Build.0 = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Debug|x64.Build.0 = Debug|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release Mac|x64.Build.0 = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release|x64.ActiveCfg = Release|Any CPU
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2842,6 +2860,7 @@ Global
 		{34C2C062-E43F-4FB5-B839-64BC044CCEF3} = {1FE3C60E-7865-40A5-9794-55ECB64F6489}
 		{65A2F556-F14A-49F3-8A92-7F2E1E7ED3B5} = {34C2C062-E43F-4FB5-B839-64BC044CCEF3}
 		{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D} = {34C2C062-E43F-4FB5-B839-64BC044CCEF3}
+		{A97F7177-86C7-4B38-A6ED-DA51BF762471} = {33D19E88-F3AE-4D28-B588-D91CCF9E3BA8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
