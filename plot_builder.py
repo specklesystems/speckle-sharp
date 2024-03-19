@@ -11,6 +11,97 @@ from itertools import cycle
 def full_flowchart(
     traces_per_app: dict, label_from: str = "rhino", label_to: str = "rhino"
 ):
+
+    # Generate initial graph
+    trace = traces_per_app[label_from][label_to]
+    options_y_send = ""
+    options_x_receive = ""
+    receive_apps = []
+    for k, v in traces_per_app.items():
+        options_y_send += f'<option value="{k}">{k}</option>'
+    for k, v in traces_per_app.items():
+        for kk, vv in v.items():
+            if kk not in receive_apps:
+                receive_apps.append(kk)
+                options_x_receive += f'<option value="{kk}">{kk}</option>'
+
+    layout = go.Layout(
+        title="Graph Title",
+        xaxis=dict(title="X-axis Title"),
+        # yaxis=dict(title="Y-axis Title"),
+    )
+
+    fig = go.Figure(data=[trace], layout=layout)
+    fig_html = fig.to_html(full_html=False)
+
+    traces_html = ""
+    for s, _ in traces_per_app.items():
+        for r in receive_apps:
+            try:
+                html_trace = traces_per_app[s][r]
+                if html_trace is not None:
+                    fig_trace = go.Figure(data=[html_trace], layout=layout)
+                    fig_trace = fig_trace.to_html(full_html=False)
+                    traces_html += f"""if (appSend === "{s}" && appReceive === "{r}") {{
+                        var trace = {fig_trace};
+                    }} 
+                    """
+            except KeyError:
+                pass
+
+    # HTML template
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </head>
+    <body>
+
+    <div>
+        <label for="send_app">Select Trace:</label>
+        <select id="send_app" onchange="updateGraph()">
+            {options_y_send}
+        </select>
+    </div>
+
+    <div>
+        <label for="receive_app">Select Option:</label>
+        <select id="receive_app" onchange="updateGraph()">
+            {options_x_receive}
+        </select>
+    </div>
+
+    <div id="plot_div">
+        {fig_html}
+    </div>
+
+    <script>
+    function updateGraph() {{
+        var sendApp = document.getElementById("send_app");
+        var appSend = sendApp.options[sendApp.selectedIndex].value;
+
+        var receiveApp = document.getElementById("receive_app");
+        var appReceive = receiveApp.options[receiveApp.selectedIndex].value;
+
+        {traces_html}
+
+        var layout = {{
+            title: 'Graph Title',
+            xaxis: {{ title: 'X-axis Title' }}
+        }};
+
+        Plotly.newPlot('plot_div', [trace], layout);
+    }}
+    </script>
+
+    </body>
+    </html>
+    """
+
+    # Write HTML to file
+    return html_template
+
     ############################ https://stackoverflow.com/questions/59406167/plotly-how-to-filter-a-pandas-dataframe-using-a-dropdown-menu
     fig = go.Figure()
 
@@ -238,3 +329,99 @@ def plot_flowchart(
 
 
 # plot_flowchart(["1", "2", "1", "4", "5"], ["11", "22", "33", "11", "88"])
+
+import plotly.graph_objects as go
+
+# Sample data
+x_values = [1, 2, 3, 4, 5]
+y_values_1 = [10, 15, 13, 17, 18]
+y_values_2 = [8, 11, 9, 12, 14]
+
+# Generate initial graph
+trace = go.Scatter(x=x_values, y=y_values_1, mode="lines+markers", name="Data")
+
+layout = go.Layout(
+    title="Graph Title",
+    xaxis=dict(title="X-axis Title"),
+    yaxis=dict(title="Y-axis Title"),
+)
+
+fig = go.Figure(data=[trace], layout=layout)
+fig_html = fig.to_html(full_html=False)
+
+# HTML template
+html_template = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<div>
+    <label for="trace_select">Select Trace:</label>
+    <select id="trace_select" onchange="updateGraph()">
+        <option value="trace1">Trace 1</option>
+        <option value="trace2">Trace 2</option>
+    </select>
+</div>
+
+<div>
+    <label for="option_select">Select Option:</label>
+    <select id="option_select" onchange="updateGraph()">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+    </select>
+</div>
+
+<div id="plot_div">
+    {fig_html}
+</div>
+
+<script>
+function updateGraph() {{
+    var traceSelect = document.getElementById("trace_select");
+    var selectedTrace = traceSelect.options[traceSelect.selectedIndex].value;
+
+    var optionSelect = document.getElementById("option_select");
+    var selectedOption = optionSelect.options[optionSelect.selectedIndex].value;
+
+    var xValues;
+    var yValues;
+    if (selectedTrace === "trace1") {{
+        yValues = {y_values_1};
+    }} else {{
+        yValues = {y_values_2};
+    }}
+
+    if (selectedOption === "option1") {{
+        xValues = {x_values};
+    }} else {{
+        // Example of different x values for option 2
+        xValues = [1, 3, 5, 7, 9];
+    }}
+
+    var trace = {{
+        x: xValues,
+        y: yValues,
+        mode: 'lines+markers',
+        name: 'Data'
+    }};
+
+    var layout = {{
+        title: 'Graph Title',
+        xaxis: {{ title: 'X-axis Title' }},
+        yaxis: {{ title: 'Y-axis Title' }}
+    }};
+
+    Plotly.newPlot('plot_div', [trace], layout);
+}}
+</script>
+
+</body>
+</html>
+"""
+
+# Write HTML to file
+with open("plotly_graph.html", "w", encoding="utf-8") as html_file:
+    html_file.write(html_template)

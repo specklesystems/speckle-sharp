@@ -584,6 +584,21 @@ for app in APPS:
                                 all_result_types.append(res_type)
                                 # print(res_type)
                                 break
+                all_result_types = [
+                    r.replace(",", "")
+                    .replace("<>", ".")
+                    .replace("[]", ".")
+                    .replace("<", ".")
+                    .replace(">", ".")
+                    .replace("[", ".")
+                    .replace("]", ".")
+                    .replace(" ", ".")
+                    .split(".")[0]
+                    for r in all_result_types
+                ]
+                all_result_types = [
+                    r[:-1] if r.endswith(".") else r for r in all_result_types
+                ]
                 all_result_types = list(set(all_result_types))
 
         result_all_apps_convertable[app]["to_native"][class_name].update(
@@ -607,90 +622,102 @@ for app, val in result_all_apps_convertable.items():
                 )
 
 traces = {}
-for app_receive in APPS:
-    print(app_receive)
-    class_send = []
-    class_sp = []
-    condition_1 = []
-    class_receive = []
-    condition_2 = []
-    classes_branching_receive = {}
-    for key, val in result_all_apps_convertable_full_names[app_receive][
-        "to_native"
-    ].items():
 
-        # key_full = get_speckle_class_full_name(key, result_all_classes)
-        # if key_full is not None:
-        #    for k_item in key_full:
-        class_receive.extend(val["to_native_classes"])
-        class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
-        condition_1.extend([val["can_convert"] for _ in val["to_native_classes"]])
+for app_send in APPS:
+    for app_receive in APPS:
+        print(app_receive)
+        class_send = []
+        class_sp = []
+        condition_1 = []
+        class_receive = []
+        condition_2 = []
+        classes_branching_receive = {}
+        for key, val in result_all_apps_convertable_full_names[app_receive][
+            "to_native"
+        ].items():
 
-        # if not convertible:
-        if len(val["to_native_classes"]) == 0:
-            parent_classes: list = all_classes_dict[key]["all_parents"]
-            subclasses: dict = all_classes_dict[key]["subclasses"]
-            tree: str = ""
-            for search_class in parent_classes:
-                if (
-                    search_class
-                    in result_all_apps_convertable_full_names[app_receive]["to_native"]
-                ):
-                    val_item = result_all_apps_convertable_full_names[app_receive][
-                        "to_native"
-                    ][search_class]
-                    resulted_native_classes = val_item["to_native_classes"]
-                    if len(resulted_native_classes) > 0:
-                        tree += "->" + search_class
-                        for native_cl in resulted_native_classes:
-                            classes_branching_receive.update({key: {tree: native_cl}})
-                        break
+            # key_full = get_speckle_class_full_name(key, result_all_classes)
+            # if key_full is not None:
+            #    for k_item in key_full:
+            class_receive.extend(val["to_native_classes"])
+            class_sp.extend([key for _ in range(len(val["to_native_classes"]))])
+            condition_1.extend([val["can_convert"] for _ in val["to_native_classes"]])
 
-            if len(classes_branching_receive) == 0:
-                search_class_props = [k for k, _ in subclasses.items()]
-                for ind, search_classes in enumerate(
-                    [v for _, v in subclasses.items()]
-                ):
-                    for search_class in search_classes:
-                        if (
-                            search_class
-                            in result_all_apps_convertable_full_names[app_receive][
-                                "to_native"
-                            ]
-                        ):
-                            val_item = result_all_apps_convertable_full_names[
-                                app_receive
-                            ]["to_native"][search_class]
-                            resulted_native_classes = val_item["to_native_classes"]
-                            if len(resulted_native_classes) > 0:
-                                tree += (
-                                    "."
-                                    + search_class_props[ind]
-                                    + "<br>("
-                                    + search_class
-                                    + ")"
+            # if not convertible:
+            if len(val["to_native_classes"]) == 0:
+                parent_classes: list = all_classes_dict[key]["all_parents"]
+                subclasses: dict = all_classes_dict[key]["subclasses"]
+                tree: str = ""
+                for search_class in parent_classes:
+                    if (
+                        search_class
+                        in result_all_apps_convertable_full_names[app_receive][
+                            "to_native"
+                        ]
+                    ):
+                        val_item = result_all_apps_convertable_full_names[app_receive][
+                            "to_native"
+                        ][search_class]
+                        resulted_native_classes = val_item["to_native_classes"]
+                        if len(resulted_native_classes) > 0:
+                            tree += "->" + search_class
+                            for native_cl in resulted_native_classes:
+                                classes_branching_receive.update(
+                                    {key: {tree: native_cl}}
                                 )
-                                for native_cl in resulted_native_classes:
-                                    classes_branching_receive.update(
-                                        {key: {tree: native_cl}}
+                            break
+
+                if len(classes_branching_receive) == 0:
+                    search_class_props = [k for k, _ in subclasses.items()]
+                    for ind, search_classes in enumerate(
+                        [v for _, v in subclasses.items()]
+                    ):
+                        for search_class in search_classes:
+                            if (
+                                search_class
+                                in result_all_apps_convertable_full_names[app_receive][
+                                    "to_native"
+                                ]
+                            ):
+                                val_item = result_all_apps_convertable_full_names[
+                                    app_receive
+                                ]["to_native"][search_class]
+                                resulted_native_classes = val_item["to_native_classes"]
+                                if len(resulted_native_classes) > 0:
+                                    if tree == "":
+                                        tree += "_"
+                                    tree += (
+                                        "."
+                                        + search_class_props[ind].replace("[]", "")
+                                        + "<br>("
+                                        + search_class
+                                        + ")"
                                     )
-                                break
-            if len(classes_branching_receive) == 0:
-                class_sp.append(key)
-                class_receive.append("NA")
-                condition_1.append(val["can_convert"])
+                                    for native_cl in resulted_native_classes:
+                                        classes_branching_receive.update(
+                                            {key: {tree: native_cl}}
+                                        )
+                                    break
+                if len(classes_branching_receive) == 0:
+                    class_sp.append(key)
+                    class_receive.append("NA")
+                    condition_1.append(val["can_convert"])
 
-    trace = plot_flowchart(
-        class_send,
-        class_sp,
-        condition_1,
-        class_receive,
-        condition_2,
-        classes_branching_receive,
-        title=app_receive,
-    )
-    traces.update({app_receive: {app_receive: trace}})
+        trace = plot_flowchart(
+            class_send,
+            class_sp,
+            condition_1,
+            class_receive,
+            condition_2,
+            classes_branching_receive,
+            title=app_receive,
+        )
+        traces.update({app_receive: {app_receive: trace}})
 
-fig = full_flowchart(traces)
-if fig is not None:
-    plotly.offline.plot(fig, filename="flowchart_full.html")
+html_template = full_flowchart(traces)
+with open("plotly_graph.html", "w", encoding="utf-8") as html_file:
+    html_file.write(html_template)
+
+# fig = full_flowchart(traces)
+# if fig is not None:
+#    plotly.offline.plot(fig, filename="flowchart_full.html")
