@@ -57,6 +57,7 @@ public class AutofacRhinoModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+    builder.RegisterType<SendBindingUICommands>().InstancePerDependency();
 
     // Register converter factory
     //builder

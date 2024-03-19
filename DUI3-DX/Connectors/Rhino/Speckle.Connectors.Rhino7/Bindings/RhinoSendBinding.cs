@@ -25,7 +25,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
-
   private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly List<ISendFilter> _sendFilters;
   private readonly Func<SendOperation> _sendOperationFactory;
@@ -48,6 +47,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     IBasicConnectorBinding basicConnectorBinding,
     IEnumerable<ISendFilter> sendFilters,
     Func<SendOperation> sendOperationFactory,
+    SendBindingUICommands.Factory sendBindingFactory,
     CancellationManager cancellationManager
   )
   {
@@ -58,10 +58,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _sendOperationFactory = sendOperationFactory;
     _cancellationManager = cancellationManager;
     Parent = parent;
-
-    // would like to know more about binding, parent relationship
-    // before injecting this
-    Commands = new SendBindingUICommands(parent);
+    Commands = sendBindingFactory(parent);
     SubscriptToRhinoEvents();
   }
 

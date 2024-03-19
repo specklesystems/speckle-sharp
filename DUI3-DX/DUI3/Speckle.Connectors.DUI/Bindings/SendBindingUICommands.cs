@@ -12,6 +12,8 @@ public class SendBindingUICommands
 
   private IBridge _bridge;
 
+  public delegate SendBindingUICommands Factory(IBridge bridge);
+
   public SendBindingUICommands(IBridge bridge)
   {
     _bridge = bridge;
