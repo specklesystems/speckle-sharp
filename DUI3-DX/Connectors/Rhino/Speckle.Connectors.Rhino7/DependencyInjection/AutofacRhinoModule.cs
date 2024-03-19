@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Rhino.Commands;
 using Rhino.PlugIns;
-using Rhino.Render.DataSources;
 using Serilog;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -18,7 +15,6 @@ using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Converters.Common;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
@@ -81,12 +77,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<SendOperation>().InstancePerDependency();
     builder.RegisterType<RootBaseObjectBuilder>().InstancePerDependency();
     builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().InstancePerDependency();
-    builder
-      .Register<Func<Account, string, ServerTransport>>(
-        c => (Account account, string projectId) => new ServerTransport(account, projectId)
-      )
-      .As<Func<Account, string, ITransport>>()
-      .InstancePerDependency();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
