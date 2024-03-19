@@ -22,7 +22,10 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     _store = store;
   }
 
-  public string GetSourceApplicationName() => "ArcGIS";
+  public string GetSourceApplicationName()
+  {
+    return "ArcGIS";
+  }
 
   public string GetSourceApplicationVersion() => "3";
 

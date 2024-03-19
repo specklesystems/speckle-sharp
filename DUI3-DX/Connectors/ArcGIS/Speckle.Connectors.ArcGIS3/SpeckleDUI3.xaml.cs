@@ -17,6 +17,7 @@
 
 */
 
+using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -32,8 +33,11 @@ namespace ConnectorArcGIS;
 /// </summary>
 public partial class SpeckleDUI3 : UserControl
 {
-  public SpeckleDUI3()
+  private readonly IEnumerable<Lazy<IBinding>> _bindings;
+
+  public SpeckleDUI3(IEnumerable<Lazy<IBinding>> bindings)
   {
+    _bindings = bindings;
     InitializeComponent();
     Browser.CoreWebView2InitializationCompleted += OnInitialized;
   }
@@ -50,14 +54,15 @@ public partial class SpeckleDUI3 : UserControl
     Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
   }
 
-  private void OnInitialized(object sender, CoreWebView2InitializationCompletedEventArgs e)
+  private void OnInitialized(object? sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    List<IBinding> bindings = Factory.CreateBindings();
-
-    foreach (IBinding binding in bindings)
+    //TODO: Pass bindings to browser bridge here!
+    foreach (Lazy<IBinding> lazyBinding in _bindings)
     {
-      // BrowserBridge bridge = new(Browser, binding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
-      // Browser.CoreWebView2.AddHostObjectToScript(binding.Name, bridge);
+      var binding = lazyBinding.Value;
+      binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
+      Console.WriteLine();
+      Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
     }
   }
 }
