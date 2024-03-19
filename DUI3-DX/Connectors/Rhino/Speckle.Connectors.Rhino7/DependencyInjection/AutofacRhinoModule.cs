@@ -17,6 +17,7 @@ using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
+using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.Common;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -54,6 +55,9 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
 
+    // binding dependencies
+    builder.RegisterType<CancellationManager>().InstancePerDependency();
+
     // Register converter factory
     //builder
     //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
@@ -68,13 +72,14 @@ public class AutofacRhinoModule : Module
       .As<ISpeckleConverter>()
       .InstancePerDependency();
 
+    // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
+    // register send operation and dependencies
+    builder.RegisterType<SendOperation>().InstancePerDependency();
     builder.RegisterType<RootBaseObjectBuilder>().InstancePerDependency();
     builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().InstancePerDependency();
-    builder.RegisterType<SendOperation>().InstancePerDependency();
-
     builder
       .Register<Func<Account, string, ServerTransport>>(
         c => (Account account, string projectId) => new ServerTransport(account, projectId)

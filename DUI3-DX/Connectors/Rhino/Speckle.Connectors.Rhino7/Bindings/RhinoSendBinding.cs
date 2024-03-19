@@ -26,13 +26,10 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
 
-  //private readonly RhinoSettings _rhinoSettings;
-  //private readonly RhinoContext _rhinoContext;
   private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly List<ISendFilter> _sendFilters;
   private readonly Func<SendOperation> _sendOperationFactory;
-
-  public CancellationManager CancellationManager { get; } = new();
+  private readonly CancellationManager _cancellationManager;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -47,22 +44,19 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   public RhinoSendBinding(
     DocumentModelStore store,
     RhinoIdleManager idleManager,
-    //RhinoSettings rhinoSettings,
     IBridge parent,
     IBasicConnectorBinding basicConnectorBinding,
     IEnumerable<ISendFilter> sendFilters,
-    Func<SendOperation> sendOperationFactory
-  //RhinoContext rhinoContext
+    Func<SendOperation> sendOperationFactory,
+    CancellationManager cancellationManager
   )
   {
     _store = store;
     _idleManager = idleManager;
-    //_rhinoSettings = rhinoSettings;
     _basicConnectorBinding = basicConnectorBinding;
-    //_rhinoContext = rhinoContext;
     _sendFilters = sendFilters.ToList();
     _sendOperationFactory = sendOperationFactory;
-
+    _cancellationManager = cancellationManager;
     Parent = parent;
 
     // would like to know more about binding, parent relationship
@@ -137,7 +131,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
@@ -175,7 +169,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     );
   }
 
-  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   /// <summary>
   /// Checks if any sender model cards contain any of the changed objects. If so, also updates the changed objects hashset for each model card - this last part is important for on send change detection.

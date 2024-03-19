@@ -93,7 +93,7 @@ public class RootBaseObjectBuilder
       onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
 
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
-      Thread.Sleep(550);
+      // Thread.Sleep(550);
     }
 
     // 5. profit
