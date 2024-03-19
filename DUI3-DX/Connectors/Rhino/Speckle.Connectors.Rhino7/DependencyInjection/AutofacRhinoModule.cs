@@ -60,6 +60,8 @@ public class AutofacRhinoModule : Module
     //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
     //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
     //  .InstancePerLifetimeScope();
+
+    // loading old converter for now just to get things to work
     builder
       .Register(c =>
       {
@@ -74,9 +76,9 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
-    builder.RegisterType<SendOperation>().InstancePerDependency();
-    builder.RegisterType<RootBaseObjectBuilder>().InstancePerDependency();
-    builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().InstancePerDependency();
+    builder.RegisterType<SendOperation>().SingleInstance();
+    builder.RegisterType<RootBaseObjectBuilder>().SingleInstance();
+    builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().SingleInstance();
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 

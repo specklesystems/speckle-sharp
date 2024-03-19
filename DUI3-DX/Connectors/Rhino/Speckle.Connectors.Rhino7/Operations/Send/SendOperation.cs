@@ -6,6 +6,9 @@ using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
+/// <summary>
+/// Stateless send operation orchestrator.
+/// </summary>
 public sealed class SendOperation
 {
   private readonly RootBaseObjectBuilder _baseBuilder;
@@ -17,6 +20,17 @@ public sealed class SendOperation
     _baseObjectSender = baseObjectSender;
   }
 
+  /// <summary>
+  /// Executes a send operation given information about the host objects and the destination account.
+  /// </summary>
+  /// <param name="sendFilter"></param>
+  /// <param name="accountId"></param>
+  /// <param name="projectId"></param>
+  /// <param name="modelId"></param>
+  /// <param name="onOperationProgressed"></param>
+  /// <param name="onVersionIdCreated"></param>
+  /// <param name="ct"></param>
+  /// <returns></returns>
   public async Task Execute(
     ISendFilter sendFilter,
     string accountId,

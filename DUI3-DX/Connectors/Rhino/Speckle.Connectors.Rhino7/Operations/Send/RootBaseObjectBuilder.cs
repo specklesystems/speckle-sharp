@@ -10,13 +10,16 @@ using System.Threading;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
+/// <summary>
+/// Stateless builder object to turn an <see cref="ISendFilter"/> into a <see cref="Base"/> object
+/// </summary>
 public class RootBaseObjectBuilder
 {
-  private readonly ISpeckleConverter _converter;
+  private readonly Func<ISpeckleConverter> _converterFactory;
 
-  public RootBaseObjectBuilder(ISpeckleConverter converter)
+  public RootBaseObjectBuilder(Func<ISpeckleConverter> converterFactory)
   {
-    _converter = converter;
+    _converterFactory = converterFactory;
   }
 
   public Base Build(
@@ -36,14 +39,17 @@ public class RootBaseObjectBuilder
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    _converter.SetContextDocument(RhinoDoc.ActiveDoc);
-    Base commitObject = ConvertObjects(rhinoObjects, onOperationProgressed, ct);
+    ISpeckleConverter converter = _converterFactory();
+
+    converter.SetContextDocument(RhinoDoc.ActiveDoc);
+    Base commitObject = ConvertObjects(rhinoObjects, converter, onOperationProgressed, ct);
 
     return commitObject;
   }
 
-  private Base ConvertObjects(
+  private static Collection ConvertObjects(
     List<RhinoObject> rhinoObjects,
+    ISpeckleConverter converter,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
@@ -81,7 +87,7 @@ public class RootBaseObjectBuilder
         converted.applicationId = applicationId;
       }*/
 
-      var converted = _converter.ConvertToSpeckle(rhinoObject);
+      var converted = converter.ConvertToSpeckle(rhinoObject);
       converted.applicationId = applicationId;
 
       // 4. add to host
@@ -100,7 +106,7 @@ public class RootBaseObjectBuilder
     return rootObjectCollection;
   }
 
-  private Collection GetHostObjectCollection(
+  private static Collection GetHostObjectCollection(
     Dictionary<int, Collection> layerCollectionCache,
     Layer layer,
     Collection rootObjectCollection

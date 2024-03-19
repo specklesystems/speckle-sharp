@@ -10,6 +10,10 @@ using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
+/// <summary>
+/// Default implementation of the <see cref="IBaseObjectSender"/> which takes a <see cref="Base"/> and sends
+/// it to a server described by the parameters in the <see cref="Send"/> method
+/// </summary>
 internal sealed class BaseObjectSenderToServer : IBaseObjectSender
 {
   private readonly Func<Account, string, ITransport> _transportFactory;
