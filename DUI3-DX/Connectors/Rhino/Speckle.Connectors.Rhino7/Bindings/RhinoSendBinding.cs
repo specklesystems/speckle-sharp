@@ -14,7 +14,6 @@ using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using System.Threading.Tasks;
 using Speckle.Connectors.Rhino7.Operations.Send;
-using Speckle.Core.Api;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
