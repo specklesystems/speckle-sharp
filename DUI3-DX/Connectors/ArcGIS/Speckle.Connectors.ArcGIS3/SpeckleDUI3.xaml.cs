@@ -21,8 +21,8 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
+using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Connectors.DUI.Bridge;
 using Speckle.Core.Logging;
 
 namespace ConnectorArcGIS;
@@ -52,7 +52,7 @@ public partial class SpeckleDUI3 : UserControl
 
   private void OnInitialized(object sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    List<IBinding> bindings = Bindings.Factory.CreateBindings();
+    List<IBinding> bindings = Factory.CreateBindings();
 
     foreach (IBinding binding in bindings)
     {

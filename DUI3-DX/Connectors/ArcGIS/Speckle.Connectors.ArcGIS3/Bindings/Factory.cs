@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using ConnectorArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 
-namespace ConnectorArcGIS.Bindings;
+namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public static class Factory
 {

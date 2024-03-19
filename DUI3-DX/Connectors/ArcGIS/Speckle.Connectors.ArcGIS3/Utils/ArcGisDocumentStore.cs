@@ -1,7 +1,7 @@
 using Speckle.Connectors.DUI.Models;
 using Speckle.Newtonsoft.Json;
 
-namespace ConnectorArcGIS.Utils;
+namespace Speckle.Connectors.ArcGIS.Utils;
 
 public class ArcGisDocumentStore : DocumentModelStore
 {

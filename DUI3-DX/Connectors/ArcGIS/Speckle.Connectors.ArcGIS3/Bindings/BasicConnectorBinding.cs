@@ -1,13 +1,12 @@
 using System.Reflection;
-using ConnectorArcGIS.Utils;
 using Sentry.Reflection;
-using Speckle.Connectors.DUI;
+using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 
-namespace ConnectorArcGIS.Bindings;
+namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public class BasicConnectorBinding : IBasicConnectorBinding
 {

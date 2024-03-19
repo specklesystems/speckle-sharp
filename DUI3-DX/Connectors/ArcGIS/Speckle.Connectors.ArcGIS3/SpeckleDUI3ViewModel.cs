@@ -21,10 +21,9 @@ using ArcGIS.Core.CIM;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
-
 using System.Threading.Tasks;
 
-namespace ConnectorArcGIS;
+namespace Speckle.Connectors.ArcGIS;
 
 internal class SpeckleDUI3ViewModel : ViewStatePane
 {
