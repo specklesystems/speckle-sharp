@@ -22,6 +22,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     _store = store;
     Parent = parent;
     Commands = new BasicConnectorBindingCommands(parent);
+
+    _store.DocumentChanged += (_, _) =>
+    {
+      Commands.NotifyDocumentChanged();
+    };
   }
 
   public string GetSourceApplicationName()
