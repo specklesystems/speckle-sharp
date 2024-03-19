@@ -13,7 +13,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
 
-  public BasicConnectorBindingCommands Commands => throw new System.NotImplementedException();
+  public BasicConnectorBindingCommands Commands { get; }
 
   private readonly ArcGISDocumentStore _store;
 
@@ -21,6 +21,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   {
     _store = store;
     Parent = parent;
+    Commands = new BasicConnectorBindingCommands(parent);
   }
 
   public string GetSourceApplicationName()
