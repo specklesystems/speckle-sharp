@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <TargetExt>.rhp</TargetExt>
@@ -19,22 +19,15 @@
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0"/>
   </ItemGroup>
 
-  <ItemGroup Label="Direct project dependencies">
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj" IncludeAssets="runtime"/>
+    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj" IncludeAssets="runtime"/>
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
+
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj"/>
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj"/>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj"/>
   </ItemGroup>
   
-  <ItemGroup Label="Indirect project dependencies">
-    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Content"
-                      CopyToOutputDirectory="PreserveNewest"/>
-    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Content"
-                      CopyToOutputDirectory="PreserveNewest"
-    />
-  </ItemGroup>
 </Project>

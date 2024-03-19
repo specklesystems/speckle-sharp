@@ -1,4 +1,4 @@
-﻿using Speckle.Autofac.DependencyInjection;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -6,7 +6,7 @@ using Speckle.Objects.Primitives;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Circle), 0)]
+[NameAndRankValue(nameof(RG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class CircleToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Circle, SOG.Circle>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;

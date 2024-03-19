@@ -1,4 +1,4 @@
-﻿using Speckle.Autofac.DependencyInjection;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -6,7 +6,7 @@ using Speckle.Objects.Primitives;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Arc), 0)]
+[NameAndRankValue(nameof(RG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Arc, SOG.Arc>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;

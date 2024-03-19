@@ -1,11 +1,11 @@
-﻿using Speckle.Autofac.DependencyInjection;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Polyline), 0)]
+[NameAndRankValue(nameof(RG.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Polyline, SOG.Polyline>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;

@@ -10,8 +10,3 @@ public interface IHostObjectToSpeckleConversion
 {
   Base Convert(object target);
 }
-
-public interface IRawConversion<TIn, TOut>
-{
-  TOut RawConvert(TIn target);
-}

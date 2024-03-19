@@ -1,11 +1,11 @@
-﻿using Speckle.Autofac.DependencyInjection;
+﻿using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Line), 0)]
+[NameAndRankValue(nameof(RG.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Line, SOG.Line>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
