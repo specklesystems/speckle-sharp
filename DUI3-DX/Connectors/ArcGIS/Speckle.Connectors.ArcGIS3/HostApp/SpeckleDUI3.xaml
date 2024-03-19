@@ -36,6 +36,6 @@
 		<wv2:WebView2 
 			CreationProperties="{StaticResource EvergreenWebView2CreationProperties}" 
 			HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-			Name="Browser" Grid.Row="0" Source="http://localhost:8082" />
+			Name="Browser" Grid.Row="0" Source="https://dui3--boisterous-douhua-e3cefb.netlify.app/" />
 	</DockPanel>
 </UserControl>
