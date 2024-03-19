@@ -57,11 +57,13 @@
 					</tooltip>
 				</button>
 			</controls>
-			<panes>
-				<pane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle" className="SpeckleDUI3ViewModel" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonGreen16.png" defaultTab="esri_mapping_homeTab" defaultTool="esri_mapping_navigateTool">
-					<content className="SpeckleDUI3Wrapper" />
-				</pane>
-			</panes>
+
+            <dockPanes>
+                <dockPane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle" className="SpeckleDUI3ViewModel" keytip="DockPane" initiallyVisible="true" dock="group" dockWith="esri_core_contentsDockPane">
+                    <content className="SpeckleDUI3Wrapper" />
+                </dockPane>
+            </dockPanes>
+            
 		</insertModule>
 	</modules>
 </ArcGIS>
