@@ -17,8 +17,8 @@
    limitations under the License.
 
 -->
-<ArcGIS defaultAssembly="Speckle.Connectors.ArcGIS3.dll" defaultNamespace="Speckle.Connectors.ArcGIS" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
-	<AddInInfo id="{D2D8A42A-F983-4814-AF7C-4E4C0609FA80}" version="1.0" desktopVersion="3.0.34047">
+<ArcGIS defaultAssembly="Speckle.Connectors.ArcGIS3.dll" defaultNamespace="Speckle.Connectors.ArcGIS.HostApp" xmlns="http://schemas.esri.com/DADF/Registry" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.esri.com/DADF/Registry file:///C:/Program%20Files/ArcGIS/Pro/bin/ArcGIS.Desktop.Framework.xsd">
+	<AddInInfo id="{6CB1D25C-B8BF-4A33-9099-C1F8D1B32EFC}" version="1.0" desktopVersion="3.0.34047">
 		<Name>Speckle</Name>
 		<Description>Speckle connector for ArcGIS</Description>
 		<Image>Images\AddinDesktop32.png</Image>
@@ -59,7 +59,7 @@
 			</controls>
 			<panes>
 				<pane id="SpeckleDUI3_SpeckleDUI3" caption="Speckle" className="SpeckleDUI3ViewModel" smallImage="pack://application:,,,/ArcGIS.Desktop.Resources;component/Images/GenericButtonGreen16.png" defaultTab="esri_mapping_homeTab" defaultTool="esri_mapping_navigateTool">
-					<content className="SpeckleDUI3" />
+					<content className="SpeckleDUI3Wrapper" />
 				</pane>
 			</panes>
 		</insertModule>

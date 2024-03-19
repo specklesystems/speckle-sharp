@@ -16,7 +16,7 @@
    limitations under the License.
 
 -->
-<UserControl x:Class="ConnectorArcGIS.SpeckleDUI3"
+<UserControl x:Class="Speckle.Connectors.ArcGIS.SpeckleDUI3"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -24,7 +24,7 @@
 			 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:extensions="clr-namespace:ArcGIS.Desktop.Extensions;assembly=ArcGIS.Desktop.Extensions"
 			 xmlns:frameworkControls="clr-namespace:ArcGIS.Desktop.Framework.Controls;assembly=ArcGIS.Desktop.Framework"
-             xmlns:ui="clr-namespace:ConnectorArcGIS"
+             xmlns:ui="clr-namespace:Speckle.Connectors.ArcGIS"
              xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"

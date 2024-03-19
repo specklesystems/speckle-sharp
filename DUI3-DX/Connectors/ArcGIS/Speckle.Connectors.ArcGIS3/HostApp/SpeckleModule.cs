@@ -25,7 +25,7 @@ using Speckle.Connectors.ArcGIS.DependencyInjetion;
 using Speckle.Converters.Common.Objects;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
-namespace Speckle.Connectors.ArcGIS;
+namespace Speckle.Connectors.ArcGIS.HostApp;
 
 /// <summary>
 /// This sample shows how to implement pane that contains an Edge WebView2 control using the built-in ArcGIS Pro SDK's WebBrowser control.  For details on how to utilize the WebBrowser control in an add-in see here: https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-Framework#webbrowser  For details on how to utilize the Microsoft Edge web browser control in an add-in see here: https://github.com/Esri/arcgis-pro-sdk/wiki/ProConcepts-Framework#webbrowser-control
@@ -51,7 +51,7 @@ internal class SpeckleModule : Module
     return true;
   }
 
-  public AutofacContainer? Container { get; private set; }
+  public static AutofacContainer? Container { get; private set; }
 
   protected override bool Initialize()
   {

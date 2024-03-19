@@ -23,7 +23,7 @@ using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using System.Threading.Tasks;
 
-namespace Speckle.Connectors.ArcGIS;
+namespace Speckle.Connectors.ArcGIS.HostApp;
 
 internal class SpeckleDUI3ViewModel : ViewStatePane
 {

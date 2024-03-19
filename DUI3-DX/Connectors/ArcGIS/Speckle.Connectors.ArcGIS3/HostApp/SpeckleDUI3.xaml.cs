@@ -22,11 +22,10 @@ using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
-using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Logging;
 
-namespace ConnectorArcGIS;
+namespace Speckle.Connectors.ArcGIS;
 
 /// <summary>
 /// Interaction logic for WebViewBrowserView.xaml
