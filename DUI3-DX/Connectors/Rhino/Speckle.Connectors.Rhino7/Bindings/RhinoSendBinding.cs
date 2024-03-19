@@ -27,7 +27,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   private readonly RhinoIdleManager _idleManager;
   private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly List<ISendFilter> _sendFilters;
-  private readonly Func<SendOperation> _sendOperationFactory;
+  private readonly SendOperation _sendOperation;
   private readonly CancellationManager _cancellationManager;
 
   /// <summary>
@@ -46,7 +46,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IBasicConnectorBinding basicConnectorBinding,
     IEnumerable<ISendFilter> sendFilters,
-    Func<SendOperation> sendOperationFactory,
+    SendOperation sendOperation,
     SendBindingUICommands.Factory sendBindingFactory,
     CancellationManager cancellationManager
   )
@@ -55,7 +55,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _idleManager = idleManager;
     _basicConnectorBinding = basicConnectorBinding;
     _sendFilters = sendFilters.ToList();
-    _sendOperationFactory = sendOperationFactory;
+    _sendOperation = sendOperation;
     _cancellationManager = cancellationManager;
     Parent = parent;
     Commands = sendBindingFactory(parent);
@@ -136,7 +136,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      await _sendOperationFactory()
+      await _sendOperation
         .Execute(
           modelCard.SendFilter,
           modelCard.AccountId,
