@@ -5,6 +5,7 @@ using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
 using Autofac;
+using Speckle.Autofac.DependencyInjection.Extensions;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Connectors.Revit.Plugin;
