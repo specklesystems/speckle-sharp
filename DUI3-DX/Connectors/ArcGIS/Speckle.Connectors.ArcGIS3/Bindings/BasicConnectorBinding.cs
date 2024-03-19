@@ -14,6 +14,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
 
+  public BasicConnectorBindingCommands Commands => throw new System.NotImplementedException();
+
   private readonly ArcGisDocumentStore _store;
 
   public BasicConnectorBinding(ArcGisDocumentStore store)

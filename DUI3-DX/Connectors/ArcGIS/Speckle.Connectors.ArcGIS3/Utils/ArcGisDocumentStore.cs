@@ -1,10 +1,12 @@
 using Speckle.Connectors.DUI.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace ConnectorArcGIS.Utils;
 
 public class ArcGisDocumentStore : DocumentModelStore
 {
-  public ArcGisDocumentStore()
+  public ArcGisDocumentStore(JsonSerializerSettings serializerOption)
+    : base(serializerOption)
   {
     // Subscribe here document related events like OnSave, OnClose, OnOpen etc...
   }

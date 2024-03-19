@@ -56,8 +56,8 @@ public partial class SpeckleDUI3 : UserControl
 
     foreach (IBinding binding in bindings)
     {
-      BrowserBridge bridge = new(Browser, binding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
-      Browser.CoreWebView2.AddHostObjectToScript(binding.Name, bridge);
+      // BrowserBridge bridge = new(Browser, binding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+      // Browser.CoreWebView2.AddHostObjectToScript(binding.Name, bridge);
     }
   }
 }
