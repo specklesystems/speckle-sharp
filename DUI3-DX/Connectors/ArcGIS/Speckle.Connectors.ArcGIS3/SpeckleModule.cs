@@ -18,7 +18,12 @@
 */
 
 using ArcGIS.Desktop.Framework;
-using ArcGIS.Desktop.Framework.Contracts;
+using Autofac;
+using Speckle.Autofac.DependencyInjection;
+using Speckle.Autofac.Files;
+using Speckle.Connectors.ArcGIS.DependencyInjetion;
+using Speckle.Converters.Common.Objects;
+using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS;
 
@@ -35,7 +40,6 @@ internal class SpeckleModule : Module
   public static SpeckleModule Current =>
     s_this ??= (SpeckleModule)FrameworkApplication.FindModule("ConnectorArcGIS_Module");
 
-  #region Overrides
   /// <summary>
   /// Called by Framework when ArcGIS Pro is closing
   /// </summary>
@@ -47,5 +51,21 @@ internal class SpeckleModule : Module
     return true;
   }
 
-  #endregion Overrides
+  public AutofacContainer? Container { get; private set; }
+
+  protected override bool Initialize()
+  {
+    Container = new AutofacContainer(new StorageInfo());
+    Container.PreBuildEvent += Container_PreBuildEvent;
+
+    // Register Settings
+    Container.AddModule(new AutofacArcGISModule()).Build();
+
+    return base.Initialize();
+  }
+
+  private void Container_PreBuildEvent(object? sender, ContainerBuilder containerBuilder)
+  {
+    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+  }
 }
