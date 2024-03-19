@@ -199,7 +199,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   public void Dispose()
   {
     IsDisposed = true;
-    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }
