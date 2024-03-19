@@ -43,7 +43,7 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
     // Otherwise crash on SqliteConnection
     SQLitePCL.Batteries.Init();
     var view = new CIMGenericView { ViewType = VIEW_PANE_ID };
-    return FrameworkApplication.Panes.Create(VIEW_PANE_ID, new object[] { view }) as SpeckleDUI3ViewModel;
+    return (SpeckleDUI3ViewModel)FrameworkApplication.Panes.Create(VIEW_PANE_ID, new object[] { view });
   }
 
   #region Pane Overrides

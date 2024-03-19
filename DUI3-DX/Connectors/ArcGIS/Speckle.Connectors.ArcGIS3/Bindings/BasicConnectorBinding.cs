@@ -15,11 +15,12 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public BasicConnectorBindingCommands Commands => throw new System.NotImplementedException();
 
-  private readonly ArcGisDocumentStore _store;
+  private readonly ArcGISDocumentStore _store;
 
-  public BasicConnectorBinding(ArcGisDocumentStore store)
+  public BasicConnectorBinding(ArcGISDocumentStore store, IBridge parent)
   {
     _store = store;
+    Parent = parent;
   }
 
   public string GetSourceApplicationName()

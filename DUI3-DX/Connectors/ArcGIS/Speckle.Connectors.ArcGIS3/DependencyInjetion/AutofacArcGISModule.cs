@@ -7,10 +7,12 @@ using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Converters.Common;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Connectors.ArcGIS.Utils;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjetion;
 
@@ -24,8 +26,10 @@ public class AutofacArcGISModule : Module
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
-    // Register bindings
     builder.RegisterType<SpeckleDUI3>().SingleInstance();
+    builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
+
+    // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
 

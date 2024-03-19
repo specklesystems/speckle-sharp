@@ -36,7 +36,6 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
     // Register other connector specific types
-    builder.RegisterType<RhinoPlugin>().As<IRhinoPlugin>().SingleInstance();
     builder.RegisterType<RhinoDocumentStore>().As<DocumentModelStore>().SingleInstance();
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
     builder.RegisterType<RhinoContext>().InstancePerLifetimeScope();
