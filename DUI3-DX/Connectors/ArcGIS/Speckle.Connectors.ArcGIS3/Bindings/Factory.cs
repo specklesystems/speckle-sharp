@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using ConnectorArcGIS.Utils;
-using DUI3;
-using DUI3.Bindings;
+using Speckle.Connectors.DUI.Bindings;
 
 namespace ConnectorArcGIS.Bindings;
 

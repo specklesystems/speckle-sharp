@@ -1,4 +1,4 @@
-﻿using DUI3.Models;
+using Speckle.Connectors.DUI.Models;
 
 namespace ConnectorArcGIS.Utils;
 
