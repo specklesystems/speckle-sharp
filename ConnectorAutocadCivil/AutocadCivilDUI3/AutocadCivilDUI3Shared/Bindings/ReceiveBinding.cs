@@ -16,6 +16,7 @@ using Autodesk.AutoCAD.LayerManager;
 using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
+using Speckle.Core.Logging;
 
 namespace ConnectorAutocadDUI3.Bindings;
 
@@ -103,7 +104,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       );
       transaction.Commit();
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       if (e is OperationCanceledException)
       {
@@ -164,7 +165,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
           );
         }
       }
-      catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+      catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
         // TODO: you know, report, etc.
         Debug.WriteLine("conversion error happened.");

@@ -203,7 +203,12 @@ public class SendBinding : ISendBinding, ICancelable
     var collectionCache = new Dictionary<string, Collection>();
     int count = 0;
 
-    foreach (var tuple in dbObjects)
+    using var transaction = Doc.TransactionManager.StartTransaction();
+
+    var layerTable =
+      transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+
+    foreach ((DBObject obj, string layerName, string appId) in dbObjects)
     {
       if (cts.IsCancellationRequested)
       {
@@ -212,7 +217,7 @@ public class SendBinding : ISendBinding, ICancelable
       try
       {
         Base converted;
-        var applicationId = tuple.applicationId;
+        var applicationId = appId;
 
         if (
           !modelCard.ChangedObjectIds.Contains(applicationId)
@@ -223,18 +228,35 @@ public class SendBinding : ISendBinding, ICancelable
         }
         else
         {
-          converted = converter.ConvertToSpeckle(tuple.obj);
+          converted = converter.ConvertToSpeckle(obj);
           converted.applicationId = applicationId;
         }
 
         // Create and add a collection for each layer if not done so already.
-        if (!collectionCache.ContainsKey(tuple.layer))
+        if (!collectionCache.ContainsKey(layerName))
         {
-          collectionCache[tuple.layer] = new Collection() { name = tuple.layer, collectionType = "layer" };
-          modelWithLayers.elements.Add(collectionCache[tuple.layer]);
+          LayerTableRecord myLayer = null;
+          foreach (var layerObjectId in layerTable)
+          {
+            var layerTableRecord = transaction.GetObject(layerObjectId, OpenMode.ForRead) as LayerTableRecord;
+            if (layerTableRecord.Name != layerName)
+            {
+              continue;
+            }
+            myLayer = layerTableRecord;
+            break;
+          }
+          // TODO: Ask claire re display styles; think about making an actual layer class for autocad & rh?
+          collectionCache[layerName] = new Collection
+          {
+            name = layerName,
+            collectionType = "layer",
+            ["layerColor"] = myLayer?.Color.ColorValue
+          };
+          modelWithLayers.elements.Add(collectionCache[layerName]);
         }
 
-        collectionCache[tuple.layer].elements.Add(converted);
+        collectionCache[layerName].elements.Add(converted);
 
         BasicConnectorBindingCommands.SetModelProgress(
           Parent,
