@@ -28,8 +28,8 @@ public class AutofacAutocadModule : Module
 
     // Register other connector specific types
     builder.RegisterType<AutocadPlugin>().As<IAutocadPlugin>().SingleInstance();
-    builder.RegisterType<TransactionContext>().InstancePerDependency(); // TODO: need to be validated?
-    builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext
+    builder.RegisterType<TransactionContext>().InstancePerDependency(); // TODO: need to be validated?, can be moved to AutocadContext
+    builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
     builder.RegisterType<AutocadDocumentModelStore>().As<DocumentModelStore>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
     // TODO: not sure about context yet, check it again

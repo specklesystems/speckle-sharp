@@ -1,3 +1,6 @@
 ﻿namespace Speckle.Connectors.Autocad.HostApp;
 
-public class AutocadContext { }
+public class AutocadContext
+{
+  // TODO: transaction
+}
