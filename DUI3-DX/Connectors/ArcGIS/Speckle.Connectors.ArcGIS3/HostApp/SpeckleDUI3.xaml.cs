@@ -25,7 +25,7 @@ using Microsoft.Web.WebView2.Core;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Logging;
 
-namespace Speckle.Connectors.ArcGIS;
+namespace Speckle.Connectors.ArcGIS.HostApp;
 
 /// <summary>
 /// Interaction logic for WebViewBrowserView.xaml
