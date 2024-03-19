@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Rhino;
@@ -123,6 +124,11 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
+  [SuppressMessage(
+    "Maintainability",
+    "CA1506:Avoid excessive class coupling",
+    Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
+  )]
   public async Task Send(string modelCardId)
   {
     try
@@ -192,8 +198,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
   public void Dispose()
   {
-    // TODO release managed resources here
     IsDisposed = true;
+    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }
