@@ -4,6 +4,7 @@ using Autofac;
 using Microsoft.Extensions.Logging;
 using Rhino.Commands;
 using Rhino.PlugIns;
+using Rhino.Render.DataSources;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
@@ -14,10 +15,15 @@ using Speckle.Connectors.Rhino7.Bindings;
 using Speckle.Connectors.Rhino7.Filters;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
+using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Converters.Common;
+using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
+using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
+using RhinoSettings = Speckle.Connectors.Rhino7.HostApp.RhinoSettings;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -49,16 +55,32 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
 
     // Register converter factory
+    //builder
+    //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .InstancePerLifetimeScope();
     builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+      .Register(c =>
+      {
+        var settings = c.Resolve<RhinoSettings>();
+        return KitManager.GetDefaultKit().LoadConverter(settings.HostAppInfo.GetVersion(settings.HostAppVersion));
+      })
+      .As<ISpeckleConverter>()
+      .InstancePerDependency();
 
-    // I can't find where the selection filter is being assigned. I'm guessing this is happening in DUI3
-    // somewhere? Not sure why this "instancePerDependency" is actually working. Where is the state being
-    // stored?
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
+
+    builder.RegisterType<RootBaseObjectBuilder>().InstancePerDependency();
+    builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().InstancePerDependency();
+    builder.RegisterType<SendOperation>().InstancePerDependency();
+
+    builder
+      .Register<Func<Account, string, ServerTransport>>(
+        c => (Account account, string projectId) => new ServerTransport(account, projectId)
+      )
+      .As<Func<Account, string, ITransport>>()
+      .InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

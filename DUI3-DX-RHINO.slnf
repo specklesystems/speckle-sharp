@@ -1,0 +1,16 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "Core\\Core\\Core.csproj",
+      "DUI3-DX\\Connectors\\Rhino\\Speckle.Connectors.Rhino7\\Speckle.Connectors.Rhino7.csproj",
+      "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7.DependencyInjection\\Speckle.Converters.Rhino7.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7\\Speckle.Converters.Rhino7.csproj",
+      "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
+      "DUI3-DX\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj"
+    ]
+  }
+}

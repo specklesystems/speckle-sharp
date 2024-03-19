@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*"/>
+    <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,18 +17,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
-    <PackageReference Include="RhinoWindows" Version="7.13.21348.13001"/>
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32"/>
+    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build" />
+    <PackageReference Include="RhinoWindows" Version="7.13.21348.13001" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj" IncludeAssets="runtime"/>
-    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj" IncludeAssets="runtime"/>
+    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj" IncludeAssets="runtime" />
+    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj" IncludeAssets="runtime" />
 
-    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj"/>
-    <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj"/>
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
+    <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
   </ItemGroup>
