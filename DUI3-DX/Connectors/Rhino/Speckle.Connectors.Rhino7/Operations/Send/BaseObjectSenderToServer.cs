@@ -42,7 +42,7 @@ internal sealed class BaseObjectSenderToServer : IBaseObjectSender
       ?? throw new SpeckleAccountManagerException();
 
     ITransport transport = _transportFactory(account, projectId);
-    var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(true);
+    var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
     ct.ThrowIfCancellationRequested();
     //// Store the converted references in memory for future send operations, overwriting the existing values for the given application id.

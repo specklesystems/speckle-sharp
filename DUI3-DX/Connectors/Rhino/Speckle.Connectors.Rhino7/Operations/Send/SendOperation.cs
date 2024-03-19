@@ -28,16 +28,14 @@ public sealed class SendOperation
   /// <param name="projectId"></param>
   /// <param name="modelId"></param>
   /// <param name="onOperationProgressed"></param>
-  /// <param name="onVersionIdCreated"></param>
   /// <param name="ct"></param>
   /// <returns></returns>
-  public async Task Execute(
+  public async Task<string> Execute(
     ISendFilter sendFilter,
     string accountId,
     string projectId,
     string modelId,
     Action<string, double?>? onOperationProgressed = null,
-    Action<string>? onVersionIdCreated = null,
     CancellationToken ct = default
   )
   {
@@ -49,6 +47,6 @@ public sealed class SendOperation
       .Send(commitObject, accountId, projectId, modelId, onOperationProgressed, ct)
       .ConfigureAwait(false);
 
-    onVersionIdCreated?.Invoke(versionId);
+    return versionId;
   }
 }

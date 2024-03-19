@@ -14,6 +14,7 @@ using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using System.Threading.Tasks;
 using Speckle.Connectors.Rhino7.Operations.Send;
+using Speckle.Core.Api;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -136,17 +137,18 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      await _sendOperation
+      string versionId = await _sendOperation
         .Execute(
           modelCard.SendFilter,
           modelCard.AccountId,
           modelCard.ProjectId,
           modelCard.ModelId,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
-          (versionId) => Commands.SetModelCreatedVersionId(modelCardId, versionId),
           cts.Token
         )
         .ConfigureAwait(false);
+
+      Commands.SetModelCreatedVersionId(modelCardId, versionId);
     }
     catch (OperationCanceledException)
     {
