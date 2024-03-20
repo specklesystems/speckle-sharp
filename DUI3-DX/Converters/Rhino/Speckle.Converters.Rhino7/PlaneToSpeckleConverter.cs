@@ -1,4 +1,5 @@
-﻿using Rhino.Geometry;
+﻿using Rhino;
+using Rhino.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -16,6 +17,7 @@ public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
   private readonly IRawConversion<Point3d, Point> _pointConverter;
 
   public PlaneToSpeckleConverter(
+    IHostToSpeckleUnitConverter<UnitSystem> unitConverter,
     IRawConversion<Vector3d, Vector> vectorConverter,
     IRawConversion<Point3d, Point> pointConverter
   )
