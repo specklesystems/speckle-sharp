@@ -69,7 +69,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private void HandleSend(string modelCardId)
   {
-    _speckleConverterToSpeckle.Convert();
+    _speckleConverterToSpeckle.Convert(null);
   }
 
   private bool HandleSpeckleException(SpeckleException spex)

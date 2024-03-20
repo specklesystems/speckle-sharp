@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Autofac;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
@@ -59,7 +59,11 @@ public static class ConversionTypesInjector
       // POC: should we explode if no found?
       if (secondaryType != null)
       {
-        containerBuilder.RegisterType(first.type).As(secondaryType).InstancePerLifetimeScope();
+        containerBuilder
+          .RegisterType(first.type)
+          .As(secondaryType)
+          .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+          .InstancePerLifetimeScope();
       }
 
       // register subsequent types with rank

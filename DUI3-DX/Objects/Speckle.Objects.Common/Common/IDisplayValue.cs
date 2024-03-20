@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using Speckle.Core.Models;
+using Speckle.Objects.Geometry;
+
 namespace Speckle.Objects.Common;
 
 // POC: still accurate?
@@ -8,7 +12,6 @@ namespace Speckle.Objects.Common;
 /// <example>
 /// <see cref="Base"/> objects that represent conceptual / abstract / mathematically derived geometry
 /// can use <see cref="displayValue"/> to be used in case the object lacks a natively displayable form.
-/// (e.g <see cref="Spiral"/>, <see cref="Wall"/>, <see cref="Pipe"/>)
 /// </example>
 /// <typeparam name="T">
 /// Type of display value.

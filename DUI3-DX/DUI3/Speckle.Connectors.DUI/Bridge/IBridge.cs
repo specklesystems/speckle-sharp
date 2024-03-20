@@ -1,6 +1,5 @@
 using System;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Bridge;
 

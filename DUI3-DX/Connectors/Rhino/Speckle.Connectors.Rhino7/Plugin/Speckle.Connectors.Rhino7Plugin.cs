@@ -5,6 +5,7 @@ using Autofac;
 using Rhino.Geometry;
 using Rhino.PlugIns;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Autofac.DependencyInjection.Extensions;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
@@ -50,7 +51,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
       Container = new AutofacContainer(new StorageInfo());
-      Container.PreBuildEvent += _container_PreBuildEvent;
+      Container.PreBuildEvent += ContainerPreBuildEvent;
 
       // Register Settings
       var rhinoSettings = new RhinoSettings(HostApplications.Rhino, HostAppVersion.v7);
@@ -82,10 +83,10 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
     base.OnShutdown();
   }
 
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
     // POC: tight binding to files
-    Assembly assembly = null;
+    Assembly? assembly = null;
     string name = args.Name.Split(',')[0];
     string path = Path.GetDirectoryName(typeof(SpeckleConnectorsRhino7Plugin).Assembly.Location);
 
@@ -102,7 +103,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
     return assembly;
   }
 
-  private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
+  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }

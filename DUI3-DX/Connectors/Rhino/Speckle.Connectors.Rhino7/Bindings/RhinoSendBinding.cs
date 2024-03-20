@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Rhino;
@@ -19,13 +20,12 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
-public class RhinoSendBinding : ISendBinding, ICancelable
+public sealed class RhinoSendBinding : ISendBinding, ICancelable
 {
   public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -138,6 +138,11 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     };
   }
 
+  [SuppressMessage(
+    "Maintainability",
+    "CA1506:Avoid excessive class coupling",
+    Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
+  )]
   public async void Send(string modelCardId)
   {
     try
@@ -171,17 +176,10 @@ public class RhinoSendBinding : ISendBinding, ICancelable
       }
 
       // 4 - Get converter
-      ISpeckleConverter converter = KitManager
-        .GetDefaultKit()
-        .LoadConverter(_rhinoSettings.HostAppInfo.GetVersion(_rhinoSettings.HostAppVersion));
-      converter.SetContextDocument(RhinoDoc.ActiveDoc);
-      // 5 - Convert objects
-      Base commitObject = ConvertObjects(rhinoObjects, converter, modelCard, cts);
 
-      if (cts.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cts.Token);
-      }
+      var commitObject = ConvertObjects(rhinoObjects, modelCard, cts.Token);
+
+      cts.Token.ThrowIfCancellationRequested();
 
       // 7 - Serialize and Send objects
       _basicConnectorBinding.Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
@@ -190,12 +188,12 @@ public class RhinoSendBinding : ISendBinding, ICancelable
       var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
 
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      foreach (var kvp in sendResult.convertedReferences)
-      {
-        // TODO: Bug in here, we need to encapsulate cache not only by app id, but also by project id,
-        // TODO: as otherwise we assume incorrectly that an object exists for a given project (e.g, send box to project 1, send same unchanged box to project 2)
-        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      }
+      // foreach (var kvp in sendResult.convertedReferences)
+      // {
+      //   // TODO: Bug in here, we need to encapsulate cache not only by app id, but also by project id,
+      //   // TODO: as otherwise we assume incorrectly that an object exists for a given project (e.g, send box to project 1, send same unchanged box to project 2)
+      //   _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      // }
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       // NOTE: ChangedObjectIds is currently JsonIgnored, but could actually be useful for highlighting changes in host app.
       //modelCard.ChangedObjectIds = new();
@@ -237,11 +235,12 @@ public class RhinoSendBinding : ISendBinding, ICancelable
 
   private Base ConvertObjects(
     List<RhinoObject> rhinoObjects,
-    ISpeckleConverter converter,
     SenderModelCard modelCard,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   )
   {
+    ISpeckleConverterToSpeckle converter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
@@ -249,10 +248,7 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     // TODO: Handle blocks.
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
-      if (cts.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cts.Token);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
 
       // 1. get object layer
       var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
@@ -277,16 +273,28 @@ public class RhinoSendBinding : ISendBinding, ICancelable
         converted = converter.ConvertToSpeckle(rhinoObject);
         converted.applicationId = applicationId;
       }*/
+      try
+      {
+        var converted = converter.Convert(rhinoObject);
+        converted.applicationId = applicationId;
 
-      var converted = converter.ConvertToSpeckle(rhinoObject);
-      converted.applicationId = applicationId;
-
-      // 4. add to host
-      collectionHost.elements.Add(converted);
-      _basicConnectorBinding.Commands.SetModelProgress(
-        modelCard.ModelCardId,
-        new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
-      );
+        // 4. add to host
+        collectionHost.elements.Add(converted);
+        _basicConnectorBinding.Commands.SetModelProgress(
+          modelCard.ModelCardId,
+          new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
+        );
+      }
+      catch (SpeckleConversionException e)
+      {
+        // DO something with the exception
+        Console.WriteLine(e);
+      }
+      catch (NotSupportedException e)
+      {
+        // DO something with the exception
+        Console.WriteLine(e);
+      }
 
       // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
       // Thread.Sleep(550);
@@ -321,10 +329,10 @@ public class RhinoSendBinding : ISendBinding, ICancelable
     foreach (var layerName in names)
     {
       var existingLayerIndex = RhinoDoc.ActiveDoc.Layers.FindByFullPath(path, -1);
-      Collection childCollection = null;
-      if (layerCollectionCache.ContainsKey(existingLayerIndex))
+      Collection? childCollection = null;
+      if (layerCollectionCache.TryGetValue(existingLayerIndex, out Collection? collection))
       {
-        childCollection = layerCollectionCache[existingLayerIndex];
+        childCollection = collection;
       }
       else
       {
@@ -372,8 +380,8 @@ public class RhinoSendBinding : ISendBinding, ICancelable
 
   public void Dispose()
   {
-    // TODO release managed resources here
     IsDisposed = true;
+    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }

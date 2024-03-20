@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Kits;
@@ -14,7 +13,7 @@ namespace Speckle.Objects.Geometry;
 /// <summary>
 /// A polyline curve, defined by a set of vertices.
 /// </summary>
-public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, ITransformable
+public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, ITransformable
 {
   /// <summary>
   /// Constructs an empty <see cref="Polyline"/>
@@ -22,24 +21,14 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   public Polyline() { }
 
   /// <summary>
-  /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
+  /// Constructs a new <see cref="Polyline"/> instance from a list of points.
   /// </summary>
-  /// <param name="coordinatesArray">The array of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
+  /// <param name="points">The list of points that compose the polyline</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  [Obsolete("Use list constructor instead", true)]
-  public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
-    : this(coordinatesArray.ToList(), units, applicationId) { }
-
-  /// <summary>
-  /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
-  /// </summary>
-  /// <param name="coordinates">The list of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
-  /// <param name="units">The units the coordinates are in.</param>
-  /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  public Polyline(List<double> coordinates, string units = Units.Meters, string? applicationId = null)
+  public Polyline(List<Point> points, string units = Units.Meters, string? applicationId = null)
   {
-    value = coordinates;
+    this.points = points;
     this.units = units;
     this.applicationId = applicationId;
   }
@@ -48,7 +37,11 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// Gets or sets the raw coordinates that define this polyline. Use GetPoints instead to access this data as <see cref="Point"/> instances instead.
   /// </summary>
   [DetachProperty, Chunkable(31250)]
-  public List<double> value { get; set; } = new();
+  public List<double> value
+  {
+    get => points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList();
+    set => points = GetPoints(value);
+  }
 
   /// <summary>
   /// If true, do not add the last point to the value list. Polyline first and last points should be unique.
@@ -64,115 +57,8 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// Gets the list of points representing the vertices of this polyline.
   /// </summary>
-  [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead", true)]
-  public List<Point> points => GetPoints();
-
-  /// <inheritdoc/>
-  public object ToType(Type conversionType, IFormatProvider provider)
-  {
-    if (conversionType == typeof(Polycurve))
-    {
-      return (Polycurve)this;
-    }
-
-    throw new InvalidCastException();
-  }
-
-  /// <inheritdoc/>
-  public TypeCode GetTypeCode()
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public bool ToBoolean(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public byte ToByte(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public char ToChar(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public DateTime ToDateTime(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public decimal ToDecimal(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public double ToDouble(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public short ToInt16(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public int ToInt32(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public long ToInt64(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public sbyte ToSByte(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public float ToSingle(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public string ToString(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public ushort ToUInt16(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public uint ToUInt32(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
-
-  /// <inheritdoc/>
-  public ulong ToUInt64(IFormatProvider provider)
-  {
-    throw new NotImplementedException();
-  }
+  [JsonIgnore]
+  public List<Point> points { get; set; }
 
   /// <summary>
   /// The internal domain of this curve.
@@ -193,7 +79,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   {
     // transform points
     var transformedPoints = new List<Point>();
-    foreach (var point in GetPoints())
+    foreach (var point in points)
     {
       point.TransformTo(transform, out Point transformedPoint);
       transformedPoints.Add(transformedPoint);
@@ -213,19 +99,19 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   ///<remarks>This function may be suboptimal for performance for polylines with many points</remarks>
   /// <returns><see cref="value"/> as List of <see cref="Point"/>s</returns>
   /// <exception cref="SpeckleException">when list is malformed</exception>
-  public List<Point> GetPoints()
+  protected List<Point> GetPoints(List<double> array)
   {
-    if (value.Count % 3 != 0)
+    if (array.Count % 3 != 0)
     {
       throw new SpeckleException(
-        $"{nameof(Polyline)}.{nameof(value)} list is malformed: expected length to be multiple of 3"
+        $"{nameof(Polyline)}.{nameof(array)} list is malformed: expected length to be multiple of 3"
       );
     }
 
-    var pts = new List<Point>(value.Count / 3);
-    for (int i = 2; i < value.Count; i += 3)
+    var pts = new List<Point>(array.Count / 3);
+    for (int i = 2; i < array.Count; i += 3)
     {
-      pts.Add(new Point(value[i - 2], value[i - 1], value[i], units));
+      pts.Add(new Point(array[i - 2], array[i - 1], array[i], units));
     }
 
     return pts;

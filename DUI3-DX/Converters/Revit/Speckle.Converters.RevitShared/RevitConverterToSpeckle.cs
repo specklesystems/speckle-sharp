@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared;
 
@@ -15,10 +16,10 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     _toSpeckle = toSpeckle;
   }
 
-  public void Convert()
+  public Base Convert(object target)
   {
     var objectConverter = _toSpeckle.ResolveInstance(nameof(Floor));
 
-    _ = -1;
+    return objectConverter.Convert(target);
   }
 }

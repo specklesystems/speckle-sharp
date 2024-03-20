@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Objects\Speckle.Objects.Common\Speckle.Objects.Common.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
 
 </Project>

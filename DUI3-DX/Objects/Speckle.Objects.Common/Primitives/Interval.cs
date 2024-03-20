@@ -14,11 +14,11 @@ public class Interval : Base
     this.end = end;
   }
 
-  public double? start { get; set; }
-  public double? end { get; set; }
+  public double start { get; set; }
+  public double end { get; set; }
 
   [JsonIgnore]
-  public double Length => Math.Abs((end ?? 0) - (start ?? 0));
+  public double Length => Math.Abs(end - start);
 
   public override string ToString()
   {

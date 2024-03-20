@@ -23,7 +23,7 @@ public class Ellipse : Base, ICurve, IHasArea
   /// <param name="radius2">Second radius of the ellipse.</param>
   /// <param name="applicationId">Application ID, defaults to null.</param>
   public Ellipse(Plane plane, double radius1, double radius2, string units = Units.Meters, string? applicationId = null)
-    : this(plane, radius1, radius2, new Interval(0, 1), null, units) { }
+    : this(plane, radius1, radius2, new Interval(0, 1), null, units, applicationId) { }
 
   /// <summary>
   /// Initializes a new instance of the <see cref="Ellipse"/> class.
