@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Autodesk.Revit.Attributes;
@@ -52,6 +54,8 @@ public class SpeckleRevitCommand : IExternalCommand
 
   public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
   {
+    ConflictCheck(commandData.Application);
+
     if (UseDockablePanel)
     {
       RegisterPane();
@@ -141,6 +145,49 @@ public class SpeckleRevitCommand : IExternalCommand
         SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
     }
+  }
+
+  private static void ConflictCheck(UIApplication revituiapp)
+  {
+    // Get loaded plugins in Revit
+    var loadedApps = revituiapp.LoadedApplications.Cast<IExternalApplication>().ToList();
+    var speckle = loadedApps.FirstOrDefault(x => x.ToString().Contains("Speckle.ConnectorRevit"));
+    var speckleReferences = speckle.GetType().Assembly.GetReferencedAssemblies().ToList();
+
+    // Get Core's references
+    // NOTE: Connector needs to be initialized otherwise Core will not be loaded in the AppDomain yet
+    // NOTE2: maybe we should iteratively loop all downstream references to be 100% sure?
+    var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies().OrderBy(x => x.FullName).ToList();
+    var core = loadedAssemblies.FirstOrDefault(x => x.FullName.Contains("SpeckleCore2"));
+    var coreReferences = core.GetReferencedAssemblies().ToList();
+    speckleReferences.AddRange(coreReferences);
+
+    loadedApps.Remove(speckle);
+
+    var output = "";
+
+    var t = new Stopwatch();
+    t.Start();
+
+    foreach (var app in loadedApps)
+    {
+      var appReferences = app.GetType().Assembly.GetReferencedAssemblies().ToList();
+
+      foreach (var appReference in appReferences)
+      {
+        var match = speckleReferences.FirstOrDefault(x => x.Name == appReference.Name);
+        if (match == null || match.Version.Equals(appReference.Version))
+          continue;
+        else
+          output += $"Conflict found: {app.ToString()}, {appReference.Name} v{appReference.Version} - expected v{match.Version}\n";
+
+      }
+    }
+    t.Stop();
+
+    output += $"\nCheck completed in {t.Elapsed.TotalSeconds}s";
+
+    TaskDialog.Show("Conflict Report 🔥", output);
   }
 
   private static void AppMain(Avalonia.Application app, string[] args)
