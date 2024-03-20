@@ -73,7 +73,7 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
   /// </summary>
   protected override async Task UninitializeAsync()
   {
-    await base.UninitializeAsync().ConfigureAwait(false);;
+    await base.UninitializeAsync().ConfigureAwait(false);
   }
 
   #endregion Pane Overrides
