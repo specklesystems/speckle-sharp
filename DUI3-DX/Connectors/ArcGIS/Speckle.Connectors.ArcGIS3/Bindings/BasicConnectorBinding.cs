@@ -1,10 +1,12 @@
 using System.Reflection;
 using Sentry.Reflection;
+using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -14,12 +16,13 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public IBridge Parent { get; set; }
 
   public BasicConnectorBindingCommands Commands { get; }
-
   private readonly ArcGISDocumentStore _store;
+  private readonly ArcGISSettings _settings;
 
-  public BasicConnectorBinding(ArcGISDocumentStore store, IBridge parent)
+  public BasicConnectorBinding(ArcGISDocumentStore store, ArcGISSettings settings, IBridge parent)
   {
     _store = store;
+    _settings = settings;
     Parent = parent;
     Commands = new BasicConnectorBindingCommands(parent);
 
@@ -29,12 +32,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     };
   }
 
-  public string GetSourceApplicationName()
-  {
-    return "ArcGIS";
-  }
+  public string GetSourceApplicationName() => _settings.HostAppInfo.Slug;
 
-  public string GetSourceApplicationVersion() => "3";
+  public string GetSourceApplicationVersion() => "3"; //_settings.HostAppInfo.GetVersion(HostAppVersion version);
 
   public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
 
