@@ -1,4 +1,5 @@
 using Rhino;
+using Rhino.DocObjects;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
