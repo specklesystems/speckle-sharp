@@ -40,7 +40,7 @@ internal class SpeckleModule : Module
   public static SpeckleModule Current =>
     s_this ??= (SpeckleModule)FrameworkApplication.FindModule("ConnectorArcGIS_Module");
 
-  public static AutofacContainer? Container { get; private set; }
+  public static AutofacContainer Container { get; private set; }
 
   /// <summary>
   /// Called by Framework when ArcGIS Pro is closing

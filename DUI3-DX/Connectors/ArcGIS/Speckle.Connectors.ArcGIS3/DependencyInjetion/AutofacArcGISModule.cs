@@ -7,7 +7,6 @@ using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Converters.Common;
 using Speckle.Newtonsoft.Json;

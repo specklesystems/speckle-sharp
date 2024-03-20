@@ -1,10 +1,10 @@
 using System.Reflection;
-using Sentry.Reflection;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils.Reflection;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -36,7 +36,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public string GetSourceApplicationVersion() => "3";
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+  public string GetConnectorVersion() => Assembly.GetAssembly(GetType())!.GetVersion();
 
   // TODO
   public DocumentInfo GetDocumentInfo() =>
