@@ -20,7 +20,6 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 

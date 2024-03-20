@@ -33,7 +33,7 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
       target.StartAngle,
       target.EndAngle,
       target.Angle,
-      Units.Meters
+      Units.Meters // TODO: Get units from context
     )
     {
       startPoint = _pointConverter.RawConvert(target.StartPoint),

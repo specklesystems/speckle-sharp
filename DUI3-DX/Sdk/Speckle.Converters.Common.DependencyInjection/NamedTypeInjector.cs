@@ -63,7 +63,11 @@ public static class NamedTypeInjector
       // POC: should we explode if no found?
       if (secondaryType != null)
       {
-        containerBuilder.RegisterType(first.type).As(secondaryType).InstancePerLifetimeScope();
+        containerBuilder
+          .RegisterType(first.type)
+          .As(secondaryType)
+          .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+          .InstancePerLifetimeScope();
       }
 
       // register subsequent types with rank
