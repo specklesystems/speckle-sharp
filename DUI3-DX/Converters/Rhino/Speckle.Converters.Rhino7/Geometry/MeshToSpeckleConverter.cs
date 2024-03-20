@@ -8,11 +8,11 @@ namespace Speckle.Converters.Rhino7.Geometry;
 [NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Mesh, SOG.Mesh>
 {
-  private readonly IRawConversion<RG.Point, SOG.Point> _pointConverter;
+  private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
 
   public MeshToSpeckleConverter(
-    IRawConversion<RG.Point, SOG.Point> pointConverter,
+    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
     IRawConversion<RG.Box, SOG.Box> boxConverter
   )
   {

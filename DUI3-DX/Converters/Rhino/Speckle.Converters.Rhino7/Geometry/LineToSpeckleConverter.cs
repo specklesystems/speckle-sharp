@@ -27,7 +27,7 @@ public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     new(_pointConverter.RawConvert(target.From), _pointConverter.RawConvert(target.To), Units.Meters)
     {
       length = target.Length,
-      domain = new Objects.Primitives.Interval(0, target.Length),
+      domain = new SOP.Interval(0, target.Length),
       bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox))
     };
 }

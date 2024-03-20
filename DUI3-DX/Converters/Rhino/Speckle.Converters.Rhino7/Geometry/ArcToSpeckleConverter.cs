@@ -2,7 +2,6 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Objects.Primitives;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
@@ -40,7 +39,7 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
       startPoint = _pointConverter.RawConvert(target.StartPoint),
       midPoint = _pointConverter.RawConvert(target.MidPoint),
       endPoint = _pointConverter.RawConvert(target.EndPoint),
-      domain = new Interval(0, 1),
+      domain = new SOP.Interval(0, 1),
       length = target.Length,
       bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox()))
     };

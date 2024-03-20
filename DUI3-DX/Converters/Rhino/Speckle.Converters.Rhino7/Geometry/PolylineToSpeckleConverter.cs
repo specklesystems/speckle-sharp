@@ -32,7 +32,7 @@ public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCo
       points.RemoveAt(points.Count - 1);
     }
 
-    return new SOG.Polyline(points, Units.Meters)
+    return new SOG.Polyline(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), Units.Meters)
     {
       // TODO: Find out why original polyline conversion has `Interval` input.
       bbox = box,

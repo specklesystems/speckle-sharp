@@ -2,7 +2,6 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Objects.Primitives;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
@@ -28,7 +27,7 @@ public class EllipseToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
     var nurbsCurve = target.ToNurbsCurve();
     return new(_planeConverter.RawConvert(target.Plane), target.Radius1, target.Radius2, Units.Meters)
     {
-      domain = new Interval(0, 1),
+      domain = new SOP.Interval(0, 1),
       length = nurbsCurve.GetLength(),
       area = Math.PI * target.Radius1 * target.Radius2,
       bbox = _boxConverter.RawConvert(new RG.Box(nurbsCurve.GetBoundingBox(true)))

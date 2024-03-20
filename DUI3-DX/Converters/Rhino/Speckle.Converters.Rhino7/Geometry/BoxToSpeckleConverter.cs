@@ -2,7 +2,6 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Objects.Primitives;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
@@ -10,11 +9,11 @@ namespace Speckle.Converters.Rhino7.Geometry;
 public class BoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Box, SOG.Box>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
-  private readonly IRawConversion<RG.Interval, Interval> _intervalConverter;
+  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
 
   public BoxToSpeckleConverter(
     IRawConversion<RG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<RG.Interval, Interval> intervalConverter
+    IRawConversion<RG.Interval, SOP.Interval> intervalConverter
   )
   {
     _planeConverter = planeConverter;
