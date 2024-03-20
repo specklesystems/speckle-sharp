@@ -32,7 +32,7 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     };
   }
 
-  public string GetSourceApplicationName() => _settings.HostAppInfo.Slug;
+  public string GetSourceApplicationName() => "ArcGIS"; // _settings.HostAppInfo.Slug;
 
   public string GetSourceApplicationVersion() => "3"; //_settings.HostAppInfo.GetVersion(HostAppVersion version);
 
