@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Speckle.Core.Models;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit;
 
@@ -21,6 +22,37 @@ public partial class ConverterRevit
     @base["level"] = ConvertAndCacheLevel(revitGroup, BuiltInParameter.GROUP_LEVEL);
 
     AddHostedDependentElements(revitGroup, @base, elIdsToConvert.ToList());
+    
+    
+    // adding parameters:
+    
+    var allParams = new Dictionary<string, Objects.BuiltElements.Revit.Parameter>();
+    AddGroupParamsToDict(revitGroup, allParams);
+    
+    Base paramBase = new();
+    //sort by key
+    foreach (var kv in allParams.OrderBy(x => x.Key))
+    {
+      try
+      {
+        paramBase[kv.Key] = kv.Value;
+      }
+      catch (InvalidPropNameException)
+      {
+        //ignore
+      }
+      catch (SpeckleException ex)
+      {
+        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
+      }
+    }
+
+    if (paramBase.GetDynamicMembers().Any())
+    {
+      @base["parameters"] = paramBase;
+    }
+    
+    
     return @base;
   }
 

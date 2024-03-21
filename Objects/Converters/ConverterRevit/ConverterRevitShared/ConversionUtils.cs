@@ -256,7 +256,6 @@ public partial class ConverterRevit
     {
       speckleElement["parameters"] = paramBase;
     }
-
     speckleElement["elementId"] = revitElement.Id.ToString();
     speckleElement.applicationId = revitElement.UniqueId;
     speckleElement["units"] = ModelUnits;
@@ -336,6 +335,33 @@ public partial class ConverterRevit
       var speckleParam = ParameterToSpeckle(param, internalName, isTypeParameter);
       paramDict[internalName] = speckleParam;
     }
+  }
+
+  private void AddGroupParamsToDict(
+    DB.Group group,
+    Dictionary<string, Parameter> paramDict,
+    List<string> exclusions = null
+  )
+  {
+    
+    if (group == null) { return; }
+
+    exclusions ??= new();
+    using var parameters = group.Parameters;
+    foreach (DB.Parameter param in parameters)
+    {
+      var internalName = GetParamInternalName(param);
+      if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
+      {
+        continue;
+      }
+
+      var speckleParam = ParameterToSpeckle(param, internalName);
+      paramDict[internalName] = speckleParam;
+    }
+    
+    // no need for checking for type parameters
+    
   }
 
   /// <summary>
