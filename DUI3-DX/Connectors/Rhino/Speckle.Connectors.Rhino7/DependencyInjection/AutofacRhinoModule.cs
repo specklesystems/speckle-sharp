@@ -47,7 +47,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>();
+    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
 
     // Register converter factory
     builder
