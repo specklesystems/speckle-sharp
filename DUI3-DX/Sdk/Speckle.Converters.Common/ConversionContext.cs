@@ -1,17 +1,13 @@
 ﻿namespace Speckle.Converters.Common;
 
-public abstract class ConversionContext<TDocument, THostUnit> : IConversionContext<TDocument, THostUnit>
+// POC: record?
+public class ConversionContext<TDocument>
   where TDocument : class
 {
-  private readonly IHostToSpeckleUnitConverter<THostUnit> _unitConverter;
-  private readonly THostUnit _hostUnits;
-
-  protected ConversionContext(TDocument doc, THostUnit hostUnit, IHostToSpeckleUnitConverter<THostUnit> unitConverter)
+  public ConversionContext(TDocument doc, string speckleUnits)
   {
-    _unitConverter = unitConverter;
     Document = doc;
-    _hostUnits = hostUnit;
-    SpeckleUnits = _unitConverter.ConvertOrThrow(_hostUnits);
+    SpeckleUnits = speckleUnits;
   }
 
   public TDocument Document { get; protected set; }

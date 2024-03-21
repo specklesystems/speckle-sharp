@@ -11,6 +11,7 @@ public class RhinoToSpeckleUnitConverter : IHostToSpeckleUnitConverter<UnitSyste
 
   public RhinoToSpeckleUnitConverter()
   {
+    // POC: we should have a unit test to confirm these are as expected and don't change
     _unitMapping[UnitSystem.None] = Units.Meters;
     _unitMapping[UnitSystem.Millimeters] = Units.Millimeters;
     _unitMapping[UnitSystem.Centimeters] = Units.Centimeters;

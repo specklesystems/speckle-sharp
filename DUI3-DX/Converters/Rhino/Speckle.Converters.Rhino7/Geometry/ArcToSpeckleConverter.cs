@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -11,16 +12,19 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public ArcToSpeckleConverter(
     IRawConversion<RG.Point3d, SOG.Point> pointConverter,
     IRawConversion<RG.Plane, SOG.Plane> planeConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _pointConverter = pointConverter;
     _planeConverter = planeConverter;
     _boxConverter = boxConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.Arc)target);
@@ -33,7 +37,7 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
       target.StartAngle,
       target.EndAngle,
       target.Angle,
-      Units.Meters // TODO: Get units from context
+      _contextStack.Current.SpeckleUnits
     )
     {
       startPoint = _pointConverter.RawConvert(target.StartPoint),
