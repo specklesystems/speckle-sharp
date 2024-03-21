@@ -1,6 +1,7 @@
 using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
+using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
@@ -17,9 +18,12 @@ using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
+using Speckle.Converters.Common;
+using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using RhinoSettings = Speckle.Connectors.Rhino7.HostApp.RhinoSettings;
+using Speckle.Autofac.DependencyInjection;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -49,26 +53,17 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
     builder.RegisterType<SendBindingUICommands>().InstancePerDependency();
 
     // Register converter factory
-    //builder
-    //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-    //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-    //  .InstancePerLifetimeScope();
-
-    // loading old converter for now just to get things to work
     builder
-      .Register(c =>
-      {
-        var settings = c.Resolve<RhinoSettings>();
-        return KitManager.GetDefaultKit().LoadConverter(settings.HostAppInfo.GetVersion(settings.HostAppVersion));
-      })
-      .As<ISpeckleConverter>()
-      .InstancePerDependency();
+      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .InstancePerLifetimeScope();
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();

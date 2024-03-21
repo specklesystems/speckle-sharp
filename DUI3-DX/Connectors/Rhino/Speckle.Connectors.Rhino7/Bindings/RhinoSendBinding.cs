@@ -11,6 +11,9 @@ using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Connectors.Utils.Operations;
+using Speckle.Converters.Common;
+using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using System.Threading.Tasks;
@@ -39,7 +42,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// <summary>
   /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
   /// </summary>
-  //private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  /// POC: Commented out this for now, relates to change tracking feature
+  // private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public RhinoSendBinding(
     DocumentModelStore store,

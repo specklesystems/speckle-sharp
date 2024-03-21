@@ -1,3 +1,5 @@
+using Speckle.Core.Models;
+
 namespace Speckle.Converters.Common.Objects;
 
 // POC: NEXT UP
@@ -6,5 +8,5 @@ namespace Speckle.Converters.Common.Objects;
 
 public interface IHostObjectToSpeckleConversion
 {
-  void Convert();
+  Base Convert(object target);
 }
