@@ -1,4 +1,5 @@
 ﻿using System;
+
 using System.IO;
 using System.Reflection;
 using Autofac;
@@ -8,6 +9,7 @@ using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
