@@ -1,4 +1,4 @@
-﻿using Autofac.Core.Registration;
+using Rhino;
 using Rhino.DocObjects;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
@@ -10,10 +10,15 @@ namespace Speckle.Converters.Rhino7;
 public class RhinoConverterToSpeckle : ISpeckleConverterToSpeckle
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IHostToSpeckleUnitConverter<UnitSystem> _unitConverter;
 
-  public RhinoConverterToSpeckle(IFactory<string, IHostObjectToSpeckleConversion> toSpeckle)
+  public RhinoConverterToSpeckle(
+    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IHostToSpeckleUnitConverter<UnitSystem> unitConverter
+  )
   {
     _toSpeckle = toSpeckle;
+    _unitConverter = unitConverter;
   }
 
   public Base Convert(object target)

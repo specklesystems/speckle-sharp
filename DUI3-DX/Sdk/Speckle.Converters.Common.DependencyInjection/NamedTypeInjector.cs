@@ -1,14 +1,13 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Autofac;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
-namespace Speckle.Autofac.DependencyInjection.Extensions;
+namespace Speckle.Converters.Common.DependencyInjection;
 
-public static class NamedTypeInjector
+public static class ConversionTypesInjector
 {
-  public static ContainerBuilder InjectNamedTypes(this ContainerBuilder containerBuilder)
+  public static ContainerBuilder InjectNamedTypes<T>(this ContainerBuilder containerBuilder)
   {
     List<Type> types = new();
 
@@ -20,7 +19,7 @@ public static class NamedTypeInjector
         var asmTypes = asm.GetTypes();
 
         // POC: IsAssignableFrom()
-        types.AddRange(asmTypes.Where(y => y.GetInterface(typeof(IHostObjectToSpeckleConversion).Name) != null));
+        types.AddRange(asmTypes.Where(y => y.GetInterface(typeof(T).Name) != null));
       }
       catch (Exception ex) when (!ex.IsFatal())
       {
@@ -49,10 +48,7 @@ public static class NamedTypeInjector
       var first = namedTypes[0];
 
       // POC: may need to be instance per lifecycle scope
-      containerBuilder
-        .RegisterType(first.type)
-        .Keyed<IHostObjectToSpeckleConversion>(first.name)
-        .InstancePerLifetimeScope();
+      containerBuilder.RegisterType(first.type).Keyed<T>(first.name).InstancePerLifetimeScope();
 
       // POC: not sure yet if...
       // * This should be an array of types
@@ -75,10 +71,7 @@ public static class NamedTypeInjector
       foreach (var other in namedTypes)
       {
         // POC: is this the right scope?
-        containerBuilder
-          .RegisterType(other.type)
-          .Keyed<IHostObjectToSpeckleConversion>($"{other.name}|{other.rank}")
-          .InstancePerLifetimeScope();
+        containerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
 
         // POC: not sure yet if...
         // * This should be an array of types

@@ -9,6 +9,7 @@
     <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
   </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\..\..\Objects\Objects\Objects.csproj" />
       <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
       <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     </ItemGroup>

@@ -12,4 +12,8 @@
       <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" />
+    </ItemGroup>
+
 </Project>

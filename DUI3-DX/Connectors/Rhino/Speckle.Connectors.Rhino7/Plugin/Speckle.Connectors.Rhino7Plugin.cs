@@ -1,15 +1,20 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Autofac;
+using Rhino;
 using Rhino.Geometry;
 using Rhino.PlugIns;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Autofac.DependencyInjection.Extensions;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
+using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -61,8 +66,6 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
         .AddSingletonInstance(rhinoSettings)
         .Build();
 
-      var resolved = Container.Resolve<IRawConversion<Plane, Objects.Geometry.Plane>>();
-
       // Resolve root plugin object and initialise.
       _rhinoPlugin = Container.Resolve<IRhinoPlugin>();
       _rhinoPlugin.Initialise();
@@ -104,6 +107,6 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
 
   private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    containerBuilder.InjectNamedTypes();
+    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 }
