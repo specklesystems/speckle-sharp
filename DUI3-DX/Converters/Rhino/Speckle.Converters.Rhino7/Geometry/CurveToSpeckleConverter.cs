@@ -16,6 +16,7 @@ public class CurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
   private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
   private readonly IRawConversion<RG.NurbsCurve, SOG.Curve> _nurbsCurveConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public CurveToSpeckleConverter(
     IRawConversion<RG.PolyCurve, SOG.Polycurve> polyCurveConverter,
@@ -24,7 +25,8 @@ public class CurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     IRawConversion<RG.Ellipse, SOG.Ellipse> ellipseConverter,
     IRawConversion<RG.Polyline, SOG.Polyline> polylineConverter,
     IRawConversion<RG.NurbsCurve, SOG.Curve> nurbsCurveConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter
+    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _polyCurveConverter = polyCurveConverter;
@@ -34,13 +36,14 @@ public class CurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     _polylineConverter = polylineConverter;
     _nurbsCurveConverter = nurbsCurveConverter;
     _intervalConverter = intervalConverter;
+    _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => (Base)RawConvert((RG.Curve)target); // TODO: ICurve and Base are not related so we need to cast here.
+  public Base Convert(object target) => (Base)RawConvert((RG.Curve)target); // POC: ICurve and Base are not related so we need to cast here.
 
   public ICurve RawConvert(RG.Curve target)
   {
-    var tolerance = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // TODO: Get this from context
+    var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
 
     if (target is RG.PolyCurve polyCurve)
     {

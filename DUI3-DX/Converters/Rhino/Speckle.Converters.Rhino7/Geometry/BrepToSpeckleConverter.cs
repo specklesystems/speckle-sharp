@@ -42,10 +42,10 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
 
   public SOG.Brep RawConvert(RG.Brep target)
   {
-    var tol = RhinoDoc.ActiveDoc.ModelAbsoluteTolerance; // TODO: Swap for context object instead.
+    var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;
     target.Repair(tol);
 
-    // TODO: This should come as part of the user settings in the context object.
+    // POC: This should come as part of the user settings in the context object.
     // if (PreprocessGeometry)
     // {
     //   brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
@@ -59,7 +59,7 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
       displayValue.Add(_meshConverter.RawConvert(displayMesh));
     }
 
-    // TODO: Swap input material for something coming from the context.
+    // POC: Swap input material for something coming from the context.
     // if (displayValue != null && mat != null)
     // {
     //   displayValue["renderMaterial"] = mat;
