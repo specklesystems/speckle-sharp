@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using Rhino;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;

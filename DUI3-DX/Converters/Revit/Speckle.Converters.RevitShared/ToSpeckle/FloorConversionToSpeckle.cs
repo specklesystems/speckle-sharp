@@ -1,8 +1,8 @@
 using Autodesk.Revit.DB;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models;
 
-namespace Speckle.Converters.Common.ToSpeckle;
+namespace Speckle.Converters.Common;
 
 // POC: reminder - writing classes and creating interfaces is a bit like organising your space
 // if you have a structure for organising things, your interfaces, then finding your stuff, your classes & methods, becomes easy
@@ -12,5 +12,5 @@ namespace Speckle.Converters.Common.ToSpeckle;
 [NameAndRankValue(nameof(Floor), 0)]
 public class FloorConversionToSpeckle : IHostObjectToSpeckleConversion
 {
-  public void Convert() => throw new System.NotImplementedException();
+  public Base Convert(object target) => throw new System.NotImplementedException();
 }

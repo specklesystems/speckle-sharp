@@ -1,6 +1,8 @@
+using Speckle.Core.Models;
+
 namespace Speckle.Converters.Common;
 
 public interface ISpeckleConverterToSpeckle
 {
-  void Convert();
+  Base Convert(object target);
 }

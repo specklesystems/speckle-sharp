@@ -5,7 +5,9 @@ using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
 using Autofac;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -47,16 +49,8 @@ internal class RevitExternalApplication : IExternalApplication
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
       _container = new AutofacContainer(new StorageInfo());
-
       _container.PreBuildEvent += _container_PreBuildEvent;
-
-      // POC: re-instate, can this be done with some injected class?
-#if REVIT2020
-              // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
-              BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
-#endif
 
       // init DI
       _container
@@ -69,7 +63,7 @@ internal class RevitExternalApplication : IExternalApplication
       _revitPlugin = _container.Resolve<IRevitPlugin>();
       _revitPlugin.Initialise();
     }
-    catch (Exception)
+    catch (Exception e) when (!e.IsFatal())
     {
       // POC: feedback?
       return Result.Failed;
@@ -92,7 +86,7 @@ internal class RevitExternalApplication : IExternalApplication
       // need to look for commonality
       _revitPlugin.Shutdown();
     }
-    catch (Exception)
+    catch (Exception e) when (!e.IsFatal())
     {
       // POC: feedback?
       return Result.Failed;

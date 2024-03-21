@@ -8,5 +8,5 @@ namespace Speckle.Autofac.DependencyInjection;
 public interface IFactory<in TKey, out TValue>
   where TValue : class
 {
-  TValue ResolveInstance(TKey strongName);
+  TValue? ResolveInstance(TKey strongName);
 }

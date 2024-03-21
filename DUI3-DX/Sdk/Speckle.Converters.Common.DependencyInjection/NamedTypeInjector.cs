@@ -1,24 +1,25 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Autofac;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
-namespace Speckle.Autofac.DependencyInjection;
+namespace Speckle.Converters.Common.DependencyInjection;
 
-public static class NamedTypeInjector
+public static class ConversionTypesInjector
 {
   public static ContainerBuilder InjectNamedTypes<T>(this ContainerBuilder containerBuilder)
-    where T : class
+    where T : notnull
   {
     List<Type> types = new();
 
+    // POC: hard-coding speckle... :/
     foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
     {
       try
       {
         var asmTypes = asm.GetTypes();
+
+        // POC: IsAssignableFrom()
         types.AddRange(asmTypes.Where(y => y.GetInterface(typeof(T).Name) != null));
       }
       catch (Exception ex) when (!ex.IsFatal())
@@ -44,17 +45,47 @@ public static class NamedTypeInjector
     {
       var namedTypes = byName.Where(x => x.name == name).OrderByDescending(y => y.rank).ToList();
 
-      // first type
+      // first type found
       var first = namedTypes[0];
 
       // POC: may need to be instance per lifecycle scope
       containerBuilder.RegisterType(first.type).Keyed<T>(first.name).InstancePerLifetimeScope();
 
+      // POC: not sure yet if...
+      // * This should be an array of types
+      // * Whether the scope should be modified or modifiable
+      // * Whether this is in the write project... hmmm
+      // POC: IsAssignableFrom()
+      var secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+      // POC: should we explode if no found?
+      if (secondaryType != null)
+      {
+        containerBuilder
+          .RegisterType(first.type)
+          .As(secondaryType)
+          .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+          .InstancePerLifetimeScope();
+      }
+
       // register subsequent types with rank
       namedTypes.RemoveAt(0);
       foreach (var other in namedTypes)
       {
+        // POC: is this the right scope?
         containerBuilder.RegisterType(other.type).Keyed<T>($"{other.name}|{other.rank}").InstancePerLifetimeScope();
+
+        // POC: not sure yet if...
+        // * This should be an array of types
+        // * Whether the scope should be modified or modifiable
+        // * Whether this is in the write project... hmmm
+        // POC: IsAssignableFrom()
+        // NOT very DRY
+        secondaryType = secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+        // POC: should we explode if no found?
+        if (secondaryType != null)
+        {
+          containerBuilder.RegisterType(first.type).As(secondaryType).InstancePerLifetimeScope();
+        }
       }
     }
 
