@@ -12,8 +12,9 @@ public class Factory<TKey, TValue> : IFactory<TKey, TValue>
     _types = types;
   }
 
-  public TValue ResolveInstance(TKey strongName)
+  public TValue? ResolveInstance(TKey strongName)
   {
-    return _types[strongName];
+    _types.TryGetValue(strongName, out TValue value);
+    return value;
   }
 }
