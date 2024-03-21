@@ -18,5 +18,6 @@ public class VectorToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
 
   public Base Convert(object target) => RawConvert((RG.Vector3d)target);
 
-  public SOG.Vector RawConvert(RG.Vector3d target) => new(target.X, target.Y, target.Z, Units.Meters);
+  public SOG.Vector RawConvert(RG.Vector3d target) =>
+    new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
 }
