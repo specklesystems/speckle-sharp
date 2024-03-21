@@ -16,14 +16,11 @@ using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Kits;
 using Speckle.Core.Transports;
 using Speckle.Converters.Common;
 using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
-using RhinoSettings = Speckle.Connectors.Rhino7.HostApp.RhinoSettings;
-using Speckle.Autofac.DependencyInjection;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
