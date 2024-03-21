@@ -11,10 +11,10 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public sealed class SendOperation
 {
-  private readonly RootBaseObjectBuilder _baseBuilder;
-  private readonly IBaseObjectSender _baseObjectSender;
+  private readonly RootObjectBuilder _baseBuilder;
+  private readonly IRootObjectSender _baseObjectSender;
 
-  public SendOperation(RootBaseObjectBuilder baseBuilder, IBaseObjectSender baseObjectSender)
+  public SendOperation(RootObjectBuilder baseBuilder, IRootObjectSender baseObjectSender)
   {
     _baseBuilder = baseBuilder;
     _baseObjectSender = baseObjectSender;

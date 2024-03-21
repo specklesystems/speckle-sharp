@@ -10,7 +10,7 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// In production, this will send to a server.
 /// In testing, this could send to a sqlite db or just save to a dictionary.
 /// </summary>
-public interface IBaseObjectSender
+public interface IRootObjectSender
 {
   public Task<string> Send(
     Base commitObject,

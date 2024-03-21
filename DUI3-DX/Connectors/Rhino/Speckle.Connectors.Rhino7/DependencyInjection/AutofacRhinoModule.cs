@@ -62,8 +62,8 @@ public class AutofacRhinoModule : Module
 
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().SingleInstance();
-    builder.RegisterType<RootBaseObjectBuilder>().SingleInstance();
-    builder.RegisterType<BaseObjectSenderToServer>().As<IBaseObjectSender>().SingleInstance();
+    builder.RegisterType<RootObjectBuilder>().SingleInstance();
+    builder.RegisterType<RootObjectSenderToServer>().As<IRootObjectSender>().SingleInstance();
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 

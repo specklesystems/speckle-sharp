@@ -5,22 +5,19 @@ using Rhino.DocObjects;
 using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
-using Speckle.Core.Kits;
 using System.Threading;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
-using Speckle.Connectors.DUI.Models.Card;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
 /// <summary>
 /// Stateless builder object to turn an <see cref="ISendFilter"/> into a <see cref="Base"/> object
 /// </summary>
-public class RootBaseObjectBuilder
+public class RootObjectBuilder
 {
   private readonly ISpeckleConverterToSpeckle _converter;
 
-  public RootBaseObjectBuilder(ISpeckleConverterToSpeckle converter)
+  public RootObjectBuilder(ISpeckleConverterToSpeckle converter)
   {
     _converter = converter;
   }

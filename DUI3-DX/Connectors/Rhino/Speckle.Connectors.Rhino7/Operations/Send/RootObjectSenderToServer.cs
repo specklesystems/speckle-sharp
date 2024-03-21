@@ -11,14 +11,14 @@ using Speckle.Core.Transports;
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
 /// <summary>
-/// Default implementation of the <see cref="IBaseObjectSender"/> which takes a <see cref="Base"/> and sends
+/// Default implementation of the <see cref="IRootObjectSender"/> which takes a <see cref="Base"/> and sends
 /// it to a server described by the parameters in the <see cref="Send"/> method
 /// </summary>
-internal sealed class BaseObjectSenderToServer : IBaseObjectSender
+internal sealed class RootObjectSenderToServer : IRootObjectSender
 {
   private readonly Func<Account, string, ITransport> _transportFactory;
 
-  public BaseObjectSenderToServer(Func<Account, string, ITransport> transportFactory)
+  public RootObjectSenderToServer(Func<Account, string, ITransport> transportFactory)
   {
     _transportFactory = transportFactory;
   }
