@@ -59,12 +59,6 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<CancellationManager>().InstancePerDependency();
     builder.RegisterType<SendBindingUICommands>().InstancePerDependency();
 
-    // Register converter factory
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
-
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();

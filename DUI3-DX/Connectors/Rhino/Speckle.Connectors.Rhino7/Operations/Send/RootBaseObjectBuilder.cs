@@ -18,11 +18,11 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public class RootBaseObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _converterFactory;
+  private readonly ISpeckleConverterToSpeckle _converter;
 
-  public RootBaseObjectBuilder(IScopedFactory<ISpeckleConverterToSpeckle> converterFactory)
+  public RootBaseObjectBuilder(ISpeckleConverterToSpeckle converter)
   {
-    _converterFactory = converterFactory;
+    _converter = converter;
   }
 
   public Base Build(
@@ -42,22 +42,17 @@ public class RootBaseObjectBuilder
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    var converter = _converterFactory.ResolveScopedInstance();
-
-    //converter.SetContextDocument(RhinoDoc.ActiveDoc);
-    Base commitObject = ConvertObjects(rhinoObjects, converter, onOperationProgressed, ct);
+    Base commitObject = ConvertObjects(rhinoObjects, onOperationProgressed, ct);
 
     return commitObject;
   }
 
-  private Base ConvertObjects(
+  private Collection ConvertObjects(
     List<RhinoObject> rhinoObjects,
-    SenderModelCard modelCard,
-    CancellationToken cancellationToken
+    Action<string, double?>? onOperationProgressed = null,
+    CancellationToken cancellationToken = default
   )
   {
-    ISpeckleConverterToSpeckle converter = _converterFactory.ResolveScopedInstance();
-
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
@@ -92,15 +87,12 @@ public class RootBaseObjectBuilder
       }*/
       try
       {
-        Base converted = converter.Convert(rhinoObject);
+        Base converted = _converter.Convert(rhinoObject);
         converted.applicationId = applicationId;
 
         // 4. add to host
         collectionHost.elements.Add(converted);
-        _basicConnectorBinding.Commands.SetModelProgress(
-          modelCard.ModelCardId,
-          new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
-        );
+        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
       }
       catch (SpeckleConversionException e)
       {
@@ -174,62 +166,62 @@ public class RootBaseObjectBuilder
     return previousCollection;
   }
 
-  private static Collection ConvertObjects(
-    List<RhinoObject> rhinoObjects,
-    ISpeckleConverterToSpeckle converter,
-    Action<string, double?>? onOperationProgressed = null,
-    CancellationToken ct = default
-  )
-  {
-    var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
-    int count = 0;
+  //private static Collection ConvertObjects(
+  //  List<RhinoObject> rhinoObjects,
+  //  ISpeckleConverterToSpeckle converter,
+  //  Action<string, double?>? onOperationProgressed = null,
+  //  CancellationToken ct = default
+  //)
+  //{
+  //  var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
+  //  int count = 0;
 
-    Dictionary<int, Collection> layerCollectionCache = new();
-    // TODO: Handle blocks.
-    foreach (RhinoObject rhinoObject in rhinoObjects)
-    {
-      ct.ThrowIfCancellationRequested();
+  //  Dictionary<int, Collection> layerCollectionCache = new();
+  //  // TODO: Handle blocks.
+  //  foreach (RhinoObject rhinoObject in rhinoObjects)
+  //  {
+  //    ct.ThrowIfCancellationRequested();
 
-      // 1. get object layer
-      var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
+  //    // 1. get object layer
+  //    var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
 
-      // 2. get or create a nested collection for it
-      var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
-      var applicationId = rhinoObject.Id.ToString();
+  //    // 2. get or create a nested collection for it
+  //    var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
+  //    var applicationId = rhinoObject.Id.ToString();
 
-      // 3. get from cache or convert:
-      // What we actually do here is check if the object has been previously converted AND has not changed.
-      // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
-      /*Base converted;
-      if (
-        !modelCard.ChangedObjectIds.Contains(applicationId)
-        && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
-      )
-      {
-        converted = value;
-      }
-      else
-      {
-        converted = converter.ConvertToSpeckle(rhinoObject);
-        converted.applicationId = applicationId;
-      }*/
+  //    // 3. get from cache or convert:
+  //    // What we actually do here is check if the object has been previously converted AND has not changed.
+  //    // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
+  //    /*Base converted;
+  //    if (
+  //      !modelCard.ChangedObjectIds.Contains(applicationId)
+  //      && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
+  //    )
+  //    {
+  //      converted = value;
+  //    }
+  //    else
+  //    {
+  //      converted = converter.ConvertToSpeckle(rhinoObject);
+  //      converted.applicationId = applicationId;
+  //    }*/
 
-      var converted = converter.ConvertToSpeckle(rhinoObject);
-      converted.applicationId = applicationId;
+  //    var converted = converter.ConvertToSpeckle(rhinoObject);
+  //    converted.applicationId = applicationId;
 
-      // 4. add to host
-      collectionHost.elements.Add(converted);
-      //_basicConnectorBinding.Commands.SetModelProgress(
-      //  modelCard.ModelCardId,
-      //  new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
-      //);
-      onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
+  //    // 4. add to host
+  //    collectionHost.elements.Add(converted);
+  //    //_basicConnectorBinding.Commands.SetModelProgress(
+  //    //  modelCard.ModelCardId,
+  //    //  new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
+  //    //);
+  //    onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
 
-      // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
-      // Thread.Sleep(550);
-    }
+  //    // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
+  //    // Thread.Sleep(550);
+  //  }
 
-    // 5. profit
-    return rootObjectCollection;
-  }
+  //  // 5. profit
+  //  return rootObjectCollection;
+  //}
 }
