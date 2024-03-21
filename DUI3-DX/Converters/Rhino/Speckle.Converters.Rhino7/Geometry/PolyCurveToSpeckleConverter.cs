@@ -1,4 +1,5 @@
 ﻿using Objects;
+using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -12,14 +13,17 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
   public IRawConversion<RG.Curve, ICurve> CurveConverter { get; set; } // This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public PolyCurveToSpeckleConverter(
     IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _intervalConverter = intervalConverter;
     _boxConverter = boxConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.PolyCurve)target);
@@ -36,7 +40,7 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
       length = target.GetLength(),
       bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))),
       segments = segments.Select(CurveConverter.RawConvert).ToList(),
-      units = Units.Meters //TODO: Get Units from context
+      units = _contextStack.Current.SpeckleUnits
     };
     return myPoly;
   }

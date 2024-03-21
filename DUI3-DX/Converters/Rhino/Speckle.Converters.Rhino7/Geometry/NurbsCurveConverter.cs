@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -11,16 +12,19 @@ public class NurbsCurveConverter : IHostObjectToSpeckleConversion, IRawConversio
   private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsCurveConverter(
     IRawConversion<RG.Polyline, SOG.Polyline> polylineConverter,
     IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _polylineConverter = polylineConverter;
     _intervalConverter = intervalConverter;
     _boxConverter = boxConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.NurbsCurve)target);
@@ -38,7 +42,7 @@ public class NurbsCurveConverter : IHostObjectToSpeckleConversion, IRawConversio
     knots.Insert(0, knots[0]);
     knots.Insert(knots.Count - 1, knots[knots.Count - 1]);
 
-    var myCurve = new SOG.Curve(displayValue, Units.Meters) // TODO: Get Units from context
+    var myCurve = new SOG.Curve(displayValue, _contextStack.Current.SpeckleUnits)
     {
       weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList(),
       points = nurbsCurve.Points

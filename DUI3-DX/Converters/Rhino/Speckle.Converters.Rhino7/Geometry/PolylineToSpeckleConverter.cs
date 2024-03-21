@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -10,20 +11,25 @@ public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCo
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public PolylineToSpeckleConverter(
     IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.Polyline)target);
 
   public SOG.Polyline RawConvert(RG.Polyline target)
   {
+    // POC: Original polyline conversion had a domain as input, as well as the side-effect of returning a `Line` if the polyline had 2 points only.
+
     var box = _boxConverter.RawConvert(new RG.Box(target.BoundingBox));
     var points = target.Select(pt => _pointConverter.RawConvert(pt)).ToList();
 
@@ -32,9 +38,11 @@ public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCo
       points.RemoveAt(points.Count - 1);
     }
 
-    return new SOG.Polyline(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), Units.Meters)
+    return new SOG.Polyline(
+      points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(),
+      _contextStack.Current.SpeckleUnits
+    )
     {
-      // TODO: Find out why original polyline conversion has `Interval` input.
       bbox = box,
       length = target.Length
     };

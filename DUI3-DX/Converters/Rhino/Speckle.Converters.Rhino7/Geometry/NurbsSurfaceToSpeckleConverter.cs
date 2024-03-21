@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -13,16 +14,19 @@ public class NurbsSurfaceToSpeckleConverter
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IRawConversion<RG.ControlPoint, SOG.ControlPoint> _controlPointConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public NurbsSurfaceToSpeckleConverter(
     IRawConversion<RG.Box, SOG.Box> boxConverter,
     IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<RG.ControlPoint, SOG.ControlPoint> controlPointConverter
+    IRawConversion<RG.ControlPoint, SOG.ControlPoint> controlPointConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _boxConverter = boxConverter;
     _intervalConverter = intervalConverter;
     _controlPointConverter = controlPointConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.NurbsSurface)target);
@@ -40,7 +44,7 @@ public class NurbsSurfaceToSpeckleConverter
       domainV = _intervalConverter.RawConvert(target.Domain(1)),
       knotsU = target.KnotsU.ToList(),
       knotsV = target.KnotsV.ToList(),
-      units = Units.Meters, // TODO: Get Units from context
+      units = _contextStack.Current.SpeckleUnits,
       bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true)))
     };
 

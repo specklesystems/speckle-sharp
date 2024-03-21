@@ -17,6 +17,7 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
   private readonly IRawConversion<RG.Mesh, SOG.Mesh> _meshConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public BrepToSpeckleConverter(
     IRawConversion<RG.Point3d, SOG.Point> pointConverter,
@@ -24,7 +25,8 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     IRawConversion<RG.NurbsSurface, SOG.Surface> surfaceConverter,
     IRawConversion<RG.Mesh, SOG.Mesh> meshConverter,
     IRawConversion<RG.Box, SOG.Box> boxConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter
+    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -33,6 +35,7 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _meshConverter = meshConverter;
     _boxConverter = boxConverter;
     _intervalConverter = intervalConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.Brep)target);
@@ -64,21 +67,29 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
 
     // Vertices, uv curves, 3d curves and surfaces
     var vertices = target.Vertices.Select(vertex => _pointConverter.RawConvert(vertex.Location)).ToList();
-    var curve3D = target.Curves3D.Select(curve3d => _curveConverter.RawConvert(curve3d)).ToList();
+    var curves3d = target.Curves3D.Select(curve3d => _curveConverter.RawConvert(curve3d)).ToList();
     var surfaces = target.Surfaces.Select(srf => _surfaceConverter.RawConvert(srf.ToNurbsSurface())).ToList();
 
-    // TODO: Curve2D's must be converted WITH Units.None, units must be changed in the context object.
-    var curve2D = target.Curves2D.Select(curve2d => _curveConverter.RawConvert(curve2d)).ToList();
+    List<ICurve> curves2d;
+    using (_contextStack.Push(Units.None))
+    {
+      // Curves2D are unitless, so we convert them within a new pushed context with None units.
+      curves2d = target.Curves2D.Select(curve2d => _curveConverter.RawConvert(curve2d)).ToList();
+    }
 
     var speckleBrep = new SOG.Brep
     {
+      Vertices = vertices,
+      Curve3D = curves3d,
+      Curve2D = curves2d,
+      Surfaces = surfaces,
       displayValue = displayValue,
       IsClosed = target.IsSolid,
       Orientation = (SOG.BrepOrientation)target.SolidOrientation,
       volume = target.IsSolid ? target.GetVolume() : 0,
       area = target.GetArea(),
       bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(false))),
-      units = Units.Meters // TODO: Get Units from context
+      units = _contextStack.Current.SpeckleUnits
     };
 
     // Brep non-geometry types

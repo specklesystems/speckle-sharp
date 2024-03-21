@@ -1,3 +1,4 @@
+using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -11,14 +12,17 @@ public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
 {
   private readonly IRawConversion<RG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public PlaneToSpeckleConverter(
     IRawConversion<RG.Vector3d, SOG.Vector> vectorConverter,
-    IRawConversion<RG.Point3d, SOG.Point> pointConverter
+    IRawConversion<RG.Point3d, SOG.Point> pointConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _vectorConverter = vectorConverter;
     _pointConverter = pointConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.Plane)target);
@@ -29,6 +33,6 @@ public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
       _vectorConverter.RawConvert(target.ZAxis),
       _vectorConverter.RawConvert(target.XAxis),
       _vectorConverter.RawConvert(target.YAxis),
-      Units.Meters
+      _contextStack.Current.SpeckleUnits
     );
 }

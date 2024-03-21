@@ -1,4 +1,5 @@
-﻿using Speckle.Converters.Common;
+﻿using Rhino;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -10,14 +11,17 @@ public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public MeshToSpeckleConverter(
     IRawConversion<RG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<RG.Box, SOG.Box> boxConverter
+    IRawConversion<RG.Box, SOG.Box> boxConverter,
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target) => RawConvert((RG.Mesh)target);
@@ -51,7 +55,7 @@ public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     var volume = target.IsClosed ? target.Volume() : 0;
     var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))); // TODO: Why do we use accurate BBox? it's slower.
 
-    return new SOG.Mesh(vertexCoordinates, faces, colors, textureCoordinates, Units.Meters)
+    return new SOG.Mesh(vertexCoordinates, faces, colors, textureCoordinates, _contextStack.Current.SpeckleUnits)
     {
       volume = volume,
       bbox = bbox

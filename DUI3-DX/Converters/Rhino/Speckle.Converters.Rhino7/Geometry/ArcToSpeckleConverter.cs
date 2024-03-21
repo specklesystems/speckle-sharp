@@ -30,7 +30,6 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
   public Base Convert(object target) => RawConvert((RG.Arc)target);
 
   public SOG.Arc RawConvert(RG.Arc target) =>
-    // TODO: handle conversions that define Radius1/Radius2 as major/minor instead of xaxis/yaxis
     new(
       _planeConverter.RawConvert(target.Plane),
       target.Radius,
