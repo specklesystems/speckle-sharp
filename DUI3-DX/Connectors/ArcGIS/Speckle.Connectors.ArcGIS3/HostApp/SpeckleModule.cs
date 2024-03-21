@@ -24,6 +24,7 @@ using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.DependencyInjetion;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
+using Speckle.Converters.Common.DependencyInjection;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS.HostApp;
