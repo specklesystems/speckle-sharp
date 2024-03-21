@@ -17,8 +17,6 @@
 
 */
 
-using ArcGIS.Core.CIM;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using System.Threading.Tasks;
@@ -27,12 +25,11 @@ namespace Speckle.Connectors.ArcGIS.HostApp;
 
 internal class SpeckleDUI3ViewModel : DockPane
 {
-  private const string DockPaneId = "SpeckleDUI3_SpeckleDUI3";
+  private const string DOCKPANE_ID = "SpeckleDUI3_SpeckleDUI3";
 
   internal static void Create()
   {
-    SQLitePCL.Batteries.Init();
-    var pane = FrameworkApplication.DockPaneManager.Find(DockPaneId);
+    var pane = FrameworkApplication.DockPaneManager.Find(DOCKPANE_ID);
     pane?.Activate();
   }
 
