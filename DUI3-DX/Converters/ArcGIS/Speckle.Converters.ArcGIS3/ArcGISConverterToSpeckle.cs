@@ -1,8 +1,7 @@
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-
-using Speckle.Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3;
 
@@ -15,9 +14,10 @@ public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
     _toSpeckle = toSpeckle;
   }
 
-  public void Convert()
+  public Base Convert(object target)
   {
-    var objectConverter = _toSpeckle.ResolveInstance(nameof(Point));
-    Console.WriteLine(objectConverter);
+    // var objectConverter = _toSpeckle.ResolveInstance(nameof(Point));
+    // Console.WriteLine(objectConverter);
+    return null;
   }
 }
