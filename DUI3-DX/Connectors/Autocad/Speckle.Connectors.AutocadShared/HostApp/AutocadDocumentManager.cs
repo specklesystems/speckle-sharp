@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
@@ -22,6 +22,7 @@ public class AutocadDocumentManager
       return null;
     }
 
+    // TODO: inject transaction context
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
@@ -71,6 +72,7 @@ public class AutocadDocumentManager
       return;
     }
 
+    // TODO: inject transaction context
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
