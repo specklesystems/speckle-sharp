@@ -60,12 +60,12 @@ internal class SpeckleModule : Module
     Container.PreBuildEvent += Container_PreBuildEvent;
 
     // Register Settings
-    var arcGISSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
+    var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
     Container
       .AddModule(new AutofacArcGISModule())
-      .LoadAutofacModules(arcGISSettings.Modules)
-      .AddSingletonInstance(arcGISSettings)
+      .LoadAutofacModules(arcgisSettings.Modules)
+      .AddSingletonInstance(arcgisSettings)
       .Build();
 
     return base.Initialize();

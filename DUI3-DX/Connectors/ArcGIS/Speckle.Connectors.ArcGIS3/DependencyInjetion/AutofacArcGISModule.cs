@@ -32,6 +32,7 @@ public class AutofacArcGISModule : Module
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
+    builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
 
     // Register converter factory
     builder
