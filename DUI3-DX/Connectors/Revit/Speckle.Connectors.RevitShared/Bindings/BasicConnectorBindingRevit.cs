@@ -9,6 +9,7 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.DUI.Bindings;
 

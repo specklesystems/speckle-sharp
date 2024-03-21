@@ -11,6 +11,14 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using System.Threading.Tasks;
+using Speckle.Core.Models;
+using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Transports;
+using System.Threading;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -50,14 +58,11 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
   }
 
-  public async void Send(string modelCardId)
+  public async Task Send(string modelCardId)
   {
-    SpeckleTopLevelExceptionHandler.Run(
-      () => HandleSend(modelCardId),
-      HandleSpeckleException,
-      HandleUnexpectedException,
-      HandleFatalException
-    );
+    await SpeckleTopLevelExceptionHandler
+      .Run(() => HandleSend(modelCardId), HandleSpeckleException, HandleUnexpectedException, HandleFatalException)
+      .ConfigureAwait(false);
   }
 
   public void CancelSend(string modelCardId)
@@ -67,9 +72,48 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   public SendBindingUICommands Commands { get; }
 
-  private void HandleSend(string modelCardId)
+  private async Task HandleSend(string modelCardId)
   {
-    _speckleConverterToSpeckle.Convert(null);
+    CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+
+    if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+    {
+      throw new InvalidOperationException("No publish model card was found.");
+    }
+
+    List<Element> objects = _revitContext.UIApplication.ActiveUIDocument.Document
+      .GetElements(modelCard.SendFilter.GetObjectIds())
+      .ToList();
+
+    Account account =
+      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == modelCard.AccountId)
+      ?? throw new SpeckleAccountManagerException();
+
+    Base commitObject = new();
+
+    foreach (Element obj in objects)
+    {
+      commitObject[obj.UniqueId] = _speckleConverterToSpeckle.Convert(obj);
+    }
+
+    var transport = new ServerTransport(account, modelCard.ProjectId);
+    var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
+
+    var apiClient = new Client(account);
+    string versionId = await apiClient
+      .CommitCreate(
+        new CommitCreateInput
+        {
+          streamId = modelCard.ProjectId,
+          branchName = modelCard.ModelId,
+          sourceApplication = "Revit",
+          objectId = sendResult.rootObjId
+        },
+        cts.Token
+      )
+      .ConfigureAwait(true);
+
+    Commands.SetModelCreatedVersionId(modelCardId, versionId);
   }
 
   private bool HandleSpeckleException(SpeckleException spex)

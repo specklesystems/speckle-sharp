@@ -9,7 +9,18 @@
     <Import_RootNamespace>Speckle.Converters.RevitShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitConversionContextStack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\RevitToSpeckleUnitConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ToSpeckleScalingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\WallConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ElementConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConverterToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\LineConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\PointConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\XyzConversionToPoint.cs" />
   </ItemGroup>
 </Project>

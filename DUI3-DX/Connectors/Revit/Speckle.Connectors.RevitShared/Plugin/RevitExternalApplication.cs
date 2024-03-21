@@ -38,7 +38,8 @@ internal class RevitExternalApplication : IExternalApplication
       RevitButtonText = "Revit Connector",
       ModuleFolders = new string[]
       {
-        "C:\\Users\\imhaw\\AppData\\Roaming\\Autodesk\\REVIT\\Addins\\2023\\Speckle.Connectors.Revit2023"
+        Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location),
+        // "C:\\Users\\imhaw\\AppData\\Roaming\\Autodesk\\REVIT\\Addins\\2023\\Speckle.Connectors.Revit2023"
       }
     };
   }
