@@ -101,7 +101,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build DUI3 Solution filter
           command: |
-            dotnet build DUI3-DX.slnf -c Release -p:IsDesktopBuild=false
+            msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
   build-sdk:
     docker:
       - image: cimg/base:2021.01

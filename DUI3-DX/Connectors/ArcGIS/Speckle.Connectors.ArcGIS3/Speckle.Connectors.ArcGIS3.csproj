@@ -13,7 +13,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743" />
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743"/>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32"/>
   </ItemGroup>
   <ItemGroup>
@@ -35,5 +35,4 @@
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
   </ItemGroup>
-  <Import Project="C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets" Condition="Exists('C:\Program Files\ArcGIS\Pro\bin\Esri.ProApp.SDK.Desktop.targets') AND !Exists('Esri.ArcGISPro.Extensions.targets')" />
 </Project>
