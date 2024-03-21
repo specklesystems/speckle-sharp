@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+
 using System.IO;
 using System.Reflection;
 using Autofac;
-using Rhino;
-using Rhino.Geometry;
 using Rhino.PlugIns;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;

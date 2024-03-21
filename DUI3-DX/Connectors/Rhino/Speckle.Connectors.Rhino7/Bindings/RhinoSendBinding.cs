@@ -49,7 +49,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// <summary>
   /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
   /// </summary>
-  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  /// POC: Commented out this for now, relates to change tracking feature
+  // private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public RhinoSendBinding(
     DocumentModelStore store,

@@ -1,7 +1,6 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;

@@ -8,6 +8,7 @@ namespace Speckle.Converters.Common.DependencyInjection;
 public static class ConversionTypesInjector
 {
   public static ContainerBuilder InjectNamedTypes<T>(this ContainerBuilder containerBuilder)
+    where T : notnull
   {
     List<Type> types = new();
 

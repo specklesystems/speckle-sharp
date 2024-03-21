@@ -20,6 +20,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   {
     var objectConverter = _toSpeckle.ResolveInstance(nameof(Floor));
 
-    return objectConverter.Convert(target);
+    return objectConverter?.Convert(target)
+      ?? throw new SpeckleConversionException("No converter or conversion returned null");
   }
 }

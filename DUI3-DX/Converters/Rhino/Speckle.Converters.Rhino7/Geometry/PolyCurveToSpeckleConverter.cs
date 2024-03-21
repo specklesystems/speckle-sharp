@@ -2,7 +2,6 @@
 using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
@@ -47,23 +46,21 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
 
   // Proper explosion of polycurves:
   // (C) The Rutten David https://www.grasshopper3d.com/forum/topics/explode-closed-planar-curve-using-rhinocommon
-  private bool CurveSegments(List<RG.Curve> L, RG.Curve crv, bool recursive)
+  private bool CurveSegments(List<RG.Curve> curveList, RG.Curve crv, bool recursive)
   {
     if (crv == null)
     {
       return false;
     }
 
-    RG.PolyCurve polycurve = crv as RG.PolyCurve;
-
-    if (polycurve != null)
+    if (crv is RG.PolyCurve polyCurve)
     {
       if (recursive)
       {
-        polycurve.RemoveNesting();
+        polyCurve.RemoveNesting();
       }
 
-      RG.Curve[] segments = polycurve.Explode();
+      RG.Curve[] segments = polyCurve.Explode();
 
       if (segments == null)
       {
@@ -77,16 +74,17 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
 
       if (recursive)
       {
-        foreach (RG.Curve S in segments)
+        foreach (RG.Curve s in segments)
         {
-          CurveSegments(L, S, recursive);
+          CurveSegments(curveList, s, recursive);
         }
       }
       else
       {
-        foreach (RG.Curve S in segments)
+        foreach (RG.Curve s in segments)
         {
-          L.Add(S.DuplicateShallow() as RG.Curve);
+          var dup = (RG.Curve)s.DuplicateShallow();
+          curveList.Add(dup);
         }
       }
 
@@ -102,13 +100,12 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
 
     double t0 = nurbs.Domain.Min;
     double t1 = nurbs.Domain.Max;
-    double t;
 
-    int LN = L.Count;
+    int ln = curveList.Count;
 
     do
     {
-      if (!nurbs.GetNextDiscontinuity(RG.Continuity.C1_locus_continuous, t0, t1, out t))
+      if (!nurbs.GetNextDiscontinuity(RG.Continuity.C1_locus_continuous, t0, t1, out double t))
       {
         break;
       }
@@ -120,19 +117,19 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
         continue;
       }
 
-      var M = nurbs.DuplicateCurve();
-      M = M.Trim(trim);
-      if (M.IsValid)
+      var m = nurbs.DuplicateCurve();
+      m = m.Trim(trim);
+      if (m.IsValid)
       {
-        L.Add(M);
+        curveList.Add(m);
       }
 
       t0 = t;
     } while (true);
 
-    if (L.Count == LN)
+    if (curveList.Count == ln)
     {
-      L.Add(nurbs);
+      curveList.Add(nurbs);
     }
 
     return true;

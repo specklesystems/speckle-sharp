@@ -1,5 +1,4 @@
 using Autodesk.Revit.DB;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
