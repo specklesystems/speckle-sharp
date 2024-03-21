@@ -1,6 +1,7 @@
 using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
+using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
@@ -14,6 +15,7 @@ using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Converters.Common;
+using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -45,6 +47,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
 
     // Register converter factory
     builder

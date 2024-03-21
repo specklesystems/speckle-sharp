@@ -5,6 +5,7 @@ using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
 using Autofac;
+using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
@@ -48,16 +49,8 @@ internal class RevitExternalApplication : IExternalApplication
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
       _container = new AutofacContainer(new StorageInfo());
-
       _container.PreBuildEvent += _container_PreBuildEvent;
-
-      // POC: re-instate, can this be done with some injected class?
-#if REVIT2020
-              // Panel.Browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
-              BindingOptions bindingOptions = new () { CamelCaseJavascriptNames = false };
-#endif
 
       // init DI
       _container

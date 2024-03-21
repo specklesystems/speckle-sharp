@@ -21,7 +21,9 @@
       "DUI3-DX\\Objects\\Speckle.Objects.Revit\\Speckle.Objects.Revit.csproj",
       "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
+      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
