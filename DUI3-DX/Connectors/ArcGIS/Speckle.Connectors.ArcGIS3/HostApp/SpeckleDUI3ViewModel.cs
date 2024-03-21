@@ -17,47 +17,20 @@
 
 */
 
-using ArcGIS.Core.CIM;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 using System.Threading.Tasks;
 
 namespace Speckle.Connectors.ArcGIS.HostApp;
 
-internal class SpeckleDUI3ViewModel : ViewStatePane
+internal class SpeckleDUI3ViewModel : DockPane
 {
-  private const string VIEW_PANE_ID = "SpeckleDUI3_SpeckleDUI3";
+  private const string DOCKPANE_ID = "SpeckleDUI3_SpeckleDUI3";
 
-  /// <summary>
-  /// Consume the passed in CIMView. Call the base constructor to wire up the CIMView.
-  /// </summary>
-  public SpeckleDUI3ViewModel(CIMView view)
-    : base(view) { }
-
-  /// <summary>
-  /// Create a new instance of the pane.
-  /// </summary>
-  internal static SpeckleDUI3ViewModel Create()
+  internal static void Create()
   {
-    // Otherwise crash on SqliteConnection
-    SQLitePCL.Batteries.Init();
-    var view = new CIMGenericView { ViewType = VIEW_PANE_ID };
-    return (SpeckleDUI3ViewModel)FrameworkApplication.Panes.Create(VIEW_PANE_ID, new object[] { view });
-  }
-
-  #region Pane Overrides
-
-  /// <summary>
-  /// Must be overridden in child classes used to persist the state of the view to the CIM.
-  /// </summary>
-  public override CIMView ViewState
-  {
-    get
-    {
-      _cimView.InstanceID = (int)InstanceID;
-      return _cimView;
-    }
+    var pane = FrameworkApplication.DockPaneManager.Find(DOCKPANE_ID);
+    pane?.Activate();
   }
 
   /// <summary>
@@ -75,8 +48,6 @@ internal class SpeckleDUI3ViewModel : ViewStatePane
   {
     await base.UninitializeAsync().ConfigureAwait(false);
   }
-
-  #endregion Pane Overrides
 }
 
 /// <summary>

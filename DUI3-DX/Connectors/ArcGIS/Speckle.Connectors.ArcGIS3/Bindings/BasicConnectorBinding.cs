@@ -1,4 +1,5 @@
 using System.Reflection;
+using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -14,12 +15,13 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public IBridge Parent { get; set; }
 
   public BasicConnectorBindingCommands Commands { get; }
-
   private readonly ArcGISDocumentStore _store;
+  private readonly ArcGISSettings _settings;
 
-  public BasicConnectorBinding(ArcGISDocumentStore store, IBridge parent)
+  public BasicConnectorBinding(ArcGISDocumentStore store, ArcGISSettings settings, IBridge parent)
   {
     _store = store;
+    _settings = settings;
     Parent = parent;
     Commands = new BasicConnectorBindingCommands(parent);
 
@@ -29,12 +31,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     };
   }
 
-  public string GetSourceApplicationName()
-  {
-    return "ArcGIS";
-  }
+  public string GetSourceApplicationName() => "ArcGIS"; // _settings.HostAppInfo.Slug;
 
-  public string GetSourceApplicationVersion() => "3";
+  public string GetSourceApplicationVersion() => "3"; //  _settings.HostAppInfo.GetVersion(_settings.HostAppVersion);
 
   public string GetConnectorVersion() => Assembly.GetAssembly(GetType())!.GetVersion();
 

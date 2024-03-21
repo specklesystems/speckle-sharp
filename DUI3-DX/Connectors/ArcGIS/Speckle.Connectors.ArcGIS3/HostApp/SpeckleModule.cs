@@ -23,6 +23,7 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.DependencyInjetion;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Kits;
 using Module = ArcGIS.Desktop.Framework.Contracts.Module;
 
 namespace Speckle.Connectors.ArcGIS.HostApp;
@@ -59,7 +60,13 @@ internal class SpeckleModule : Module
     Container.PreBuildEvent += Container_PreBuildEvent;
 
     // Register Settings
-    Container.AddModule(new AutofacArcGISModule()).Build();
+    var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
+
+    Container
+      .AddModule(new AutofacArcGISModule())
+      .LoadAutofacModules(arcgisSettings.Modules)
+      .AddSingletonInstance(arcgisSettings)
+      .Build();
 
     return base.Initialize();
   }
