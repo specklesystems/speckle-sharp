@@ -14,11 +14,12 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// Default implementation of the <see cref="IRootObjectSender"/> which takes a <see cref="Base"/> and sends
 /// it to a server described by the parameters in the <see cref="Send"/> method
 /// </summary>
-internal sealed class RootObjectSenderToServer : IRootObjectSender
+internal sealed class RootObjectSender : IRootObjectSender
 {
+  // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
   private readonly Func<Account, string, ITransport> _transportFactory;
 
-  public RootObjectSenderToServer(Func<Account, string, ITransport> transportFactory)
+  public RootObjectSender(Func<Account, string, ITransport> transportFactory)
   {
     _transportFactory = transportFactory;
   }
@@ -36,7 +37,7 @@ internal sealed class RootObjectSenderToServer : IRootObjectSender
 
     onOperationProgressed?.Invoke("Uploading...", null);
 
-    // TODO: FETCHING ACCOUNTS BY ID ONLY IS UNSAFE
+    // POC: FETCHING ACCOUNTS BY ID ONLY IS UNSAFE, we should filter by server first, but the server info is not stored on the ModelCard
     Account account =
       AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
       ?? throw new SpeckleAccountManagerException();
