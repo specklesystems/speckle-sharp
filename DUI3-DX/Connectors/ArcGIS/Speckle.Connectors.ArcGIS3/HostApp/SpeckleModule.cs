@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Reflection;
 using ArcGIS.Desktop.Framework;
@@ -6,7 +5,6 @@ using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.ArcGIS.DependencyInjection;
-using Speckle.Converters.ArcGIS3.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;

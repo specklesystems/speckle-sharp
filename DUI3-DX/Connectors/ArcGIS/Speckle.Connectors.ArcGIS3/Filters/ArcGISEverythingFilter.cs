@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Speckle.Connectors.DUI.Bindings;
 
 namespace Speckle.Connectors.ArcGIS.Filters;
