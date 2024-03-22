@@ -37,7 +37,7 @@ public class BasicConnectorBindingCommands
   private const string SET_MODEL_PROGRESS_UI_COMMAND_NAME = "setModelProgress";
   private const string SET_MODEL_ERROR_UI_COMMAND_NAME = "setModelError";
 
-  private IBridge _bridge;
+  protected IBridge _bridge;
 
   public BasicConnectorBindingCommands(IBridge bridge)
   {
