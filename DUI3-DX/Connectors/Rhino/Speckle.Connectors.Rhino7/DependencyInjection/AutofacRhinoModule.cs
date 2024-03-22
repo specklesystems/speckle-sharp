@@ -5,6 +5,7 @@ using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -63,6 +64,11 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RootObjectBuilder>().SingleInstance();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
+
+    builder
+      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

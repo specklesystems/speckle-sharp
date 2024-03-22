@@ -6,6 +6,7 @@ using Rhino;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 using System.Threading;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
@@ -15,11 +16,11 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public class RootObjectBuilder
 {
-  private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _converterFactory;
 
-  public RootObjectBuilder(ISpeckleConverterToSpeckle converter)
+  public RootObjectBuilder(IScopedFactory<ISpeckleConverterToSpeckle> converterFactory)
   {
-    _converter = converter;
+    _converterFactory = converterFactory;
   }
 
   public Base Build(
@@ -85,7 +86,8 @@ public class RootObjectBuilder
       }*/
       try
       {
-        Base converted = _converter.Convert(rhinoObject);
+        var converter = _converterFactory.ResolveScopedInstance();
+        Base converted = converter.Convert(rhinoObject);
         converted.applicationId = applicationId;
 
         // add to host
