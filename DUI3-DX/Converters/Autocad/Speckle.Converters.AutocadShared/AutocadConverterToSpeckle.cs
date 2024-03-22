@@ -5,7 +5,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.AutocadShared;
+namespace Speckle.Converters.Autocad;
 
 public class AutocadConverterToSpeckle : ISpeckleConverterToSpeckle
 {

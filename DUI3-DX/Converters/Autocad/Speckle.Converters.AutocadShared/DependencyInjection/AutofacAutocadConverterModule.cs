@@ -2,9 +2,7 @@ using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Converters.AutocadShared;
 
 namespace Speckle.Converters.Autocad.DependencyInjection;
 

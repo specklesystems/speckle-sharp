@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 
-namespace Speckle.Converters.AutocadShared;
+namespace Speckle.Converters.Autocad;
 
 // POC: Suppressed naming warning for now, but we should evaluate if we should follow this or disable it.
 [SuppressMessage(

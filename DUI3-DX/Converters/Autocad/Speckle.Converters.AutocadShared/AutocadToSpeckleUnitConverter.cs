@@ -4,7 +4,7 @@ using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging; // POC: boy do I think this is the wrong place for SpeckleException!
 
-namespace Speckle.Converters.AutocadShared;
+namespace Speckle.Converters.Autocad;
 
 public class AutocadToSpeckleUnitConverter : IHostToSpeckleUnitConverter<UnitsValue>
 {

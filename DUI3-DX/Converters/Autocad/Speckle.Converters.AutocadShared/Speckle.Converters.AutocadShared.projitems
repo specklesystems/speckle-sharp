@@ -10,9 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConverterToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadConverterModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadConverterModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\BoxToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\IntervalToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\LineToSpeckleConverter.cs" />

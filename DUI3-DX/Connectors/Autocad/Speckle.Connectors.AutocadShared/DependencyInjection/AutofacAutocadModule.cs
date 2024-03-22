@@ -1,3 +1,4 @@
+using Autodesk.AutoCAD.DatabaseServices;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -10,6 +11,7 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Converters.Common;
+using Speckle.Converters.Autocad;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -40,7 +42,10 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadSendBinding>().As<IBinding>().SingleInstance();
-    //builder.RegisterType<AutocadToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
+    builder
+      .RegisterType<AutocadToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<UnitsValue>>()
+      .SingleInstance();
 
     // Register converter factory
     builder

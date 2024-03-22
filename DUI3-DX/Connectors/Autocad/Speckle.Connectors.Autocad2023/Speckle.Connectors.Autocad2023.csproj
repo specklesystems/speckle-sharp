@@ -8,6 +8,7 @@
     <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Converters\Autocad\Speckle.Converters.Autocad2023\Speckle.Converters.Autocad2023.csproj" />
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
