@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
 using Autofac;
@@ -6,8 +6,9 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Autocad.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
@@ -35,7 +36,7 @@ public class SpeckleCommand
     };
 
     Container = new AutofacContainer(new StorageInfo());
-    Container.PreBuildEvent += _container_PreBuildEvent;
+    //Container.PreBuildEvent += ContainerPreBuildEvent;
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
@@ -65,8 +66,8 @@ public class SpeckleCommand
     PaletteSet.Visible = true;
   }
 
-  private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
+  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    //containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 }

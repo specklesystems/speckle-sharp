@@ -1,4 +1,4 @@
-﻿using Autofac;
+using Autofac;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
@@ -37,8 +37,9 @@ public class AutofacAutocadModule : Module
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
-    // builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
-    // builder.RegisterType<AutocadSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<AutocadSendBinding>().As<IBinding>().SingleInstance();
+    //builder.RegisterType<AutocadToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
 
     // Register converter factory
     builder

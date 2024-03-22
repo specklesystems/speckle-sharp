@@ -12,8 +12,11 @@
     <Page Include="$(MSBuildThisFileDirectory)HostApp\DUI3PanelWebView.xaml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\AutocadSelectionFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentModelStore.cs" />
@@ -28,5 +31,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IAutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\SpeckleCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)utils\Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Utils\" />
   </ItemGroup>
 </Project>

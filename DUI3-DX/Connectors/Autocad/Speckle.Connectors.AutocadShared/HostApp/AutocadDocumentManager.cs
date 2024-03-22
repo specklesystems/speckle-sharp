@@ -22,7 +22,6 @@ public class AutocadDocumentManager
       return null;
     }
 
-    // TODO: inject transaction context
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
@@ -72,7 +71,6 @@ public class AutocadDocumentManager
       return;
     }
 
-    // TODO: inject transaction context
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;

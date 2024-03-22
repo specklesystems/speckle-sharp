@@ -1,18 +1,18 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Autodesk.AutoCAD.ApplicationServices.Core;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 
 public class AutocadIdleManager
 {
-  private static readonly ConcurrentDictionary<string, Action> s_sCalls = new();
-  private static bool s_hasSubscribed;
+  private readonly ConcurrentDictionary<string, Action> s_sCalls = new();
+  private bool s_hasSubscribed;
 
   /// <summary>
-  /// Subscribe deferred action to RhinoIdle event to run it whenever Rhino become idle.
+  /// Subscribe deferred action to AutocadIdle event to run it whenever Autocad become idle.
   /// </summary>
-  /// <param name="action"> Action to call whenever Rhino become Idle.</param>
-  public static void SubscribeToIdle(Action action)
+  /// <param name="action"> Action to call whenever Autocad become Idle.</param>
+  public void SubscribeToIdle(Action action)
   {
     s_sCalls[action.Method.Name] = action;
 
@@ -25,7 +25,7 @@ public class AutocadIdleManager
     Application.Idle += OnIdleHandler;
   }
 
-  private static void OnIdleHandler(object sender, EventArgs e)
+  private void OnIdleHandler(object sender, EventArgs e)
   {
     foreach (var kvp in s_sCalls)
     {

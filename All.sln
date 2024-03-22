@@ -524,20 +524,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Common",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{9584AEE5-CD59-46E6-93E6-2DC2B5285B75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Connectors.Rhino7", "DUI3-DX\Connectors\Rhino\Speckle.Connectors.Rhino7\Speckle.Connectors.Rhino7.csproj", "{1E2644A9-6B31-4350-8772-CEAAD6EE0B21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Rhino7", "DUI3-DX\Connectors\Rhino\Speckle.Connectors.Rhino7\Speckle.Connectors.Rhino7.csproj", "{1E2644A9-6B31-4350-8772-CEAAD6EE0B21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{34C2C062-E43F-4FB5-B839-64BC044CCEF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Rhino7", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj", "{65A2F556-F14A-49F3-8A92-7F2E1E7ED3B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Rhino7", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj", "{65A2F556-F14A-49F3-8A92-7F2E1E7ED3B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Rhino7.DependencyInjection", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj", "{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Rhino7.DependencyInjection", "DUI3-DX\Converters\Rhino\Speckle.Converters.Rhino7.DependencyInjection\Speckle.Converters.Rhino7.DependencyInjection.csproj", "{9C1ECA1D-DE98-4FB7-92D0-FC45BB308E5D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Autocad", "Autocad", "{743489BF-1941-43D5-8AF9-35C56D0DCC34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Connectors.Autocad2023", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.Autocad2023\Speckle.Connectors.Autocad2023.csproj", "{89C4CBC7-1606-40DE-B6DA-FBE3AAC98395}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Connectors.Autocad2023", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.Autocad2023\Speckle.Connectors.Autocad2023.csproj", "{89C4CBC7-1606-40DE-B6DA-FBE3AAC98395}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Speckle.Connectors.AutocadShared", "DUI3-DX\Connectors\Autocad\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.shproj", "{41BC679F-887F-44CF-971D-A5502EE87DB0}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Common.DependencyInjection", "DUI3-DX\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj", "{11F7D41B-AFCA-4D29-BC08-285A14BF3A3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Common.DependencyInjection", "DUI3-DX\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj", "{11F7D41B-AFCA-4D29-BC08-285A14BF3A3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2919,6 +2920,7 @@ Global
 		ConnectorRevit\RevitDUI3\RevitDUI3Shared\RevitDUI3Shared.projitems*{3d7f0278-6cf2-4588-a101-4027abb8b87f}*SharedItemsImports = 13
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{3df12639-78b6-41b3-a046-a675035369be}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{3e30d170-3cb4-4728-97d5-887c5019da9b}*SharedItemsImports = 5
+		DUI3-DX\Connectors\Autocad\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.projitems*{41bc679f-887f-44cf-971d-a5502ee87db0}*SharedItemsImports = 13
 		Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{425f0d00-6608-4bd2-a1e0-2730c9f2bfd3}*SharedItemsImports = 13
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{442116f3-0f4a-4136-894e-ff5f4295500b}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{464f2220-d7d9-4d8c-bb3d-b93a1c603469}*SharedItemsImports = 5
@@ -2957,6 +2959,7 @@ Global
 		ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{86920221-416e-4a66-a601-3418207e2401}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{88a24c40-74c8-4e20-9051-6be9e6adecfd}*SharedItemsImports = 5
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{89996067-3233-410a-a6a1-39e2f11f0626}*SharedItemsImports = 5
+		DUI3-DX\Connectors\Autocad\Speckle.Connectors.AutocadShared\Speckle.Connectors.AutocadShared.projitems*{89c4cbc7-1606-40de-b6da-fbe3aac98395}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 5
 		ConnectorRevit\RevitSharedResources\RevitSharedResources.projitems*{8ad2ea4f-14fb-4bb6-94cd-932630dfed9c}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{8b467ff4-6a6c-4071-87a7-0dd7b9822251}*SharedItemsImports = 5
