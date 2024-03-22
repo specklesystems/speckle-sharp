@@ -13,7 +13,7 @@ using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.ArcGIS.Utils;
 
-namespace Speckle.Connectors.ArcGIS.DependencyInjetion;
+namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
 public class AutofacArcGISModule : Module
 {

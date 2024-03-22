@@ -2,7 +2,8 @@ using ArcGIS.Desktop.Framework;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.ArcGIS.DependencyInjetion;
+using Speckle.Connectors.ArcGIS.DependencyInjection;
+using Speckle.Converters.ArcGIS3.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
@@ -45,6 +46,7 @@ internal class SpeckleModule : Module
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
     Container
+      .AddModule(new AutofacArcGISConverterModule())
       .AddModule(new AutofacArcGISModule())
       .LoadAutofacModules(arcgisSettings.Modules)
       .AddSingletonInstance(arcgisSettings)
