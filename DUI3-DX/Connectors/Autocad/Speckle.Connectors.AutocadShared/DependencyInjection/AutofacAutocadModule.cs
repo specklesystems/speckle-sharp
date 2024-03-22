@@ -32,6 +32,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
     builder.RegisterType<AutocadDocumentModelStore>().As<DocumentModelStore>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
+    builder.RegisterType<AutocadContext>().InstancePerLifetimeScope();
     // TODO: not sure about context yet, check it again
 
     // Register bindings

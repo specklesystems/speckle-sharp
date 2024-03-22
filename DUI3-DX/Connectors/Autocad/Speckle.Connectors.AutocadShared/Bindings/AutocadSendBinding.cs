@@ -1,6 +1,7 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.Autocad.Filters;
+using Speckle.Connectors.Autocad.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -12,19 +13,19 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
-using Speckle.Connectors.Autocad.Utils;
 using Speckle.Core.Transports;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Diagnostics;
+using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
 public class AutocadSendBinding : ISendBinding, ICancelable
 {
-  public string Name { get; set; } = "sendBinding";
+  public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
@@ -59,7 +60,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     _autocadContext = autocadContext;
-    _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    //_toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -270,7 +271,6 @@ public class AutocadSendBinding : ISendBinding, ICancelable
             collection.elements.Add(converted);
           }
         }
-
         _basicConnectorBinding.Commands.SetModelProgress(
           modelCard.ModelCardId,
           new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
@@ -297,4 +297,12 @@ public class AutocadSendBinding : ISendBinding, ICancelable
   }
 
   public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+
+  public void Dispose()
+  {
+    IsDisposed = true;
+    _speckleConverterToSpeckleFactory.Dispose();
+  }
+
+  public bool IsDisposed { get; private set; }
 }
