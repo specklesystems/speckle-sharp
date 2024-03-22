@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;

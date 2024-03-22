@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Threading;
 using DUI3;
 using DUI3.Bindings;
@@ -90,24 +89,6 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         }
       }
 
-      var objectsToConvert = new List<(List<string>, Base)>();
-      foreach (
-        var (objPath, obj) in commitObject.TraverseWithPath(
-          obj => obj is not Collection && converter.CanConvertToNative(obj)
-        )
-      ) // note the "obj is not collection" is working around a bug of sorts in the rh converter where we assume collections always have a collectionType; also unsure why collection to layer is in the converter (it's fine, but weird)
-      {
-        if (cts.IsCancellationRequested)
-        {
-          throw new OperationCanceledException(cts.Token);
-        }
-
-        if (obj is not Collection && converter.CanConvertToNative(obj))
-        {
-          objectsToConvert.Add((objPath, obj));
-        }
-      }
-
       var baseLayerName = $"Project {modelCard.ProjectName}: Model {modelCard.ModelName}";
       var convertedIds = BakeObjects(convertableObjects, baseLayerName, modelCardId, cts, converter);
 
@@ -138,7 +119,11 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
   )
   {
     var rootLayerName = baseLayerName;
+
+#pragma warning disable CS0618
+    // NOTE: I could not get the non-obsolete version to work as intended
     var rootLayerIndex = Doc.Layers.Find(rootLayerName, true);
+#pragma warning restore CS0618
 
     // Cleans up any previously received objects
     if (rootLayerIndex >= 0)
