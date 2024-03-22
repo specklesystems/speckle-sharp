@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
@@ -161,9 +160,9 @@ public class SendBinding : ISendBinding, ICancelable
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
       {
-        // NOTE: Object cache needs to be encapsulated by project id, as objects are unique by project. Otherwise we 
-        // can assume incorrectly that an object exists for a given project when actually it is not (e.g., send box to 
-        // a model in project 1, send same unchanged box to a different model in project 2). 
+        // NOTE: Object cache needs to be encapsulated by project id, as objects are unique by project. Otherwise we
+        // can assume incorrectly that an object exists for a given project when actually it is not (e.g., send box to
+        // a model in project 1, send same unchanged box to a different model in project 2).
         _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
       }
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
@@ -298,10 +297,16 @@ public class SendBinding : ISendBinding, ICancelable
       }
       else
       {
+        // TODO: Ask claire re display styles; think about making an actual layer class for autocad & rh?
         childCollection = new Collection(layerName, "layer")
         {
-          applicationId = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Id.ToString()
+          applicationId = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Id.ToString(),
+          ["layerColor"] = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].Color,
+          ["plotColor"] = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].PlotColor,
+          ["plotWeight"] = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].PlotWeight,
+          ["renderMaterial"] = RhinoDoc.ActiveDoc.Layers[existingLayerIndex].RenderMaterial
         };
+
         previousCollection.elements.Add(childCollection);
         layerCollectionCache[existingLayerIndex] = childCollection;
       }

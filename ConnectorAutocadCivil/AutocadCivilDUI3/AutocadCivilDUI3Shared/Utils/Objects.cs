@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Runtime;
 
 namespace AutocadCivilDUI3Shared.Utils;
 
@@ -25,14 +25,26 @@ public static class Objects
         continue;
       }
 
-      var dbObject = tr.GetObject(myObjectId, OpenMode.ForRead);
-      if (dbObject == null)
+      try
       {
-        continue;
-      }
+        var dbObject = tr.GetObject(myObjectId, OpenMode.ForRead);
+        if (dbObject == null)
+        {
+          continue;
+        }
 
-      var layer = (dbObject as Entity)?.Layer;
-      dbObjects.Add((dbObject, layer, objectIdHandle));
+        var layer = (dbObject as Entity)?.Layer;
+        dbObjects.Add((dbObject, layer, objectIdHandle));
+      }
+      catch (Autodesk.AutoCAD.Runtime.Exception e)
+      {
+        // TODO: think if we need to handle more in here
+        if (e.ErrorStatus == ErrorStatus.WasErased)
+        {
+          continue;
+        }
+        throw e;
+      }
     }
     tr.Commit();
     return dbObjects;

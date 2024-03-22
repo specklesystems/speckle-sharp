@@ -11,11 +11,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.LayerManager;
 using DUI3.Models.Card;
 using DUI3.Operations;
 using DUI3.Utils;
+using Speckle.Core.Logging;
 
 namespace ConnectorAutocadDUI3.Bindings;
 
@@ -64,13 +66,14 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         modelCardId,
         new ModelCardProgress() { Status = "Parsing structure" }
       );
-      var objectsToConvert = new List<(List<string>, Base)>();
-      foreach (var (objPath, obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
+      var objectsToConvert = new List<(List<Collection>, Base)>();
+      foreach (var (objPath, obj) in commitObject.TraverseWithCollectionPath((obj) => obj is not Collection))
       {
         if (cts.IsCancellationRequested)
         {
           throw new OperationCanceledException(cts.Token);
         }
+
         if (obj is not Collection && converter.CanConvertToNative(obj))
         {
           objectsToConvert.Add((objPath, obj));
@@ -79,7 +82,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       if (objectsToConvert.Count == 0)
       {
-        throw new Exception("No convertible objects found.");
+        throw new InvalidOperationException("No convertible objects found.");
       }
 
       var baseLayerPrefix = $"SPK-{modelCard.ProjectName}-{modelCard.ModelName}-";
@@ -103,7 +106,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       );
       transaction.Commit();
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       if (e is OperationCanceledException)
       {
@@ -114,7 +117,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
   }
 
   private List<string> BakeObjects(
-    List<(List<string>, Base)> objects,
+    List<(List<Collection>, Base)> objects,
     string baseLayerPrefix,
     string modelCardId,
     CancellationTokenSource cts,
@@ -129,7 +132,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     var uniqueLayerNames = new HashSet<string>();
     var handleValues = new List<string>();
     var count = 0;
-    foreach (var (path, obj) in objects)
+    foreach (var (collectionPath, obj) in objects)
     {
       if (cts.IsCancellationRequested)
       {
@@ -138,12 +141,13 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
       try
       {
+        var path = collectionPath.Select(c => c.name);
         var layerFullName = baseLayerPrefix + string.Join("-", path);
         layerFullName = Utils.RemoveInvalidChars(layerFullName);
 
         if (uniqueLayerNames.Add(layerFullName))
         {
-          CreateLayerOrPurge(layerFullName);
+          CreateLayerOrPurge(layerFullName, collectionPath.Last());
         }
 
         var converted = converter.ConvertToNative(obj);
@@ -164,7 +168,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
           );
         }
       }
-      catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+      catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
       {
         // TODO: you know, report, etc.
         Debug.WriteLine("conversion error happened.");
@@ -178,13 +182,19 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
   /// This ensures we're creating the new objects we've just received rather than overlaying them.
   /// </summary>
   /// <param name="layerName"></param>
-  private void CreateLayerOrPurge(string layerName)
+  private void CreateLayerOrPurge(string layerName, Collection collection)
   {
     using var transaction = Doc.TransactionManager.TopTransaction;
 
     var layerTable =
       transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-    var layerTableRecord = new LayerTableRecord() { Name = layerName };
+    var layerTableRecord = new LayerTableRecord()
+    {
+      Name = layerName,
+      Color = collection["layerColor"] is long layerColor
+        ? Color.FromColor(System.Drawing.Color.FromArgb((int)layerColor))
+        : Color.FromColor(System.Drawing.Color.Black)
+    };
 
     var hasLayer = layerTable.Has(layerName);
     if (hasLayer)
@@ -242,11 +252,13 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     var layerFilterExpression = $"NAME==\"SPK-{filterName}*\"";
     foreach (LayerFilter lf in groupFilter.NestedFilters)
     {
-      if (lf.Name == filterName)
+      if (lf.Name != filterName)
       {
-        lf.FilterExpression = layerFilterExpression;
-        return;
+        continue;
       }
+
+      lf.FilterExpression = layerFilterExpression;
+      return;
     }
     var layerFilter = new LayerFilter() { Name = filterName, FilterExpression = layerFilterExpression };
     groupFilter.NestedFilters.Add(layerFilter);

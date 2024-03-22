@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using DUI3;
 using DUI3.Bindings;
@@ -12,6 +13,7 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 using ICancelable = DUI3.Operations.ICancelable;
@@ -63,19 +65,18 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       // 3 - Get converter
       ISpeckleConverter converter = Converters.GetConverter(Doc, "Rhino7");
 
-      var objectsToConvert = new List<(List<string>, Base)>();
-
       BasicConnectorBindingCommands.SetModelProgress(
         Parent,
         modelCardId,
         new ModelCardProgress() { Status = "Parsing structure" }
       );
 
-      foreach (
-        var (objPath, obj) in commitObject.TraverseWithPath(
-          obj => obj is not Collection && converter.CanConvertToNative(obj)
-        )
-      ) // note the "obj is not collection" is working around a bug of sorts in the rh converter where we assume collections always have a collectionType; also unsure why collection to layer is in the converter (it's fine, but weird)
+      var objs = commitObject.TraverseWithCollectionPath(
+        obj => obj is not Collection && converter.CanConvertToNative(obj)
+      );
+
+      var convertableObjects = new List<(List<Collection> collectionPath, Base obj)>();
+      foreach (var (collectionPath, obj) in objs)
       {
         if (cts.IsCancellationRequested)
         {
@@ -84,12 +85,12 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
         if (obj is not Collection && converter.CanConvertToNative(obj))
         {
-          objectsToConvert.Add((objPath, obj));
+          convertableObjects.Add((collectionPath, obj));
         }
       }
 
       var baseLayerName = $"Project {modelCard.ProjectName}: Model {modelCard.ModelName}";
-      var convertedIds = BakeObjects(objectsToConvert, baseLayerName, modelCardId, cts, converter);
+      var convertedIds = BakeObjects(convertableObjects, baseLayerName, modelCardId, cts, converter);
 
       var receiveResult = new ReceiveResult() { BakedObjectIds = convertedIds, Display = true };
 
@@ -98,7 +99,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       // 7 - Redraw the view to render baked objects
       Doc.Views.Redraw();
     }
-    catch (Exception e)
+    catch (Exception e) when (!e.IsFatal())
     {
       if (e is OperationCanceledException) // We do not want to display an error, we just stop sending.
       {
@@ -110,17 +111,21 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
   }
 
   private List<string> BakeObjects(
-    List<(List<string>, Base)> objects,
+    List<(List<Collection> collectionPath, Base obj)> objects,
     string baseLayerName,
     string modelCardId,
     CancellationTokenSource cts,
     ISpeckleConverter converter
   )
   {
-    // LETS FUCK AROUND AND FIND OUT
     var rootLayerName = baseLayerName;
-    var rootLayerIndex = Doc.Layers.Find(rootLayerName, true);
 
+#pragma warning disable CS0618
+    // NOTE: I could not get the non-obsolete version to work as intended
+    var rootLayerIndex = Doc.Layers.Find(rootLayerName, true);
+#pragma warning restore CS0618
+
+    // Cleans up any previously received objects
     if (rootLayerIndex >= 0)
     {
       foreach (var layer in RhinoDoc.ActiveDoc.Layers[rootLayerIndex].GetChildren())
@@ -171,21 +176,34 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     return newObjectIds;
   }
 
-  private int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
+  private int GetAndCreateLayerFromPath(
+    List<Collection> collectionPath,
+    string baseLayerName,
+    Dictionary<string, int> cache
+  )
   {
     var currentLayerName = baseLayerName;
     var previousLayer = Doc.Layers.FindName(currentLayerName);
-    foreach (var layerName in path)
+    foreach (var collection in collectionPath)
     {
-      currentLayerName = baseLayerName + Layer.PathSeparator + layerName;
+      currentLayerName = baseLayerName + Layer.PathSeparator + collection.name;
       currentLayerName = currentLayerName.Replace("{", "").Replace("}", ""); // Rhino specific cleanup for gh (see RemoveInvalidRhinoChars)
       if (cache.TryGetValue(currentLayerName, out int value))
       {
         previousLayer = Doc.Layers.FindIndex(value);
         continue;
       }
-      var cleanNewLayerName = layerName.Replace("{", "").Replace("}", "");
-      var newLayer = new Layer() { Name = cleanNewLayerName, ParentLayerId = previousLayer.Id };
+      var cleanNewLayerName = collection.name.Replace("{", "").Replace("}", "");
+      var newLayer = new Layer
+      {
+        Name = cleanNewLayerName,
+        ParentLayerId = previousLayer.Id,
+        Color = collection["layerColor"] is long layerColor ? Color.FromArgb((int)layerColor) : Color.Black,
+        PlotColor = collection["plotColor"] is long plotColor ? Color.FromArgb((int)plotColor) : Color.Black,
+        PlotWeight = collection["plotWeight"] is double plotWeight ? plotWeight : 1
+        // TODO: Render Material (probably needs conversion rethinking).
+      };
+
       var index = Doc.Layers.Add(newLayer);
       cache.Add(currentLayerName, index);
       previousLayer = Doc.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this

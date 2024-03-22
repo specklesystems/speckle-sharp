@@ -87,6 +87,75 @@ public static class Traversal
       }
     }
   }
+  
+  
+  /// <summary>
+  /// The same as the above, but tracks the path via collections & ensures all collections have a name.
+  /// </summary>
+  /// <param name="root"></param>
+  /// <param name="recursionBreaker"></param>
+  /// <returns></returns>
+  public static IEnumerable<(List<Collection> flatCollectionPath, Base obj)> TraverseWithCollectionPath(this Base root, BaseExtensions.BaseRecursionBreaker recursionBreaker)
+  {
+    var stack = new Stack<(List<Collection>, Base)>();
+    stack.Push((new List<Collection>(), root));
+
+    while (stack.Count > 0)
+    {
+      (List<Collection> path, Base current) = stack.Pop();
+      yield return (path, current);
+      
+      if (recursionBreaker(current))
+      {
+        continue;
+      }
+      
+      foreach (string child in current.GetDynamicMemberNames())
+      {
+        Collection localPathFragment;
+        if (current is Collection { name: { } } c)
+        {
+          localPathFragment = c;
+        }
+        else
+        {
+          localPathFragment = new Collection() { name = child, collectionType = "unknown" };
+        }
+
+        var newPath = new List<Collection>(path) { localPathFragment };
+        
+        switch (current[child])
+        {
+          case Base o:
+            stack.Push((newPath, o));
+            break;
+          case IDictionary dictionary:
+          {
+            foreach (object obj in dictionary.Keys)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+
+            break;
+          }
+          case IList collection:
+          {
+            foreach (object obj in collection)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
 
   /// <summary>
   /// Utility function to flatten a conversion result that might have nested lists of objects.
