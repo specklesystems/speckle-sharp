@@ -43,7 +43,7 @@ internal class SpeckleModule : Module
   protected override bool Initialize()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-    
+
     Container = new AutofacContainer(new StorageInfo());
     Container.PreBuildEvent += Container_PreBuildEvent;
 
@@ -51,7 +51,6 @@ internal class SpeckleModule : Module
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
     Container
-      .AddModule(new AutofacArcGISConverterModule())
       .AddModule(new AutofacArcGISModule())
       .LoadAutofacModules(arcgisSettings.Modules)
       .AddSingletonInstance(arcgisSettings)
@@ -64,7 +63,7 @@ internal class SpeckleModule : Module
   {
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
-  
+
   private Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)
   {
     // POC: tight binding to files

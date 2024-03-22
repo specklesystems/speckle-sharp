@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -17,7 +18,6 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
 using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.ArcGIS.Utils;
@@ -33,7 +33,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   private readonly ArcGISDocumentStore _store;
   private readonly ArcGISSettings _arcgisSettings;
   private readonly IBasicConnectorBinding _basicConnectorBinding;
-  private readonly ISpeckleConverterToSpeckle _toSpeckleConverter;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
 
   // private readonly ArcGISIdleManager _idleManager;
@@ -67,7 +66,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     // _arcgisContext = arcgisContext;
-    _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -101,7 +99,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     "CA1506:Avoid excessive class coupling",
     Justification = "Being refactored on in parallel, muting this issue so CI can pass initially."
   )]
-  public async void Send(string modelCardId)
+  public async Task Send(string modelCardId)
   {
     try
     {
@@ -129,12 +127,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
       }
 
-      // 4 - Get converter: TODO
-      ISpeckleConverter converter = KitManager
-        .GetDefaultKit()
-        .LoadConverter(_arcgisSettings.HostAppInfo.GetVersion(_arcgisSettings.HostAppVersion));
-      // converter.SetContextDocument(ArcGISDoc.ActiveDoc);
-
+      var converter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
       // 5 - Convert objects
       Base commitObject = ConvertObjects(arcgisObjects, converter, modelCard, cts);
 
@@ -197,7 +190,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private Base ConvertObjects(
     List<string> arcgisObjects,
-    ISpeckleConverter converter,
+    ISpeckleConverterToSpeckle converter,
     SenderModelCard modelCard,
     CancellationTokenSource cts
   )
@@ -239,7 +232,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         converted.applicationId = applicationId;
       }*/
 
-      var converted = converter.ConvertToSpeckle(arcgisObject);
+      var converted = converter.Convert(arcgisObject);
       // converted.applicationId = applicationId;
 
       // 4. add to host
