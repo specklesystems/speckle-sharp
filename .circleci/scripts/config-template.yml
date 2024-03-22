@@ -90,7 +90,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
   build-dui3-job:
     executor:
       name: win/default
-      shell: bash.exe
+      shell: powershell.exe
     steps:
       - checkout
       - run:
@@ -98,10 +98,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             dotnet tool restore
             dotnet csharpier --check .
+            dotnet restore DUI3-DX.slnf
       - run:
           name: Build DUI3 Solution filter
           command: |
-            dotnet build DUI3-DX.slnf -c Release -p:IsDesktopBuild=false
+            msbuild DUI3-DX.slnf /p:Configuration=Release /p:IsDesktopBuild=false
   build-sdk:
     docker:
       - image: cimg/base:2021.01

@@ -9,7 +9,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.ArcGIS.Filters;
@@ -21,7 +20,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;

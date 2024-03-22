@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ConnectorArcGIS": {
+    "Speckle.Connectors.ArcGIS3": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\ArcGIS\\Pro\\bin\\ArcGISPro.exe",
       "commandLineArgs": ""

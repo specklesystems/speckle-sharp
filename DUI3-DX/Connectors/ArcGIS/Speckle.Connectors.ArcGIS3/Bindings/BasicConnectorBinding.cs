@@ -1,11 +1,11 @@
 using System.Reflection;
-using Sentry.Reflection;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils.Reflection;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
@@ -31,11 +31,11 @@ public class BasicConnectorBinding : IBasicConnectorBinding
     };
   }
 
-  public string GetSourceApplicationName() => "ArcGIS"; // _settings.HostAppInfo.Slug;
+  public string GetSourceApplicationName() => _settings.HostAppInfo.Slug;
 
-  public string GetSourceApplicationVersion() => "3"; //  _settings.HostAppInfo.GetVersion(_settings.HostAppVersion);
+  public string GetSourceApplicationVersion() => _settings.HostAppInfo.GetVersion(_settings.HostAppVersion);
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+  public string GetConnectorVersion() => Assembly.GetAssembly(GetType())!.GetVersion();
 
   // TODO
   public DocumentInfo GetDocumentInfo() =>

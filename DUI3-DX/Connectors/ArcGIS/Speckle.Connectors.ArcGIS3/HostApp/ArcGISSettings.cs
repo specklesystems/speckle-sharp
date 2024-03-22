@@ -10,7 +10,7 @@ public class ArcGISSettings
   {
     HostAppInfo = hostAppInfo;
     HostAppVersion = hostAppVersion;
-    Modules = new[] { new DirectoryInfo(typeof(ArcGISSettings).Assembly.ToString()).Parent.FullName };
+    Modules = new[] { new DirectoryInfo(typeof(ArcGISSettings).Assembly.ToString()).Parent!.FullName };
   }
 
   public HostApplication HostAppInfo { get; private set; }
