@@ -26,7 +26,6 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
-  private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly List<ISendFilter> _sendFilters;
   private readonly SendOperation _sendOperation;
   private readonly CancellationManager _cancellationManager;
@@ -46,26 +45,24 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     DocumentModelStore store,
     RhinoIdleManager idleManager,
     IBridge parent,
-    IBasicConnectorBinding basicConnectorBinding,
     IEnumerable<ISendFilter> sendFilters,
     SendOperation sendOperation,
-    SendBindingUICommands.Factory sendBindingFactory,
     CancellationManager cancellationManager
   )
   {
     _store = store;
     _idleManager = idleManager;
-    _basicConnectorBinding = basicConnectorBinding;
     _sendFilters = sendFilters.ToList();
     _sendOperation = sendOperation;
     _cancellationManager = cancellationManager;
     Parent = parent;
-    Commands = sendBindingFactory(parent);
-    SubscriptToRhinoEvents();
+    Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
+    SubscribeToRhinoEvents();
   }
 
-  private void SubscriptToRhinoEvents()
+  private void SubscribeToRhinoEvents()
   {
+    // POC: It is unclear to me why is the binding keeping track of ChangedObjectIds. Change tracking should be moved to a separate type.
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       Commands.RefreshSendFilters();
@@ -162,16 +159,13 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
-      _basicConnectorBinding.Commands.SetModelError(modelCardId, e);
+      Commands.SetModelError(modelCardId, e);
     }
   }
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    _basicConnectorBinding.Commands.SetModelProgress(
-      modelCardId,
-      new ModelCardProgress { Status = status, Progress = progress }
-    );
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
