@@ -12,9 +12,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitConversionContextStack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\CachingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ICachingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\RevitToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ToSpeckleScalingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\LevelConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\LocationConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CurveConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ParameterConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\WallConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ElementConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />

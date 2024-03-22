@@ -11,15 +11,17 @@ public sealed class ToSpeckleScalingService
   {
     var formatOptions = contextStack.Current.Document.Document.GetUnits().GetFormatOptions(SpecTypeId.Length);
     var lengthUnitsTypeId = formatOptions.GetUnitTypeId();
-    _defaultLengthConversionFactor = ScaleToSpeckle(1, lengthUnitsTypeId);
+    _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
   }
 
-  public double ScaleLength(double length)
+  public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
+
+  public double Scale(double value, ForgeTypeId forgeTypeId)
   {
-    return length * _defaultLengthConversionFactor;
+    return ScaleStatic(value, forgeTypeId);
   }
 
-  public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
+  private static double ScaleStatic(double value, ForgeTypeId forgeTypeId)
   {
     return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
   }
