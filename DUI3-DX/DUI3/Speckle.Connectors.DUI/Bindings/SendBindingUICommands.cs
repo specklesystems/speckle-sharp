@@ -6,11 +6,9 @@ namespace Speckle.Connectors.DUI.Bindings;
 // POC: Send Commands share all commands from BasicBindings + some, this pattern should be revised
 public class SendBindingUICommands : BasicConnectorBindingCommands
 {
-  private string REFRESH_SEND_FILTERS_UI_COMMAND_NAME = "refreshSendFilters";
-  private string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
-  private string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
-
-  public delegate SendBindingUICommands Factory(IBridge bridge);
+  private const string REFRESH_SEND_FILTERS_UI_COMMAND_NAME = "refreshSendFilters";
+  private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
+  private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
 
   public SendBindingUICommands(IBridge bridge)
     : base(bridge) { }
