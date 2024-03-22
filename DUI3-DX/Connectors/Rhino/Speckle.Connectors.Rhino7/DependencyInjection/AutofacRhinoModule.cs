@@ -37,13 +37,12 @@ public class AutofacRhinoModule : Module
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<SpeckleRhinoPanel>().SingleInstance();
-    builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
+    builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types
     builder.RegisterType<RhinoPlugin>().As<IRhinoPlugin>().SingleInstance();
     builder.RegisterType<RhinoDocumentStore>().As<DocumentModelStore>().SingleInstance();
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
-    builder.RegisterType<RhinoContext>().InstancePerLifetimeScope();
 
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
@@ -54,7 +53,6 @@ public class AutofacRhinoModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
-    builder.RegisterType<SendBindingUICommands>().InstancePerDependency();
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();

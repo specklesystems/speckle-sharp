@@ -53,20 +53,21 @@ public class RootObjectBuilder
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
-    Dictionary<int, Collection> layerCollectionCache = new();
-    // TODO: Handle blocks.
+    Dictionary<int, Collection> layerCollectionCache = new(); // POC: This seems to always start empty, so it's not caching anything out here.
+
+    // POC: Handle blocks.
     foreach (RhinoObject rhinoObject in rhinoObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
-      // 1. get object layer
+      // POC: This uses the ActiveDoc but it is bad practice to do so. A context object should be injected that would contain the Doc.
       var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
 
-      // 2. get or create a nested collection for it
       var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
       var applicationId = rhinoObject.Id.ToString();
 
-      // 3. get from cache or convert:
+      // get from cache or convert:
+      // POC: We're not using the cache here yet but should once the POC is working.
       // What we actually do here is check if the object has been previously converted AND has not changed.
       // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
       /*Base converted;
@@ -87,18 +88,19 @@ public class RootObjectBuilder
         Base converted = _converter.Convert(rhinoObject);
         converted.applicationId = applicationId;
 
-        // 4. add to host
+        // add to host
         collectionHost.elements.Add(converted);
         onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
       }
+      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
       catch (SpeckleConversionException e)
       {
-        // DO something with the exception
+        // POC: DO something with the exception
         Console.WriteLine(e);
       }
       catch (NotSupportedException e)
       {
-        // DO something with the exception
+        // POC: DO something with the exception
         Console.WriteLine(e);
       }
 
@@ -123,6 +125,7 @@ public class RootObjectBuilder
     Collection rootObjectCollection
   )
   {
+    // POC: This entire implementation should be broken down and potentially injected in.
     if (layerCollectionCache.TryGetValue(layer.Index, out Collection value))
     {
       return value;
