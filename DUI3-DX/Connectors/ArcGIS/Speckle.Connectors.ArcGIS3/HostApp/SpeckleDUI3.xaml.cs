@@ -34,7 +34,6 @@ public partial class SpeckleDUI3 : UserControl
 
   private void OnInitialized(object? sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    SQLitePCL.Batteries.Init();
     //TODO: Pass bindings to browser bridge here!
     foreach (Lazy<IBinding> lazyBinding in _bindings)
     {
