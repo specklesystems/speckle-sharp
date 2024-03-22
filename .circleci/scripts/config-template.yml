@@ -98,6 +98,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             dotnet tool restore
             dotnet csharpier --check .
+      - run:
+          name: Dotnet Restore
+          command: |
             dotnet restore DUI3-DX.slnf
       - run:
           name: Build DUI3 Solution filter
