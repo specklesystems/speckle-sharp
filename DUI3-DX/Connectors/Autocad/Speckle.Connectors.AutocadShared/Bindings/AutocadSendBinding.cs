@@ -60,7 +60,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     _autocadContext = autocadContext;
-    //_toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);

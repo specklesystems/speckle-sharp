@@ -3,6 +3,8 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Converters.AutocadShared;
 
 namespace Speckle.Converters.Autocad.DependencyInjection;
 
@@ -19,7 +21,7 @@ public class AutofacAutocadConverterModule : Module
     // single stack per conversion
     builder
       .RegisterType<AutocadConversionContextStack>()
-      .As<IConversionContextStack<Document, UnitSystem>>()
+      .As<IConversionContextStack<Document, UnitsValue>>()
       .InstancePerLifetimeScope();
 
     // factory for conversions

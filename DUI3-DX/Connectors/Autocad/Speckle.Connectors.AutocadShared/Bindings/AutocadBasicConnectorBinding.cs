@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Autodesk.AutoCAD.DatabaseServices;
 using Sentry.Reflection;
 using Speckle.Connectors.Autocad.HostApp;
