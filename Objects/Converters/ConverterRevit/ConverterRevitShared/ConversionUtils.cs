@@ -343,8 +343,10 @@ public partial class ConverterRevit
     List<string> exclusions = null
   )
   {
-    
-    if (group == null) { return; }
+    if (group == null)
+    {
+      return;
+    }
 
     exclusions ??= new();
     using var parameters = group.Parameters;
@@ -359,9 +361,7 @@ public partial class ConverterRevit
       var speckleParam = ParameterToSpeckle(param, internalName);
       paramDict[internalName] = speckleParam;
     }
-    
     // no need for checking for type parameters
-    
   }
 
   /// <summary>
