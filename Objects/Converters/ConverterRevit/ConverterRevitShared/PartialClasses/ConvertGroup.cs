@@ -23,9 +23,7 @@ public partial class ConverterRevit
 
     AddHostedDependentElements(revitGroup, @base, elIdsToConvert.ToList());
     
-    
-    // adding parameters:
-    
+    //adding parameters
     var allParams = new Dictionary<string, Objects.BuiltElements.Revit.Parameter>();
     AddGroupParamsToDict(revitGroup, allParams);
     
@@ -51,7 +49,6 @@ public partial class ConverterRevit
     {
       @base["parameters"] = paramBase;
     }
-    
     
     return @base;
   }
