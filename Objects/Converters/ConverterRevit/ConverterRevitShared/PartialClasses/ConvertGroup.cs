@@ -22,11 +22,11 @@ public partial class ConverterRevit
     @base["level"] = ConvertAndCacheLevel(revitGroup, BuiltInParameter.GROUP_LEVEL);
 
     AddHostedDependentElements(revitGroup, @base, elIdsToConvert.ToList());
-    
+
     //adding parameters
     var allParams = new Dictionary<string, Objects.BuiltElements.Revit.Parameter>();
     AddGroupParamsToDict(revitGroup, allParams);
-    
+
     Base paramBase = new();
     //sort by key
     foreach (var kv in allParams.OrderBy(x => x.Key))
@@ -49,7 +49,7 @@ public partial class ConverterRevit
     {
       @base["parameters"] = paramBase;
     }
-    
+
     return @base;
   }
 
