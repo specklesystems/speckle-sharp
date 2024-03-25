@@ -10,7 +10,7 @@ public class SendBindingUICommands : BasicConnectorBindingCommands
   private const string SET_MODELS_EXPIRED_UI_COMMAND_NAME = "setModelsExpired";
   private const string SET_MODEL_CREATED_VERSION_ID_UI_COMMAND_NAME = "setModelCreatedVersionId";
 
-  public  SendBindingUICommands(IBridge bridge)
+  public SendBindingUICommands(IBridge bridge)
     : base(bridge) { }
 
   // POC.. the only reasons this needs the bridge is to send? realtionship to these messages and the bridge is unclear
