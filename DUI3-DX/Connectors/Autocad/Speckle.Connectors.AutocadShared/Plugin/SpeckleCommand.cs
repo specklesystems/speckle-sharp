@@ -6,9 +6,9 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Autocad.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models.Extensions;
+using Speckle.Converters.Common.DependencyInjection;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
@@ -36,7 +36,7 @@ public class SpeckleCommand
     };
 
     Container = new AutofacContainer(new StorageInfo());
-    //Container.PreBuildEvent += ContainerPreBuildEvent;
+    Container.PreBuildEvent += ContainerPreBuildEvent;
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
@@ -68,6 +68,6 @@ public class SpeckleCommand
 
   private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    //containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 }
