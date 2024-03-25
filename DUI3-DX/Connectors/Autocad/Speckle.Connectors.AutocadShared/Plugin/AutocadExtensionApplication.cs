@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Reflection;
 using Autodesk.AutoCAD.Runtime;
 
@@ -13,9 +13,9 @@ public class AutocadExtensionApplication : IExtensionApplication
     // TBD
   }
 
-  private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
-    Assembly a = null;
+    Assembly? a = null;
     string name = args.Name.Split(',')[0];
     string path = Path.GetDirectoryName(typeof(AutocadExtensionApplication).Assembly.Location);
 

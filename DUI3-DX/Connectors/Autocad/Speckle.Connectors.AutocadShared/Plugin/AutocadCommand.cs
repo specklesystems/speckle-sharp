@@ -12,7 +12,7 @@ using Speckle.Converters.Common.DependencyInjection;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
-public class SpeckleCommand
+public class AutocadCommand
 {
   private static PaletteSet PaletteSet { get; set; }
   private static readonly Guid s_id = new("3223E594-1B09-4E54-B3DD-8EA0BECE7BA5");

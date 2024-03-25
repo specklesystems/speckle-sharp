@@ -1,4 +1,3 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Newtonsoft.Json;
@@ -26,7 +25,7 @@ public class AutocadDocumentModelStore : DocumentModelStore
     Application.DocumentManager.DocumentToBeDestroyed += (_, _) => WriteToFile();
     Application.DocumentManager.DocumentActivated += (_, e) => OnDocChangeInternal(e.Document);
     Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated += (_, args) =>
-      OnDocChangeInternal(args.DocumentWindow.Document as Document);
+      OnDocChangeInternal((Document)args.DocumentWindow.Document);
   }
 
   /// <summary>
@@ -66,7 +65,7 @@ public class AutocadDocumentModelStore : DocumentModelStore
       return;
     }
 
-    string serializedModelCards = _autocadDocumentManager.ReadModelCards(Doc);
+    string? serializedModelCards = _autocadDocumentManager.ReadModelCards(Doc);
     if (serializedModelCards == null)
     {
       return;

@@ -1,8 +1,6 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
-using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.EditorInput;
 
 namespace Speckle.Connectors.Autocad.Bindings;

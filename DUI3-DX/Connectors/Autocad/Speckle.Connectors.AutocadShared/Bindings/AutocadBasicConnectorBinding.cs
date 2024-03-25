@@ -7,9 +7,8 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Core.Credentials;
-using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
-using Autodesk.AutoCAD.ApplicationServices;
 using Speckle.Connectors.Autocad.HostApp.Extensions;
+using Speckle.Connectors.Autocad.Utils;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -48,7 +47,10 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
   public DocumentInfo GetDocumentInfo()
   {
     if (Doc == null)
-      return null;
+    {
+      return new DocumentInfo();
+    }
+
     string name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
     return new DocumentInfo()
     {
@@ -90,7 +92,8 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     if (model is SenderModelCard senderModelCard)
     {
-      var dbObjects = GetObjectsFromDocument(Doc, senderModelCard.SendFilter.GetObjectIds());
+      List<(DBObject obj, string applicationId)> dbObjects = Doc.GetObjects(senderModelCard.SendFilter.GetObjectIds());
+
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
 
@@ -120,7 +123,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
       var tr = Doc.TransactionManager.StartTransaction();
       foreach (ObjectId objectId in objectIds)
       {
-        Entity entity = tr.GetObject(objectId, OpenMode.ForRead) as Entity;
+        var entity = (Entity)tr.GetObject(objectId, OpenMode.ForRead);
         if (entity != null)
         {
           selectedExtents.AddExtents(entity.GeometricExtents);
@@ -130,35 +133,5 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
       tr.Commit();
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     });
-  }
-
-  public List<(DBObject obj, string layer, string applicationId)> GetObjectsFromDocument(
-    Document doc,
-    IEnumerable<string> objectIds
-  )
-  {
-    using DocumentLock acLckDoc = doc.LockDocument();
-    var dbObjects = new List<(DBObject, string layer, string applicationId)>();
-    using Transaction tr = doc.Database.TransactionManager.StartTransaction();
-    foreach (var objectIdHandle in objectIds)
-    {
-      var handle = new Handle(Convert.ToInt64(objectIdHandle));
-      var hasFoundObjectId = doc.Database.TryGetObjectId(handle, out ObjectId myObjectId);
-      if (!hasFoundObjectId)
-      {
-        continue;
-      }
-
-      var dbObject = tr.GetObject(myObjectId, OpenMode.ForRead);
-      if (dbObject == null)
-      {
-        continue;
-      }
-
-      var layer = (dbObject as Entity)?.Layer;
-      dbObjects.Add((dbObject, layer, objectIdHandle));
-    }
-    tr.Commit();
-    return dbObjects;
   }
 }

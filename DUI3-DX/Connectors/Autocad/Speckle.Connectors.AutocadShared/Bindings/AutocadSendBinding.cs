@@ -8,15 +8,12 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Credentials;
-using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
-using Autodesk.AutoCAD.ApplicationServices;
 using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Core.Transports;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Api;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Diagnostics;
 using ICancelable = System.Reactive.Disposables.ICancelable;
@@ -219,7 +216,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
       new()
       {
         name = Application.DocumentManager.CurrentDocument.Name
-          .Split(new[] { "\\" }, StringSplitOptions.None)
+          .Split(s_separator, StringSplitOptions.None)
           .Reverse()
           .First(),
         collectionType = "root"
@@ -305,4 +302,6 @@ public class AutocadSendBinding : ISendBinding, ICancelable
   }
 
   public bool IsDisposed { get; private set; }
+
+  private static readonly string[] s_separator = new[] { "\\" };
 }

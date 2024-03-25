@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Text;
-using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.Connectors.Autocad.HostApp;
@@ -15,7 +14,7 @@ public class AutocadDocumentManager
   /// </summary>
   /// <param name="doc"></param>
   /// <returns></returns>
-  public string ReadModelCards(Document doc)
+  public string? ReadModelCards(Document doc)
   {
     if (doc == null)
     {
@@ -25,14 +24,15 @@ public class AutocadDocumentManager
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
-      DBDictionary nod = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
+
+      var nod = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
       if (!nod.Contains(SPECKLE_KEY))
       {
         return null;
       }
 
-      DBDictionary speckleDict = tr.GetObject(nod.GetAt(SPECKLE_KEY), OpenMode.ForRead) as DBDictionary;
-      if (speckleDict == null || speckleDict.Count == 0)
+      var speckleDict = (DBDictionary)tr.GetObject(nod.GetAt(SPECKLE_KEY), OpenMode.ForRead);
+      if (speckleDict.Count == 0)
       {
         return null;
       }
@@ -43,7 +43,7 @@ public class AutocadDocumentManager
         return null;
       }
 
-      Xrecord record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
+      var record = (Xrecord)tr.GetObject(id, OpenMode.ForRead);
       string value = GetXrecordData(record);
 
       try
@@ -63,7 +63,6 @@ public class AutocadDocumentManager
   /// Writes the model cards to the current document.
   /// </summary>
   /// <param name="doc"></param>
-  /// <param name="wrap"></param>
   public void WriteModelCards(Document doc, string modelCardsString)
   {
     if (doc == null)
@@ -74,6 +73,7 @@ public class AutocadDocumentManager
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
+
       var nod = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
       DBDictionary speckleDict;
       if (nod.Contains(SPECKLE_KEY))
@@ -87,8 +87,9 @@ public class AutocadDocumentManager
         nod.SetAt(SPECKLE_KEY, speckleDict);
         tr.AddNewlyCreatedDBObject(speckleDict, true);
       }
-      Xrecord xRec = new();
-      xRec.Data = CreateResultBuffer(modelCardsString);
+
+      Xrecord xRec = new() { Data = CreateResultBuffer(modelCardsString) };
+
       speckleDict.SetAt(SPECKLE_MODEL_CARDS_KEY, xRec);
       tr.AddNewlyCreatedDBObject(xRec, true);
     }
@@ -126,14 +127,14 @@ public class AutocadDocumentManager
 
   private string Base64Encode(string plainText)
   {
-    var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-    return System.Convert.ToBase64String(plainTextBytes);
+    var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+    return Convert.ToBase64String(plainTextBytes);
   }
 
   private string Base64Decode(string base64EncodedData)
   {
-    var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-    return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+    var base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
+    return Encoding.UTF8.GetString(base64EncodedBytes);
   }
 
   private IEnumerable<string> SplitString(string text, int chunkSize)

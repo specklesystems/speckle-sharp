@@ -5,8 +5,8 @@ namespace Speckle.Connectors.Autocad.HostApp;
 
 public class AutocadIdleManager
 {
-  private readonly ConcurrentDictionary<string, Action> s_sCalls = new();
-  private bool s_hasSubscribed;
+  private readonly ConcurrentDictionary<string, Action> _sCalls = new();
+  private bool _hasSubscribed;
 
   /// <summary>
   /// Subscribe deferred action to AutocadIdle event to run it whenever Autocad become idle.
@@ -14,26 +14,26 @@ public class AutocadIdleManager
   /// <param name="action"> Action to call whenever Autocad become Idle.</param>
   public void SubscribeToIdle(Action action)
   {
-    s_sCalls[action.Method.Name] = action;
+    _sCalls[action.Method.Name] = action;
 
-    if (s_hasSubscribed)
+    if (_hasSubscribed)
     {
       return;
     }
 
-    s_hasSubscribed = true;
+    _hasSubscribed = true;
     Application.Idle += OnIdleHandler;
   }
 
   private void OnIdleHandler(object sender, EventArgs e)
   {
-    foreach (var kvp in s_sCalls)
+    foreach (var kvp in _sCalls)
     {
       kvp.Value();
     }
 
-    s_sCalls.Clear();
-    s_hasSubscribed = false;
+    _sCalls.Clear();
+    _hasSubscribed = false;
     Application.Idle -= OnIdleHandler;
   }
 }
