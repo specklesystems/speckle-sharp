@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net48</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
-  </ItemGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
       <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />

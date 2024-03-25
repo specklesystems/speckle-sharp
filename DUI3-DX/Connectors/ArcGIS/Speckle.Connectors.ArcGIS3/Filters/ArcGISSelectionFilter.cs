@@ -1,10 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Connectors.DUI.Bindings;
 
-namespace Speckle.Connectors.Rhino7.Filters;
+namespace Speckle.Connectors.ArcGIS.Filters;
 
-public class RhinoSelectionFilter : DirectSelectionSendFilter
+public class ArcGISSelectionFilter : DirectSelectionSendFilter
 {
   public override List<string> GetObjectIds() => SelectedObjectIds;
 

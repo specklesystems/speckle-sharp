@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Newtonsoft.Json;
@@ -13,7 +14,7 @@ public interface ISendBinding : IBinding
   /// Instructs the host app to start sending this model.
   /// </summary>
   /// <param name="modelCardId"></param>
-  public void Send(string modelCardId);
+  public Task Send(string modelCardId);
 
   /// <summary>
   /// Instructs the host app to  cancel the sending for a given model.
