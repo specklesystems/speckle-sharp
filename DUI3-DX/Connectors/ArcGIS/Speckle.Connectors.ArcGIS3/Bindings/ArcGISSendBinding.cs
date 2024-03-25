@@ -27,7 +27,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private readonly ArcGISDocumentStore _store;
   private readonly ArcGISSettings _arcgisSettings;
-  private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
 
   // private readonly ArcGISIdleManager _idleManager;
@@ -47,20 +46,14 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
-    // ArcGISIdleManager idleManager,
     ArcGISSettings arcgisSettings,
     IBridge parent,
-    IBasicConnectorBinding basicConnectorBinding,
     IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory
-  // ArcGISContext arcgisContext
   )
   {
     _store = store;
-    // _idleManager = idleManager;
     _arcgisSettings = arcgisSettings;
-    _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
-    // _arcgisContext = arcgisContext;
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -132,7 +125,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       }
 
       // 7 - Serialize and Send objects
-      _basicConnectorBinding.Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
 
       var transport = new ServerTransport(account, modelCard.ProjectId);
       var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
@@ -148,10 +141,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       // NOTE: ChangedObjectIds is currently JsonIgnored, but could actually be useful for highlighting changes in host app.
       //modelCard.ChangedObjectIds = new();
 
-      _basicConnectorBinding.Commands.SetModelProgress(
-        modelCardId,
-        new ModelCardProgress { Status = "Linking version to model..." }
-      );
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
 
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
@@ -177,7 +167,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
-      _basicConnectorBinding.Commands.SetModelError(modelCardId, e);
+      Commands.SetModelError(modelCardId, e);
     }
   }
 
@@ -232,7 +222,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
       // 4. add to host
       collectionHost.elements.Add(converted);
-      _basicConnectorBinding.Commands.SetModelProgress(
+      Commands.SetModelProgress(
         modelCard.ModelCardId,
         new ModelCardProgress { Status = "Converting", Progress = (double)++count / 2 } //  / arcgisObjects.Count }
       );
