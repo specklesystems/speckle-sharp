@@ -21,18 +21,14 @@ namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
-  public IBridge Parent { get; set; }
+  public IBridge Parent { get; }
 
   private readonly ArcGISDocumentStore _store;
   private readonly ArcGISSettings _arcgisSettings;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
-
-  // private readonly ArcGISIdleManager _idleManager;
-  // private readonly ArcGISContext _arcgisContext;
-
-  public CancellationManager CancellationManager { get; } = new();
+  private readonly CancellationManager _cancellationManager;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -48,12 +44,14 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     ArcGISDocumentStore store,
     ArcGISSettings arcgisSettings,
     IBridge parent,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory
+    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    CancellationManager cancellationManager
   )
   {
     _store = store;
     _arcgisSettings = arcgisSettings;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _cancellationManager = cancellationManager;
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -92,7 +90,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
 
@@ -171,7 +169,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     }
   }
 
-  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   private Base ConvertObjects(
     List<string> arcgisObjects,
