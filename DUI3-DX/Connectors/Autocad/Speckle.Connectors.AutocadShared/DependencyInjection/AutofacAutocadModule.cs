@@ -14,6 +14,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Autocad;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Connectors.Autocad.Interfaces;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 

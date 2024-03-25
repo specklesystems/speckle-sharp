@@ -30,11 +30,9 @@ public class AutocadSendBinding : ISendBinding, ICancelable
   private readonly AutocadIdleManager _idleManager;
   private readonly AutocadSettings _autocadSettings;
   private readonly AutocadContext _autocadContext;
-  private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly ISpeckleConverterToSpeckle _toSpeckleConverter;
+  private readonly CancellationManager _cancellationManager;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
-
-  public CancellationManager CancellationManager { get; } = new();
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -47,6 +45,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     AutocadSettings autocadSettings,
     IBridge parent,
     IBasicConnectorBinding basicConnectorBinding,
+    CancellationManager cancellationManager,
     IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
     AutocadContext autocadContext
   )
@@ -54,9 +53,9 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     _store = store;
     _idleManager = idleManager;
     _autocadSettings = autocadSettings;
-    _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
     _autocadContext = autocadContext;
+    _cancellationManager = cancellationManager;
     _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
 
     Parent = parent;
@@ -117,17 +116,17 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     return new List<ISendFilter> { new AutocadSelectionFilter { IsDefault = true } };
   }
 
-  public void Send(string modelCardId)
+  public async Task Send(string modelCardId)
   {
-    Parent.RunOnMainThread(() => SendInternal(modelCardId));
+    Parent.RunOnMainThread(async () => await SendInternal(modelCardId).ConfigureAwait(false));
   }
 
-  private async void SendInternal(string modelCardId)
+  private async Task SendInternal(string modelCardId)
   {
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
       if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
@@ -155,7 +154,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
       cts.Token.ThrowIfCancellationRequested();
 
       // 5 - Serialize and Send objects
-      _basicConnectorBinding.Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
 
       var transport = new ServerTransport(account, modelCard.ProjectId);
       var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
@@ -172,10 +171,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
       //modelCard.ChangedObjectIds = new();
 
       // 7 - Create Version
-      _basicConnectorBinding.Commands.SetModelProgress(
-        modelCardId,
-        new ModelCardProgress { Status = "Linking version to model..." }
-      );
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
 
       // 8 - Create the version (commit)
       Client apiClient = new(account);
@@ -201,7 +197,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
-      _basicConnectorBinding.Commands.SetModelError(modelCardId, e);
+      Commands.SetModelError(modelCardId, e);
     }
   }
 
@@ -268,7 +264,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
             collection.elements.Add(converted);
           }
         }
-        _basicConnectorBinding.Commands.SetModelProgress(
+        Commands.SetModelProgress(
           modelCard.ModelCardId,
           new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
         );
@@ -293,7 +289,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     return modelWithLayers;
   }
 
-  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   public void Dispose()
   {

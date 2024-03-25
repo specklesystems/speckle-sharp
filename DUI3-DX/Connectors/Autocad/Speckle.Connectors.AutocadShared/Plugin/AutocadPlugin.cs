@@ -1,4 +1,5 @@
-﻿using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Connectors.Autocad.Interfaces;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 

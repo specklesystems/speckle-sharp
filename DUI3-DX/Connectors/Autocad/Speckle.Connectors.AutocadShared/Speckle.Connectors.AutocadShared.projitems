@@ -29,11 +29,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadExtensionApplication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\IAutocadPlugin.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\SpeckleCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)utils\Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Utils\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />
   </ItemGroup>
 </Project>

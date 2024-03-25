@@ -1,4 +1,4 @@
-﻿namespace Speckle.Connectors.Autocad.Plugin;
+namespace Speckle.Connectors.Autocad.Interfaces;
 
 internal interface IAutocadPlugin
 {

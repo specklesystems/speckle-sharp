@@ -9,6 +9,7 @@ using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
+using Speckle.Connectors.Autocad.Interfaces;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
@@ -18,7 +19,7 @@ public class AutocadCommand
   private static readonly Guid s_id = new("3223E594-1B09-4E54-B3DD-8EA0BECE7BA5");
   private IAutocadPlugin? _autocadPlugin;
 
-  public AutofacContainer? Container { get; private set; } // NOT SURE!
+  public AutofacContainer? Container { get; private set; }
 
   [CommandMethod("SpeckleDUI3DX")]
   public void Command()
@@ -50,9 +51,6 @@ public class AutocadCommand
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
     _autocadPlugin.Initialise();
 
-    // NOTE: Autocad 2022 seems to support Webview2 rather well, hence I (Dim) have removed
-    // all references to Cef. CefSharp also worked rather fine, and we would need to match
-    // the correct versions, etc.. But it seems it's not needed!
     var panelWebView = Container.Resolve<Dui3PanelWebView>();
 
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
