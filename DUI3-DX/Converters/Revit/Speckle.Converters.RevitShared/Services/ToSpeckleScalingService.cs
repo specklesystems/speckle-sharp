@@ -9,10 +9,13 @@ public sealed class ToSpeckleScalingService
 
   public ToSpeckleScalingService(RevitConversionContextStack contextStack)
   {
-    var formatOptions = contextStack.Current.Document.Document.GetUnits().GetFormatOptions(SpecTypeId.Length);
+    Units documentUnits = contextStack.Current.Document.Document.GetUnits();
+    FormatOptions formatOptions = documentUnits.GetFormatOptions(SpecTypeId.Length);
     var lengthUnitsTypeId = formatOptions.GetUnitTypeId();
     _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
   }
+
+  public string SpeckleUnits { get; }
 
   public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
 
