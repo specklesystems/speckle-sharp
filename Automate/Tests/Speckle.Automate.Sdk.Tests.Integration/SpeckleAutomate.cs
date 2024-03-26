@@ -102,7 +102,7 @@ public sealed class AutomationContextTest : IDisposable
     FunctionRunData<TestFunctionInputs> functionRunData = new() { FunctionInputs = testFunctionInputs };
     string serializedFunctionRunData = JsonConvert.SerializeObject(functionRunData);
     File.WriteAllText("./inputData.json", serializedFunctionRunData);
-    FunctionRunData<TestFunctionInputs>? data = FunctionRunDataParser.FromPath<TestFunctionInputs>("./inputData.json");
+    FunctionRunData<TestFunctionInputs> data = FunctionRunDataParser.FromPath<TestFunctionInputs>("./inputData.json");
 
     Assert.AreEqual("Base", data.FunctionInputs.ForbiddenSpeckleType);
   }
