@@ -20,10 +20,9 @@ public static class RawConversionRegisterer
         Type firstGenericType = interfaceType.GenericTypeArguments[0];
         containerBuilder
           .RegisterType(type)
+          .AsImplementedInterfaces()
           .Keyed<IHostObjectToSpeckleConversion>(firstGenericType)
           .InstancePerLifetimeScope();
-
-        containerBuilder.RegisterType(type).AsImplementedInterfaces().InstancePerLifetimeScope();
       }
     }
 
@@ -32,9 +31,7 @@ public static class RawConversionRegisterer
 
   public static Type? GetImplementedRawConversionType(Type givenType)
   {
-    var interfaceTypes = givenType.GetInterfaces();
-
-    foreach (var it in interfaceTypes)
+    foreach (var it in givenType.GetInterfaces())
     {
       if (it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IRawConversion<,>))
       {
