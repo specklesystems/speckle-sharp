@@ -9,7 +9,7 @@ namespace Speckle.Converters.Rhino7.Geometry;
 [NameAndRankValue(nameof(RG.PolyCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.PolyCurve, SOG.Polycurve>
 {
-  public IRawConversion<RG.Curve, ICurve> CurveConverter { get; set; } // This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
+  public IRawConversion<RG.Curve, ICurve>? CurveConverter { get; set; } // This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
@@ -38,7 +38,7 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
       domain = _intervalConverter.RawConvert(target.Domain),
       length = target.GetLength(),
       bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))),
-      segments = segments.Select(CurveConverter.RawConvert).ToList(),
+      segments = segments.Select(CurveConverter!.RawConvert).ToList(),
       units = _contextStack.Current.SpeckleUnits
     };
     return myPoly;

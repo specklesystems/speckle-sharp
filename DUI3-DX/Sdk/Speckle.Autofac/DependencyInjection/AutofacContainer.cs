@@ -14,12 +14,12 @@ namespace Speckle.Autofac.DependencyInjection;
 public class AutofacContainer
 {
   // Declare the event.
-  public event EventHandler<ContainerBuilder> PreBuildEvent;
+  public event EventHandler<ContainerBuilder>? PreBuildEvent;
 
   private readonly ContainerBuilder _builder;
   private readonly IStorageInfo _storageInfo;
 
-  private IContainer _container;
+  private IContainer? _container;
 
   public AutofacContainer(IStorageInfo storageInfo)
   {
@@ -98,7 +98,13 @@ public class AutofacContainer
   public T Resolve<T>()
     where T : class
   {
-    // POC: resolve null check with a check and throw perhaps?
+    if (_container == null)
+    {
+      throw new InvalidOperationException(
+        $"Container was not initialized, {nameof(Build)} must be called before calling {nameof(Resolve)}"
+      );
+    }
+
     return _container.Resolve<T>();
   }
 }
