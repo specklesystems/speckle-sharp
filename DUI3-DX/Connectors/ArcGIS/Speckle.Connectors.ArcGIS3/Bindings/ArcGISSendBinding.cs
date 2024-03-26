@@ -21,19 +21,14 @@ namespace Speckle.Connectors.ArcGIS.Bindings;
 
 public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 {
-  public string Name { get; } = "sendBinding";
+  public string Name => "sendBinding";
   public SendBindingUICommands Commands { get; }
-  public IBridge Parent { get; set; }
+  public IBridge Parent { get; }
 
   private readonly ArcGISDocumentStore _store;
   private readonly ArcGISSettings _arcgisSettings;
-  private readonly IBasicConnectorBinding _basicConnectorBinding;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
-
-  // private readonly ArcGISIdleManager _idleManager;
-  // private readonly ArcGISContext _arcgisContext;
-
-  public CancellationManager CancellationManager { get; } = new();
+  private readonly CancellationManager _cancellationManager;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -47,20 +42,16 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
-    // ArcGISIdleManager idleManager,
     ArcGISSettings arcgisSettings,
     IBridge parent,
-    IBasicConnectorBinding basicConnectorBinding,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory
-  // ArcGISContext arcgisContext
+    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    CancellationManager cancellationManager
   )
   {
     _store = store;
-    // _idleManager = idleManager;
     _arcgisSettings = arcgisSettings;
-    _basicConnectorBinding = basicConnectorBinding;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
-    // _arcgisContext = arcgisContext;
+    _cancellationManager = cancellationManager;
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -99,7 +90,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
       // 1 - Get model
 
@@ -132,7 +123,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       }
 
       // 7 - Serialize and Send objects
-      _basicConnectorBinding.Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
 
       var transport = new ServerTransport(account, modelCard.ProjectId);
       var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
@@ -148,10 +139,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
       // NOTE: ChangedObjectIds is currently JsonIgnored, but could actually be useful for highlighting changes in host app.
       //modelCard.ChangedObjectIds = new();
 
-      _basicConnectorBinding.Commands.SetModelProgress(
-        modelCardId,
-        new ModelCardProgress { Status = "Linking version to model..." }
-      );
+      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
 
       // 8 - Create the version (commit)
       var apiClient = new Client(account);
@@ -177,11 +165,11 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
-      _basicConnectorBinding.Commands.SetModelError(modelCardId, e);
+      Commands.SetModelError(modelCardId, e);
     }
   }
 
-  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
+  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
   private Base ConvertObjects(
     List<string> arcgisObjects,
@@ -232,7 +220,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
       // 4. add to host
       collectionHost.elements.Add(converted);
-      _basicConnectorBinding.Commands.SetModelProgress(
+      Commands.SetModelProgress(
         modelCard.ModelCardId,
         new ModelCardProgress { Status = "Converting", Progress = (double)++count / 2 } //  / arcgisObjects.Count }
       );
