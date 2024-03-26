@@ -28,9 +28,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly AutocadIdleManager _idleManager;
-  private readonly AutocadSettings _autocadSettings;
-  private readonly AutocadContext _autocadContext;
-  private readonly ISpeckleConverterToSpeckle _toSpeckleConverter;
+  private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
 
@@ -42,21 +40,17 @@ public class AutocadSendBinding : ISendBinding, ICancelable
   public AutocadSendBinding(
     DocumentModelStore store,
     AutocadIdleManager idleManager,
-    AutocadSettings autocadSettings,
     IBridge parent,
-    IBasicConnectorBinding basicConnectorBinding,
+    IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
-    AutocadContext autocadContext
+    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory
   )
   {
     _store = store;
     _idleManager = idleManager;
-    _autocadSettings = autocadSettings;
     _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
-    _autocadContext = autocadContext;
     _cancellationManager = cancellationManager;
-    _toSpeckleConverter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    _sendFilters = sendFilters.ToList();
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
@@ -111,10 +105,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     ChangedObjectIds = new HashSet<string>();
   }
 
-  public List<ISendFilter> GetSendFilters()
-  {
-    return new List<ISendFilter> { new AutocadSelectionFilter { IsDefault = true } };
-  }
+  public List<ISendFilter> GetSendFilters() => _sendFilters;
 
   public async Task Send(string modelCardId)
   {

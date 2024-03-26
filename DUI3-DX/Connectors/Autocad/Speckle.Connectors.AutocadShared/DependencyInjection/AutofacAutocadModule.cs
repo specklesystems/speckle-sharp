@@ -15,6 +15,8 @@ using Speckle.Converters.Autocad;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.Autocad.Interfaces;
+using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Connectors.Autocad.Filters;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -27,16 +29,14 @@ public class AutofacAutocadModule : Module
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<Dui3PanelWebView>().SingleInstance();
-    builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
+    builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types
     builder.RegisterType<AutocadPlugin>().As<IAutocadPlugin>().SingleInstance();
-    builder.RegisterType<TransactionContext>().InstancePerDependency(); // TODO: need to be validated?, can be moved to AutocadContext
+    builder.RegisterType<TransactionContext>().InstancePerDependency();
     builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
-    builder.RegisterType<AutocadDocumentModelStore>().As<DocumentModelStore>().SingleInstance();
+    builder.RegisterType<AutocadDocumentStore>().As<DocumentModelStore>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
-    builder.RegisterType<AutocadContext>().InstancePerLifetimeScope();
-    // TODO: not sure about context yet, check it again
 
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
@@ -47,6 +47,12 @@ public class AutofacAutocadModule : Module
       .RegisterType<AutocadToSpeckleUnitConverter>()
       .As<IHostToSpeckleUnitConverter<UnitsValue>>()
       .SingleInstance();
+
+    // binding dependencies
+    builder.RegisterType<CancellationManager>().InstancePerDependency();
+
+    // register send filters
+    builder.RegisterType<AutocadSelectionFilter>().As<ISendFilter>().InstancePerDependency();
 
     // Register converter factory
     builder

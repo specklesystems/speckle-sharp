@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Autodesk.AutoCAD.ApplicationServices.Core;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 

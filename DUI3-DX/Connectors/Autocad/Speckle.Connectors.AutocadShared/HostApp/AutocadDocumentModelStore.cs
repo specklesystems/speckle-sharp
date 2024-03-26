@@ -4,13 +4,13 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 
-public class AutocadDocumentModelStore : DocumentModelStore
+public class AutocadDocumentStore : DocumentModelStore
 {
   private static Document Doc { get; set; }
   private static string s_previousDocName;
   private readonly AutocadDocumentManager _autocadDocumentManager;
 
-  public AutocadDocumentModelStore(
+  public AutocadDocumentStore(
     JsonSerializerSettings jsonSerializerSettings,
     AutocadDocumentManager autocadDocumentManager
   )
