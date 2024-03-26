@@ -35,6 +35,7 @@ def full_flowchart(
     fig_html = fig.to_html(full_html=False)
 
     traces_html = ""
+    count = 0
     for s, _ in traces_per_app.items():
         for r in receive_apps:
             try:
@@ -42,10 +43,28 @@ def full_flowchart(
                 if html_trace is not None:
                     fig_trace = go.Figure(data=[html_trace], layout=layout)
                     fig_trace = fig_trace.to_html(full_html=False)
+
+                    fig_old_id = fig_trace.split('div id="')[-1].split('"')[0]
+                    fig_new_id = f"plot_div_{s}_{r}"
+
+                    traces_html += (
+                        "<div>"
+                        + fig_trace.replace(fig_old_id, fig_new_id).replace(
+                            'class="plotly-graph-div" style="height:100%; width:100%;',
+                            'class="plotly-graph-div" style="height:0px; width:100%;',
+                        )
+                        + "</div>"
+                    )
+                    count += 1
+                    r'''
+                    fig_trace = fig_trace.split("LICENSE.txt */")[-1].split(
+                        "</script>"
+                    )[0]
                     traces_html += f"""if (appSend === "{s}" && appReceive === "{r}") {{
                         var trace = {fig_trace};
                     }} 
                     """
+                    '''
             except KeyError:
                 pass
 
@@ -72,9 +91,7 @@ def full_flowchart(
         </select>
     </div>
 
-    <div id="plot_div">
-        {fig_html}
-    </div>
+    {traces_html}
 
     <script>
     function updateGraph() {{
@@ -84,14 +101,14 @@ def full_flowchart(
         var receiveApp = document.getElementById("receive_app");
         var appReceive = receiveApp.options[receiveApp.selectedIndex].value;
 
-        {traces_html}
+        var dateRE = /^plot_div_/;
+        var divs=[],els=document.getElementsByTagName('*');
+        for (var i=els.length;i--;) if (dateRE.test(els[i].id)) els[i].setAttribute("style","height:0px");
 
-        var layout = {{
-            title: 'Graph Title',
-            xaxis: {{ title: 'X-axis Title' }}
-        }};
+        var name = 'plot_div_' + appSend + '_' + appReceive
+        console.log(name)
 
-        Plotly.newPlot('plot_div', [trace], layout);
+        document.getElementById(name).setAttribute("style","height:1000%; width:100%;");
     }}
     </script>
 
