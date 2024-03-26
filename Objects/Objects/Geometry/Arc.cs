@@ -33,7 +33,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     double endAngle,
     double angleRadians,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.plane = plane;
@@ -41,6 +41,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     this.startAngle = startAngle;
     this.endAngle = endAngle;
     this.angleRadians = angleRadians;
+    domain = angleRadians > 0 ? new Interval(0, angleRadians) : new Interval(angleRadians, 0);
     this.applicationId = applicationId;
     this.units = units;
   }
@@ -60,7 +61,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     Point endPoint,
     double angleRadians,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
     : this(
       new Plane(startPoint, new Vector(0, 0, 1), new Vector(1, 0, 0), new Vector(0, 1, 0), units),
@@ -87,7 +88,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     Point endPoint,
     double angleRadians,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     // don't be annoying
@@ -105,6 +106,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     this.startPoint = startPoint;
     this.endPoint = endPoint;
     this.angleRadians = angleRadians;
+    domain = angleRadians > 0 ? new Interval(0, angleRadians) : new Interval(angleRadians, 0);
     this.applicationId = applicationId;
 
     // find chord and chord angle which may differ from the arc angle
@@ -202,7 +204,7 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
   public string units { get; set; }
 
   /// <inheritdoc/>
-  public Interval domain { get; set; }
+  public Interval domain { get; set; } = new(0, 0);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -220,9 +222,11 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     midPoint.TransformTo(transform, out Point transformedMidpoint);
     endPoint.TransformTo(transform, out Point transformedEndPoint);
     plane.TransformTo(transform, out Plane pln);
-    var arc = new Arc(pln, transformedStartPoint, transformedEndPoint, angleRadians, units);
-    arc.midPoint = transformedMidpoint;
-    arc.domain = domain;
+    var arc = new Arc(pln, transformedStartPoint, transformedEndPoint, angleRadians, units)
+    {
+      midPoint = transformedMidpoint,
+      domain = domain
+    };
     transformed = arc;
     return true;
   }
@@ -247,8 +251,8 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
     list.Add(startAngle ?? 0);
     list.Add(endAngle ?? 0);
     list.Add(angleRadians);
-    list.Add(domain.start ?? 0);
-    list.Add(domain.end ?? 0);
+    list.Add(domain?.start ?? 0);
+    list.Add(domain?.end ?? 0);
 
     list.AddRange(plane.ToList());
     list.AddRange(startPoint.ToList());
@@ -269,15 +273,16 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
   /// <returns>A new <see cref="Arc"/> with the values assigned from the list.</returns>
   public static Arc FromList(List<double> list)
   {
-    var arc = new Arc();
-
-    arc.radius = list[2];
-    arc.startAngle = list[3];
-    arc.endAngle = list[4];
-    arc.angleRadians = list[5];
-    arc.domain = new Interval(list[6], list[7]);
-    arc.units = Units.GetUnitFromEncoding(list[list.Count - 1]);
-    arc.plane = Plane.FromList(list.GetRange(8, 13));
+    var arc = new Arc
+    {
+      radius = list[2],
+      startAngle = list[3],
+      endAngle = list[4],
+      angleRadians = list[5],
+      domain = new Interval(list[6], list[7]),
+      units = Units.GetUnitFromEncoding(list[list.Count - 1]),
+      plane = Plane.FromList(list.GetRange(8, 13))
+    };
     arc.startPoint = Point.FromList(list.GetRange(21, 3), arc.units);
     arc.midPoint = Point.FromList(list.GetRange(24, 3), arc.units);
     arc.endPoint = Point.FromList(list.GetRange(27, 3), arc.units);

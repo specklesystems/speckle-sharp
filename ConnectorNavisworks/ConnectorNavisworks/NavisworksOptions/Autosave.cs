@@ -36,6 +36,10 @@ public partial class NavisworksOptionsManager
       case true when _autosaveSetting:
         rootOptions.SetBoolean("general.autosave.enable", true);
         break;
+      default:
+        // This case is intentionally left empty as all logical scenarios
+        // for a boolean 'enable' are covered above.
+        break;
     }
 
     SaveGlobalOptions();
@@ -44,16 +48,10 @@ public partial class NavisworksOptionsManager
   /// <summary>
   /// Disables the auto-save feature.
   /// </summary>
-  public void DisableAutoSave()
-  {
-    UpdateAutoSaveSetting(false);
-  }
+  public void DisableAutoSave() => UpdateAutoSaveSetting(false);
 
   /// <summary>
   /// Restores the auto-save setting to its original state after the send process.
   /// </summary>
-  public void RestoreAutoSave()
-  {
-    UpdateAutoSaveSetting(true);
-  }
+  public void RestoreAutoSave() => UpdateAutoSaveSetting(true);
 }

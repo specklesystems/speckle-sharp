@@ -1,31 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>Speckle.Automate.Sdk</PackageId>
+    <Product>Speckle.Automate.Sdk</Product>
+    <Description>Speckle Automate SDK</Description>
+    <PackageTags>$(PackageTags) speckle automation</PackageTags>
+    <RootNamespace>Speckle.Automate.Sdk</RootNamespace>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <IsPackable>true</IsPackable>
-        <PackageId>Speckle.Automate.Sdk</PackageId>
-        <Product>Speckle.Automate.Sdk</Product>
-        <Description>Speckle Automate SDK</Description>
-        <PackageTags>$(PackageTags) speckle automation</PackageTags>
-        <RootNamespace>Speckle.Automate.Sdk</RootNamespace>
-    </PropertyGroup>
-
-<!--  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">-->
-<!--    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
-<!--  </PropertyGroup>-->
+  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU5104</WarningsNotAsErrors>
+  </PropertyGroup>
   
   <ItemGroup>
     <InternalsVisibleTo Include="Speckle.Automate.Sdk.Tests.Integration" />
   </ItemGroup>
-
+  
   <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.15" />
-        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-        <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-
-    </ItemGroup>
-
-
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.15" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+  </ItemGroup>
+  
 </Project>

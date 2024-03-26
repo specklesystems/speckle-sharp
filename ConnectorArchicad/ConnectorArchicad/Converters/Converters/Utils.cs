@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using Archicad.Model;
 using Objects;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -152,28 +151,84 @@ public static class Utils
     return shape;
   }
 
-  public static T ConvertDTOs<T>(dynamic jObject)
+  public static T ConvertToSpeckleDTOs<T>(dynamic jObject)
   {
-    Objects.BuiltElements.Archicad.ArchicadLevel level =
-      jObject.level.ToObject<Objects.BuiltElements.Archicad.ArchicadLevel>();
+    Objects.BuiltElements.Archicad.ArchicadLevel level = null;
+    if (jObject.level != null)
+    {
+      level = jObject.level.ToObject<Objects.BuiltElements.Archicad.ArchicadLevel>();
+      jObject.Remove("level");
+    }
 
-    jObject.Remove("level");
+    List<Objects.BuiltElements.Archicad.PropertyGroup> elementProperties = null;
+    if (jObject.elementProperties != null)
+    {
+      elementProperties = jObject.elementProperties.ToObject<List<Objects.BuiltElements.Archicad.PropertyGroup>>();
+      jObject.Remove("elementProperties");
+    }
+
+    List<Objects.BuiltElements.Archicad.ComponentProperties> componentProperties = null;
+    if (jObject.componentProperties != null)
+    {
+      componentProperties = jObject.componentProperties.ToObject<
+        List<Objects.BuiltElements.Archicad.ComponentProperties>
+      >();
+      jObject.Remove("componentProperties");
+    }
+
     T speckleObject = jObject.ToObject<T>();
 
-    PropertyInfo prop = speckleObject.GetType().GetProperty("archicadLevel");
-    prop.SetValue(speckleObject, level);
+    if (level != null)
+    {
+      PropertyInfo propLevel = speckleObject.GetType().GetProperty("archicadLevel");
+      propLevel.SetValue(speckleObject, level);
+    }
+
+    if (elementProperties != null)
+    {
+      PropertyInfo propElementProperties = speckleObject.GetType().GetProperty("elementProperties");
+      propElementProperties.SetValue(speckleObject, PropertyGroup.ToBase(elementProperties));
+    }
+
+    if (componentProperties != null)
+    {
+      PropertyInfo propComponentProperties = speckleObject.GetType().GetProperty("componentProperties");
+      propComponentProperties.SetValue(speckleObject, ComponentProperties.ToBase(componentProperties));
+    }
 
     return speckleObject;
   }
 
+  public static T ConvertToArchicadDTOs<T>(dynamic @object)
+  {
+    if (@object.elementProperties != null)
+    {
+      @object.elementProperties = null;
+    }
+
+    if (@object.componentProperties != null)
+    {
+      @object.componentProperties = null;
+    }
+
+    if (@object.GetType().GetProperty("elements") != null)
+    {
+      @object.elements = null;
+    }
+
+    return @object;
+  }
+
   public static Objects.BuiltElements.Archicad.ArchicadLevel ConvertLevel(Objects.BuiltElements.Level level)
   {
-    return new Objects.BuiltElements.Archicad.ArchicadLevel
-    {
-      id = level.id,
-      applicationId = level.applicationId,
-      elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
-      name = level.name
-    };
+    return (level == null)
+      ? null
+      : new Objects.BuiltElements.Archicad.ArchicadLevel
+      {
+        id = level.id,
+        applicationId = level.applicationId,
+        elevation = level.elevation * Units.GetConversionFactor(level.units, Units.Meters),
+        name = level.name
+      };
   }
 }

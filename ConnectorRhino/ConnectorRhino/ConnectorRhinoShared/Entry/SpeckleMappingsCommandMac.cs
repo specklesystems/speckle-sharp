@@ -1,16 +1,10 @@
 #if MAC
 using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-using DesktopUI2.ViewModels;
 using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
-using Serilog;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -47,7 +41,7 @@ namespace SpeckleRhino;
         MainWindow.Activate();
         return Result.Success;
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
         SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle mappings window");
         RhinoApp.CommandLineOut.WriteLine($"Speckle Error - {e.ToFormattedString()}");

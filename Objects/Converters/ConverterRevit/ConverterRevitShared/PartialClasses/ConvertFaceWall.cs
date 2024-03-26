@@ -8,6 +8,8 @@ using System.IO;
 using System.Linq;
 using Speckle.Core.Models.Extensions;
 using DB = Autodesk.Revit.DB;
+using Speckle.Core.Logging;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
@@ -31,9 +33,9 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    if (speckleWall.surface == null)
+    if (speckleWall?.brep?.Surfaces?.FirstOrDefault() == null)
     {
-      appObj.Update(status: ApplicationObject.State.Failed, logItem: "Facewall surface was null");
+      appObj.Update(status: ApplicationObject.State.Failed, logItem: "FaceWall surface was null");
       return appObj;
     }
 
@@ -52,17 +54,20 @@ public partial class ConverterRevit
       return appObj;
     }
 
-    var tempMassFamilyPath = CreateMassFamily(templatePath, speckleWall.surface, speckleWall.applicationId);
-    Family fam;
-    Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out fam);
+    var tempMassFamilyPath = CreateMassFamily(
+      templatePath,
+      speckleWall.brep.Surfaces.First(),
+      speckleWall.applicationId
+    );
+
+    Doc.LoadFamily(tempMassFamilyPath, new FamilyLoadOption(), out Family fam);
     var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
     symbol.Activate();
 
-    try
+    if (File.Exists(tempMassFamilyPath))
     {
       File.Delete(tempMassFamilyPath);
     }
-    catch { }
 
     var mass = Doc.Create.NewFamilyInstance(XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
     // NOTE: must set a schedule level!
@@ -104,7 +109,7 @@ public partial class ConverterRevit
     {
       revitWall = DB.FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceRef);
     }
-    catch (Exception e) { }
+    catch (Autodesk.Revit.Exceptions.ApplicationException) { }
 
     if (revitWall == null)
     {
@@ -126,6 +131,7 @@ public partial class ConverterRevit
     {
       applicationId = speckleWall.applicationId
     };
+
     try
     {
       var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
@@ -175,17 +181,18 @@ public partial class ConverterRevit
       SetInstanceParameters(revitWall, speckleWall);
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
       //appObj = SetHostedElements(speckleWall, revitWall, appObj);
-      return appObj;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(
         status: ApplicationObject.State.Failed,
-        logItem: $"Revit wall creation failed: {e.Message}",
-        log: new List<string> { e.ToFormattedString() }
+        logItem: $"Revit wall creation failed: {ex.Message}",
+        log: new List<string> { ex.ToFormattedString() }
       );
-      return appObj;
     }
+
+    return appObj;
   }
 
   private Reference GetFaceRef(Element e)
@@ -244,7 +251,10 @@ public partial class ConverterRevit
 
         var loft = famDoc.FamilyCreate.NewLoftForm(true, curveArray);
       }
-      catch (Exception e) { }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        SpeckleLog.Logger.LogDefaultError(ex);
+      }
 
       t.Commit();
     }

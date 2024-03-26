@@ -10,15 +10,15 @@ namespace Objects.Converter.Navisworks;
 public partial class ConverterNavisworks : ISpeckleConverter
 {
 #if NAVMAN21
-  private readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
-  public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
-    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
 #elif NAVMAN18
-    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
 #elif NAVMAN17
-  private readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
 #endif
 
   public string Description => "Default Speckle Kit for Navisworks";
@@ -39,10 +39,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
 
   private static Document Doc { get; set; }
 
-  public IEnumerable<string> GetServicedApplications()
-  {
-    return new[] { VersionedAppName };
-  }
+  public IEnumerable<string> GetServicedApplications() => new[] { s_versionedAppName };
 
   public void SetContextDocument(object doc)
   {
@@ -61,7 +58,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
       Doc = Application.ActiveDocument;
     }
 
-    // This sets or resets the correct ElevationMode flag for model orientation.
+    // This sets or resets the correct IsUpright flag for model orientation.
     // Needs to be called every time a Send is initiated to reflect the options
     SetModelOrientationMode();
     SetModelBoundingBox();
@@ -73,16 +70,11 @@ public partial class ConverterNavisworks : ISpeckleConverter
   public IReadOnlyList<ApplicationObject> ContextObjects => _contextObjects;
 
   /// <inheritdoc />
-  public void SetContextObjects(List<ApplicationObject> objects)
-  {
+  public void SetContextObjects(List<ApplicationObject> objects) =>
     _contextObjects = objects ?? throw new ArgumentNullException(nameof(objects));
-  }
 
   /// <inheritdoc />
-  public void SetPreviousContextObjects(List<ApplicationObject> objects)
-  {
-    throw new NotImplementedException();
-  }
+  public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
 
   /// <inheritdoc />
   public void SetConverterSettings(object settings)

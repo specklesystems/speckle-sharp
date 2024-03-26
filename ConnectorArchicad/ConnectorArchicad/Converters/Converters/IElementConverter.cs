@@ -17,7 +17,11 @@ public interface IConverter
 
   #region --- Functions ---
 
-  Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token);
+  Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions state
+  );
 
   Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token);
 

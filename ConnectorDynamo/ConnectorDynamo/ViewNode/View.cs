@@ -8,7 +8,7 @@ using Dynamo.Graph.Nodes;
 using Dynamo.Utilities;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
-using Speckle.Core.Logging;
+using Speckle.ConnectorDynamo.Functions;
 
 namespace Speckle.ConnectorDynamo.ViewNode;
 
@@ -101,8 +101,7 @@ public class View : NodeModel
       Url = "";
       return;
     }
-
-    Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Stream View" } });
+    AnalyticsUtils.TrackNodeRun("Stream View");
 
     Process.Start(Url);
   }

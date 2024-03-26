@@ -1,10 +1,12 @@
 using System;
 using System.Drawing;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams;
 
@@ -90,7 +92,7 @@ public class StreamGetComponentV2 : GH_SpeckleTaskCapableComponent<StreamWrapper
     {
       await newWrapper.ValidateWithAccount(account).ConfigureAwait(false); // Validates the stream
     }
-    catch (Exception e)
+    catch (Exception e) when (e is SpeckleException or HttpRequestException or ArgumentException)
     {
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
       return null;

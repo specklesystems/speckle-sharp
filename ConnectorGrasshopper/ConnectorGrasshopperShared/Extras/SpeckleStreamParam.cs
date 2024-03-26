@@ -4,6 +4,7 @@ using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Extras;
 
@@ -92,7 +93,7 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
         Value = new StreamWrapper(ghStr.Value);
         return true;
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return false;
       }
@@ -105,7 +106,7 @@ public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
         Value = new StreamWrapper(str);
         return true;
       }
-      catch
+      catch (Exception ex) when (!ex.IsFatal())
       {
         return false;
       }

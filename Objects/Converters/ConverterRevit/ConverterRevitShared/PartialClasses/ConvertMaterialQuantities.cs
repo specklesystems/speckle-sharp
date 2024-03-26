@@ -1,6 +1,5 @@
 #nullable enable
 using Autodesk.Revit.DB;
-using ConverterRevitShared.Extensions;
 using Objects.Other;
 using System.Collections.Generic;
 using System.Linq;

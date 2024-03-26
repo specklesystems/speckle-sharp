@@ -1,4 +1,3 @@
-#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 
@@ -56,7 +55,6 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
   }
 }
 
-#region Builder interfaces/delegates
 public delegate bool WhenCondition(Base o);
 
 /// <summary>
@@ -87,4 +85,3 @@ public interface ITraversalBuilderTraverse : ITraversalBuilderWhen
   /// <returns>Traversal rule in a usable state</returns>
   ITraversalRule ContinueTraversing(SelectMembers membersToTraverse);
 }
-#endregion

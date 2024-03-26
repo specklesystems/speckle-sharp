@@ -6,6 +6,7 @@ using ConnectorGrasshopperUtils;
 using Eto.Drawing;
 using Eto.Forms;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper;
 
@@ -139,9 +140,11 @@ public class CreateSchemaObjectDialog : Dialog
           ((Dictionary<string, object>)tree[key])[t.Name] = constructors.Values.First();
         }
       }
-      catch (Exception e)
+      catch (Exception e) when (!e.IsFatal())
       {
-        Console.WriteLine(e);
+        // We do not know what specific failure this will cause yet, requires further investigation and
+        // potentially a refactor of CSOUtils to throw more explicitly.
+        SpeckleLog.Logger.Warning(e, "Failed to get valid constructors for type {t}", t);
       }
     }
   }

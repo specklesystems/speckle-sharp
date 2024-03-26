@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper;
 using Grasshopper.Kernel;
@@ -46,12 +47,7 @@ public class Accounts_GetAccountToken : GH_SpeckleComponent
 
   protected override void RegisterInputParams(GH_InputParamManager pManager)
   {
-    pManager.AddTextParameter(
-      "Account",
-      "A",
-      "Account to get the auth token from. Expects the `userId`",
-      GH_ParamAccess.item
-    );
+    pManager.AddParameter(new SpeckleAccountParam());
   }
 
   protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -66,14 +62,12 @@ public class Accounts_GetAccountToken : GH_SpeckleComponent
 
   public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
   {
-    var userId = "";
-    if (!DA.GetData(0, ref userId))
+    Account account = null;
+    if (!DA.GetData(0, ref account))
     {
       return;
     }
 
-    var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
-
-    DA.SetData(0, acc.token);
+    DA.SetData(0, account.token);
   }
 }

@@ -65,9 +65,6 @@
 
   <Style Selector="Button.Send">
 
-    <Style.Resources>
-      <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
-    </Style.Resources>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Margin="4">
@@ -76,7 +73,7 @@
             Command="{Binding SendCommand, FallbackValue={x:Null}}"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Send to this stream'}">
+            ToolTip.Tip="Send to this project">
             <Button.Content>
               <icons:MaterialIcon
                 Name="send"
@@ -140,7 +137,7 @@
             CornerRadius="40"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Send to this stream'}">
+            ToolTip.Tip="Send to this project">
             <Button.Content>
               <StackPanel Orientation="Horizontal" Spacing="12">
 
@@ -233,7 +230,7 @@
             Command="{Binding ReceiveCommand}"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Receive from this stream'}">
+            ToolTip.Tip="Receive from this project">
             <Button.Content>
               <icons:MaterialIcon
                 Name="receive"
@@ -301,7 +298,7 @@
             CornerRadius="40"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Receive from this stream'}">
+            ToolTip.Tip="Receive from this project">
             <Button.Content>
               <StackPanel Orientation="Horizontal" Spacing="12">
 

@@ -25,10 +25,10 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public Mesh(
     List<double> vertices,
     List<int> faces,
-    List<int> colors = null,
-    List<double> texture_coords = null,
+    List<int>? colors = null,
+    List<double>? texture_coords = null,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
   {
     this.vertices = vertices;
@@ -39,16 +39,23 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
     this.units = units;
   }
 
-  [Obsolete("Use lists constructor")]
+  [Obsolete("Use lists constructor", true)]
   public Mesh(
     double[] vertices,
     int[] faces,
-    int[] colors = null,
-    double[] texture_coords = null,
+    int[]? colors = null,
+    double[]? texture_coords = null,
     string units = Units.Meters,
-    string applicationId = null
+    string? applicationId = null
   )
-    : this(vertices.ToList(), faces.ToList(), colors?.ToList(), texture_coords?.ToList(), applicationId, units) { }
+    : this(
+      vertices.ToList(),
+      faces.ToList(),
+      colors?.ToList() ?? new(),
+      texture_coords?.ToList() ?? new(),
+      units,
+      applicationId
+    ) { }
 
   [DetachProperty, Chunkable(31250)]
   public List<double> vertices { get; set; } = new();
@@ -67,7 +74,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   /// The unit's this <see cref="Mesh"/> is in.
   /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <inheritdoc/>
   public double area { get; set; }
@@ -94,7 +101,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out Mesh mesh)
+  public bool TransformTo(Transform transform, out Mesh transformed)
   {
     // transform vertices
     var transformedVertices = new List<Point>();
@@ -104,7 +111,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
       transformedVertices.Add(transformedVertex);
     }
 
-    mesh = new Mesh
+    transformed = new Mesh
     {
       vertices = transformedVertices.SelectMany(o => o.ToList()).ToList(),
       textureCoordinates = textureCoordinates,
@@ -113,7 +120,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
       colors = colors,
       units = units
     };
-    mesh["renderMaterial"] = this["renderMaterial"];
+    transformed["renderMaterial"] = this["renderMaterial"];
 
     return true;
   }
@@ -166,10 +173,10 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   }
 
   /// <summary>
-  /// Gets a texture coordinate as a <see cref="(T1, T2)"/> by <paramref name="index"/>
+  /// Gets a texture coordinate as a <see cref="ValueTuple{T1, T2}"/> by <paramref name="index"/>
   /// </summary>
   /// <param name="index">The index of the texture coordinate</param>
-  /// <returns>Texture coordinate as a <see cref="(T1, T2)"/></returns>
+  /// <returns>Texture coordinate as a <see cref="ValueTuple{T1, T2}"/></returns>
   public (double, double) GetTextureCoordinate(int index)
   {
     index *= 2;

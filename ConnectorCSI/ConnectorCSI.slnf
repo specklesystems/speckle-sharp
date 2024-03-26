@@ -19,7 +19,7 @@
       "Objects\\Converters\\ConverterCSI\\ConverterSAP2000\\ConverterSAP2000.csproj",
       "Objects\\Converters\\StructuralUtilities\\PolygonMesher\\PolygonMesher.csproj",
       "Objects\\Objects\\Objects.csproj",
-      "Objects\\Tests\\Tests.csproj"
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
   }
 }

@@ -83,7 +83,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override string GetHostAppNameVersion()
   {
-    return Utils.RhinoAppName;
+    return Utils.GetRhinoHostAppVersion();
   }
 
   public override string GetHostAppName()

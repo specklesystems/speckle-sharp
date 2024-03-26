@@ -1,6 +1,7 @@
 #ifndef CREATE_OPENING_BASE
 #define CREATE_OPENING_BASE
 
+#include "APIMigrationHelper.hpp"
 #include "CreateCommand.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
@@ -265,7 +266,7 @@ GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, 
 			BNZeroMemory (&libPart, sizeof (API_LibPart));
 			GS::ucscpy (libPart.docu_UName, libPartName.ToUStr ());
 
-			err = ACAPI_LibPart_Search (&libPart, false, true);
+			err = ACAPI_LibraryPart_Search (&libPart, false, true);
 			if (err == NoError) {
 				element.openingBase.libInd = libPart.index;
 				ACAPI_ELEMENT_MASK_SET (mask, T, openingBase.libInd);

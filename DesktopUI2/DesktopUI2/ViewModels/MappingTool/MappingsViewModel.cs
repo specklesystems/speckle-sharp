@@ -178,11 +178,11 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       }
       else if (!AvailableRevitTypes.Any())
       {
-        PromptMsg = "The selected branch does not contain any Revit types, try changing mapping data source.";
+        PromptMsg = "The selected model does not contain any Revit types, try changing mapping data source.";
       }
       else if (!AvailableRevitLevels.Any())
       {
-        PromptMsg = "The selected branch does not contain any Revit levels, try changing mapping data source.";
+        PromptMsg = "The selected model does not contain any Revit levels, try changing mapping data source.";
       }
       else
       {
@@ -244,7 +244,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     if (commit == null)
     {
       throw new Exception(
-        $"Branch {StreamSelector.SelectedBranch.name} in stream {StreamSelector.SelectedStream.Stream.id} has no commits"
+        $"Model {StreamSelector.SelectedBranch.name} in project {StreamSelector.SelectedStream.Stream.id} has no versions"
       );
     }
 
@@ -252,7 +252,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
       StreamSelector.SelectedStream.Account,
       StreamSelector.SelectedStream.Stream.id
     );
-    return await Operations.Receive(commit.referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
+    return await Operations.Receive(commit.referencedObject, transport).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)
@@ -293,7 +293,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         () =>
           Dialogs.ShowMapperDialog(
             "No types available",
-            "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\n👉 And no worries, you can keep using Speckle Mapper with default types!",
+            "The selected project does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\n👉 And no worries, you can keep using Speckle Mapper with default types!",
             Material.Dialog.Icons.DialogIconKind.Info
           )
       );
@@ -314,7 +314,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
         () =>
           Dialogs.ShowMapperDialog(
             "No levels available",
-            "The selected stream does not contain any Revit levels.\nMake sure to send Project Information > Levels from Revit\nusing the latest version of the connector.",
+            "The selected project does not contain any Revit levels.\nMake sure to send Project Information > Levels from Revit\nusing the latest version of the connector.",
             Material.Dialog.Icons.DialogIconKind.Info
           )
       );

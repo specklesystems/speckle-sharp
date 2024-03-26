@@ -133,7 +133,7 @@ internal static class BrepEncoder
           }
 
           kinkyEdges += edges.Count - edgeCount;
-#if RHINO7
+#if RHINO7_OR_GREATER
             microEdges += edges.RemoveNakedMicroEdges(modelRelativeTolerance, true);
 #endif
           mergedEdges += edges.MergeAllEdges(modelAngleToleranceRadians) - edgeCount;

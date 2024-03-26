@@ -1,8 +1,6 @@
 using System;
-using Dynamo.Configuration;
 using Dynamo.Controls;
 using Dynamo.Models;
-using Dynamo.Scheduler;
 using Dynamo.ViewModels;
 using Dynamo.Wpf;
 using System.Threading.Tasks;

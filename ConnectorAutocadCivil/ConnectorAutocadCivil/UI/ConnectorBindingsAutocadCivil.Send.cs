@@ -40,7 +40,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
     var deletedElements = new List<string>();
     foreach (var selectedId in state.SelectedObjectIds)
     {
-      if (Utils.GetHandle(selectedId, out Handle handle))
+      if (GetHandle(selectedId, out Handle handle))
       {
         if (Doc.Database.TryGetObjectId(handle, out ObjectId id))
         {
@@ -61,9 +61,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       );
     }
 
-    var modelName = $"{Utils.AppName} Model";
+    var modelName = $"{AppName} Model";
     var commitObject = new Collection(modelName, modelName.ToLower());
-    commitObject["units"] = Utils.GetUnits(Doc); // TODO: check whether commits base needs units attached
+    commitObject["units"] = GetUnits(Doc); // TODO: check whether commits base needs units attached
 
     int convertedCount = 0;
 
@@ -84,9 +84,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
       progress.Report.Merge(converter.Report);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      progress.Report.LogOperationError(e);
+      progress.Report.LogOperationError(ex);
     }
 
     if (convertedCount == 0)
@@ -102,7 +102,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       commitObject,
       progress.CancellationToken,
       transports,
-      onProgressAction: dict => progress.Update(dict),
+      onProgressAction: progress.Update,
       onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
       disposeTransports: true
     );
@@ -114,8 +114,8 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
       streamId = streamId,
       objectId = commitObjId,
       branchName = state.BranchName,
-      message = state.CommitMessage ?? $"Pushed {convertedCount} elements from {Utils.AppName}.",
-      sourceApplication = Utils.VersionedAppName
+      message = state.CommitMessage ?? $"Pushed {convertedCount} elements from {AppName}.",
+      sourceApplication = VersionedAppName
     };
 
     if (state.PreviousCommitId != null)
@@ -191,7 +191,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           DBObject obj = null;
           string layer = null;
           string applicationId = null;
-          if (Utils.GetHandle(autocadObjectHandle, out Handle hn))
+          if (GetHandle(autocadObjectHandle, out Handle hn))
           {
             obj = hn.GetObject(tr, out string type, out layer, out applicationId);
           }
@@ -203,7 +203,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
           // create applicationobject for reporting
           Base converted = null;
-          var descriptor = Utils.ObjectDescriptor(obj);
+          var descriptor = ObjectDescriptor(obj);
           ApplicationObject reportObj = new(autocadObjectHandle, descriptor) { applicationId = autocadObjectHandle };
 
           if (!converter.CanConvertToSpeckle(obj))
@@ -264,7 +264,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
                 return false;
               }
 
-              return appId.Length == 5 ? true : false;
+              return appId.Length == 5;
             }
             if (isOldApplicationId(applicationId))
             {
@@ -303,9 +303,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
             convertedCount++;
           }
-          catch (Exception e)
+          catch (Exception e) when (!e.IsFatal())
           {
-            //TODO: Log to serilog failed conversions
+            SpeckleLog.Logger.Error(e, $"Failed object conversion");
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
             progress.Report.Log(reportObj);
             continue;
@@ -326,8 +326,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           else
           {
             var layerRecord = (LayerTableRecord)tr.GetObject(layerTable[layerPath], OpenMode.ForRead);
-            var collection = converter.ConvertToSpeckle(layerRecord) as Collection;
-            if (collection != null)
+            if (converter.ConvertToSpeckle(layerRecord) is Collection collection)
             {
               collection.elements = commitLayerObjects[layerPath];
               commitCollections.Add(layerPath, collection);

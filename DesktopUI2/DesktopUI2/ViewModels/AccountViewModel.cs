@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;

@@ -9,13 +9,13 @@ using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit.Models;
 using Objects.Geometry;
 using Objects.Other;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -152,9 +152,9 @@ public partial class ConverterRevit
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
           }
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          SpeckleLog.Logger.Error(ex, ex.Message);
+          SpeckleLog.Logger.LogDefaultError(ex);
           reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
         }
       }
@@ -165,7 +165,7 @@ public partial class ConverterRevit
       Report.Log(reportObj);
     }
 
-    if (convertedHostedElements.Any())
+    if (convertedHostedElements.Count > 0)
     {
       notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
 
@@ -242,9 +242,13 @@ public partial class ConverterRevit
       {
         paramBase[kv.Key] = kv.Value;
       }
-      catch
+      catch (InvalidPropNameException)
       {
         //ignore
+      }
+      catch (SpeckleException ex)
+      {
+        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
       }
     }
 
@@ -586,7 +590,7 @@ public partial class ConverterRevit
           break;
       }
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       // do nothing for now...
     }
@@ -1030,12 +1034,13 @@ public partial class ConverterRevit
       returnValue = func();
       subtransaction.Commit();
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       subtransaction.RollBack();
       Doc.Regenerate();
       catchFunc(ex);
     }
+
     return returnValue;
   }
   #endregion
@@ -1083,7 +1088,7 @@ public partial class ConverterRevit
   }
 
   #region materials
-  public RenderMaterial GetElementRenderMaterial(DB.Element element)
+  public RenderMaterial? GetElementRenderMaterial(DB.Element? element)
   {
     var matId = element?.GetMaterialIds(false)?.FirstOrDefault();
 
@@ -1097,7 +1102,7 @@ public partial class ConverterRevit
     return RenderMaterialToSpeckle(revitMaterial);
   }
 
-  public static RenderMaterial RenderMaterialToSpeckle(DB.Material revitMaterial)
+  public static RenderMaterial? RenderMaterialToSpeckle(DB.Material? revitMaterial)
   {
     if (revitMaterial == null)
     {
@@ -1242,9 +1247,10 @@ public partial class ConverterRevit
       curveArray.Append(LineToNative(line));
       return true;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      appObj.Log.Add(e.Message);
+      SpeckleLog.Logger.LogDefaultError(ex);
+      appObj.Log.Add(ex.Message);
       return false;
     }
   }
@@ -1410,5 +1416,18 @@ public partial class ConverterRevit
     }
 
     return headOffset;
+  }
+
+  public static string GetCleanBasePropName(string propName)
+  {
+    var charsToRemove = new string[] { ".", "/" };
+    foreach (var c in charsToRemove)
+    {
+      if (propName.Contains(c))
+      {
+        propName = propName.Replace(c, string.Empty);
+      }
+    }
+    return propName;
   }
 }

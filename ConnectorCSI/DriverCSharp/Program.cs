@@ -1,9 +1,12 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
+using Speckle.Core.Logging;
 using System.Windows.Forms;
 using CSiAPIv1;
 using SpeckleConnectorCSI;
+
+#if DEBUG
+using System.Diagnostics;
+#endif
 
 namespace DriverCSharp;
 
@@ -16,55 +19,47 @@ class Program
 
   static int Main(string[] args)
   {
+    try
+    {
 #if DEBUG
-    Debugger.Launch();
+      Debugger.Launch();
 #endif
-    //MessageBox.Show("Starting DriverCSharp");
+      //MessageBox.Show("Starting DriverCSharp");
 
-    // dimension the SapObject as cOAPI type
-    cOAPI mySapObject = null;
+      // dimension the SapObject as cOAPI type
+      cOAPI mySapObject = null;
 
-    // Use ret to check if functions return successfully (ret = 0) or fail (ret = nonzero)
-    int ret = -1;
+      // Use ret to check if functions return successfully (ret = 0) or fail (ret = nonzero)
+      int ret = -1;
 
-    // create API helper object
-    cHelper myHelper = null;
+      // create API helper object
+      cHelper myHelper = null;
 
-    try
-    {
       myHelper = new Helper();
-    }
-    catch (Exception ex)
-    {
-      MessageBox.Show("Cannot create an instance of the Helper object: " + ex.Message);
-      ret = -1;
-      return ret;
-    }
 
-    // attach to a running program instance
-    try
-    {
+      // attach to a running program instance
+
       // get the active SapObject
       // determine program type
       string progID = null;
       string[] arguments = Environment.GetCommandLineArgs();
 
-      if (arguments.Count() > 1)
+      if (arguments.Length > 1)
       {
         string arg = arguments[1];
-        if (string.Compare(arg, "SAP2000", true) == 0)
+        if (string.Equals(arg, "SAP2000", StringComparison.CurrentCultureIgnoreCase))
         {
           progID = ProgID_SAP2000;
         }
-        else if (string.Compare(arg, "ETABS", true) == 0)
+        else if (string.Equals(arg, "ETABS", StringComparison.CurrentCultureIgnoreCase))
         {
           progID = ProgID_ETABS;
         }
-        else if (string.Compare(arg, "SAFE", true) == 0)
+        else if (string.Equals(arg, "SAFE", StringComparison.CurrentCultureIgnoreCase))
         {
           progID = ProgID_SAFE;
         }
-        else if (string.Compare(arg, "CSiBridge", true) == 0)
+        else if (string.Equals(arg, "CSiBridge", StringComparison.CurrentCultureIgnoreCase))
         {
           progID = ProgID_CSiBridge;
         }
@@ -77,47 +72,33 @@ class Program
       else
       {
         // missing/unknown program type, try one by one
-        try
+        progID = ProgID_SAP2000;
+        mySapObject = myHelper.GetObject(progID);
+
+        if (mySapObject == null)
         {
-          progID = ProgID_SAP2000;
+          progID = ProgID_ETABS;
           mySapObject = myHelper.GetObject(progID);
         }
-        catch (Exception ex) { }
-
         if (mySapObject == null)
         {
-          try
-          {
-            progID = ProgID_ETABS;
-            mySapObject = myHelper.GetObject(progID);
-          }
-          catch (Exception ex) { }
-        }
-        if (mySapObject == null)
-        {
-          try
-          {
-            progID = ProgID_CSiBridge;
-            mySapObject = myHelper.GetObject(progID);
-          }
-          catch (Exception ex) { }
+          progID = ProgID_CSiBridge;
+          mySapObject = myHelper.GetObject(progID);
         }
       }
-    }
-    catch (Exception ex)
-    {
-      MessageBox.Show("No running instance of the program found or failed to attach: " + ex.Message);
 
-      ret = -2;
-      return ret;
-    }
+      if (mySapObject is null)
+      {
+        MessageBox.Show("No running instance of the program found");
 
-    // Get a reference to cSapModel to access all API classes and functions
-    cSapModel mySapModel = mySapObject.SapModel;
+        ret = -2;
+        return ret;
+      }
 
-    // call Speckle plugin
-    try
-    {
+      // Get a reference to cSapModel to access all API classes and functions
+      cSapModel mySapModel = mySapObject.SapModel;
+
+      // call Speckle plugin
       cPlugin p = new();
       cPluginCallback cb = new PluginCallback();
 
@@ -130,12 +111,11 @@ class Program
 
       return cb.ErrorFlag;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      MessageBox.Show("Failed to call plugin: " + ex.Message);
-
-      ret = -3;
-      return ret;
+      SpeckleLog.Logger.Fatal(ex, "Failed to initialize plugin");
+      MessageBox.Show("Failed to initialize plugin: " + ex.Message);
+      return -3;
     }
   }
 }

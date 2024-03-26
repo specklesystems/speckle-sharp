@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
 namespace RevitSharedResources.Models;
@@ -41,7 +40,7 @@ public class ErrorEater : IFailuresPreprocessor
         failuresAccessor.ResolveFailure(failure);
         resolvedFailures++;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         var idsToDelete = failure.GetFailingElementIds().ToList();
 
@@ -65,9 +64,9 @@ public class ErrorEater : IFailuresPreprocessor
           failedElements.AddRange(failure.GetFailingElementIds());
 
           // logging the error
-          var speckleEx = new SpeckleException($"Fatal Error: {t}");
+          var speckleEx = new SpeckleException($"Unexpected error while preprocessing failures: {t}", ex);
           _exceptions.Add(speckleEx);
-          SpeckleLog.Logger.Fatal(speckleEx, "Fatal Error: {failureMessage}", t);
+          SpeckleLog.Logger.Error(speckleEx, "Unexpected error while preprocessing failures: {failureMessage}", t);
         }
       }
     }

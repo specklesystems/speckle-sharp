@@ -35,7 +35,7 @@
           Grid.Row="1"
           Margin="15"
           Foreground="Gray"
-          Text="Select a stream and branch coming from Revit with the Mapping Data"
+          Text="Select a project and model coming from Revit with the Mapping Data"
           TextWrapping="Wrap" />
 
         <Expander
@@ -63,7 +63,7 @@
                   Name="SearchBox"
                   Margin="0"
                   Padding="0"
-                  assists:TextFieldAssist.Label="Stream"
+                  assists:TextFieldAssist.Label="Project"
                   Text="{Binding SearchQuery}"
                   UseFloatingWatermark="True">
                   <TextBox.InnerRightContent>
@@ -121,10 +121,10 @@
             <ComboBox
               HorizontalAlignment="Stretch"
               VerticalAlignment="Center"
-              assists:ComboBoxAssist.Label="Branch"
+              assists:ComboBoxAssist.Label="Model"
               Classes="Outline"
               Items="{Binding Branches}"
-              PlaceholderText="Branch"
+              PlaceholderText="Model"
               SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
               <ComboBox.ItemTemplate>
                 <DataTemplate>

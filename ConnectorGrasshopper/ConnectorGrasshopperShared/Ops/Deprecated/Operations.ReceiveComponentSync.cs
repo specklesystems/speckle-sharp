@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,12 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops.Deprecated;
 
+[Obsolete($"Use {nameof(SyncReceiveComponent)}")]
+[SuppressMessage(
+  "Design",
+  "CA1031:Do not catch general exception types",
+  Justification = "Class is used by obsolete component"
+)]
 public class ReceiveSync : SelectKitTaskCapableComponentBase<Base>
 {
   private const int delay = 100000;

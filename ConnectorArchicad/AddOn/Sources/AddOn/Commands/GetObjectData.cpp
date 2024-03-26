@@ -26,14 +26,9 @@ API_ElemTypeID GetObjectData::GetElemTypeID() const
 
 
 GS::ErrCode	GetObjectData::SerializeElementType (const API_Element& elem,
-	const API_ElementMemo& memo,
+	const API_ElementMemo& /*memo*/,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (elem, memo, os);
-	if (NoError != err)
-		return err;
-
 	API_StoryType story = Utility::GetStory (elem.object.head.floorInd);
 	os.Add (ElementBase::Level, Objects::Level (story));
 

@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using GraphQL;
 using Speckle.Newtonsoft.Json;
@@ -8,7 +9,7 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Api.GraphQL.Serializer;
 
-public class MapConverter : JsonConverter<Map>
+internal sealed class MapConverter : JsonConverter<Map>
 {
   public override void WriteJson(JsonWriter writer, Map value, JsonSerializer serializer)
   {
@@ -34,6 +35,11 @@ public class MapConverter : JsonConverter<Map>
     throw new ArgumentException("This converter can only parse when the root element is a JSON Object.");
   }
 
+  [SuppressMessage(
+    "Maintainability",
+    "CA1508:Avoid dead conditional code",
+    Justification = "False positive, see https://github.com/dotnet/roslyn-analyzers/issues/6893"
+  )]
   private object ReadToken(JToken token)
   {
     return token switch

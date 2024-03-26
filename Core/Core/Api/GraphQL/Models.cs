@@ -1,6 +1,6 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Speckle.Core.Api;
@@ -379,15 +379,38 @@ public class ServerInfo
 {
   public string name { get; set; }
   public string company { get; set; }
-  public string url { get; set; }
   public string version { get; set; }
   public string adminContact { get; set; }
   public string description { get; set; }
 
-  //NOTE: this field is not returned from the GQL API
-  //it is manually populated by checking against the response headers
-  //TODO: deprecate after the transition from fe1 to fe2
+  /// <remarks>
+  /// This field is not returned from the GQL API,
+  /// it should populated on construction from the response headers.
+  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
+  /// </remarks>
   public bool frontend2 { get; set; }
+
+  /// <remarks>
+  /// This field is not returned from the GQL API,
+  /// it should populated on construction.
+  /// see <see cref="Speckle.Core.Credentials.AccountManager"/>
+  /// </remarks>
+  public string url { get; set; }
+
+  public ServerMigration migration { get; set; }
+}
+
+public class ServerMigration
+{
+  /// <summary>
+  /// New URI where this server is now deployed
+  /// </summary>
+  public Uri movedTo { get; set; }
+
+  /// <summary>
+  /// Previous URI where this server used to be deployed
+  /// </summary>
+  public Uri movedFrom { get; set; }
 }
 
 public class StreamData

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,15 +11,15 @@ namespace Speckle.Core.Kits;
 
 public static class KitManager
 {
-  private static string? _kitsFolder;
+  private static string? s_kitsFolder;
 
   public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
-  private static Dictionary<string, ISpeckleKit> _SpeckleKits = new();
+  private static readonly Dictionary<string, ISpeckleKit> s_speckleKits = new();
 
-  private static List<Type> _AvailableTypes = new();
+  private static List<Type> s_availableTypes = new();
 
-  private static bool _initialized;
+  private static bool s_initialized;
 
   /// <summary>
   /// Local installations store kits in C:\Users\USERNAME\AppData\Roaming\Speckle\Kits
@@ -28,8 +27,8 @@ public static class KitManager
   /// </summary>
   public static string KitsFolder
   {
-    get => _kitsFolder ??= SpecklePathProvider.KitsFolderPath;
-    set => _kitsFolder = value;
+    get => s_kitsFolder ??= SpecklePathProvider.KitsFolderPath;
+    set => s_kitsFolder = value;
   }
 
   /// <summary>
@@ -40,7 +39,7 @@ public static class KitManager
     get
     {
       Initialize();
-      return _SpeckleKits.Values.Where(v => v != null); //NOTE: null check here should be unnecessary
+      return s_speckleKits.Values.Where(v => v != null); //NOTE: null check here should be unnecessary
     }
   }
 
@@ -52,7 +51,7 @@ public static class KitManager
     get
     {
       Initialize();
-      return _AvailableTypes;
+      return s_availableTypes;
     }
   }
 
@@ -64,7 +63,7 @@ public static class KitManager
   public static bool HasKit(string assemblyFullName)
   {
     Initialize();
-    return _SpeckleKits.ContainsKey(assemblyFullName);
+    return s_speckleKits.ContainsKey(assemblyFullName);
   }
 
   /// <summary>
@@ -75,7 +74,7 @@ public static class KitManager
   public static ISpeckleKit GetKit(string assemblyFullName)
   {
     Initialize();
-    return _SpeckleKits[assemblyFullName];
+    return s_speckleKits[assemblyFullName];
   }
 
   /// <summary>
@@ -85,7 +84,7 @@ public static class KitManager
   public static ISpeckleKit GetDefaultKit()
   {
     Initialize();
-    return _SpeckleKits.First(kvp => kvp.Value.Name == "Objects").Value;
+    return s_speckleKits.First(kvp => kvp.Value.Name == "Objects").Value;
   }
 
   /// <summary>
@@ -110,7 +109,7 @@ public static class KitManager
   /// <param name="kitFolderLocation"></param>
   public static void Initialize(string kitFolderLocation)
   {
-    if (_initialized)
+    if (s_initialized)
     {
       SpeckleLog.Logger.Error("{objectType} is already initialised", typeof(KitManager));
       throw new SpeckleException(
@@ -120,17 +119,17 @@ public static class KitManager
 
     KitsFolder = kitFolderLocation;
     Load();
-    _initialized = true;
+    s_initialized = true;
   }
 
   #region Private Methods
 
   private static void Initialize()
   {
-    if (!_initialized)
+    if (!s_initialized)
     {
       Load();
-      _initialized = true;
+      s_initialized = true;
     }
   }
 
@@ -141,7 +140,7 @@ public static class KitManager
     GetLoadedSpeckleReferencingAssemblies();
     LoadSpeckleReferencingAssemblies();
 
-    _AvailableTypes = _SpeckleKits
+    s_availableTypes = s_speckleKits
       .Where(kit => kit.Value != null) //Null check should be unnecessary
       .SelectMany(kit => kit.Value.Types)
       .ToList();
@@ -188,7 +187,7 @@ public static class KitManager
         {
           assembly = Assembly.Load(reference);
         }
-        catch
+        catch (SystemException ex) when (ex is IOException or BadImageFormatException)
         {
           continue;
         }
@@ -219,7 +218,7 @@ public static class KitManager
         continue;
       }
 
-      if (_SpeckleKits.ContainsKey(assembly.FullName))
+      if (s_speckleKits.ContainsKey(assembly.FullName))
       {
         continue;
       }
@@ -232,7 +231,7 @@ public static class KitManager
 
       if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
       {
-        _SpeckleKits.Add(assembly.FullName, speckleKit);
+        s_speckleKits.Add(assembly.FullName, speckleKit);
       }
     }
   }
@@ -263,11 +262,11 @@ public static class KitManager
           var kitClass = GetKitClass(assembly);
           if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
           {
-            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+            if (!s_speckleKits.ContainsKey(assembly.FullName))
             {
               if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
               {
-                _SpeckleKits.Add(assembly.FullName, speckleKit);
+                s_speckleKits.Add(assembly.FullName, speckleKit);
               }
             }
           }
@@ -291,32 +290,19 @@ public static class KitManager
 
       return kitClass;
     }
-    catch
-    {
-      // this will be a ReflectionTypeLoadException and is expected. we don't need to care!
-      return null;
-    }
-  }
-
-  private static Assembly? SafeLoadAssembly(AppDomain domain, AssemblyName assemblyName)
-  {
-    try
-    {
-      return domain.Load(assemblyName);
-    }
-    catch
+    catch (ReflectionTypeLoadException)
     {
       return null;
     }
   }
 
-  private static AssemblyName? SafeGetAssemblyName(string assemblyPath)
+  private static AssemblyName? SafeGetAssemblyName(string? assemblyPath)
   {
     try
     {
       return AssemblyName.GetAssemblyName(assemblyPath);
     }
-    catch
+    catch (Exception ex) when (ex is ArgumentException or IOException or BadImageFormatException)
     {
       return null;
     }
@@ -325,7 +311,7 @@ public static class KitManager
   #endregion
 }
 
-public static class AssemblyExtensions
+internal static class AssemblyExtensions
 {
   /// <summary>
   /// Indicates if a given assembly references another which is identified by its name.

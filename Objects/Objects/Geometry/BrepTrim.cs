@@ -32,6 +32,8 @@ public class BrepTrim : Base
     IsoStatus = isoStatus;
     TrimType = trimType;
     IsReversed = reversed;
+    StartIndex = startIndex;
+    EndIndex = endIndex;
   }
 
   [JsonIgnore]
@@ -47,7 +49,7 @@ public class BrepTrim : Base
   public BrepTrimType TrimType { get; set; }
   public bool IsReversed { get; set; }
 
-  public Interval Domain { get; set; }
+  public Interval Domain { get; set; } = new(0, 1);
 
   [JsonIgnore]
   public BrepFace Face => Brep.Faces[FaceIndex];
@@ -56,7 +58,7 @@ public class BrepTrim : Base
   public BrepLoop Loop => Brep.Loops[LoopIndex];
 
   [JsonIgnore]
-  public BrepEdge Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
+  public BrepEdge? Edge => EdgeIndex != -1 ? Brep.Edges[EdgeIndex] : null;
 
   [JsonIgnore]
   public ICurve Curve2d => Brep.Curve2D[CurveIndex];

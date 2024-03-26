@@ -25,6 +25,8 @@ public class Room
   // Element base
   public string? elementType { get; set; }
   public List<Classification>? classifications { get; set; }
+  public List<PropertyGroup>? elementProperties { get; set; }
+  public List<ComponentProperties>? componentProperties { get; set; }
   public ArchicadLevel? level { get; set; }
   public string? layer { get; set; }
 

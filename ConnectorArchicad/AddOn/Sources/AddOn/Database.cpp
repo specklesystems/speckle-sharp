@@ -1,5 +1,6 @@
-#include "Database.hpp"
 #include "ACAPinc.h"
+#include "APIMigrationHelper.hpp"
+#include "Database.hpp"
 
 
 using namespace Utility;
@@ -45,7 +46,7 @@ void Database::SwitchToFloorPlan (void)
 {
 	API_DatabaseInfo databaseInfo;
 	BNZeroMemory (&databaseInfo, sizeof (API_DatabaseInfo));
-	GSErrCode err = ACAPI_Database (APIDb_GetCurrentDatabaseID, &databaseInfo, nullptr);
+	GSErrCode err = ACAPI_Database_GetCurrentDatabase (&databaseInfo);
 
 	if (err != NoError)
 		databaseInfo.typeID = API_ZombieWindowID;
@@ -56,5 +57,5 @@ void Database::SwitchToFloorPlan (void)
 
 /*static*/ void Database::ChangeCurrent (API_DatabaseInfo& databaseInfo)
 {
-	ACAPI_Database (APIDb_ChangeCurrentDatabaseID, &databaseInfo, nullptr);
+	ACAPI_Database_ChangeCurrentDatabase (&databaseInfo);
 }

@@ -1,4 +1,6 @@
 #include "GetWallData.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -31,11 +33,6 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	const API_WallType wall = element.wall;
 
 	// Wall geometry
@@ -136,7 +133,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	// The reference line location of the wall (outside, center, inside, core outside, core center or core inside)
 	os.Add (Wall::ReferenceLineLocation, referenceLineLocationNames.Get (wall.referenceLineLocation));
 
-	// The offset of the wall’s base line from reference line
+	// The offset of the wallï¿½s base line from reference line
 	if (wall.type != APIWtyp_Poly &&
 		wall.referenceLineLocation != APIWallRefLine_Center &&
 		wall.referenceLineLocation != APIWallRefLine_CoreCenter) {
@@ -166,7 +163,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// Floor Plan and Section - Cut Surfaces parameters
 
-	// The pen index and linetype name of wall’s cut contour line
+	// The pen index and linetype name of wallï¿½s cut contour line
 	if (wall.modelElemStructureType == API_BasicStructure) {
 		os.Add (Wall::CutLinePenIndex, wall.contPen);
 
@@ -178,22 +175,15 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 			os.Add (Wall::CutLinetypeName, GS::UniString{attribute.header.name});
 	}
 
-	// Override cut fill pen
-	if (wall.penOverride.overrideCutFillPen) {
-		os.Add (Wall::OverrideCutFillPenIndex, wall.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (wall.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Wall::OverrideCutFillBackgroundPenIndex, wall.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (wall, os, Wall::OverrideCutFillPenIndex, Wall::OverrideCutFillBackgroundPenIndex);
 
 	// Floor Plan and Section - Outlines parameters
 
-	// The pen index of wall’s uncut contour line
+	// The pen index of wallï¿½s uncut contour line
 	os.Add (Wall::UncutLinePenIndex, wall.contPen3D);
 
-	// The linetype name of wall’s uncut contour line
+	// The linetype name of wallï¿½s uncut contour line
 	BNZeroMemory (&attribute, sizeof (API_Attribute));
 	attribute.header.typeID = API_LinetypeID;
 	attribute.header.index = wall.belowViewLineType;
@@ -201,10 +191,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attribute))
 		os.Add (Wall::UncutLinetypeName, GS::UniString{attribute.header.name});
 
-	// The pen index of wall’s overhead contour line
+	// The pen index of wallï¿½s overhead contour line
 	os.Add (Wall::OverheadLinePenIndex, wall.aboveViewLinePen);
 
-	// The linetype name of wall’s overhead contour line
+	// The linetype name of wallï¿½s overhead contour line
 	BNZeroMemory (&attribute, sizeof (API_Attribute));
 	attribute.header.typeID = API_LinetypeID;
 	attribute.header.index = wall.aboveViewLineType;
@@ -216,10 +206,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// The reference overridden material name, start and end edge index
 	int countOverriddenMaterial = 0;
-	if (wall.refMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.refMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.refMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.refMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -230,10 +220,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	}
 
 	// The opposite overridden material name, start and end edge index
-	if (wall.oppMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.oppMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.oppMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.oppMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -244,10 +234,10 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	}
 
 	// The side overridden material name
-	if (wall.sidMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden(wall.sidMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = wall.sidMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute(wall.sidMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;

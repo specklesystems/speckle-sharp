@@ -1,8 +1,10 @@
 #include "SelectElements.hpp"
+#include "APIMigrationHelper.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
 #include "APIdefs_Automate.h"
+
 
 GS::String AddOnCommands::SelectElements::GetName () const
 {
@@ -27,16 +29,16 @@ GS::ObjectState AddOnCommands::SelectElements::Execute (const GS::ObjectState& p
 	GS::Array<API_Neig> selectionBasket = ids.Transform<API_Neig> ([] (const GS::UniString& idStr) { return API_Neig (APIGuidFromString (idStr.ToCStr ())); });
 
 	if (clearSelection) {
-		err = ACAPI_Element_DeselectAll ();
+		err = ACAPI_Selection_DeselectAll ();
 		if (err != NoError)
 			return result;
 	}
 
-	err = ACAPI_Element_Select (selectionBasket, !deselect);
+	err = ACAPI_Selection_Select (selectionBasket, !deselect);
 	if (err != NoError)
 		return result;
 
-	ACAPI_Automate (APIDo_ZoomToSelectedID);
+	ACAPI_View_ZoomToSelected ();
 
 	result.Add (FieldNames::ApplicationObject::Status, true);
 	return result;

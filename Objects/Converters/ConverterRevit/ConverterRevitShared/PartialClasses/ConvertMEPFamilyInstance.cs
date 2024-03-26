@@ -2,13 +2,13 @@ using DB = Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Autodesk.Revit.DB;
 using System.Linq;
-using Objects.Organization;
 using System;
 using System.Collections.Generic;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using RevitSharedResources.Models;
 using Speckle.Core.Logging;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 
 namespace Objects.Converter.Revit;
 
@@ -107,8 +107,9 @@ public partial class ConverterRevit
           return appObj;
         }
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
+        SpeckleLog.Logger.LogDefaultError(ex);
         appObj.Update(
           logItem: $"Could not create fitting as part of the system. Reason: {ex.Message}. Converting as independent instance instead"
         );

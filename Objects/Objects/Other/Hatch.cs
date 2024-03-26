@@ -12,7 +12,7 @@ public class Hatch : Base
   public List<HatchLoop> loops { get; set; }
   public string pattern { get; set; }
   public double scale { get; set; } = 1;
-  public double rotation { get; set; } = 0; // relative angle
+  public double rotation { get; set; } // relative angle
 }
 
 /// <summary>

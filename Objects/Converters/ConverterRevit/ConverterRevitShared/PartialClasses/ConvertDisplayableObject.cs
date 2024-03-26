@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
@@ -86,6 +85,8 @@ public partial class ConverterRevit
         return BuiltInCategory.OST_Columns.ToString();
       case BE.Pipe _:
         return BuiltInCategory.OST_PipeSegments.ToString();
+      case BE.RebarGroup<BE.RebarShape> _:
+        return BuiltInCategory.OST_Rebar.ToString();
       case BE.Rebar _:
         return BuiltInCategory.OST_Rebar.ToString();
       case BE.Topography _:

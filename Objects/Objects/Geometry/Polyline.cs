@@ -26,8 +26,8 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <param name="coordinatesArray">The array of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  [Obsolete("Use list constructor instead")]
-  public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
+  [Obsolete("Use list constructor instead", true)]
+  public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string? applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId) { }
 
   /// <summary>
@@ -36,7 +36,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <param name="coordinates">The list of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
   /// <param name="units">The units the coordinates are in.</param>
   /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
-  public Polyline(List<double> coordinates, string units = Units.Meters, string applicationId = null)
+  public Polyline(List<double> coordinates, string units = Units.Meters, string? applicationId = null)
   {
     value = coordinates;
     this.units = units;
@@ -63,7 +63,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// Gets the list of points representing the vertices of this polyline.
   /// </summary>
-  [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
+  [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead", true)]
   public List<Point> points => GetPoints();
 
   /// <inheritdoc/>
@@ -176,7 +176,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   /// <summary>
   /// The internal domain of this curve.
   /// </summary>
-  public Interval domain { get; set; }
+  public Interval domain { get; set; } = new(0, 1);
 
   /// <inheritdoc/>
   public double length { get; set; }
@@ -188,7 +188,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   public Box bbox { get; set; }
 
   /// <inheritdoc/>
-  public bool TransformTo(Transform transform, out ITransformable polyline)
+  public bool TransformTo(Transform transform, out ITransformable transformed)
   {
     // transform points
     var transformedPoints = new List<Point>();
@@ -198,7 +198,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
       transformedPoints.Add(transformedPoint);
     }
 
-    polyline = new Polyline
+    transformed = new Polyline
     {
       value = transformedPoints.SelectMany(o => o.ToList()).ToList(),
       closed = closed,
@@ -238,8 +238,8 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
   {
     var list = new List<double>();
     list.Add(closed ? 1 : 0); // 2
-    list.Add(domain.start ?? 0); // 3
-    list.Add(domain.end ?? 1); // 4
+    list.Add(domain?.start ?? 0); // 3
+    list.Add(domain?.end ?? 1); // 4
     list.Add(value.Count); // 5
     list.AddRange(value); // 6 onwards
 
@@ -257,9 +257,7 @@ public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, I
 
   public static Polyline FromList(List<double> list)
   {
-    var polyline = new Polyline();
-    polyline.closed = list[2] == 1;
-    polyline.domain = new Interval(list[3], list[4]);
+    var polyline = new Polyline { closed = list[2] == 1, domain = new Interval(list[3], list[4]) };
     var pointCount = (int)list[5];
     polyline.value = list.GetRange(6, pointCount);
     polyline.units = Units.GetUnitFromEncoding(list[list.Count - 1]);

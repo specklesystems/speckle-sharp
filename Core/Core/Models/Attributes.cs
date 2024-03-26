@@ -7,6 +7,7 @@ namespace Speckle.Core.Models;
 /// <para>If set to true the default serialiser will persist it separately, and add a reference to the property's value in the original object.</para>
 /// <para>Only applies to properties of types derived from the Base class.</para>
 /// </summary>
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class DetachProperty : Attribute
 {
   /// <summary>
@@ -14,19 +15,13 @@ public sealed class DetachProperty : Attribute
   /// <para>If set to true the default serialiser will persist it separately, and add a reference to the property's value in the original object.</para>
   /// <para>Only applies to properties of types derived from the Base class.</para>
   /// </summary>
-  /// <param name="_detachable">Wether to detach the property or not.</param>
-  public DetachProperty(bool _detachable)
+  /// <param name="detachable">Whether to detach the property or not.</param>
+  public DetachProperty(bool detachable = true)
   {
-    Detachable = _detachable;
+    Detachable = detachable;
   }
 
-  public DetachProperty()
-  {
-    Detachable = true;
-  }
-
-  public bool Detachable { get; set; } = true;
-  public bool _detachable { get; }
+  public bool Detachable { get; }
 }
 
 /// <summary>
@@ -37,11 +32,10 @@ public sealed class DetachProperty : Attribute
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class Chunkable : Attribute
 {
-  public Chunkable(int ObjectsPerChunk = 1000)
+  public Chunkable(int maxObjCountPerChunk = 1000)
   {
-    MaxObjCountPerChunk = ObjectsPerChunk;
+    MaxObjCountPerChunk = maxObjCountPerChunk;
   }
 
-  public int MaxObjCountPerChunk { get; set; }
-  public int ObjectsPerChunk { get; }
+  public int MaxObjCountPerChunk { get; }
 }

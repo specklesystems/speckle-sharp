@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using Dynamo.Graph.Nodes;
-using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
-using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.Functions.Developer;
@@ -27,9 +24,9 @@ public static class Transport
       basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
     }
 
-    Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Disk Transport" } });
+    AnalyticsUtils.TrackNodeRun("Disk Transport");
 
-    return new DiskTransport.DiskTransport(basePath);
+    return new DiskTransport(basePath);
   }
 
   /// <summary>
@@ -40,7 +37,8 @@ public static class Transport
   [NodeCategory("Transports")]
   public static object MemoryTransport(string name = "Memory")
   {
-    Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Memory Transport" } });
+    AnalyticsUtils.TrackNodeRun("Memory Transport");
+
     return new MemoryTransport { TransportName = name };
   }
 
@@ -76,7 +74,7 @@ public static class Transport
       throw error;
     }
 
-    Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Server Transport" } });
+    AnalyticsUtils.TrackNodeRun("Server Transport");
 
     return new ServerTransport(account, stream.StreamId);
   }
@@ -110,7 +108,7 @@ public static class Transport
       scope = "UserLocalDefaultDb";
     }
 
-    Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "SQLite Transport" } });
+    AnalyticsUtils.TrackNodeRun("Server Transport");
 
     return new SQLiteTransport(basePath, applicationName, scope);
   }
