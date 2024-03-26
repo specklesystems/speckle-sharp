@@ -25,20 +25,9 @@ internal class SpeckleModule : Module
   public static SpeckleModule Current =>
     s_this ??= (SpeckleModule)FrameworkApplication.FindModule("ConnectorArcGIS_Module");
 
-  public static AutofacContainer? Container { get; private set; }
+  public AutofacContainer Container { get; }
 
-  /// <summary>
-  /// Called by Framework when ArcGIS Pro is closing
-  /// </summary>
-  /// <returns>False to prevent Pro from closing, otherwise True</returns>
-  protected override bool CanUnload()
-  {
-    //TODO - add your business logic
-    //return false to ~cancel~ Application close
-    return true;
-  }
-
-  protected override bool Initialize()
+  public SpeckleModule()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
@@ -53,16 +42,25 @@ internal class SpeckleModule : Module
       .LoadAutofacModules(arcgisSettings.Modules)
       .AddSingletonInstance(arcgisSettings)
       .Build();
-
-    return base.Initialize();
   }
 
-  private void Container_PreBuildEvent(object? sender, ContainerBuilder containerBuilder)
+  /// <summary>
+  /// Called by Framework when ArcGIS Pro is closing
+  /// </summary>
+  /// <returns>False to prevent Pro from closing, otherwise True</returns>
+  protected override bool CanUnload()
+  {
+    //TODO - add your business logic
+    //return false to ~cancel~ Application close
+    return true;
+  }
+
+  private static void Container_PreBuildEvent(object? sender, ContainerBuilder containerBuilder)
   {
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 
-  private Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)
+  private static Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)
   {
     // POC: tight binding to files
     Assembly? assembly = null;
