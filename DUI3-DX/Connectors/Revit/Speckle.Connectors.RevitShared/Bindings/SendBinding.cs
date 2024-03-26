@@ -19,6 +19,8 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Transports;
 using System.Threading;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Connectors.Revit.Operations.Send;
+using Speckle.Connectors.DUI.Models.Card;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -31,23 +33,22 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
   // In the context of the SEND operation, we're only ever expecting ONE conversion
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
-  private readonly ISpeckleConverterToSpeckle _speckleConverterToSpeckle;
+  private readonly SendOperation _sendOperation;
   private readonly IRevitIdleManager _idleManager;
 
   public SendBinding(
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
     IRevitIdleManager idleManager,
     RevitContext revitContext,
     RevitDocumentStore store,
-    IBridge bridge
+    IBridge bridge,
+    SendOperation sendOperation
   )
     : base("sendBinding", store, bridge, revitContext)
   {
-    _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
-    _speckleConverterToSpeckle = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
     _idleManager = idleManager;
     Commands = new SendBindingUICommands(bridge);
+    _sendOperation = sendOperation;
+
     // TODO expiry events
     // TODO filters need refresh events
     revitContext.UIApplication.Application.DocumentChanged += (_, e) => DocChangeHandler(e);
@@ -81,39 +82,23 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
       throw new InvalidOperationException("No publish model card was found.");
     }
 
-    List<Element> objects = _revitContext.UIApplication.ActiveUIDocument.Document
-      .GetElements(modelCard.SendFilter.GetObjectIds())
-      .ToList();
-
-    Account account =
-      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == modelCard.AccountId)
-      ?? throw new SpeckleAccountManagerException();
-
-    Base commitObject = new();
-
-    foreach (Element obj in objects)
-    {
-      commitObject[obj.UniqueId] = _speckleConverterToSpeckle.Convert(obj);
-    }
-
-    var transport = new ServerTransport(account, modelCard.ProjectId);
-    var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
-
-    var apiClient = new Client(account);
-    string versionId = await apiClient
-      .CommitCreate(
-        new CommitCreateInput
-        {
-          streamId = modelCard.ProjectId,
-          branchName = modelCard.ModelId,
-          sourceApplication = "Revit",
-          objectId = sendResult.rootObjId
-        },
+    string versionId = await _sendOperation
+      .Execute(
+        modelCard.SendFilter,
+        modelCard.AccountId,
+        modelCard.ProjectId,
+        modelCard.ModelId,
+        (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
         cts.Token
       )
-      .ConfigureAwait(true);
+      .ConfigureAwait(false);
 
     Commands.SetModelCreatedVersionId(modelCardId, versionId);
+  }
+
+  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
+  {
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
   }
 
   private bool HandleSpeckleException(SpeckleException spex)
@@ -187,9 +172,6 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   protected override void Disposing(bool isDipsosing, bool disposedState)
   {
-    if (isDipsosing && !disposedState)
-    {
-      _speckleConverterToSpeckleFactory.Dispose();
-    }
+    if (isDipsosing && !disposedState) { }
   }
 }

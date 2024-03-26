@@ -5,6 +5,8 @@ namespace Speckle.Converters.RevitShared.Helpers;
 
 public class RevitConversionContextStack : ConversionContextStack<UI.UIDocument, ForgeTypeId>
 {
+  public double TOLERANCE { get; } = 0.0164042; // 5mm in ft
+
   public RevitConversionContextStack(RevitContext context, IHostToSpeckleUnitConverter<ForgeTypeId> unitConverter)
     : base(
       context.UIApplication.ActiveUIDocument,

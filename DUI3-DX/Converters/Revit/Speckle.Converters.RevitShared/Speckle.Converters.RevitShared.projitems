@@ -18,11 +18,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitConversionContextStack.cs" />
+    <Compile Include="..\Speckle.Converters.RevitShared\Helpers\ToSpeckleConvertedObjectsCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\HostedElementConversionToSpeckle.cs" />
+    <Compile Include="..\Speckle.Converters.RevitShared\Helpers\SendSelection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\CachingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ICachingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\RevitToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ToSpeckleScalingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CurveArrayConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CurveConversionToSpeckle.cs" />

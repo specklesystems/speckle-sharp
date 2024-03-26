@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -23,4 +24,12 @@ public abstract class BaseConversionToSpeckle<THost, TSpeckle>
   }
 
   public abstract TSpeckle RawConvert(THost target);
+
+  public IEnumerable<TSpeckle> RawConvertMany(IEnumerable<THost> target)
+  {
+    foreach (var targetItem in target)
+    {
+      yield return RawConvert(targetItem);
+    }
+  }
 }
