@@ -64,7 +64,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
       _parameterValueExtractor.GetValueAsBool(target, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;
 
-    //speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
+    speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
     return speckleWall;
   }

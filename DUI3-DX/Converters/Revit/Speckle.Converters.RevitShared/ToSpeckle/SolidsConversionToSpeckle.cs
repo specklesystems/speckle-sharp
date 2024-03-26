@@ -12,6 +12,12 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
   private readonly RevitConversionContextStack _contextStack;
   private readonly MeshDataTriangulator _meshDataTriangulator;
 
+  public SolidsConversionToSpeckle(RevitConversionContextStack contextStack, MeshDataTriangulator meshDataTriangulator)
+  {
+    _contextStack = contextStack;
+    _meshDataTriangulator = meshDataTriangulator;
+  }
+
   public override List<Mesh> RawConvert(List<DB.Solid> target)
   {
     MeshBuildHelper meshBuildHelper = new();

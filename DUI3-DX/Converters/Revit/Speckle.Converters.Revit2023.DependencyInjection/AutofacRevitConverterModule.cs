@@ -30,5 +30,6 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<CachingService>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();
   }
 }
