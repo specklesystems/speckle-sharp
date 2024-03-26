@@ -29,7 +29,6 @@
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
-      "DesktopUI3\\DUI3\\DUI3.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
