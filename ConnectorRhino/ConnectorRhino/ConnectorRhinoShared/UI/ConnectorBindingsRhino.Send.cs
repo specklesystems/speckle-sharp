@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using Rhino;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
 
 namespace SpeckleRhino;
 
@@ -21,7 +19,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 {
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
     converter.SetContextDocument(Doc);
 
     // set converter settings
@@ -253,7 +251,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       objectId = objectId,
       branchName = state.BranchName,
       message = state.CommitMessage ?? $"Sent {objCount} elements from Rhino.",
-      sourceApplication = Utils.RhinoAppName
+      sourceApplication = Utils.GetRhinoHostAppVersion()
     };
 
     if (state.PreviousCommitId != null)

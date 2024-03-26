@@ -35,24 +35,31 @@ public sealed class Column : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(
+              archicadColumn
+            );
             columns.Add(archicadColumn);
             break;
           case Objects.BuiltElements.Column column:
-            var baseLine = (Line)column.baseLine;
-            Objects.BuiltElements.Archicad.ArchicadColumn newColumn =
-              new()
-              {
-                id = column.id,
-                applicationId = column.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(column.level),
-                origoPos = Utils.ScaleToNative(baseLine.start),
-                height = Math.Abs(
-                  Utils.ScaleToNative(baseLine.end.z, baseLine.end.units)
-                    - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units)
-                )
-              };
 
-            columns.Add(newColumn);
+            {
+              if (column.baseLine is Line baseLine)
+              {
+                columns.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadColumn
+                  {
+                    id = column.id,
+                    applicationId = column.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(column.level),
+                    origoPos = Utils.ScaleToNative(baseLine.start),
+                    height = Math.Abs(
+                      Utils.ScaleToNative(baseLine.end.z, baseLine.end.units)
+                        - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units)
+                    )
+                  }
+                );
+              }
+            }
             break;
         }
       }
@@ -63,11 +70,19 @@ public sealed class Column : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetColumnData(elementModels.Select(e => e.applicationId)),
+      new Communication.Commands.GetColumnData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -86,7 +101,7 @@ public sealed class Column : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadColumn column =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadColumn>(jToken);
 
         column.units = Units.Meters;
         column.displayValue = Operations.ModelConverter.MeshesToSpeckle(

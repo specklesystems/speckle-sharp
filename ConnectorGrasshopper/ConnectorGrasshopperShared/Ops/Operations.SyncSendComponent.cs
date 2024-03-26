@@ -13,6 +13,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
@@ -182,7 +183,7 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               {
                 transport = new StreamWrapper(s);
               }
-              catch (Exception e)
+              catch (Exception e) when (!e.IsFatal())
               {
                 // TODO: Check this with team.
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
@@ -209,8 +210,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               {
                 acc = sw.GetAccount().Result;
               }
-              catch (Exception e)
+              catch (SpeckleException e)
               {
+                SpeckleLog.Logger.Warning(e, "Failed to get account from stream wrapper");
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
                 continue;
               }
@@ -248,15 +250,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
           }
 
           // Part 3.1: persist the objects
-          var BaseId = await Operations.Send(
-            objectToSend,
-            CancelToken,
-            transports,
-            UseDefaultCache,
-            y => { },
-            (x, z) => { },
-            true
-          );
+          var BaseId = await Operations
+            .Send(objectToSend, CancelToken, transports, UseDefaultCache, y => { }, (x, z) => { }, true)
+            .ConfigureAwait(false);
 
           var message = messageInput; //.get_FirstItem(true).Value;
           if (message == "")
@@ -309,8 +305,9 @@ public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWr
               );
               prevCommits.Add(wrapper);
             }
-            catch (Exception e)
+            catch (Exception e) when (!e.IsFatal())
             {
+              SpeckleLog.Logger.Warning(e, "Failed to send synchronously");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
               return null;
             }

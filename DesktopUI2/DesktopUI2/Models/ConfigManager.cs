@@ -25,12 +25,11 @@ public static class ConfigManager
       var oldConfig = ConfigStorage.GetObject("config");
       var newConfig = ConfigStorage.GetObject("configDUI");
 
-      if (!string.IsNullOrEmpty(newConfig))
-      {
-        return JsonConvert.DeserializeObject<Config>(newConfig);
-      }
+      Config deserializedConfig = !string.IsNullOrWhiteSpace(newConfig)
+        ? JsonConvert.DeserializeObject<Config>(newConfig)
+        : JsonConvert.DeserializeObject<Config>(oldConfig);
 
-      return JsonConvert.DeserializeObject<Config>(oldConfig);
+      return deserializedConfig;
     }
     catch (Exception e) { }
     return new Config();
@@ -45,5 +44,5 @@ public class Config
   public bool DarkTheme { set; get; }
   public bool OneClickMode { set; get; } = true;
   public bool ShowImportExportAlert { set; get; } = true;
-  public bool UseFe2 { set; get; } = false;
+  public bool UseFe2 { set; get; }
 }

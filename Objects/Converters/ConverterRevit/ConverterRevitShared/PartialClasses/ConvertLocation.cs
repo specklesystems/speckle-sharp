@@ -1,7 +1,6 @@
 using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;

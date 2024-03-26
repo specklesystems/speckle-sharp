@@ -1,6 +1,5 @@
 using System;
 using System.Drawing;
-using System.Linq;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -15,11 +14,6 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
   public GH_SpeckleAccountGoo(Account account)
   {
     m_value = account;
-  }
-
-  public GH_SpeckleAccountGoo(string userId)
-  {
-    m_value = AccountManager.GetAccounts().First(acc => acc.id == userId);
   }
 
   public override bool IsValid => m_value != null;
@@ -38,33 +32,12 @@ public class GH_SpeckleAccountGoo : GH_Goo<Account>
 
   public override bool CastFrom(object source)
   {
-    if (source is GH_String ghString)
-    {
-      try
-      {
-        Value = AccountManager.GetAccounts().First(acc => acc.userInfo.id == ghString.Value);
-        return true;
-      }
-      catch (Exception e) // TODO: Handle this exception instead of ignoring it
-      { }
-    }
-
-    if (source is string userId)
-    {
-      try
-      {
-        Value = AccountManager.GetAccounts().First(acc => acc.id == userId);
-        return true;
-      }
-      catch (Exception e) // TODO: Handle this exception instead of ignoring it
-      { }
-    }
-
     if (source is Account account)
     {
       Value = account;
       return true;
     }
+
     return base.CastFrom(source);
   }
 

@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using FamilyInstance = Objects.BuiltElements.Revit.FamilyInstance;
@@ -201,8 +202,9 @@ public partial class ConverterRevit
     {
       CreateVoids(revitRoof, speckleRoof);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
 

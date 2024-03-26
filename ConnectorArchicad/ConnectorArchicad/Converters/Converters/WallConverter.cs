@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -38,24 +37,25 @@ public sealed class Wall : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(archiWall);
             walls.Add(archiWall);
             break;
           case Objects.BuiltElements.Wall wall:
-            var baseLine = (Line)wall.baseLine;
-
-            ArchicadWall newWall =
-              new()
-              {
-                id = wall.id,
-                applicationId = wall.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(wall.level),
-                startPoint = Utils.ScaleToNative(baseLine.start),
-                endPoint = Utils.ScaleToNative(baseLine.end),
-                height = Utils.ScaleToNative(wall.height, wall.units),
-                flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
-              };
-
-            walls.Add(newWall);
+            if (wall.baseLine is Line baseLine)
+            {
+              walls.Add(
+                new ArchicadWall
+                {
+                  id = wall.id,
+                  applicationId = wall.applicationId,
+                  archicadLevel = Archicad.Converters.Utils.ConvertLevel(wall.level),
+                  startPoint = Utils.ScaleToNative(baseLine.start),
+                  endPoint = Utils.ScaleToNative(baseLine.end),
+                  height = Utils.ScaleToNative(wall.height, wall.units),
+                  flipped = (tc.current is RevitWall revitWall) ? revitWall.flipped : false
+                }
+              );
+            }
             break;
         }
       }
@@ -66,12 +66,20 @@ public sealed class Wall : IConverter
     return result is null ? new List<ApplicationObject>() : result.ToList();
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     var elementModels = elements as ElementModelData[] ?? elements.ToArray();
 
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
+      new Communication.Commands.GetWallData(
+        elementModels.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -90,7 +98,7 @@ public sealed class Wall : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadWall wall =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadWall>(jToken);
 
         wall.units = Units.Meters;
         wall.displayValue = Operations.ModelConverter.MeshesToSpeckle(

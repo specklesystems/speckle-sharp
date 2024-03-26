@@ -5,8 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Speckle.Core.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters;
@@ -34,20 +35,29 @@ public sealed class Floor : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(archiFloor);
             floors.Add(archiFloor);
             break;
           case Objects.BuiltElements.Floor floor:
 
-            Objects.BuiltElements.Archicad.ArchicadFloor newFloor =
-              new()
+            {
+              try
               {
-                id = floor.id,
-                applicationId = floor.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
-                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
-              };
-
-            floors.Add(newFloor);
+                floors.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadFloor
+                  {
+                    id = floor.id,
+                    applicationId = floor.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(floor.level),
+                    shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids)
+                  }
+                );
+              }
+              catch (SpeckleException ex)
+              {
+                SpeckleLog.Logger.Error(ex, "Polycurves conversion failed.");
+              }
+            }
             break;
         }
       }
@@ -60,10 +70,18 @@ public sealed class Floor : IConverter
     ;
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)),
+      new Communication.Commands.GetFloorData(
+        elements.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -82,7 +100,7 @@ public sealed class Floor : IConverter
       {
         // convert between DTOs
         Objects.BuiltElements.Archicad.ArchicadFloor slab =
-          Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(jToken);
+          Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadFloor>(jToken);
 
         slab.units = Units.Meters;
         slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(

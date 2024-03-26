@@ -4,17 +4,11 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{CB85D2B2-9837-40B8-91DB-3C0636B1174D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsUnit", "Tests\TestsUnit.csproj", "{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsIntegration", "IntegrationTests\TestsIntegration.csproj", "{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FF890E88-185B-4A99-9391-6342F22279D0}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		README.md = README.md
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExampleApp", "Examples\ExampleApp.csproj", "{73BBCC3C-E649-4977-A34A-7CF424D638E6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBTransport", "Transports\MongoDBTransport\MongoDBTransport.csproj", "{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}"
 EndProject
@@ -23,6 +17,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "Transports\DiskTransport\DiskTransport.csproj", "{815A9C70-BF5F-4718-AACB-9E50B26F4630}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Unit", "Tests\Speckle.Core.Tests.Unit\Speckle.Core.Tests.Unit.csproj", "{72030F4F-8509-4745-8BF4-01AFEB93EF07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Integration", "Tests\Speckle.Core.Tests.Integration\Speckle.Core.Tests.Integration.csproj", "{51922311-4D42-46DB-BB16-CDEF9337C0BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,18 +32,6 @@ Global
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB85D2B2-9837-40B8-91DB-3C0636B1174D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73BBCC3C-E649-4977-A34A-7CF424D638E6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -54,15 +40,23 @@ Global
 		{815A9C70-BF5F-4718-AACB-9E50B26F4630}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{815A9C70-BF5F-4718-AACB-9E50B26F4630}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{815A9C70-BF5F-4718-AACB-9E50B26F4630}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72030F4F-8509-4745-8BF4-01AFEB93EF07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72030F4F-8509-4745-8BF4-01AFEB93EF07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72030F4F-8509-4745-8BF4-01AFEB93EF07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72030F4F-8509-4745-8BF4-01AFEB93EF07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51922311-4D42-46DB-BB16-CDEF9337C0BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{2EDE05B7-2B21-4C0B-9EA5-3BC7A52315BE} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
-		{4A79F5D2-3B66-43E3-BE33-0BB79FBFDC61} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
 		{4450B0E9-D663-4F13-AF96-6A41B1A3B5C9} = {424ECC59-E693-4678-AFAC-C00F2D8AE735}
 		{815A9C70-BF5F-4718-AACB-9E50B26F4630} = {424ECC59-E693-4678-AFAC-C00F2D8AE735}
+		{72030F4F-8509-4745-8BF4-01AFEB93EF07} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
+		{51922311-4D42-46DB-BB16-CDEF9337C0BF} = {A3E889EB-76D7-4A6E-A3FB-BCAEAC2634FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1378F8F4-B354-4DB6-8052-A1A69B59BC2C}

@@ -1,25 +1,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements.Archicad;
+using ConnectorArchicad.Communication.Commands;
 
 namespace Archicad.Communication.Commands;
 
-sealed internal class GetRoomData : ICommand<IEnumerable<Archicad.Room>>
+sealed internal class GetRoomData : GetDataBase, ICommand<IEnumerable<Archicad.Room>>
 {
-  [JsonObject(MemberSerialization.OptIn)]
-  public sealed class Parameters
-  {
-    [JsonProperty("applicationIds")]
-    private IEnumerable<string> ApplicationIds { get; }
-
-    public Parameters(IEnumerable<string> applicationIds)
-    {
-      ApplicationIds = applicationIds;
-    }
-  }
-
   [JsonObject(MemberSerialization.OptIn)]
   private sealed class Result
   {
@@ -27,16 +14,15 @@ sealed internal class GetRoomData : ICommand<IEnumerable<Archicad.Room>>
     public IEnumerable<Archicad.Room> Rooms { get; private set; }
   }
 
-  private IEnumerable<string> ApplicationIds { get; }
-
-  public GetRoomData(IEnumerable<string> applicationIds)
-  {
-    ApplicationIds = applicationIds;
-  }
+  public GetRoomData(IEnumerable<string> applicationIds, bool sendProperties, bool sendListingParameters)
+    : base(applicationIds, sendProperties, sendListingParameters) { }
 
   public async Task<IEnumerable<Archicad.Room>> Execute()
   {
-    var result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoomData", new Parameters(ApplicationIds));
+    var result = await HttpCommandExecutor.Execute<Parameters, Result>(
+      "GetRoomData",
+      new Parameters(ApplicationIds, SendProperties, SendListingParameters)
+    );
 
     return result.Rooms;
   }

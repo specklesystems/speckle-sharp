@@ -23,7 +23,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(double[] value, string units = null)
+  public Transform(double[] value, string units = Units.None)
   {
     if (value.Length != 16)
     {
@@ -43,7 +43,7 @@ public class Transform : Base
   /// <param name="value"></param>
   /// <param name="units"></param>
   /// <exception cref="SpeckleException"></exception>
-  public Transform(float[] value, string units = null)
+  public Transform(float[] value, string units = Units.None)
   {
     if (value.Length != 16)
     {
@@ -59,7 +59,7 @@ public class Transform : Base
   /// </summary>
   /// <param name="matrix"></param>
   /// <param name="units"></param>
-  public Transform(Matrix4x4 matrix, string units = null)
+  public Transform(Matrix4x4 matrix, string units = Units.None)
   {
     this.matrix = matrix;
     this.units = units;
@@ -107,7 +107,7 @@ public class Transform : Base
   /// <summary>
   /// Units for translation
   /// </summary>
-  public string units { get; set; }
+  public string units { get; set; } = Units.None;
 
   /// <summary>
   /// Decomposes matrix into its scaling, rotation, and translation components
@@ -317,7 +317,12 @@ public class Transform : Base
 
   #region obsolete
 
-  [JsonIgnore, Obsolete("Use the matrix property")]
+  [JsonIgnore, Obsolete("Use the matrix property", true)]
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Performance",
+    "CA1819:Properties should not return arrays",
+    Justification = "Obsolete"
+  )]
   public double[] value
   {
     get => ToArray();
@@ -376,7 +381,7 @@ public class Transform : Base
   /// Transform a single speckle Point
   /// </summary>
   [Obsolete("Use transform method in Point class", true)]
-  public Point ApplyToPoint(Point point)
+  public Point? ApplyToPoint(Point point)
   {
     if (point == null)
     {
@@ -390,18 +395,18 @@ public class Transform : Base
   /// <summary>
   /// Transform a list of three doubles representing a point
   /// </summary>
-  [Obsolete("Use transform method in Point class")]
+  [Obsolete("Use transform method in Point class", true)]
   public List<double> ApplyToPoint(List<double> point)
   {
-    var _point = new Point(point[0], point[1], point[2]);
-    _point.TransformTo(this, out Point transformedPoint);
-    return transformedPoint.ToList();
+    var newPoint = new Point(point[0], point[1], point[2]);
+    newPoint.TransformTo(this, out Point transformed);
+    return transformed.ToList();
   }
 
   /// <summary>
   /// Transform a single speckle Vector
   /// </summary>
-  [Obsolete("Use transform method in Vector class")]
+  [Obsolete("Use transform method in Vector class", true)]
   public Vector ApplyToVector(Vector vector)
   {
     var newCoords = ApplyToVector(new List<double> { vector.x, vector.y, vector.z });
@@ -412,7 +417,7 @@ public class Transform : Base
   /// <summary>
   /// Transform a list of three doubles representing a vector
   /// </summary>
-  [Obsolete("Use transform method in Vector class")]
+  [Obsolete("Use transform method in Vector class", true)]
   public List<double> ApplyToVector(List<double> vector)
   {
     var newPoint = new List<double>();
@@ -429,7 +434,7 @@ public class Transform : Base
   /// Transform a flat list of ICurves. Note that if any of the ICurves does not implement `ITransformable`,
   /// it will not be returned.
   /// </summary>
-  [Obsolete("Use transform method in Curve class")]
+  [Obsolete("Use transform method in Curve class", true)]
   public List<ICurve> ApplyToCurves(List<ICurve> curves, out bool success)
   {
     // TODO: move to curve class

@@ -115,9 +115,9 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
             speckleObj[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
           }
         }
-        catch (Exception e)
+        catch (Exception ex) when (!ex.IsFatal())
         {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
         }
       }
 
@@ -129,7 +129,7 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
 
       return speckleObj;
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       // If we reach this, something happened that we weren't expecting...
       SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());

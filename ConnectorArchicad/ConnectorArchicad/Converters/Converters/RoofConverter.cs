@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Objects.BuiltElements;
-using Speckle.Core.Models;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters;
@@ -36,21 +36,33 @@ public sealed class Roof : IConverter
         switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(archiRoof);
             roofs.Add(archiRoof);
             break;
           case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
+            Archicad.Converters.Utils.ConvertToArchicadDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(archiShell);
             shells.Add(archiShell);
             break;
           case Objects.BuiltElements.Roof roof:
-            roofs.Add(
-              new Objects.BuiltElements.Archicad.ArchicadRoof
+
+            {
+              try
               {
-                id = roof.id,
-                applicationId = roof.applicationId,
-                archicadLevel = Archicad.Converters.Utils.ConvertLevel(roof.level),
-                shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids)
+                roofs.Add(
+                  new Objects.BuiltElements.Archicad.ArchicadRoof
+                  {
+                    id = roof.id,
+                    applicationId = roof.applicationId,
+                    archicadLevel = Archicad.Converters.Utils.ConvertLevel(roof.level),
+                    shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids)
+                  }
+                );
               }
-            );
+              catch (SpeckleException ex)
+              {
+                SpeckleLog.Logger.Error(ex, "Polycurves conversion failed.");
+              }
+            }
             break;
         }
       }
@@ -77,10 +89,18 @@ public sealed class Roof : IConverter
     return result is null ? new List<ApplicationObject>() : result;
   }
 
-  public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+  public async Task<List<Base>> ConvertToSpeckle(
+    IEnumerable<Model.ElementModelData> elements,
+    CancellationToken token,
+    ConversionOptions conversionOptions
+  )
   {
     Speckle.Newtonsoft.Json.Linq.JArray jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)),
+      new Communication.Commands.GetRoofData(
+        elements.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -96,7 +116,7 @@ public sealed class Roof : IConverter
         {
           // convert between DTOs
           Objects.BuiltElements.Archicad.ArchicadRoof roof =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
+            Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadRoof>(jToken);
 
           roof.units = Units.Meters;
           roof.displayValue = Operations.ModelConverter.MeshesToSpeckle(
@@ -118,7 +138,11 @@ public sealed class Roof : IConverter
     }
 
     jArray = await AsyncCommandProcessor.Execute(
-      new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)),
+      new Communication.Commands.GetShellData(
+        elements.Select(e => e.applicationId),
+        conversionOptions.SendProperties,
+        conversionOptions.SendListingParameters
+      ),
       token
     );
 
@@ -134,7 +158,7 @@ public sealed class Roof : IConverter
         {
           // convert between DTOs
           Objects.BuiltElements.Archicad.ArchicadShell shell =
-            Archicad.Converters.Utils.ConvertDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
+            Archicad.Converters.Utils.ConvertToSpeckleDTOs<Objects.BuiltElements.Archicad.ArchicadShell>(jToken);
 
           shell.units = Units.Meters;
           shell.displayValue = Operations.ModelConverter.MeshesToSpeckle(

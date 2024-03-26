@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using DesktopUI2.Models;
+using RevitSharedResources.Extensions.SpeckleExtensions;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorRevit.Storage;
@@ -36,8 +38,9 @@ public static class StreamStateManager
 
       return states;
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       return new List<StreamState>();
     }
   }

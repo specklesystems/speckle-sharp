@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Autodesk.Revit.DB;
-using Objects.Primitive;
 
 namespace ConverterRevitShared.Extensions;
 

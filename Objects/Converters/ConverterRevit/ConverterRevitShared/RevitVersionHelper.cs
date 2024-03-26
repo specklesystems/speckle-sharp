@@ -31,7 +31,7 @@ public static class RevitVersionHelper
   public static double ConvertToInternalUnits(object value, string applicationUnit)
   {
 #if REVIT2020
-    Enum.TryParse(applicationUnit, out DisplayUnitType sourceUnit);
+    _ = Enum.TryParse(applicationUnit, out DisplayUnitType sourceUnit);
     return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(value), sourceUnit);
 #else
     // if a commit is sent in <=2021 and received in 2022+, the application unit will be a different format
@@ -97,7 +97,7 @@ public static class RevitVersionHelper
     {
       return curve.IsClosed;
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       return true;
     }
@@ -123,7 +123,7 @@ public static class RevitVersionHelper
     {
       return curve.IsClosed;
     }
-    catch
+    catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
       return true;
     }

@@ -9,7 +9,7 @@
       "ConnectorAutocadCivil\\ConnectorAutocad2024\\ConnectorAutocad2024.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocadCivil\\ConnectorAutocadCivilShared.shproj",
       "Core\\Core\\Core.csproj",
-      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",

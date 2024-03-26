@@ -26,14 +26,14 @@ public sealed partial class ElementConverterManager
       var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
       return await elementConverter.ConvertToArchicad(elements, token);
     }
+    catch (Exception ex) when (ex is SpeckleException or ArgumentNullException or ObjectDisposedException)
+    {
+      SpeckleLog.Logger.Warning(ex, "Failed to convert element type {elementType}", elementType.ToString());
+      return null;
+    }
     catch (OperationCanceledException)
     {
       throw;
-    }
-    catch (Exception)
-    {
-      SpeckleLog.Logger.Warning("Failed to convert element type {elementType}", elementType.ToString());
-      return null;
     }
   }
 
@@ -67,6 +67,9 @@ public sealed partial class ElementConverterManager
         var dict = convertedElements
           .Where(obj => (!string.IsNullOrEmpty(obj.OriginalId)))
           .ToDictionary(obj => obj.OriginalId, obj => obj);
+
+        progress.Value += convertedElements.Count();
+
         foreach (var contextObject in converter.ContextObjects)
         {
           if (dict.ContainsKey(contextObject.OriginalId))
@@ -91,7 +94,7 @@ public sealed partial class ElementConverterManager
 
     Objects.Converter.Archicad.ConverterArchicad converter = new(conversionOptions);
     List<TraversalContext> flattenObjects = FlattenCommitObject(commitObject, converter);
-
+    progress.Max = flattenObjects.Count;
     converter.SetContextObjects(flattenObjects);
 
     foreach (var applicationObject in converter.ContextObjects)

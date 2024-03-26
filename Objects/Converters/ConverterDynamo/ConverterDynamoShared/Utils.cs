@@ -2,6 +2,7 @@ using Autodesk.DesignScript.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.Core.Logging;
 using DS = Autodesk.DesignScript.Geometry;
 
 namespace Objects.Converter.Dynamo;
@@ -60,7 +61,7 @@ public static class Utils
       var extremesDistance = curve.StartPoint.DistanceTo(curve.EndPoint);
       return Threshold(curve.Length, extremesDistance);
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }
@@ -104,7 +105,7 @@ public static class Utils
         return Threshold(radius, (curve.Length) / (2 * Math.PI));
       }
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }
@@ -152,7 +153,7 @@ public static class Utils
 
       return Threshold(curve.Length, perimeter, 1e-5); //Ellipse perimeter is an approximation
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }
@@ -208,7 +209,7 @@ public static class Utils
         return Threshold(arc.Length, curve.Length);
       }
     }
-    catch (Exception e)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       return false;
     }

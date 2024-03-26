@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive.Linq;
 using Dynamo.Graph.Nodes;
 using Dynamo.Utilities;
 using Newtonsoft.Json;
 using ProtoCore.AST.AssociativeAST;
+using Speckle.ConnectorDynamo.Functions;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 using Account = Speckle.Core.Credentials.Account;
 
 namespace Speckle.ConnectorDynamo.CreateStreamNode;
@@ -146,32 +147,16 @@ public class CreateStream : NodeModel
       CreateEnabled = false;
       SelectedUserId = SelectedAccount.userInfo.id;
 
-      this.Name = "Stream Created";
+      Name = "Stream Created";
 
-      Analytics.TrackEvent(
-        SelectedAccount,
-        Analytics.Events.NodeRun,
-        new Dictionary<string, object>() { { "name", "Stream Create" } }
-      );
+      AnalyticsUtils.TrackNodeRun(SelectedAccount, "Stream Create");
 
       OnNodeModified(true);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
-      //someone improve this pls :)
-      if (ex.InnerException != null && ex.InnerException.InnerException != null)
-      {
-        Error(ex.InnerException.InnerException.Message);
-      }
-
-      if (ex.InnerException != null)
-      {
-        Error(ex.InnerException.Message);
-      }
-      else
-      {
-        Error(ex.Message);
-      }
+      SpeckleLog.Logger.Error(ex, "Failed to create stream");
+      Error("Failed to create stream: " + ex.ToFormattedString());
     }
   }
 

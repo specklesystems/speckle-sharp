@@ -21,6 +21,7 @@ public enum Field
 
 // Question: the benefit of noSQL is the use of unstructured collections of variable documents.
 // Explore storing partially serialized Speckle objects with dynamically generated fields instead of just a content string?
+[Obsolete("This Transport is no longer maintained or routinely tested, use with caution")]
 public class MongoDBTransport : IDisposable, ITransport
 {
   private bool IS_WRITING;

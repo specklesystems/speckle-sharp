@@ -2,8 +2,8 @@ namespace Speckle.ConnectorNavisworks.Other;
 
 internal static class FilterTypes
 {
-  public const string Manual = "manual";
-  public const string Sets = "sets";
-  public const string Clashes = "clashes";
-  public const string Views = "views";
+  public const string MANUAL = "manual";
+  public const string SETS = "sets";
+  public const string CLASHES = "clashes";
+  public const string VIEWS = "views";
 }

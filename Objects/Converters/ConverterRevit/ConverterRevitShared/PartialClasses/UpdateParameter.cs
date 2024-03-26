@@ -1,9 +1,5 @@
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using System.Collections.Generic;
-using System.Linq;
-using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit;

@@ -13,7 +13,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   public override List<string> GetSelectedObjects()
   {
     var objs = new List<string>();
-    var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var Converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
 
     if (Converter == null || Doc == null)
     {
@@ -76,36 +76,22 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
   public override void SelectClientObjects(List<string> objs, bool deselect = false)
   {
-    var isPreview = PreviewConduit != null && PreviewConduit.Enabled ? true : false;
+    var isPreview = PreviewConduit != null && PreviewConduit.Enabled;
 
     foreach (var id in objs)
     {
-      RhinoObject obj = null;
-      try
+      if (Utils.GetGuidFromString(id, out Guid guid))
       {
-        obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
-      }
-      catch
-      {
-        continue; // this was a named view!
-      }
-
-      if (obj != null)
-      {
-        if (deselect)
+        if (Doc.Objects.FindId(guid) is RhinoObject obj)
         {
-          obj.Select(false, true, false, true, true, true);
+          obj.Select(!deselect, true, true, true, true, true);
         }
-        else
+        else if (isPreview)
         {
-          obj.Select(true, true, true, true, true, true);
+          PreviewConduit.Enabled = false;
+          PreviewConduit.SelectPreviewObject(id, deselect);
+          PreviewConduit.Enabled = true;
         }
-      }
-      else if (isPreview)
-      {
-        PreviewConduit.Enabled = false;
-        PreviewConduit.SelectPreviewObject(id, deselect);
-        PreviewConduit.Enabled = true;
       }
     }
 

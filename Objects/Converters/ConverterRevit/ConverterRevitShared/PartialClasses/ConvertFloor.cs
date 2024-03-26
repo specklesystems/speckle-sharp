@@ -9,6 +9,9 @@ using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
 using OO = Objects.Other;
+#if REVIT2020 || REVIT2021
+using RevitSharedResources.Extensions.SpeckleExtensions;
+#endif
 
 namespace Objects.Converter.Revit;
 
@@ -151,8 +154,9 @@ public partial class ConverterRevit
     {
       CreateVoids(revitFloor, speckleFloor);
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
+      SpeckleLog.Logger.LogDefaultError(ex);
       appObj.Update(logItem: $"Could not create openings: {ex.Message}");
     }
 #endif

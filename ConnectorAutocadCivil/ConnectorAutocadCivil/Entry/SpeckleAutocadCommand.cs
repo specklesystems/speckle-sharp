@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-using Autodesk.AutoCAD.ApplicationServices;
-
 #if ADVANCESTEEL
 using Autodesk.AdvanceSteel.Runtime;
 #else
@@ -18,10 +16,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 
-using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
+using Speckle.Core.Logging;
+using Exception = System.Exception;
 
 #if ADVANCESTEEL
 [assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
@@ -66,11 +65,16 @@ public class SpeckleAutocadCommand
     BuildAvaloniaApp().Start(AppMain, null);
   }
 
+  [SuppressMessage(
+    "Design",
+    "CA1031:Do not catch general exception types",
+    Justification = "Is top level plugin catch"
+  )]
   public static void CreateOrFocusSpeckle(bool showWindow = true)
   {
     if (MainWindow == null)
     {
-      var viewModel = new MainViewModel(Bindings);
+      MainViewModel viewModel = new(Bindings);
       MainWindow = new MainWindow { DataContext = viewModel };
     }
 
@@ -97,7 +101,10 @@ public class SpeckleAutocadCommand
         }
       }
     }
-    catch { }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
+    }
   }
 
   private static void AppMain(Avalonia.Application app, string[] args)
@@ -117,7 +124,10 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
+    catch (System.Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Community: {exceptionMessage}");
+    }
   }
 
   [CommandMethod("SpeckleTutorials", CommandFlags.ActionMacro)]
@@ -132,7 +142,10 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
+    catch (System.Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Tutorials: {exceptionMessage}");
+    }
   }
 
   [CommandMethod("SpeckleDocs", CommandFlags.ActionMacro)]
@@ -147,38 +160,9 @@ public class SpeckleAutocadCommand
         true
       );
     }
-    catch { }
-  }
-}
-
-/*
-[CommandMethod("SpeckleSchema", CommandFlags.UsePickSet | CommandFlags.Transparent)]
-public static void SetSchema()
-{
-  var ids = new List<ObjectId>();
-  PromptSelectionResult selection = Doc.Editor.GetSelection();
-  if (selection.Status == PromptStatus.OK)
-    ids = selection.Value.GetObjectIds().ToList();
-  foreach (var id in ids)
-  {
-    // decide schema here, assumption or user input.
-    string schema = "";
-    switch (id.ObjectClass.DxfName)
+    catch (System.Exception ex) when (!ex.IsFatal())
     {
-      case "LINE":
-        schema = "Column";
-        break;
-    }
-
-    // add schema to object XData
-    using (Transaction tr = Doc.TransactionManager.StartTransaction())
-    {
-      DBObject obj = tr.GetObject(id, OpenMode.ForWrite);
-      if (obj.XData == null)
-        obj.XData = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
-      else
-        obj.XData.Add(new TypedValue(Convert.ToInt32(DxfCode.Text), schema));
+      SpeckleLog.Logger.Error(ex, "Could not execute opening browser link for Speckle Docs: {exceptionMessage}");
     }
   }
 }
-*/

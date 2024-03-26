@@ -4,6 +4,7 @@ using DesktopUI2.Models;
 using Objects.Converter.Revit;
 using RevitSharedResources.Models;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -190,9 +191,9 @@ public class SpeckleConversionTest
           {
             res = converter.ConvertToNative(el);
           }
-          catch (Exception e)
+          catch (Exception ex) when (!ex.IsFatal())
           {
-            converter.Report.LogConversionError(new Exception(e.Message, e));
+            converter.Report.LogConversionError(ex);
           }
 
           if (res is List<ApplicationObject> apls)

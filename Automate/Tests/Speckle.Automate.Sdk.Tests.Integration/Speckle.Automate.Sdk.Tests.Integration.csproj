@@ -7,7 +7,10 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <NoWarn>$(NoWarn);CA2007</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Core\IntegrationTests\TestsIntegration.csproj" />
+      <ProjectReference Include="..\..\..\Core\Tests\Speckle.Core.Tests.Integration\Speckle.Core.Tests.Integration.csproj" />
       <ProjectReference Include="..\..\Speckle.Automate.Sdk\Speckle.Automate.Sdk.csproj" />
     </ItemGroup>
 

@@ -4,7 +4,6 @@ using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 
@@ -57,7 +56,7 @@ public partial class ConverterRevit
     {
       if (level != null)
       {
-        level = GetLevelByName(speckleRevitBeam.level.name);
+        level = GetLevelByName(speckleRevitBeam.level?.name);
       }
     }
 
@@ -95,8 +94,9 @@ public partial class ConverterRevit
         }
         isUpdate = true;
       }
-      catch
+      catch (Autodesk.Revit.Exceptions.ApplicationException)
       {
+        appObj.Update(logItem: "Unable to update element. Creating a new element instead");
         //something went wrong, re-create it
       }
     }

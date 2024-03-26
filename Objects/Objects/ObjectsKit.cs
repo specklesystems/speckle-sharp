@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +15,7 @@ namespace Objects;
 /// </summary>
 public class ObjectsKit : ISpeckleKit
 {
-  private static string? _objectsFolder;
+  private static string? s_objectsFolder;
 
   private readonly Dictionary<string, Type> _loadedConverters = new();
 
@@ -28,9 +27,9 @@ public class ObjectsKit : ISpeckleKit
   /// </summary>
   public static string ObjectsFolder
   {
-    get => _objectsFolder ??= SpecklePathProvider.ObjectsFolderPath;
+    get => s_objectsFolder ??= SpecklePathProvider.ObjectsFolderPath;
     [Obsolete("Use " + nameof(SpecklePathProvider.OverrideObjectsFolderName), true)]
-    set => _objectsFolder = value;
+    set => s_objectsFolder = value;
   }
 
   /// <inheritdoc/>
@@ -128,12 +127,12 @@ public class ObjectsKit : ISpeckleKit
   public List<string> GetAvailableConverters()
   {
     var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-    var allConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*.dll");
+    var allConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*.dll").ToArray();
 
     //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
-    if (!allConverters.Any())
+    if (allConverters.Length == 0)
     {
-      allConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*.dll");
+      allConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*.dll").ToArray();
     }
 
     //only get assemblies matching the Major and Minor version of Objects

@@ -1,9 +1,7 @@
 using ConnectorCSIShared.Util;
 using DesktopUI2;
 using DesktopUI2.Models.Settings;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Speckle.ConnectorCSI.UI;
 

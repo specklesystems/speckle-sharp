@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
 using DesktopUI2;
-using DesktopUI2.Models;
 using Speckle.Core.Models;
-using Speckle.ConnectorCSI.Util;
-using System.Timers;
 using CSiAPIv1;
 using Speckle.Core.Kits;
-using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI;
 

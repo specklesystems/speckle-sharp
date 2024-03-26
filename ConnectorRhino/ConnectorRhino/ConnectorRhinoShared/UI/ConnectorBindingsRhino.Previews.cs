@@ -8,6 +8,7 @@ using DesktopUI2.ViewModels;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace SpeckleRhino;
@@ -22,7 +23,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
   {
     // report and converter
     progress.Report = new ProgressReport();
-    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+    var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
 
     converter.SetContextDocument(Doc);
 
@@ -111,7 +112,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     if (commit.id != SelectedReceiveCommit)
     {
       // check for converter
-      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.GetRhinoHostAppVersion());
       converter.SetContextDocument(Doc);
 
       // set converter settings
@@ -195,16 +196,15 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
 
     // create display conduit
-    try
+    PreviewConduit = new PreviewConduit(Preview);
+    if (PreviewConduit.Preview.Count == 0)
     {
-      PreviewConduit = new PreviewConduit(Preview);
-    }
-    catch (Exception e)
-    {
-      progress.Report.OperationErrors.Add(new Exception($"Could not create preview: {e.Message}"));
+      SpeckleLog.Logger.Information("No previewable geometry was found.");
+      progress.Report.OperationErrors.Add(new Exception($"No previewable objects found."));
       ResetDocument();
       return null;
     }
+
     PreviewConduit.Enabled = true;
     Doc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(PreviewConduit.bbox);
     Doc.Views.Redraw();

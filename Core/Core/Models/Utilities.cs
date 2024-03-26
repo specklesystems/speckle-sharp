@@ -1,17 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
-using System.Text;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Models;
 
-[SuppressMessage("Security", "CA5351:Do Not Use Broken Cryptographic Algorithms")]
 public static class Utilities
 {
   public enum HashingFunctions
@@ -20,78 +19,36 @@ public static class Utilities
     MD5
   }
 
-  public static int HashLength { get; } = 32;
+  public static int HashLength => 32;
 
   /// <summary>
   /// Wrapper method around hashing functions..
   /// </summary>
   /// <param name="input"></param>
   /// <returns></returns>
+  [Pure]
   public static string HashString(string input, HashingFunctions func = HashingFunctions.SHA256)
   {
-    switch (func)
+    return func switch
     {
-      case HashingFunctions.SHA256:
-        return Sha256(input).Substring(0, HashLength);
-
-      case HashingFunctions.MD5:
-      default:
-        return Md5(input).Substring(0, HashLength);
-    }
+      HashingFunctions.SHA256 => Crypt.Sha256(input, length: HashLength),
+      HashingFunctions.MD5 => Crypt.Md5(input, length: HashLength),
+      _ => throw new ArgumentOutOfRangeException(nameof(func), func, "Unrecognised value"),
+    };
   }
 
+  [SuppressMessage("Security", "CA5351:Do Not Use Broken Cryptographic Algorithms")]
   public static string HashFile(string filePath, HashingFunctions func = HashingFunctions.SHA256)
   {
-    HashAlgorithm hashAlgorithm;
-    if (func == HashingFunctions.MD5)
-    {
-      hashAlgorithm = MD5.Create();
-    }
-    else
-    {
-      hashAlgorithm = SHA256.Create();
-    }
+    using HashAlgorithm hashAlgorithm = func == HashingFunctions.MD5 ? MD5.Create() : SHA256.Create();
 
-    using (var stream = File.OpenRead(filePath))
-    {
-      var hash = hashAlgorithm.ComputeHash(stream);
-      hashAlgorithm.Dispose();
-      return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
-    }
+    using var stream = File.OpenRead(filePath);
+
+    var hash = hashAlgorithm.ComputeHash(stream);
+    return BitConverter.ToString(hash, 0, HashLength).Replace("-", "").ToLowerInvariant();
   }
 
-  private static string Sha256(string input)
-  {
-    using MemoryStream ms = new();
-
-    new BinaryFormatter().Serialize(ms, input);
-    using SHA256 sha = SHA256.Create();
-
-    var hash = sha.ComputeHash(ms.ToArray());
-    StringBuilder sb = new();
-    foreach (byte b in hash)
-    {
-      sb.Append(b.ToString("X2"));
-    }
-
-    return sb.ToString().ToLower();
-  }
-
-  private static string Md5(string input)
-  {
-    using MD5 md5 = MD5.Create();
-    byte[] inputBytes = Encoding.ASCII.GetBytes(input.ToLowerInvariant());
-    byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-    StringBuilder sb = new();
-    for (int i = 0; i < hashBytes.Length; i++)
-    {
-      sb.Append(hashBytes[i].ToString("X2"));
-    }
-
-    return sb.ToString().ToLower();
-  }
-
+  [Pure]
   public static bool IsSimpleType(this Type type)
   {
     return type.IsPrimitive
@@ -119,7 +76,7 @@ public static class Utilities
     object o,
     Type t,
     bool getParentProps = false,
-    IReadOnlyList<string> ignore = null
+    IReadOnlyList<string>? ignore = null
   )
   {
     var appProps = new Base();
@@ -135,7 +92,7 @@ public static class Utilities
           continue;
         }
 
-        if (IsMeaningfulProp(propInfo, o, out object propValue))
+        if (IsMeaningfulProp(propInfo, o, out object? propValue))
         {
           appProps[propInfo.Name] = propValue;
         }
@@ -154,14 +111,14 @@ public static class Utilities
             continue;
           }
 
-          if (IsMeaningfulProp(propInfo, o, out object propValue))
+          if (IsMeaningfulProp(propInfo, o, out object? propValue))
           {
             appProps[propInfo.Name] = propValue;
           }
         }
       }
     }
-    catch (Exception ex)
+    catch (Exception ex) when (!ex.IsFatal())
     {
       SpeckleLog.Logger.Warning(ex, "Failed to get application properties");
     }
@@ -169,7 +126,7 @@ public static class Utilities
     return appProps;
   }
 
-  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object value)
+  private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object? value)
   {
     value = propInfo.GetValue(o);
     if (propInfo.GetSetMethod() != null && value != null)
@@ -199,6 +156,7 @@ public static class Utilities
   /// <param name="o"></param>
   /// <param name="t"></param>
   /// <param name="props">The base class object representing application props</param>
+  [Obsolete("Unused")]
   public static void SetApplicationProps(object o, Type t, Base props)
   {
     var propNames = props.GetDynamicMembers();
@@ -232,7 +190,7 @@ public static class Utilities
               new[] { value }
             );
           }
-          catch { }
+          catch (Exception ex) when (!ex.IsFatal()) { }
         }
       }
     }
@@ -245,6 +203,7 @@ public static class Utilities
   /// <param name="list"></param>
   /// <param name="chunkSize"></param>
   /// <returns></returns>
+  [Obsolete("Unused")]
   public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
   {
     for (int i = 0; i < list.Count; i += chunkSize)
@@ -252,21 +211,4 @@ public static class Utilities
       yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
     }
   }
-
-  #region Deprecated Members
-  [Obsolete("Use " + nameof(HashString), true)]
-  [SuppressMessage("ReSharper", "InconsistentNaming")]
-  public static string hashString(string input, HashingFunctions func = HashingFunctions.SHA256)
-  {
-    return HashString(input, func);
-  }
-
-  [Obsolete("Use " + nameof(HashFile), true)]
-  [SuppressMessage("ReSharper", "InconsistentNaming")]
-  public static string hashFile(string filePath, HashingFunctions func = HashingFunctions.SHA256)
-  {
-    return hashString(filePath, func);
-  }
-
-  #endregion
 }

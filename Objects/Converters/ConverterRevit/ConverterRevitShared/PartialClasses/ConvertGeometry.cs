@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.DoubleNumerics;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.PointClouds;
-using Objects.Converters.DxfConverter;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
@@ -23,7 +20,6 @@ using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
-using Transform = Objects.Other.Transform;
 using Units = Speckle.Core.Kits.Units;
 using Vector = Objects.Geometry.Vector;
 
@@ -706,7 +702,7 @@ public partial class ConverterRevit
     {
       tsb.Build();
     }
-    catch (Exception e)
+    catch (Autodesk.Revit.Exceptions.ApplicationException e)
     {
       Report.LogConversionError(e);
       return null;
@@ -1263,7 +1259,12 @@ public partial class ConverterRevit
             // Update trim indices with new item.
             // TODO: Make this better.
             var trimIndices = sEdge.TrimIndices.ToList();
-            trimIndices.Append(sTrimIndex); //TODO Append is a pure function and the return is unused
+
+            // suppressing the warning even though it is completely valid.
+            // reason we are just suppressing is because this entire class is broken anyways
+#pragma warning disable CA1806 // Do not ignore method results
+            trimIndices.Append(sTrimIndex);
+#pragma warning restore CA1806 // Do not ignore method results
             sEdge.TrimIndices = trimIndices.ToArray();
           }
         }
@@ -1426,7 +1427,7 @@ public partial class ConverterRevit
       }
       revitDs.SetShape(new List<GeometryObject> { solid });
     }
-    catch (Exception e)
+    catch (SpeckleException)
     {
       notes.Add($"Failed to convert brep, using display value meshes instead.");
       var meshes = brep.displayValue.SelectMany(m => MeshToNative(m));

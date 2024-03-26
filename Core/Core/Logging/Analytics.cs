@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,8 +70,8 @@ public static class Analytics
     MappingsAction
   }
 
-  private const string MixpanelToken = "acd87c5a50b56df91a795e999812a3a4";
-  private const string MixpanelServer = "https://analytics.speckle.systems";
+  private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";
+  private const string MIXPANEL_SERVER = "https://analytics.speckle.systems";
 
   /// <summary>
   /// Cached email
@@ -81,6 +82,17 @@ public static class Analytics
   /// Cached server URL
   /// </summary>
   private static string LastServer { get; set; }
+
+  /// <summary>
+  /// <see langword="false"/> when the DEBUG pre-processor directive is <see langword="true"/>, <see langword="false"/> otherwise
+  /// </summary>
+  /// <remarks>This must be kept as a computed property, not a compile time const</remarks>
+  internal static bool IsReleaseMode =>
+#if DEBUG
+    false;
+#else
+    true;
+#endif
 
   /// <summary>
   /// Tracks an event without specifying the email and server.
@@ -97,8 +109,8 @@ public static class Analytics
     bool isAction = true
   )
   {
-    string email = "";
-    string server = "";
+    string email;
+    string server;
 
     if (LastEmail != null && LastServer != null && LastServer != "no-account-server")
     {
@@ -176,12 +188,13 @@ public static class Analytics
     LastEmail = hashedEmail;
     LastServer = hashedServer;
 
-#if DEBUG
-    //only track in prod
-    return;
-#endif
+    if (!IsReleaseMode)
+    {
+      //only track in prod
+      return;
+    }
 
-    Task.Run(() =>
+    Task.Run(async () =>
     {
       try
       {
@@ -190,7 +203,7 @@ public static class Analytics
         {
           { "distinct_id", hashedEmail },
           { "server_id", hashedServer },
-          { "token", MixpanelToken },
+          { "token", MIXPANEL_TOKEN },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
           {
@@ -208,18 +221,23 @@ public static class Analytics
 
         if (customProperties != null)
         {
-          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          foreach (KeyValuePair<string, object> customProp in customProperties)
+          {
+            properties[customProp.Key] = customProp.Value;
+          }
         }
 
         string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-        HttpClient client = Http.GetHttpProxyClient();
+
+        using HttpClient client = new();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MixpanelServer + "/track?ip=1", query);
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/track?ip=1", query).ConfigureAwait(false);
+        res.EnsureSuccessStatusCode();
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger
           .ForContext("eventName", eventName.ToString())
@@ -231,13 +249,13 @@ public static class Analytics
 
   internal static void AddConnectorToProfile(string hashedEmail, string connector)
   {
-    Task.Run(() =>
+    Task.Run(async () =>
     {
       try
       {
         var data = new Dictionary<string, object>
         {
-          { "$token", MixpanelToken },
+          { "$token", MIXPANEL_TOKEN },
           { "$distinct_id", hashedEmail },
           {
             "$union",
@@ -257,12 +275,13 @@ public static class Analytics
         string json = JsonConvert.SerializeObject(data);
 
         var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-        HttpClient client = Http.GetHttpProxyClient();
+        using HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-        client.PostAsync(MixpanelServer + "/engage#profile-union", query);
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/engage#profile-union", query).ConfigureAwait(false);
+        res.EnsureSuccessStatusCode();
       }
-      catch (Exception ex)
+      catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed add connector to profile");
       }

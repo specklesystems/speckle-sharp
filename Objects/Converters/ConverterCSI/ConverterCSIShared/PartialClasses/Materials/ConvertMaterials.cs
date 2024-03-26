@@ -10,7 +10,7 @@ public partial class ConverterCSI
   {
     material = material ?? new StructuralMaterial("undefined", Structural.MaterialType.Other, null, null, null);
     int numbMaterial = 0;
-    string[] materials = new string[] { };
+    string[] materials = System.Array.Empty<string>();
     Model.PropMaterial.GetNameList(ref numbMaterial, ref materials);
 
     if (materials.Contains(material.name))

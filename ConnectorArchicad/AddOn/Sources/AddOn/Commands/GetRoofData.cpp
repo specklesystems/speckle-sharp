@@ -1,4 +1,6 @@
 #include "GetRoofData.hpp"
+#include "APIMigrationHelper.hpp"
+#include "CommandHelpers.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -29,11 +31,6 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	// quantities
 	API_ElementQuantity quantity = {};
 	API_Quantities quantities = {};
@@ -43,7 +40,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	ACAPI_ELEMENT_QUANTITY_MASK_SET (quantityMask, roof, volume);
 
 	quantities.elements = &quantity;
-	err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
+	GSErrCode err = ACAPI_Element_GetQuantities (element.roof.head.guid, nullptr, &quantities, &quantityMask);
 	if (err != NoError)
 		return err;
 
@@ -174,15 +171,8 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Roof::SectContLtype, GS::UniString{attrib.header.name});
 
-	// Override cut fill pen
-	if (element.roof.shellBase.penOverride.overrideCutFillPen) {
-		os.Add (Roof::CutFillPen, element.roof.shellBase.penOverride.cutFillPen);
-	}
-
-	// Override cut fill backgound pen
-	if (element.roof.shellBase.penOverride.overrideCutFillBackgroundPen) {
-		os.Add (Roof::CutFillBackgroundPen, element.roof.shellBase.penOverride.cutFillBackgroundPen);
-	}
+	// Override cut fill pen and background cut fill pen
+	CommandHelpers::GetCutfillPens (element.roof.shellBase, os, Roof::CutFillPen, Roof::CutFillBackgroundPen);
 
 	// Outlines
 
@@ -243,10 +233,10 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 
 	// Overridden materials
 	int countOverriddenMaterial = 0;
-	if (element.roof.shellBase.topMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.roof.shellBase.topMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.roof.shellBase.topMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.roof.shellBase.topMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -254,10 +244,10 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 		os.Add (Roof::TopMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.roof.shellBase.sidMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.roof.shellBase.sidMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.roof.shellBase.sidMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.roof.shellBase.sidMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;
@@ -265,10 +255,10 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 		os.Add (Roof::SideMat, GS::UniString{attribute.header.name});
 	}
 
-	if (element.roof.shellBase.botMat.overridden) {
+	if (IsAPIOverriddenAttributeOverridden (element.roof.shellBase.botMat)) {
 		BNZeroMemory (&attribute, sizeof (API_Attribute));
 		attribute.header.typeID = API_MaterialID;
-		attribute.header.index = element.roof.shellBase.botMat.attributeIndex;
+		attribute.header.index = GetAPIOverriddenAttribute (element.roof.shellBase.botMat);
 
 		if (NoError == ACAPI_Attribute_Get (&attribute))
 			countOverriddenMaterial = countOverriddenMaterial + 1;

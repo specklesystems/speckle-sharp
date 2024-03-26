@@ -1,7 +1,6 @@
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
 using Speckle.ConnectorCSI.Util;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -67,7 +66,7 @@ public partial class ConnectorBindingsCSI : ConnectorBindings
         );
       }
 
-      string[] groupNames = new string[0];
+      string[] groupNames = System.Array.Empty<string>();
       int numNames = 0;
       Model.GroupDef.GetNameList(ref numNames, ref groupNames);
       if (groupNames.Any())

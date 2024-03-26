@@ -12,7 +12,7 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <UseWpf>true</UseWpf>
-    <DefineConstants>$(DefineConstants);RHINO6</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO6;RHINO6_OR_GREATER</DefineConstants>
     <RhinoMacLauncher>/Applications/Rhinoceros.app</RhinoMacLauncher>
   </PropertyGroup>
 

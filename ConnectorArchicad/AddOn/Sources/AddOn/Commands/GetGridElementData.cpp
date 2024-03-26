@@ -29,11 +29,6 @@ GS::ErrCode	GetGridElementData::SerializeElementType (const API_Element& element
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
-	GS::ErrCode err = NoError;
-	err = GetDataCommand::SerializeElementType (element, memo, os);
-	if (NoError != err)
-		return err;
-
 	GS::UniString markerText;
 	double angle = element.object.angle;
 	double length = .0;

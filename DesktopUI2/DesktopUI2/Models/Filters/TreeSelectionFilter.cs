@@ -95,7 +95,7 @@ public class TreeNode : DynamicObject
 
   // For applications that record the pointer as successive indexes
   [JsonProperty("Indices")]
-  public int[] Indices { get; set; } = { };
+  public int[] Indices { get; set; } = Array.Empty<int>();
 
   // For applications that record the pointer as a hash
   [JsonProperty("Hash")]

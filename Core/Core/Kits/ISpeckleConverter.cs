@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using Speckle.Core.Models;
 
@@ -23,37 +24,41 @@ public interface ISpeckleConverter
   /// <summary>
   /// Converts a native object to a Speckle one
   /// </summary>
-  /// <param name="object">Native object to convert</param>
+  /// <param name="value">Native object to convert</param>
   /// <returns></returns>
-  public Base ConvertToSpeckle(object @object);
+  /// <exception cref="System.Exception"></exception>
+  public Base ConvertToSpeckle(object value);
 
   /// <summary>
   /// Converts a list of objects to Speckle.
   /// </summary>
-  /// <param name="objects"></param>
+  /// <param name="values"></param>
   /// <returns></returns>
-  public List<Base> ConvertToSpeckle(List<object> objects);
+  /// <exception cref="System.Exception"></exception>
+  public List<Base> ConvertToSpeckle(List<object> values);
 
   /// <summary>
   /// Checks if it can convert a native object to a Speckle one
   /// </summary>
-  /// <param name="object">Native object to convert</param>
+  /// <param name="value">Native object to convert</param>
   /// <returns></returns>
-  public bool CanConvertToSpeckle(object @object);
+  public bool CanConvertToSpeckle(object value);
 
   /// <summary>
   /// Converts a Speckle object to a native one
   /// </summary>
-  /// <param name="object">Speckle object to convert</param>
+  /// <param name="value">Speckle object to convert</param>
   /// <returns></returns>
-  public object ConvertToNative(Base @object);
+  /// <exception cref="System.Exception"></exception>
+  public object ConvertToNative(Base value);
 
   /// <summary>
   /// Converts a list of Speckle objects to a native ones.
   /// </summary>
-  /// <param name="objects"></param>
+  /// <param name="values"></param>
   /// <returns></returns>
-  public List<object> ConvertToNative(List<Base> objects);
+  /// <exception cref="System.Exception"></exception>
+  public List<object> ConvertToNative(List<Base> values);
 
   /// <summary>
   /// Converts a given speckle objects as a generic native object.
@@ -68,16 +73,16 @@ public interface ISpeckleConverter
   /// In this case, deciding which to use is dependent on each connector developer.
   /// Preferably, <see cref="ConvertToNativeDisplayable"/> should be used as a fallback to the <see cref="ConvertToNative(Speckle.Core.Models.Base)"/> logic.
   /// </remarks>
-  /// <param name="object">Speckle object to convert</param>
-  /// <returns>The native object that resulted after converting the input <paramref name="object"/></returns>
-  public object ConvertToNativeDisplayable(Base @object);
+  /// <param name="value">Speckle object to convert</param>
+  /// <returns>The native object that resulted after converting the input <paramref name="value"/></returns>
+  public object ConvertToNativeDisplayable(Base value);
 
   /// <summary>
   /// Checks if it can convert a Speckle object to a native one
   /// </summary>
-  /// <param name="object">Speckle object to convert</param>
+  /// <param name="value">Speckle object to convert</param>
   /// <returns></returns>
-  public bool CanConvertToNative(Base @object);
+  public bool CanConvertToNative(Base value);
 
   /// <summary>
   /// Checks to verify if a given object is: 1) displayable and  2) can be supported for conversion to the native application.
@@ -89,9 +94,9 @@ public interface ISpeckleConverter
   /// Preferably, <see cref="CanConvertToNativeDisplayable"/> should be used as a fallback to the <see cref="CanConvertToNative"/> logic.
   /// Objects found in the 'displayValue' property are assumed to be universally convertible by all converters and the viewer, but are not guaranteed to be so.
   /// </remarks>
-  /// <param name="object">Speckle object to convert</param>
+  /// <param name="value">Speckle object to convert</param>
   /// <returns>True if the object is "displayable" and the converter supports native conversion of the given speckle object in particular.</returns>
-  public bool CanConvertToNativeDisplayable(Base @object);
+  public bool CanConvertToNativeDisplayable(Base value);
 
   /// <summary>
   /// Returns a list of applications serviced by this converter

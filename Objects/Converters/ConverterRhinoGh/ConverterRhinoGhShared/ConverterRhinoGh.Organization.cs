@@ -1,6 +1,4 @@
-using System;
 using System.Drawing;
-using Objects.Organization;
 using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
@@ -35,26 +33,19 @@ public partial class ConverterRhinoGh
     }
     Layer MakeLayer(string name, Layer parentLayer = null)
     {
-      try
+      Layer newLayer = new() { Name = name };
+      if (parentLayer != null)
       {
-        Layer newLayer = new() { Name = name };
-        if (parentLayer != null)
-        {
-          newLayer.ParentLayerId = parentLayer.Id;
-        }
-
-        int newIndex = Doc.Layers.Add(newLayer);
-        if (newIndex < 0)
-        {
-          return null;
-        }
-
-        return Doc.Layers.FindIndex(newIndex);
+        newLayer.ParentLayerId = parentLayer.Id;
       }
-      catch (Exception e)
+
+      int newIndex = Doc.Layers.Add(newLayer);
+      if (newIndex < 0)
       {
         return null;
       }
+
+      return Doc.Layers.FindIndex(newIndex);
     }
     #endregion
 
@@ -62,14 +53,14 @@ public partial class ConverterRhinoGh
     {
       applicationId = collection.applicationId
     };
-    Layer layer = null;
-    var status = ApplicationObject.State.Unknown;
 
     // see if this layer already exists in the doc
-    var layerPath = RemoveInvalidRhinoChars(collection["path"] as string);
+    var layerPath = MakeValidPath(collection["path"] as string);
     Layer existingLayer = GetLayer(layerPath);
 
     // update this layer if it exists & receive mode is on update
+    Layer layer;
+    ApplicationObject.State status;
     if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
     {
       layer = existingLayer;
