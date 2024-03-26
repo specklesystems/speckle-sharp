@@ -1,6 +1,5 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.HostApp;
-using Speckle.Connectors.Autocad.Filters;
 using Speckle.Connectors.Autocad.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
