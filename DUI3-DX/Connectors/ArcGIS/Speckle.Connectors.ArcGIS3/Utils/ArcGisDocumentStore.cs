@@ -8,7 +8,7 @@ public class ArcGISDocumentStore : DocumentModelStore
   public ArcGISDocumentStore(JsonSerializerSettings serializerOption)
     : base(serializerOption)
   {
-    // Subscribe here document related events like OnSave, OnClose, OnOpen etc...
+    // POC: Subscribe here document related events like OnSave, OnClose, OnOpen etc...
   }
 
   public override void WriteToFile()

@@ -275,7 +275,7 @@ public class BrowserBridge : IBridge
 
   public void OpenUrl(string url)
   {
-    Process.Start(url);
+    Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
   }
 
   public void Send(string eventName)
