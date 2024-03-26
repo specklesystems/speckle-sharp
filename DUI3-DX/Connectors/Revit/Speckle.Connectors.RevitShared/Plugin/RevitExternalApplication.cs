@@ -75,7 +75,7 @@ internal class RevitExternalApplication : IExternalApplication
 
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    containerBuilder.RegisterRawConversions();
   }
 
   public Result OnShutdown(UIControlledApplication application)

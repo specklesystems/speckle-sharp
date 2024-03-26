@@ -9,9 +9,9 @@ namespace Speckle.Converters.RevitShared;
 // POC: maybe possible to restrict the access so this cannot be created directly?
 public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 {
-  private readonly IIndex<string, IHostObjectToSpeckleConversion> _hostObjectConversions;
+  private readonly IIndex<Type, IHostObjectToSpeckleConversion> _hostObjectConversions;
 
-  public RevitConverterToSpeckle(IIndex<string, IHostObjectToSpeckleConversion> hostObjectConversions)
+  public RevitConverterToSpeckle(IIndex<Type, IHostObjectToSpeckleConversion> hostObjectConversions)
   {
     _hostObjectConversions = hostObjectConversions;
   }
@@ -33,7 +33,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 
   public IHostObjectToSpeckleConversion? RetrieveObjectConversion(Type objectType)
   {
-    if (_hostObjectConversions.TryGetValue(objectType.Name, out var conversion))
+    if (_hostObjectConversions.TryGetValue(objectType, out var conversion))
     {
       return conversion;
     }
