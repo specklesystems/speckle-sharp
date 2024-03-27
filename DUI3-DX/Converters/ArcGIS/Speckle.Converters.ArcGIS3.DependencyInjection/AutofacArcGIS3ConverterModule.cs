@@ -12,7 +12,7 @@ public class AutofacArcGISConverterModule : Module
   protected override void Load(ContainerBuilder builder)
   {
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>();
+    builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
 
     // factory for conversions
     builder

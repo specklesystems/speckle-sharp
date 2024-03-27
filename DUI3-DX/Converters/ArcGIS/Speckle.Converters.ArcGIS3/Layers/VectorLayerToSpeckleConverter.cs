@@ -1,15 +1,13 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Objects.Geometry;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
-using System.Drawing;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
+[NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
   private readonly IRawConversion<Row, PointElement> _pointElementConverter;

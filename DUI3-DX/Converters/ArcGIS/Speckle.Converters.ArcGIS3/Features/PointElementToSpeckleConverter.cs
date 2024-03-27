@@ -4,10 +4,11 @@ using Speckle.Core.Models;
 using Objects.Geometry;
 using Objects.GIS;
 using ArcGIS.Core.Data;
-using Objects.BuiltElements.TeklaStructures;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
+[NameAndRankValue(nameof(Row), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointElementToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Row, PointElement>
 {
   private readonly IRawConversion<MapPoint, Point> _pointConverter;
@@ -19,16 +20,16 @@ public class PointElementToSpeckleConverter : IHostObjectToSpeckleConversion, IR
 
   public Base Convert(object target) => RawConvert((Row)target);
 
-  public PointElement RawConvert(Row feature)
+  public PointElement RawConvert(Row target)
   {
     var geometry = new List<Point>();
-    MapPoint shape = (MapPoint)feature["SHAPE"];
+    MapPoint shape = (MapPoint)target["SHAPE"];
     var pt = _pointConverter.RawConvert(shape);
     geometry.Add(pt);
 
     // get attributes
     var attributes = new Base();
-    IReadOnlyList<Field> fields = feature.GetFields();
+    // IReadOnlyList<Field> fields = target.GetFields();
 
     return new PointElement(geometry, attributes);
   }

@@ -1,5 +1,4 @@
 ﻿using ArcGIS.Desktop.Framework.Threading.Tasks;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGis.Operations.Send;
@@ -23,13 +22,6 @@ public sealed class SendOperation
   /// <summary>
   /// Executes a send operation given information about the host objects and the destination account.
   /// </summary>
-  /// <param name="sendFilter"></param>
-  /// <param name="accountId"></param>
-  /// <param name="projectId"></param>
-  /// <param name="modelId"></param>
-  /// <param name="onOperationProgressed"></param>
-  /// <param name="ct"></param>
-  /// <returns></returns>
   public async Task<string> Execute(
     //ISendFilter sendFilter,
     string accountId,
