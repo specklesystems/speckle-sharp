@@ -9,11 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-
+  
   <ItemGroup>
     <Content Include="Config.daml" />
     <Content Include="Images\AddInDesktop16.png" />

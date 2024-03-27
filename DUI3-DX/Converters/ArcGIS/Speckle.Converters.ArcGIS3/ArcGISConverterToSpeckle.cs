@@ -16,7 +16,7 @@ public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
 
   public Base Convert(object target)
   {
-    Type type = typeof(String);
+    Type type = target.GetType();
 
     try
     {
@@ -24,10 +24,9 @@ public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
 
       if (objectConverter == null)
       {
-        throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+        throw new NotSupportedException($"No conversion found for {type.Name}");
       }
-
-      var convertedObject = objectConverter.Convert("Teststt");
+      var convertedObject = objectConverter.Convert(target);
 
       return convertedObject;
     }

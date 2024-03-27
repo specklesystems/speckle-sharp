@@ -4,6 +4,7 @@ using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.Bindings;
 using Speckle.Connectors.ArcGIS.HostApp;
+using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Utils;
@@ -12,6 +13,7 @@ using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -35,6 +37,15 @@ public class AutofacArcGISModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+    builder.RegisterType<SendOperation>().InstancePerDependency();
+
+    // register send operation and dependencies
+    builder.RegisterType<SendOperation>().SingleInstance();
+    builder.RegisterType<RootObjectBuilder>().SingleInstance();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+
+    //TODO: how tf does this work?
+    builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();
 
     // Register converter factory
     builder
