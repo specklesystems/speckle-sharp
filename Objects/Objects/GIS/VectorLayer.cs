@@ -1,9 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using Objects.BuiltElements;
-using Objects.Structural.Geometry;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.GIS;

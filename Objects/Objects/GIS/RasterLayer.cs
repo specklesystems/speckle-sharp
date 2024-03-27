@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using Objects.BuiltElements;
-using Objects.Structural.Geometry;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.GIS;
