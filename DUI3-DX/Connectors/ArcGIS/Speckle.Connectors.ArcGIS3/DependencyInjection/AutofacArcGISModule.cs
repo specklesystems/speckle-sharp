@@ -54,6 +54,7 @@ public class AutofacArcGISModule : Module
       .InstancePerLifetimeScope();
   }
 
+  //poc: dupe code
   private static JsonSerializerSettings GetJsonSerializerSettings()
   {
     // Register WebView2 panel stuff

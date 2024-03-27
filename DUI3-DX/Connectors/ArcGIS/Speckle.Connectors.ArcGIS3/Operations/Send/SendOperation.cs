@@ -1,4 +1,5 @@
-﻿using Speckle.Connectors.DUI.Bindings;
+﻿using ArcGIS.Desktop.Framework.Threading.Tasks;
+using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGis.Operations.Send;
@@ -30,7 +31,7 @@ public sealed class SendOperation
   /// <param name="ct"></param>
   /// <returns></returns>
   public async Task<string> Execute(
-    ISendFilter sendFilter,
+    //ISendFilter sendFilter,
     string accountId,
     string projectId,
     string modelId,
@@ -38,7 +39,7 @@ public sealed class SendOperation
     CancellationToken ct = default
   )
   {
-    Base commitObject = _baseBuilder.Build(sendFilter, onOperationProgressed, ct);
+    Base commitObject = await QueuedTask.Run(() => _baseBuilder.Build(onOperationProgressed, ct)).ConfigureAwait(false);
 
     // base object handler is separated so we can do some testing on non-production databases
     // exact interface may want to be tweaked when we implement this

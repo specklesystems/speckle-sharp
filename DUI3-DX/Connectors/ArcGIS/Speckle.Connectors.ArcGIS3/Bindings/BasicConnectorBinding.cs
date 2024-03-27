@@ -9,6 +9,7 @@ using Speckle.Connectors.Utils.Reflection;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 
+//poc: dupe code between connectors
 public class BasicConnectorBinding : IBasicConnectorBinding
 {
   public string Name => "baseBinding";

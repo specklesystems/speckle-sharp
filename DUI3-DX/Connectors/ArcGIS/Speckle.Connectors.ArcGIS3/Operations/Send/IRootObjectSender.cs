@@ -2,7 +2,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGis.Operations.Send;
 
-//poc: this class is a file paste from rhino
+//poc: duped from rhino
 
 /// <summary>
 /// Contract for the send operation that handles an assembled <see cref="Base"/> object.

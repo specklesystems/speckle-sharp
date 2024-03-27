@@ -20,7 +20,7 @@ public class RootObjectBuilder
   }
 
   public Base Build(
-    ISendFilter sendFilter,
+    //ISendFilter sendFilter,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
@@ -29,62 +29,42 @@ public class RootObjectBuilder
     {
       throw new SpeckleException("No Map currently open");
     }
-    var selectedObjects = GetSelection(sendFilter, MapView.Active.Map);
+    var selectedObjects = GetSelection(MapView.Active.Map);
 
-    if (selectedObjects.Count == 0)
-    {
-      throw new InvalidOperationException("No objects were found. Please update your send filter!");
-    }
+    // if (selectedObjects.Count == 0)
+    // {
+    //   throw new InvalidOperationException("No objects were found. Please update your send filter!");
+    // }
 
     Base commitObject = ConvertObjects(selectedObjects, onOperationProgressed, ct);
 
     return commitObject;
   }
 
-  private HashSet<MapMember> GetSelection(ISendFilter sendFilter, Map map)
+  /// <remarks>
+  /// This method must be called on the MCT. Use QueuedTask. Run.
+  /// </remarks>
+  private Dictionary<MapMember, List<long>> GetSelection(Map map)
   {
-    var allMembers = map.GetMapMembersAsFlattenedList();
+    // var allMembers = map.GetMapMembersAsFlattenedList();
 
-    var selectedMemberUrls = sendFilter.GetObjectIds().ToHashSet();
-    HashSet<MapMember> selectedMembers = new(selectedMemberUrls.Count);
+    //POC: Right now, we're not using the send filter
+    // We're still undecided how we handle MapMember vs objectId when converting
+    // + the ArcGIS api breaks some assumptions we've made
+    // e.g.
+    // - There isn't a single type of ID to uniquely identify objects
+    //    - MapMembers are identifiable by uri, but objects on a MapMember have an objectId which is their index in the MapMember
+    //    - plus, some MapMembers work differently (raster layers, voxel layers, pointclound layers) etc.
+    // - getting selection is an async operation, needs to be done on the main thread, and returns the full object, not just an ID
 
-    foreach (var member in allMembers)
-    {
-      //if (selectedMembers.Contains(member))
-      {
-        selectedMembers.Add(member);
-      }
-    }
+    var selectedMemberUrls = map.GetSelection().ToDictionary();
 
-    // if (selectedMemberUrls.Count != selectedMembers.Count)
-    // {
-    //   throw new SpeckleException("Some of the selected objects were not found in the active map");
-    // }
-
-    return selectedMembers;
-
-    //
-    // return QueuedTask.Run(() =>
-    // {
-    //   var res = map.GetSelection();
-    //   _ = 0;
-    // });
-    //
-    // var objects = sendFilter.GetObjectIds().Select(GisObjectId.FromEncodedString);
-    //
-    // Dictionary<string, Layer> layersByUri = map.GetLayersAsFlattenedList().ToDictionary(x => x.URI);
-    // foreach (GisObjectId objectId in objects)
-    // {
-    //   Layer layer = layersByUri[objectId.LayerUri];
-    //   switch (layer)
-    //   {
-    //     FeatureLayer b => b.get
-    //   }
-    // }
+    return selectedMemberUrls;
   }
 
+  //poc: semi dupe
   private Collection ConvertObjects(
-    IReadOnlyCollection<MapMember> mapMembers,
+    IReadOnlyDictionary<MapMember, List<long>> mapMembers,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
   )
@@ -94,17 +74,17 @@ public class RootObjectBuilder
 
     Collection rootObjectCollection = new(); //TODO: Collections
 
-    foreach (MapMember gisObject in mapMembers)
+    foreach ((MapMember mapMember, List<long> objectIds) in mapMembers)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
       var collectionHost = rootObjectCollection;
-      var applicationId = gisObject.ToString();
+      var applicationId = mapMember.ToString();
 
       try
       {
         var converter = _converterFactory.ResolveScopedInstance();
-        Base converted = converter.Convert(gisObject);
+        Base converted = converter.Convert(mapMember);
         converted.applicationId = applicationId;
 
         // add to host
