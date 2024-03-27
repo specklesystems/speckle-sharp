@@ -16,11 +16,6 @@ public class AutocadDocumentManager
   /// <returns></returns>
   public string? ReadModelCards(Document doc)
   {
-    if (doc == null)
-    {
-      return null;
-    }
-
     using (TransactionContext.StartTransaction(doc))
     {
       Transaction tr = doc.Database.TransactionManager.TopTransaction;
