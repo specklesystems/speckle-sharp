@@ -731,49 +731,53 @@ public partial class ConverterAutocadCivil
 
     return speckleFeatureline;
   }
-
+  
   // surfaces
   public Mesh SurfaceToSpeckle(TinSurface surface)
   {
     // output vars
-    List<Point3d> vertices = new();
-    var faces = new List<int>();
+    List<double> vertices = new();
+    List<int> faces = new ();
+    Dictionary<Point3d, int> indices = new();
+    
+    int indexCounter = 0;
     foreach (var triangle in surface.GetTriangles(false))
     {
-      var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
-
+      try
+      {
 #if CIVIL2023 || CIVIL2024 // skip any triangles that are hidden in the surface!
-      if (!triangle.IsVisible)
+        if (!triangle.IsVisible)
+        {
+          //TODO: why are we skipping trianlges like this, are we not excluding them already in our call to GetTriangles(false) ?
+          continue;
+        }
+#endif
+        
+        Point3d[] triangleVertices = { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
+        foreach (Point3d p in triangleVertices)
+        {
+          if (!indices.ContainsKey(p))
+          {
+            var scaledP = ToExternalCoordinates(p);
+            vertices.Add(scaledP.X);
+            vertices.Add(scaledP.Y);
+            vertices.Add(scaledP.Z);
+            indices.Add(p, indexCounter);
+            indexCounter++;
+          }
+        }
+        faces.Add(3);
+        faces.Add(indices[triangleVertices[0]]);
+        faces.Add(indices[triangleVertices[1]]);
+        faces.Add(indices[triangleVertices[2]]);
+      }
+      finally
       {
         triangle.Dispose();
-        continue;
       }
-#endif
-
-      // store vertices
-      var faceIndices = new List<int>();
-      foreach (var vertex in triangleVertices)
-      {
-        if (!vertices.Contains(vertex))
-        {
-          faceIndices.Add(vertices.Count);
-          vertices.Add(vertex);
-        }
-        else
-        {
-          faceIndices.Add(vertices.IndexOf(vertex));
-        }
-      }
-
-      // get face
-      faces.AddRange(new List<int> { 3, faceIndices[0], faceIndices[1], faceIndices[2] });
-
-      triangle.Dispose();
     }
-
-    var speckleVertices = vertices.SelectMany(o => PointToSpeckle(o).ToList()).ToList();
-
-    var mesh = new Mesh(speckleVertices, faces)
+    
+    var mesh = new Mesh(vertices, faces)
     {
       units = ModelUnits,
       bbox = BoxToSpeckle(surface.GeometricExtents)
@@ -963,9 +967,11 @@ public partial class ConverterAutocadCivil
           continue;
         }
 
+        // TODO: This foreach loop is unacceptably expensive... probably FindVertexAtXY is the culprit, we should avoid using it.
+        
         var a1 = surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
         var a2 = surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
-        surface.AddLine(a1, a2);
+        surface.AddLine(a1, a2); 
         a1.Dispose();
         a2.Dispose();
       }

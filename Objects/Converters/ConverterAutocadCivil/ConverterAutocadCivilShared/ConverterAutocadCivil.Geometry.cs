@@ -57,12 +57,9 @@ public partial class ConverterAutocadCivil
 
   public Point3d PointToNative(Point point)
   {
-    var _point = new Point3d(
-      ScaleToNative(point.x, point.units),
-      ScaleToNative(point.y, point.units),
-      ScaleToNative(point.z, point.units)
-    );
-    var intPt = ToInternalCoordinates(_point);
+    var scaleFactor = Units.GetConversionFactor(point.units, ModelUnits); 
+    var scaledPoint = new Point3d(point.x * scaleFactor, point.y * scaleFactor, point.z * scaleFactor);
+    var intPt = ToInternalCoordinates(scaledPoint);
     return intPt;
   }
 
