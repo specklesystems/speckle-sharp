@@ -1,6 +1,5 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.HostApp;
-using Speckle.Connectors.Autocad.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -19,7 +18,7 @@ using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
-public class AutocadSendBinding : ISendBinding, ICancelable
+public sealed class AutocadSendBinding : ISendBinding, ICancelable
 {
   public string Name { get; } = "sendBinding";
   public SendBindingUICommands Commands { get; }
@@ -57,7 +56,7 @@ public class AutocadSendBinding : ISendBinding, ICancelable
     Application.DocumentManager.DocumentActivated += (sender, args) => SubscribeToObjectChanges(args.Document);
     if (Application.DocumentManager.CurrentDocument != null)
     {
-      // NOTE: catches the case when autocad just opens up with a blank new doc
+      // catches the case when autocad just opens up with a blank new doc
       SubscribeToObjectChanges(Application.DocumentManager.CurrentDocument);
     }
   }
@@ -106,9 +105,10 @@ public class AutocadSendBinding : ISendBinding, ICancelable
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
 
-  public async Task Send(string modelCardId)
+  public Task Send(string modelCardId)
   {
     Parent.RunOnMainThread(async () => await SendInternal(modelCardId).ConfigureAwait(false));
+    return Task.CompletedTask;
   }
 
   private async Task SendInternal(string modelCardId)
@@ -261,17 +261,14 @@ public class AutocadSendBinding : ISendBinding, ICancelable
       }
       catch (SpeckleConversionException e)
       {
-        // DO something with the exception
         Console.WriteLine(e);
       }
       catch (NotSupportedException e)
       {
-        // DO something with the exception
         Console.WriteLine(e);
       }
       catch (Exception e) when (!e.IsFatal())
       {
-        // TODO: Add to report, etc.
         Debug.WriteLine(e.Message);
       }
     }

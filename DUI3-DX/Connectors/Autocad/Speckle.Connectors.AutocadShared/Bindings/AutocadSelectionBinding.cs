@@ -28,12 +28,14 @@ public class AutocadSelectionBinding : ISelectionBinding
     {
       return;
     }
+
     if (!_visitedDocuments.Contains(document))
     {
       document.ImpliedSelectionChanged += (_, _) =>
       {
         Parent.RunOnMainThread(OnSelectionChanged);
       };
+
       _visitedDocuments.Add(document);
     }
   }
@@ -57,9 +59,7 @@ public class AutocadSelectionBinding : ISelectionBinding
         foreach (SelectedObject obj in selection.Value)
         {
           var dbObject = tr.GetObject(obj.ObjectId, OpenMode.ForRead);
-          if (
-            dbObject == null /*|| !dbObject.Visible()*/
-          )
+          if (dbObject == null)
           {
             continue;
           }
@@ -67,6 +67,7 @@ public class AutocadSelectionBinding : ISelectionBinding
           var handleString = dbObject.Handle.Value.ToString();
           objs.Add(handleString);
         }
+
         tr.Commit();
         tr.Dispose();
       }

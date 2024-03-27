@@ -1,4 +1,3 @@
-using System.Reflection;
 using Autodesk.AutoCAD.DatabaseServices;
 using Sentry.Reflection;
 using Speckle.Connectors.Autocad.HostApp;
@@ -8,7 +7,6 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Core.Credentials;
 using Speckle.Connectors.Autocad.HostApp.Extensions;
-using Speckle.Connectors.Autocad.Utils;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -36,7 +34,8 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     };
   }
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+  public string GetConnectorVersion() =>
+    typeof(AutocadBasicConnectorBinding).Assembly.GetNameAndVersion().Version ?? "No version";
 
   public string GetSourceApplicationName() => _settings.HostAppInfo.Slug;
 
@@ -82,12 +81,13 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     {
       return;
     }
+
     var objectIds = Array.Empty<ObjectId>();
 
     var model = _store.GetModelById(modelCardId);
     if (model == null)
     {
-      return; // TODO: RECEIVERS
+      return;
     }
 
     if (model is SenderModelCard senderModelCard)
@@ -96,16 +96,6 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
-
-    // TODO: enable it when IReceiveBindingUICommands enabled!
-    // if (
-    //   model is ReceiverModelCard { ReceiveResult: { } } receiverModelCard
-    //   && receiverModelCard.ReceiveResult.BakedObjectIds.Count != 0
-    // )
-    // {
-    //   var dbObjects = GetObjectsFromDocument(Doc, receiverModelCard.ReceiveResult.BakedObjectIds);
-    //   objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
-    // }
 
     if (objectIds.Length == 0)
     {
@@ -129,7 +119,8 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
           selectedExtents.AddExtents(entity.GeometricExtents);
         }
       }
-      Doc.Editor.Zoom(selectedExtents); // TODO: It is extension method, re-consider?
+
+      Doc.Editor.Zoom(selectedExtents);
       tr.Commit();
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     });

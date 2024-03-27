@@ -1,9 +1,9 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.HostApp;
 
-namespace Speckle.Connectors.Autocad.Utils;
+namespace Speckle.Connectors.Autocad;
 
-public static class Utils
+public static class DocumentExtensions
 {
   public static List<(DBObject, string)> GetObjects(this Document doc, IEnumerable<string> objectIds)
   {

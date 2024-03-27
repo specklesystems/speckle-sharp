@@ -31,8 +31,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\GlobalUsings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils\Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />

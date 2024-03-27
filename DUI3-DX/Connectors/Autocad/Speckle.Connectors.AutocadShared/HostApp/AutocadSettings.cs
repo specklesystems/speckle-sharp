@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.Autocad.HostApp;
@@ -15,5 +15,5 @@ public class AutocadSettings
   public HostApplication HostAppInfo { get; private set; }
   public HostAppVersion HostAppVersion { get; private set; }
 
-  public string[] Modules { get; private set; }
+  public IReadOnlyList<string> Modules { get; private set; }
 }
