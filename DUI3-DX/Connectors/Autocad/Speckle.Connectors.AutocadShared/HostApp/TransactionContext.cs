@@ -3,6 +3,11 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.Connectors.Autocad.HostApp;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage(
+  "Usage",
+  "CA2213:Disposable fields should be disposed",
+  Justification = "Analyzer false positive with Autocad classes"
+)]
 public sealed class TransactionContext : IDisposable
 {
   private DocumentLock? _documentLock;
