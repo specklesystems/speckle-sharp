@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 
@@ -12,6 +12,7 @@ public static class EditorExtensions
     {
       throw new ArgumentNullException(nameof(editor));
     }
+
     using ViewTableRecord view = editor.GetCurrentView();
     Matrix3d worldToEye =
       Matrix3d.WorldToPlane(view.ViewDirection)

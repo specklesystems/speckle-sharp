@@ -16,10 +16,7 @@ public class AutocadPlugin : IAutocadPlugin
     _idleManager = idleManager;
   }
 
-  public void Initialise()
-  {
-    // TBD
-  }
+  public void Initialise() { }
 
   public void Shutdown() { }
 }

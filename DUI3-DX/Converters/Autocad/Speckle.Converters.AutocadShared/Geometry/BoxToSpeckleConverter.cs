@@ -5,8 +5,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
-[NameAndRankValue(nameof(ADB.Extents3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBBoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Extents3d, SOG.Box>
+[NameAndRankValue(nameof(Extents3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class DBBoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Extents3d, SOG.Box>
 {
   private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
@@ -20,9 +20,9 @@ public class DBBoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ADB.Extents3d)target);
+  public Base Convert(object target) => RawConvert((Extents3d)target);
 
-  public SOG.Box RawConvert(ADB.Extents3d target)
+  public SOG.Box RawConvert(Extents3d target)
   {
     // get dimension intervals and volume
     SOP.Interval xSize = new(target.MinPoint.X, target.MaxPoint.X);

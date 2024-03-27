@@ -8,10 +8,7 @@ public class AutocadExtensionApplication : IExtensionApplication
 {
   public void Initialize() => AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-  public void Terminate()
-  {
-    // TBD
-  }
+  public void Terminate() { }
 
   private Assembly? OnAssemblyResolve(object sender, ResolveEventArgs args)
   {
