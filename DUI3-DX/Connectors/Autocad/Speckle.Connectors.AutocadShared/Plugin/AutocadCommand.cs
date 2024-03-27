@@ -15,7 +15,7 @@ namespace Speckle.Connectors.Autocad.Plugin;
 
 public class AutocadCommand
 {
-  private static PaletteSet PaletteSet { get; set; }
+  private static PaletteSet? PaletteSet { get; set; }
   private static readonly Guid s_id = new("3223E594-1B09-4E54-B3DD-8EA0BECE7BA5");
   private IAutocadPlugin? _autocadPlugin;
 
