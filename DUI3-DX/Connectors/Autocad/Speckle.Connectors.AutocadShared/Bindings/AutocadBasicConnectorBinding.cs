@@ -20,8 +20,6 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public BasicConnectorBindingCommands Commands { get; }
 
-  private static Document Doc => Application.DocumentManager.MdiActiveDocument;
-
   public AutocadBasicConnectorBinding(DocumentModelStore store, AutocadSettings settings, IBridge parent)
   {
     _store = store;
@@ -45,17 +43,19 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public DocumentInfo GetDocumentInfo()
   {
-    if (Doc == null)
+    var doc = Application.DocumentManager.MdiActiveDocument;
+
+    if (doc == null)
     {
       return new DocumentInfo();
     }
 
-    string name = Doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
+    string name = doc.Name.Split(System.IO.Path.PathSeparator).Reverse().First();
     return new DocumentInfo()
     {
       Name = name,
-      Id = Doc.Name,
-      Location = Doc.Name
+      Id = doc.Name,
+      Location = doc.Name
     };
   }
 
@@ -77,7 +77,9 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public void HighlightModel(string modelCardId)
   {
-    if (Doc == null)
+    var doc = Application.DocumentManager.MdiActiveDocument;
+
+    if (doc == null)
     {
       return;
     }
@@ -92,7 +94,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     if (model is SenderModelCard senderModelCard)
     {
-      List<(DBObject obj, string applicationId)> dbObjects = Doc.GetObjects(senderModelCard.SendFilter.GetObjectIds());
+      List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(senderModelCard.SendFilter.GetObjectIds());
 
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
@@ -105,12 +107,13 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
     Parent.RunOnMainThread(() =>
     {
-      Doc.Editor.SetImpliedSelection(Array.Empty<ObjectId>()); // Deselects
-      Doc.Editor.SetImpliedSelection(objectIds); // Selects
-      Doc.Editor.UpdateScreen();
+      doc.Editor.SetImpliedSelection(Array.Empty<ObjectId>()); // Deselects
+      doc.Editor.SetImpliedSelection(objectIds); // Selects
+      doc.Editor.UpdateScreen();
 
       Extents3d selectedExtents = new();
-      var tr = Doc.TransactionManager.StartTransaction();
+
+      var tr = doc.TransactionManager.StartTransaction();
       foreach (ObjectId objectId in objectIds)
       {
         var entity = (Entity)tr.GetObject(objectId, OpenMode.ForRead);
@@ -120,7 +123,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
         }
       }
 
-      Doc.Editor.Zoom(selectedExtents);
+      doc.Editor.Zoom(selectedExtents);
       tr.Commit();
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     });

@@ -14,10 +14,12 @@ public static class EditorExtensions
     }
 
     using ViewTableRecord view = editor.GetCurrentView();
+
     Matrix3d worldToEye =
       Matrix3d.WorldToPlane(view.ViewDirection)
       * Matrix3d.Displacement(Point3d.Origin - view.Target)
       * Matrix3d.Rotation(view.ViewTwist, view.ViewDirection, view.Target);
+
     ext.TransformBy(worldToEye);
     view.Width = ext.MaxPoint.X - ext.MinPoint.X;
     view.Height = ext.MaxPoint.Y - ext.MinPoint.Y;

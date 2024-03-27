@@ -6,8 +6,8 @@ namespace Speckle.Connectors.Autocad.HostApp;
 
 public class AutocadDocumentStore : DocumentModelStore
 {
-  private static Document Doc { get; set; }
-  private static string s_previousDocName;
+  private readonly string _nullDocumentName = "Null Doc";
+  private string _previousDocName;
   private readonly AutocadDocumentManager _autocadDocumentManager;
 
   public AutocadDocumentStore(
@@ -17,7 +17,9 @@ public class AutocadDocumentStore : DocumentModelStore
     : base(jsonSerializerSettings)
   {
     _autocadDocumentManager = autocadDocumentManager;
-    if (Doc != null)
+    _previousDocName = _nullDocumentName;
+
+    if (Application.DocumentManager.MdiActiveDocument != null)
     {
       IsDocumentInit = true;
     }
@@ -30,21 +32,19 @@ public class AutocadDocumentStore : DocumentModelStore
 
   /// <summary>
   /// Tracks whether the doc has been subscribed to save events.
-  /// TODO: two separate docs can have the same name, this is a brittle implementation - should be correlated with file location.
+  /// POC: two separate docs can have the same name, this is a brittle implementation - should be correlated with file location.
   /// </summary>
   private readonly List<string> _saveToDocSubTracker = new();
 
   private void OnDocChangeInternal(Document doc)
   {
-    Doc = doc;
-    var nullDocName = "Null Doc";
-    var currentDocName = doc != null ? doc.Name : nullDocName;
-    if (s_previousDocName == currentDocName)
+    var currentDocName = doc != null ? doc.Name : _nullDocumentName;
+    if (_previousDocName == currentDocName)
     {
       return;
     }
 
-    s_previousDocName = doc != null ? doc.Name : nullDocName;
+    _previousDocName = doc != null ? doc.Name : _nullDocumentName;
 
     if (doc != null && !_saveToDocSubTracker.Contains(doc.Name))
     {
@@ -60,12 +60,15 @@ public class AutocadDocumentStore : DocumentModelStore
   public override void ReadFromFile()
   {
     Models = new List<ModelCard>();
-    if (Doc == null)
+
+    Document doc = Application.DocumentManager.MdiActiveDocument;
+
+    if (doc == null)
     {
       return;
     }
 
-    string? serializedModelCards = _autocadDocumentManager.ReadModelCards(Doc);
+    string? serializedModelCards = _autocadDocumentManager.ReadModelCards(doc);
     if (serializedModelCards == null)
     {
       return;
@@ -76,12 +79,14 @@ public class AutocadDocumentStore : DocumentModelStore
 
   public override void WriteToFile()
   {
-    if (Doc == null)
+    Document doc = Application.DocumentManager.MdiActiveDocument;
+
+    if (doc == null)
     {
       return;
     }
 
     string modelCardsString = Serialize();
-    _autocadDocumentManager.WriteModelCards(Doc, modelCardsString);
+    _autocadDocumentManager.WriteModelCards(doc, modelCardsString);
   }
 }

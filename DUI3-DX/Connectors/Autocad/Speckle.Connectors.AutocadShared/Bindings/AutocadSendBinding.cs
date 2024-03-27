@@ -35,6 +35,11 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   /// </summary>
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
+  /// <summary>
+  /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
+  /// </summary>
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+
   public AutocadSendBinding(
     DocumentModelStore store,
     AutocadIdleManager idleManager,
@@ -125,7 +130,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       }
 
       // 2 - Check account exist
-      // TODO: FETCHING ACCOUNTS BY ID ONLY IS UNSAFE
       Account account =
         AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == modelCard.AccountId)
         ?? throw new SpeckleAccountManagerException();
@@ -150,20 +154,18 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
 
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
-      // foreach (var kvp in sendResult.convertedReferences)
-      // {
-      //   // TODO: Bug in here, we need to encapsulate cache not only by app id, but also by project id,
-      //   // TODO: as otherwise we assume incorrectly that an object exists for a given project (e.g, send box to project 1, send same unchanged box to project 2)
-      //   _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
-      // }
-      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
-      // NOTE: ChangedObjectIds is currently JsonIgnored, but could actually be useful for highlighting changes in host app.
-      //modelCard.ChangedObjectIds = new();
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      }
 
-      // 7 - Create Version
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      modelCard.ChangedObjectIds = new();
+
+      // 6 - Create Version
       Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
 
-      // 8 - Create the version (commit)
+      // 7 - Create the version (commit)
       Client apiClient = new(account);
       string versionId = await apiClient
         .CommitCreate(
@@ -218,42 +220,41 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       var dbObject = tuple.obj;
       var applicationId = tuple.applicationId;
 
-      // 3. get from cache or convert:
-      // What we actually do here is check if the object has been previously converted AND has not changed.
-      // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
-      /*Base converted;
-      if (
-        !modelCard.ChangedObjectIds.Contains(applicationId)
-        && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
-      )
-      {
-        converted = value;
-      }
-      else
-      {
-        converted = converter.ConvertToSpeckle(tuple.obj);
-        converted.applicationId = applicationId;
-      }*/
       try
       {
-        Base? converted = converter.Convert(dbObject);
-        if (converted != null)
+        Base converted;
+        if (
+          !modelCard.ChangedObjectIds.Contains(applicationId)
+          && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
+        )
         {
-          converted.applicationId = applicationId;
-
-          // Create and add a collection for each layer if not done so already.
-          if ((tuple.obj as Entity)?.Layer is string layer)
-          {
-            if (!collectionCache.TryGetValue(layer, out Collection? collection))
-            {
-              collection = new Collection() { name = layer, collectionType = "layer" };
-              collectionCache[layer] = collection;
-              modelWithLayers.elements.Add(collectionCache[layer]);
-            }
-
-            collection.elements.Add(converted);
-          }
+          converted = value;
         }
+        else
+        {
+          converted = converter.Convert(dbObject);
+
+          if (converted == null)
+          {
+            continue;
+          }
+
+          converted.applicationId = applicationId;
+        }
+
+        // Create and add a collection for each layer if not done so already.
+        if ((tuple.obj as Entity)?.Layer is string layer)
+        {
+          if (!collectionCache.TryGetValue(layer, out Collection? collection))
+          {
+            collection = new Collection() { name = layer, collectionType = "layer" };
+            collectionCache[layer] = collection;
+            modelWithLayers.elements.Add(collectionCache[layer]);
+          }
+
+          collection.elements.Add(converted);
+        }
+
         Commands.SetModelProgress(
           modelCard.ModelCardId,
           new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
