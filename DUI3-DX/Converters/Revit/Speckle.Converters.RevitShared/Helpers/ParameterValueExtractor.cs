@@ -90,6 +90,13 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
+  public T? GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+    where T : class
+  {
+    ElementId? elementId = GetValueAsElementId(element, builtInParameter);
+    return element.Document.GetElement(elementId) as T;
+  }
+
   private TResult? GetValueGeneric<TResult>(
     Element element,
     BuiltInParameter builtInParameter,

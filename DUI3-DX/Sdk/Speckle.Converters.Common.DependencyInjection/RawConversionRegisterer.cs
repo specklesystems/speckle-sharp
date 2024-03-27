@@ -17,12 +17,23 @@ public static class RawConversionRegisterer
           continue;
         }
 
+        var registrationBuilder = containerBuilder.RegisterType(type).As(interfaceType);
+
         Type firstGenericType = interfaceType.GenericTypeArguments[0];
-        containerBuilder
-          .RegisterType(type)
-          .AsImplementedInterfaces()
-          .Keyed<IHostObjectToSpeckleConversion>(firstGenericType)
-          .InstancePerLifetimeScope();
+        var singleParamRawConversionType = typeof(IRawConversion<>).MakeGenericType(firstGenericType);
+        if (singleParamRawConversionType.IsAssignableFrom(type))
+        {
+          registrationBuilder = registrationBuilder.As(singleParamRawConversionType);
+        }
+
+        if (typeof(IHostObjectToSpeckleConversion).IsAssignableFrom(type))
+        {
+          registrationBuilder = registrationBuilder
+            .As<IHostObjectToSpeckleConversion>()
+            .Keyed<IHostObjectToSpeckleConversion>(firstGenericType);
+        }
+
+        registrationBuilder.InstancePerLifetimeScope();
       }
     }
 

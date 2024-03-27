@@ -9,7 +9,6 @@ using System.Linq;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using Speckle.Core.Logging;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -19,31 +18,31 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
   private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
   private readonly IRawConversion<DB.Level, RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
-  private readonly IRawConversion<DB.Parameter, SOBR.Parameter> _paramConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly RevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
   public WallConversionToSpeckle(
     IRawConversion<DB.Curve, ICurve> curveConverter,
     IRawConversion<Level, RevitLevel> levelConverter,
-    IRawConversion<DB.Parameter, SOBR.Parameter> paramConverter,
     RevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     IRawConversion<CurveArray, Polycurve> curveArrayConverter,
-    HostedElementConversionToSpeckle hostedElementConverter
+    HostedElementConversionToSpeckle hostedElementConverter,
+    ParameterObjectAssigner parameterObjectAssigner
   )
   {
     _curveConverter = curveConverter;
     _levelConverter = levelConverter;
-    _paramConverter = paramConverter;
     _contextStack = contextStack;
     _parameterValueExtractor = parameterValueExtractor;
     _displayValueExtractor = displayValueExtractor;
     _curveArrayConverter = curveArrayConverter;
     _hostedElementConverter = hostedElementConverter;
+    _parameterObjectAssigner = parameterObjectAssigner;
   }
 
   public override RevitWall RawConvert(DB.Wall target)
@@ -59,12 +58,16 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
 
     speckleWall.baseLine = _curveConverter.RawConvert(locationCurve.Curve);
 
-    var levelElementId = _parameterValueExtractor.GetValueAsElementId(target, BuiltInParameter.WALL_BASE_CONSTRAINT);
-    var level = _contextStack.Current.Document.Document.GetElement(levelElementId) as DB.Level;
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
+      target,
+      BuiltInParameter.WALL_BASE_CONSTRAINT
+    );
     speckleWall.level = _levelConverter.RawConvert(level);
 
-    var topLevelElementId = _parameterValueExtractor.GetValueAsElementId(target, BuiltInParameter.WALL_BASE_CONSTRAINT);
-    var topLevel = _contextStack.Current.Document.Document.GetElement(topLevelElementId) as DB.Level;
+    var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
+      target,
+      BuiltInParameter.WALL_BASE_CONSTRAINT
+    );
     speckleWall.topLevel = _levelConverter.RawConvert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
@@ -80,36 +83,10 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
 
     AssignVoids(target, speckleWall);
     AssignHostedElements(target, speckleWall);
-    AssignParameters(target, speckleWall);
+
+    _parameterObjectAssigner.AssignParametersToBase(target, speckleWall);
 
     return speckleWall;
-  }
-
-  private void AssignParameters(Wall target, RevitWall speckleWall)
-  {
-    Dictionary<string, DB.Parameter> allParams = _parameterValueExtractor.GetAllRemainingParams(target);
-    Base paramBase = new();
-    //sort by key
-    foreach (var kv in allParams.OrderBy(x => x.Key))
-    {
-      try
-      {
-        paramBase[kv.Key] = _paramConverter.RawConvert(kv.Value);
-      }
-      catch (InvalidPropNameException)
-      {
-        //ignore
-      }
-      catch (SpeckleException ex)
-      {
-        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
-      }
-    }
-
-    if (paramBase.GetMembers(DynamicBaseMemberType.Dynamic).Count > 0)
-    {
-      speckleWall["parameters"] = paramBase;
-    }
   }
 
   private void AssignHostedElements(Wall target, RevitWall speckleWall)
