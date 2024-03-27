@@ -62,6 +62,7 @@ internal class SpeckleModule : Module
 
   private static Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)
   {
+    // POC: dupe code
     // POC: tight binding to files
     Assembly? assembly = null;
     string name = args.Name.Split(',')[0];

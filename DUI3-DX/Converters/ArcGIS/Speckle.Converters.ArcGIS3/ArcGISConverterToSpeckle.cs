@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3;
 
+//poc: dupe code from rhino
 public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
@@ -16,18 +17,17 @@ public class ArcGISConverterToSpeckle : ISpeckleConverterToSpeckle
 
   public Base Convert(object target)
   {
-    Type type = typeof(String);
+    Type type = target.GetType();
 
     try
     {
-      var objectConverter = _toSpeckle.ResolveInstance(type.Name);
+      var objectConverter = _toSpeckle.ResolveInstance(type.Name); //poc: would be nice to have supertypes resolve
 
       if (objectConverter == null)
       {
-        throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+        throw new NotSupportedException($"No conversion found for {type.Name}");
       }
-
-      var convertedObject = objectConverter.Convert("Teststt");
+      var convertedObject = objectConverter.Convert(target);
 
       return convertedObject;
     }
