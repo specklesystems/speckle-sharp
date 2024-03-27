@@ -13,14 +13,17 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 {
   private readonly IIndex<Type, IHostObjectToSpeckleConversion> _hostObjectConversions;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public RevitConverterToSpeckle(
     IIndex<Type, IHostObjectToSpeckleConversion> hostObjectConversions,
-    ToSpeckleConvertedObjectsCache convertedObjectsCache
+    ToSpeckleConvertedObjectsCache convertedObjectsCache,
+    ParameterValueExtractor parameterValueExtractor
   )
   {
     _hostObjectConversions = hostObjectConversions;
     _convertedObjectsCache = convertedObjectsCache;
+    _parameterValueExtractor = parameterValueExtractor;
   }
 
   public Base Convert(object target)
@@ -37,6 +40,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     if (target is Element element)
     {
       _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
     }
 
     return result;

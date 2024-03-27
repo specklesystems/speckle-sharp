@@ -1,12 +1,20 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Objects.BuiltElements.Revit;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.Element), 0)]
 public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, RevitElement>
 {
+  private readonly DisplayValueExtractor _displayValueExtractor;
+
+  public ElementConversionToSpeckle(DisplayValueExtractor displayValueExtractor)
+  {
+    _displayValueExtractor = displayValueExtractor;
+  }
+
   public override RevitElement RawConvert(Element target)
   {
     RevitElement speckleElement = new();
@@ -34,6 +42,8 @@ public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, Re
     //}
 
     speckleElement.category = target.Category.Name;
+
+    speckleElement.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
     //GetHostedElements(speckleElement, target, out notes);
 

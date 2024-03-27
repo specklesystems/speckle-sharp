@@ -26,7 +26,7 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
 
   public override SOBR.Parameter RawConvert(DB.Parameter target)
   {
-    string internalName = GetParamInternalName(target);
+    string internalName = target.GetInternalName();
     ParameterToSpeckleData toSpeckleData = _cachingService.GetOrAdd(
       internalName,
       paramInternalName => ExtractParameterDataFromDocument(paramInternalName, target)
@@ -54,26 +54,6 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
       newParamData.ApplicationUnits = unitTypeId.ToUniqueString();
     }
     return newParamData;
-  }
-
-  //Shared parameters use a GUID to be uniquely identified
-  //Other parameters use a BuiltInParameter enum
-  private static string GetParamInternalName(DB.Parameter rp)
-  {
-    if (rp.IsShared)
-    {
-      return rp.GUID.ToString();
-    }
-    else
-    {
-      var def = rp.Definition as InternalDefinition;
-      if (def.BuiltInParameter == BuiltInParameter.INVALID)
-      {
-        return def.Name;
-      }
-
-      return def.BuiltInParameter.ToString();
-    }
   }
 }
 

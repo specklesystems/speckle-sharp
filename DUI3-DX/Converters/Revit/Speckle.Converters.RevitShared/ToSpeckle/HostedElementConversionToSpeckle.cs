@@ -20,7 +20,7 @@ public class HostedElementConversionToSpeckle
     _converter = converter;
   }
 
-  public List<Base> GetHostedElements(Element host)
+  public List<Base> GetHostedElementsConverted(Element host)
   {
     var convertedHostedElements = new List<Base>();
 
@@ -40,9 +40,9 @@ public class HostedElementConversionToSpeckle
     return convertedHostedElements;
   }
 
-  public IList<ElementId> GetHostedElementIds(Element host)
+  private static IList<ElementId> GetHostedElementIds(Element host)
   {
-    IList<ElementId> ids = null;
+    IList<ElementId> ids;
     if (host is HostObject hostObject)
     {
       ids = hostObject.FindInserts(true, false, false, false);

@@ -9,6 +9,7 @@ using System.Linq;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Logging;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -18,7 +19,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
   private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
   private readonly IRawConversion<DB.Level, RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
-  private readonly ParameterConversionToSpeckle _paramConverter;
+  private readonly IRawConversion<DB.Parameter, SOBR.Parameter> _paramConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly RevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
@@ -27,7 +28,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
   public WallConversionToSpeckle(
     IRawConversion<DB.Curve, ICurve> curveConverter,
     IRawConversion<Level, RevitLevel> levelConverter,
-    ParameterConversionToSpeckle paramConverter,
+    IRawConversion<DB.Parameter, SOBR.Parameter> paramConverter,
     RevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
@@ -77,15 +78,43 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
 
     speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
-    List<CurveArray> voids = GetWallVoids(target);
-    List<Polycurve> polycurves = voids.Select(v => _curveArrayConverter.RawConvert(v)).ToList();
+    AssignVoids(target, speckleWall);
+    AssignHostedElements(target, speckleWall);
+    AssignParameters(target, speckleWall);
 
-    if (polycurves.Count > 0)
+    return speckleWall;
+  }
+
+  private void AssignParameters(Wall target, RevitWall speckleWall)
+  {
+    Dictionary<string, DB.Parameter> allParams = _parameterValueExtractor.GetAllRemainingParams(target);
+    Base paramBase = new();
+    //sort by key
+    foreach (var kv in allParams.OrderBy(x => x.Key))
     {
-      speckleWall["voids"] = polycurves;
+      try
+      {
+        paramBase[kv.Key] = _paramConverter.RawConvert(kv.Value);
+      }
+      catch (InvalidPropNameException)
+      {
+        //ignore
+      }
+      catch (SpeckleException ex)
+      {
+        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
+      }
     }
 
-    List<Base> hostedObjects = _hostedElementConverter.GetHostedElements(target);
+    if (paramBase.GetMembers(DynamicBaseMemberType.Dynamic).Count > 0)
+    {
+      speckleWall["parameters"] = paramBase;
+    }
+  }
+
+  private void AssignHostedElements(Wall target, RevitWall speckleWall)
+  {
+    List<Base> hostedObjects = _hostedElementConverter.GetHostedElementsConverted(target);
     if (hostedObjects.Count > 0)
     {
       if (speckleWall.GetDetachedProp("elements") is List<Base> elements)
@@ -97,8 +126,17 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
         speckleWall.SetDetachedProp("elements", hostedObjects);
       }
     }
+  }
 
-    return speckleWall;
+  private void AssignVoids(Wall target, RevitWall speckleWall)
+  {
+    List<CurveArray> voids = GetWallVoids(target);
+    List<Polycurve> polycurves = voids.Select(v => _curveArrayConverter.RawConvert(v)).ToList();
+
+    if (polycurves.Count > 0)
+    {
+      speckleWall["voids"] = polycurves;
+    }
   }
 
   private List<CurveArray> GetWallVoids(Wall wall)

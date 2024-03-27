@@ -11,11 +11,14 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisplayValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\MeshBuildHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\MeshDataTriangulator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategoryInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitConversionContextStack.cs" />
     <Compile Include="..\Speckle.Converters.RevitShared\Helpers\ToSpeckleConvertedObjectsCache.cs" />

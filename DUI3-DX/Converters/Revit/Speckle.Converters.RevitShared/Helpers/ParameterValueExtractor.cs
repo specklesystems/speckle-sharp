@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.Helpers;
@@ -9,7 +10,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 public class ParameterValueExtractor
 {
   private readonly ToSpeckleScalingService _scalingService;
-  private readonly HashSet<BuiltInParameter> _usedParameters = new();
+  private readonly Dictionary<string, HashSet<BuiltInParameter>> _uniqueIdToUsedParameterSetMap = new();
 
   public ParameterValueExtractor(ToSpeckleScalingService scalingService)
   {
@@ -96,7 +97,12 @@ public class ParameterValueExtractor
     Func<DB.Parameter, TResult> getParamValue
   )
   {
-    _usedParameters.Add(builtInParameter);
+    if (!_uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter> usedParameters))
+    {
+      usedParameters = new();
+      _uniqueIdToUsedParameterSetMap[element.UniqueId] = usedParameters;
+    }
+    usedParameters.Add(builtInParameter);
     var parameter = element.get_Parameter(builtInParameter);
     return GetValueGeneric(parameter, expectedStorageType, getParamValue);
   }
@@ -120,5 +126,48 @@ public class ParameterValueExtractor
     }
 
     return getParamValue(parameter);
+  }
+
+  public Dictionary<string, Parameter> GetAllRemainingParams(DB.Element revitElement)
+  {
+    var allParams = new Dictionary<string, Parameter>();
+    AddElementParamsToDict(revitElement, allParams);
+
+    //var elementType = revitElement.Document.GetElement(revitElement.GetTypeId());
+    //AddElementParamsToDict(
+    //  speckleElement is Level ? null : elementType, //ignore type props of levels..!
+    //  allParams,
+    //  true,
+    //  exclusions
+    //);
+
+    return allParams;
+  }
+
+  private void AddElementParamsToDict(DB.Element element, Dictionary<string, Parameter> paramDict)
+  {
+    _uniqueIdToUsedParameterSetMap.TryGetValue(element.UniqueId, out HashSet<BuiltInParameter>? usedParameters);
+
+    using var parameters = element.Parameters;
+    foreach (DB.Parameter param in parameters)
+    {
+      var internalName = param.GetInternalName();
+      if (paramDict.ContainsKey(internalName))
+      {
+        continue;
+      }
+
+      if (param.GetBuiltInParameter() is BuiltInParameter bip && (usedParameters?.Contains(bip) ?? false))
+      {
+        continue;
+      }
+
+      paramDict[internalName] = param;
+    }
+  }
+
+  public void RemoveUniqueId(string uniqueId)
+  {
+    _uniqueIdToUsedParameterSetMap.Remove(uniqueId);
   }
 }
