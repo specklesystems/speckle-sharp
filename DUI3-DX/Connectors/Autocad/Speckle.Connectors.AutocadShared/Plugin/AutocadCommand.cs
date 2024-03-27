@@ -60,8 +60,11 @@ public class AutocadCommand
 
   private void FocusPalette()
   {
-    PaletteSet.KeepFocus = true;
-    PaletteSet.Visible = true;
+    if (PaletteSet != null)
+    {
+      PaletteSet.KeepFocus = true;
+      PaletteSet.Visible = true;
+    }
   }
 
   private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
