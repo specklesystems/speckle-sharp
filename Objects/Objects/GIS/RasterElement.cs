@@ -6,8 +6,6 @@ namespace Objects.GIS;
 
 public class RasterElement : Base
 {
-  public RasterElement() { }
-
   public int? band_count { get; set; }
   public List<string>? band_names { get; set; }
   public float? x_origin { get; set; }

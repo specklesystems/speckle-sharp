@@ -31,6 +31,6 @@ public class PointElementToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     var attributes = new Base();
     // IReadOnlyList<Field> fields = target.GetFields();
 
-    return new PointElement(geometry, attributes);
+    return new PointElement { geometry = geometry, attributes = attributes };
   }
 }
