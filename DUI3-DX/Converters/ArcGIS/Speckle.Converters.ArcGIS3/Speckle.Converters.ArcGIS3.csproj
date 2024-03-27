@@ -1,11 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net6.0-windows</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Esri.ArcGISPro.Extensions30" Version="3.2.0.49743"/>
+  </ItemGroup>
+  
     <ItemGroup>
       <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
       <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
