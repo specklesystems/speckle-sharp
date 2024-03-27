@@ -12,4 +12,6 @@ public class CRS : Base
   public float? offset_x { get; set; }
   public float? offset_y { get; set; }
   public float? rotation { get; set; }
+
+  public CRS() { }
 }
