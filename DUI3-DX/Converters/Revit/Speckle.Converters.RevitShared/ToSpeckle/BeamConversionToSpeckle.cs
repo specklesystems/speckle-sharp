@@ -39,7 +39,7 @@ public class BeamConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.Re
         $"Beam location conversion did not yield an ICurve, instead it yielded an object of type {baseGeometry.GetType()}"
       );
     }
-    var symbol = target.Document.GetElement(target.GetTypeId()) as FamilySymbol;
+    var symbol = (FamilySymbol)target.Document.GetElement(target.GetTypeId());
 
     RevitBeam speckleBeam =
       new()

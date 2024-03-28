@@ -26,7 +26,7 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
 
   public override Base RawConvert(FamilyInstance target)
   {
-    Base @base = null;
+    Base? @base = null;
 
     ////adaptive components
     //if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(target))
@@ -67,10 +67,7 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     //}
 
     //beams & braces
-    if (
-      @base == null
-      && RevitCategories.StructuralFraming.BuiltInCategories.Contains(target.Category.GetBuiltInCategory())
-    )
+    if (RevitCategories.StructuralFraming.BuiltInCategories.Contains(target.Category.GetBuiltInCategory()))
     {
       if (target.StructuralType == StructuralType.Beam)
       {

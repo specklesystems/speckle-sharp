@@ -6,15 +6,14 @@ using System.Reflection;
 using System.IO;
 using Autofac;
 using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
 internal class RevitExternalApplication : IExternalApplication
 {
-  private IRevitPlugin? _revitPlugin = null;
-  private AutofacContainer? _container = null;
+  private IRevitPlugin? _revitPlugin;
+  private AutofacContainer? _container;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way
@@ -36,11 +35,7 @@ internal class RevitExternalApplication : IExternalApplication
       RevitVersionName = "2023",
       RevitButtonName = "Speckle DUI3 (DI)",
       RevitButtonText = "Revit Connector",
-      ModuleFolders = new string[]
-      {
-        Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location),
-        // "C:\\Users\\imhaw\\AppData\\Roaming\\Autodesk\\REVIT\\Addins\\2023\\Speckle.Connectors.Revit2023"
-      }
+      ModuleFolders = new string[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) }
     };
   }
 

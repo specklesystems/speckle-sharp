@@ -25,7 +25,9 @@ public class ParameterValueExtractor
       StorageType.Integer => GetValueAsInt(parameter),
       StorageType.String => GetValueAsString(parameter),
       StorageType.ElementId => GetValueAsElementId(parameter)?.ToString(),
-      _ => throw new SpeckleConversionException($"Unsupported parameter storage type {parameter.StorageType}")
+      StorageType.None
+      or _
+        => throw new SpeckleConversionException($"Unsupported parameter storage type {parameter.StorageType}")
     };
   }
 
@@ -90,11 +92,15 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
-  public T? GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
     where T : class
   {
     ElementId? elementId = GetValueAsElementId(element, builtInParameter);
-    return element.Document.GetElement(elementId) as T;
+    Element paramElement = element.Document.GetElement(elementId);
+    return paramElement as T
+      ?? throw new SpeckleConversionException(
+        $"Unable to cast retrieved element of type {paramElement.GetType()} to an element of type {typeof(T)}"
+      );
   }
 
   private TResult? GetValueGeneric<TResult>(

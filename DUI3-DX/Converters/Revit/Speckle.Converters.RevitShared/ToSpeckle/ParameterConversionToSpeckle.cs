@@ -70,7 +70,7 @@ internal struct ParameterToSpeckleData
   public bool IsShared;
   public bool IsTypeParameter;
   public string Name;
-  public string UnitsSymbol;
+  public string? UnitsSymbol;
   public string UnitType;
 
   public readonly SOBR.Parameter GetParameterObjectWithValue(object? value)
@@ -83,7 +83,7 @@ internal struct ParameterToSpeckleData
       isReadOnly = IsReadOnly,
       isTypeParameter = IsTypeParameter,
       name = Name,
-      units = UnitsSymbol,
+      units = UnitsSymbol ?? "None",
       value = value
     };
   }

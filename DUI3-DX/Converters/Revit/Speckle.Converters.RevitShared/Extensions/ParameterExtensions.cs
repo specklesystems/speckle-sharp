@@ -18,7 +18,7 @@ public static class ParameterExtensions
     }
     else
     {
-      var def = rp.Definition as InternalDefinition;
+      var def = (InternalDefinition)rp.Definition;
       if (def.BuiltInParameter == BuiltInParameter.INVALID)
       {
         return def.Name;

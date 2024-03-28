@@ -35,36 +35,36 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public RevitColumn RawConvert(DB.FamilyInstance revitColumn)
+  public RevitColumn RawConvert(DB.FamilyInstance target)
   {
-    var symbol = revitColumn.Document.GetElement(revitColumn.GetTypeId()) as FamilySymbol;
+    var symbol = (FamilySymbol)target.Document.GetElement(target.GetTypeId());
 
     var speckleColumn = new RevitColumn();
     speckleColumn.family = symbol.FamilyName;
-    speckleColumn.type = revitColumn.Document.GetElement(revitColumn.GetTypeId()).Name;
+    speckleColumn.type = target.Document.GetElement(target.GetTypeId()).Name;
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
-      revitColumn,
+      target,
       BuiltInParameter.FAMILY_BASE_LEVEL_PARAM
     );
     speckleColumn.level = _levelConverter.RawConvert(level);
 
     var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
-      revitColumn,
+      target,
       BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
     );
     speckleColumn.topLevel = _levelConverter.RawConvert(topLevel);
     speckleColumn.baseOffset =
-      _parameterValueExtractor.GetValueAsDouble(revitColumn, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM) ?? 0;
+      _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM) ?? 0;
     speckleColumn.topOffset =
-      _parameterValueExtractor.GetValueAsDouble(revitColumn, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM) ?? 0;
-    speckleColumn.facingFlipped = revitColumn.FacingFlipped;
-    speckleColumn.handFlipped = revitColumn.HandFlipped;
-    speckleColumn.isSlanted = revitColumn.IsSlantedColumn;
+      _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM) ?? 0;
+    speckleColumn.facingFlipped = target.FacingFlipped;
+    speckleColumn.handFlipped = target.HandFlipped;
+    speckleColumn.isSlanted = target.IsSlantedColumn;
     //speckleColumn.structural = revitColumn.StructuralType == StructuralType.Column;
 
     //geometry
-    var baseGeometry = _locationConverter.ConvertToBase(revitColumn.Location);
+    var baseGeometry = _locationConverter.ConvertToBase(target.Location);
     var baseLine = baseGeometry as ICurve;
 
     //make line from point and height
@@ -95,14 +95,14 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.
 
     speckleColumn.baseLine = baseLine; //all speckle columns should be line based
 
-    _parameterObjectAssigner.AssignParametersToBase(revitColumn, speckleColumn);
+    _parameterObjectAssigner.AssignParametersToBase(target, speckleColumn);
 
-    if (revitColumn.Location is LocationPoint locationPoint)
+    if (target.Location is LocationPoint locationPoint)
     {
       speckleColumn.rotation = locationPoint.Rotation;
     }
 
-    speckleColumn.displayValue = _displayValueExtractor.GetDisplayValue(revitColumn);
+    speckleColumn.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
     return speckleColumn;
   }

@@ -12,7 +12,7 @@ public static class ForgeTypeIdExtensions
       return null;
     }
     var validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
-    var typeId = validSymbols?.Where(x => !x.Empty());
+    var typeId = validSymbols.Where(x => !x.Empty());
     foreach (DB.ForgeTypeId symbolId in typeId)
     {
       return LabelUtils.GetLabelForSymbol(symbolId);

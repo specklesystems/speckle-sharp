@@ -22,23 +22,26 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
   {
     MeshBuildHelper meshBuildHelper = new();
 
-    var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
+    var meshMap = new Dictionary<Mesh, List<DB.Mesh>>();
     foreach (Solid solid in target)
     {
       foreach (Face face in solid.Faces)
       {
         DB.Material faceMaterial =
-          _contextStack.Current.Document.Document.GetElement(face.MaterialElementId) as DB.Material;
+          _contextStack.Current.Document.Document.GetElement(face.MaterialElementId) as DB.Material
+          ?? throw new SpeckleConversionException("Unable to cast face's materialElementId element to DB.Material");
         Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, _contextStack.Current.SpeckleUnits);
-        if (!MeshMap.ContainsKey(m))
+        if (!meshMap.TryGetValue(m, out List<DB.Mesh>? value))
         {
-          MeshMap.Add(m, new List<DB.Mesh>());
+          value = new List<DB.Mesh>();
+          meshMap.Add(m, value);
         }
-        MeshMap[m].Add(face.Triangulate());
+
+        value.Add(face.Triangulate());
       }
     }
 
-    foreach (var meshData in MeshMap)
+    foreach (var meshData in meshMap)
     {
       //It's cheaper to resize lists manually, since we would otherwise be resizing a lot!
       int numberOfVertices = 0;

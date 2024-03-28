@@ -25,7 +25,7 @@ public sealed class DisplayValueExtractor
     DB.Element element,
     DB.Options? options = null,
     bool isConvertedAsInstance = false,
-    DB.Transform transform = null
+    DB.Transform? transform = null
   )
   {
     var displayMeshes = new List<Mesh>();
@@ -61,9 +61,9 @@ public sealed class DisplayValueExtractor
   /// </remarks>
   private List<Mesh> GetElementDisplayValue(
     DB.Element element,
-    Options options = null,
+    Options? options = null,
     bool isConvertedAsInstance = false,
-    DB.Transform transform = null
+    DB.Transform? transform = null
   )
   {
     var displayMeshes = new List<Mesh>();
@@ -90,7 +90,7 @@ public sealed class DisplayValueExtractor
 
   private (List<Solid>, List<DB.Mesh>) GetSolidsAndMeshesFromElement(
     Element element,
-    Options options,
+    Options? options,
     Transform? transform = null
   )
   {
@@ -140,7 +140,7 @@ public sealed class DisplayValueExtractor
     List<Solid> solids,
     List<DB.Mesh> meshes,
     GeometryElement geom,
-    Transform inverseTransform = null
+    Transform? inverseTransform = null
   )
   {
     var topLevelSolidsCount = 0;
@@ -220,7 +220,6 @@ public sealed class DisplayValueExtractor
         topLevelSolidsCount,
         topLevelMeshesCount,
         topLevelGeomElementCount,
-        topLevelGeomInstanceCount,
         hasSymbolGeometry
       );
     }
@@ -231,7 +230,6 @@ public sealed class DisplayValueExtractor
     int topLevelSolidsCount,
     int topLevelMeshesCount,
     int topLevelGeomElementCount,
-    int topLevelGeomInstanceCount,
     bool hasSymbolGeom
   )
   {
@@ -270,7 +268,7 @@ public sealed class DisplayValueExtractor
   /// <summary>
   /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
   /// </summary>
-  private Dictionary<string, GraphicsStyle> _graphicStyleCache = new();
+  private readonly Dictionary<string, GraphicsStyle> _graphicStyleCache = new();
 
   /// <summary>
   /// Exclude light source cones and potentially other geometries by their graphic style
@@ -282,14 +280,14 @@ public sealed class DisplayValueExtractor
   {
     if (!_graphicStyleCache.ContainsKey(id.ToString()))
     {
-      _graphicStyleCache.Add(id.ToString(), doc.GetElement(id) as GraphicsStyle);
+      _graphicStyleCache.Add(id.ToString(), (GraphicsStyle)doc.GetElement(id));
     }
 
     var graphicStyle = _graphicStyleCache[id.ToString()];
 
     if (
       graphicStyle != null
-      && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource)
+      && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)BuiltInCategory.OST_LightingFixtureSource
     )
     {
       return true;
