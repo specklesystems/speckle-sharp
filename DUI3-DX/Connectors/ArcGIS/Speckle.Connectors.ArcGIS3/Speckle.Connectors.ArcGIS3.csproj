@@ -27,6 +27,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3.DependencyInjection\Speckle.Converters.ArcGIS3.DependencyInjection.csproj" IncludeAssets="runtime"/>
+    <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3\Speckle.Converters.ArcGIS3.csproj" IncludeAssets="runtime"/>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />

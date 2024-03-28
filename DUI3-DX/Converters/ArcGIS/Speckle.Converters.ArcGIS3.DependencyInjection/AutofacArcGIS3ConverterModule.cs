@@ -1,5 +1,7 @@
 // POC: not sure we should have this here as it attaches us to autofac, maybe a bit prematurely...
 
+using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Mapping;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
@@ -13,6 +15,12 @@ public class AutofacArcGISConverterModule : Module
   {
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
+
+    // single stack per conversion
+    builder
+      .RegisterType<ArcGISConversionContextStack>()
+      .As<IConversionContextStack<Map, Unit>>()
+      .InstancePerDependency();
 
     // factory for conversions
     builder

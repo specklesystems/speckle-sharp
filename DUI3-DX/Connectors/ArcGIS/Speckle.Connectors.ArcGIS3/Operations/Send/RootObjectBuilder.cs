@@ -59,6 +59,11 @@ public class RootObjectBuilder
 
     var selectedMemberUrls = map.GetSelection().ToDictionary();
 
+    if (selectedMemberUrls.Count == 0)
+    {
+      throw new SpeckleException("No data to send");
+    }
+
     return selectedMemberUrls;
   }
 
