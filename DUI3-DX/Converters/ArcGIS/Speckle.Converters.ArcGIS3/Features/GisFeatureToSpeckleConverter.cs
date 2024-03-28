@@ -9,20 +9,20 @@ using Speckle.Converters.Common;
 namespace Speckle.Converters.ArcGIS3.Features;
 
 [NameAndRankValue(nameof(Row), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointElementToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Row, PointElement>
+public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Row, GisFeature>
 {
   private readonly IRawConversion<MapPoint, Point> _pointConverter;
 
-  public PointElementToSpeckleConverter(IRawConversion<MapPoint, Point> pointConverter)
+  public GisFeatureToSpeckleConverter(IRawConversion<MapPoint, Point> pointConverter)
   {
     _pointConverter = pointConverter;
   }
 
   public Base Convert(object target) => RawConvert((Row)target);
 
-  public PointElement RawConvert(Row target)
+  public GisFeature RawConvert(Row target)
   {
-    var geometry = new List<Point>();
+    var geometry = new List<Base>();
     MapPoint shape = (MapPoint)target["SHAPE"];
     var pt = _pointConverter.RawConvert(shape);
     geometry.Add(pt);
@@ -31,6 +31,6 @@ public class PointElementToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     var attributes = new Base();
     // IReadOnlyList<Field> fields = target.GetFields();
 
-    return new PointElement { geometry = geometry, attributes = attributes };
+    return new GisFeature { geometry = geometry, attributes = attributes };
   }
 }

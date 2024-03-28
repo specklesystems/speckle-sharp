@@ -10,11 +10,11 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 [NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
-  private readonly IRawConversion<Row, PointElement> _pointElementConverter;
+  private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
 
-  public VectorLayerToSpeckleConverter(IRawConversion<Row, PointElement> pointElementConverter)
+  public VectorLayerToSpeckleConverter(IRawConversion<Row, GisFeature> gisFeatureConverter)
   {
-    _pointElementConverter = pointElementConverter;
+    _gisFeatureConverter = gisFeatureConverter;
   }
 
   public Base Convert(object target)
@@ -56,7 +56,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          var element = _pointElementConverter.RawConvert(row);
+          var element = _gisFeatureConverter.RawConvert(row);
           speckleLayer.elements.Add(element);
         }
       }

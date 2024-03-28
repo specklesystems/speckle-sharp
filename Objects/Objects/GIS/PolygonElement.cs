@@ -5,7 +5,6 @@ namespace Objects.GIS;
 
 public class PolygonElement : Base
 {
-  [DetachProperty]
-  public List<object> geometry { get; set; }
+  public List<Base> geometry { get; set; }
   public Base attributes { get; set; }
 }

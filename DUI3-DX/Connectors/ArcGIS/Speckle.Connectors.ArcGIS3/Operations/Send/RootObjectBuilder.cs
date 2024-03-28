@@ -27,7 +27,7 @@ public class RootObjectBuilder
   {
     if (MapView.Active == null)
     {
-      throw new SpeckleException("No Map currently open");
+      throw new SpeckleException("No Map currently active");
     }
     var selectedObjects = GetSelection(MapView.Active.Map);
 
