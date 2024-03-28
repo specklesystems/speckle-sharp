@@ -6,7 +6,7 @@ using Autodesk.Revit.UI;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
-using Speckle.Connectors.Revit.Plugin;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 

@@ -1,0 +1,20 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "Core\\Core\\Core.csproj",
+      "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
+      "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.RevitShared\\Speckle.Connectors.RevitShared.shproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.DependencyInjection\\Speckle.Converters.Revit2023.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023\\Speckle.Converters.Revit2023.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
+      "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
+      "DUI3-DX\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
+      "Objects\\Objects\\Objects.csproj"
+    ]
+  }
+}

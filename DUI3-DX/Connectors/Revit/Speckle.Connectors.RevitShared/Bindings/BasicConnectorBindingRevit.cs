@@ -9,6 +9,8 @@ using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -95,11 +97,12 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
   public void HighlightModel(string modelCardId)
   {
     // POC: don't know if we can rely on storing the ActiveUIDocument, hence getting it each time
-    var activeUIDoc = _revitContext.UIApplication.ActiveUIDocument;
+    var activeUIDoc =
+      _revitContext.UIApplication?.ActiveUIDocument
+      ?? throw new SpeckleException("Unable to retrieve active UI document");
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
-    // POC: as sendermodelcard, surely we should cast here? better to have invalidcast which is the real reason than NRE
-    SenderModelCard model = _store.GetModelById(modelCardId) as SenderModelCard;
+    SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
     List<string> objectsIds = model.SendFilter.GetObjectIds();
 
     // POC: GetElementsFromDocument could be interfaced out, extension is cleaner

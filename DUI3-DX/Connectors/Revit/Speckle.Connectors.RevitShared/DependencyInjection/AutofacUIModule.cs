@@ -4,14 +4,14 @@ using Autofac;
 using CefSharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -60,13 +60,19 @@ public class AutofacUIModule : Module
     builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
+    // send operation and dependencies
+    builder.RegisterType<SendOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SendSelection>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ToSpeckleConvertedObjectsCache>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
+
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
 
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    //builder
+    //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .InstancePerLifetimeScope();
 
     // POC: logging factory couldn't be added, which is the recommendation, due to janky dependencies
     // having a SpeckleLogging service, might be interesting, if a service can listen on a local port or use named pipes

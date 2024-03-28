@@ -5,6 +5,9 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared;
+using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Converters.RevitShared.Services;
+using Speckle.Converters.RevitShared.ToSpeckle;
 
 namespace Speckle.Converters.Revit2023.DependencyInjection;
 
@@ -19,5 +22,15 @@ public class AutofacRevitConverterModule : Module
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
       .As<IFactory<string, IHostObjectToSpeckleConversion>>();
+
+    builder.RegisterType<ToSpeckleScalingService>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<RevitConversionContextStack>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<RevitToSpeckleUnitConverter>().AsImplementedInterfaces().SingleInstance();
+    builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<CachingService>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<HostedElementConversionToSpeckle>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ParameterObjectAssigner>().AsSelf().InstancePerLifetimeScope();
   }
 }
