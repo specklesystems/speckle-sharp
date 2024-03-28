@@ -24,6 +24,7 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
   {
     var geometry = new List<Base>();
     MapPoint shape = (MapPoint)target["SHAPE"];
+    var nativeGeometryType = shape.GetType().ToString();
     var pt = _pointConverter.RawConvert(shape);
     geometry.Add(pt);
 
@@ -31,6 +32,11 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
     var attributes = new Base();
     // IReadOnlyList<Field> fields = target.GetFields();
 
-    return new GisFeature { geometry = geometry, attributes = attributes };
+    return new GisFeature
+    {
+      geometry = geometry,
+      attributes = attributes,
+      nativeGeometryType = nativeGeometryType,
+    };
   }
 }
