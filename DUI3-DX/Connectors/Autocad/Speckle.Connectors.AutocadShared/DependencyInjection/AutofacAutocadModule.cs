@@ -43,6 +43,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<AutocadReceiveBinding>().As<IBinding>().SingleInstance();
     builder
       .RegisterType<AutocadToSpeckleUnitConverter>()
       .As<IHostToSpeckleUnitConverter<UnitsValue>>()

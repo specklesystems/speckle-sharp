@@ -8,7 +8,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
-
 using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
@@ -20,6 +19,8 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly CancellationManager _cancellationManager;
+  
+  public ReceiveBindingUICommands Commands { get; }
 
   //private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
 
@@ -30,13 +31,15 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     _cancellationManager = cancellationManager;
 
     Parent = parent;
+    Commands = new ReceiveBindingUICommands(parent);
   }
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
-  public Task Receive(string modelCardId, string versionId)
+  public Task Receive(string modelCardId)
   {
-    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId, versionId).ConfigureAwait(false));
+    ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
+    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId, modelCard.SelectedVersionId).ConfigureAwait(false));
     return Task.CompletedTask;
   }
 
