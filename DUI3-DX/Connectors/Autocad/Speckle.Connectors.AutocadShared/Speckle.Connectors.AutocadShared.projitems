@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadReceiveBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadModule.cs" />

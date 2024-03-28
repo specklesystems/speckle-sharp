@@ -1,4 +1,5 @@
 using Speckle.Connectors.DUI.Models.Card;
+using System.Threading.Tasks;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -9,7 +10,7 @@ public interface IReceiveBinding : IBinding
   /// </summary>
   /// <param name="modelCardId"> Model card id</param>
   /// <param name="versionId"> Version id to receive</param>
-  public void Receive(string modelCardId, string versionId);
+  public Task Receive(string modelCardId, string versionId);
 
   /// <summary>
   /// Instructs the host app to  cancel the receiving for a given model.
