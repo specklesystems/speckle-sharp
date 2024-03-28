@@ -6,7 +6,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.Parameter), 0)]
+[NameAndRankValue(nameof(Parameter), 0)]
 public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter, SOBR.Parameter>
 {
   private readonly ToSpeckleScalingService _scalingService;
@@ -68,7 +68,6 @@ internal struct ParameterToSpeckleData
   public string InternalName;
   public bool IsReadOnly;
   public bool IsShared;
-  public bool IsTypeParameter;
   public string Name;
   public string? UnitsSymbol;
   public string UnitType;
@@ -81,7 +80,6 @@ internal struct ParameterToSpeckleData
       applicationUnit = ApplicationUnits,
       isShared = IsShared,
       isReadOnly = IsReadOnly,
-      isTypeParameter = IsTypeParameter,
       name = Name,
       units = UnitsSymbol ?? "None",
       value = value

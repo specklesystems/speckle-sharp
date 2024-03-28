@@ -41,7 +41,10 @@ public class RevitCategoryInfo
   public List<T> GetElementTypes<T>(Document document)
     where T : ElementType
   {
+#pragma warning disable CA2000 // Dispose objects before losing scope
     var collector = new FilteredElementCollector(document);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
     if (BuiltInCategories.Count > 0)
     {
       using var filter = new ElementMulticategoryFilter(BuiltInCategories);

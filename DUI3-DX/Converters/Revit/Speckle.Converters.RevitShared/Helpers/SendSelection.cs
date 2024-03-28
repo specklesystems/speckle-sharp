@@ -5,7 +5,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 
 public class SendSelection
 {
-  private HashSet<string> _selectedItemIds;
+  private readonly HashSet<string> _selectedItemIds;
 
   public SendSelection(IEnumerable<string> selectedItemIds)
   {

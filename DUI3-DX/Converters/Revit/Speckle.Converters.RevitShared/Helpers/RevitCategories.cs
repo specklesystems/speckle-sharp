@@ -143,5 +143,6 @@ public static class RevitCategories
     );
   public static RevitCategoryInfo Wire { get; } =
     new(nameof(Wire), typeof(DB.Electrical.Wire), typeof(DB.Electrical.WireType), new List<BuiltInCategory>());
-  public static RevitCategoryInfo Undefined { get; } = new(nameof(Undefined), null, null, new List<BuiltInCategory>());
+  public static RevitCategoryInfo Undefined { get; } =
+    new(nameof(Undefined), typeof(RevitCategoryInfo), typeof(RevitCategoryInfo), new List<BuiltInCategory>());
 }

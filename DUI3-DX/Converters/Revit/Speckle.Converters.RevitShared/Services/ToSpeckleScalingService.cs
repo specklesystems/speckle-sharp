@@ -15,8 +15,6 @@ public sealed class ToSpeckleScalingService
     _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
   }
 
-  public string SpeckleUnits { get; }
-
   public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
 
   public double Scale(double value, ForgeTypeId forgeTypeId)

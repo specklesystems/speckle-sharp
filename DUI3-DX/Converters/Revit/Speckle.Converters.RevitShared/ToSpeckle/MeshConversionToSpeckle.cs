@@ -30,7 +30,7 @@ public class MeshConversionToSpeckle : BaseConversionToSpeckle<List<DB.Mesh>, Li
 
     foreach (var mesh in target)
     {
-      var revitMaterial = _contextStack.Current.Document.Document.GetElement(mesh.MaterialElementId) as DB.Material;
+      var revitMaterial = (DB.Material)_contextStack.Current.Document.Document.GetElement(mesh.MaterialElementId);
       Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, _contextStack.Current.SpeckleUnits);
       _meshDataTriangulator.Triangulate(mesh, speckleMesh.faces, speckleMesh.vertices);
     }

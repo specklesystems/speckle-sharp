@@ -8,9 +8,9 @@ namespace Speckle.Converters.RevitShared.Helpers;
 public sealed class MeshBuildHelper
 {
   //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
-  private readonly Dictionary<int, RenderMaterial> materialMap = new();
+  private readonly Dictionary<int, RenderMaterial?> _materialMap = new();
 
-  public RenderMaterial GetOrCreateMaterial(DB.Material revitMaterial)
+  public RenderMaterial? GetOrCreateMaterial(DB.Material revitMaterial)
   {
     if (revitMaterial == null)
     {
@@ -18,50 +18,43 @@ public sealed class MeshBuildHelper
     }
 
     int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
-    if (materialMap.TryGetValue(hash, out RenderMaterial m))
+    if (_materialMap.TryGetValue(hash, out RenderMaterial? m))
     {
       return m;
     }
 
     var material = RenderMaterialToSpeckle(revitMaterial);
-    materialMap.Add(hash, material);
+    _materialMap.Add(hash, material);
     return material;
   }
 
   private static int Hash(DB.Material mat) =>
     mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
 
-  //Mesh to use for null materials (because dictionary keys can't be null)
-  private Mesh nullMesh;
-
   //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
-  private readonly Dictionary<int, Mesh> meshMap = new();
+  private readonly Dictionary<int, Mesh> _meshMap = new();
 
   public Mesh GetOrCreateMesh(DB.Material mat, string units)
   {
     if (mat == null)
     {
-      return nullMesh ??= new Mesh { units = units };
+      return new Mesh { units = units };
     }
 
     int materialHash = Hash(mat);
-    if (meshMap.TryGetValue(materialHash, out Mesh m))
+    if (_meshMap.TryGetValue(materialHash, out Mesh m))
     {
       return m;
     }
 
     var mesh = new Mesh { ["renderMaterial"] = GetOrCreateMaterial(mat), units = units };
-    meshMap.Add(materialHash, mesh);
+    _meshMap.Add(materialHash, mesh);
     return mesh;
   }
 
   public List<Mesh> GetAllMeshes()
   {
-    List<Mesh> meshes = meshMap.Values?.ToList() ?? new List<Mesh>();
-    if (nullMesh != null)
-    {
-      meshes.Add(nullMesh);
-    }
+    List<Mesh> meshes = _meshMap.Values?.ToList() ?? new List<Mesh>();
 
     return meshes;
   }
@@ -79,7 +72,7 @@ public sealed class MeshBuildHelper
       new()
       {
         name = revitMaterial.Name,
-        opacity = 1 - (revitMaterial.Transparency / 100d),
+        opacity = 1 - revitMaterial.Transparency / 100d,
         //metalness = revitMaterial.Shininess / 128d, //Looks like these are not valid conversions
         //roughness = 1 - (revitMaterial.Smoothness / 100d),
         diffuse = System.Drawing.Color

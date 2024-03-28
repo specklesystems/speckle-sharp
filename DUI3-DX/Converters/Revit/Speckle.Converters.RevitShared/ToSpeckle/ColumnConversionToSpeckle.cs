@@ -39,9 +39,11 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.
   {
     var symbol = (FamilySymbol)target.Document.GetElement(target.GetTypeId());
 
-    var speckleColumn = new RevitColumn();
-    speckleColumn.family = symbol.FamilyName;
-    speckleColumn.type = target.Document.GetElement(target.GetTypeId()).Name;
+    var speckleColumn = new RevitColumn
+    {
+      family = symbol.FamilyName,
+      type = target.Document.GetElement(target.GetTypeId()).Name
+    };
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
