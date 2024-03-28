@@ -14,6 +14,7 @@ using Speckle.Core.Models;
 using System.Diagnostics;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Newtonsoft.Json.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
@@ -65,15 +66,22 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       // 3 - Get commit object from server
       Client apiClient = new(account);
       ServerTransport transport = new(account, modelCard.ProjectId);
-      Base receiveResult = await ReceiveHelper
-        .Receive(apiClient, transport, true, null, cts.Token)
-        .ConfigureAwait(true);
+      Commit? version =
+        await apiClient.CommitGet(modelCard.ProjectId, versionId, cts.Token).ConfigureAwait(false)
+        ?? throw new SpeckleException($"Failed to receive commit: {versionId} from server)");
+
+      Base? commitObject =
+        await Operations
+          .Receive(version.id, cancellationToken: cts.Token, remoteTransport: transport)
+          .ConfigureAwait(false)
+        ?? throw new SpeckleException(
+          $"Failed to receive commit: {version.id} objects from server: {nameof(Operations)} returned null"
+        );
 
       apiClient.Dispose();
       cts.Token.ThrowIfCancellationRequested();
 
       // 4 - Convert objects
-      Base commitObject = ConvertObjects(autocadObjects, modelCard, cts.Token);
     }
     catch (OperationCanceledException)
     {
