@@ -2,19 +2,14 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
-using Speckle.Converters.Common;
 using Speckle.Core.Transports;
-using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
-using System.Diagnostics;
+
 using ICancelable = System.Reactive.Disposables.ICancelable;
-using Speckle.Newtonsoft.Json.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 
