@@ -18,37 +18,23 @@ public class RootObjectBuilder
   private readonly RevitContext _revitContext;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
 
-  private bool _operationStarted;
-
   public RootObjectBuilder(
-    SendSelection sendSelection,
+    ISendFilter sendFilter,
     ISpeckleConverterToSpeckle converter,
     RevitContext revitContext,
     ToSpeckleConvertedObjectsCache convertedObjectsCache
   )
   {
-    _sendSelection = sendSelection;
+    _sendSelection = new(sendFilter.GetObjectIds());
     _converter = converter;
     _revitContext = revitContext;
     _convertedObjectsCache = convertedObjectsCache;
   }
 
-  public Base Build(
-    ISendFilter sendFilter,
-    Action<string, double?>? onOperationProgressed = null,
-    CancellationToken ct = default
-  )
+  public Base Build(Action<string, double?>? onOperationProgressed = null, CancellationToken ct = default)
   {
-    if (_operationStarted)
-    {
-      throw new InvalidOperationException();
-    }
-    _operationStarted = true;
-
-    _sendSelection.SetSelection(sendFilter.GetObjectIds());
-
     List<Element> objects = _revitContext.UIApplication.ActiveUIDocument.Document
-      .GetElements(sendFilter.GetObjectIds())
+      .GetElements(_sendSelection.SelectedItems)
       .ToList();
 
     Base commitObject = new();

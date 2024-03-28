@@ -43,8 +43,8 @@ public sealed class SendOperation
     Base commitObject;
     using (var scope = _scope.BeginLifetimeScope())
     {
-      RootObjectBuilder rootObjectBuilder = scope.Resolve<RootObjectBuilder>();
-      commitObject = rootObjectBuilder.Build(sendFilter, onOperationProgressed, ct);
+      RootObjectBuilder rootObjectBuilder = scope.Resolve<Func<ISendFilter, RootObjectBuilder>>()(sendFilter);
+      commitObject = rootObjectBuilder.Build(onOperationProgressed, ct);
     }
 
     Account account =
