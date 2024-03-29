@@ -73,6 +73,7 @@ public class RootObjectBuilder
     int count = 0;
 
     Collection rootObjectCollection = new(); //TODO: Collections
+    ISpeckleConverterToSpeckle converter = _converterFactory.ResolveScopedInstance();
 
     foreach ((MapMember mapMember, List<long> objectIds) in mapMembers)
     {
@@ -83,7 +84,6 @@ public class RootObjectBuilder
 
       try
       {
-        var converter = _converterFactory.ResolveScopedInstance();
         Base converted = converter.Convert(mapMember);
         converted.applicationId = applicationId;
 
