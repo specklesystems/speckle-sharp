@@ -8,7 +8,7 @@ public class GisFeature : Base
   public GisFeature()
   {
     geometry = new List<Base>();
-    geometryType = "None";
+    nativeGeometryType = "None";
   }
 
   [DetachProperty]
@@ -17,5 +17,6 @@ public class GisFeature : Base
   [DetachProperty]
   public List<Base>? displayValue { get; set; }
   public Base? attributes { get; set; }
-  public string geometryType { get; set; }
+  public string nativeGeometryType { get; set; }
+  public string? speckleGeometryType { get; set; }
 }
