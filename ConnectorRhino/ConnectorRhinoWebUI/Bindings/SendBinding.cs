@@ -217,8 +217,14 @@ public class SendBinding : ISendBinding, ICancelable
     int count = 0;
 
     Dictionary<int, Collection> layerCollectionCache = new();
-    // TODO: Handle blocks.
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+
+    var unpacker = new RhinoInstanceUnpacker();
+
+    unpacker.Unpack(rhinoObjects);
+
+    rootObjectCollection["instanceDefs"] = unpacker.FlatDefinitions.Select(kvp => kvp.Value);
+
+    foreach (RhinoObject rhinoObject in unpacker.FlatAtomicObjects.Values)
     {
       if (cts.IsCancellationRequested)
       {
@@ -236,7 +242,12 @@ public class SendBinding : ISendBinding, ICancelable
       // What we actually do here is check if the object has been previously converted AND has not changed.
       // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
       Base converted;
-      if (
+
+      if (rhinoObject is InstanceObject) // Special case for blocks, bypass cache
+      {
+        converted = unpacker.FlatBlocks[applicationId];
+      }
+      else if (
         !modelCard.ChangedObjectIds.Contains(applicationId)
         && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
       )
