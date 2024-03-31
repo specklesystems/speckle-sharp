@@ -1,4 +1,5 @@
 using Speckle.Connectors.DUI.Models.Card;
+using System.Threading.Tasks;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -8,8 +9,7 @@ public interface IReceiveBinding : IBinding
   /// Instructs the host app to start receiving this model version.
   /// </summary>
   /// <param name="modelCardId"> Model card id</param>
-  /// <param name="versionId"> Version id to receive</param>
-  public void Receive(string modelCardId, string versionId);
+  public Task Receive(string modelCardId);
 
   /// <summary>
   /// Instructs the host app to  cancel the receiving for a given model.
@@ -18,11 +18,8 @@ public interface IReceiveBinding : IBinding
   public void CancelReceive(string modelCardId);
 }
 
-public static class ReceiveBindingEvents
+public class ReceiverModelCard : ModelCard
 {
-  public const string RECEIVERS_EXPIRED = "receiversExpired";
-  public const string RECEIVERS_PROGRESS = "receiverProgress";
-  public const string NOTIFY = "notify";
+  public string SelectedVersionId { get; set; }
+  public string LatestVersionId { get; set; }
 }
-
-public class ReceiverModelCard : ModelCard { }
