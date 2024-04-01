@@ -27,7 +27,7 @@ public class AutocadLayerManager
   /// <param name="layerName"></param>
   public void CreateLayerOrPurge(string layerName)
   {
-    using var transaction = Doc.TransactionManager.TopTransaction;
+    using var transaction = Doc.Database.TransactionManager.StartTransaction();
 
     var layerTable =
       transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
@@ -54,6 +54,7 @@ public class AutocadLayerManager
     layerTable.UpgradeOpen();
     layerTable.Add(layerTableRecord);
     transaction.AddNewlyCreatedDBObject(layerTableRecord, true);
+    transaction.Commit();
   }
 
   /// <summary>
