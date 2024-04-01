@@ -3,6 +3,8 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Autofac.DependencyInjection;
+using Speckle.Converters.Common;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
@@ -19,15 +21,20 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly CancellationManager _cancellationManager;
-  
+
   public ReceiveBindingUICommands Commands { get; }
 
-  //private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly IScopedFactory<ISpeckleConverterToHost> _speckleConverterToHostFactory;
 
-  public AutocadReceiveBinding(DocumentModelStore store, IBridge parent, CancellationManager cancellationManager)
+  public AutocadReceiveBinding(
+    DocumentModelStore store,
+    IBridge parent,
+    CancellationManager cancellationManager,
+    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory
+  )
   {
     _store = store;
-    //_speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _speckleConverterToHostFactory = speckleConverterToHostFactory;
     _cancellationManager = cancellationManager;
 
     Parent = parent;
@@ -39,7 +46,9 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   public Task Receive(string modelCardId)
   {
     ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
-    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId, modelCard.SelectedVersionId).ConfigureAwait(false));
+    Parent.RunOnMainThread(
+      async () => await ReceiveInternal(modelCardId, modelCard.SelectedVersionId).ConfigureAwait(false)
+    );
     return Task.CompletedTask;
   }
 
@@ -91,13 +100,13 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     }
   }
 
-  private Base ConvertObjects(
+  private void ConvertObjects(
     List<(DBObject obj, string applicationId)> dbObjects,
     ReceiverModelCard modelCard,
     CancellationToken cancellationToken
   )
   {
-    //ISpeckleConverterToNative converter = _speckleConverterToNativeFactory.ResolveScopedInstance();
+    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
@@ -105,7 +114,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   public void Dispose()
   {
     IsDisposed = true;
-    //_speckleConverterToNativeFactory.Dispose();
+    _speckleConverterToHostFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }
