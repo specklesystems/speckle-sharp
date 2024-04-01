@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
+using ConnectorRhinoWebUI.Utils;
 using DUI3;
 using DUI3.Bindings;
 using DUI3.Models;
@@ -76,6 +78,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       );
 
       var convertableObjects = new List<(List<Collection> collectionPath, Base obj)>();
+      var instancesAndInstanceDefinitions = new List<(List<Collection> collectionPath, IInstanceComponent obj)>();
       foreach (var (collectionPath, obj) in objs)
       {
         if (cts.IsCancellationRequested)
@@ -87,10 +90,22 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         {
           convertableObjects.Add((collectionPath, obj));
         }
+
+        if (obj is IInstanceComponent p)
+        {
+          instancesAndInstanceDefinitions.Add((collectionPath, p));
+        }
       }
 
       var baseLayerName = $"Project {modelCard.ProjectName}: Model {modelCard.ModelName}";
-      var convertedIds = BakeObjects(convertableObjects, baseLayerName, modelCardId, cts, converter);
+      var convertedIds = BakeObjects(
+        convertableObjects,
+        instancesAndInstanceDefinitions,
+        baseLayerName,
+        modelCardId,
+        cts,
+        converter
+      );
 
       var receiveResult = new ReceiveResult() { BakedObjectIds = convertedIds, Display = true };
 
@@ -112,6 +127,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
 
   private List<string> BakeObjects(
     List<(List<Collection> collectionPath, Base obj)> objects,
+    List<(List<Collection> collectionPath, IInstanceComponent obj)> instancesAndInstanceDefinitions,
     string baseLayerName,
     string modelCardId,
     CancellationTokenSource cts,
@@ -121,9 +137,17 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     var rootLayerName = baseLayerName;
 
 #pragma warning disable CS0618
-    // NOTE: I could not get the non-obsolete version to work as intended
     var rootLayerIndex = Doc.Layers.Find(rootLayerName, true);
 #pragma warning restore CS0618
+
+    // Cleanup blocks/definitions/instances before layers
+    foreach (var definition in Doc.InstanceDefinitions)
+    {
+      if (!definition.IsDeleted && definition.Name.Contains(rootLayerName))
+      {
+        Doc.InstanceDefinitions.Delete(definition.Index, true, false);
+      }
+    }
 
     // Cleans up any previously received objects
     if (rootLayerIndex >= 0)
@@ -139,24 +163,18 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     cache.Add(rootLayerName, rootLayerIndex);
 
     var newObjectIds = new List<string>();
+    var applicationIdMap = new Dictionary<string, string>();
     var count = 0;
+
+    // Stage 1: Raw atomic objects conversion
     foreach (var (path, baseObj) in objects)
     {
       if (cts.IsCancellationRequested)
       {
         throw new OperationCanceledException(cts.Token);
       }
-      var fullLayerName = string.Join("::", path);
-      var layerIndex = -1;
-      if (cache.ContainsKey(fullLayerName))
-      {
-        layerIndex = cache[fullLayerName];
-      }
 
-      if (layerIndex == -1)
-      {
-        layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
-      }
+      var layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
 
       BasicConnectorBindingCommands.SetModelProgress(
         Parent,
@@ -164,13 +182,97 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         new ModelCardProgress() { Status = "Converting & creating objects", Progress = (double)++count / objects.Count }
       );
 
+      // Skips instances (blocks) as they are handled in the second stage
+      if (baseObj is InstanceProxy)
+      {
+        continue;
+      }
+
       var converted = converter.ConvertToNative(baseObj);
       if (converted is GeometryBase newObject)
       {
         var newObjectGuid = Doc.Objects.Add(newObject, new ObjectAttributes() { LayerIndex = layerIndex });
         newObjectIds.Add(newObjectGuid.ToString());
+        if (baseObj.applicationId != null)
+        {
+          applicationIdMap[baseObj.applicationId] = newObjectGuid.ToString();
+        }
       }
-      // else something weird happened? a block maybe? also, blocks are treated like $$$ now tbh so i won't dive into them
+    }
+
+    // Stage 2: Instances and Instance Definitions
+    var sortedList = instancesAndInstanceDefinitions
+      .OrderByDescending(x => x.obj.MaxDepth) // Sort by max depth, so we start baking from the deepest element first
+      .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
+      .ToList();
+    var definitionIdAndApplicationIdMap = new Dictionary<string, int>();
+
+    foreach (var (path, instanceOrDefinition) in sortedList)
+    {
+      if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
+      {
+        var currentApplicationObjectsIds = definitionProxy.Objects
+          .Select(x => applicationIdMap.TryGetValue(x, out string value) ? value : null)
+          .Where(x => x is not null)
+          .ToList();
+
+        var definitionGeometryList = new List<GeometryBase>();
+        var attributes = new List<ObjectAttributes>();
+
+        foreach (var id in currentApplicationObjectsIds)
+        {
+          var docObject = Doc.Objects.FindId(new Guid(id));
+          if (docObject is InstanceObject inst)
+          {
+            // DO something else
+            definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: NO ITS NOT
+            attributes.Add(docObject.Attributes);
+          }
+          else
+          {
+            definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: NO ITS NOT
+            attributes.Add(docObject.Attributes);
+          }
+        }
+
+        // TODO: Currently we're relying on the definition name for identification if it's coming from speckle and from which model; could we do something else?
+        var defName = baseLayerName + " " + definitionProxy.applicationId; // TODO: something nicer? We might need to clean them later on
+        var defIndex = Doc.InstanceDefinitions.Add(
+          defName,
+          "No description", // TODO: perhaps bring it along from source? We'd need to look at ACAD first
+          Point3d.Origin,
+          definitionGeometryList,
+          attributes
+        );
+
+        // TODO: check on defIndex -1, means we haven't created anything - this is most likely an recoverable error at this stage
+        if (defIndex == -1)
+        {
+          var x = "break";
+        }
+
+        if (definitionProxy.applicationId != null)
+        {
+          definitionIdAndApplicationIdMap[definitionProxy.applicationId] = defIndex;
+        }
+
+        Doc.Objects.Delete(currentApplicationObjectsIds.Select(stringId => new Guid(stringId)), false);
+        newObjectIds.RemoveAll(id => currentApplicationObjectsIds.Contains(id));
+      }
+      if (
+        instanceOrDefinition is InstanceProxy instanceProxy
+        && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out int index)
+      )
+      {
+        var transform = RhinoInstanceUnpacker.MatrixToTransform(instanceProxy.Transform);
+        var layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
+        var id = Doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
+        if (instanceProxy.applicationId != null)
+        {
+          applicationIdMap[instanceProxy.applicationId] = id.ToString();
+        }
+        newObjectIds.Add(id.ToString());
+      }
     }
 
     return newObjectIds;
@@ -182,6 +284,14 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     Dictionary<string, int> cache
   )
   {
+    var fullLayerName = string.Join("::", collectionPath.Select(col => col.name));
+#pragma warning disable CA1854
+    if (cache.ContainsKey(fullLayerName)) // Do not use try get value here, it defaults to zero rather than -1 (which is what we need)
+#pragma warning restore CA1854
+    {
+      return cache[fullLayerName];
+    }
+
     var currentLayerName = baseLayerName;
     var previousLayer = Doc.Layers.FindName(currentLayerName);
     foreach (var collection in collectionPath)

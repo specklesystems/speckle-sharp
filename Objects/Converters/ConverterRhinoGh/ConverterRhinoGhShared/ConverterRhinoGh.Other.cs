@@ -404,11 +404,13 @@ public partial class ConverterRhinoGh
 
     // get the definition name
     var commitInfo = GetCommitInfo();
+
     string definitionName = definition is BlockDefinition blockDef
       ? blockDef.name
       : definition is RevitSymbolElementType revitDef
         ? $"{revitDef.family} - {revitDef.type} - {definition.id}"
         : definition.id;
+
     if (ReceiveMode == ReceiveMode.Create)
     {
       definitionName = $"{commitInfo} - " + definitionName;

@@ -20,37 +20,17 @@ public static class Utils
   public static readonly string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
   public static readonly string AppName = "Rhino";
 #endif
-
-  // POC
-  public static IEnumerable<RhinoObject> UnpackInstanceDefinition(InstanceDefinition definition)
-  {
-    var stack = new Stack<RhinoObject>();
-    foreach (var obj in definition.GetObjects())
-    {
-      stack.Push(obj);
-    }
-
-    while (stack.Count > 0)
-    {
-      var obj = stack.Pop();
-      if (obj is InstanceObject block)
-      {
-        foreach (var VARIABLE in block.InstanceDefinition.GetObjects())
-        {
-          stack.Push(VARIABLE);
-        }
-        continue;
-      }
-
-      yield return obj;
-    }
-  }
 }
 
+/// <summary>
+/// POC: hacking blocks
+/// </summary>
 public class RhinoInstanceUnpacker
 {
-  public Dictionary<string, InstanceProxy> FlatBlocks { get; set; } = new();
-  public Dictionary<string, InstanceDefinitionProxy> FlatDefinitions { get; set; } = new();
+  public Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
+
+  private readonly Dictionary<string, List<InstanceProxy>> _instanceProxiesByDefinitionId = new(); // TODO: max depth blocks needs to be set correctly
+  public Dictionary<string, InstanceDefinitionProxy> DefinitionProxies { get; set; } = new();
   public Dictionary<string, RhinoObject> FlatAtomicObjects { get; set; } = new();
 
   public void Unpack(List<RhinoObject> objects)
@@ -67,64 +47,90 @@ public class RhinoInstanceUnpacker
 
   private void UnpackInstance(InstanceObject instance, int depth = 0)
   {
-    if (FlatBlocks.ContainsKey(instance.Id.ToString()))
+    var instanceId = instance.Id.ToString();
+    var instanceDefinitionId = instance.InstanceDefinition.Id.ToString();
+    InstanceProxies[instanceId] = new InstanceProxy()
     {
-      FlatBlocks[instance.Id.ToString()].MaxDepth = depth;
-      return;
-    }
-
-    FlatBlocks[instance.Id.ToString()] = new InstanceProxy()
-    {
-      applicationId = instance.Id.ToString(),
+      applicationId = instanceId,
       DefinitionId = instance.InstanceDefinition.Id.ToString(),
       Transform = XFormToMatrix(instance.InstanceXform),
       MaxDepth = depth
     };
 
-    if (FlatDefinitions.ContainsKey(instance.InstanceDefinition.Id.ToString()))
+    // For each block instance that has the same definition, we need to keep track of the "maximum depth" at which is found.
+    // This will enable on receive to create them in the correct order (descending by max depth, interleaved definitions and instances).
+    // We need to interleave the creation of definitions and instances, as some definitions may depend on instances.
+    if (
+      !_instanceProxiesByDefinitionId.TryGetValue(
+        instanceDefinitionId,
+        out List<InstanceProxy> instanceProxiesWithSameDefinition
+      )
+    )
     {
-      FlatDefinitions[instance.InstanceDefinition.Id.ToString()].MaxDepth = depth;
+      instanceProxiesWithSameDefinition = new List<InstanceProxy>();
+      _instanceProxiesByDefinitionId[instanceDefinitionId] = instanceProxiesWithSameDefinition;
+    }
+
+    // We ensure that all previous instance proxies that have the same definition are at this max depth
+    foreach (var instanceProxy in instanceProxiesWithSameDefinition)
+    {
+      instanceProxy.MaxDepth = depth;
+    }
+
+    instanceProxiesWithSameDefinition.Add(InstanceProxies[instanceId]);
+
+    if (DefinitionProxies.TryGetValue(instanceDefinitionId, out InstanceDefinitionProxy value))
+    {
+      value.MaxDepth = depth;
       return;
     }
 
-    var def = new InstanceDefinitionProxy
+    var definition = new InstanceDefinitionProxy
     {
-      applicationId = instance.InstanceDefinition.Id.ToString(),
-      Objects = new List<string>()
+      applicationId = instanceDefinitionId,
+      Objects = new List<string>(),
+      MaxDepth = depth
     };
-
-    FlatDefinitions[instance.InstanceDefinition.Id.ToString()] = def;
+    DefinitionProxies[instance.InstanceDefinition.Id.ToString()] = definition;
 
     foreach (var obj in instance.InstanceDefinition.GetObjects())
     {
-      def.Objects.Add(obj.Id.ToString());
-
+      definition.Objects.Add(obj.Id.ToString());
       if (obj is InstanceObject localInstance)
       {
         UnpackInstance(localInstance, depth + 1);
       }
-      else
-      {
-        FlatAtomicObjects[obj.Id.ToString()] = obj;
-      }
+      FlatAtomicObjects[obj.Id.ToString()] = obj;
     }
   }
 
-  private Matrix4x4 XFormToMatrix(Transform t) =>
+  // POC: Shouldn't be here, should be in converters? Esp. re unit conversion/scaling factors?
+  public static Matrix4x4 XFormToMatrix(Transform t) =>
     new(t.M00, t.M01, t.M02, t.M03, t.M10, t.M11, t.M12, t.M13, t.M20, t.M21, t.M22, t.M23, t.M30, t.M31, t.M32, t.M33);
-}
 
-public class InstanceProxy : Base
-{
-  // public string Id { get; set; }
-  public string DefinitionId { get; set; }
-  public Matrix4x4 Transform { get; set; }
-  public int MaxDepth { get; set; } = 0;
-}
+  // POC: Ditto above comment
+  public static Transform MatrixToTransform(Matrix4x4 matrix)
+  {
+    Transform t = Transform.Identity;
+    t.M00 = matrix.M11;
+    t.M01 = matrix.M12;
+    t.M02 = matrix.M13;
+    t.M03 = matrix.M14;
 
-public class InstanceDefinitionProxy : Base
-{
-  // public string Id { get; set; }
-  public List<string> Objects { get; set; }
-  public int MaxDepth { get; set; } = 0;
+    t.M10 = matrix.M21;
+    t.M11 = matrix.M22;
+    t.M12 = matrix.M23;
+    t.M13 = matrix.M24;
+
+    t.M20 = matrix.M31;
+    t.M21 = matrix.M32;
+    t.M22 = matrix.M33;
+    t.M23 = matrix.M34;
+
+    t.M30 = matrix.M41;
+    t.M31 = matrix.M42;
+    t.M32 = matrix.M43;
+    t.M33 = matrix.M44;
+    return t;
+  }
 }

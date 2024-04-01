@@ -222,7 +222,9 @@ public class SendBinding : ISendBinding, ICancelable
 
     unpacker.Unpack(rhinoObjects);
 
-    rootObjectCollection["instanceDefs"] = unpacker.FlatDefinitions.Select(kvp => kvp.Value);
+    rootObjectCollection["instanceDefs"] = unpacker.DefinitionProxies.Select(kvp => kvp.Value);
+    rootObjectCollection["groups"] = "something";
+    rootObjectCollection["hostingDefs"] = "somethingelse";
 
     foreach (RhinoObject rhinoObject in unpacker.FlatAtomicObjects.Values)
     {
@@ -243,9 +245,9 @@ public class SendBinding : ISendBinding, ICancelable
       // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
       Base converted;
 
-      if (rhinoObject is InstanceObject) // Special case for blocks, bypass cache
+      if (rhinoObject is InstanceObject) // Special case for blocks, bypass cache; TODO: we need to think about cache invalidation of sub objects (are the proxy types enough?)
       {
-        converted = unpacker.FlatBlocks[applicationId];
+        converted = unpacker.InstanceProxies[applicationId];
       }
       else if (
         !modelCard.ChangedObjectIds.Contains(applicationId)
