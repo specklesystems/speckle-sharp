@@ -1,9 +1,14 @@
+using System.Collections;
+using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Connectors.Autocad.HostApp.Extensions;
+using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Converters.Common;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -21,6 +26,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly CancellationManager _cancellationManager;
+  private readonly AutocadLayerManager _autocadLayerManager;
 
   public ReceiveBindingUICommands Commands { get; }
 
@@ -30,12 +36,14 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     DocumentModelStore store,
     IBridge parent,
     CancellationManager cancellationManager,
-    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory
+    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory,
+    AutocadLayerManager autocadLayerManager
   )
   {
     _store = store;
     _speckleConverterToHostFactory = speckleConverterToHostFactory;
     _cancellationManager = cancellationManager;
+    _autocadLayerManager = autocadLayerManager;
 
     Parent = parent;
     Commands = new ReceiveBindingUICommands(parent);
@@ -79,7 +87,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
       Base? commitObject =
         await Operations
-          .Receive(version.id, cancellationToken: cts.Token, remoteTransport: transport)
+          .Receive(version.referencedObject, cancellationToken: cts.Token, remoteTransport: transport)
           .ConfigureAwait(false)
         ?? throw new SpeckleException(
           $"Failed to receive commit: {version.id} objects from server: {nameof(Operations)} returned null"
@@ -89,6 +97,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       cts.Token.ThrowIfCancellationRequested();
 
       // 4 - Convert objects
+      ConvertObjects(commitObject, modelCard, cts);
     }
     catch (OperationCanceledException)
     {
@@ -100,13 +109,116 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     }
   }
 
-  private void ConvertObjects(
+  private void ConvertObjectsOld(
     List<(DBObject obj, string applicationId)> dbObjects,
     ReceiverModelCard modelCard,
     CancellationToken cancellationToken
   )
   {
     ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
+  }
+
+  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationTokenSource cts)
+  {
+    var objectsToConvert = new List<(List<string>, Base)>();
+    foreach (var (objPath, obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
+    {
+      if (cts.IsCancellationRequested)
+      {
+        throw new OperationCanceledException(cts.Token);
+      }
+      if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
+      {
+        objectsToConvert.Add((objPath, obj));
+      }
+    }
+
+    return objectsToConvert;
+  }
+
+  private void ConvertObjects(Base commitObject, ReceiverModelCard modelCard, CancellationTokenSource cts)
+  {
+    // POC: Progress here
+    Commands.SetModelProgress(modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting" });
+
+    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
+
+    // Layer filter for received commit with project and model name
+    _autocadLayerManager.CreateLayerFilter(modelCard.ProjectName, modelCard.ModelName);
+    var objectsWithPath = GetBaseWithPath(commitObject, cts);
+    var baseLayerPrefix = $"SPK-{modelCard.ProjectName}-{modelCard.ModelName}-";
+
+    var uniqueLayerNames = new HashSet<string>();
+    var handleValues = new List<string>();
+    var count = 0;
+
+    foreach (var (path, obj) in objectsWithPath)
+    {
+      if (cts.IsCancellationRequested)
+      {
+        throw new OperationCanceledException(cts.Token);
+      }
+
+      try
+      {
+        var layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
+
+        if (uniqueLayerNames.Add(layerFullName))
+        {
+          _autocadLayerManager.CreateLayerOrPurge(layerFullName);
+        }
+
+        var converted = converter.Convert(obj);
+        var flattened = FlattenToNativeConversionResult(converted);
+        foreach (Entity conversionResult in flattened.Cast<Entity>())
+        {
+          if (conversionResult == null)
+          {
+            continue;
+          }
+
+          conversionResult.Append(layerFullName);
+          handleValues.Add(conversionResult.Handle.Value.ToString());
+        }
+
+        Commands.SetModelProgress(
+          modelCard.ModelCardId,
+          new ModelCardProgress() { Status = "Converting", Progress = (double)++count / objectsWithPath.Count }
+        );
+      }
+      catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+      {
+        // POC: report, etc.
+        Debug.WriteLine("conversion error happened.");
+      }
+    }
+  }
+
+  /// <summary>
+  /// Utility function to flatten a conversion result that might have nested lists of objects.
+  /// This happens, for example, in the case of multiple display value fallbacks for a given object.
+  /// </summary>
+  /// <param name="item"></param>
+  /// <returns></returns>
+  private List<object> FlattenToNativeConversionResult(object item)
+  {
+    var convertedList = new List<object>();
+    void Flatten(object item)
+    {
+      if (item is IList list)
+      {
+        foreach (object child in list)
+        {
+          Flatten(child);
+        }
+      }
+      else
+      {
+        convertedList.Add(item);
+      }
+    }
+    Flatten(item);
+    return convertedList;
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);

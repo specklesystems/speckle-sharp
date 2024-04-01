@@ -10,6 +10,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -285,6 +286,69 @@ public class Base : DynamicBase
     }
 
     return myDuplicate;
+  }
+
+  /// <summary>
+  /// A variation of the OG Traversal extension from Alan, but with tracking the object path as well.
+  /// </summary>
+  /// <param name="recursionBreaker"></param>
+  /// <returns></returns>
+  public IEnumerable<(List<string>, Base)> TraverseWithPath(BaseExtensions.BaseRecursionBreaker recursionBreaker)
+  {
+    var stack = new Stack<(List<string>, Base)>();
+    stack.Push((new List<string>(), this));
+
+    while (stack.Count > 0)
+    {
+      (List<string> path, Base current) = stack.Pop();
+      yield return (path, current);
+
+      if (recursionBreaker(current))
+      {
+        continue;
+      }
+
+      foreach (string child in current.GetDynamicMemberNames())
+      {
+        // NOTE: we can store collections rather than just path names. Where we have an actual collection, use that, where not, create a mock one based on the prop name
+        var localPathFragment = child;
+        if (current is Collection { name: { } } c)
+        {
+          localPathFragment = c.name;
+        }
+
+        var newPath = new List<string>(path) { localPathFragment };
+        switch (current[child])
+        {
+          case Base o:
+            stack.Push((newPath, o));
+            break;
+          case IDictionary dictionary:
+          {
+            foreach (object obj in dictionary.Keys)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+
+            break;
+          }
+          case IList collection:
+          {
+            foreach (object obj in collection)
+            {
+              if (obj is Base b)
+              {
+                stack.Push((newPath, b));
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
   }
 
   #region Obsolete

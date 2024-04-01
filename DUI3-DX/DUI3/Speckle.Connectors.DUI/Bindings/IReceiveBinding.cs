@@ -20,6 +20,8 @@ public interface IReceiveBinding : IBinding
 
 public class ReceiverModelCard : ModelCard
 {
+  public string ProjectName { get; set; }
+  public string ModelName { get; set; }
   public string SelectedVersionId { get; set; }
   public string LatestVersionId { get; set; }
 }
