@@ -109,15 +109,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     }
   }
 
-  private void ConvertObjectsOld(
-    List<(DBObject obj, string applicationId)> dbObjects,
-    ReceiverModelCard modelCard,
-    CancellationToken cancellationToken
-  )
-  {
-    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
-  }
-
   private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationTokenSource cts)
   {
     var objectsToConvert = new List<(List<string>, Base)>();

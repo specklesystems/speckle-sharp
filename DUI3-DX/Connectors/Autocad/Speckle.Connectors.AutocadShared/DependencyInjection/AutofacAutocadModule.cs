@@ -62,6 +62,10 @@ public class AutofacAutocadModule : Module
       .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
       .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
       .InstancePerLifetimeScope();
+    builder
+      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
+      .As<IScopedFactory<ISpeckleConverterToHost>>()
+      .InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
