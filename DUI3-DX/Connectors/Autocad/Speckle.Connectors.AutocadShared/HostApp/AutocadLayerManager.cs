@@ -27,10 +27,12 @@ public class AutocadLayerManager
   /// <param name="layerName"></param>
   public void CreateLayerOrPurge(string layerName)
   {
-    using var transaction = Doc.Database.TransactionManager.StartTransaction();
+    Document doc = Application.DocumentManager.MdiActiveDocument;
+    doc.LockDocument();
+    using var transaction = doc.TransactionManager.StartTransaction();
 
     var layerTable =
-      transaction.TransactionManager.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
+      transaction.TransactionManager.GetObject(doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
     var layerTableRecord = new LayerTableRecord() { Name = layerName };
 
     var hasLayer = layerTable.Has(layerName);
@@ -38,7 +40,7 @@ public class AutocadLayerManager
     {
       var tvs = new[] { new TypedValue((int)DxfCode.LayerName, layerName) };
       var selectionFilter = new SelectionFilter(tvs);
-      var selectionResult = Doc.Editor.SelectAll(selectionFilter).Value;
+      var selectionResult = doc.Editor.SelectAll(selectionFilter).Value;
       if (selectionResult == null)
       {
         return;
