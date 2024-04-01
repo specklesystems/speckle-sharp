@@ -4,6 +4,7 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
+using ArcGIS.Desktop.Internal.Core.CommonControls;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -34,15 +35,25 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     };
     speckleLayer.name = target.Name;
 
-    //Get the layer's definition
-    // var lyrDefn = target.GetFeatureClass().GetDefinition();
+    // get feature class fields
+    var attributes = new Base();
+    IReadOnlyList<Field> fields = target.GetTable().GetDefinition().GetFields();
+    foreach (Field field in fields)
+    {
+      string name = field.Name;
+      if (name != "Shape")
+      {
+        attributes[name] = 10; // code for "string" for now
+      }
+    }
+    speckleLayer.attributes = attributes;
+
     //Get the shape field of the feature class
     // string shapeField = lyrDefn.GetShapeField();
     //Index of the shape field
     // var shapeIndex = lyrDefn.FindField(shapeField);
     //Original geometry of the modified row
     // .GetOriginalValue(shapeIndex)
-
 
     // search the rows
 
