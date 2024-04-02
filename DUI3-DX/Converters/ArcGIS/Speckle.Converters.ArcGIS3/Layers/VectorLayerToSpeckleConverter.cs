@@ -49,11 +49,8 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     {
       while (rowCursor.MoveNext())
       {
-        using (Row row = rowCursor.Current)
-        {
-          var element = _pointElementConverter.RawConvert(row);
-          speckleLayer.elements.Add(element);
-        }
+        var element = _pointElementConverter.RawConvert(rowCursor.Current);
+        speckleLayer.elements.Add(element);
       }
     }
     return speckleLayer;
