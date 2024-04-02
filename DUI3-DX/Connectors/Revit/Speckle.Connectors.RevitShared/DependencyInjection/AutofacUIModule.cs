@@ -12,6 +12,7 @@ using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -65,6 +66,8 @@ public class AutofacUIModule : Module
     builder.RegisterType<SendSelection>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ToSpeckleConvertedObjectsCache>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();

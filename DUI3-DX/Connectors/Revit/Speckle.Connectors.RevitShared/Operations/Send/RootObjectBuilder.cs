@@ -15,27 +15,25 @@ public class RootObjectBuilder
 {
   private readonly SendSelection _sendSelection;
   private readonly ISpeckleConverterToSpeckle _converter;
-  private readonly RevitContext _revitContext;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
+  private readonly RevitConversionContextStack _contextStack;
 
   public RootObjectBuilder(
     ISendFilter sendFilter,
     ISpeckleConverterToSpeckle converter,
-    RevitContext revitContext,
-    ToSpeckleConvertedObjectsCache convertedObjectsCache
+    ToSpeckleConvertedObjectsCache convertedObjectsCache,
+    RevitConversionContextStack contextStack
   )
   {
     _sendSelection = new(sendFilter.GetObjectIds());
     _converter = converter;
-    _revitContext = revitContext;
     _convertedObjectsCache = convertedObjectsCache;
+    _contextStack = contextStack;
   }
 
   public Base Build(Action<string, double?>? onOperationProgressed = null, CancellationToken ct = default)
   {
-    List<Element> objects = _revitContext.UIApplication.ActiveUIDocument.Document
-      .GetElements(_sendSelection.SelectedItems)
-      .ToList();
+    List<Element> objects = _contextStack.Current.Document.Document.GetElements(_sendSelection.SelectedItems).ToList();
 
     Base commitObject = new();
 

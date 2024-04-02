@@ -162,9 +162,4 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     Commands.SetModelsExpired(expiredSenderIds);
     ChangedObjectIds = new HashSet<string>();
   }
-
-  protected override void Disposing(bool isDipsosing, bool disposedState)
-  {
-    if (isDipsosing && !disposedState) { }
-  }
 }

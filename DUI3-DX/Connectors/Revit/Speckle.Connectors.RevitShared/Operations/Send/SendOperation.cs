@@ -3,11 +3,6 @@ using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 using System.Threading.Tasks;
 using System.Threading;
-using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
-using Speckle.Core.Transports;
-using System.Linq;
 using Autofac;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
@@ -15,10 +10,12 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 public sealed class SendOperation
 {
   private readonly ILifetimeScope _scope;
+  private readonly IRootObjectSender _rootObjectSender;
 
-  public SendOperation(ILifetimeScope scope)
+  public SendOperation(ILifetimeScope scope, IRootObjectSender rootObjectSender)
   {
     _scope = scope;
+    _rootObjectSender = rootObjectSender;
   }
 
   /// <summary>
@@ -47,27 +44,8 @@ public sealed class SendOperation
       commitObject = rootObjectBuilder.Build(onOperationProgressed, ct);
     }
 
-    Account account =
-      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
-      ?? throw new SpeckleAccountManagerException();
-
-    var transport = new ServerTransport(account, projectId);
-    var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(true);
-
-    var apiClient = new Client(account);
-    string versionId = await apiClient
-      .CommitCreate(
-        new CommitCreateInput
-        {
-          streamId = projectId,
-          branchName = modelId,
-          sourceApplication = "Revit",
-          objectId = sendResult.rootObjId
-        },
-        ct
-      )
+    return await _rootObjectSender
+      .Send(commitObject, accountId, projectId, modelId, onOperationProgressed, ct)
       .ConfigureAwait(true);
-
-    return versionId;
   }
 }
