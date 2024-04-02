@@ -14,6 +14,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
@@ -54,6 +55,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     progress.Report = new ProgressReport();
     var conversionProgressDict = new ConcurrentDictionary<string, int>();
     conversionProgressDict["Conversion"] = 0;
+
+    // track object types for mixpanel logging
+    Dictionary<string, int> loggingTypeCountDict = new();
 
     Base commitObject = null;
     if (Preview.Count == 0)
@@ -161,6 +165,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             .Where(o => !string.IsNullOrEmpty(o))
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
+
           // if on create mode, make sure the parent commit layer is created first
           if (state.ReceiveMode == ReceiveMode.Create)
           {
@@ -185,6 +190,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             var collection = Preview
               .Where(o => o.Container == container && o.Descriptor.Contains("Collection"))
               .FirstOrDefault();
+
             if (collection != null)
             {
               var storedCollection = StoredObjects[collection.OriginalId];
@@ -217,6 +223,19 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
           foreach (var previewObj in Preview)
           {
+            // log received object type
+            if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
+            {
+              if (loggingTypeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
+              {
+                loggingTypeCountDict[previewBaseObj.speckle_type] = ++value;
+              }
+              else
+              {
+                loggingTypeCountDict.Add(previewBaseObj.speckle_type, 1);
+              }
+            }
+
             if (previewObj.Status != ApplicationObject.State.Unknown)
             {
               continue; // this has already been converted and baked
@@ -302,6 +321,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           progress.Report.Merge(converter.Report);
 
           RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // reactivate the layer handler
+
+          // track the object type counts as an event before we try to send
+          // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+          Speckle.Core.Logging.Analytics.TrackEvent(
+            AccountManager.GetDefaultAccount(),
+            Speckle.Core.Logging.Analytics.Events.ReceiveObjectReport,
+            loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+          );
 
           // undo notes edit
           var segments = Doc.Notes.Split(new[] { "%%%" }, StringSplitOptions.None).ToList();

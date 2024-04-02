@@ -16,6 +16,7 @@ using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Serilog.Context;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -53,6 +54,9 @@ public partial class ConnectorBindingsRevit
 
     converter.SetConverterSettings(settings);
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> loggingTypeCountDict = new();
+
     Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = myCommit;
     Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
@@ -70,7 +74,26 @@ public partial class ConnectorBindingsRevit
     foreach (var previewObj in Preview)
     {
       progress.Report.Log(previewObj);
+      if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
+      {
+        if (loggingTypeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
+        {
+          loggingTypeCountDict[previewBaseObj.speckle_type] = ++value;
+        }
+        else
+        {
+          loggingTypeCountDict.Add(previewBaseObj.speckle_type, 1);
+        }
+      }
     }
+
+    // track the object type counts as an event before we try to send
+    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+    Speckle.Core.Logging.Analytics.TrackEvent(
+      AccountManager.GetDefaultAccount(),
+      Speckle.Core.Logging.Analytics.Events.ReceiveObjectReport,
+      loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+    );
 
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work

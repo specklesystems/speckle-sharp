@@ -11,6 +11,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -110,6 +111,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         progress.Report = new ProgressReport();
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
+
+        // track object types for mixpanel logging
+        Dictionary<string, int> loggingTypeCountDict = new();
 
         // create a commit prefix: used for layers and block definition names
         var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
@@ -217,18 +221,28 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             return;
           }
 
-          // convert base (or base fallback values) and store in appobj converted prop
-          if (commitObj.Convertible)
+          if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base commitBaseObj))
           {
-            if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base obj))
+            // log received object type
+            if (loggingTypeCountDict.TryGetValue(commitBaseObj.speckle_type, out int value))
             {
-              converter.Report.Log(commitObj); // Log object so converter can access
-              commitObj.Converted = ConvertObject(obj, converter);
+              loggingTypeCountDict[commitBaseObj.speckle_type] = ++value;
             }
             else
             {
-              commitObj.Update(status: ApplicationObject.State.Failed, logItem: "Object not found in StoredObjects");
+              loggingTypeCountDict.Add(commitBaseObj.speckle_type, 1);
             }
+          }
+          else
+          {
+            commitObj.Update(status: ApplicationObject.State.Failed, logItem: "Object not found in StoredObjects");
+          }
+
+          // convert base (or base fallback values) and store in appobj converted prop
+          if (commitObj.Convertible)
+          {
+            converter.Report.Log(commitObj); // Log object so converter can access
+            commitObj.Converted = ConvertObject(commitBaseObj, converter);
           }
           else
           {
@@ -270,6 +284,14 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           progress.Report.Log(commitObj);
         }
         progress.Report.Merge(converter.Report);
+
+        // track the object type counts as an event before we try to send
+        // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+        Analytics.TrackEvent(
+          AccountManager.GetDefaultAccount(),
+          Analytics.Events.ReceiveObjectReport,
+          loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+        );
 
         // add applicationID xdata before bake
         if (!ApplicationIdManager.AddApplicationIdXDataToDoc(Doc, tr))
