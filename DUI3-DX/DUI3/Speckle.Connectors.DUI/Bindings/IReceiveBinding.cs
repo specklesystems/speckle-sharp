@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Speckle.Connectors.DUI.Models.Card;
 using System.Threading.Tasks;
-using Speckle.Connectors.DUI.Utils;
 
 namespace Speckle.Connectors.DUI.Bindings;
 

@@ -2,7 +2,6 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using Autodesk.AutoCAD.DatabaseServices;
-using Objects.Structural.Analysis;
 using Speckle.Core.Kits;
 
 namespace Speckle.Converters.Autocad.Geometry;
