@@ -16,6 +16,7 @@ using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Serilog.Context;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -99,6 +100,9 @@ public partial class ConnectorBindingsRevit
     var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
     var convertedCount = 0;
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> loggingTypeCountDict = new();
+
     await APIContext
       .Run(() =>
       {
@@ -136,10 +140,20 @@ public partial class ConnectorBindingsRevit
 
             Base result = ConvertToSpeckle(revitElement, converter);
 
+            // log converted object
             reportObj.Update(
               status: ApplicationObject.State.Created,
               logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
             );
+            if (loggingTypeCountDict.TryGetValue(result.speckle_type, out int value))
+            {
+              loggingTypeCountDict[result.speckle_type] = ++value;
+            }
+            else
+            {
+              loggingTypeCountDict.Add(result.speckle_type, 1);
+            }
+
             if (result.applicationId != reportObj.applicationId)
             {
               SpeckleLog.Logger.Information(
@@ -179,6 +193,14 @@ public partial class ConnectorBindingsRevit
     {
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
+
+    // track the object type counts as an event before we try to send
+    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+    Analytics.TrackEvent(
+      AccountManager.GetDefaultAccount(),
+      Analytics.Events.SendObjectReport,
+      loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+    );
 
     commitObjectBuilder.BuildCommitObject(commitObject);
 

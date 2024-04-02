@@ -67,7 +67,17 @@ public static class Analytics
     /// <summary>
     /// Event triggered by the Mapping Tool
     /// </summary>
-    MappingsAction
+    MappingsAction,
+
+    /// <summary>
+    /// Event triggered on send, capturing the object type counts of the sent commit
+    /// </summary>
+    SendObjectReport,
+
+    /// <summary>
+    /// Event triggered on receive, capturing the object type counts of the received commit
+    /// </summary>
+    ReceiveObjectReport
   }
 
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";

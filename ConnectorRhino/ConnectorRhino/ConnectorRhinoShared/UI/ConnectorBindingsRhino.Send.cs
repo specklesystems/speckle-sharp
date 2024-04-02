@@ -8,6 +8,7 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -52,6 +53,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var commitLayerObjects = new Dictionary<string, List<Base>>();
     var commitLayers = new Dictionary<string, Layer>();
     var commitCollections = new Dictionary<string, Collection>();
+
+    // track object types for mixpanel logging
+    Dictionary<string, int> loggingTypeCountDict = new();
 
     // convert all commit objs
     foreach (var selectedId in state.SelectedObjectIds)
@@ -147,6 +151,14 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       // log report object
       reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       progress.Report.Log(reportObj);
+      if (loggingTypeCountDict.TryGetValue(converted.speckle_type, out int value))
+      {
+        loggingTypeCountDict[converted.speckle_type] = ++value;
+      }
+      else
+      {
+        loggingTypeCountDict.Add(converted.speckle_type, 1);
+      }
 
       objCount++;
     }
@@ -228,10 +240,19 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
 
+    // track the object type counts as an event before we try to send
+    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+    Speckle.Core.Logging.Analytics.TrackEvent(
+      AccountManager.GetDefaultAccount(),
+      Speckle.Core.Logging.Analytics.Events.SendObjectReport,
+      loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+    );
+
     progress.CancellationToken.ThrowIfCancellationRequested();
 
     progress.Max = objCount;
 
+    // send the commit
     var transports = new List<ITransport> { new ServerTransport(client.Account, streamId) };
 
     var objectId = await Operations.Send(
@@ -260,6 +281,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
 
     var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
+
     return commitId;
   }
 }
