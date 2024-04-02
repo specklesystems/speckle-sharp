@@ -14,6 +14,7 @@ using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Autodesk.Revit.DB.Events;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -22,7 +23,7 @@ public class App : IExternalApplication
   public static UIApplication AppInstance { get; set; }
 
   public static UIControlledApplication UICtrlApp { get; set; }
-
+  private static ConnectorBindingsRevit Bindings { get; set; }
   private bool _initialized;
 
   public Result OnStartup(UIControlledApplication application)
@@ -34,6 +35,7 @@ public class App : IExternalApplication
 
     UICtrlApp = application;
     UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
+    UICtrlApp.ControlledApplication.DocumentOpening += ControlledApplication_DocumentOpening;
     string tabName = "Speckle";
 
     try
@@ -141,16 +143,12 @@ public class App : IExternalApplication
     {
       InitializeConnector();
 
-      AppInstance = new UIApplication(sender as Application);
-
-      var bindings = new ConnectorBindingsRevit(AppInstance);
-      bindings.RegisterAppEvents();
-      SpeckleRevitCommand.Bindings = bindings;
-      SchedulerCommand.Bindings = bindings;
+      AppInstance ??= new UIApplication(sender as Application);
+      CreateBindings();
 
       BatchUploaderClient client = new(new Uri("http://localhost:5001"));
       RevitApplicationController revitAppController = new(AppInstance);
-      BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
+      BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, Bindings);
 
       batchUploadOperationDriver.ProcessAllJobs();
 
@@ -171,6 +169,38 @@ public class App : IExternalApplication
       SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
       NotifyUserOfErrorStartingConnector(ex);
     }
+  }
+
+  private void ControlledApplication_DocumentOpening(object sender, DocumentOpeningEventArgs e)
+  {
+    // When a user double-clicks on an .rvt file that start Revit, Revit invokes the DocumentOpening event before ApplicationInitialized.
+    // In such instances, it becomes necessary to instantiate the pane during the document opening process.
+    try
+    {
+      AppInstance ??= new UIApplication(sender as Application);
+      CreateBindings();
+      SpeckleRevitCommand.RegisterPane();
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
+      NotifyUserOfErrorStartingConnector(ex);
+    }
+  }
+
+  private static void CreateBindings()
+  {
+    // Since this function is triggered during every 'DocumentOpening' event,
+    // if the bindings have already been set previously, there's no need to re-set them.
+    if (Bindings != null)
+    {
+      return;
+    }
+
+    Bindings = new ConnectorBindingsRevit(AppInstance);
+    Bindings.RegisterAppEvents();
+    SpeckleRevitCommand.Bindings = Bindings;
+    SchedulerCommand.Bindings = Bindings;
   }
 
   private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
