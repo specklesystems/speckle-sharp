@@ -41,19 +41,14 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     foreach (Field field in fields)
     {
       string name = field.Name;
-      if (name != "Shape")
+      // breaks on Raster Field type when assigning indiv. GisFeature values
+      if (name != "Shape" && field.FieldType.ToString() != "Raster")
       {
-        attributes[name] = 10; // code for "string" for now
+        attributes[name] = field.FieldType;
       }
     }
     speckleLayer.attributes = attributes;
-
-    //Get the shape field of the feature class
-    // string shapeField = lyrDefn.GetShapeField();
-    //Index of the shape field
-    // var shapeIndex = lyrDefn.FindField(shapeField);
-    //Original geometry of the modified row
-    // .GetOriginalValue(shapeIndex)
+    speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
     // search the rows
 

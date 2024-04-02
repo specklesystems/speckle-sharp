@@ -1,0 +1,24 @@
+using ArcGIS.Core.Geometry;
+using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models;
+using Objects.Geometry;
+using Speckle.Converters.Common;
+using ArcGIS.Desktop.Mapping;
+
+namespace Speckle.Converters.ArcGIS3.Geometry;
+/*
+[NameAndRankValue(nameof(Polygon), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class PointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polygon, Point>
+{
+  private readonly IConversionContextStack<Map, Unit> _contextStack;
+
+  public PointToSpeckleConverter(IConversionContextStack<Map, Unit> contextStack)
+  {
+    _contextStack = contextStack;
+  }
+
+  public Base Convert(object target) => RawConvert((Polygon)target);
+
+  public Point RawConvert(Polygon target) => new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
+}
+*/

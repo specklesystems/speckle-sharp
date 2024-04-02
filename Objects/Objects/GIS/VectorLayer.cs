@@ -9,6 +9,7 @@ public class VectorLayer : Collection
   public string? units { get; set; }
   public Base attributes { get; set; }
   public string? geomType { get; set; }
+  public string? nativeGeomType { get; set; }
   public Dictionary<string, object>? renderer { get; set; }
 
   public VectorLayer()
