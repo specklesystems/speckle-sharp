@@ -181,7 +181,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
             new ModelCardProgress() { Status = "Converting", Progress = (double)++count / objectsWithPath.Count }
           );
         }
-        catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+        catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
         {
           // POC: report, etc.
           Debug.WriteLine("conversion error happened.");
