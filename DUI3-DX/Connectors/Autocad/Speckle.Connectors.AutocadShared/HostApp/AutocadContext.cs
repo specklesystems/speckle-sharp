@@ -6,7 +6,7 @@ public class AutocadContext
 
   private const string INVALID_CHARS = @"<>/\:;""?*|=,‘";
 
-  // POC: we can move this function into more relevant place.
+  // POC: we can move this function into more relevant/general place. Not sure other connectors need similar functionality like this.
   public string RemoveInvalidChars(string str)
   {
     foreach (char c in INVALID_CHARS)

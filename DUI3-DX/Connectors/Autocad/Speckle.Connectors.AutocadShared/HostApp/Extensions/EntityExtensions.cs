@@ -7,9 +7,9 @@ public static class EntityExtensions
   /// <summary>
   /// Adds an entity to the autocad database model space record
   /// </summary>
-  /// <param name="entity"></param>
-  /// <param name="tr"></param>
-  public static ObjectId Append(this Entity entity, string layer = null)
+  /// <param name="entity">Entity to add into database.</param>
+  /// <param name="layer"> Layer to append object.</param>
+  public static ObjectId Append(this Entity entity, string? layer = null)
   {
     var db = entity.Database ?? Application.DocumentManager.MdiActiveDocument.Database;
     Transaction tr = db.TransactionManager.TopTransaction;

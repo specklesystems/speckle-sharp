@@ -31,7 +31,7 @@ public class AutocadLayerManager
   /// Will create a layer with the provided name, or, if it finds an existing one, will "purge" all objects from it.
   /// This ensures we're creating the new objects we've just received rather than overlaying them.
   /// </summary>
-  /// <param name="layerName"></param>
+  /// <param name="layerName">Name to search layer for purge and create.</param>
   public void CreateLayerOrPurge(string layerName)
   {
     Document doc = Application.DocumentManager.MdiActiveDocument;
@@ -40,14 +40,14 @@ public class AutocadLayerManager
 
     LayerTable? layerTable =
       transaction.TransactionManager.GetObject(doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
-    var layerTableRecord = new LayerTableRecord() { Name = layerName };
+    LayerTableRecord layerTableRecord = new() { Name = layerName };
 
-    var hasLayer = layerTable != null && layerTable.Has(layerName);
+    bool hasLayer = layerTable != null && layerTable.Has(layerName);
     if (hasLayer)
     {
-      var tvs = new[] { new TypedValue((int)DxfCode.LayerName, layerName) };
-      var selectionFilter = new SelectionFilter(tvs);
-      var selectionResult = doc.Editor.SelectAll(selectionFilter).Value;
+      TypedValue[] tvs = { new((int)DxfCode.LayerName, layerName) };
+      SelectionFilter selectionFilter = new(tvs);
+      SelectionSet selectionResult = doc.Editor.SelectAll(selectionFilter).Value;
       if (selectionResult == null)
       {
         return;

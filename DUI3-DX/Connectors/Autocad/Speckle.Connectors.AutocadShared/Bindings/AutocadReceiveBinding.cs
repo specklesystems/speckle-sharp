@@ -101,6 +101,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     }
     catch (OperationCanceledException)
     {
+      // POC: not sure here need to handle anything. UI already aware it cancelled operation visually.
       return;
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
