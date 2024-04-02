@@ -1,6 +1,4 @@
-using Polyline = ArcGIS.Core.Geometry.Polyline;
-using Unit = ArcGIS.Core.Geometry.Unit;
-using MapPoint = ArcGIS.Core.Geometry.MapPoint;
+using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
@@ -9,41 +7,69 @@ using ArcGIS.Desktop.Mapping;
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
 [NameAndRankValue(nameof(Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolyineToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<Polyline, Objects.Geometry.Polyline>
+public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polyline, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, Objects.Geometry.Point> _pointConverter;
+  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<EllipticArcSegment, SOG.Polyline> _arcConverter;
 
   public PolyineToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, Objects.Geometry.Point> pointConverter
+    IRawConversion<MapPoint, SOG.Point> pointConverter,
+    IRawConversion<EllipticArcSegment, SOG.Polyline> arcConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
+    _arcConverter = arcConverter;
   }
 
   public Base Convert(object target) => RawConvert((Polyline)target);
 
-  public Objects.Geometry.Polyline RawConvert(Polyline target)
+  public SOG.Polyline RawConvert(Polyline target)
   {
-    List<Objects.Geometry.Point> points = new();
-    foreach (MapPoint pt in target.Points)
+    // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
+    List<SOG.Polyline> polylineList = new();
+    double len = 0;
+
+    // or use foreach pattern
+    foreach (var part in target.Parts)
     {
-      points.Add(_pointConverter.RawConvert(pt));
+      List<SOG.Point> points = new();
+      foreach (var segment in part)
+      {
+        len += segment.Length;
+
+        // perhaps do something specific per segment type
+        switch (segment.SegmentType)
+        {
+          case SegmentType.Line:
+            points.Add(_pointConverter.RawConvert(segment.StartPoint));
+            points.Add(_pointConverter.RawConvert(segment.EndPoint));
+            break;
+          case SegmentType.Bezier:
+            var segmentBezier = (CubicBezierSegment)segment;
+            // points.Add(_pointConverter.RawConvert(segmentBezier.ControlPoint1));
+            // points.Add(_pointConverter.RawConvert(segmentBezier.ControlPoint2));
+            break;
+          case SegmentType.EllipticArc:
+            var segmentElliptic = (EllipticArcSegment)segment;
+            points.AddRange(_arcConverter.RawConvert(segmentElliptic).GetPoints());
+            break;
+        }
+      }
+      // var box = _boxConverter.RawConvert(target.Extent);
+      SOG.Polyline polylinePart =
+        new(points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(), _contextStack.Current.SpeckleUnits)
+        {
+          // bbox = box,
+          length = target.Length
+        };
+      return polylinePart;
+      //polylineList.Add(polylinePart);
     }
+    return new SOG.Polyline();
 
-    // var box = _boxConverter.RawConvert(target.Extent);
-
-    return new Objects.Geometry.Polyline(
-      points.SelectMany(pt => new[] { pt.x, pt.y, pt.z }).ToList(),
-      _contextStack.Current.SpeckleUnits
-    )
-    {
-      // bbox = box,
-      length = target.Length
-    };
+    //return polylineList;
   }
 }
