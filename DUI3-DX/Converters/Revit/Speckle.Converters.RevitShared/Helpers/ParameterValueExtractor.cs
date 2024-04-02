@@ -146,14 +146,6 @@ public class ParameterValueExtractor
     var allParams = new Dictionary<string, Parameter>();
     AddElementParamsToDict(revitElement, allParams);
 
-    //var elementType = revitElement.Document.GetElement(revitElement.GetTypeId());
-    //AddElementParamsToDict(
-    //  speckleElement is Level ? null : elementType, //ignore type props of levels..!
-    //  allParams,
-    //  true,
-    //  exclusions
-    //);
-
     return allParams;
   }
 

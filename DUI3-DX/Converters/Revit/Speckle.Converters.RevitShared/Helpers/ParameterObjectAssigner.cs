@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -9,11 +10,11 @@ namespace Speckle.Converters.RevitShared.Helpers;
 
 public sealed class ParameterObjectAssigner
 {
-  private readonly IRawConversion<DB.Parameter, SOBR.Parameter> _paramConverter;
+  private readonly IRawConversion<Parameter, SOBR.Parameter> _paramConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public ParameterObjectAssigner(
-    IRawConversion<DB.Parameter, SOBR.Parameter> paramConverter,
+    IRawConversion<Parameter, SOBR.Parameter> paramConverter,
     ParameterValueExtractor parameterValueExtractor
   )
   {
@@ -23,28 +24,48 @@ public sealed class ParameterObjectAssigner
 
   public void AssignParametersToBase(Element target, Base @base)
   {
-    Dictionary<string, DB.Parameter> allParams = _parameterValueExtractor.GetAllRemainingParams(target);
+    Dictionary<string, Parameter> instanceParameters = _parameterValueExtractor.GetAllRemainingParams(target);
+    var elementType = target.Document.GetElement(target.GetTypeId());
+
     Base paramBase = new();
-    //sort by key
-    foreach (var kv in allParams.OrderBy(x => x.Key))
+    AssignSpeckleParamToBaseObject(instanceParameters, paramBase);
+
+    if (target is not Level) //ignore type props of levels..!
     {
-      try
-      {
-        paramBase[kv.Key] = _paramConverter.RawConvert(kv.Value);
-      }
-      catch (InvalidPropNameException)
-      {
-        //ignore
-      }
-      catch (SpeckleException ex)
-      {
-        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
-      }
+      // I don't think we should be adding the type parameters to the object like this
+      Dictionary<string, Parameter> typeParameters = _parameterValueExtractor.GetAllRemainingParams(elementType);
+      AssignSpeckleParamToBaseObject(typeParameters, paramBase, true);
     }
 
     if (paramBase.GetMembers(DynamicBaseMemberType.Dynamic).Count > 0)
     {
       @base["parameters"] = paramBase;
+    }
+  }
+
+  private void AssignSpeckleParamToBaseObject(
+    IEnumerable<KeyValuePair<string, Parameter>> parameters,
+    Base paramBase,
+    bool isTypeParameter = false
+  )
+  {
+    //sort by key
+    foreach (var kv in parameters.OrderBy(x => x.Key))
+    {
+      try
+      {
+        SOBR.Parameter speckleParam = _paramConverter.RawConvert(kv.Value);
+        speckleParam.isTypeParameter = isTypeParameter;
+        paramBase[kv.Key] = speckleParam;
+      }
+      catch (InvalidPropNameException)
+      {
+        //ignore
+      }
+      catch (SpeckleConversionException ex)
+      {
+        SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);
+      }
     }
   }
 }
