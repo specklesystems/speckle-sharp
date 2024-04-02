@@ -33,7 +33,8 @@ public sealed class CurveArrayConversionToSpeckle : BaseConversionToSpeckle<DB.C
     List<DB.Curve> curves = target.Cast<DB.Curve>().ToList();
 
     polycurve.units = _contextStack.Current.SpeckleUnits;
-    polycurve.closed = curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < _contextStack.TOLERANCE;
+    polycurve.closed =
+      curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConversionContextStack.TOLERANCE;
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
 
     polycurve.segments.AddRange(curves.Select(x => _curveConverter.RawConvert(x)));
