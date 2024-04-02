@@ -7,6 +7,7 @@ namespace Speckle.Connectors.Autocad.HostApp;
 public class AutocadLayerManager
 {
   private readonly AutocadContext _autocadContext;
+  private readonly string _layerFilterName = "Speckle";
   private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
 
   public AutocadLayerManager(AutocadContext autocadContext)
@@ -14,6 +15,12 @@ public class AutocadLayerManager
     _autocadContext = autocadContext;
   }
 
+  /// <summary>
+  /// Constructs layer name with prefix and valid characters.
+  /// </summary>
+  /// <param name="baseLayerPrefix"> Prefix to add layer name.</param>
+  /// <param name="path"> list of entries to concat with hyphen.</param>
+  /// <returns>Full layer name with provided prefix and path.</returns>
   public string LayerFullName(string baseLayerPrefix, string path)
   {
     var layerFullName = baseLayerPrefix + string.Join("-", path);
@@ -29,13 +36,13 @@ public class AutocadLayerManager
   {
     Document doc = Application.DocumentManager.MdiActiveDocument;
     doc.LockDocument();
-    using var transaction = doc.TransactionManager.StartTransaction();
+    using Transaction transaction = doc.TransactionManager.StartTransaction();
 
-    var layerTable =
+    LayerTable? layerTable =
       transaction.TransactionManager.GetObject(doc.Database.LayerTableId, OpenMode.ForRead) as LayerTable;
     var layerTableRecord = new LayerTableRecord() { Name = layerName };
 
-    var hasLayer = layerTable.Has(layerName);
+    var hasLayer = layerTable != null && layerTable.Has(layerName);
     if (hasLayer)
     {
       var tvs = new[] { new TypedValue((int)DxfCode.LayerName, layerName) };
@@ -53,8 +60,8 @@ public class AutocadLayerManager
       return;
     }
 
-    layerTable.UpgradeOpen();
-    layerTable.Add(layerTableRecord);
+    layerTable?.UpgradeOpen();
+    layerTable?.Add(layerTableRecord);
     transaction.AddNewlyCreatedDBObject(layerTableRecord, true);
     transaction.Commit();
   }
@@ -68,28 +75,29 @@ public class AutocadLayerManager
   public void CreateLayerFilter(string projectName, string modelName)
   {
     using var docLock = Doc.LockDocument();
-    var filterName = _autocadContext.RemoveInvalidChars($@"{projectName}-{modelName}");
-    var layerFilterTree = Doc.Database.LayerFilters;
-    var layerFilterCollection = layerFilterTree.Root.NestedFilters;
-    var groupFilterName = "Speckle";
-    LayerFilter groupFilter = null;
+    string filterName = _autocadContext.RemoveInvalidChars($@"{projectName}-{modelName}");
+    LayerFilterTree layerFilterTree = Doc.Database.LayerFilters;
+    LayerFilterCollection? layerFilterCollection = layerFilterTree.Root.NestedFilters;
+    LayerFilter? groupFilter = null;
 
+    // Find existing layer filter if exists
     foreach (LayerFilter existingFilter in layerFilterCollection)
     {
-      if (existingFilter.Name == groupFilterName)
+      if (existingFilter.Name == _layerFilterName)
       {
         groupFilter = existingFilter;
         break;
       }
     }
 
+    // Create new one unless exists
     if (groupFilter == null)
     {
       groupFilter = new LayerFilter() { Name = "Speckle", FilterExpression = $"NAME==\"SPK-*\"" };
       layerFilterCollection.Add(groupFilter);
     }
 
-    var layerFilterExpression = $"NAME==\"SPK-{filterName}*\"";
+    string layerFilterExpression = $"NAME==\"SPK-{filterName}*\"";
     foreach (LayerFilter lf in groupFilter.NestedFilters)
     {
       if (lf.Name == filterName)

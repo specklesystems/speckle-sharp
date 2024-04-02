@@ -15,6 +15,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 
 namespace Speckle.Connectors.Autocad.Bindings;
@@ -53,14 +54,11 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   public Task Receive(string modelCardId)
   {
-    ReceiverModelCard modelCard = _store.GetModelById(modelCardId) as ReceiverModelCard;
-    Parent.RunOnMainThread(
-      async () => await ReceiveInternal(modelCardId, modelCard.SelectedVersionId).ConfigureAwait(false)
-    );
+    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId).ConfigureAwait(false));
     return Task.CompletedTask;
   }
 
-  private async Task ReceiveInternal(string modelCardId, string versionId)
+  private async Task ReceiveInternal(string modelCardId)
   {
     try
     {
@@ -82,8 +80,8 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       Client apiClient = new(account);
       ServerTransport transport = new(account, modelCard.ProjectId);
       Commit? version =
-        await apiClient.CommitGet(modelCard.ProjectId, versionId, cts.Token).ConfigureAwait(false)
-        ?? throw new SpeckleException($"Failed to receive commit: {versionId} from server)");
+        await apiClient.CommitGet(modelCard.ProjectId, modelCard.SelectedVersionId, cts.Token).ConfigureAwait(false)
+        ?? throw new SpeckleException($"Failed to receive commit: {modelCard.SelectedVersionId} from server)");
 
       Base? commitObject =
         await Operations
@@ -97,7 +95,9 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       cts.Token.ThrowIfCancellationRequested();
 
       // 4 - Convert objects
-      ConvertObjects(commitObject, modelCard, cts);
+      List<string> convertedObjectIds = ConvertObjects(commitObject, modelCard, cts);
+
+      Commands.SetModelReceiveResult(modelCardId, convertedObjectIds);
     }
     catch (OperationCanceledException)
     {
@@ -111,8 +111,8 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationTokenSource cts)
   {
-    var objectsToConvert = new List<(List<string>, Base)>();
-    foreach (var (objPath, obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
+    List<(List<string>, Base)> objectsToConvert = new();
+    foreach ((List<string> objPath, Base obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
     {
       if (cts.IsCancellationRequested)
       {
@@ -127,64 +127,70 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     return objectsToConvert;
   }
 
-  private void ConvertObjects(Base commitObject, ReceiverModelCard modelCard, CancellationTokenSource cts)
+  private List<string> ConvertObjects(Base commitObject, ReceiverModelCard modelCard, CancellationTokenSource cts)
   {
-    // POC: Progress here
+    // Prompt the UI conversion started. Progress bar will swoosh.
     Commands.SetModelProgress(modelCard.ModelCardId, new ModelCardProgress() { Status = "Converting" });
 
     ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
 
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(modelCard.ProjectName, modelCard.ModelName);
-    var objectsWithPath = GetBaseWithPath(commitObject, cts);
-    var baseLayerPrefix = $"SPK-{modelCard.ProjectName}-{modelCard.ModelName}-";
+    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(commitObject, cts);
+    string baseLayerPrefix = $"SPK-{modelCard.ProjectName}-{modelCard.ModelName}-";
 
-    var uniqueLayerNames = new HashSet<string>();
-    var handleValues = new List<string>();
-    var count = 0;
+    HashSet<string> uniqueLayerNames = new();
+    List<string> handleValues = new();
+    int count = 0;
 
-    foreach (var (path, obj) in objectsWithPath)
+    using (TransactionContext.StartTransaction(Application.DocumentManager.MdiActiveDocument))
     {
-      if (cts.IsCancellationRequested)
+      foreach ((List<string> path, Base obj) in objectsWithPath)
       {
-        throw new OperationCanceledException(cts.Token);
-      }
-
-      try
-      {
-        var layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
-
-        if (uniqueLayerNames.Add(layerFullName))
+        if (cts.IsCancellationRequested)
         {
-          _autocadLayerManager.CreateLayerOrPurge(layerFullName);
+          throw new OperationCanceledException(cts.Token);
         }
 
-        var converted = converter.Convert(obj);
-        var flattened = FlattenToNativeConversionResult(converted);
-        foreach (Entity conversionResult in flattened.Cast<Entity>())
+        try
         {
-          if (conversionResult == null)
+          string layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
+
+          if (uniqueLayerNames.Add(layerFullName))
           {
-            continue;
+            _autocadLayerManager.CreateLayerOrPurge(layerFullName);
           }
 
-          conversionResult.Append(layerFullName);
-          handleValues.Add(conversionResult.Handle.Value.ToString());
-        }
+          object converted = converter.Convert(obj);
+          List<object> flattened = FlattenToNativeConversionResult(converted);
 
-        Commands.SetModelProgress(
-          modelCard.ModelCardId,
-          new ModelCardProgress() { Status = "Converting", Progress = (double)++count / objectsWithPath.Count }
-        );
-      }
-      catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
-      {
-        // POC: report, etc.
-        Debug.WriteLine("conversion error happened.");
+          foreach (Entity conversionResult in flattened.Cast<Entity>())
+          {
+            if (conversionResult == null)
+            {
+              continue;
+            }
+
+            conversionResult.Append(layerFullName);
+            handleValues.Add(conversionResult.Handle.Value.ToString());
+          }
+
+          Commands.SetModelProgress(
+            modelCard.ModelCardId,
+            new ModelCardProgress() { Status = "Converting", Progress = (double)++count / objectsWithPath.Count }
+          );
+        }
+        catch (Exception e) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
+        {
+          // POC: report, etc.
+          Debug.WriteLine("conversion error happened.");
+        }
       }
     }
+    return handleValues;
   }
 
+  // POC: This method should be move somewhere more general!
   /// <summary>
   /// Utility function to flatten a conversion result that might have nested lists of objects.
   /// This happens, for example, in the case of multiple display value fallbacks for a given object.
@@ -193,7 +199,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   /// <returns></returns>
   private List<object> FlattenToNativeConversionResult(object item)
   {
-    var convertedList = new List<object>();
+    List<object> convertedList = new();
     void Flatten(object item)
     {
       if (item is IList list)
@@ -221,6 +227,4 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
   }
 
   public bool IsDisposed { get; private set; }
-
-  private static readonly string[] s_separator = new[] { "\\" };
 }

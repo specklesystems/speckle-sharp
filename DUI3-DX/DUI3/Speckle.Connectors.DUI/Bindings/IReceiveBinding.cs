@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Speckle.Connectors.DUI.Models.Card;
 using System.Threading.Tasks;
+using Speckle.Connectors.DUI.Utils;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -24,4 +26,16 @@ public class ReceiverModelCard : ModelCard
   public string ModelName { get; set; }
   public string SelectedVersionId { get; set; }
   public string LatestVersionId { get; set; }
+}
+
+public class ReceiverModelCardResult
+{
+  public string ModelCardId { get; set; }
+  public ReceiveResult ReceiveResult { get; set; }
+}
+
+public class ReceiveResult
+{
+  public List<string> BakedObjectIds { get; set; }
+  public bool Display { get; set; }
 }
