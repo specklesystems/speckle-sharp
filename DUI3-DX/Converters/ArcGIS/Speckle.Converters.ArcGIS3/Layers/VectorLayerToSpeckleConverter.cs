@@ -45,17 +45,23 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 
 
     // search the rows
+
+    // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
+    // This means we need to be carefully adding using statements based on the API documentation coming from each method/class
+
     using (RowCursor rowCursor = target.Search())
     {
       while (rowCursor.MoveNext())
       {
+        // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
           var element = _pointElementConverter.RawConvert(row);
           speckleLayer.elements.Add(element);
         }
       }
+
+      return speckleLayer;
     }
-    return speckleLayer;
   }
 }
