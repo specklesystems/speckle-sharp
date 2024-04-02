@@ -10,7 +10,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Core.Models.Extensions;
 using Speckle.Core.Serialisation;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
