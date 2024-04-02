@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Utils;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
@@ -27,6 +28,9 @@ public interface ISendBinding : IBinding
 public class SenderModelCard : ModelCard
 {
   public ISendFilter SendFilter { get; set; }
+
+  [JsonIgnore]
+  public HashSet<string> ChangedObjectIds { get; set; } = new();
 }
 
 public interface ISendFilter
