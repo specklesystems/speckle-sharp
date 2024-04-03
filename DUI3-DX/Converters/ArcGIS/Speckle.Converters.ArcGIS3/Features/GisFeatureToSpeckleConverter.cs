@@ -14,39 +14,26 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
   private readonly IRawConversion<MapPoint, Point> _pointConverter;
+  private readonly IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>> _geometryConverter;
 
   public GisFeatureToSpeckleConverter(
     IRawConversion<MapPoint, Point> pointConverter,
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle
+    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>> geometryConverter
   )
   {
     _toSpeckle = toSpeckle;
     _pointConverter = pointConverter;
+    _geometryConverter = geometryConverter;
   }
 
   public Base Convert(object target) => RawConvert((Row)target);
 
   public GisFeature RawConvert(Row target)
   {
-    GisFeature newFeature;
-    var shape = target["Shape"];
-    Type type = shape.GetType();
-
-    try
-    {
-      var objectConverter = _toSpeckle.ResolveInstance(type.Name);
-
-      if (objectConverter == null)
-      {
-        throw new NotSupportedException($"No conversion found for {type.Name}");
-      }
-      newFeature = (GisFeature)objectConverter.Convert(shape);
-    }
-    catch (SpeckleConversionException e)
-    {
-      Console.WriteLine(e);
-      throw; // Just rethrowing for now, Logs may be needed here.
-    }
+    // GisFeature newFeature;
+    var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
+    var speckleShapes = _geometryConverter.RawConvert(shape);
 
     // get attributes
     var attributes = new Base();
@@ -64,7 +51,7 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
       }
       i++;
     }
-    newFeature.attributes = attributes;
-    return newFeature;
+
+    return new GisFeature(speckleShapes, attributes);
   }
 }
