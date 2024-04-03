@@ -3,20 +3,22 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
+using Objects.GIS;
+using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
-namespace Speckle.Converters.ArcGIS3.Geometry;
+namespace Speckle.Converters.ArcGIS3.Features;
 
 [NameAndRankValue(nameof(Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polyline, SOG.Polyline>
+public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polyline, GisFeature>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<EllipticArcSegment, SOG.Polyline> _arcConverter;
   private readonly IRawConversion<CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
-  public PolyineToSpeckleConverter(
+  public PolyineFeatureToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter,
+    IRawConversion<ArcMapPoint, SOG.Point> pointConverter,
     IRawConversion<EllipticArcSegment, SOG.Polyline> arcConverter,
     IRawConversion<CubicBezierSegment, SOG.Polyline> bezierConverter
   )
@@ -29,10 +31,10 @@ public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
 
   public Base Convert(object target) => RawConvert((Polyline)target);
 
-  public SOG.Polyline RawConvert(Polyline target)
+  public GisFeature RawConvert(Polyline target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
-    List<SOG.Polyline> polylineList = new();
+    List<Base> polylineList = new();
     double len = 0;
 
     // or use foreach pattern
@@ -67,10 +69,10 @@ public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
           // bbox = box,
           length = target.Length
         };
-      return polylinePart;
-      //polylineList.Add(polylinePart);
+      // return polylinePart;
+      polylineList.Add(polylinePart);
     }
-    return new SOG.Polyline();
+    return new GisFeature { geometry = polylineList };
 
     //return polylineList;
   }

@@ -5,7 +5,7 @@ using Objects.Geometry;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 
-namespace Speckle.Converters.ArcGIS3.Geometry;
+namespace Speckle.Converters.ArcGIS3.Features;
 /*
 [NameAndRankValue(nameof(Polygon), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polygon, Point>

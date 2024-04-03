@@ -28,7 +28,7 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
 
   public GisFeature RawConvert(Row target)
   {
-    var geometry = new List<Base>();
+    GisFeature newFeature;
     var shape = target["Shape"];
     Type type = shape.GetType();
 
@@ -40,10 +40,7 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
       {
         throw new NotSupportedException($"No conversion found for {type.Name}");
       }
-      var convertedObject = objectConverter.Convert(shape);
-
-      // TODO: handle multitypes
-      geometry.Add(convertedObject);
+      newFeature = (GisFeature)objectConverter.Convert(shape);
     }
     catch (SpeckleConversionException e)
     {
@@ -67,7 +64,7 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
       }
       i++;
     }
-
-    return new GisFeature { geometry = geometry, attributes = attributes, };
+    newFeature.attributes = attributes;
+    return newFeature;
   }
 }
