@@ -42,7 +42,7 @@ public class EllipticArcToSpeckleConverter
     )
     {
       fullAngle = Math.PI * 2 - Math.Abs(fullAngle);
-      if (angleStart > 0)
+      if (target.IsCounterClockwise is false)
       {
         coeff = -1;
       }
@@ -55,7 +55,8 @@ public class EllipticArcToSpeckleConverter
       double angle = angleStart + coeff * fullAngle * (i / (double)numVertices);
       MapPoint pointOnArc = MapPointBuilderEx.CreateMapPoint(
         target.CenterPoint.X + target.SemiMajorAxis * Math.Cos(angle),
-        target.CenterPoint.Y + target.SemiMinorAxis * Math.Sin(angle)
+        target.CenterPoint.Y + target.SemiMinorAxis * Math.Sin(angle),
+        target.SpatialReference
       );
 
       points.Add(_pointConverter.RawConvert(pointOnArc));

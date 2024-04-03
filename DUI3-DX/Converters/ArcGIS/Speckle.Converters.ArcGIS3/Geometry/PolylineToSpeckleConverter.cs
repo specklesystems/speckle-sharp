@@ -12,16 +12,19 @@ public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<EllipticArcSegment, SOG.Polyline> _arcConverter;
+  private readonly IRawConversion<CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
   public PolyineToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
     IRawConversion<MapPoint, SOG.Point> pointConverter,
-    IRawConversion<EllipticArcSegment, SOG.Polyline> arcConverter
+    IRawConversion<EllipticArcSegment, SOG.Polyline> arcConverter,
+    IRawConversion<CubicBezierSegment, SOG.Polyline> bezierConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
     _arcConverter = arcConverter;
+    _bezierConverter = bezierConverter;
   }
 
   public Base Convert(object target) => RawConvert((Polyline)target);
@@ -49,8 +52,7 @@ public class PolyineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
             break;
           case SegmentType.Bezier:
             var segmentBezier = (CubicBezierSegment)segment;
-            // points.Add(_pointConverter.RawConvert(segmentBezier.ControlPoint1));
-            // points.Add(_pointConverter.RawConvert(segmentBezier.ControlPoint2));
+            points.AddRange(_bezierConverter.RawConvert(segmentBezier).GetPoints());
             break;
           case SegmentType.EllipticArc:
             var segmentElliptic = (EllipticArcSegment)segment;
