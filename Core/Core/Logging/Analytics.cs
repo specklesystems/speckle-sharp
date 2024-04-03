@@ -266,10 +266,6 @@ public static class Analytics
                 new List<string> { connector }
               }
             }
-          },
-          {
-            "set",
-            new Dictionary<string, object> { { "Identified", true } }
           }
         };
         string json = JsonConvert.SerializeObject(data);
