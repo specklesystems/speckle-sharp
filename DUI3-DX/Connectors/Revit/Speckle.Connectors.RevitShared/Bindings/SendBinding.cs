@@ -11,12 +11,9 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
 using System.Threading.Tasks;
 using System.Threading;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
-using Speckle.Converters.Common;
-using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
