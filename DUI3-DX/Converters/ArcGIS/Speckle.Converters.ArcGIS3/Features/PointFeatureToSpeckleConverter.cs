@@ -8,7 +8,7 @@ using Objects.GIS;
 namespace Speckle.Converters.ArcGIS3.Features;
 
 [NameAndRankValue(nameof(MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<MapPoint, GisFeature>
+public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<MapPoint, List<Base>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
@@ -17,9 +17,9 @@ public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((MapPoint)target);
+  public List<Base> Convert(object target) => RawConvert((MapPoint)target);
 
-  public GisFeature RawConvert(MapPoint target)
+  public List<Base> RawConvert(MapPoint target)
   {
     if (
       GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
@@ -33,6 +33,6 @@ public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     List<Base> geometry =
       new() { new SOG.Point(reprojectedPt.X, reprojectedPt.Y, reprojectedPt.Z, _contextStack.Current.SpeckleUnits) };
 
-    return new GisFeature { geometry = geometry };
+    return geometry;
   }
 }

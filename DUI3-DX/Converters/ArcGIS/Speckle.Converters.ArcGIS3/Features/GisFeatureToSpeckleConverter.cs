@@ -12,18 +12,10 @@ namespace Speckle.Converters.ArcGIS3.Features;
 [NameAndRankValue(nameof(Row), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Row, GisFeature>
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
-  private readonly IRawConversion<MapPoint, Point> _pointConverter;
   private readonly IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>> _geometryConverter;
 
-  public GisFeatureToSpeckleConverter(
-    IRawConversion<MapPoint, Point> pointConverter,
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
-    IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>> geometryConverter
-  )
+  public GisFeatureToSpeckleConverter(IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>> geometryConverter)
   {
-    _toSpeckle = toSpeckle;
-    _pointConverter = pointConverter;
     _geometryConverter = geometryConverter;
   }
 
@@ -31,7 +23,6 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
 
   public GisFeature RawConvert(Row target)
   {
-    // GisFeature newFeature;
     var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
     var speckleShapes = _geometryConverter.RawConvert(shape);
 

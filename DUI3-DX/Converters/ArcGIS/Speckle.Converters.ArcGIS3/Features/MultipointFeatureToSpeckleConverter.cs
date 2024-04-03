@@ -11,7 +11,7 @@ namespace Speckle.Converters.ArcGIS3.Features;
 [NameAndRankValue(nameof(Multipoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class MultipointFeatureToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<Multipoint, GisFeature>
+    IRawConversion<Multipoint, List<Base>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
@@ -25,9 +25,9 @@ public class MultipointFeatureToSpeckleConverter
     _pointConverter = pointConverter;
   }
 
-  public Base Convert(object target) => RawConvert((Multipoint)target);
+  public List<Base> Convert(object target) => RawConvert((Multipoint)target);
 
-  public GisFeature RawConvert(Multipoint target)
+  public List<Base> RawConvert(Multipoint target)
   {
     List<Base> multipoint = new();
     foreach (ArcMapPoint point in target.Points)
@@ -35,6 +35,6 @@ public class MultipointFeatureToSpeckleConverter
       multipoint.Add(_pointConverter.RawConvert(point));
     }
 
-    return new GisFeature { geometry = multipoint };
+    return multipoint;
   }
 }

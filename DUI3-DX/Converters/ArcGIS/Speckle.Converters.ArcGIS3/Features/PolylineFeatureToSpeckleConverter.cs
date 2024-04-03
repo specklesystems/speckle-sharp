@@ -9,7 +9,7 @@ using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 namespace Speckle.Converters.ArcGIS3.Features;
 
 [NameAndRankValue(nameof(Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polyline, GisFeature>
+public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Polyline, List<Base>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
@@ -29,9 +29,9 @@ public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
     _bezierConverter = bezierConverter;
   }
 
-  public Base Convert(object target) => RawConvert((Polyline)target);
+  public List<Base> Convert(object target) => RawConvert((Polyline)target);
 
-  public GisFeature RawConvert(Polyline target)
+  public List<Base> RawConvert(Polyline target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     List<Base> polylineList = new();
@@ -72,7 +72,7 @@ public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
       // return polylinePart;
       polylineList.Add(polylinePart);
     }
-    return new GisFeature { geometry = polylineList };
+    return polylineList;
 
     //return polylineList;
   }
