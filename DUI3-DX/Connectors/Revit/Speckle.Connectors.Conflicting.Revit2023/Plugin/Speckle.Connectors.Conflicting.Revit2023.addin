@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Speckle Revit Connector | Conflicting</Name>
+    <Description>Speckle Revit Connector | DUI3 + Kits + DI</Description>
+    <Assembly>Speckle.Connectors.Conflicting.Revit2023\Speckle.Connectors.Conflicting.Revit2023.dll</Assembly>
+    <FullClassName>Speckle.Connectors.Conflicting.Revit2023.Plugin.RevitExternalApplication</FullClassName>
+    <ClientId>bde83078-4ded-447e-b2b2-2ab41aee8108</ClientId>
+    <VendorId>conflict</VendorId>
+    <VendorDescription>Speckle: Empowering your design and construction data. For any problems, visit our community forum https://speckle.community</VendorDescription>
+  </AddIn>
+</RevitAddIns>
