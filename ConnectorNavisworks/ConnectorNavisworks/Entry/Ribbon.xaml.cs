@@ -205,6 +205,11 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 #if NAVMAN21
     buildVersion = "2024";
 #endif
+#if NAVMAN22
+    buildVersion = "2025";
+#endif
+
+    MessageBox.Show(NavisworksApp.Version.RuntimeProductName);
 
     // Version
     if (!NavisworksApp.Version.RuntimeProductName.Contains(buildVersion))
