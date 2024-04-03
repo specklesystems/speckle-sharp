@@ -18,6 +18,7 @@ public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<DB
     _unitMapping[DB.UnitTypeId.Feet] = Units.Feet;
   }
 
+  // POC: maybe just convert, it's not a Try method
   public string ConvertOrThrow(DB.ForgeTypeId hostUnit)
   {
     if (_unitMapping.TryGetValue(hostUnit, out string value))

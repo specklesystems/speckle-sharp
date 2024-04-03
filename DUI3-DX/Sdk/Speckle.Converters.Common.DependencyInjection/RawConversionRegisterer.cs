@@ -3,8 +3,10 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Common.DependencyInjection;
 
+// POC: review and see if it can be made more generic, related to the
+// NameAndRankAttribute work that needs doing
 public static class RawConversionRegisterer
-{
+{\
   public static ContainerBuilder RegisterRawConversions(this ContainerBuilder containerBuilder)
   {
     // POC: hard-coding speckle... :/

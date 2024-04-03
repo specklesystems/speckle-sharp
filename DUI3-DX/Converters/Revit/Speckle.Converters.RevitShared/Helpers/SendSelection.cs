@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: why do we need this send selection?
+// why does conversion need to know about selection in this way?
 public class SendSelection
 {
   private readonly HashSet<string> _selectedItemIds;

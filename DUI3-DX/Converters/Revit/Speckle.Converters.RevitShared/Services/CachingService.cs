@@ -4,6 +4,9 @@ using System.Collections;
 
 namespace Speckle.Converters.RevitShared.Services;
 
+// POC: not sure where or how this caching is working and why it has this Func<T> pattern
+// we might want to take this out and restore caching in more structured places in a sensible way
+// ideally being DRY about HOW we do this, using preferably generic caching patterns
 public class CachingService : ICachingService
 {
   private readonly Dictionary<Type, IDictionary> _objectTypeCaches = new();

@@ -8,6 +8,10 @@ namespace Speckle.Converters.RevitShared.Helpers;
 /// Contains predefined categories of revit objects as well as the types that make up the elements
 /// in that category
 /// </summary>
+///
+// POC: is quite a messy looking thing, need some review
+// might be legit or maybe a bette/cleaner pattern rather than the dictionary of pain, but maybe not
+// some whitespace between each at the least!
 public static class RevitCategories
 {
   public static Dictionary<string, RevitCategoryInfo> All { get; }

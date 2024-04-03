@@ -7,6 +7,9 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: needs reviewing, it may be fine, not sure how open/closed it is
+// really if we have to edit a switch statement...
+// maybe also better as an extension method, but maybe is fine?
 public class ParameterValueExtractor
 {
   private readonly ToSpeckleScalingService _scalingService;

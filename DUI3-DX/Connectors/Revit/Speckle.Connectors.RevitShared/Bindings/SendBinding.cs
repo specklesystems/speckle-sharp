@@ -11,9 +11,12 @@ using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
 using System.Threading.Tasks;
 using System.Threading;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Converters.Common;
+using Speckle.Core.Kits;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -25,6 +28,8 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
+  // POC: update SendOperation to be interfaced out and could be shared implementation
+  // could be abstract implementation
   // In the context of the SEND operation, we're only ever expecting ONE conversion
   private readonly SendOperation _sendOperation;
   private readonly IRevitIdleManager _idleManager;
@@ -68,6 +73,9 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private async Task HandleSend(string modelCardId)
   {
+    // POC this is where we need to begin UoW
+    // i.e. we resolve the UoW
+
     CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
     if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)

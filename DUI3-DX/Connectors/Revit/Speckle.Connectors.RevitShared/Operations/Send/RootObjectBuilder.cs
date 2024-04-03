@@ -13,6 +13,7 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 
 public class RootObjectBuilder
 {
+  // POC: SendSelection and RevitConversionContextStack should be interfaces, former needs interfaces
   private readonly SendSelection _sendSelection;
   private readonly ISpeckleConverterToSpeckle _converter;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
@@ -20,6 +21,7 @@ public class RootObjectBuilder
 
   public RootObjectBuilder(
     ISendFilter sendFilter,
+    // POC: need to resolve where the UoW should be and whether this is with the SpeckleConverterToSpeckle or something else
     ISpeckleConverterToSpeckle converter,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     RevitConversionContextStack contextStack
@@ -27,6 +29,7 @@ public class RootObjectBuilder
   {
     _sendSelection = new(sendFilter.GetObjectIds());
     _converter = converter;
+    // POC: needs considering if this is something to add now or needs refactoring
     _convertedObjectsCache = convertedObjectsCache;
     _contextStack = contextStack;
   }

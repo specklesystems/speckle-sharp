@@ -8,6 +8,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: rationalise whether this and ParameterObjectBuilder are sufficiently different??
+// did it go away?
 public sealed class ParameterObjectAssigner
 {
   private readonly IRawConversion<Parameter, SOBR.Parameter> _paramConverter;
@@ -58,10 +60,14 @@ public sealed class ParameterObjectAssigner
         speckleParam.isTypeParameter = isTypeParameter;
         paramBase[kv.Key] = speckleParam;
       }
+      // POC swallow and continue seems bad?
+      // maybe hoover these into one exception or into our reporting strategy
       catch (InvalidPropNameException)
       {
         //ignore
       }
+      // POC swallow and continue seems bad?
+      // maybe hoover these into one exception or into our reporting strategy
       catch (SpeckleConversionException ex)
       {
         SpeckleLog.Logger.Warning(ex, "Error thrown when trying to set property named {propName}", kv.Key);

@@ -53,6 +53,8 @@ public class AutofacUIModule : Module
     builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
+    // POC: we need to review the scopes and create a document on what the policy is
+    // and where the UoW should be
     // register UI bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
@@ -72,6 +74,7 @@ public class AutofacUIModule : Module
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
 
+    // POC: this needs to considering, and should either be re-instated/fixed and relates to where the UoW is.
     //builder
     //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
     //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()

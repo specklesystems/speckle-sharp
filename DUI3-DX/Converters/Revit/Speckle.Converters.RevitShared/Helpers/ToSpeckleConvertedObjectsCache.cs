@@ -3,6 +3,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: review the cache? should this be a common class?
+// Does caching work this way everywhere, i.e, string key and base value?
 public sealed class ToSpeckleConvertedObjectsCache
 {
   private readonly Dictionary<string, Base> _uniqueIdToConvertedBaseDict = new();

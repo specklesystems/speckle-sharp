@@ -9,6 +9,7 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 
 public sealed class SendOperation
 {
+  // POC: need to consider
   private readonly ILifetimeScope _scope;
   private readonly IRootObjectSender _rootObjectSender;
 

@@ -35,6 +35,7 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
     return toSpeckleData.GetParameterObjectWithValue(_valueExtractor.GetValue(target));
   }
 
+  // POC: naming, I don't know if we need FromDocument, even if it is using it (but maybe it is not)
   private ParameterToSpeckleData ExtractParameterDataFromDocument(string paramInternalName, DB.Parameter parameter)
   {
     var definition = parameter.Definition;
@@ -47,12 +48,15 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
       Name = definition.Name,
       UnitType = definition.GetUnitTypeString(),
     };
+
+    // POC: why is this specialisation needed? Could there be more?
     if (parameter.StorageType == StorageType.Double)
     {
       ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
       newParamData.UnitsSymbol = unitTypeId.GetSymbol();
       newParamData.ApplicationUnits = unitTypeId.ToUniqueString();
     }
+
     return newParamData;
   }
 }
@@ -61,6 +65,8 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
 /// This struct is used when caching parameter definitions upon sending to avoid having to deep clone the parameter object
 /// This is done because all the fields except the parameter value will change
 /// </summary>
+///
+// POC: needed for caching but should it be a struct? We should have it in it's own file
 internal struct ParameterToSpeckleData
 {
   public string ApplicationUnits;

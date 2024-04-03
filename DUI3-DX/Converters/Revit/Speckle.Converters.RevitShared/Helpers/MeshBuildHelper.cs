@@ -5,6 +5,7 @@ using Objects.Other;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: probably interface out
 public sealed class MeshBuildHelper
 {
   //Lazy initialised Dictionary of Revit material (hash) -> Speckle material
@@ -12,11 +13,6 @@ public sealed class MeshBuildHelper
 
   public RenderMaterial? GetOrCreateMaterial(DB.Material revitMaterial)
   {
-    if (revitMaterial == null)
-    {
-      return null;
-    }
-
     int hash = Hash(revitMaterial); //Key using the hash as we may be given several instances with identical material properties
     if (_materialMap.TryGetValue(hash, out RenderMaterial? m))
     {
@@ -28,12 +24,22 @@ public sealed class MeshBuildHelper
     return material;
   }
 
+  // POC: cannot see how the hash is guaranteed to be unique
+  // surely we could store hash as a unsigned long and use bit shifting
+  // Extension method preferred
   private static int Hash(DB.Material mat) =>
     mat.Transparency ^ mat.Color.Red ^ mat.Color.Green ^ mat.Color.Blue ^ mat.Smoothness ^ mat.Shininess;
 
   //Lazy initialised Dictionary of revit material (hash) -> Speckle Mesh
   private readonly Dictionary<int, Mesh> _meshMap = new();
 
+  // POC: nullability needs checking
+  // what is this meant to be doing?
+  // what is the empty mesh and the material hash?
+  // feels like we should be caching materials but...
+  // why did we choose to cache this material?
+  // what is the relevance of the units here?
+  // probably we should have some IMaterialCache
   public Mesh GetOrCreateMesh(DB.Material mat, string units)
   {
     if (mat == null)
@@ -68,6 +74,9 @@ public sealed class MeshBuildHelper
       return null;
     }
 
+    // POC: not sure we should be pulling in System.Drawing -
+    // maybe this isn't a problem as it's part of the netstandard Fwk
+    // ideally we'd have serialiser of our own colour class, i.e. to serialise to an uint
     RenderMaterial material =
       new()
       {

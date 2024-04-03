@@ -26,6 +26,8 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     _parameterValueExtractor = parameterValueExtractor;
   }
 
+  // POC: our assumption here is target is valid for conversion
+  // if it cannot be converted then we should throw
   public Base Convert(object target)
   {
     var objectConverter =
@@ -46,6 +48,14 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     return result;
   }
 
+  // POC: we should try to de-couple raw object conversion and paramater scraping so they can happen..
+  //   "yeah, I'm wondering if we can make conversion "pipelines" or something
+  //    like that where we could add all the Wall properties like length and height
+  //    and then continue passing the object down to more generic conversions that
+  //    could add more generic info like parameters or display value."
+  //
+  // We need to look for the commonality...
+  //   "I think it's achievable and makes more sense than having to add parameters on every conversion"
   private IHostObjectToSpeckleConversion? RetrieveObjectConversion(Type objectType)
   {
     if (_hostObjectConversions.TryGetValue(objectType, out var conversion))

@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// review, maybe it doesn't need injecting, or maybe we inject a factory?
 public class RevitCategoryInfo
 {
   public RevitCategoryInfo(
@@ -41,6 +42,7 @@ public class RevitCategoryInfo
   public List<T> GetElementTypes<T>(Document document)
     where T : ElementType
   {
+    // POC: why is this disabled? surely a using statement is golden here?
 #pragma warning disable CA2000 // Dispose objects before losing scope
     var collector = new FilteredElementCollector(document);
 #pragma warning restore CA2000 // Dispose objects before losing scope

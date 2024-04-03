@@ -5,6 +5,7 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
+// POC: not currently used? clearly some missing pieces
 [NameAndRankValue(nameof(Element), 0)]
 public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, RevitElement>
 {

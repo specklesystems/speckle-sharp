@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
+// POC: maybe but could be generic abstract Converters.Common?
 public abstract class BaseConversionToSpeckle<THost, TSpeckle>
   : IHostObjectToSpeckleConversion,
     IRawConversion<THost>,
@@ -25,6 +26,7 @@ public abstract class BaseConversionToSpeckle<THost, TSpeckle>
 
   public abstract TSpeckle RawConvert(THost target);
 
+  // POC: this isn't even used, needs review, not sure we need it atm?
   public IEnumerable<TSpeckle> RawConvertMany(IEnumerable<THost> target)
   {
     foreach (var targetItem in target)

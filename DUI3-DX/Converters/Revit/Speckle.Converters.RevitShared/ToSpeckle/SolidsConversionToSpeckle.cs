@@ -6,6 +6,9 @@ using Mesh = Objects.Geometry.Mesh;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
+// POC: do we need to have this atm?
+// why do we need a List<DB.Solid>, do we encounter these in the converter logic?
+// it looks wrong here or perhaps the List<DB.Solid> is coming from the connector?
 [NameAndRankValue(nameof(List<DB.Solid>), 0)]
 public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>, List<Mesh>>
 {
@@ -18,6 +21,7 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
     _meshDataTriangulator = meshDataTriangulator;
   }
 
+  // POC: this is converting and caching and using the cache and some of it is a bit questionable
   public override List<Mesh> RawConvert(List<DB.Solid> target)
   {
     MeshBuildHelper meshBuildHelper = new();
@@ -27,9 +31,14 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
     {
       foreach (Face face in solid.Faces)
       {
+        // POC: throwing here? Just review. Is it necessary armouring against Revit APU weirdness?
+        // do direct cast (DB.Material) instead of as and then no need to throw, it will throw naturally
+        // of course if we need to do this then maybe it's valid. So hence, just review.
         DB.Material faceMaterial =
           _contextStack.Current.Document.Document.GetElement(face.MaterialElementId) as DB.Material
           ?? throw new SpeckleConversionException("Unable to cast face's materialElementId element to DB.Material");
+
+        // POC: this logic, relationship between material and mesh, seems wrong
         Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, _contextStack.Current.SpeckleUnits);
         if (!meshMap.TryGetValue(m, out List<DB.Mesh>? value))
         {

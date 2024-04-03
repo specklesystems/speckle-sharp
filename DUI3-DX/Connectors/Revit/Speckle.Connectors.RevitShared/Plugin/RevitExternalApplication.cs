@@ -70,6 +70,10 @@ internal class RevitExternalApplication : IExternalApplication
 
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
+    // POC: refactor the conversions to be simper, this method could be the basis for this
+    // tbe event can probably go
+    // IRawConversions should be separately injectable (and not Require an IHostObject... or NameAndRank attribute)
+    // Name and Rank can become ConversionRank or something and be optional (otherwise it is rank 0)
     containerBuilder.RegisterRawConversions();
   }
 

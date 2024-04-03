@@ -18,6 +18,10 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.
   private readonly RevitConversionContextStack _contextStack;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
+  // POC: could be broken down more granular, maybe injected, maybe even if methods
+  // GetParameters()
+  // GetGeometry()
+  // etc...
   public ColumnConversionToSpeckle(
     IRawConversion<Location> locationConverter,
     IRawConversion<Level, RevitLevel> levelConverter,

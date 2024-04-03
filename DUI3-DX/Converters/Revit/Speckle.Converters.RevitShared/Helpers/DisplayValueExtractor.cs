@@ -7,6 +7,7 @@ using Mesh = Objects.Geometry.Mesh;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
+// POC: class is kind of big and could do with breaking down
 public sealed class DisplayValueExtractor
 {
   private readonly IRawConversion<List<DB.Solid>, List<Mesh>> _solidsConversion;
@@ -25,6 +26,7 @@ public sealed class DisplayValueExtractor
     DB.Element element,
     DB.Options? options = null,
     bool isConvertedAsInstance = false,
+    // POC: should this be part of the context?
     DB.Transform? transform = null
   )
   {
@@ -102,6 +104,7 @@ public sealed class DisplayValueExtractor
     {
       geom = element.get_Geometry(options);
     }
+    // POC: should we be trying to continue?
     catch (Autodesk.Revit.Exceptions.ArgumentException)
     {
       options.ComputeReferences = false;
@@ -151,6 +154,8 @@ public sealed class DisplayValueExtractor
 
     foreach (GeometryObject geomObj in geom)
     {
+      // POC: switch could possibly become factory and IIndex<,> pattern and move conversions to
+      // separate IComeConversionInterfaces
       switch (geomObj)
       {
         case Solid solid:
@@ -225,6 +230,7 @@ public sealed class DisplayValueExtractor
     }
   }
 
+  // POC: should be hoovered up with the new reporting, logging, exception philosophy
   private static void LogInstanceMeshRetrievalWarnings(
     Element element,
     int topLevelSolidsCount,

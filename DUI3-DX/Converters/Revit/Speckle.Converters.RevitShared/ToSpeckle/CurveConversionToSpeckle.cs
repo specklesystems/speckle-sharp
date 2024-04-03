@@ -1,3 +1,4 @@
+using Autofac.Features.Indexed;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 using Objects;
@@ -7,6 +8,11 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 [NameAndRankValue(nameof(DB.Curve), 0)]
 public class CurveConversionToSpeckle : BaseConversionToSpeckle<DB.Curve, ICurve>
 {
+  // POC: can we do this sort of thing?
+  // Can this converter be made generic to make a ConverterFetcher? and be used
+  // whenever we have some ambiguity as to the specific converter we need to call?
+  // IIndex<string, IRawConversion<DB.Curve, ICurve>> _curveConverters;
+
   private readonly IRawConversion<DB.Line, SOG.Line> _lineConverter;
 
   //private readonly IRawConversion<DB.Arc, SOG.Line> _arcConverter;
@@ -21,9 +27,18 @@ public class CurveConversionToSpeckle : BaseConversionToSpeckle<DB.Curve, ICurve
 
   public override ICurve RawConvert(DB.Curve target)
   {
+    // POC: and then here:
+    // if (_curveConverters.TryGetValue(target.GetType().Name, out IRawConversion<DB.Curve, ICurve> converter))
+    // {
+    //   return converter.RawConvert(target);
+    // }
+    //
+    // throw ...
+
     return target switch
     {
       DB.Line line => _lineConverter.RawConvert(line),
+      // POC: these conversions are "coming soon" can we use IIndex with variance with nice injection
       //DB.Arc arc => _arcConverter.RawConvert(arc),
       //DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
       //DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),

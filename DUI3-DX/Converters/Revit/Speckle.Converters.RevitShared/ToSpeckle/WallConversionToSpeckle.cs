@@ -12,6 +12,8 @@ using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
+// POC: needs review feels, BIG, feels like it could be broken down..
+// i.e. GetParams(), GetGeom()? feels like it's doing too much
 [NameAndRankValue(nameof(DB.Wall), 0)]
 public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWall>
 {
@@ -89,6 +91,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
     return speckleWall;
   }
 
+  // POC: not sure
   private void AssignHostedElements(Wall target, RevitWall speckleWall)
   {
     List<Base> hostedObjects = _hostedElementConverter.GetHostedElementsConverted(target);

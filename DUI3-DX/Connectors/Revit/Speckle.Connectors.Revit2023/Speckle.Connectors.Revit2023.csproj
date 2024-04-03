@@ -42,10 +42,6 @@
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-
   <Target AfterTargets="Clean" Name="CleanAddinFolder">
     <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2023;$(AppData)\Autodesk\Revit\Addins\2023\Speckle.Connectors.Revit2023;" />
     <Delete Files="$(AppData)\Autodesk\Revit\Addins\2023\Speckle.Connectors.Revit2023.addin" />

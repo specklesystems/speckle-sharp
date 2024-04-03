@@ -26,6 +26,7 @@ public class MeshConversionToSpeckle : BaseConversionToSpeckle<List<DB.Mesh>, Li
 
   public override List<SOG.Mesh> RawConvert(List<DB.Mesh> target)
   {
+    // POC: should be injected
     MeshBuildHelper buildHelper = new();
 
     foreach (var mesh in target)

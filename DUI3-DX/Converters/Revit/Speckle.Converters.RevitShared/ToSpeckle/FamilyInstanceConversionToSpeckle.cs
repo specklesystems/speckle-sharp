@@ -7,6 +7,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
+// POC: bin for now? This is also a parent child relationship and may need a pattern for this
+// so we don't end up with some god FamilyInstanceConversionToSpeckle converter
 public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<DB.FamilyInstance, Base>
 {
   private readonly IRawConversion<DB.Element> _elementConverter;
