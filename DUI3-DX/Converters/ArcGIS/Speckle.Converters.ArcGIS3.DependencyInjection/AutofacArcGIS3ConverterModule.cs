@@ -20,7 +20,7 @@ public class AutofacArcGISConverterModule : Module
     builder
       .RegisterType<ArcGISConversionContextStack>()
       .As<IConversionContextStack<Map, Unit>>()
-      .InstancePerDependency();
+      .InstancePerLifetimeScope();
 
     // factory for conversions
     builder
