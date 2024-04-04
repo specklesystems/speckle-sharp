@@ -8,6 +8,8 @@ public class AutocadLayerManager
 {
   private readonly AutocadContext _autocadContext;
   private readonly string _layerFilterName = "Speckle";
+
+  // POC: Will be addressed to move it into AutocadContext!
   private Document Doc => Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
 
   public AutocadLayerManager(AutocadContext autocadContext)
@@ -34,6 +36,7 @@ public class AutocadLayerManager
   /// <param name="layerName">Name to search layer for purge and create.</param>
   public void CreateLayerOrPurge(string layerName)
   {
+    // POC: Will be addressed to move it into AutocadContext!
     Document doc = Application.DocumentManager.MdiActiveDocument;
     doc.LockDocument();
     using Transaction transaction = doc.TransactionManager.StartTransaction();

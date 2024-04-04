@@ -144,6 +144,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     List<string> handleValues = new();
     int count = 0;
 
+    // POC: Will be addressed to move it into AutocadContext!
     using (TransactionContext.StartTransaction(Application.DocumentManager.MdiActiveDocument))
     {
       foreach ((List<string> path, Base obj) in objectsWithPath)
