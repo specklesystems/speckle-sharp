@@ -31,8 +31,6 @@ public class PolyineFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     List<Base> polylineList = new();
-    double len = 0;
-
     foreach (var segmentCollection in target.Parts)
     {
       polylineList.Add(_segmentConverter.RawConvert(segmentCollection));

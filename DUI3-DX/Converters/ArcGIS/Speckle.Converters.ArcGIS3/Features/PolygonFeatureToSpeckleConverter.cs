@@ -5,7 +5,6 @@ using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 using Objects.GIS;
-using static ArcGIS.Desktop.Editing.Templates.EditingGroupTemplate;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -32,9 +31,10 @@ public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
   public Base RawConvert(Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
-    GisPolygonGeometry polygon = new() { voids = new List<Base>() };
+    List<Base> polygonList = new();
     int partCount = target.PartCount;
 
+    GisPolygonGeometry polygon = new() { voids = new List<Base>() };
     // test each part for "exterior ring"
     for (int idx = 0; idx < partCount; idx++)
     {
@@ -44,14 +44,19 @@ public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
       bool isExteriorRing = target.IsExteriorRing(idx);
       if (isExteriorRing is true)
       {
-        polygon.boundary = polyline;
+        if (polygonList.Count > 0)
+        {
+          polygonList.Add(polygon);
+        }
+        polygon = new() { voids = new List<Base>(), boundary = polyline };
       }
       else
       {
         polygon.voids.Add(polyline);
       }
     }
+    polygonList.Add(polygon);
 
-    return polygon;
+    return polygonList[0];
   }
 }
