@@ -8,6 +8,7 @@ using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.HostApp;
 using System.Linq;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
