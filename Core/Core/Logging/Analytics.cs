@@ -283,7 +283,7 @@ public static class Analytics
       }
     });
   }
-  
+
   internal static void IdentifyProfile(string hashedEmail, string connector)
   {
     Task.Run(async () =>
