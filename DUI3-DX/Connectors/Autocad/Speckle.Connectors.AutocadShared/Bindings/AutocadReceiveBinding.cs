@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.DUI.Bindings;
@@ -119,6 +118,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       {
         throw new OperationCanceledException(cts.Token);
       }
+
       if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
       {
         objectsToConvert.Add((objPath, obj));
@@ -163,7 +163,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
           }
 
           object converted = converter.Convert(obj);
-          List<object> flattened = FlattenToNativeConversionResult(converted);
+          List<object> flattened = Core.Models.Utilities.FlattenToNativeConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
           {
@@ -173,6 +173,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
             }
 
             conversionResult.Append(layerFullName);
+
             handleValues.Add(conversionResult.Handle.Value.ToString());
           }
 
@@ -189,34 +190,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       }
     }
     return handleValues;
-  }
-
-  // POC: This method should be move somewhere more general!
-  /// <summary>
-  /// Utility function to flatten a conversion result that might have nested lists of objects.
-  /// This happens, for example, in the case of multiple display value fallbacks for a given object.
-  /// </summary>
-  /// <param name="item"></param>
-  /// <returns></returns>
-  private List<object> FlattenToNativeConversionResult(object item)
-  {
-    List<object> convertedList = new();
-    void Flatten(object item)
-    {
-      if (item is IList list)
-      {
-        foreach (object child in list)
-        {
-          Flatten(child);
-        }
-      }
-      else
-      {
-        convertedList.Add(item);
-      }
-    }
-    Flatten(item);
-    return convertedList;
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);

@@ -28,6 +28,7 @@
       <DependentUpon>DUI3PanelWebView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DatabaseExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DocumentExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EntityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
@@ -36,7 +37,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />

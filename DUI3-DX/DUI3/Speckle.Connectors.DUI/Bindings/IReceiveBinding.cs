@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Speckle.Connectors.DUI.Models.Card;
 using System.Threading.Tasks;
 
 namespace Speckle.Connectors.DUI.Bindings;
@@ -17,24 +15,4 @@ public interface IReceiveBinding : IBinding
   /// </summary>
   /// <param name="modelCardId"></param>
   public void CancelReceive(string modelCardId);
-}
-
-public class ReceiverModelCard : ModelCard
-{
-  public string ProjectName { get; set; }
-  public string ModelName { get; set; }
-  public string SelectedVersionId { get; set; }
-  public string LatestVersionId { get; set; }
-}
-
-public class ReceiverModelCardResult
-{
-  public string ModelCardId { get; set; }
-  public ReceiveResult ReceiveResult { get; set; }
-}
-
-public class ReceiveResult
-{
-  public List<string> BakedObjectIds { get; set; }
-  public bool Display { get; set; }
 }

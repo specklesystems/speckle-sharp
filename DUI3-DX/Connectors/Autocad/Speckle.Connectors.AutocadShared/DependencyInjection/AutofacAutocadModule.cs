@@ -17,6 +17,7 @@ using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Autocad.Filters;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 

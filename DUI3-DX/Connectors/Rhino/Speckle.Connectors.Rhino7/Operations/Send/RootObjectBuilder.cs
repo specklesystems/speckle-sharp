@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Rhino.DocObjects;
 using Rhino;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 using System.Threading;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 

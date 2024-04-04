@@ -12,6 +12,8 @@ using Speckle.Connectors.Utils;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using System.Threading.Tasks;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.Models.Card;
 
 namespace Speckle.Connectors.Revit.Bindings;
 

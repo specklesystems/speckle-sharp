@@ -1,7 +1,6 @@
-using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Connectors.Autocad.HostApp;
+﻿using Autodesk.AutoCAD.DatabaseServices;
 
-namespace Speckle.Connectors.Autocad;
+namespace Speckle.Connectors.Autocad.HostApp.Extensions;
 
 public static class DocumentExtensions
 {

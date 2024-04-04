@@ -23,13 +23,6 @@ public class AutocadConverterToHost : ISpeckleConverterToHost
 
   public object Convert(Base target)
   {
-    if (target is not Base speckleObject)
-    {
-      throw new NotSupportedException(
-        $"Conversion of {target.GetType().Name} to Host is not supported. Only objects that inherit from Base are."
-      );
-    }
-
     Type type = target.GetType();
 
     try
@@ -41,14 +34,14 @@ public class AutocadConverterToHost : ISpeckleConverterToHost
         throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
       }
 
-      var convertedObject = objectConverter.Convert(speckleObject);
+      var convertedObject = objectConverter.Convert(target);
 
       return convertedObject;
     }
     catch (SpeckleConversionException e)
     {
       Console.WriteLine(e);
-      throw; // Just rethrowing for now, Logs may be needed here.
+      throw; // POC: Just rethrowing for now, Logs may be needed here.
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.Connectors.Autocad.HostApp.Extensions;
 
@@ -9,13 +9,16 @@ public static class EntityExtensions
   /// </summary>
   /// <param name="entity">Entity to add into database.</param>
   /// <param name="layer"> Layer to append object.</param>
+  /// <exception cref="InvalidOperationException">Throws when there is no top transaction in the document.</exception>
   public static ObjectId Append(this Entity entity, string? layer = null)
   {
     var db = entity.Database ?? Application.DocumentManager.MdiActiveDocument.Database;
     Transaction tr = db.TransactionManager.TopTransaction;
     if (tr == null)
     {
-      return ObjectId.Null;
+      throw new InvalidOperationException(
+        $"Document does not have a top transaction."
+      );
     }
 
     BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
