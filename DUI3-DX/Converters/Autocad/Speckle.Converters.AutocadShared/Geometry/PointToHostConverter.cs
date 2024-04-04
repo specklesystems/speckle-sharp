@@ -9,10 +9,15 @@ namespace Speckle.Converters.Autocad.Geometry;
 [NameAndRankValue(nameof(SOG.Point), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DBPointToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Point, DBPoint>
 {
+  private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public DBPointToHostConverter(IConversionContextStack<Document, UnitsValue> contextStack)
+  public DBPointToHostConverter(
+    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
+    IConversionContextStack<Document, UnitsValue> contextStack
+  )
   {
+    _pointConverter = pointConverter;
     _contextStack = contextStack;
   }
 
@@ -26,7 +31,6 @@ public class DBPointToHostConverter : ISpeckleObjectToHostConversion, IRawConver
   }
 }
 
-/* POC: enable this when converter registration is resolved
 public class PointToHostConverter : IRawConversion<SOG.Point, AG.Point3d>
 {
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
@@ -45,4 +49,4 @@ public class PointToHostConverter : IRawConversion<SOG.Point, AG.Point3d>
 
     return point;
   }
-*/
+}

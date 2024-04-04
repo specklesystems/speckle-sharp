@@ -22,12 +22,15 @@ public static class RawConversionRegisterer
         var registrationBuilder = containerBuilder.RegisterType(type).As(interfaceType);
 
         Type firstGenericType = interfaceType.GenericTypeArguments[0];
+
+        // POC: this is making IRawConversion<TIn,TOut> into a generic IRawConversion<TIn>
         var singleParamRawConversionType = typeof(IRawConversion<>).MakeGenericType(firstGenericType);
         if (singleParamRawConversionType.IsAssignableFrom(type))
         {
           registrationBuilder = registrationBuilder.As(singleParamRawConversionType);
         }
 
+        // POC: this assumes that every IHostToSpeckleConversion class also implements IRawConversion
         if (typeof(IHostObjectToSpeckleConversion).IsAssignableFrom(type))
         {
           registrationBuilder = registrationBuilder
