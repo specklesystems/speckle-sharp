@@ -3,9 +3,6 @@ using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
 using Speckle.Converters.Common;
-using Objects.Utils;
-using System;
-using Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -43,26 +40,5 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
       i++;
     }
     return new GisFeature(speckleShapes, attributes);
-    /*
-    try
-    {
-      var displayValue = new List<Base>();
-      foreach (GisPolygonGeometry polygon in speckleShapes)
-      {
-        if (polygon.voids == null || polygon.voids.Count == 0)
-        {
-          int[] values = { polygon.boundary.GetPoints().Count };
-          values = values.Concat(Enumerable.Range(0, polygon.boundary.GetPoints().Count).ToArray()).ToArray();
-          var meshFaces = MeshTriangulationHelper.TriangulateFace(0, values, polygon.boundary.value);
-          displayValue.Add(new SOG.Mesh(polygon.boundary.value, meshFaces));
-        }
-      }
-      return new GisFeature(speckleShapes, attributes, displayValue);
-    }
-    catch (InvalidCastException)
-    {
-      return new GisFeature(speckleShapes, attributes);
-    }
-    */
   }
 }

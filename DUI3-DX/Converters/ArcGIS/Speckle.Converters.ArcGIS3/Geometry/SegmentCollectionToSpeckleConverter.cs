@@ -42,7 +42,7 @@ public class SegmentCollectionToSpeckleConverter
     {
       len += segment.Length;
 
-      // perhaps do something specific per segment type
+      // do something specific per segment type
       switch (segment.SegmentType)
       {
         case SegmentType.Line:
