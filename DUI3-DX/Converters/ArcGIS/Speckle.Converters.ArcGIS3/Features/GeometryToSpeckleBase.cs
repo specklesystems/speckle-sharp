@@ -1,5 +1,4 @@
-using Objects.BuiltElements.TeklaStructures;
-using Objects.GIS;
+using ArcGIS.Core.Data;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -7,7 +6,10 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>>
+[NameAndRankValue(nameof(ArcGIS.Core.Geometry.Geometry), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class GeometryToSpeckleBaseList
+  : IHostObjectToSpeckleConversion,
+    IRawConversion<ArcGIS.Core.Geometry.Geometry, Base>
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
 
@@ -16,7 +18,9 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
     _toSpeckle = toSpeckle;
   }
 
-  public List<Base> RawConvert(ArcGIS.Core.Geometry.Geometry target)
+  public Base Convert(object target) => RawConvert((ArcGIS.Core.Geometry.Geometry)target);
+
+  public Base RawConvert(ArcGIS.Core.Geometry.Geometry target)
   {
     List<Base> convertedList = new();
 
@@ -31,7 +35,7 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
       }
       Base newGeometry = objectConverter.Convert(target);
       convertedList.Add(newGeometry);
-      return convertedList;
+      return convertedList[0];
     }
     catch (SpeckleConversionException e)
     {
