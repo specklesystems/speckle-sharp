@@ -42,7 +42,8 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
       }
       i++;
     }
-
+    return new GisFeature(speckleShapes, attributes);
+    /*
     try
     {
       var displayValue = new List<Base>();
@@ -62,5 +63,6 @@ public class GisFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRaw
     {
       return new GisFeature(speckleShapes, attributes);
     }
+    */
   }
 }
