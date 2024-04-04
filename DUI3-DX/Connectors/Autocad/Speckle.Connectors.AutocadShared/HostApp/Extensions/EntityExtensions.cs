@@ -16,9 +16,7 @@ public static class EntityExtensions
     Transaction tr = db.TransactionManager.TopTransaction;
     if (tr == null)
     {
-      throw new InvalidOperationException(
-        $"Document does not have a top transaction."
-      );
+      throw new InvalidOperationException($"Document does not have a top transaction.");
     }
 
     BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
