@@ -10,15 +10,10 @@ namespace Speckle.Converters.Autocad;
 public class AutocadConverterToHost : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
-  private readonly IHostToSpeckleUnitConverter<UnitsValue> _unitConverter;
 
-  public AutocadConverterToHost(
-    IFactory<string, ISpeckleObjectToHostConversion> toHost,
-    IHostToSpeckleUnitConverter<UnitsValue> unitConverter
-  )
+  public AutocadConverterToHost(IFactory<string, ISpeckleObjectToHostConversion> toHost)
   {
     _toHost = toHost;
-    _unitConverter = unitConverter;
   }
 
   public object Convert(Base target)

@@ -10,15 +10,10 @@ namespace Speckle.Converters.Autocad;
 public class AutocadConverterToSpeckle : ISpeckleConverterToSpeckle
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
-  private readonly IHostToSpeckleUnitConverter<UnitsValue> _unitConverter;
 
-  public AutocadConverterToSpeckle(
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
-    IHostToSpeckleUnitConverter<UnitsValue> unitConverter
-  )
+  public AutocadConverterToSpeckle(IFactory<string, IHostObjectToSpeckleConversion> toSpeckle)
   {
     _toSpeckle = toSpeckle;
-    _unitConverter = unitConverter;
   }
 
   public Base Convert(object target)

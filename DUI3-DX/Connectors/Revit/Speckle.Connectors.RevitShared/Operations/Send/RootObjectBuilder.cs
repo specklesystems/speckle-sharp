@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using System.Threading;
