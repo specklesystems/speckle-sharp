@@ -46,7 +46,7 @@ public class ConversionException : SpeckleException
   public ConversionException(string? message, object? objectToConvert, Exception? innerException = null)
     : base(message, innerException)
   {
-    this.ObjectThatFailed = objectToConvert;
+    ObjectThatFailed = objectToConvert;
   }
 
   public ConversionException(string? message, Exception? innerException)

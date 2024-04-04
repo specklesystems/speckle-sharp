@@ -4,15 +4,16 @@ using Autofac;
 using CefSharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 
@@ -53,6 +54,8 @@ public class AutofacUIModule : Module
     builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
+    // POC: we need to review the scopes and create a document on what the policy is
+    // and where the UoW should be
     // register UI bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
@@ -61,13 +64,22 @@ public class AutofacUIModule : Module
     builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
+    // send operation and dependencies
+    builder.RegisterType<SendOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SendSelection>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ToSpeckleConvertedObjectsCache>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
 
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    // POC: this needs to considering, and should either be re-instated/fixed and relates to where the UoW is.
+    //builder
+    //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+    //  .InstancePerLifetimeScope();
 
     // POC: logging factory couldn't be added, which is the recommendation, due to janky dependencies
     // having a SpeckleLogging service, might be interesting, if a service can listen on a local port or use named pipes

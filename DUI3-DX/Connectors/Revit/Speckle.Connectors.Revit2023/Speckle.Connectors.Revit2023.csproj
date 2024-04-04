@@ -25,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Converters\Revit\Speckle.Converters.Revit2023.DependencyInjection\Speckle.Converters.Revit2023.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\..\Converters\Revit\Speckle.Converters.Revit2023\Speckle.Converters.Revit2023.csproj" />
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
