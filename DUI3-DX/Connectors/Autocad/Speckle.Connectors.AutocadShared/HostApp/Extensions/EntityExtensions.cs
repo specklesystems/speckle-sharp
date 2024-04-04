@@ -12,6 +12,7 @@ public static class EntityExtensions
   /// <exception cref="InvalidOperationException">Throws when there is no top transaction in the document.</exception>
   public static ObjectId Append(this Entity entity, string? layer = null)
   {
+    // POC: Will be addressed to move it into AutocadContext!
     var db = entity.Database ?? Application.DocumentManager.MdiActiveDocument.Database;
     Transaction tr = db.TransactionManager.TopTransaction;
     if (tr == null)
