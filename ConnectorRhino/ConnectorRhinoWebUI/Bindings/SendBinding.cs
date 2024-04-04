@@ -79,10 +79,30 @@ public class SendBinding : ISendBinding, ICancelable
         return;
       }
 
+      // var paths = BlockHierarchyPaths.GetBlockHierarchyPaths(e.Document);
+      // var objectPaths = BlockHierarchyPaths.GetObjectHierarchyPaths(e.NewRhinoObject, e.Document);
+      // var oldObjectPaths = BlockHierarchyPaths.GetObjectHierarchyPaths(e.OldRhinoObject, e.Document);
+      // var path = RhinoObjectPath(e.NewRhinoObject);
+
       ChangedObjectIds.Add(e.NewRhinoObject.Id.ToString());
       ChangedObjectIds.Add(e.OldRhinoObject.Id.ToString());
       RhinoIdleManager.SubscribeToIdle(RunExpirationChecks);
     };
+  }
+
+  public List<string> RhinoObjectPath(RhinoObject rhinoObject)
+  {
+    List<string> path = new();
+    var doc = RhinoDoc.ActiveDoc;
+    // var objects = doc.Objects.ToList();
+    // IEnumerable<InstanceObject> instances =
+    //   RhinoDoc.ActiveDoc.Objects.Where(obj => obj is InstanceObject) as IEnumerable<InstanceObject>;
+    // foreach (InstanceObject instance in instances)
+    // {
+    //   var definitionObjects = instance.InstanceDefinition.GetObjects();
+    //   if (definitionObjects.Contains(rhinoObject)) { }
+    // }
+    return path;
   }
 
   public List<ISendFilter> GetSendFilters()
@@ -345,6 +365,15 @@ public class SendBinding : ISendBinding, ICancelable
     List<SenderModelCard> senders = _store.GetSenders();
     string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
+
+    foreach (string id in objectIdsList)
+    {
+      var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
+      if (obj is not null)
+      {
+        var oldObjectPaths = BlockHierarchyPaths.GetObjectHierarchyPaths(obj, RhinoDoc.ActiveDoc);
+      }
+    }
 
     foreach (SenderModelCard modelCard in senders)
     {
