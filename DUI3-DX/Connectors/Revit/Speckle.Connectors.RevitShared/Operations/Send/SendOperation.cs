@@ -1,9 +1,9 @@
 using System;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 using System.Threading.Tasks;
 using System.Threading;
 using Autofac;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
