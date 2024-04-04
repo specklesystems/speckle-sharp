@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Utils;
@@ -8,8 +9,8 @@ public static class SpeckleTopLevelExceptionHandler
 {
   // POC: async/await?
   // handlers for
-  public static void Run(
-    Action run,
+  public static async Task Run(
+    Func<Task> run,
     Func<SpeckleException, bool>? speckleError = null,
     Func<Exception, bool>? unexpectedError = null,
     Func<Exception, bool>? fatalError = null
@@ -18,7 +19,7 @@ public static class SpeckleTopLevelExceptionHandler
     // POC: TL-handler
     try
     {
-      run();
+      await run().ConfigureAwait(false);
     }
     catch (SpeckleException spex)
     {

@@ -8,6 +8,7 @@ using System.Linq;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Bindings;
 using System.Diagnostics;
+using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Connectors.Revit.Plugin;
 

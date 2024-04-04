@@ -11,11 +11,16 @@ public class ScopedFactory<T> : IScopedFactory<T>
 
   public ScopedFactory(ILifetimeScope parentScope)
   {
+    // POC: do I need a new lifetime each time I do the resolve.
+    // move this to ResolveScopedInstance() and rename this to UnitOfWork()
+    // look at the disposal lifecycle, what we might need to return is a UoW object
+    // we need a document to explain how this works and how to pick where to do it
     _lifetimeScope = parentScope.BeginLifetimeScope();
   }
 
   public T ResolveScopedInstance()
   {
+    // POC: do I need a new lifetime each time I do the resolve
     return _lifetimeScope.Resolve<T>();
   }
 

@@ -23,12 +23,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacUIModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\IRootObjectSender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectSender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\SendOperation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
       <DependentUpon>CefSharpPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitIdleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitIdleManager.cs" />
