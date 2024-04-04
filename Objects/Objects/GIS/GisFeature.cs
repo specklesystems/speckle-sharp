@@ -3,8 +3,27 @@ using Speckle.Core.Models;
 
 namespace Objects.GIS;
 
-public class GisPolygonGeometry : Base
+public class GisFeature : Base
 {
-  public Base? boundary { get; set; }
-  public List<Base>? voids { get; set; }
+  public GisFeature() { }
+
+  public GisFeature(List<Base> geometry, Base attributes)
+  {
+    this.geometry = geometry;
+    this.attributes = attributes;
+  }
+
+  public GisFeature(List<Base> geometry, Base attributes, List<Base> displayValue)
+  {
+    this.geometry = geometry;
+    this.attributes = attributes;
+    this.displayValue = displayValue;
+  }
+
+  [DetachProperty]
+  public List<Base>? geometry { get; set; }
+
+  [DetachProperty]
+  public List<Base>? displayValue { get; set; }
+  public Base? attributes { get; set; }
 }

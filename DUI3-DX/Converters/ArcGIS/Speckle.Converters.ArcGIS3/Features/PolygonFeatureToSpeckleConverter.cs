@@ -34,7 +34,7 @@ public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
     List<Base> polygonList = new();
     int partCount = target.PartCount;
 
-    GisPolygonGeometry polygon = new() { voids = new List<Base>() };
+    GisPolygonGeometry polygon = new() { voids = new List<SOG.Polyline>() };
     // test each part for "exterior ring"
     for (int idx = 0; idx < partCount; idx++)
     {
@@ -48,7 +48,7 @@ public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
         {
           polygonList.Add(polygon);
         }
-        polygon = new() { voids = new List<Base>(), boundary = polyline };
+        polygon = new() { voids = new List<SOG.Polyline>(), boundary = polyline };
       }
       else
       {
