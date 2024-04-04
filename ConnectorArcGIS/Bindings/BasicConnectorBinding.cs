@@ -23,7 +23,8 @@ public class BasicConnectorBinding : IBasicConnectorBinding
 
   public string GetSourceApplicationVersion() => "3";
 
-  public string GetConnectorVersion() => Assembly.GetAssembly(GetType()).GetNameAndVersion().Version;
+  public string GetConnectorVersion() =>
+    typeof(BasicConnectorBinding).Assembly.GetNameAndVersion().Version ?? "No version";
 
   // TODO
   public DocumentInfo GetDocumentInfo() =>
