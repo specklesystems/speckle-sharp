@@ -1,30 +1,20 @@
-using System.Collections.Generic;
-using Objects.Geometry;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(List<DB.Mesh>), 0)]
-public class MeshConversionToSpeckle : BaseConversionToSpeckle<List<DB.Mesh>, List<SOG.Mesh>>
+public class MeshConversionToSpeckle : IRawConversion<List<DB.Mesh>, List<SOG.Mesh>>
 {
   private readonly RevitConversionContextStack _contextStack;
-  private readonly IRawConversion<DB.XYZ, Point> _xyzToPointConverter;
   private readonly MeshDataTriangulator _meshDataTriangulator;
 
-  public MeshConversionToSpeckle(
-    RevitConversionContextStack contextStack,
-    IRawConversion<DB.XYZ, Point> xyzToPointConverter,
-    MeshDataTriangulator meshDataTriangulator
-  )
+  public MeshConversionToSpeckle(RevitConversionContextStack contextStack, MeshDataTriangulator meshDataTriangulator)
   {
     _contextStack = contextStack;
-    _xyzToPointConverter = xyzToPointConverter;
     _meshDataTriangulator = meshDataTriangulator;
   }
 
-  public override List<SOG.Mesh> RawConvert(List<DB.Mesh> target)
+  public List<SOG.Mesh> RawConvert(List<DB.Mesh> target)
   {
     // POC: should be injected
     MeshBuildHelper buildHelper = new();
@@ -32,7 +22,7 @@ public class MeshConversionToSpeckle : BaseConversionToSpeckle<List<DB.Mesh>, Li
     foreach (var mesh in target)
     {
       var revitMaterial = (DB.Material)_contextStack.Current.Document.Document.GetElement(mesh.MaterialElementId);
-      Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, _contextStack.Current.SpeckleUnits);
+      SOG.Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, _contextStack.Current.SpeckleUnits);
       _meshDataTriangulator.Triangulate(mesh, speckleMesh.faces, speckleMesh.vertices);
     }
 

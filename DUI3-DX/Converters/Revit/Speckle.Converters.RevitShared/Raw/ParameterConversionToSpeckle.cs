@@ -1,30 +1,22 @@
-using Autodesk.Revit.DB;
-using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(Parameter), 0)]
-public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter, SOBR.Parameter>
+public class ParameterConversionToSpeckle : IRawConversion<DB.Parameter, SOBR.Parameter>
 {
-  private readonly ToSpeckleScalingService _scalingService;
   private readonly ParameterValueExtractor _valueExtractor;
   private readonly CachingService _cachingService;
 
-  public ParameterConversionToSpeckle(
-    ToSpeckleScalingService scalingService,
-    ParameterValueExtractor valueExtractor,
-    CachingService cachingService
-  )
+  public ParameterConversionToSpeckle(ParameterValueExtractor valueExtractor, CachingService cachingService)
   {
-    _scalingService = scalingService;
     _valueExtractor = valueExtractor;
     _cachingService = cachingService;
   }
 
-  public override SOBR.Parameter RawConvert(DB.Parameter target)
+  public SOBR.Parameter RawConvert(DB.Parameter target)
   {
     string internalName = target.GetInternalName();
     ParameterToSpeckleData toSpeckleData = _cachingService.GetOrAdd(
@@ -50,9 +42,9 @@ public class ParameterConversionToSpeckle : BaseConversionToSpeckle<DB.Parameter
     };
 
     // POC: why is this specialisation needed? Could there be more?
-    if (parameter.StorageType == StorageType.Double)
+    if (parameter.StorageType == DB.StorageType.Double)
     {
-      ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
+      DB.ForgeTypeId unitTypeId = parameter.GetUnitTypeId();
       newParamData.UnitsSymbol = unitTypeId.GetSymbol();
       newParamData.ApplicationUnits = unitTypeId.ToUniqueString();
     }

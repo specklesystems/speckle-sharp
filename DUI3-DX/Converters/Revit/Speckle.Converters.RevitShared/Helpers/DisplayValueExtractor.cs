@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
