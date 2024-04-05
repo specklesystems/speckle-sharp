@@ -11,7 +11,6 @@ using System.Threading;
 using System.Runtime.CompilerServices;
 using Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -62,12 +61,9 @@ internal class RevitExternalApplication : IExternalApplication
     try
     {
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-
       conflictDetector.LoadSpeckleAssemblies();
 
-      //CallMissingMethod();
-
-      //InitializePlugin(application, conflictDetector);
+      InitializePlugin(application, conflictDetector);
 
       conflictDetector.WarnUserOfPossibleConflicts();
     }
@@ -109,13 +105,6 @@ internal class RevitExternalApplication : IExternalApplication
     // resolve root object
     _revitPlugin = _container.Resolve<IRevitPlugin>();
     _revitPlugin.Initialise();
-  }
-
-  [MethodImpl(MethodImplOptions.NoInlining)]
-  private void CallMissingMethod()
-  {
-    var x = new Speckle.Core.Models.Base();
-    var y = x.GetId(false, Core.Api.SerializerVersion.V1);
   }
 
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
