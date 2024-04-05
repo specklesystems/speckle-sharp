@@ -13,7 +13,9 @@ using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Converters.ArcGIS3;
 using Speckle.Core.Transports;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -34,6 +36,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();

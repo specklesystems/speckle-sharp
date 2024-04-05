@@ -4,6 +4,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RootNameSpace>Speckle.Connectors.ArcGIS</RootNameSpace>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -27,6 +28,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3.DependencyInjection\Speckle.Converters.ArcGIS3.DependencyInjection.csproj" IncludeAssets="runtime"/>
+    <ProjectReference Include="..\..\..\Converters\ArcGIS\Speckle.Converters.ArcGIS3\Speckle.Converters.ArcGIS3.csproj" IncludeAssets="runtime"/>
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\..\DUI3\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />

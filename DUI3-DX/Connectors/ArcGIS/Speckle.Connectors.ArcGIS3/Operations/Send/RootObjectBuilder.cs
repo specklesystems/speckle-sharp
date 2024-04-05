@@ -27,7 +27,7 @@ public class RootObjectBuilder
   {
     if (MapView.Active == null)
     {
-      throw new SpeckleException("No Map currently open");
+      throw new SpeckleException("No Map currently active");
     }
     var selectedObjects = GetSelection(MapView.Active.Map);
 
@@ -58,6 +58,11 @@ public class RootObjectBuilder
     // - getting selection is an async operation, needs to be done on the main thread, and returns the full object, not just an ID
 
     var selectedMemberUrls = map.GetSelection().ToDictionary();
+
+    if (selectedMemberUrls.Count == 0)
+    {
+      throw new SpeckleException("No data to send");
+    }
 
     return selectedMemberUrls;
   }
