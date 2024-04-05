@@ -21,6 +21,9 @@ internal class RevitExternalApplication : IExternalApplication
       var x = new Objects.BuiltElements.Revit.FamilyInstance();
       var y = new Speckle.Core.Serialisation.BaseObjectSerializer();
 
+      var a = LevelAlias.Off;
+      Trace.WriteLine(a);
+
       var plugin = new RevitPlugin(application);
       plugin.Initialise();
     }

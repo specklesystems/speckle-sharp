@@ -30,19 +30,22 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   // In the context of the SEND operation, we're only ever expecting ONE conversion
   private readonly SendOperation _sendOperation;
   private readonly IRevitIdleManager _idleManager;
+  private readonly DllConflictDetector _dllConflictDetector;
 
   public SendBinding(
     IRevitIdleManager idleManager,
     RevitContext revitContext,
     RevitDocumentStore store,
     IBridge bridge,
-    SendOperation sendOperation
+    SendOperation sendOperation,
+    DllConflictDetector dllConflictDetector
   )
     : base("sendBinding", store, bridge, revitContext)
   {
     _idleManager = idleManager;
     Commands = new SendBindingUICommands(bridge);
     _sendOperation = sendOperation;
+    _dllConflictDetector = dllConflictDetector;
 
     // TODO expiry events
     // TODO filters need refresh events
@@ -56,8 +59,14 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   public async Task Send(string modelCardId)
   {
+    throw new Exception();
     await SpeckleTopLevelExceptionHandler
-      .Run(() => HandleSend(modelCardId), HandleSpeckleException, HandleUnexpectedException, HandleFatalException)
+      .Run(
+        () => HandleSend(modelCardId),
+        _dllConflictDetector.HandleTypeLoadException,
+        HandleUnexpectedException,
+        HandleFatalException
+      )
       .ConfigureAwait(false);
   }
 

@@ -296,7 +296,7 @@ public class Base : DynamicBase
   }
 
   /// <inheritdoc cref="GetId(bool)"/>
-  [Obsolete("Serializer v1 is deprecated, use other overload(s)", true)]
+  [Obsolete("Serializer v1 is deprecated, use other overload(s)")]
   public string GetId(bool decompose, SerializerVersion serializerVersion)
   {
     throw new NotImplementedException(
