@@ -6,11 +6,9 @@ using System.Reflection;
 using System.IO;
 using Autofac;
 using Speckle.Converters.Common.DependencyInjection;
-using System.Diagnostics.Contracts;
-using System.Threading;
-using System.Runtime.CompilerServices;
 using Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -49,32 +47,31 @@ internal class RevitExternalApplication : IExternalApplication
   ///
   /// <para>
   /// If you need to use types from a potentially conflicting dll, then use a different method
-  /// decorated with "[MethodImpl(MethodImplOptions.NoInlining)]" to make sure that the conflicting type
-  /// method is not inlined in this method
+  /// and make sure that it is called after the <see cref="DllConflictManager.DetectConflicts"/> call
   /// </para>
   /// </summary>
   /// <param name="application"></param>
   /// <returns></returns>
   public Result OnStartup(UIControlledApplication application)
   {
-    DllConflictManager conflictDetector = new(new DllConflictManagmentOptionsLoader());
+    DllConflictManager conflictManager = new(new DllConflictManagmentOptionsLoader());
     try
     {
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-      conflictDetector.LoadSpeckleAssemblies();
+      conflictManager.DetectConflicts();
 
-      InitializePlugin(application, conflictDetector);
+      InitializePlugin(application, conflictManager);
 
-      conflictDetector.WarnUserOfPossibleConflicts();
+      conflictManager.WarnUserOfPossibleConflicts();
     }
     catch (MissingMethodException e)
     {
-      conflictDetector.HandleTypeMissingMethodException(e);
+      conflictManager.HandleTypeMissingMethodException(e);
       return Result.Failed;
     }
     catch (TypeLoadException e)
     {
-      conflictDetector.HandleTypeLoadException(e);
+      conflictManager.HandleTypeLoadException(e);
       return Result.Failed;
     }
     catch (Exception e) when (!IsFatal(e))
@@ -86,8 +83,16 @@ internal class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
-  [MethodImpl(MethodImplOptions.NoInlining)]
-  private void InitializePlugin(UIControlledApplication application, DllConflictManager conflictDetector)
+  /// <summary>
+  /// If we directly use ex.IsFatal() in the above method, and there is an outdated version of Core loaded,
+  /// the MissingMethodException will be throw prior to executing the OnStartup method. We would prefer if
+  /// the exception is thrown after the <see cref="DllConflictManager.DetectConflicts"/> method is executed
+  /// </summary>
+  /// <param name="ex"></param>
+  /// <returns></returns>
+  private static bool IsFatal(Exception ex) => ex.IsFatal();
+
+  private void InitializePlugin(UIControlledApplication application, DllConflictManager conflictManager)
   {
     // POC: not sure what this is doing...  could be messing up our Aliasing????
     //AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
@@ -97,7 +102,7 @@ internal class RevitExternalApplication : IExternalApplication
     // init DI
     _container
       .LoadAutofacModules(_revitSettings.ModuleFolders)
-      .AddSingletonInstance(conflictDetector) // conflict detector
+      .AddSingletonInstance(conflictManager) // conflict detector
       .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
       .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
       .Build();
@@ -152,22 +157,5 @@ internal class RevitExternalApplication : IExternalApplication
     }
 
     return assembly;
-  }
-
-  [Pure]
-  // copied from Core because we can't reference core in this class
-  public static bool IsFatal(Exception ex)
-  {
-    return ex switch
-    {
-      OutOfMemoryException
-      or ThreadAbortException
-      or InvalidProgramException
-      or AccessViolationException
-      or AppDomainUnloadedException
-      or BadImageFormatException
-        => true,
-      _ => false,
-    };
   }
 }

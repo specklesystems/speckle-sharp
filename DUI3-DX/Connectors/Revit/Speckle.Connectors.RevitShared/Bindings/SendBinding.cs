@@ -58,7 +58,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   public async Task Send(string modelCardId)
   {
     await SpeckleTopLevelExceptionHandler
-      .Run(() => HandleSend(modelCardId), HandleUnexpectedException, HandleFatalException)
+      .Run(() => HandleSend(modelCardId), HandleSpeckleException, HandleUnexpectedException, HandleFatalException)
       .ConfigureAwait(false);
   }
 

@@ -18,7 +18,7 @@ public class DllConflictManager
     _optionsLoader = optionsLoader;
   }
 
-  public void LoadSpeckleAssemblies()
+  public void DetectConflicts()
   {
     Dictionary<string, Assembly> loadedAssembliesDict = new();
     foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
