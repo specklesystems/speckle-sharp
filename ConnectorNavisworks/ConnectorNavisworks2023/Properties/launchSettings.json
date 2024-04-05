@@ -2,7 +2,8 @@
   "profiles": {
     "SpeckleNavisworks.2023": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Navisworks Manage 2023\\Roamer.exe"
+      "executablePath": "C:\\Program Files\\Autodesk\\Navisworks Manage 2023\\Roamer.exe",
+      "commandLineArgs": " -licensing AdLM"
     }
   }
 }
