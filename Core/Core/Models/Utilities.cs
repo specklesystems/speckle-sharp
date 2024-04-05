@@ -229,7 +229,7 @@ public static class Utilities
     {
       object current = stack.Pop();
 
-      if (current is IList list)
+      if (current is IEnumerable list)
       {
         foreach (object subItem in list)
         {

@@ -17,7 +17,10 @@ using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Autocad.Filters;
+using Speckle.Connectors.Autocad.Operations.Receive;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -40,6 +43,13 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadContext>().SingleInstance();
     builder.RegisterType<AutocadLayerManager>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
+
+    // Operations
+    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+
+    // Object Builders
+    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
+    // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
