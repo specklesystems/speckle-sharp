@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
 

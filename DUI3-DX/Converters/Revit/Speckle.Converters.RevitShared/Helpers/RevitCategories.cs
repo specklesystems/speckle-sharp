@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Helpers;

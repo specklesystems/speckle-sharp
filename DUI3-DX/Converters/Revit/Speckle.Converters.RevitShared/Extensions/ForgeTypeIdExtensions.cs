@@ -1,4 +1,3 @@
-using System.Linq;
 using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.Extensions;
