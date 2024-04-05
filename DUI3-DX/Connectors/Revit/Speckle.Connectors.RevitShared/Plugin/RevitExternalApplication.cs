@@ -8,16 +8,8 @@ using Autofac;
 using Speckle.Converters.Common.DependencyInjection;
 using System.Diagnostics.Contracts;
 using System.Threading;
-using Serilog.Events;
-using System.Diagnostics;
-
-using Speckle.Core.Logging;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-
-// WARNING : We can't use any namespaces from dlls that may have conflicts here
-// or this class will fail to load and the conflict detecting mechanism won't work
+using Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -50,39 +42,35 @@ internal class RevitExternalApplication : IExternalApplication
     };
   }
 
+  /// <summary>
+  /// WARNING : We can't use any types from dlls that may have conflicts directly in this method
+  /// or this method will fail to load and the conflict detecting mechanism won't work.
+  ///
+  /// <para>
+  /// If you need to use types from a potentially conflicting dll, then use a different method
+  /// decorated with "[MethodImpl(MethodImplOptions.NoInlining)]" to make sure that the conflicting type
+  /// method is not inlined in this method
+  /// </para>
+  /// </summary>
+  /// <param name="application"></param>
+  /// <returns></returns>
   public Result OnStartup(UIControlledApplication application)
   {
-    DllConflictDetector conflictDetector = new();
+    DllConflictManager conflictDetector = new();
     try
     {
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
       conflictDetector.LoadSpeckleAssemblies();
 
-      // POC: not sure what this is doing...  could be messing up our Aliasing????
-      //AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-      _container = new AutofacContainer(new StorageInfo());
-      _container.PreBuildEvent += _container_PreBuildEvent;
-
       CallMissingMethod();
 
-      // init DI
-      _container
-        .LoadAutofacModules(_revitSettings.ModuleFolders)
-        .AddSingletonInstance(conflictDetector) // conflict detector
-        .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
-        .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
-        .Build();
-
-      // resolve root object
-      _revitPlugin = _container.Resolve<IRevitPlugin>();
-      _revitPlugin.Initialise();
+      InitializePlugin(application, conflictDetector);
     }
     catch (MissingMethodException e)
     {
-      var x = e;
-      var info = new SerializationInfo(null, null);
-      e.GetObjectData(info, new StreamingContext());
+      conflictDetector.HandleTypeMissingMethodException(e);
+      return Result.Failed;
     }
     catch (TypeLoadException e)
     {
@@ -96,6 +84,27 @@ internal class RevitExternalApplication : IExternalApplication
     }
 
     return Result.Succeeded;
+  }
+
+  [MethodImpl(MethodImplOptions.NoInlining)]
+  private void InitializePlugin(UIControlledApplication application, DllConflictManager conflictDetector)
+  {
+    // POC: not sure what this is doing...  could be messing up our Aliasing????
+    //AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+    _container = new AutofacContainer(new StorageInfo());
+    _container.PreBuildEvent += _container_PreBuildEvent;
+
+    // init DI
+    _container
+      .LoadAutofacModules(_revitSettings.ModuleFolders)
+      .AddSingletonInstance(conflictDetector) // conflict detector
+      .AddSingletonInstance<RevitSettings>(_revitSettings) // apply revit settings into DI
+      .AddSingletonInstance<UIControlledApplication>(application) // inject UIControlledApplication application
+      .Build();
+
+    // resolve root object
+    _revitPlugin = _container.Resolve<IRevitPlugin>();
+    _revitPlugin.Initialise();
   }
 
   [MethodImpl(MethodImplOptions.NoInlining)]

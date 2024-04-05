@@ -14,6 +14,7 @@ using System.Threading;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -30,7 +31,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   // In the context of the SEND operation, we're only ever expecting ONE conversion
   private readonly SendOperation _sendOperation;
   private readonly IRevitIdleManager _idleManager;
-  private readonly DllConflictDetector _dllConflictDetector;
+  private readonly DllConflictManager _dllConflictDetector;
 
   public SendBinding(
     IRevitIdleManager idleManager,
@@ -38,7 +39,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     RevitDocumentStore store,
     IBridge bridge,
     SendOperation sendOperation,
-    DllConflictDetector dllConflictDetector
+    DllConflictManager dllConflictDetector
   )
     : base("sendBinding", store, bridge, revitContext)
   {
@@ -59,7 +60,6 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   public async Task Send(string modelCardId)
   {
-    throw new Exception();
     await SpeckleTopLevelExceptionHandler
       .Run(
         () => HandleSend(modelCardId),

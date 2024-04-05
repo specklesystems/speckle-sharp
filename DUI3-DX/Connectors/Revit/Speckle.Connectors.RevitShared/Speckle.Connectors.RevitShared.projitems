@@ -30,7 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\CefSharpPanel.xaml.cs">
       <DependentUpon>CefSharpPanel.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\AssemblyConflictInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\DllConflictManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />
