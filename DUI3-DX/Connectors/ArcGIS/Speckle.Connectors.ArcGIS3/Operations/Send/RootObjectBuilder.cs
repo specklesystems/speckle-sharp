@@ -1,5 +1,4 @@
 using ArcGIS.Desktop.Mapping;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
@@ -8,7 +7,7 @@ using Speckle.Core.Logging;
 namespace Speckle.Connectors.ArcGis.Operations.Send;
 
 /// <summary>
-/// Stateless builder object to turn an <see cref="ISendFilter"/> into a <see cref="Base"/> object
+/// Stateless builder object to turn an ISendFilter into a <see cref="Base"/> object
 /// </summary>
 public class RootObjectBuilder
 {
