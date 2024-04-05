@@ -16,6 +16,7 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.ArcGIS3;
 using Speckle.Core.Transports;
 using ArcGIS.Core.Geometry;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 

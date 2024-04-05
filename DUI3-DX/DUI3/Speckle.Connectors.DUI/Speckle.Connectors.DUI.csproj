@@ -16,6 +16,11 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Operations\" />
   </ItemGroup>
 
 </Project>

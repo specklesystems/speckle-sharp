@@ -11,6 +11,7 @@ using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.ArcGIS.Bindings;
 

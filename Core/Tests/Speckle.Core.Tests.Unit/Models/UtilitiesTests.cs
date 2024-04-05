@@ -28,4 +28,25 @@ public sealed class UtilitiesTests
     Assert.That(lower, Is.EqualTo(expected.ToLower()));
     Assert.That(upper, Is.EqualTo(expected.ToUpper()));
   }
+
+  [Test]
+  public void FlattenToNativeConversion()
+  {
+    var singleObject = new object();
+    var nestedObjects = new List<object>()
+    {
+      new List<object>()
+      {
+        new(), // obj 1
+        new() // obj 2
+      },
+      new() // obj 3
+    };
+
+    var singleObjectFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(singleObject);
+    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(nestedObjects);
+
+    Assert.That(singleObjectFlattened.Count, Is.EqualTo(1));
+    Assert.That(nestedObjectsFlattened.Count, Is.EqualTo(3));
+  }
 }

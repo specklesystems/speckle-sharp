@@ -9,6 +9,7 @@
     <Import_RootNamespace>Speckle.Converters.AutocadShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AutocadConverterToHost.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConverterToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
@@ -17,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\IntervalToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\LineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\PlaneToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\VectorToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />

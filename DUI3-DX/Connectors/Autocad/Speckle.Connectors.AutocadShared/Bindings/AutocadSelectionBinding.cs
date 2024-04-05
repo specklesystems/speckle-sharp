@@ -48,6 +48,7 @@ public class AutocadSelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
+    // POC: Will be addressed to move it into AutocadContext!
     Document doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
     if (doc != null)

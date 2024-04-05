@@ -19,6 +19,7 @@ public class AutocadDocumentStore : DocumentModelStore
     _autocadDocumentManager = autocadDocumentManager;
     _previousDocName = _nullDocumentName;
 
+    // POC: Will be addressed to move it into AutocadContext!
     if (Application.DocumentManager.MdiActiveDocument != null)
     {
       IsDocumentInit = true;
@@ -61,6 +62,7 @@ public class AutocadDocumentStore : DocumentModelStore
   {
     Models = new List<ModelCard>();
 
+    // POC: Will be addressed to move it into AutocadContext!
     Document doc = Application.DocumentManager.MdiActiveDocument;
 
     if (doc == null)
@@ -79,6 +81,7 @@ public class AutocadDocumentStore : DocumentModelStore
 
   public override void WriteToFile()
   {
+    // POC: Will be addressed to move it into AutocadContext!
     Document doc = Application.DocumentManager.MdiActiveDocument;
 
     if (doc == null)

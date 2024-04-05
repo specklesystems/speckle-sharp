@@ -15,6 +15,7 @@ public class AutofacAutocadConverterModule : Module
     // should be InstancePerLifetimeScope
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.RegisterType<AutocadConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
+    builder.RegisterType<AutocadConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
 
     // single stack per conversion
     builder
@@ -26,5 +27,8 @@ public class AutofacAutocadConverterModule : Module
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
       .As<IFactory<string, IHostObjectToSpeckleConversion>>();
+    builder
+      .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
+      .As<IFactory<string, ISpeckleObjectToHostConversion>>();
   }
 }

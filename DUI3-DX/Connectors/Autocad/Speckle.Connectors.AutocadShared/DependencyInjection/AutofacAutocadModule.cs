@@ -17,6 +17,10 @@ using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Autocad.Filters;
+using Speckle.Connectors.Autocad.Operations.Receive;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -36,13 +40,23 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<TransactionContext>().InstancePerDependency();
     builder.RegisterInstance<AutocadDocumentManager>(new AutocadDocumentManager()); // TODO: Dependent to TransactionContext, can be moved to AutocadContext
     builder.RegisterType<AutocadDocumentStore>().As<DocumentModelStore>().SingleInstance();
+    builder.RegisterType<AutocadContext>().SingleInstance();
+    builder.RegisterType<AutocadLayerManager>().SingleInstance();
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
+
+    // Operations
+    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+
+    // Object Builders
+    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
+    // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // Register bindings
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadSendBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<AutocadReceiveBinding>().As<IBinding>().SingleInstance();
     builder
       .RegisterType<AutocadToSpeckleUnitConverter>()
       .As<IHostToSpeckleUnitConverter<UnitsValue>>()
@@ -58,6 +72,10 @@ public class AutofacAutocadModule : Module
     builder
       .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
       .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .InstancePerLifetimeScope();
+    builder
+      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
+      .As<IScopedFactory<ISpeckleConverterToHost>>()
       .InstancePerLifetimeScope();
   }
 

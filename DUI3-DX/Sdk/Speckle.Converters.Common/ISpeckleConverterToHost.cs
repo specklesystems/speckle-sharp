@@ -1,6 +1,8 @@
+using Speckle.Core.Models;
+
 namespace Speckle.Converters.Common;
 
 public interface ISpeckleConverterToHost
 {
-  void Convert();
+  object Convert(Base target);
 }

@@ -25,8 +25,7 @@ public class DBPointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
   public SOG.Point RawConvert(DBPoint target) => _pointConverter.RawConvert(target.Position);
 }
 
-[NameAndRankValue(nameof(AG.Point3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Point3d, SOG.Point>
+public class PointToSpeckleConverter : IRawConversion<AG.Point3d, SOG.Point>
 {
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 

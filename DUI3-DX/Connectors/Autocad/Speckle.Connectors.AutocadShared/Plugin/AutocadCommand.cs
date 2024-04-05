@@ -69,6 +69,8 @@ public class AutocadCommand
 
   private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
+    containerBuilder.RegisterRawConversions();
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
