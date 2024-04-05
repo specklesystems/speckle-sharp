@@ -1,2 +1,2 @@
 global using SOG = Objects.Geometry;
-global using SOP = Objects.Primitive;
+// global using SOP = Objects.Primitive;

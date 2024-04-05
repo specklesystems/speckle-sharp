@@ -1,11 +1,11 @@
 using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Mapping;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
 using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
-namespace Speckle.Converters.ArcGIS3.Features;
+namespace Speckle.Converters.ArcGIS3.Geometry;
 
 [NameAndRankValue(nameof(ReadOnlySegmentCollection), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class SegmentCollectionToSpeckleConverter

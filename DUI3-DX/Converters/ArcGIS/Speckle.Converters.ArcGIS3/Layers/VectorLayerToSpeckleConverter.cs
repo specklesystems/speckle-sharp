@@ -4,7 +4,6 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
-using ArcGIS.Desktop.Internal.Core.CommonControls;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 

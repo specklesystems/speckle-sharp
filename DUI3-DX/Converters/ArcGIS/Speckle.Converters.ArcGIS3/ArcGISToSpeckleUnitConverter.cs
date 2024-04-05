@@ -29,7 +29,7 @@ public class ArcGISToSpeckleUnitConverter : IHostToSpeckleUnitConverter<Unit>
   {
     var linearUnit = LinearUnit.CreateLinearUnit(hostUnit.Wkt).Name;
 
-    if (_unitMapping.TryGetValue(linearUnit, out string value))
+    if (_unitMapping.TryGetValue(linearUnit, out string? value))
     {
       return value;
     }

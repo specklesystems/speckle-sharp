@@ -1,10 +1,3 @@
-using ArcGIS.Core.Geometry;
-using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
-using Objects.Geometry;
-using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
-
 namespace Speckle.Converters.ArcGIS3.Features;
 /*
 [NameAndRankValue(nameof(MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
