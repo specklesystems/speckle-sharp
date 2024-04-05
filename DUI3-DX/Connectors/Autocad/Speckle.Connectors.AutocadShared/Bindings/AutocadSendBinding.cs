@@ -1,5 +1,6 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Connectors.Autocad.HostApp;
+using Speckle.Connectors.Autocad.HostApp.Extensions;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -15,6 +16,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Models;
 using System.Diagnostics;
 using ICancelable = System.Reactive.Disposables.ICancelable;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Autocad.Bindings;
 

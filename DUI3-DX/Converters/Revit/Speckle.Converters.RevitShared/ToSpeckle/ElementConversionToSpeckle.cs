@@ -1,4 +1,3 @@
-using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Objects.BuiltElements.Revit;
 using Speckle.Converters.RevitShared.Helpers;
@@ -6,7 +5,7 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: not currently used? clearly some missing pieces
-[NameAndRankValue(nameof(Element), 0)]
+[NameAndRankValue(nameof(DB.Element), 0)]
 public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, RevitElement>
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
@@ -16,11 +15,11 @@ public class ElementConversionToSpeckle : BaseConversionToSpeckle<DB.Element, Re
     _displayValueExtractor = displayValueExtractor;
   }
 
-  public override RevitElement RawConvert(Element target)
+  public override RevitElement RawConvert(DB.Element target)
   {
     RevitElement speckleElement = new();
 
-    if (target.Document.GetElement(target.GetTypeId()) is FamilySymbol symbol)
+    if (target.Document.GetElement(target.GetTypeId()) is DB.FamilySymbol symbol)
     {
       speckleElement.family = symbol.FamilyName;
       speckleElement.type = symbol.Name;

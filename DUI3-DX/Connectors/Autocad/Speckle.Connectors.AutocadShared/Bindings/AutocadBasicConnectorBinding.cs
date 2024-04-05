@@ -43,6 +43,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public DocumentInfo GetDocumentInfo()
   {
+    // POC: Will be addressed to move it into AutocadContext!
     var doc = Application.DocumentManager.MdiActiveDocument;
 
     if (doc == null)
@@ -77,6 +78,7 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
 
   public void HighlightModel(string modelCardId)
   {
+    // POC: Will be addressed to move it into AutocadContext!
     var doc = Application.DocumentManager.MdiActiveDocument;
 
     if (doc == null)

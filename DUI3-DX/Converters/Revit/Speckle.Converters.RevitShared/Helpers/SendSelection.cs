@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Speckle.Converters.RevitShared.Helpers;
 
 // POC: why do we need this send selection?

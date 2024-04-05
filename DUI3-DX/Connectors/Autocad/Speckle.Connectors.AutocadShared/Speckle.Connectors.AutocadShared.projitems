@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadReceiveBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSendBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadModule.cs" />
@@ -21,18 +22,22 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentModelStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadLayerManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\DUI3PanelWebView.xaml.cs">
       <DependentUpon>DUI3PanelWebView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DatabaseExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DocumentExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EntityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\HostObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadExtensionApplication.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />

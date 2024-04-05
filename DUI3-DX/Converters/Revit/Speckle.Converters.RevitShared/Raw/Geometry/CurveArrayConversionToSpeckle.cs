@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using Objects;
 using Objects.Geometry;
@@ -9,7 +7,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public sealed class CurveArrayConversionToSpeckle : BaseConversionToSpeckle<DB.CurveArray, SOG.Polycurve>
+public sealed class CurveArrayConversionToSpeckle : IRawConversion<DB.CurveArray, SOG.Polycurve>
 {
   private readonly RevitConversionContextStack _contextStack;
   private readonly ToSpeckleScalingService _scalingService;
@@ -26,7 +24,7 @@ public sealed class CurveArrayConversionToSpeckle : BaseConversionToSpeckle<DB.C
     _curveConverter = curveConverter;
   }
 
-  public override Polycurve RawConvert(CurveArray target)
+  public Polycurve RawConvert(CurveArray target)
   {
     Polycurve polycurve = new();
 

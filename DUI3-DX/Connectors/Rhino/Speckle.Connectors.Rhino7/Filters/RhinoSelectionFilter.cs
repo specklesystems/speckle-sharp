@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Rhino7.Filters;
 

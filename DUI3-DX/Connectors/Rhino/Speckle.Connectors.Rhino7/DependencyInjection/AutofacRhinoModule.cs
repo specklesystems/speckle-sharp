@@ -22,6 +22,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 

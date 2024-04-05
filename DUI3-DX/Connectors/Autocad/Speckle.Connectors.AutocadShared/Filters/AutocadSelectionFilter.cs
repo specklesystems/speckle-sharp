@@ -1,4 +1,4 @@
-using Speckle.Connectors.DUI.Bindings;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
 namespace Speckle.Connectors.Autocad.Filters;
 

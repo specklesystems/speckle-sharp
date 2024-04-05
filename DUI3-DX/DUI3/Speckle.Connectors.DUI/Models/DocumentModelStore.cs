@@ -4,7 +4,6 @@ using System.Linq;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.DUI.Objects;
 using Speckle.Newtonsoft.Json;
-using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Models.Card;
 
 namespace Speckle.Connectors.DUI.Models;

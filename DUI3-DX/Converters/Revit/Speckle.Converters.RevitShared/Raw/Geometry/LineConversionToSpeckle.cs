@@ -1,14 +1,11 @@
-using Autodesk.Revit.DB;
 using Objects.Primitive;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.Line), 0)]
-public class LineConversionToSpeckle : BaseConversionToSpeckle<DB.Line, SOG.Line>
+public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
 {
   private readonly RevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
@@ -16,7 +13,7 @@ public class LineConversionToSpeckle : BaseConversionToSpeckle<DB.Line, SOG.Line
 
   public LineConversionToSpeckle(
     RevitConversionContextStack contextStack,
-    IRawConversion<XYZ, SOG.Point> xyzToPointConverter,
+    IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
     ToSpeckleScalingService scalingService
   )
   {
@@ -25,7 +22,7 @@ public class LineConversionToSpeckle : BaseConversionToSpeckle<DB.Line, SOG.Line
     _scalingService = scalingService;
   }
 
-  public override SOG.Line RawConvert(DB.Line target)
+  public SOG.Line RawConvert(DB.Line target)
   {
     return new()
     {

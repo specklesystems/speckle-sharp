@@ -10,6 +10,8 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Runtime.CompilerServices;
 using Speckle.Connectors.Revit.Plugin.DllConflictManagment;
+using Speckle.Converters.Common.Objects;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -122,7 +124,7 @@ internal class RevitExternalApplication : IExternalApplication
     // tbe event can probably go
     // IRawConversions should be separately injectable (and not Require an IHostObject... or NameAndRank attribute)
     // Name and Rank can become ConversionRank or something and be optional (otherwise it is rank 0)
-    containerBuilder.RegisterRawConversions();
+    containerBuilder.RegisterRawConversions().InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 
   public Result OnShutdown(UIControlledApplication application)

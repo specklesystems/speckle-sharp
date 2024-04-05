@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Speckle.Converters.Common;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
