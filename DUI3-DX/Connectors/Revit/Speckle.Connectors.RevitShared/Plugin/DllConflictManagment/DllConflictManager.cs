@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
 using Autodesk.Revit.UI;
 
@@ -12,6 +11,12 @@ namespace Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 public class DllConflictManager
 {
   private readonly Dictionary<string, AssemblyConflictInfo> _assemblyConflicts = new();
+  private readonly DllConflictManagmentOptionsLoader _optionsLoader;
+
+  public DllConflictManager(DllConflictManagmentOptionsLoader optionsLoader)
+  {
+    _optionsLoader = optionsLoader;
+  }
 
   public void LoadSpeckleAssemblies()
   {
@@ -189,5 +194,36 @@ public class DllConflictManager
       );
 
     return (T)fi.GetValue(obj);
+  }
+
+  public void WarnUserOfPossibleConflicts()
+  {
+    if (_assemblyConflicts.Count == 0)
+    {
+      return;
+    }
+
+    StringBuilder sb = new();
+
+    sb.AppendLine(
+      $"Speckle encountered an error loading the following dependencies. This is likely due to different addin that uses a different version of the same dependency."
+    );
+
+    foreach (var assemblyConflictInfo in _assemblyConflicts.Values)
+    {
+      sb.AppendLine();
+      sb.AppendLine($"Dependency Name:  {assemblyConflictInfo.SpeckleDependencyAssemblyName.Name}");
+      sb.AppendLine($"Expected Version: {assemblyConflictInfo.SpeckleDependencyAssemblyName.Version}");
+      sb.AppendLine($"Actual Version:   {assemblyConflictInfo.ConflictingAssembly.GetName().Version}");
+      sb.AppendLine($"Conflicting version folder: {assemblyConflictInfo.GetConflictingExternalAppName()}");
+    }
+
+    using var dialog = new TaskDialog("Conflict Report 🔥");
+    dialog.Id = "b3e46885-ece6-4063-b4c1-87dadf197eaf";
+    dialog.EnableDoNotShowAgain(dialog.Id, true, "Do not show this warning again");
+    dialog.MainContent = sb.ToString();
+    dialog.CommonButtons = TaskDialogCommonButtons.Ok;
+
+    TaskDialogResult result = dialog.Show();
   }
 }

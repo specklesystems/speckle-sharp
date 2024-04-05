@@ -32,6 +32,8 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\AssemblyConflictInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\DllConflictManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\DllConflictManagmentOptionsLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\DllConflictManagment\DllConflictManagmentOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\IRevitPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Plugin\RevitExternalApplication.cs" />

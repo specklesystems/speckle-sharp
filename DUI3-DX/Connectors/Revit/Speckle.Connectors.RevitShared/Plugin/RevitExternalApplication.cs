@@ -56,16 +56,18 @@ internal class RevitExternalApplication : IExternalApplication
   /// <returns></returns>
   public Result OnStartup(UIControlledApplication application)
   {
-    DllConflictManager conflictDetector = new();
+    DllConflictManager conflictDetector = new(new DllConflictManagmentOptionsLoader());
     try
     {
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
       conflictDetector.LoadSpeckleAssemblies();
 
-      CallMissingMethod();
+      //CallMissingMethod();
 
-      InitializePlugin(application, conflictDetector);
+      //InitializePlugin(application, conflictDetector);
+
+      conflictDetector.WarnUserOfPossibleConflicts();
     }
     catch (MissingMethodException e)
     {
@@ -176,45 +178,5 @@ internal class RevitExternalApplication : IExternalApplication
         => true,
       _ => false,
     };
-  }
-
-  public static T GetPrivatePropertyValue<T>(object obj, string propName)
-  {
-    if (obj == null)
-    {
-      throw new ArgumentNullException("obj");
-    }
-
-    var x = obj.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic);
-
-    PropertyInfo pi =
-      obj.GetType().GetProperty(propName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-      ?? throw new ArgumentOutOfRangeException(
-        "propName",
-        string.Format("Property {0} was not found in Type {1}", propName, obj.GetType().FullName)
-      );
-
-    return (T)pi.GetValue(obj, null);
-  }
-
-  public static T GetPrivateFieldValue<T>(object obj, string fieldName)
-  {
-    if (obj == null)
-    {
-      throw new ArgumentNullException("obj");
-    }
-
-    BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-
-    var x = obj.GetType().GetFields(bindFlags);
-
-    FieldInfo fi =
-      obj.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-      ?? throw new ArgumentOutOfRangeException(
-        "propName",
-        string.Format("Property {0} was not found in Type {1}", fieldName, obj.GetType().FullName)
-      );
-
-    return (T)fi.GetValue(obj);
   }
 }
