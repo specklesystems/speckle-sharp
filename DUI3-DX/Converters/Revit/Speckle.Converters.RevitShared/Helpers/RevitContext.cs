@@ -1,4 +1,3 @@
-using System;
 using Autodesk.Revit.UI;
 
 namespace Speckle.Converters.RevitShared.Helpers;

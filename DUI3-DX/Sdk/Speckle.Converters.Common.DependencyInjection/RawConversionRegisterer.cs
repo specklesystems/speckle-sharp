@@ -12,46 +12,28 @@ public static class RawConversionRegisterer
     // POC: hard-coding speckle... :/
     foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith("Speckle")))
     {
-      foreach (var type in asm.GetTypes().Where(t => t.IsClass && !t.IsAbstract))
+      foreach (var type in asm.GetTypes())
       {
-        if (GetImplementedRawConversionType(type) is not Type interfaceType)
-        {
-          continue;
-        }
-
-        var registrationBuilder = containerBuilder.RegisterType(type).As(interfaceType);
-
-        Type firstGenericType = interfaceType.GenericTypeArguments[0];
-        var singleParamRawConversionType = typeof(IRawConversion<>).MakeGenericType(firstGenericType);
-        if (singleParamRawConversionType.IsAssignableFrom(type))
-        {
-          registrationBuilder = registrationBuilder.As(singleParamRawConversionType);
-        }
-
-        if (typeof(IHostObjectToSpeckleConversion).IsAssignableFrom(type))
-        {
-          registrationBuilder = registrationBuilder
-            .As<IHostObjectToSpeckleConversion>()
-            .Keyed<IHostObjectToSpeckleConversion>(firstGenericType);
-        }
-
-        registrationBuilder.InstancePerLifetimeScope();
+        RegisterRawConversionsForType(containerBuilder, type);
       }
     }
 
     return containerBuilder;
   }
 
-  public static Type? GetImplementedRawConversionType(Type givenType)
+  private static void RegisterRawConversionsForType(ContainerBuilder containerBuilder, Type type)
   {
-    foreach (var it in givenType.GetInterfaces())
+    if (!type.IsClass || type.IsAbstract)
     {
-      if (it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IRawConversion<,>))
-      {
-        return it;
-      }
+      return;
     }
 
-    return null;
+    var rawConversionInterfaces = type.GetInterfaces()
+      .Where(it => it.IsGenericType && it.GetGenericTypeDefinition() == typeof(IRawConversion<,>));
+
+    foreach (var conversionInterface in rawConversionInterfaces)
+    {
+      containerBuilder.RegisterType(type).As(conversionInterface).InstancePerLifetimeScope();
+    }
   }
 }
