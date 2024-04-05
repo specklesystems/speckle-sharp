@@ -1,16 +1,13 @@
-using System.Collections.Generic;
-using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
-using Mesh = Objects.Geometry.Mesh;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: do we need to have this atm?
 // why do we need a List<DB.Solid>, do we encounter these in the converter logic?
 // it looks wrong here or perhaps the List<DB.Solid> is coming from the connector?
-[NameAndRankValue(nameof(List<DB.Solid>), 0)]
-public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>, List<Mesh>>
+public class SolidsConversionToSpeckle : IRawConversion<List<DB.Solid>, List<SOG.Mesh>>
 {
   private readonly RevitConversionContextStack _contextStack;
   private readonly MeshDataTriangulator _meshDataTriangulator;
@@ -22,14 +19,14 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
   }
 
   // POC: this is converting and caching and using the cache and some of it is a bit questionable
-  public override List<Mesh> RawConvert(List<DB.Solid> target)
+  public List<SOG.Mesh> RawConvert(List<DB.Solid> target)
   {
     MeshBuildHelper meshBuildHelper = new();
 
-    var meshMap = new Dictionary<Mesh, List<DB.Mesh>>();
-    foreach (Solid solid in target)
+    var meshMap = new Dictionary<SOG.Mesh, List<DB.Mesh>>();
+    foreach (DB.Solid solid in target)
     {
-      foreach (Face face in solid.Faces)
+      foreach (DB.Face face in solid.Faces)
       {
         // POC: throwing here? Just review. Is it necessary armouring against Revit APU weirdness?
         // do direct cast (DB.Material) instead of as and then no need to throw, it will throw naturally
@@ -39,7 +36,7 @@ public class SolidsConversionToSpeckle : BaseConversionToSpeckle<List<DB.Solid>,
           ?? throw new SpeckleConversionException("Unable to cast face's materialElementId element to DB.Material");
 
         // POC: this logic, relationship between material and mesh, seems wrong
-        Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, _contextStack.Current.SpeckleUnits);
+        SOG.Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, _contextStack.Current.SpeckleUnits);
         if (!meshMap.TryGetValue(m, out List<DB.Mesh>? value))
         {
           value = new List<DB.Mesh>();

@@ -1,24 +1,24 @@
-using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
+using Speckle.Converters.RevitShared.Extensions;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 // POC: bin for now? This is also a parent child relationship and may need a pattern for this
 // so we don't end up with some god FamilyInstanceConversionToSpeckle converter
+[NameAndRankValue(nameof(DB.FamilyInstance), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<DB.FamilyInstance, Base>
 {
-  private readonly IRawConversion<DB.Element> _elementConverter;
+  private readonly IRawConversion<DB.Element, SOBR.RevitElement> _elementConverter;
   private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> _beamConverter;
   private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> _columnConverter;
 
   public FamilyInstanceConversionToSpeckle(
-    IRawConversion<Element> elementConverter,
-    IRawConversion<FamilyInstance, SOBR.RevitBeam> beamConverter,
-    IRawConversion<FamilyInstance, SOBR.RevitColumn> columnConverter
+    IRawConversion<DB.Element, SOBR.RevitElement> elementConverter,
+    IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> beamConverter,
+    IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> columnConverter
   )
   {
     _elementConverter = elementConverter;
@@ -26,7 +26,7 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     _columnConverter = columnConverter;
   }
 
-  public override Base RawConvert(FamilyInstance target)
+  public override Base RawConvert(DB.FamilyInstance target)
   {
     Base? @base = null;
 
@@ -71,11 +71,11 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     //beams & braces
     if (RevitCategories.StructuralFraming.BuiltInCategories.Contains(target.Category.GetBuiltInCategory()))
     {
-      if (target.StructuralType == StructuralType.Beam)
+      if (target.StructuralType == DB.Structure.StructuralType.Beam)
       {
         @base = _beamConverter.RawConvert(target);
       }
-      else if (target.StructuralType == StructuralType.Brace)
+      else if (target.StructuralType == DB.Structure.StructuralType.Brace)
       {
         //@base = BraceToSpeckle(target, out notes);
       }
@@ -85,7 +85,7 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     if (
       @base == null
         && RevitCategories.StructuralFraming.BuiltInCategories.Contains(target.Category.GetBuiltInCategory())
-      || target.StructuralType == StructuralType.Column
+      || target.StructuralType == DB.Structure.StructuralType.Column
     )
     {
       @base = _columnConverter.RawConvert(target);
@@ -117,7 +117,7 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
     //  @base = RevitInstanceToSpeckle(target, out notes, null);
     //}
 
-    @base ??= _elementConverter.ConvertToBase(target);
+    @base ??= _elementConverter.RawConvert(target);
 
     //// add additional props to base object
     //if (isUGridLine.HasValue)

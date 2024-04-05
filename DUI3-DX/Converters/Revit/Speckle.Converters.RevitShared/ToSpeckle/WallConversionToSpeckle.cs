@@ -1,12 +1,7 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
-using Objects.BuiltElements.Revit;
-using Autodesk.Revit.DB;
 using Objects;
 using Speckle.Converters.RevitShared.Helpers;
-using System.Collections.Generic;
-using System.Linq;
-using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
@@ -15,10 +10,10 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: needs review feels, BIG, feels like it could be broken down..
 // i.e. GetParams(), GetGeom()? feels like it's doing too much
 [NameAndRankValue(nameof(DB.Wall), 0)]
-public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWall>
+public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.RevitWall>
 {
   private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
-  private readonly IRawConversion<DB.Level, RevitLevel> _levelConverter;
+  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly RevitConversionContextStack _contextStack;
@@ -28,11 +23,11 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
 
   public WallConversionToSpeckle(
     IRawConversion<DB.Curve, ICurve> curveConverter,
-    IRawConversion<Level, RevitLevel> levelConverter,
+    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
     RevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
-    IRawConversion<CurveArray, Polycurve> curveArrayConverter,
+    IRawConversion<DB.CurveArray, SOG.Polycurve> curveArrayConverter,
     HostedElementConversionToSpeckle hostedElementConverter,
     ParameterObjectAssigner parameterObjectAssigner
   )
@@ -47,11 +42,11 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public override RevitWall RawConvert(DB.Wall target)
+  public override SOBR.RevitWall RawConvert(DB.Wall target)
   {
-    RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
+    SOBR.RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
 
-    if (target.Location is not LocationCurve locationCurve)
+    if (target.Location is not DB.LocationCurve locationCurve)
     {
       throw new SpeckleConversionException(
         "Incorrect assumption was made that all Revit Wall location properties would be of type \"LocationCurve\""
@@ -62,23 +57,24 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
 
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
-      BuiltInParameter.WALL_BASE_CONSTRAINT
+      DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
     speckleWall.level = _levelConverter.RawConvert(level);
 
     var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
       target,
-      BuiltInParameter.WALL_BASE_CONSTRAINT
+      DB.BuiltInParameter.WALL_BASE_CONSTRAINT
     );
     speckleWall.topLevel = _levelConverter.RawConvert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
     speckleWall.height =
-      _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.WALL_USER_HEIGHT_PARAM) ?? 0;
-    speckleWall.baseOffset = _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.WALL_BASE_OFFSET) ?? 0;
-    speckleWall.topOffset = _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.WALL_TOP_OFFSET) ?? 0;
+      _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_USER_HEIGHT_PARAM) ?? 0;
+    speckleWall.baseOffset =
+      _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_BASE_OFFSET) ?? 0;
+    speckleWall.topOffset = _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_TOP_OFFSET) ?? 0;
     speckleWall.structural =
-      _parameterValueExtractor.GetValueAsBool(target, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
+      _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;
 
     speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
@@ -92,7 +88,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
   }
 
   // POC: not sure
-  private void AssignHostedElements(Wall target, RevitWall speckleWall)
+  private void AssignHostedElements(DB.Wall target, SOBR.RevitWall speckleWall)
   {
     List<Base> hostedObjects = _hostedElementConverter.GetHostedElementsConverted(target);
     if (hostedObjects.Count > 0)
@@ -108,10 +104,10 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
     }
   }
 
-  private void AssignVoids(Wall target, RevitWall speckleWall)
+  private void AssignVoids(DB.Wall target, SOBR.RevitWall speckleWall)
   {
-    List<CurveArray> voids = GetWallVoids(target);
-    List<Polycurve> polycurves = voids.Select(v => _curveArrayConverter.RawConvert(v)).ToList();
+    List<DB.CurveArray> voids = GetWallVoids(target);
+    List<SOG.Polycurve> polycurves = voids.Select(v => _curveArrayConverter.RawConvert(v)).ToList();
 
     if (polycurves.Count > 0)
     {
@@ -119,10 +115,10 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, RevitWal
     }
   }
 
-  private List<CurveArray> GetWallVoids(Wall wall)
+  private List<DB.CurveArray> GetWallVoids(DB.Wall wall)
   {
-    List<CurveArray> curveArrays = new();
-    var profile = ((Sketch)_contextStack.Current.Document.Document.GetElement(wall.SketchId))?.Profile;
+    List<DB.CurveArray> curveArrays = new();
+    var profile = ((DB.Sketch)_contextStack.Current.Document.Document.GetElement(wall.SketchId))?.Profile;
 
     if (profile == null)
     {

@@ -1,13 +1,9 @@
-using Objects.BuiltElements.Revit;
-using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class LevelConverter { }
-
-[NameAndRankValue(nameof(DB.Level), 0)]
-public class LevelConversionToSpeckle : BaseConversionToSpeckle<DB.Level, RevitLevel>
+public class LevelConversionToSpeckle : IRawConversion<DB.Level, SOBR.RevitLevel>
 {
   private readonly CachingService _cachingService;
   private readonly ToSpeckleScalingService _scalingService;
@@ -18,14 +14,14 @@ public class LevelConversionToSpeckle : BaseConversionToSpeckle<DB.Level, RevitL
     _scalingService = scalingService;
   }
 
-  public override RevitLevel RawConvert(DB.Level target)
+  public SOBR.RevitLevel RawConvert(DB.Level target)
   {
     return _cachingService.GetOrAdd(target.UniqueId, () => CreateSpeckleRevitLevel(target));
   }
 
-  private RevitLevel CreateSpeckleRevitLevel(DB.Level level)
+  private SOBR.RevitLevel CreateSpeckleRevitLevel(DB.Level level)
   {
-    var speckleLevel = new RevitLevel
+    var speckleLevel = new SOBR.RevitLevel
     {
       elevation = _scalingService.ScaleLength(level.Elevation),
       name = level.Name,

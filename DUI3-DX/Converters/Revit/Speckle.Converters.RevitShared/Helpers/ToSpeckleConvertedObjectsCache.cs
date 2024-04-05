@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.Helpers;

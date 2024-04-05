@@ -1,11 +1,11 @@
+using Objects;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
-using Objects;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.Curve), 0)]
-public class CurveConversionToSpeckle : BaseConversionToSpeckle<DB.Curve, ICurve>
+public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
 {
   // POC: can we do this sort of thing?
   // Can this converter be made generic to make a ConverterFetcher? and be used
@@ -24,7 +24,7 @@ public class CurveConversionToSpeckle : BaseConversionToSpeckle<DB.Curve, ICurve
     _lineConverter = lineConverter;
   }
 
-  public override ICurve RawConvert(DB.Curve target)
+  public ICurve RawConvert(DB.Curve target)
   {
     // POC: and then here:
     // if (_curveConverters.TryGetValue(target.GetType().Name, out IRawConversion<DB.Curve, ICurve> converter))

@@ -1,11 +1,11 @@
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.XYZ), 0)]
-public class XyzConversionToPoint : BaseConversionToSpeckle<DB.XYZ, SOG.Point>
+public class XyzConversionToPoint : IRawConversion<DB.XYZ, SOG.Point>
 {
   private readonly ToSpeckleScalingService _toSpeckleScalingService;
   private readonly RevitConversionContextStack _contextStack;
@@ -16,7 +16,7 @@ public class XyzConversionToPoint : BaseConversionToSpeckle<DB.XYZ, SOG.Point>
     _contextStack = contextStack;
   }
 
-  public override SOG.Point RawConvert(DB.XYZ target)
+  public SOG.Point RawConvert(DB.XYZ target)
   {
     var pointToSpeckle = new SOG.Point(
       _toSpeckleScalingService.ScaleLength(target.X),
