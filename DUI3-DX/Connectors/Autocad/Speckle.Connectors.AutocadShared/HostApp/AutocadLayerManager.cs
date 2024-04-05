@@ -69,6 +69,7 @@ public class AutocadLayerManager
     transaction.Commit();
   }
 
+  // POC: Consider to extract somehow in factory or service!
   /// <summary>
   /// Creates a layer filter for the just received model, grouped under a top level filter "Speckle". Note: manual close and open of the layer properties panel required (it's an acad thing).
   /// This comes in handy to quickly access the layers created for this specific model.
