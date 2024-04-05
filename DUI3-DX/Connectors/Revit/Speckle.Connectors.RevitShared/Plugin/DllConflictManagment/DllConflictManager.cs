@@ -203,27 +203,43 @@ public class DllConflictManager
       return;
     }
 
-    StringBuilder sb = new();
+    var options = _optionsLoader.LoadOptions();
+    List<AssemblyConflictInfo> conflictInfoNotIgnored = _assemblyConflicts.Values
+      .Where(info => !options.DllsToIgnore.Contains(info.SpeckleDependencyAssemblyName.Name))
+      .ToList();
 
-    sb.AppendLine(
-      $"Speckle encountered an error loading the following dependencies. This is likely due to different addin that uses a different version of the same dependency."
-    );
-
-    foreach (var assemblyConflictInfo in _assemblyConflicts.Values)
+    if (conflictInfoNotIgnored.Count == 0)
     {
-      sb.AppendLine();
+      return;
+    }
+
+    StringBuilder sb = new();
+    foreach (var assemblyConflictInfo in conflictInfoNotIgnored)
+    {
       sb.AppendLine($"Dependency Name:  {assemblyConflictInfo.SpeckleDependencyAssemblyName.Name}");
       sb.AppendLine($"Expected Version: {assemblyConflictInfo.SpeckleDependencyAssemblyName.Version}");
       sb.AppendLine($"Actual Version:   {assemblyConflictInfo.ConflictingAssembly.GetName().Version}");
       sb.AppendLine($"Conflicting version folder: {assemblyConflictInfo.GetConflictingExternalAppName()}");
+      sb.AppendLine();
     }
 
     using var dialog = new TaskDialog("Conflict Report 🔥");
-    dialog.Id = "b3e46885-ece6-4063-b4c1-87dadf197eaf";
-    dialog.EnableDoNotShowAgain(dialog.Id, true, "Do not show this warning again");
+    dialog.MainInstruction =
+      "Speckle encountered an error loading the following dependencies. This is likely due to a different addin that uses a different version of the same dependency.";
+
+    dialog.ExtraCheckBoxText = "Do not warn about this conflict again";
     dialog.MainContent = sb.ToString();
     dialog.CommonButtons = TaskDialogCommonButtons.Ok;
 
-    TaskDialogResult result = dialog.Show();
+    _ = dialog.Show();
+
+    if (dialog.WasExtraCheckBoxChecked())
+    {
+      foreach (var conflictInfo in conflictInfoNotIgnored)
+      {
+        options.DllsToIgnore.Add(conflictInfo.SpeckleDependencyAssemblyName.Name);
+      }
+      _optionsLoader.SaveOptions(options);
+    }
   }
 }

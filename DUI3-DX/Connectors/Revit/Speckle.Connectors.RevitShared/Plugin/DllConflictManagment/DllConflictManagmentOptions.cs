@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+
 namespace Speckle.Connectors.Revit.Plugin.DllConflictManagment;
 
 public sealed class DllConflictManagmentOptions
 {
-  public bool ShowConflictWarning { get; set; }
+  public HashSet<string> DllsToIgnore { get; private set; }
 
-  public DllConflictManagmentOptions(bool showConflictWarning)
+  public DllConflictManagmentOptions(HashSet<string> dllsToIgnore)
   {
-    ShowConflictWarning = showConflictWarning;
+    DllsToIgnore = dllsToIgnore;
   }
 }
