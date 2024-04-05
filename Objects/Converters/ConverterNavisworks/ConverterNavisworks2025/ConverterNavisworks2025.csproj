@@ -13,47 +13,11 @@
     <Import Project="..\ConverterNavisworks\ConverterNavisworksShared.projitems" Label="Shared" />
 
     <ItemGroup>
-<!--        <PackageReference Include="Speckle.Navisworks.API" Version="2025.0.0" />-->
+        <PackageReference Include="Speckle.Navisworks.API" Version="2025.0.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="AdWindows">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\AdWindows.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.Api">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.Api.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.Clash">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.Clash.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.ComApi">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.ComApi.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.Controls">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.Controls.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.Interop.ComApi">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.Interop.ComApi.dll</HintPath>
-      </Reference>
-      <Reference Include="Autodesk.Navisworks.Interop.ComApiAutomation">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\Autodesk.Navisworks.Interop.ComApiAutomation.dll</HintPath>
-      </Reference>
-      <Reference Include="navisworks.gui.common">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\navisworks.gui.common.dll</HintPath>
-      </Reference>
-      <Reference Include="navisworks.gui.interface">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\navisworks.gui.interface.dll</HintPath>
-      </Reference>
-      <Reference Include="navisworks.gui.roamer">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\navisworks.gui.roamer.dll</HintPath>
-      </Reference>
-      <Reference Include="navisworks.roamer.clr">
-        <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2025\navisworks.roamer.clr.dll</HintPath>
-      </Reference>
     </ItemGroup>
 </Project>
