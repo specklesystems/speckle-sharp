@@ -27,8 +27,8 @@ public sealed class ReceiveOperation
     string projectName,
     string modelName,
     string versionId,
-    Action<string, double?>? onOperationProgressed = null,
-    CancellationTokenSource cts = default
+    CancellationTokenSource cts,
+    Action<string, double?>? onOperationProgressed = null
   )
   {
     // 2 - Check account exist
