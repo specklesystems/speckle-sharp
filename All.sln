@@ -556,8 +556,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Speckle.Converters.AutocadS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Autocad2023", "DUI3-DX\Converters\Autocad\Speckle.Converters.Autocad2023\Speckle.Converters.Autocad2023.csproj", "{631C295A-7CCF-4B42-8686-7034E31469E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Connectors.Conflicting.Revit2023", "DUI3-DX\Connectors\Revit\Speckle.Connectors.Conflicting.Revit2023\Speckle.Connectors.Conflicting.Revit2023.csproj", "{932E02EC-B68D-4B46-A801-1CCE2FE591FC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2760,22 +2758,6 @@ Global
 		{631C295A-7CCF-4B42-8686-7034E31469E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{631C295A-7CCF-4B42-8686-7034E31469E7}.Release|x64.ActiveCfg = Release|Any CPU
 		{631C295A-7CCF-4B42-8686-7034E31469E7}.Release|x64.Build.0 = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug Mac|x64.Build.0 = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Debug|x64.Build.0 = Debug|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release Mac|Any CPU.Build.0 = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release Mac|x64.ActiveCfg = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release Mac|x64.Build.0 = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release|x64.ActiveCfg = Release|Any CPU
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2992,7 +2974,6 @@ Global
 		{804E065F-914C-414A-AF84-009312C3CFF6} = {1FE3C60E-7865-40A5-9794-55ECB64F6489}
 		{9ADD1B7A-6401-4202-8613-F668E2FBC0A4} = {804E065F-914C-414A-AF84-009312C3CFF6}
 		{631C295A-7CCF-4B42-8686-7034E31469E7} = {804E065F-914C-414A-AF84-009312C3CFF6}
-		{932E02EC-B68D-4B46-A801-1CCE2FE591FC} = {4838C66E-8677-4FBD-9609-25376042E981}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
