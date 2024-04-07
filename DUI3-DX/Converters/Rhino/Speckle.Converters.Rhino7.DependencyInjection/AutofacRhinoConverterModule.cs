@@ -4,6 +4,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Rhino;
 using Speckle.Converters.Common.DependencyInjection;
+using Speckle.Converters.Rhino7.ToHost;
 
 namespace Speckle.Converters.Rhino7.DependencyInjection;
 
@@ -33,7 +34,7 @@ public class AutofacRhinoConverterModule : Module
 
     // To Host
     // POC: Missing Unit converter
-    builder.RegisterType<RhinoConverterToNative>().As<ISpeckleConverterToHost>().SingleInstance();
+    builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
     builder
       .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
       .As<IScopedFactory<ISpeckleConverterToHost>>()
