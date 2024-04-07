@@ -24,6 +24,6 @@ public interface IHostObjectBuilder
     string projectName,
     string modelName,
     Action<string, double?>? onOperationProgressed,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   );
 }

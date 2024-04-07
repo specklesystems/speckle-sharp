@@ -27,7 +27,7 @@ public sealed class ReceiveOperation
     string projectName,
     string modelName,
     string versionId,
-    CancellationTokenSource cts,
+    CancellationToken cancellationToken,
     Action<string, double?>? onOperationProgressed = null
   )
   {
@@ -40,21 +40,21 @@ public sealed class ReceiveOperation
     Client apiClient = new(account);
     ServerTransport transport = new(account, projectId);
     Commit? version =
-      await apiClient.CommitGet(projectId, versionId, cts.Token).ConfigureAwait(false)
+      await apiClient.CommitGet(projectId, versionId, cancellationToken).ConfigureAwait(false)
       ?? throw new SpeckleException($"Failed to receive commit: {versionId} from server)");
 
     Base? commitObject =
       await Speckle.Core.Api.Operations
-        .Receive(version.referencedObject, cancellationToken: cts.Token, remoteTransport: transport)
+        .Receive(version.referencedObject, cancellationToken: cancellationToken, remoteTransport: transport)
         .ConfigureAwait(false)
       ?? throw new SpeckleException(
         $"Failed to receive commit: {version.id} objects from server: {nameof(Operations)} returned null"
       );
 
     apiClient.Dispose();
-    cts.Token.ThrowIfCancellationRequested();
+    cancellationToken.ThrowIfCancellationRequested();
 
     // 4 - Convert objects
-    return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cts);
+    return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);
   }
 }

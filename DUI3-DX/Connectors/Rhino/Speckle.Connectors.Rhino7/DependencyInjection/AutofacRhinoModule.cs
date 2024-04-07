@@ -1,11 +1,9 @@
 using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
-using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -18,11 +16,12 @@ using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Transports;
-using Speckle.Converters.Common;
-using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Rhino7.Operations.Receive;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -51,7 +50,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
+    builder.RegisterType<RhinoReceiveBinding>().As<IBinding>().SingleInstance();
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
@@ -62,14 +61,14 @@ public class AutofacRhinoModule : Module
 
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().SingleInstance();
+    builder.RegisterType<ReceiveOperation>().SingleInstance();
+
+    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().SingleInstance();
+
     builder.RegisterType<RootObjectBuilder>().SingleInstance();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
-    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
 
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
