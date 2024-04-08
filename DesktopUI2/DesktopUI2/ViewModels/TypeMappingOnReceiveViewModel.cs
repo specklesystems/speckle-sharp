@@ -44,9 +44,18 @@ public class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
     {
       this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
-      SearchResults = GetCategoryOrAll(SelectedCategory)
+      SearchResults = GetCategoryOrAll(SelectedCategory, out bool isUsingAllTypes)
         .Where(ht => ht.HostTypeDisplayName.ToLower().Contains(SearchQuery.ToLower()))
         .ToList();
+
+      if (SearchResults.Count == 0 && !isUsingAllTypes)
+      {
+        SearchResults = hostTypeContainer
+          .GetAllTypes()
+          .Where(ht => ht.HostTypeDisplayName.ToLower().Contains(SearchQuery.ToLower()))
+          .ToList();
+      }
+
       this.RaisePropertyChanged(nameof(SearchResults));
     }
   }
@@ -78,7 +87,7 @@ public class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
       this.RaiseAndSetIfChanged(ref _selectedCategory, value);
       VisibleMappingValues = Mapping.GetValuesToMapOfCategory(value).ToList();
       SearchQuery = "";
-      SearchResults = GetCategoryOrAll(value).ToList();
+      SearchResults = GetCategoryOrAll(value, out _).ToList();
       SelectedMappingValues.Clear();
     }
   }
@@ -98,9 +107,16 @@ public class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
     set => this.RaiseAndSetIfChanged(ref _searchResults, value);
   }
 
-  private ICollection<ISingleHostType> GetCategoryOrAll(string category)
+  private ICollection<ISingleHostType> GetCategoryOrAll(string category, out bool isUsingAllTypes)
   {
-    return hostTypeContainer.GetTypesInCategory(category) ?? hostTypeContainer.GetAllTypes();
+    isUsingAllTypes = false;
+    if (hostTypeContainer.GetTypesInCategory(category) is ICollection<ISingleHostType> collection)
+    {
+      return collection;
+    }
+
+    isUsingAllTypes = true;
+    return hostTypeContainer.GetAllTypes();
   }
 
   public string UrlPathSegment => throw new NotImplementedException();
