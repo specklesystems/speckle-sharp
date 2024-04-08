@@ -200,7 +200,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
       }
     }
 
-    // Stage 2: Instances and Instance Definitions
+    // Stage 2: Instances and Instance Definitions (POC: probably should move somewhere else)
     var definitionsAndInstancesInCreationOrder = instancesAndInstanceDefinitions
       .OrderByDescending(x => x.obj.MaxDepth) // Sort by max depth, so we start baking from the deepest element first
       .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
@@ -234,7 +234,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         foreach (var id in currentApplicationObjectsIds)
         {
           var docObject = Doc.Objects.FindId(new Guid(id));
-          definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: Nope it's not (LATER): Actually it is ok!
+          definitionGeometryList.Add(docObject.Geometry);
           attributes.Add(docObject.Attributes);
         }
 
@@ -268,7 +268,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         && definitionIdAndApplicationIdMap.TryGetValue(instanceProxy.DefinitionId, out int index)
       )
       {
-        var transform = RhinoInstanceUnpacker.MatrixToTransform(instanceProxy.Transform);
+        var transform = RawSelectionUnpackerAkaBlockManager.MatrixToTransform(instanceProxy.Transform);
         var layerIndex = GetAndCreateLayerFromPath(path, rootLayerName, cache);
         var id = Doc.Objects.AddInstanceObject(index, transform, new ObjectAttributes() { LayerIndex = layerIndex });
         if (instanceProxy.applicationId != null)
