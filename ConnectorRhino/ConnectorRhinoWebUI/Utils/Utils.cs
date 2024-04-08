@@ -29,7 +29,7 @@ public class RhinoInstanceUnpacker
 {
   public Dictionary<string, InstanceProxy> InstanceProxies { get; set; } = new();
 
-  private readonly Dictionary<string, List<InstanceProxy>> _instanceProxiesByDefinitionId = new(); // TODO: max depth blocks needs to be set correctly
+  private readonly Dictionary<string, List<InstanceProxy>> _instanceProxiesByDefinitionId = new();
   public Dictionary<string, InstanceDefinitionProxy> DefinitionProxies { get; set; } = new();
   public Dictionary<string, RhinoObject> FlatAtomicObjects { get; set; } = new();
 
@@ -89,8 +89,11 @@ public class RhinoInstanceUnpacker
     {
       applicationId = instanceDefinitionId,
       Objects = new List<string>(),
-      MaxDepth = depth
+      MaxDepth = depth,
+      ["name"] = instance.InstanceDefinition.Name,
+      ["description"] = instance.InstanceDefinition.Description
     };
+
     DefinitionProxies[instance.InstanceDefinition.Id.ToString()] = definition;
 
     foreach (var obj in instance.InstanceDefinition.GetObjects())

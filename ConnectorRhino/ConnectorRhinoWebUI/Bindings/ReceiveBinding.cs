@@ -201,14 +201,26 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
     }
 
     // Stage 2: Instances and Instance Definitions
-    var sortedList = instancesAndInstanceDefinitions
+    var definitionsAndInstancesInCreationOrder = instancesAndInstanceDefinitions
       .OrderByDescending(x => x.obj.MaxDepth) // Sort by max depth, so we start baking from the deepest element first
       .ThenBy(x => x.obj is InstanceDefinitionProxy ? 0 : 1) // Ensure we bake the deepest definition first, then any instances that depend on it
       .ToList();
+
     var definitionIdAndApplicationIdMap = new Dictionary<string, int>();
 
-    foreach (var (path, instanceOrDefinition) in sortedList)
+    count = 0;
+    foreach (var (path, instanceOrDefinition) in definitionsAndInstancesInCreationOrder)
     {
+      BasicConnectorBindingCommands.SetModelProgress(
+        Parent,
+        modelCardId,
+        new ModelCardProgress()
+        {
+          Status = "Converting blocks",
+          Progress = (double)++count / definitionsAndInstancesInCreationOrder.Count
+        }
+      );
+
       if (instanceOrDefinition is InstanceDefinitionProxy definitionProxy)
       {
         var currentApplicationObjectsIds = definitionProxy.Objects
@@ -222,30 +234,21 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
         foreach (var id in currentApplicationObjectsIds)
         {
           var docObject = Doc.Objects.FindId(new Guid(id));
-          if (docObject is InstanceObject inst)
-          {
-            // DO something else
-            definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: NO ITS NOT
-            attributes.Add(docObject.Attributes);
-          }
-          else
-          {
-            definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: NO ITS NOT
-            attributes.Add(docObject.Attributes);
-          }
+          definitionGeometryList.Add(docObject.Geometry); // Seems ok re if this is ok for nested blocks A: Nope it's not (LATER): Actually it is ok!
+          attributes.Add(docObject.Attributes);
         }
 
-        // TODO: Currently we're relying on the definition name for identification if it's coming from speckle and from which model; could we do something else?
-        var defName = baseLayerName + " " + definitionProxy.applicationId; // TODO: something nicer? We might need to clean them later on
+        // POC: Currently we're relying on the definition name for identification if it's coming from speckle and from which model; could we do something else?
+        var defName = $"{baseLayerName} ({definitionProxy.applicationId})"; // POC: something nicer? We might need to clean them later on
         var defIndex = Doc.InstanceDefinitions.Add(
           defName,
-          "No description", // TODO: perhaps bring it along from source? We'd need to look at ACAD first
+          "No description", // POC: perhaps bring it along from source? We'd need to look at ACAD first
           Point3d.Origin,
           definitionGeometryList,
           attributes
         );
 
-        // TODO: check on defIndex -1, means we haven't created anything - this is most likely an recoverable error at this stage
+        // POC: check on defIndex -1, means we haven't created anything - this is most likely an recoverable error at this stage
         if (defIndex == -1)
         {
           var x = "break";
@@ -256,6 +259,7 @@ public class ReceiveBinding : IReceiveBinding, ICancelable
           definitionIdAndApplicationIdMap[definitionProxy.applicationId] = defIndex;
         }
 
+        // Rhino deletes original objects on block creation - we should do the same.
         Doc.Objects.Delete(currentApplicationObjectsIds.Select(stringId => new Guid(stringId)), false);
         newObjectIds.RemoveAll(id => currentApplicationObjectsIds.Contains(id));
       }
