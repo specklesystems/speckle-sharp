@@ -54,7 +54,11 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   {
     // LET'S FUCK AROUND AND FIND OUT
     var rootLayerName = baseLayerName;
+    // POC: This Find method was flagged as obsolete and I found no obvious way to work around it.
+    // Silencing it for now but we should find a way to fix this.
+#pragma warning disable CS0618 // Type or member is obsolete
     var rootLayerIndex = _contextStack.Current.Document.Layers.Find(rootLayerName, true);
+#pragma warning restore CS0618 // Type or member is obsolete
 
     if (rootLayerIndex >= 0)
     {

@@ -2,13 +2,11 @@
   "solution": {
     "path": "All.sln",
     "projects": [
-      "ConnectorRhino\\ConnectorRhinoWebUI\\ConnectorRhinoWebUI.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Performance\\Speckle.Core.Tests.Performance.csproj",
       "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
       "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
-      "DesktopUI3\\DUI3\\DUI3.csproj",
       "DUI3-DX\\Connectors\\ArcGIS\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj",
       "DUI3-DX\\Connectors\\Autocad\\Speckle.Connectors.Autocad2023\\Speckle.Connectors.Autocad2023.csproj",
       "DUI3-DX\\Connectors\\Autocad\\Speckle.Connectors.AutocadShared\\Speckle.Connectors.AutocadShared.shproj",
@@ -31,8 +29,6 @@
       "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
       "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
-      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino7\\ConverterRhino7.csproj",
-      "Objects\\Converters\\ConverterRhinoGh\\ConverterRhinoGhShared\\ConverterRhinoGhShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
     ]
