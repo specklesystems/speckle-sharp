@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.DoubleNumerics;
 using System.Linq;
 using Speckle.Core.Models.Extensions;
 
@@ -66,6 +67,27 @@ public class ObjectReference : Base
   public string referencedId { get; set; }
 
   public Dictionary<string, int> closure { get; set; }
+}
+
+// POC: Probably should go in objects? These are some quick proxy classes for blocks/instances and definitions.
+public interface IInstanceComponent
+{
+  public int MaxDepth { get; set; }
+}
+
+// POC: Probably should go in objects? These are some quick proxy classes for blocks/instances and definitions.
+public class InstanceProxy : Base, IInstanceComponent
+{
+  public string DefinitionId { get; set; }
+  public Matrix4x4 Transform { get; set; }
+  public int MaxDepth { get; set; }
+}
+
+// POC: Probably should go in objects? These are some quick proxy classes for blocks/instances and definitions.
+public class InstanceDefinitionProxy : Base, IInstanceComponent
+{
+  public List<string> Objects { get; set; } // source app application ids for the objects
+  public int MaxDepth { get; set; }
 }
 
 public class ProgressEventArgs : EventArgs

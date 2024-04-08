@@ -15,6 +15,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using DUI3.Utils;
+using Rhino.Commands;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -45,6 +46,15 @@ public class SendBinding : ISendBinding, ICancelable
     RhinoDoc.LayerTableEvent += (_, _) =>
     {
       SendBindingUiCommands.RefreshSendFilters(Parent);
+    };
+
+    Command.BeginCommand += (_, e) =>
+    {
+      if (e.CommandEnglishName == "BlockEdit")
+      {
+        var selectedObject = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).First();
+        ChangedObjectIds.Add(selectedObject.Id.ToString());
+      }
     };
 
     RhinoDoc.AddRhinoObject += (_, e) =>
@@ -217,8 +227,20 @@ public class SendBinding : ISendBinding, ICancelable
     int count = 0;
 
     Dictionary<int, Collection> layerCollectionCache = new();
-    // TODO: Handle blocks.
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+
+    var selectionUnpacker = new RawSelectionUnpackerAkaBlockManager();
+    (
+      List<RhinoObject> atomicObjects,
+      Dictionary<string, InstanceProxy> instanceProxies,
+      List<InstanceDefinitionProxy> instanceDefinitionProxies
+    ) = selectionUnpacker.Unpack(rhinoObjects);
+
+    rootObjectCollection["instanceDefs"] = instanceDefinitionProxies;
+    // POC: keeping here for inspiration for later
+    // rootObjectCollection["groups"] = "something";
+    // rootObjectCollection["hostingDefs"] = "somethingelse";
+
+    foreach (RhinoObject rhinoObject in atomicObjects)
     {
       if (cts.IsCancellationRequested)
       {
@@ -236,7 +258,15 @@ public class SendBinding : ISendBinding, ICancelable
       // What we actually do here is check if the object has been previously converted AND has not changed.
       // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
       Base converted;
-      if (
+
+      // Note for future readers: on instance definition elements and the cache
+      // The short of it is that when editing objects inside a block (=instance) the edited objects get new ids. While this could look like a purely simple Rhino api weirdness,
+      // it helps us out as those objects are automatically bypassing the cache based on this. This saves us from more complicated object tracking and we don't need to do... anything.
+      if (rhinoObject is InstanceObject) // Special case for blocks, bypass cache: the reason being that they're not really converted, they're just "mapped" to proxies in the block manager class.
+      {
+        converted = instanceProxies[applicationId];
+      }
+      else if (
         !modelCard.ChangedObjectIds.Contains(applicationId)
         && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
       )
@@ -336,7 +366,8 @@ public class SendBinding : ISendBinding, ICancelable
     foreach (SenderModelCard modelCard in senders)
     {
       var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
-      bool isExpired = intersection.Any();
+      bool isExpired = intersection.Count != 0;
+
       if (isExpired)
       {
         expiredSenderIds.Add(modelCard.ModelCardId);
