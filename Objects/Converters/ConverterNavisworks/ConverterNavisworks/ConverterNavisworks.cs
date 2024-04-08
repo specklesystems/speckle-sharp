@@ -9,7 +9,9 @@ namespace Objects.Converter.Navisworks;
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks : ISpeckleConverter
 {
-#if NAVMAN21
+#if NAVMAN22
+  private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2025);
+#elif NAVMAN21
   private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
   private static readonly string s_versionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
