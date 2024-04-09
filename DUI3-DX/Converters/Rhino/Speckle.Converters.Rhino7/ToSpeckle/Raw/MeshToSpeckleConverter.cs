@@ -1,12 +1,11 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 [NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Mesh, SOG.Mesh>
+public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -22,8 +21,6 @@ public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.Mesh)target);
 
   public SOG.Mesh RawConvert(RG.Mesh target)
   {

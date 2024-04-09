@@ -5,8 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Box), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Box, SOG.Box>
+public class BoxToSpeckleConverter : IRawConversion<RG.Box, SOG.Box>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
@@ -22,8 +21,6 @@ public class BoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
     _intervalConverter = intervalConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.Box)target);
 
   public SOG.Box RawConvert(RG.Box target) =>
     new(

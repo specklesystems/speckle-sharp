@@ -5,8 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.NurbsCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class NurbsCurveConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.NurbsCurve, SOG.Curve>
+public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
 {
   private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;

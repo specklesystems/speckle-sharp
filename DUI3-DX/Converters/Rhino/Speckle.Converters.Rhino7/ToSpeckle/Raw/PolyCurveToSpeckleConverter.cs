@@ -2,12 +2,10 @@
 using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.PolyCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.PolyCurve, SOG.Polycurve>
+public class PolyCurveToSpeckleConverter : IRawConversion<RG.PolyCurve, SOG.Polycurve>
 {
   public IRawConversion<RG.Curve, ICurve>? CurveConverter { get; set; } // This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
@@ -24,8 +22,6 @@ public class PolyCurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawC
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.PolyCurve)target);
 
   public SOG.Polycurve RawConvert(RG.PolyCurve target)
   {

@@ -6,8 +6,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Curve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Curve, ICurve>
+public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>
 {
   private readonly IRawConversion<RG.PolyCurve, SOG.Polycurve> _polyCurveConverter;
   private readonly IRawConversion<RG.Circle, SOG.Circle> _circleConverter;
@@ -38,8 +37,6 @@ public class CurveToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     _intervalConverter = intervalConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => (Base)RawConvert((RG.Curve)target); // POC: ICurve and Base are not related so we need to cast here.
 
   public ICurve RawConvert(RG.Curve target)
   {

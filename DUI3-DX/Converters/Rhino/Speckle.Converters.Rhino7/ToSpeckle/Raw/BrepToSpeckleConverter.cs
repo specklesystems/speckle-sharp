@@ -8,8 +8,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Brep), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Brep, SOG.Brep>
+public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Curve, ICurve> _curveConverter;
@@ -37,8 +36,6 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _intervalConverter = intervalConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.Brep)target);
 
   public SOG.Brep RawConvert(RG.Brep target)
   {

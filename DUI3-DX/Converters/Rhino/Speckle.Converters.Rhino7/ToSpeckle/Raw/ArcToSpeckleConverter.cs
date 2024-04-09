@@ -5,8 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Arc, SOG.Arc>
+public class ArcToSpeckleConverter : IRawConversion<RG.Arc, SOG.Arc>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
@@ -25,8 +24,6 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.Arc)target);
 
   public SOG.Arc RawConvert(RG.Arc target) =>
     new(

@@ -3,12 +3,9 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.NurbsSurface), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class NurbsSurfaceToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<RG.NurbsSurface, SOG.Surface>
+public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SOG.Surface>
 {
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;

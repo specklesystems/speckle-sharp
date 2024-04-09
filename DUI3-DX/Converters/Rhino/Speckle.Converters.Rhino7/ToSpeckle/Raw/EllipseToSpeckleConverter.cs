@@ -5,8 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : IRawConversion<RG.Ellipse, SOG.Ellipse>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -22,8 +21,6 @@ public class EllipseToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.Ellipse)target);
 
   public SOG.Ellipse RawConvert(RG.Ellipse target)
   {

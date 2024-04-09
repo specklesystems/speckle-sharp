@@ -3,10 +3,9 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Polyline, SOG.Polyline>
+public class PolylineToSpeckleConverter : IRawConversion<RG.Polyline, SOG.Polyline>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;

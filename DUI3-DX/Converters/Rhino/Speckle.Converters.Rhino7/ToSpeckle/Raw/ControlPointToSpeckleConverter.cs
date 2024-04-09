@@ -5,10 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.ControlPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ControlPointToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<RG.ControlPoint, SOG.ControlPoint>
+public class ControlPointToSpeckleConverter : IRawConversion<RG.ControlPoint, SOG.ControlPoint>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 

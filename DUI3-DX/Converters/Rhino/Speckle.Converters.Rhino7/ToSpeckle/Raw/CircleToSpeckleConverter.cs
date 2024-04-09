@@ -5,8 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.Geometry;
 
-[NameAndRankValue(nameof(RG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class CircleToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Circle, SOG.Circle>
+public class CircleToSpeckleConverter : IRawConversion<RG.Circle, SOG.Circle>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
