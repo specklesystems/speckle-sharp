@@ -57,7 +57,9 @@ internal class SpeckleModule : Module
 
   private static void Container_PreBuildEvent(object? sender, ContainerBuilder containerBuilder)
   {
+    containerBuilder.RegisterRawConversions();
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
+    containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
 
   private static Assembly? OnAssemblyResolve(object? sender, ResolveEventArgs args)

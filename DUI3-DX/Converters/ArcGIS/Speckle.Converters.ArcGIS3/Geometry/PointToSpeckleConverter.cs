@@ -1,5 +1,4 @@
 using ArcGIS.Core.Geometry;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
@@ -7,8 +6,7 @@ using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(ArcMapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ArcMapPoint, SOG.Point>
+public class PointToSpeckleConverter : IRawConversion<MapPoint, SOG.Point>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
@@ -17,13 +15,13 @@ public class PointToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((ArcMapPoint)target);
+  public Base Convert(object target) => RawConvert((MapPoint)target);
 
-  public SOG.Point RawConvert(ArcMapPoint target)
+  public SOG.Point RawConvert(MapPoint target)
   {
     if (
       GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
-      is not ArcMapPoint reprojectedPt
+      is not MapPoint reprojectedPt
     )
     {
       throw new SpeckleConversionException(

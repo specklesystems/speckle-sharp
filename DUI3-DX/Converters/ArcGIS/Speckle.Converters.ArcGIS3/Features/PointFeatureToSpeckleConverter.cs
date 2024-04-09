@@ -3,11 +3,11 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
+using MapPointFeature = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-[NameAndRankValue(nameof(MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<MapPoint, Base>
+public class PointFeatureToSpeckleConverter : IRawConversion<MapPointFeature, List<Base>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
@@ -16,13 +16,11 @@ public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((MapPoint)target);
-
-  public Base RawConvert(MapPoint target)
+  public List<Base> RawConvert(MapPointFeature target)
   {
     if (
       GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
-      is not MapPoint reprojectedPt
+      is not MapPointFeature reprojectedPt
     )
     {
       throw new SpeckleConversionException(
@@ -32,6 +30,6 @@ public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IR
     List<Base> geometry =
       new() { new SOG.Point(reprojectedPt.X, reprojectedPt.Y, reprojectedPt.Z, _contextStack.Current.SpeckleUnits) };
 
-    return geometry[0];
+    return geometry;
   }
 }

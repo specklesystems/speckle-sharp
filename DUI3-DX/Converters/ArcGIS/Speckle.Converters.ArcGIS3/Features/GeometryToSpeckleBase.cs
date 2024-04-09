@@ -1,71 +1,60 @@
 using ArcGIS.Core.Geometry;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using MapPointFeature = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-[NameAndRankValue(nameof(ArcGIS.Core.Geometry.Geometry), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class GeometryToSpeckleBaseList
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<ArcGIS.Core.Geometry.Geometry, Base>
+public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>>
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
-  private readonly IRawConversion<MapPoint, Base> _pointFeatureConverter;
-  private readonly IRawConversion<Multipoint, Base> _multiPointFeatureConverter;
-  private readonly IRawConversion<Polyline, Base> _polylineFeatureConverter;
-  private readonly IRawConversion<Polygon, Base> _polygonFeatureConverter;
+  private readonly IRawConversion<MapPointFeature, List<Base>> _pointFeatureConverter;
+  private readonly IRawConversion<Multipoint, List<Base>> _multiPointFeatureConverter;
+  private readonly IRawConversion<Polyline, List<Base>> _polylineFeatureConverter;
+  private readonly IRawConversion<Polygon, List<Base>> _polygonFeatureConverter;
 
   public GeometryToSpeckleBaseList(
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
-    IRawConversion<MapPoint, Base> pointFeatureConverter,
-    IRawConversion<Multipoint, Base> multiPointFeatureConverter,
-    IRawConversion<Polyline, Base> polylineFeatureConverter,
-    IRawConversion<Polygon, Base> polygonFeatureConverter
+    IRawConversion<MapPointFeature, List<Base>> pointFeatureConverter,
+    IRawConversion<Multipoint, List<Base>> multiPointFeatureConverter,
+    IRawConversion<Polyline, List<Base>> polylineFeatureConverter,
+    IRawConversion<Polygon, List<Base>> polygonFeatureConverter
   )
   {
-    _toSpeckle = toSpeckle;
     _pointFeatureConverter = pointFeatureConverter;
     _multiPointFeatureConverter = multiPointFeatureConverter;
     _polylineFeatureConverter = polylineFeatureConverter;
     _polygonFeatureConverter = polygonFeatureConverter;
   }
 
-  public Base Convert(object target) => RawConvert((ArcGIS.Core.Geometry.Geometry)target);
-
-  public Base RawConvert(ArcGIS.Core.Geometry.Geometry target)
+  public List<Base> RawConvert(ArcGIS.Core.Geometry.Geometry target)
   {
-    List<Base> convertedList = new();
+    List<Base> convertedList;
 
-    Type type = target.GetType();
     try
     {
       Base newGeometry = new(); // objectConverter.Convert(target);
-      if (target is MapPoint)
+      if (target is MapPointFeature)
       {
-        newGeometry = _pointFeatureConverter.RawConvert((MapPoint)target);
-        convertedList.Add(newGeometry);
-        return convertedList[0];
+        convertedList = _pointFeatureConverter.RawConvert((MapPointFeature)target);
+        return convertedList;
       }
       if (target is Multipoint)
       {
-        newGeometry = _multiPointFeatureConverter.RawConvert((Multipoint)target);
-        convertedList.Add(newGeometry);
-        return convertedList[0];
+        convertedList = _multiPointFeatureConverter.RawConvert((Multipoint)target);
+        return convertedList;
       }
       if (target is Polyline)
       {
-        newGeometry = _polylineFeatureConverter.RawConvert((Polyline)target);
-        convertedList.Add(newGeometry);
-        return convertedList[0];
+        convertedList = _polylineFeatureConverter.RawConvert((Polyline)target);
+        return convertedList;
       }
       if (target is Polygon)
       {
-        newGeometry = _polygonFeatureConverter.RawConvert((Polygon)target);
-        convertedList.Add(newGeometry);
-        return convertedList[0];
+        convertedList = _polygonFeatureConverter.RawConvert((Polygon)target);
+        return convertedList;
       }
+
+      Type type = target.GetType();
       throw new NotSupportedException($"No conversion found for {type.Name}");
     }
     catch (SpeckleConversionException e)
