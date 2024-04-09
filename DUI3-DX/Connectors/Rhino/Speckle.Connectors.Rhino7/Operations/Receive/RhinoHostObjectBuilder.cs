@@ -7,6 +7,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
