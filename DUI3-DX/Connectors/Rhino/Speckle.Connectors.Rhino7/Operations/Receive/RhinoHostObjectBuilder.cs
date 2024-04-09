@@ -45,6 +45,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     return convertedIds;
   }
 
+  // POC: Potentially refactor out into an IObjectBaker.
   private List<string> BakeObjects(
     IEnumerable<(List<string>, Base)> objects,
     string baseLayerName,
@@ -52,7 +53,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    // LET'S FUCK AROUND AND FIND OUT
     var rootLayerName = baseLayerName;
     // POC: This Find method was flagged as obsolete and I found no obvious way to work around it.
     // Silencing it for now but we should find a way to fix this.
@@ -64,6 +64,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     {
       foreach (var layer in _contextStack.Current.Document.Layers[rootLayerIndex].GetChildren())
       {
+        // Cleans up any previously received objects
         _contextStack.Current.Document.Layers.Purge(layer.Index, false);
       }
     }
@@ -95,12 +96,17 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         );
         newObjectIds.Add(newObjectGuid.ToString());
       }
+
       // POC:  else something weird happened? a block maybe? also, blocks are treated like $$$ now tbh so i won't dive into them
+      throw new SpeckleException(
+        $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
+      );
     }
 
     return newObjectIds;
   }
 
+  // POC: This is the original DUI3 function, this will grow over time as we add more conversions that are missing, so it should be refactored out into an ILayerManager or some sort of service.
   private int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
   {
     var currentLayerName = baseLayerName;
