@@ -14,6 +14,8 @@ using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using DllConflictManagment;
+using ConnectorRevit.Entry;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -27,15 +29,124 @@ public class App : IExternalApplication
 
   public Result OnStartup(UIControlledApplication application)
   {
-    InitializeConnector();
+    // We need to hook into the AssemblyResolve event before doing anything else
+    // or we'll run into unresolved issues loading dependencies
+    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+    System.Windows.Forms.Application.ThreadException += Application_ThreadException;
 
-    //Always initialize RevitTask ahead of time within Revit API context
-    APIContext.Initialize(application);
+    var dllPath = Path.GetDirectoryName(typeof(DllConflictManager).Assembly.Location);
 
-    UICtrlApp = application;
-    UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
+    // ignore dll conflicts when dll lives in GAC because they are noisy and not an issue (at least in revit)
+    var conflictManager = new DllConflictManager(
+      new DllConflictManagmentOptionsLoader(dllPath),
+      "Microsoft.Net\\assembly\\GAC_MSIL\\"
+    );
+    conflictManager.DetectConflictsWithAssembliesInCurrentDomain(typeof(App).Assembly);
+    RevitDllConflictUserNotifier conflictNotifier = new(conflictManager);
+
+    try
+    {
+      InitializeConnector();
+
+      //Always initialize RevitTask ahead of time within Revit API context
+      APIContext.Initialize(application);
+
+      UICtrlApp = application;
+      UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
+
+      InitializeUiPanel(application);
+      conflictNotifier.WarnUserOfPossibleConflicts();
+
+      return Result.Succeeded;
+    }
+    catch (TypeLoadException ex)
+    {
+      conflictNotifier.NotifyUserOfTypeLoadException(ex);
+      return Result.Failed;
+    }
+    catch (MissingMethodException ex)
+    {
+      conflictNotifier.NotifyUserOfMissingMethodException(ex);
+      return Result.Failed;
+    }
+  }
+
+  private void ControlledApplication_ApplicationInitialized(
+    object sender,
+    Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
+  )
+  {
+    try
+    {
+      InitializeConnector();
+
+      AppInstance = new UIApplication(sender as Application);
+
+      var bindings = new ConnectorBindingsRevit(AppInstance);
+      bindings.RegisterAppEvents();
+      SpeckleRevitCommand.Bindings = bindings;
+      SchedulerCommand.Bindings = bindings;
+
+      BatchUploaderClient client = new(new Uri("http://localhost:5001"));
+      RevitApplicationController revitAppController = new(AppInstance);
+      BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
+
+      batchUploadOperationDriver.ProcessAllJobs();
+
+      //This is also called in DUI, adding it here to know how often the connector is loaded and used
+      Analytics.TrackEvent(Analytics.Events.Registered, null, false);
+
+      SpeckleRevitCommand.RegisterPane();
+
+      //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
+    }
+    catch (KitException ex)
+    {
+      SpeckleLog.Logger.Warning(ex, "Error loading kit on startup");
+      NotifyUserOfErrorStartingConnector(ex);
+    }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
+      NotifyUserOfErrorStartingConnector(ex);
+    }
+  }
+
+  private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
+  {
+    SpeckleLog.Logger.Fatal(
+      e.Exception,
+      "Caught thread exception with message {exceptionMessage}",
+      e.Exception.Message
+    );
+  }
+
+  private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+  {
+    if (e.ExceptionObject is Exception ex)
+    {
+      SpeckleLog.Logger.Fatal(
+        ex,
+        "Caught unhandled exception. Is terminating : {isTerminating}. Message : {exceptionMessage}",
+        e.IsTerminating,
+        ex.Message
+      );
+    }
+    else
+    {
+      SpeckleLog.Logger.Fatal(
+        "Caught unhandled exception. Is terminating : {isTerminating}. Exception object is of type : {exceptionObjectType}. Exception object to string : {exceptionObjToString}",
+        e.IsTerminating,
+        e.ExceptionObject.GetType(),
+        e.ExceptionObject.ToString()
+      );
+    }
+  }
+
+  private void InitializeUiPanel(UIControlledApplication application)
+  {
     string tabName = "Speckle";
-
     try
     {
       application.CreateRibbonTab(tabName);
@@ -49,7 +160,7 @@ public class App : IExternalApplication
     {
       SpeckleLog.Logger.Warning(ex, "User has too many Revit add-on tabs installed");
       NotifyUserOfErrorStartingConnector(ex);
-      return Result.Failed;
+      throw;
     }
 
     var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
@@ -128,80 +239,6 @@ public class App : IExternalApplication
     manager.ToolTip = "Manage accounts and connectors. Opens SpeckleManager.";
     manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
     manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
-
-    return Result.Succeeded;
-  }
-
-  private void ControlledApplication_ApplicationInitialized(
-    object sender,
-    Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e
-  )
-  {
-    try
-    {
-      InitializeConnector();
-
-      AppInstance = new UIApplication(sender as Application);
-
-      var bindings = new ConnectorBindingsRevit(AppInstance);
-      bindings.RegisterAppEvents();
-      SpeckleRevitCommand.Bindings = bindings;
-      SchedulerCommand.Bindings = bindings;
-
-      BatchUploaderClient client = new(new Uri("http://localhost:5001"));
-      RevitApplicationController revitAppController = new(AppInstance);
-      BatchUploadOperationDriver batchUploadOperationDriver = new(client, revitAppController, bindings);
-
-      batchUploadOperationDriver.ProcessAllJobs();
-
-      //This is also called in DUI, adding it here to know how often the connector is loaded and used
-      Analytics.TrackEvent(Analytics.Events.Registered, null, false);
-
-      SpeckleRevitCommand.RegisterPane();
-
-      //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
-    }
-    catch (KitException ex)
-    {
-      SpeckleLog.Logger.Warning(ex, "Error loading kit on startup");
-      NotifyUserOfErrorStartingConnector(ex);
-    }
-    catch (Exception ex) when (!ex.IsFatal())
-    {
-      SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
-      NotifyUserOfErrorStartingConnector(ex);
-    }
-  }
-
-  private void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e)
-  {
-    SpeckleLog.Logger.Fatal(
-      e.Exception,
-      "Caught thread exception with message {exceptionMessage}",
-      e.Exception.Message
-    );
-  }
-
-  private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-  {
-    if (e.ExceptionObject is Exception ex)
-    {
-      SpeckleLog.Logger.Fatal(
-        ex,
-        "Caught unhandled exception. Is terminating : {isTerminating}. Message : {exceptionMessage}",
-        e.IsTerminating,
-        ex.Message
-      );
-    }
-    else
-    {
-      SpeckleLog.Logger.Fatal(
-        "Caught unhandled exception. Is terminating : {isTerminating}. Exception object is of type : {exceptionObjectType}. Exception object to string : {exceptionObjToString}",
-        e.IsTerminating,
-        e.ExceptionObject.GetType(),
-        e.ExceptionObject.ToString()
-      );
-    }
   }
 
   public Result OnShutdown(UIControlledApplication application)
@@ -268,12 +305,6 @@ public class App : IExternalApplication
     {
       return;
     }
-
-    // We need to hook into the AssemblyResolve event before doing anything else
-    // or we'll run into unresolved issues loading dependencies
-    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-    System.Windows.Forms.Application.ThreadException += Application_ThreadException;
 
     // initialize the speckle logger
     Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);

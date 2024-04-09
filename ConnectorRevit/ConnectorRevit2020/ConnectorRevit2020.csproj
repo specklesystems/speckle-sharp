@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <RootNamespace>Speckle.ConnectorRevit</RootNamespace>
     <AssemblyName>SpeckleConnectorRevit</AssemblyName>
@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ConnectorCore\BatchUploader.OperationDriver\BatchUploader.OperationDriver.csproj" />
+    <ProjectReference Include="..\..\ConnectorCore\DllConflictManagment\DllConflictManagment.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />

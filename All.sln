@@ -440,7 +440,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Core.Tests.Unit", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Performance", "Core\Tests\Speckle.Core.Tests.Performance\Speckle.Core.Tests.Performance.csproj", "{1DE6EF69-0782-4FD7-A2A7-9F697426882D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Core.Tests.Integration", "Core\Tests\Speckle.Core.Tests.Integration\Speckle.Core.Tests.Integration.csproj", "{FB2DEE1D-788B-45B6-B80C-D8F7C8390C37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Core.Tests.Integration", "Core\Tests\Speckle.Core.Tests.Integration\Speckle.Core.Tests.Integration.csproj", "{FB2DEE1D-788B-45B6-B80C-D8F7C8390C37}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper8", "ConnectorGrasshopper\ConnectorGrasshopper8\ConnectorGrasshopper8.csproj", "{FDBC3082-1FAD-4701-A121-802F591D2D35}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -456,6 +456,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterNavisworks2025", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2025\ConverterNavisworks2025.csproj", "{0B6B5C52-54EC-461F-8729-6244ACA63646}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorNavisworks2025", "ConnectorNavisworks\ConnectorNavisworks2025\ConnectorNavisworks2025.csproj", "{2568500E-F1BC-440E-9150-DD4820B3FAD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DllConflictManagment", "ConnectorCore\DllConflictManagment\DllConflictManagment.csproj", "{88399964-4DD7-4430-9669-93967D938B31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2291,6 +2293,22 @@ Global
 		{2568500E-F1BC-440E-9150-DD4820B3FAD6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2568500E-F1BC-440E-9150-DD4820B3FAD6}.Release|x64.ActiveCfg = Release|x64
 		{2568500E-F1BC-440E-9150-DD4820B3FAD6}.Release|x64.Build.0 = Release|x64
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Debug|x64.Build.0 = Debug|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release Mac|x64.Build.0 = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release|x64.ActiveCfg = Release|Any CPU
+		{88399964-4DD7-4430-9669-93967D938B31}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2461,6 +2479,7 @@ Global
 		{9E74F0E6-94B4-46BD-B1CA-DD874B459399} = {8A909E95-7A39-4B21-A04A-E168478E71F0}
 		{0B6B5C52-54EC-461F-8729-6244ACA63646} = {B6C38DB9-7B20-4B7E-BC90-6A8CAFC16807}
 		{2568500E-F1BC-440E-9150-DD4820B3FAD6} = {B6887DDC-B9B9-4B00-95DC-1DD930A1E901}
+		{88399964-4DD7-4430-9669-93967D938B31} = {DA9DFC36-C53F-4B19-8911-BF7605230BA7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
