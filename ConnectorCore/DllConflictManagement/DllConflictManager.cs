@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace DllConflictManagment;
+namespace Speckle.DllConflictManagement;
 
 public sealed class DllConflictManager
 {
@@ -8,6 +8,8 @@ public sealed class DllConflictManager
   private readonly DllConflictManagmentOptionsLoader _optionsLoader;
   private readonly string[] _assemblyPathFragmentsToIgnore;
   public IEnumerable<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
+
+  public Action<string>? LogError { get; set; }
 
   public DllConflictManager(
     DllConflictManagmentOptionsLoader optionsLoader,
@@ -86,7 +88,7 @@ public sealed class DllConflictManager
     }
   }
 
-  private static Assembly? GetLoadedAssembly(AssemblyName assemblyName)
+  private Assembly? GetLoadedAssembly(AssemblyName assemblyName)
   {
     try
     {
@@ -94,16 +96,11 @@ public sealed class DllConflictManager
     }
     catch (FileNotFoundException)
     {
-      // how do we add logging when the logger may be part of a dll conflict?
+      // trying to load Objects.dll will result in this exception, but that is okay because its only dependency
+      // is core which will be checked as a dependency of many other libraries.
     }
-    catch (FileLoadException)
-    {
-      // POC : add logging
-    }
-    catch (BadImageFormatException)
-    {
-      // POC : add logging
-    }
+    catch (FileLoadException) { }
+    catch (BadImageFormatException) { }
     return null;
   }
 

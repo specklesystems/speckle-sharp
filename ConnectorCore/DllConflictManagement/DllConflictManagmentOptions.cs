@@ -1,4 +1,4 @@
-namespace DllConflictManagment;
+namespace Speckle.DllConflictManagement;
 
 public sealed class DllConflictManagmentOptions
 {

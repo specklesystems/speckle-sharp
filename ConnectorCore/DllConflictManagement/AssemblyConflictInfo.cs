@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace DllConflictManagment;
+namespace Speckle.DllConflictManagement;
 
 public sealed class AssemblyConflictInfo
 {

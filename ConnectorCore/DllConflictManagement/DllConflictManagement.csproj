@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
+    <RootNamespace>Speckle.DllConflictManagement</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsDesktopBuild)' == false">

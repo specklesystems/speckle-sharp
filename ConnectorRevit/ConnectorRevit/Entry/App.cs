@@ -14,8 +14,8 @@ using Speckle.BatchUploader.OperationDriver;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using DllConflictManagment;
 using ConnectorRevit.Entry;
+using Speckle.DllConflictManagement;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -47,6 +47,9 @@ public class App : IExternalApplication
 
     try
     {
+      InitializeLogger();
+      conflictManager.LogError = (m) => SpeckleLog.Logger.Error(m);
+
       InitializeConnector();
 
       //Always initialize RevitTask ahead of time within Revit API context
@@ -299,15 +302,17 @@ public class App : IExternalApplication
     }
   }
 
+  private void InitializeLogger()
+  {
+    Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
+  }
+
   private void InitializeConnector()
   {
     if (_initialized)
     {
       return;
     }
-
-    // initialize the speckle logger
-    Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
 
     //DUI2 - pre build app, so that it's faster to open up
     SpeckleRevitCommand.InitAvalonia();

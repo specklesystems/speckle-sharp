@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace DllConflictManagment;
+namespace Speckle.DllConflictManagement;
 
 public abstract class DllConflictUserNotifier
 {
@@ -13,11 +13,15 @@ public abstract class DllConflictUserNotifier
 
   public void NotifyUserOfMissingMethodException(MissingMethodException ex)
   {
+    NotifyUserOfException(_dllConflictManager.GetConflictThatCausedException(ex), ex);
+  }
+
+  private void NotifyUserOfException(AssemblyConflictInfo? identifiedConflictingAssemblyInfo, Exception ex)
+  {
     StringBuilder sb = new();
-    sb.AppendLine($"Speckle failed to load due to a dependency mismatch error.");
-    if (_dllConflictManager.GetConflictThatCausedException(ex) is AssemblyConflictInfo assemblyConflictInfo)
+    if (identifiedConflictingAssemblyInfo is not null)
     {
-      AddSingleDependencyErrorToStringBuilder(sb, assemblyConflictInfo);
+      AddSingleDependencyErrorToStringBuilder(sb, identifiedConflictingAssemblyInfo);
     }
     else if (
       _dllConflictManager.AllConflictInfo.ToList() is List<AssemblyConflictInfo> conflictInfos
@@ -27,8 +31,14 @@ public abstract class DllConflictUserNotifier
       sb.AppendLine("This is likely due to one of the following dependency conflicts");
       AddMultipleDependencyErrorsToStringBuilder(sb, conflictInfos);
     }
+    else
+    {
+      _dllConflictManager.LogError?.Invoke(
+        $"A type load exception was thrown, but the conflict manager did not detect any conflicts. Exception message: {ex.Message}"
+      );
+    }
 
-    ShowDialog("Conflict Report 🔥", sb.ToString());
+    ShowDialog("Conflict Report 🔥", "Speckle failed to load due to a dependency mismatch error.", sb.ToString());
   }
 
   private static void AddSingleDependencyErrorToStringBuilder(
@@ -54,26 +64,11 @@ public abstract class DllConflictUserNotifier
     }
   }
 
-  protected abstract void ShowDialog(string dialogTitle, string body);
+  protected abstract void ShowDialog(string title, string heading, string body);
 
   public void NotifyUserOfTypeLoadException(TypeLoadException ex)
   {
-    StringBuilder sb = new();
-    sb.AppendLine($"Speckle failed to load due to a dependency mismatch error.");
-    if (_dllConflictManager.GetConflictThatCausedException(ex) is AssemblyConflictInfo assemblyConflictInfo)
-    {
-      AddSingleDependencyErrorToStringBuilder(sb, assemblyConflictInfo);
-    }
-    else if (
-      _dllConflictManager.AllConflictInfo.ToList() is List<AssemblyConflictInfo> conflictInfos
-      && conflictInfos.Count > 0
-    )
-    {
-      sb.AppendLine("This is likely due to one of the following dependency conflicts");
-      AddMultipleDependencyErrorsToStringBuilder(sb, conflictInfos);
-    }
-
-    ShowDialog("Conflict Report 🔥", sb.ToString());
+    NotifyUserOfException(_dllConflictManager.GetConflictThatCausedException(ex), ex);
   }
 
   public void WarnUserOfPossibleConflicts()
@@ -104,8 +99,8 @@ public abstract class DllConflictUserNotifier
   }
 
   protected abstract void ShowDialogWithDoNotWarnAgainOption(
-    string dialogTitle,
-    string dialogHeading,
+    string title,
+    string heading,
     string body,
     out bool doNotWarnAgain
   );

@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace DllConflictManagment;
+namespace Speckle.DllConflictManagement;
 
 public sealed class DllConflictManagmentOptionsLoader
 {

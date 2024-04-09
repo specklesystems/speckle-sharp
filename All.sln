@@ -459,6 +459,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorNavisworks2025", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DllConflictManagment", "ConnectorCore\DllConflictManagment\DllConflictManagment.csproj", "{88399964-4DD7-4430-9669-93967D938B31}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DllConflictManagement", "ConnectorCore\DllConflictManagement\DllConflictManagement.csproj", "{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2309,6 +2311,22 @@ Global
 		{88399964-4DD7-4430-9669-93967D938B31}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88399964-4DD7-4430-9669-93967D938B31}.Release|x64.ActiveCfg = Release|Any CPU
 		{88399964-4DD7-4430-9669-93967D938B31}.Release|x64.Build.0 = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Debug|x64.Build.0 = Debug|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release Mac|x64.Build.0 = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release|x64.ActiveCfg = Release|Any CPU
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2480,6 +2498,7 @@ Global
 		{0B6B5C52-54EC-461F-8729-6244ACA63646} = {B6C38DB9-7B20-4B7E-BC90-6A8CAFC16807}
 		{2568500E-F1BC-440E-9150-DD4820B3FAD6} = {B6887DDC-B9B9-4B00-95DC-1DD930A1E901}
 		{88399964-4DD7-4430-9669-93967D938B31} = {DA9DFC36-C53F-4B19-8911-BF7605230BA7}
+		{0D23858F-4CC1-4DCA-9207-5EDB8B6CE9DD} = {DA9DFC36-C53F-4B19-8911-BF7605230BA7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
