@@ -2,19 +2,18 @@ using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using MapPointFeature = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>>
 {
-  private readonly IRawConversion<MapPointFeature, List<Base>> _pointFeatureConverter;
+  private readonly IRawConversion<MapPoint, List<Base>> _pointFeatureConverter;
   private readonly IRawConversion<Multipoint, List<Base>> _multiPointFeatureConverter;
   private readonly IRawConversion<Polyline, List<Base>> _polylineFeatureConverter;
   private readonly IRawConversion<Polygon, List<Base>> _polygonFeatureConverter;
 
   public GeometryToSpeckleBaseList(
-    IRawConversion<MapPointFeature, List<Base>> pointFeatureConverter,
+    IRawConversion<MapPoint, List<Base>> pointFeatureConverter,
     IRawConversion<Multipoint, List<Base>> multiPointFeatureConverter,
     IRawConversion<Polyline, List<Base>> polylineFeatureConverter,
     IRawConversion<Polygon, List<Base>> polygonFeatureConverter
@@ -33,9 +32,9 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
     try
     {
       Base newGeometry = new(); // objectConverter.Convert(target);
-      if (target is MapPointFeature)
+      if (target is MapPoint)
       {
-        convertedList = _pointFeatureConverter.RawConvert((MapPointFeature)target);
+        convertedList = _pointFeatureConverter.RawConvert((MapPoint)target);
         return convertedList;
       }
       if (target is Multipoint)
