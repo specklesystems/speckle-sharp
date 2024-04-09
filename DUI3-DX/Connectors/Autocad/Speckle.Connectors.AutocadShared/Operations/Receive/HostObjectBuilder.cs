@@ -25,15 +25,12 @@ public class HostObjectBuilder : IHostObjectBuilder
     _autocadLayerManager = autocadLayerManager;
   }
 
-  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationTokenSource cts)
+  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationToken cancellationToken)
   {
     List<(List<string>, Base)> objectsToConvert = new();
     foreach ((List<string> objPath, Base obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
     {
-      if (cts.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cts.Token);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
 
       if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
       {
@@ -49,7 +46,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     string projectName,
     string modelName,
     Action<string, double?>? onOperationProgressed,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   )
   {
     // Prompt the UI conversion started. Progress bar will swoosh.
@@ -59,7 +56,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(projectName, modelName);
-    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cts);
+    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cancellationToken);
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     HashSet<string> uniqueLayerNames = new();
@@ -71,10 +68,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     {
       foreach ((List<string> path, Base obj) in objectsWithPath)
       {
-        if (cts.IsCancellationRequested)
-        {
-          throw new OperationCanceledException(cts.Token);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         try
         {

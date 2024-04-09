@@ -1,54 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Logging;
-using ICancelable = System.Reactive.Disposables.ICancelable;
 
-namespace Speckle.Connectors.Autocad.Bindings;
+namespace Speckle.Connectors.Rhino7.Bindings;
 
-public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
+public class RhinoReceiveBinding : IReceiveBinding, ICancelable
 {
-  public string Name { get; } = "receiveBinding";
-  public IBridge Parent { get; }
+  public string Name { get; set; } = "receiveBinding";
+  public IBridge Parent { get; set; }
+  public CancellationManager CancellationManager { get; set; }
 
   private readonly DocumentModelStore _store;
-  private readonly CancellationManager _cancellationManager;
-
+  private readonly ReceiveOperation _receiveOperation;
   public ReceiveBindingUICommands Commands { get; }
 
-  private readonly ReceiveOperation _receiveOperation;
-
-  public AutocadReceiveBinding(
+  public RhinoReceiveBinding(
     DocumentModelStore store,
+    CancellationManager cancellationManager,
     IBridge parent,
-    ReceiveOperation receiveOperation,
-    CancellationManager cancellationManager
+    ReceiveOperation receiveOperation
   )
   {
-    _store = store;
-    _cancellationManager = cancellationManager;
-    _receiveOperation = receiveOperation;
     Parent = parent;
+    _store = store;
+    CancellationManager = cancellationManager;
+    _receiveOperation = receiveOperation;
     Commands = new ReceiveBindingUICommands(parent);
   }
 
-  public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
+  public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public Task Receive(string modelCardId)
-  {
-    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId).ConfigureAwait(false));
-    return Task.CompletedTask;
-  }
-
-  private async Task ReceiveInternal(string modelCardId)
+  public async Task Receive(string modelCardId)
   {
     try
     {
       // Init cancellation token source -> Manager also cancel it if exist before
-      CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
       // Get receiver card
       if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
@@ -74,7 +70,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     catch (OperationCanceledException)
     {
       // POC: not sure here need to handle anything. UI already aware it cancelled operation visually.
-      return;
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
     {
@@ -87,7 +82,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
   }
 
-  public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
+  public void CancelSend(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
   public void Dispose()
   {

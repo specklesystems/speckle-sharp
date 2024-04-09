@@ -38,7 +38,6 @@ public partial class SpeckleRhinoPanel : UserControl
     {
       var binding = lazyBinding.Value;
       binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
-      Console.WriteLine();
       Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
     }
   }
