@@ -14,7 +14,6 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
