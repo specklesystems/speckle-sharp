@@ -1,4 +1,4 @@
-﻿using ArcGIS.Core.Geometry;
+using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.Common;
@@ -27,7 +27,7 @@ public class GisFeatureToHostConverter : ISpeckleObjectToHostConversion, IRawCon
   public object RawConvert(GisFeature target)
   {
     // POC: Its BAAAD! parsing for test purpose
-    var polyline = (SOG.Polyline)target.geometry[0];
+    var polyline = (SOG.Polyline)target.geometry[0]; // might be any geometry: point, polyline, polygon
 
     var bakedPolyline = _polylineConverter.RawConvert(polyline);
 

@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
+using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
@@ -12,9 +14,15 @@ public class HostObjectBuilder : IHostObjectBuilder
 {
   private readonly IScopedFactory<ISpeckleConverterToHost> _speckleConverterToHostFactory;
 
-  public HostObjectBuilder(IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory)
+  // private readonly IConversionContextStack<Map, Unit> _contextStack;
+
+  public HostObjectBuilder(
+    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory //,
+  // IConversionContextStack<Map, Unit> contextStack
+  )
   {
     _speckleConverterToHostFactory = speckleConverterToHostFactory;
+    // _contextStack = contextStack;
   }
 
   public IEnumerable<string> Build(
@@ -45,8 +53,8 @@ public class HostObjectBuilder : IHostObjectBuilder
       try
       {
         // POC: Question to Kate -> Conversion returns already baked objects?? If so we do not necessarily need below loop?
-        object converted = converter.Convert(obj);
-        List<object> flattened = Core.Models.Utilities.FlattenToNativeConversionResult(converted);
+        object converted = converter.Convert(obj); // NULL right now returns Polyline, should return Feature class/Raster
+        List<object> flattened = Utilities.FlattenToNativeConversionResult(converted); // not necessary
 
         foreach (var conversionResult in flattened)
         {
@@ -54,11 +62,7 @@ public class HostObjectBuilder : IHostObjectBuilder
           {
             continue;
           }
-
-          // POC: Bake here converted objects into ArcGIS Map.
-          // POC: add here baked arcgis objects into list that we will return
         }
-
         onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count());
       }
       catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
