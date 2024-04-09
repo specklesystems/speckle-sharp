@@ -118,6 +118,17 @@ public partial class ConnectorBindingsRevit
             break;
           }
 
+          // log selected object type
+          string revitObjectType = revitElement.GetType().ToString();
+          if (loggingTypeCountDict.TryGetValue(revitObjectType, out int value))
+          {
+            loggingTypeCountDict[revitObjectType] = ++value;
+          }
+          else
+          {
+            loggingTypeCountDict.Add(revitObjectType, 1);
+          }
+
           bool isAlreadyConverted = GetOrCreateApplicationObject(
             revitElement,
             converter.Report,
@@ -145,14 +156,6 @@ public partial class ConnectorBindingsRevit
               status: ApplicationObject.State.Created,
               logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
             );
-            if (loggingTypeCountDict.TryGetValue(result.speckle_type, out int value))
-            {
-              loggingTypeCountDict[result.speckle_type] = ++value;
-            }
-            else
-            {
-              loggingTypeCountDict.Add(result.speckle_type, 1);
-            }
 
             if (result.applicationId != reportObj.applicationId)
             {
@@ -195,10 +198,9 @@ public partial class ConnectorBindingsRevit
     }
 
     // track the object type counts as an event before we try to send
-    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+    // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
     Analytics.TrackEvent(
-      AccountManager.GetDefaultAccount(),
-      Analytics.Events.SendObjectReport,
+      Analytics.Events.ConvertToSpeckle,
       loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
     );
 

@@ -288,8 +288,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         // track the object type counts as an event before we try to send
         // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
         Analytics.TrackEvent(
-          AccountManager.GetDefaultAccount(),
-          Analytics.Events.ReceiveObjectReport,
+          Analytics.Events.ConvertToNative,
           loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
         );
 

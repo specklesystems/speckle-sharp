@@ -205,6 +205,17 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             continue;
           }
 
+          // log selection object type
+          var objectType = obj.GetType().ToString();
+          if (loggingTypeCountDict.TryGetValue(objectType, out int value))
+          {
+            loggingTypeCountDict[objectType] = ++value;
+          }
+          else
+          {
+            loggingTypeCountDict.Add(objectType, 1);
+          }
+
           // create applicationobject for reporting
           Base converted = null;
           var descriptor = ObjectDescriptor(obj);
@@ -304,14 +315,6 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             // log report object
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.GetType().Name}");
             progress.Report.Log(reportObj);
-            if (loggingTypeCountDict.TryGetValue(converted.speckle_type, out int value))
-            {
-              loggingTypeCountDict[converted.speckle_type] = ++value;
-            }
-            else
-            {
-              loggingTypeCountDict.Add(converted.speckle_type, 1);
-            }
 
             convertedCount++;
           }
@@ -355,10 +358,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         #endregion
 
         // track the object type counts as an event before we try to send
-        // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+        // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
         Analytics.TrackEvent(
-          AccountManager.GetDefaultAccount(),
-          Analytics.Events.SendObjectReport,
+          Analytics.Events.ConvertToSpeckle,
           loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
         );
 

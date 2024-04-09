@@ -70,14 +70,14 @@ public static class Analytics
     MappingsAction,
 
     /// <summary>
-    /// Event triggered on send, capturing the object type counts of the sent commit
+    /// Event triggered when user selects object to convert to Speckle on Send
     /// </summary>
-    SendObjectReport,
+    ConvertToSpeckle,
 
     /// <summary>
-    /// Event triggered on receive, capturing the object type counts of the received commit
+    /// Event triggered when user selects object to convert to Native on Receive
     /// </summary>
-    ReceiveObjectReport
+    ConvertToNative
   }
 
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";

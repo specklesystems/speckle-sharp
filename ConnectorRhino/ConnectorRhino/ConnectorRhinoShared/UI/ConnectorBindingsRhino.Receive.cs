@@ -322,11 +322,10 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
 
           RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // reactivate the layer handler
 
-          // track the object type counts as an event before we try to send
-          // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+          // track the object type counts as an event before we try to receive
+          // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received.
           Speckle.Core.Logging.Analytics.TrackEvent(
-            AccountManager.GetDefaultAccount(),
-            Speckle.Core.Logging.Analytics.Events.ReceiveObjectReport,
+            Speckle.Core.Logging.Analytics.Events.ConvertToNative,
             loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
           );
 

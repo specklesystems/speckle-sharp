@@ -90,8 +90,7 @@ public partial class ConnectorBindingsRevit
     // track the object type counts as an event before we try to send
     // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
     Speckle.Core.Logging.Analytics.TrackEvent(
-      AccountManager.GetDefaultAccount(),
-      Speckle.Core.Logging.Analytics.Events.ReceiveObjectReport,
+      Speckle.Core.Logging.Analytics.Events.ConvertToNative,
       loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
     );
 

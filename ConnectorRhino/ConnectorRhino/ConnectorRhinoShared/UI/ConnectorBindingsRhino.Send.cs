@@ -8,7 +8,6 @@ using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -67,6 +66,17 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       var reportObj = new ApplicationObject(selectedId, "Unknown");
       if (Utils.FindObjectBySelectedId(Doc, selectedId, out object obj, out string descriptor))
       {
+        // log selection object type
+        var objectType = obj.GetType().ToString();
+        if (loggingTypeCountDict.TryGetValue(objectType, out int value))
+        {
+          loggingTypeCountDict[objectType] = ++value;
+        }
+        else
+        {
+          loggingTypeCountDict.Add(objectType, 1);
+        }
+
         // create applicationObject
         reportObj = new ApplicationObject(selectedId, descriptor);
         converter.Report.Log(reportObj); // Log object so converter can access
@@ -151,14 +161,6 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       // log report object
       reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       progress.Report.Log(reportObj);
-      if (loggingTypeCountDict.TryGetValue(converted.speckle_type, out int value))
-      {
-        loggingTypeCountDict[converted.speckle_type] = ++value;
-      }
-      else
-      {
-        loggingTypeCountDict.Add(converted.speckle_type, 1);
-      }
 
       objCount++;
     }
@@ -241,10 +243,9 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     }
 
     // track the object type counts as an event before we try to send
-    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+    // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
     Speckle.Core.Logging.Analytics.TrackEvent(
-      AccountManager.GetDefaultAccount(),
-      Speckle.Core.Logging.Analytics.Events.SendObjectReport,
+      Speckle.Core.Logging.Analytics.Events.ConvertToSpeckle,
       loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
     );
 
