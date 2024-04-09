@@ -2,12 +2,12 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class SpecklePlaneToHostConverter : IRawConversion<SOG.Plane, RG.Plane>
+public class SpecklePlaneRawToHostConversion : IRawConversion<SOG.Plane, RG.Plane>
 {
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
   private readonly IRawConversion<SOG.Vector, RG.Vector3d> _vectorConverter;
 
-  public SpecklePlaneToHostConverter(
+  public SpecklePlaneRawToHostConversion(
     IRawConversion<SOG.Point, RG.Point3d> pointConverter,
     IRawConversion<SOG.Vector, RG.Vector3d> vectorConverter
   )

@@ -37,7 +37,9 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   {
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
-    var objectsToConvert = rootObject.TraverseWithPath(obj => obj is not Collection);
+    var objectsToConvert = rootObject
+      .TraverseWithPath(obj => obj is not Collection)
+      .Where(obj => obj.Item2 is not Collection);
 
     var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
@@ -54,29 +56,32 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    var rootLayerName = baseLayerName;
-    // POC: This Find method was flagged as obsolete and I found no obvious way to work around it.
-    // Silencing it for now but we should find a way to fix this.
-#pragma warning disable CS0618 // Type or member is obsolete
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(rootLayerName, true);
-#pragma warning restore CS0618 // Type or member is obsolete
+    RhinoDoc doc = _contextStack.Current.Document;
 
+    var rootLayerIndex = doc.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
+
+    // Cleans up any previously received objects
     if (rootLayerIndex >= 0)
     {
-      foreach (var layer in _contextStack.Current.Document.Layers[rootLayerIndex].GetChildren())
+      Layer documentLayer = doc.Layers[rootLayerIndex];
+      Layer[]? childLayers = documentLayer.GetChildren();
+      if (childLayers != null)
       {
-        // Cleans up any previously received objects
-        _contextStack.Current.Document.Layers.Purge(layer.Index, false);
+        foreach (var layer in childLayers)
+        {
+          doc.Layers.Purge(layer.Index, false);
+        }
       }
     }
 
     var cache = new Dictionary<string, int>();
-    rootLayerIndex = _contextStack.Current.Document.Layers.Add(new Layer { Name = rootLayerName });
-    cache.Add(rootLayerName, rootLayerIndex);
+    rootLayerIndex = doc.Layers.Add(new Layer { Name = baseLayerName });
+    cache.Add(baseLayerName, rootLayerIndex);
 
     var newObjectIds = new List<string>();
     var count = 0;
     var listObjects = objects.ToList();
+
     foreach ((List<string> path, Base baseObj) in objects)
     {
       cancellationToken.ThrowIfCancellationRequested();
@@ -84,21 +89,20 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       var fullLayerName = string.Join("::", path);
       var layerIndex = cache.TryGetValue(fullLayerName, out int value)
         ? value
-        : GetAndCreateLayerFromPath(path, rootLayerName, cache);
+        : GetAndCreateLayerFromPath(path, baseLayerName, cache);
 
       onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
 
       var converted = _toHostConverter.Convert(baseObj);
+
       if (converted is GeometryBase newObject)
       {
-        var newObjectGuid = _contextStack.Current.Document.Objects.Add(
-          newObject,
-          new ObjectAttributes { LayerIndex = layerIndex }
-        );
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
         newObjectIds.Add(newObjectGuid.ToString());
+        continue;
       }
 
-      // POC:  else something weird happened? a block maybe? also, blocks are treated like $$$ now tbh so i won't dive into them
+      // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
       throw new SpeckleException(
         $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
       );
