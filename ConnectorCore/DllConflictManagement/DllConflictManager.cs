@@ -98,9 +98,8 @@ public sealed class DllConflictManager
     {
       // trying to load Objects.dll will result in this exception, but that is okay because its only dependency
       // is core which will be checked as a dependency of many other libraries.
+      // there are a couple other random types that will trigger this exception as well
     }
-    catch (FileLoadException) { }
-    catch (BadImageFormatException) { }
     return null;
   }
 
