@@ -70,12 +70,12 @@ public class AutofacAutocadModule : Module
 
     // Register converter factory
     builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
+      .As<IUnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
       .InstancePerLifetimeScope();
     builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
-      .As<IScopedFactory<ISpeckleConverterToHost>>()
+      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToHost>>()
+      .As<IUnitOfWorkFactory<ISpeckleConverterToHost>>()
       .InstancePerLifetimeScope();
   }
 

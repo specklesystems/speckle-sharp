@@ -29,8 +29,8 @@ public class AutofacRhinoConverterModule : Module
     builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
     builder.RegisterType<RhinoConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
     builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
+      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
+      .As<IUnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
       .InstancePerLifetimeScope();
 
     /*
@@ -46,8 +46,8 @@ public class AutofacRhinoConverterModule : Module
     // POC: Missing Unit converter
     builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
     builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
-      .As<IScopedFactory<ISpeckleConverterToHost>>()
+      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToHost>>()
+      .As<IUnitOfWorkFactory<ISpeckleConverterToHost>>()
       .InstancePerLifetimeScope();
 
     /*

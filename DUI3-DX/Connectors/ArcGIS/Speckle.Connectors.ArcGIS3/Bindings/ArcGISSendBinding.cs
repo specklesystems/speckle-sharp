@@ -22,7 +22,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public IBridge Parent { get; }
 
   private readonly ArcGISDocumentStore _store;
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly IUnitOfWorkFactory<ISpeckleConverterToSpeckle> _unitOfWorkFactory;
   private readonly CancellationManager _cancellationManager;
   private readonly SendOperation _sendOperation;
 
@@ -34,13 +34,13 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
     IBridge parent,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    IUnitOfWorkFactory<ISpeckleConverterToSpeckle> unitOfWorkFactory,
     SendOperation sendOperation,
     CancellationManager cancellationManager
   )
   {
     _store = store;
-    _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _sendOperation = sendOperation;
     _cancellationManager = cancellationManager;
 
@@ -140,7 +140,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public void Dispose()
   {
     IsDisposed = true;
-    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }

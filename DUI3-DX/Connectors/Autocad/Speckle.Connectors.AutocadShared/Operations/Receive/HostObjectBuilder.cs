@@ -13,15 +13,15 @@ namespace Speckle.Connectors.Autocad.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToHost> _speckleConverterToHostFactory;
+  private readonly IUnitOfWorkFactory<ISpeckleConverterToHost> _unitOfWorkFactory;
   private readonly AutocadLayerManager _autocadLayerManager;
 
   public HostObjectBuilder(
-    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory,
+    IUnitOfWorkFactory<ISpeckleConverterToHost> unitOfWorkFactory,
     AutocadLayerManager autocadLayerManager
   )
   {
-    _speckleConverterToHostFactory = speckleConverterToHostFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _autocadLayerManager = autocadLayerManager;
   }
 
@@ -52,7 +52,10 @@ public class HostObjectBuilder : IHostObjectBuilder
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
-    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
+    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
+    // begin the unit of work
+    using var uow = _unitOfWorkFactory.Resolve();
+    var converter = uow.Service;
 
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(projectName, modelName);

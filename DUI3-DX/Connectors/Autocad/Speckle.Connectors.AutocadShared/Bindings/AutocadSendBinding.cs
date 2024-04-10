@@ -30,7 +30,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly AutocadIdleManager _idleManager;
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly IUnitOfWorkFactory<ISpeckleConverterToSpeckle> _unitOfWorkFactory;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -48,12 +48,12 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory
+    IUnitOfWorkFactory<ISpeckleConverterToSpeckle> unitOfWorkFactory
   )
   {
     _store = store;
     _idleManager = idleManager;
-    _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
 
@@ -201,7 +201,11 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     CancellationToken cancellationToken
   )
   {
-    ISpeckleConverterToSpeckle converter = _speckleConverterToSpeckleFactory.ResolveScopedInstance();
+    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
+    // begin the unit of work
+    using var uow = _unitOfWorkFactory.Resolve();
+    var converter = uow.Service;
+
     Collection modelWithLayers =
       new()
       {
@@ -284,7 +288,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   public void Dispose()
   {
     IsDisposed = true;
-    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }
