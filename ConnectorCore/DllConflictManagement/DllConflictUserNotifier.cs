@@ -6,18 +6,23 @@ public abstract class DllConflictUserNotifier
 {
   private readonly DllConflictManager _dllConflictManager;
 
+  public event EventHandler<LoggingEventArgs> OnError;
+  public event EventHandler<LoggingEventArgs> OnInfo;
+
   protected DllConflictUserNotifier(DllConflictManager dllConflictManager)
   {
     _dllConflictManager = dllConflictManager;
   }
 
-  public void NotifyUserOfMissingMethodException(MissingMethodException ex)
+  public void NotifyUserOfMissingMethodException(MemberAccessException ex)
   {
     NotifyUserOfException(_dllConflictManager.GetConflictThatCausedException(ex), ex);
   }
 
   private void NotifyUserOfException(AssemblyConflictInfo? identifiedConflictingAssemblyInfo, Exception ex)
   {
+    OnInfo?.Invoke(this, new LoggingEventArgs("An exception was thrown that is likely caused by a dll conflict.", ex));
+
     StringBuilder sb = new();
     if (identifiedConflictingAssemblyInfo is not null)
     {
@@ -33,8 +38,12 @@ public abstract class DllConflictUserNotifier
     }
     else
     {
-      _dllConflictManager.LogError?.Invoke(
-        $"A type load exception was thrown, but the conflict manager did not detect any conflicts. Exception message: {ex.Message}"
+      OnError?.Invoke(
+        this,
+        new LoggingEventArgs(
+          "A type load exception was thrown, but the conflict manager did not detect any conflicts",
+          ex
+        )
       );
     }
 

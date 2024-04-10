@@ -38,17 +38,16 @@ public class App : IExternalApplication
     var dllPath = Path.GetDirectoryName(typeof(DllConflictManager).Assembly.Location);
 
     // ignore dll conflicts when dll lives in GAC because they are noisy and not an issue (at least in revit)
-    var conflictManager = new DllConflictManager(
-      new DllConflictManagmentOptionsLoader(dllPath),
-      "Microsoft.Net\\assembly\\GAC_MSIL\\"
-    );
+    DllConflictManagmentOptionsLoader optionsLoader = GetOptionsLoader();
+    DllConflictManager conflictManager = new(optionsLoader, "Microsoft.Net\\assembly\\GAC_MSIL\\");
     conflictManager.DetectConflictsWithAssembliesInCurrentDomain(typeof(App).Assembly);
     RevitDllConflictUserNotifier conflictNotifier = new(conflictManager);
 
     try
     {
       InitializeLogger();
-      conflictManager.LogError = (m) => SpeckleLog.Logger.Error(m);
+      conflictNotifier.OnError += (obj, args) => SpeckleLog.Logger.Error(args.Exception, args.ContextMessage);
+      conflictNotifier.OnInfo += (obj, args) => SpeckleLog.Logger.Information(args.Exception, args.ContextMessage);
 
       InitializeConnector();
 
@@ -68,11 +67,28 @@ public class App : IExternalApplication
       conflictNotifier.NotifyUserOfTypeLoadException(ex);
       return Result.Failed;
     }
-    catch (MissingMethodException ex)
+    catch (MemberAccessException ex)
     {
       conflictNotifier.NotifyUserOfMissingMethodException(ex);
       return Result.Failed;
     }
+  }
+
+  private static DllConflictManagmentOptionsLoader GetOptionsLoader()
+  {
+    string revitVersion;
+#if REVIT2020
+    revitVersion = "2020";
+#elif REVIT2021
+    revitVersion = "2021";
+#elif REVIT2022
+    revitVersion = "2022";
+#elif REVIT2023
+    revitVersion = "2023";
+#elif REVIT2024
+    revitVersion = "2024";
+#endif
+    return new DllConflictManagmentOptionsLoader("Revit", revitVersion);
   }
 
   private void ControlledApplication_ApplicationInitialized(

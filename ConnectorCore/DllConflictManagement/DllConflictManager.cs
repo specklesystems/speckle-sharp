@@ -9,8 +9,6 @@ public sealed class DllConflictManager
   private readonly string[] _assemblyPathFragmentsToIgnore;
   public IEnumerable<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
 
-  public Action<string>? LogError { get; set; }
-
   public DllConflictManager(
     DllConflictManagmentOptionsLoader optionsLoader,
     params string[] assemblyPathFragmentsToIgnore
@@ -103,7 +101,7 @@ public sealed class DllConflictManager
     return null;
   }
 
-  public AssemblyConflictInfo? GetConflictThatCausedException(MissingMethodException ex)
+  public AssemblyConflictInfo? GetConflictThatCausedException(MemberAccessException ex)
   {
     if (
       TryParseTypeNameFromMissingMethodExceptionMessage(ex.Message, out var typeName)
