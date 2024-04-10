@@ -731,7 +731,7 @@ public partial class ConverterAutocadCivil
 
     return speckleFeatureline;
   }
-  
+
   // surfaces
   public Mesh SurfaceToSpeckle(TinSurface surface)
   {
@@ -966,12 +966,10 @@ public partial class ConverterAutocadCivil
         {
           continue;
         }
-
-        // TODO: This foreach loop is unacceptably expensive... probably FindVertexAtXY is the culprit, we should avoid using it.
         
         var a1 = surface.FindVertexAtXY(edgeStart.X, edgeStart.Y);
         var a2 = surface.FindVertexAtXY(vertexToAdd.X, vertexToAdd.Y);
-        surface.AddLine(a1, a2); 
+        surface.AddLine(a1, a2);
         a1.Dispose();
         a2.Dispose();
       }
