@@ -100,7 +100,7 @@ public partial class ConnectorBindingsRevit
     var convertedCount = 0;
 
     // track object types for mixpanel logging
-    Dictionary<string, int> loggingTypeCountDict = new();
+    Dictionary<string, int> typeCountDict = new();
 
     await APIContext
       .Run(() =>
@@ -119,13 +119,13 @@ public partial class ConnectorBindingsRevit
 
           // log selected object type
           string revitObjectType = revitElement.GetType().ToString();
-          if (loggingTypeCountDict.TryGetValue(revitObjectType, out int value))
+          if (typeCountDict.TryGetValue(revitObjectType, out int value))
           {
-            loggingTypeCountDict[revitObjectType] = ++value;
+            typeCountDict[revitObjectType] = ++value;
           }
           else
           {
-            loggingTypeCountDict.Add(revitObjectType, 1);
+            typeCountDict.Add(revitObjectType, 1);
           }
 
           bool isAlreadyConverted = GetOrCreateApplicationObject(
@@ -198,9 +198,17 @@ public partial class ConnectorBindingsRevit
 
     // track the object type counts as an event before we try to send
     // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountArray = typeCountDict
+      .ToArray()
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(25);
+
     Analytics.TrackEvent(
       Analytics.Events.ConvertToSpeckle,
-      loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+      new Dictionary<string, object>() { { "typeCount", typeCountArray } }
     );
 
     commitObjectBuilder.BuildCommitObject(commitObject);

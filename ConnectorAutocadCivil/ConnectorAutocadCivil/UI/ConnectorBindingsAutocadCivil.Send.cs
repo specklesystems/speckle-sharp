@@ -180,7 +180,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         var commitCollections = new Dictionary<string, Collection>();
 
         // track object types for mixpanel logging
-        Dictionary<string, int> loggingTypeCountDict = new();
+        Dictionary<string, int> typeCountDict = new();
 
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
@@ -206,13 +206,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
           // log selection object type
           var objectType = obj.GetType().ToString();
-          if (loggingTypeCountDict.TryGetValue(objectType, out int value))
+          if (typeCountDict.TryGetValue(objectType, out int value))
           {
-            loggingTypeCountDict[objectType] = ++value;
+            typeCountDict[objectType] = ++value;
           }
           else
           {
-            loggingTypeCountDict.Add(objectType, 1);
+            typeCountDict.Add(objectType, 1);
           }
 
           // create applicationobject for reporting
@@ -358,9 +358,17 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
         // track the object type counts as an event before we try to send
         // this will tell us the composition of a commit the user is trying to convert and send, even if it's not successfully converted or sent
+        // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+        var typeCountArray = typeCountDict
+          .ToArray()
+          .Select(o => new { TypeName = o.Key, Count = o.Value })
+          .OrderBy(pair => pair.Count)
+          .Reverse()
+          .Take(25);
+
         Analytics.TrackEvent(
           Analytics.Events.ConvertToSpeckle,
-          loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+          new Dictionary<string, object>() { { "typeCount", typeCountArray } }
         );
 
         tr.Commit();

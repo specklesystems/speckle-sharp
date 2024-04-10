@@ -112,7 +112,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         conversionProgressDict["Conversion"] = 0;
 
         // track object types for mixpanel logging
-        Dictionary<string, int> loggingTypeCountDict = new();
+        Dictionary<string, int> typeCountDict = new();
 
         // create a commit prefix: used for layers and block definition names
         var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
@@ -223,13 +223,13 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base commitBaseObj))
           {
             // log received object type
-            if (loggingTypeCountDict.TryGetValue(commitBaseObj.speckle_type, out int value))
+            if (typeCountDict.TryGetValue(commitBaseObj.speckle_type, out int value))
             {
-              loggingTypeCountDict[commitBaseObj.speckle_type] = ++value;
+              typeCountDict[commitBaseObj.speckle_type] = ++value;
             }
             else
             {
-              loggingTypeCountDict.Add(commitBaseObj.speckle_type, 1);
+              typeCountDict.Add(commitBaseObj.speckle_type, 1);
             }
           }
           else
@@ -284,11 +284,19 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         }
         progress.Report.Merge(converter.Report);
 
-        // track the object type counts as an event before we try to send
-        // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
+        // track the object type counts as an event before we try to receive
+        // this will tell us the composition of a commit the user is trying to receive, even if it's not successfully received
+        // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+        var typeCountArray = typeCountDict
+          .ToArray()
+          .Select(o => new { TypeName = o.Key, Count = o.Value })
+          .OrderBy(pair => pair.Count)
+          .Reverse()
+          .Take(25);
+
         Analytics.TrackEvent(
           Analytics.Events.ConvertToNative,
-          loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+          new Dictionary<string, object>() { { "typeCount", typeCountArray } }
         );
 
         // add applicationID xdata before bake

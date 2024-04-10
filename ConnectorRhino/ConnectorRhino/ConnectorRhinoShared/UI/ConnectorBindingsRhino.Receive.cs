@@ -56,7 +56,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     conversionProgressDict["Conversion"] = 0;
 
     // track object types for mixpanel logging
-    Dictionary<string, int> loggingTypeCountDict = new();
+    Dictionary<string, int> typeCountDict = new();
 
     Base commitObject = null;
     if (Preview.Count == 0)
@@ -225,13 +225,13 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             // log received object type
             if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
             {
-              if (loggingTypeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
+              if (typeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
               {
-                loggingTypeCountDict[previewBaseObj.speckle_type] = ++value;
+                typeCountDict[previewBaseObj.speckle_type] = ++value;
               }
               else
               {
-                loggingTypeCountDict.Add(previewBaseObj.speckle_type, 1);
+                typeCountDict.Add(previewBaseObj.speckle_type, 1);
               }
             }
 
@@ -322,10 +322,18 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
           RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // reactivate the layer handler
 
           // track the object type counts as an event before we try to receive
-          // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received.
+          // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received
+          // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+          var typeCountArray = typeCountDict
+            .ToArray()
+            .Select(o => new { TypeName = o.Key, Count = o.Value })
+            .OrderBy(pair => pair.Count)
+            .Reverse()
+            .Take(25);
+
           Speckle.Core.Logging.Analytics.TrackEvent(
             Speckle.Core.Logging.Analytics.Events.ConvertToNative,
-            loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+            new Dictionary<string, object>() { { "typeCount", typeCountArray } }
           );
 
           // undo notes edit

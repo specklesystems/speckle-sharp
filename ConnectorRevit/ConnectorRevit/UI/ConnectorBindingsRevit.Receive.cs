@@ -54,7 +54,7 @@ public partial class ConnectorBindingsRevit
     converter.SetConverterSettings(settings);
 
     // track object types for mixpanel logging
-    Dictionary<string, int> loggingTypeCountDict = new();
+    Dictionary<string, int> typeCountDict = new();
 
     Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = myCommit;
@@ -75,22 +75,30 @@ public partial class ConnectorBindingsRevit
       progress.Report.Log(previewObj);
       if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
       {
-        if (loggingTypeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
+        if (typeCountDict.TryGetValue(previewBaseObj.speckle_type, out int value))
         {
-          loggingTypeCountDict[previewBaseObj.speckle_type] = ++value;
+          typeCountDict[previewBaseObj.speckle_type] = ++value;
         }
         else
         {
-          loggingTypeCountDict.Add(previewBaseObj.speckle_type, 1);
+          typeCountDict.Add(previewBaseObj.speckle_type, 1);
         }
       }
     }
 
-    // track the object type counts as an event before we try to send
-    // this will tell us the composition of a commit the user is trying to send, even if it's not successfully sent
-    Speckle.Core.Logging.Analytics.TrackEvent(
-      Speckle.Core.Logging.Analytics.Events.ConvertToNative,
-      loggingTypeCountDict.ToDictionary(o => o.Key, o => o.Value as object)
+    // track the object type counts as an event before we try to receive
+    // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountArray = typeCountDict
+      .ToArray()
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(25);
+
+    Analytics.TrackEvent(
+      Analytics.Events.ConvertToNative,
+      new Dictionary<string, object>() { { "typeCount", typeCountArray } }
     );
 
     converter.ReceiveMode = state.ReceiveMode;
