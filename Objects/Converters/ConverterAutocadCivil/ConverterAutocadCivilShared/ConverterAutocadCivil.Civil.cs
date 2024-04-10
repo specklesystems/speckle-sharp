@@ -745,14 +745,6 @@ public partial class ConverterAutocadCivil
     {
       try
       {
-#if CIVIL2023 || CIVIL2024 // skip any triangles that are hidden in the surface!
-        if (!triangle.IsVisible)
-        {
-          //TODO: why are we skipping trianlges like this, are we not excluding them already in our call to GetTriangles(false) ?
-          continue;
-        }
-#endif
-        
         Point3d[] triangleVertices = { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
         foreach (Point3d p in triangleVertices)
         {
