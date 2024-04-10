@@ -13,13 +13,10 @@ namespace Speckle.Connectors.Autocad.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly IUnitOfWorkFactory<ISpeckleConverterToHost> _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadLayerManager _autocadLayerManager;
 
-  public HostObjectBuilder(
-    IUnitOfWorkFactory<ISpeckleConverterToHost> unitOfWorkFactory,
-    AutocadLayerManager autocadLayerManager
-  )
+  public HostObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, AutocadLayerManager autocadLayerManager)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _autocadLayerManager = autocadLayerManager;
@@ -54,7 +51,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve();
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToHost>();
     var converter = uow.Service;
 
     // Layer filter for received commit with project and model name

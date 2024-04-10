@@ -30,7 +30,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly AutocadIdleManager _idleManager;
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
-  private readonly IUnitOfWorkFactory<ISpeckleConverterToSpeckle> _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -48,7 +48,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
-    IUnitOfWorkFactory<ISpeckleConverterToSpeckle> unitOfWorkFactory
+    IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     _store = store;
@@ -203,7 +203,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   {
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve();
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
     var converter = uow.Service;
 
     Collection modelWithLayers =

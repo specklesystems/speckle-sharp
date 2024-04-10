@@ -69,14 +69,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadSelectionFilter>().As<ISendFilter>().InstancePerDependency();
 
     // Register converter factory
-    builder
-      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
-      .As<IUnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToHost>>()
-      .As<IUnitOfWorkFactory<ISpeckleConverterToHost>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

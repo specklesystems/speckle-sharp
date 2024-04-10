@@ -4,8 +4,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Autofac.DependencyInjection;
 
-public class UnitOfWorkFactory<TService> : IUnitOfWorkFactory<TService>
-  where TService : class
+public class UnitOfWorkFactory : IUnitOfWorkFactory
 {
   private readonly ILifetimeScope _parentScope;
 
@@ -14,7 +13,8 @@ public class UnitOfWorkFactory<TService> : IUnitOfWorkFactory<TService>
     _parentScope = parentScope;
   }
 
-  public IUnitOfWork<TService> Resolve()
+  public IUnitOfWork<TService> Resolve<TService>()
+    where TService : class
   {
     ILifetimeScope? childScope = null;
 

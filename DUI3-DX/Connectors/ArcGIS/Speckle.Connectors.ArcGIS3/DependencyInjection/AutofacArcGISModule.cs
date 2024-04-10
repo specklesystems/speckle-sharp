@@ -51,10 +51,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();
 
     // Register converter factory
-    builder
-      .RegisterType<UnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
-      .As<IUnitOfWorkFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
   }
 
   //poc: dupe code

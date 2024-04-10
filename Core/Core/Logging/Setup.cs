@@ -73,7 +73,8 @@ public static class Setup
     //start mutex so that Manager can detect if this process is running
     Mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
-    SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
+    // POC: this is exploding for me - version problem or possibly some crappy plugin I have (IMH) :(
+    // SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
 
     foreach (var account in AccountManager.GetAccounts())
     {

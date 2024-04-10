@@ -22,7 +22,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public IBridge Parent { get; }
 
   private readonly ArcGISDocumentStore _store;
-  private readonly IUnitOfWorkFactory<ISpeckleConverterToSpeckle> _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly CancellationManager _cancellationManager;
   private readonly SendOperation _sendOperation;
 
@@ -34,7 +34,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
     IBridge parent,
-    IUnitOfWorkFactory<ISpeckleConverterToSpeckle> unitOfWorkFactory,
+    IUnitOfWorkFactory unitOfWorkFactory,
     SendOperation sendOperation,
     CancellationManager cancellationManager
   )

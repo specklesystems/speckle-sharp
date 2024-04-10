@@ -16,9 +16,9 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public class RootObjectBuilder
 {
-  private readonly IUnitOfWorkFactory<ISpeckleConverterToSpeckle> _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-  public RootObjectBuilder(IUnitOfWorkFactory<ISpeckleConverterToSpeckle> unitOfWorkFactory)
+  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
   {
     _unitOfWorkFactory = unitOfWorkFactory;
   }
@@ -53,7 +53,7 @@ public class RootObjectBuilder
   {
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve();
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
     var converter = uow.Service;
 
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
