@@ -94,7 +94,7 @@ public partial class ConnectorBindingsRevit
       .Select(o => new { TypeName = o.Key, Count = o.Value })
       .OrderBy(pair => pair.Count)
       .Reverse()
-      .Take(25);
+      .Take(250);
 
     Analytics.TrackEvent(
       Analytics.Events.ConvertToNative,
