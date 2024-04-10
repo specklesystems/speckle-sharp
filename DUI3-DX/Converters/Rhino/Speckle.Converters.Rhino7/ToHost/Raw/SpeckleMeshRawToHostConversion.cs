@@ -1,8 +1,6 @@
 ﻿using System.Drawing;
 using Objects.Utils;
-using Rhino;
 using Rhino.Collections;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
@@ -10,15 +8,10 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
 {
   private readonly IRawConversion<IList<double>, Point3dList> _pointListConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
-  public SpeckleMeshRawToHostConversion(
-    IRawConversion<IList<double>, Point3dList> pointListConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
-  )
+  public SpeckleMeshRawToHostConversion(IRawConversion<IList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
-    _contextStack = contextStack;
   }
 
   public RG.Mesh RawConvert(SOG.Mesh target)
