@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -82,30 +83,46 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var count = 0;
     var listObjects = objects.ToList();
 
+    // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
+    var conversionExceptions = new List<Exception>();
+
     foreach ((List<string> path, Base baseObj) in objects)
     {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      var fullLayerName = string.Join("::", path);
-      var layerIndex = cache.TryGetValue(fullLayerName, out int value)
-        ? value
-        : GetAndCreateLayerFromPath(path, baseLayerName, cache);
-
-      onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
-
-      var converted = _toHostConverter.Convert(baseObj);
-
-      if (converted is GeometryBase newObject)
+      try
       {
-        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
-        newObjectIds.Add(newObjectGuid.ToString());
-        continue;
-      }
+        cancellationToken.ThrowIfCancellationRequested();
 
-      // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
-      throw new SpeckleException(
-        $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-      );
+        var fullLayerName = string.Join("::", path);
+        var layerIndex = cache.TryGetValue(fullLayerName, out int value)
+          ? value
+          : GetAndCreateLayerFromPath(path, baseLayerName, cache);
+
+        onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
+
+        var converted = _toHostConverter.Convert(baseObj);
+
+        if (converted is GeometryBase newObject)
+        {
+          var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+          newObjectIds.Add(newObjectGuid.ToString());
+          continue;
+        }
+
+        // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
+        throw new SpeckleException(
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
+        );
+      }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        conversionExceptions.Add(e);
+      }
+    }
+
+    if (conversionExceptions.Count != 0)
+    {
+      // POC: Both the message and the handling of this should be engineered taking into account error reporting in DUI becoming better.
+      throw new AggregateException("Some conversions failed. Please check inner exceptions.", conversionExceptions);
     }
 
     return newObjectIds;
