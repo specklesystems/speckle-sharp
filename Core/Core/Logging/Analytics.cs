@@ -67,7 +67,17 @@ public static class Analytics
     /// <summary>
     /// Event triggered by the Mapping Tool
     /// </summary>
-    MappingsAction
+    MappingsAction,
+
+    /// <summary>
+    /// Event triggered when user selects object to convert to Speckle on Send
+    /// </summary>
+    ConvertToSpeckle,
+
+    /// <summary>
+    /// Event triggered when user selects object to convert to Native on Receive
+    /// </summary>
+    ConvertToNative
   }
 
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";

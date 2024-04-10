@@ -143,7 +143,6 @@ public partial class ConverterAutocadCivil : ISpeckleConverter
               break;
             case AcadDB.Polyline o:
               @base = o.IsOnlyLines ? PolylineToSpeckle(o) : (Base)PolycurveToSpeckle(o);
-
               break;
             case AcadDB.Polyline3d o:
               @base = PolylineToSpeckle(o);
