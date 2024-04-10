@@ -322,7 +322,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             .Select(o => new { TypeName = o.Key, Count = o.Value })
             .OrderBy(pair => pair.Count)
             .Reverse()
-            .Take(250);
+            .Take(200);
 
           Speckle.Core.Logging.Analytics.TrackEvent(
             Speckle.Core.Logging.Analytics.Events.ConvertToNative,

@@ -285,7 +285,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           .Select(o => new { TypeName = o.Key, Count = o.Value })
           .OrderBy(pair => pair.Count)
           .Reverse()
-          .Take(250);
+          .Take(200);
 
         Analytics.TrackEvent(
           Analytics.Events.ConvertToNative,
