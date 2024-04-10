@@ -223,14 +223,8 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base commitBaseObj))
           {
             // log received object type
-            if (typeCountDict.TryGetValue(commitBaseObj.speckle_type, out int value))
-            {
-              typeCountDict[commitBaseObj.speckle_type] = ++value;
-            }
-            else
-            {
-              typeCountDict.Add(commitBaseObj.speckle_type, 1);
-            }
+            typeCountDict.TryGetValue(commitBaseObj.speckle_type, out var currentCount);
+            typeCountDict[commitBaseObj.speckle_type] = ++currentCount;
           }
           else
           {
@@ -287,8 +281,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         // track the object type counts as an event before we try to receive
         // this will tell us the composition of a commit the user is trying to receive, even if it's not successfully received
         // we are capped at 255 properties for mixpanel events, so we need to check dict entries
-        var typeCountArray = typeCountDict
-          .ToArray()
+        var typeCountList = typeCountDict
           .Select(o => new { TypeName = o.Key, Count = o.Value })
           .OrderBy(pair => pair.Count)
           .Reverse()
@@ -296,7 +289,7 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
 
         Analytics.TrackEvent(
           Analytics.Events.ConvertToNative,
-          new Dictionary<string, object>() { { "typeCount", typeCountArray } }
+          new Dictionary<string, object>() { { "typeCount", typeCountList } }
         );
 
         // add applicationID xdata before bake
