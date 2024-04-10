@@ -26,13 +26,6 @@ public class GisFeatureToHostConverter : ISpeckleObjectToHostConversion, IRawCon
 
   public object RawConvert(GisFeature target)
   {
-    // POC: Its BAAAD! parsing for test purpose
-    var polyline = (SOG.Polyline)target.geometry[0]; // might be any geometry: point, polyline, polygon
-
-    var bakedPolyline = _polylineConverter.RawConvert(polyline);
-
-    // POC: Here need to create ROW(FeatureClass?)! and add polyline into it?
-
-    return bakedPolyline;
+    return new();
   }
 }

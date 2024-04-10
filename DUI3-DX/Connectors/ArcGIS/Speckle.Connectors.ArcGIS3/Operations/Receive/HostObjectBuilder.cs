@@ -1,8 +1,11 @@
 using System.Diagnostics;
+using ArcGIS.Core.Data;
+using System.IO;
 using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -37,6 +40,15 @@ public class HostObjectBuilder : IHostObjectBuilder
     onOperationProgressed?.Invoke("Converting", null);
 
     ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
+
+    ///////////////////////// create and add Geodatabase to a project
+    string newGDBPath = Project.Current.URI;
+    var fGdbPath = Directory.GetParent(newGDBPath).ToString();
+    var fGdbName = "Speckle5.gdb";
+
+    var utils = new ArcGISProjectUtils();
+    Task task = utils.addDatabaseToProject(fGdbPath, fGdbName);
+    /////////////////////////
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     IEnumerable<(List<string>, Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
