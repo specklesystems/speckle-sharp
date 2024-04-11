@@ -4,7 +4,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PolylineToHostDBPolylineConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Polyline, ADB.Polyline3d>

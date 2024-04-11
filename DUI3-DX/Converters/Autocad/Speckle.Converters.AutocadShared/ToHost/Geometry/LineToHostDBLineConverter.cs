@@ -2,7 +2,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.ToHost.DataBase;
+namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class LineToHostDBLineConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Line, ADB.Line>

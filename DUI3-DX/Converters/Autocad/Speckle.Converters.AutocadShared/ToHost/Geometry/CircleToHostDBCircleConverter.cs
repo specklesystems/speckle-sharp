@@ -7,7 +7,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.ToHost.DataBase;
+namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Circle), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class CircleToHostDBCircleConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Circle, ADB.Circle>

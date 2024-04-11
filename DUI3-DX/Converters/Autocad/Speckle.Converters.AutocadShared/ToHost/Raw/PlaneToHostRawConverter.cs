@@ -1,14 +1,14 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.ToHost.Geometry;
+namespace Speckle.Converters.Autocad.ToHost.Raw;
 
-public class PlaneToHostGeometryConverter : IRawConversion<SOG.Plane, AG.Plane>
+public class PlaneToHostRawConverter : IRawConversion<SOG.Plane, AG.Plane>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IRawConversion<SOG.Vector, AG.Vector3d> _vectorConverter;
 
-  public PlaneToHostGeometryConverter(
+  public PlaneToHostRawConverter(
     IRawConversion<SOG.Point, AG.Point3d> pointConverter,
     IRawConversion<SOG.Vector, AG.Vector3d> vectorConverter
   )

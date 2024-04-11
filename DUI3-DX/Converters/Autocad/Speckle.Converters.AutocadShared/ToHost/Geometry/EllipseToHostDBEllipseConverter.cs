@@ -7,7 +7,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.ToHost.DataBase;
+namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DBEllipseToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Ellipse, ADB.Ellipse>

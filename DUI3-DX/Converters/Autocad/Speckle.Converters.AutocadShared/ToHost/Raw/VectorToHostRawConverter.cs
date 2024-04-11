@@ -4,13 +4,13 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.ToHost.Geometry;
+namespace Speckle.Converters.Autocad.ToHost.Raw;
 
-public class VectorToHostGeometryConverter : IRawConversion<SOG.Vector, AG.Vector3d>
+public class VectorToHostRawConverter : IRawConversion<SOG.Vector, AG.Vector3d>
 {
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public VectorToHostGeometryConverter(IConversionContextStack<Document, UnitsValue> contextStack)
+  public VectorToHostRawConverter(IConversionContextStack<Document, UnitsValue> contextStack)
   {
     _contextStack = contextStack;
   }

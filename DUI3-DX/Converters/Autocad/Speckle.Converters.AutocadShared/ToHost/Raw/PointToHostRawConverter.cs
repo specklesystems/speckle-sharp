@@ -2,13 +2,13 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 
-namespace Speckle.Converters.Autocad.ToHost.Geometry;
+namespace Speckle.Converters.Autocad.ToHost.Raw;
 
-public class PointToHostGeometryConverter : IRawConversion<SOG.Point, AG.Point3d>
+public class PointToHostRawConverter : IRawConversion<SOG.Point, AG.Point3d>
 {
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public PointToHostGeometryConverter(IConversionContextStack<Document, ADB.UnitsValue> contextStack)
+  public PointToHostRawConverter(IConversionContextStack<Document, ADB.UnitsValue> contextStack)
   {
     _contextStack = contextStack;
   }
