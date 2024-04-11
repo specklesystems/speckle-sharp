@@ -76,24 +76,9 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     string? appId = conversionResult.applicationId;
     if (appId != null)
     {
-      if (!Converted.ContainsKey(appId))
-      {
-        Converted[appId] = conversionResult;
-      }
-      else
-      {
-        Converted.Add(appId, conversionResult);
-      }
+      Converted[appId] = conversionResult;
     }
-
-    if (!_nestingInstructions.ContainsKey(conversionResult))
-    {
-      _nestingInstructions[conversionResult] = nestingInstructionsList;
-    }
-    else
-    {
-      _nestingInstructions.Add(conversionResult, nestingInstructionsList);
-    }
+    _nestingInstructions[conversionResult] = nestingInstructionsList;
   }
 
   /// <summary>
