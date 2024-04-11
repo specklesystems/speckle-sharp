@@ -94,6 +94,11 @@ public partial class ConverterAutocadCivil
   /// <returns></returns>
   public static string RemoveInvalidChars(string str)
   {
+    // TOOD: DUI3! this is temporary check since DUI3 not fully implemented!
+    if (str == null)
+    {
+      return "";
+    }
     // using this to handle rhino nested layer syntax
     // replace "::" layer delimiter with "$" (acad standard)
     string cleanDelimiter = str.Replace("::", "$");

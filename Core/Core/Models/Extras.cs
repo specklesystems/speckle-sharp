@@ -59,11 +59,13 @@ public class DataChunk : Base
   public List<object> data { get; set; } = new();
 }
 
-public class ObjectReference
+public class ObjectReference : Base
 {
-  public string speckle_type = "reference";
+  public new string speckle_type = "reference";
 
   public string referencedId { get; set; }
+
+  public Dictionary<string, int> closure { get; set; }
 }
 
 public class ProgressEventArgs : EventArgs

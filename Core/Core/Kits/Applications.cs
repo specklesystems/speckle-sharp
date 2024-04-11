@@ -5,6 +5,7 @@ namespace Speckle.Core.Kits;
 public enum HostAppVersion
 {
   v,
+  v3,
   v6,
   v7,
   v8,
