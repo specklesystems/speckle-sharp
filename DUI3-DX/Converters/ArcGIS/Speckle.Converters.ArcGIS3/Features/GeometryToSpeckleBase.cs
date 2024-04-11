@@ -31,25 +31,24 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
 
     try
     {
-      Base newGeometry = new(); // objectConverter.Convert(target);
-      if (target is MapPoint)
+      if (target is MapPoint point)
       {
-        convertedList = _pointFeatureConverter.RawConvert((MapPoint)target);
+        convertedList = _pointFeatureConverter.RawConvert(point);
         return convertedList;
       }
-      if (target is Multipoint)
+      if (target is Multipoint multipoint)
       {
-        convertedList = _multiPointFeatureConverter.RawConvert((Multipoint)target);
+        convertedList = _multiPointFeatureConverter.RawConvert(multipoint);
         return convertedList;
       }
-      if (target is Polyline)
+      if (target is Polyline polyline)
       {
-        convertedList = _polylineFeatureConverter.RawConvert((Polyline)target);
+        convertedList = _polylineFeatureConverter.RawConvert(polyline);
         return convertedList;
       }
-      if (target is Polygon)
+      if (target is Polygon polygon)
       {
-        convertedList = _polygonFeatureConverter.RawConvert((Polygon)target);
+        convertedList = _polygonFeatureConverter.RawConvert(polygon);
         return convertedList;
       }
 
