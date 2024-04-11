@@ -14,13 +14,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadConverterModule.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\BoxToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\IntervalToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\LineToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\PlaneToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToHostConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\VectorToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PointToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BoxToSpeckleRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\PointToSpeckleRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\IntervalToSpeckleRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Geometry\LineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\PlaneToSpeckleRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PointToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Geometry\PointToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\VectorToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)ToHost\Raw\" />
+    <Folder Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\" />
   </ItemGroup>
 </Project>

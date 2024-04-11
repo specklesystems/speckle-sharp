@@ -3,14 +3,13 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-[Common.NameAndRankValue(nameof(AG.Vector3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Vector3d, SOG.Vector>
+public class VectorToSpeckleRawConverter : IRawConversion<AG.Vector3d, SOG.Vector>
 {
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public VectorToSpeckleConverter(IConversionContextStack<Document, UnitsValue> contextStack)
+  public VectorToSpeckleRawConverter(IConversionContextStack<Document, UnitsValue> contextStack)
   {
     _contextStack = contextStack;
   }

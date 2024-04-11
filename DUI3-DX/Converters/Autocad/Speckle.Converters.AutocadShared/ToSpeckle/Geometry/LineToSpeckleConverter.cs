@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Line, SOG.Line>

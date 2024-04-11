@@ -4,15 +4,15 @@ using Speckle.Core.Models;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Core.Kits;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Point), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBPointToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Point, DBPoint>
+public class PointToHostConverter : ISpeckleObjectToHostConversion
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public DBPointToHostConverter(
+  public PointToHostConverter(
     IRawConversion<SOG.Point, AG.Point3d> pointConverter,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
@@ -28,25 +28,5 @@ public class DBPointToHostConverter : ISpeckleObjectToHostConversion, IRawConver
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
     AG.Point3d point = new(target.x * f, target.y * f, target.z * f);
     return new(point);
-  }
-}
-
-public class PointToHostConverter : IRawConversion<SOG.Point, AG.Point3d>
-{
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
-
-  public PointToHostConverter(IConversionContextStack<Document, UnitsValue> contextStack)
-  {
-    _contextStack = contextStack;
-  }
-
-  public object Convert(Base target) => RawConvert((SOG.Point)target);
-
-  public AG.Point3d RawConvert(SOG.Point target)
-  {
-    double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
-    AG.Point3d point = new(target.x * f, target.y * f, target.z * f);
-
-    return point;
   }
 }

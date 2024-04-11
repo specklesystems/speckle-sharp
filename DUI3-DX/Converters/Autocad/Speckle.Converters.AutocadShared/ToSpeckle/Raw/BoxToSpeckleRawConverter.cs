@@ -3,15 +3,14 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(Extents3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBBoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Extents3d, SOG.Box>
+public class BoxToSpeckleRawConverter : IRawConversion<Extents3d, SOG.Box>
 {
   private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public DBBoxToSpeckleConverter(
+  public BoxToSpeckleRawConverter(
     IRawConversion<AG.Plane, SOG.Plane> planeConverter,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
@@ -31,7 +30,7 @@ public class DBBoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     double volume = xSize.Length * ySize.Length * zSize.Length;
 
     // get the base plane of the bounding box from extents and current UCS
-    var ucs = Application.DocumentManager.CurrentDocument.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
+    var ucs = _contextStack.Current.Document.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
     AG.Plane acadPlane = new(target.MinPoint, ucs.Xaxis, ucs.Yaxis);
     SOG.Plane plane = _planeConverter.RawConvert(acadPlane);
 
