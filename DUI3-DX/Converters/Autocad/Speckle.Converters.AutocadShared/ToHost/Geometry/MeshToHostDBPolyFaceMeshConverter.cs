@@ -10,7 +10,8 @@ using System.Collections.Generic;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
-[NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+// POC: there is a transaction error, ingoring for now to not crash acad!
+// [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DBMeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;

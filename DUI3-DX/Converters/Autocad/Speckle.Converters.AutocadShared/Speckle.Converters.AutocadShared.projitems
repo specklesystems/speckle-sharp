@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\EllipseToHostDBEllipseConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\IntervalToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\LineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PolycurveToHostDBPolycurveConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\ArcToHostRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\MeshToHostDBPolyFaceMeshConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\CurveToHostRawConverter.cs" />
@@ -29,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PolylineToHostDBPolylineConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\LineToHostDBLineConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PolycurveToHostPolylineRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\VectorToHostRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\VectorToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
