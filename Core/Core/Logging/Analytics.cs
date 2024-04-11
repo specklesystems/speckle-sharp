@@ -67,7 +67,17 @@ public static class Analytics
     /// <summary>
     /// Event triggered by the Mapping Tool
     /// </summary>
-    MappingsAction
+    MappingsAction,
+
+    /// <summary>
+    /// Event triggered when user selects object to convert to Speckle on Send
+    /// </summary>
+    ConvertToSpeckle,
+
+    /// <summary>
+    /// Event triggered when user selects object to convert to Native on Receive
+    /// </summary>
+    ConvertToNative
   }
 
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";
@@ -266,10 +276,6 @@ public static class Analytics
                 new List<string> { connector }
               }
             }
-          },
-          {
-            "set",
-            new Dictionary<string, object> { { "Identified", true } }
           }
         };
         string json = JsonConvert.SerializeObject(data);
@@ -284,6 +290,37 @@ public static class Analytics
       catch (Exception ex) when (!ex.IsFatal())
       {
         SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed add connector to profile");
+      }
+    });
+  }
+
+  internal static void IdentifyProfile(string hashedEmail, string connector)
+  {
+    Task.Run(async () =>
+    {
+      try
+      {
+        var data = new Dictionary<string, object>
+        {
+          { "$token", MIXPANEL_TOKEN },
+          { "$distinct_id", hashedEmail },
+          {
+            "$set",
+            new Dictionary<string, object> { { "Identified", true } }
+          }
+        };
+        string json = JsonConvert.SerializeObject(data);
+
+        var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
+        using HttpClient client = Http.GetHttpProxyClient();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+        query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        var res = await client.PostAsync(MIXPANEL_SERVER + "/engage#profile-set", query).ConfigureAwait(false);
+        res.EnsureSuccessStatusCode();
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed identify profile");
       }
     });
   }

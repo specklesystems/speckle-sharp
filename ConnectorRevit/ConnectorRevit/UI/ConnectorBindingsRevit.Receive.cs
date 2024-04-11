@@ -53,6 +53,9 @@ public partial class ConnectorBindingsRevit
 
     converter.SetConverterSettings(settings);
 
+    // track object types for mixpanel logging
+    Dictionary<string, int> typeCountDict = new();
+
     Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = myCommit;
     Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
@@ -70,7 +73,26 @@ public partial class ConnectorBindingsRevit
     foreach (var previewObj in Preview)
     {
       progress.Report.Log(previewObj);
+      if (StoredObjects.TryGetValue(previewObj.OriginalId, out Base previewBaseObj))
+      {
+        typeCountDict.TryGetValue(previewBaseObj.speckle_type, out var currentCount);
+        typeCountDict[previewBaseObj.speckle_type] = ++currentCount;
+      }
     }
+
+    // track the object type counts as an event before we try to receive
+    // this will tell us the composition of a commit the user is trying to convert and receive, even if it's not successfully converted or received
+    // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+    var typeCountList = typeCountDict
+      .Select(o => new { TypeName = o.Key, Count = o.Value })
+      .OrderBy(pair => pair.Count)
+      .Reverse()
+      .Take(200);
+
+    Analytics.TrackEvent(
+      Analytics.Events.ConvertToNative,
+      new Dictionary<string, object>() { { "typeCount", typeCountList } }
+    );
 
     converter.ReceiveMode = state.ReceiveMode;
     // needs to be set for editing to work

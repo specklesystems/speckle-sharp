@@ -111,6 +111,9 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
 
+        // track object types for mixpanel logging
+        Dictionary<string, int> typeCountDict = new();
+
         // create a commit prefix: used for layers and block definition names
         var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
 
@@ -217,18 +220,22 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
             return;
           }
 
+          if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base commitBaseObj))
+          {
+            // log received object type
+            typeCountDict.TryGetValue(commitBaseObj.speckle_type, out var currentCount);
+            typeCountDict[commitBaseObj.speckle_type] = ++currentCount;
+          }
+          else
+          {
+            commitObj.Update(status: ApplicationObject.State.Failed, logItem: "Object not found in StoredObjects");
+          }
+
           // convert base (or base fallback values) and store in appobj converted prop
           if (commitObj.Convertible)
           {
-            if (StoredObjects.TryGetValue(commitObj.OriginalId, out Base obj))
-            {
-              converter.Report.Log(commitObj); // Log object so converter can access
-              commitObj.Converted = ConvertObject(obj, converter);
-            }
-            else
-            {
-              commitObj.Update(status: ApplicationObject.State.Failed, logItem: "Object not found in StoredObjects");
-            }
+            converter.Report.Log(commitObj); // Log object so converter can access
+            commitObj.Converted = ConvertObject(commitBaseObj, converter);
           }
           else
           {
@@ -270,6 +277,20 @@ public partial class ConnectorBindingsAutocad : ConnectorBindings
           progress.Report.Log(commitObj);
         }
         progress.Report.Merge(converter.Report);
+
+        // track the object type counts as an event before we try to receive
+        // this will tell us the composition of a commit the user is trying to receive, even if it's not successfully received
+        // we are capped at 255 properties for mixpanel events, so we need to check dict entries
+        var typeCountList = typeCountDict
+          .Select(o => new { TypeName = o.Key, Count = o.Value })
+          .OrderBy(pair => pair.Count)
+          .Reverse()
+          .Take(200);
+
+        Analytics.TrackEvent(
+          Analytics.Events.ConvertToNative,
+          new Dictionary<string, object>() { { "typeCount", typeCountList } }
+        );
 
         // add applicationID xdata before bake
         if (!ApplicationIdManager.AddApplicationIdXDataToDoc(Doc, tr))
