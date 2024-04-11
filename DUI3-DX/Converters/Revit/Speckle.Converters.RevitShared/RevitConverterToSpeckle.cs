@@ -29,12 +29,9 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   // if it cannot be converted then we should throw
   public Base Convert(object target)
   {
-    var objectConverter = _toSpeckle.ResolveInstance(target.GetType().Name);
-
-    if (objectConverter == null)
-    {
-      throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
-    }
+    var objectConverter =
+      _toSpeckle.ResolveInstance(target.GetType().Name)
+      ?? throw new SpeckleConversionException($"No conversion found for {target.GetType().Name}");
 
     Base result =
       objectConverter.Convert(target)

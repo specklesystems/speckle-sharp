@@ -10,8 +10,11 @@ using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.Revit.Operations.Receive;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -71,6 +74,9 @@ public class AutofacUIModule : Module
     builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+
+    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<RevitHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();

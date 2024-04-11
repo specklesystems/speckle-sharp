@@ -29,6 +29,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitConverterToHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ToHostScalingService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToNative\BaseConversionToHost.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToNative\LevelConversionToNative.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />

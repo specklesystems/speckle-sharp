@@ -1,7 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
+using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
@@ -10,38 +16,46 @@ namespace Speckle.Connectors.Revit.Bindings;
 internal class ReceiveBinding : RevitBaseBinding, ICancelable
 {
   public CancellationManager CancellationManager { get; } = new();
+  private readonly ReceiveOperation _receiveOperation;
 
-  public ReceiveBinding(RevitContext revitContext, RevitDocumentStore store, IBridge bridge)
-    : base("receiveBinding", store, bridge, revitContext) { }
+  public ReceiveBinding(
+    RevitContext revitContext,
+    RevitDocumentStore store,
+    IBridge bridge,
+    ReceiveOperation receiveOperation
+  )
+    : base("receiveBinding", store, bridge, revitContext)
+  {
+    _receiveOperation = receiveOperation;
+  }
 
   public void CancelReceive(string modelCardId) => CancellationManager.CancelOperation(modelCardId);
 
-  public async void Receive(string modelCardId, string versionId)
+  public async Task Receive(string modelCardId)
   {
     try
     {
-      //// 0 - Init cancellation token source -> Manager also cancel it if exist before
-      //CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
+      // 0 - Init cancellation token source -> Manager also cancel it if exist before
+      CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-      //// 1 - Get receiver card
-      //ReceiverModelCard model = _store.GetModelById(modelCardId) as ReceiverModelCard;
+      if (_store.GetModelById(modelCardId) is not ReceiverModelCard modelCard)
+      {
+        throw new InvalidOperationException("No publish model card was found.");
+      }
 
-      //// 2 - Get commit object from server
-      //Base commitObject = await Operations.GetCommitBase(Parent, model, versionId, cts.Token).ConfigureAwait(true);
-
-      //if (cts.IsCancellationRequested)
-      //{
-      //  return;
-      //}
-
-      //// 3 - Get converter
-      //ISpeckleConverter converter = Converters.GetConverter(Doc, RevitAppProvider.Version());
-
-      //// 4 - Traverse commit object
-      //List<Base> objectsToConvert = Traversal.GetObjectsToConvert(commitObject, converter);
-
-      //// 5 - Bake objects
-      //BakeObjects(objectsToConvert, converter, modelCardId, cts);
+      List<string> receivedObjectIds = (
+        await _receiveOperation
+          .Execute(
+            modelCard.AccountId,
+            modelCard.ProjectId,
+            modelCard.ProjectName,
+            modelCard.ModelName,
+            modelCard.SelectedVersionId,
+            cts.Token,
+            null
+          )
+          .ConfigureAwait(false)
+      ).ToList();
     }
     catch (Exception e) when (!e.IsFatal())
     {
