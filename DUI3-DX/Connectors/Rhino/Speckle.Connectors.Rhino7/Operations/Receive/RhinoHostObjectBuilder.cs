@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
