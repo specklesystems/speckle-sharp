@@ -1,4 +1,5 @@
 using ArcGIS.Core.Geometry;
+using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -7,16 +8,16 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, List<Base>>
 {
-  private readonly IRawConversion<MapPoint, List<Base>> _pointFeatureConverter;
-  private readonly IRawConversion<Multipoint, List<Base>> _multiPointFeatureConverter;
-  private readonly IRawConversion<Polyline, List<Base>> _polylineFeatureConverter;
-  private readonly IRawConversion<Polygon, List<Base>> _polygonFeatureConverter;
+  private readonly IRawConversion<MapPoint, List<SOG.Point>> _pointFeatureConverter;
+  private readonly IRawConversion<Multipoint, List<SOG.Point>> _multiPointFeatureConverter;
+  private readonly IRawConversion<Polyline, List<SOG.Polyline>> _polylineFeatureConverter;
+  private readonly IRawConversion<Polygon, List<GisPolygonGeometry>> _polygonFeatureConverter;
 
   public GeometryToSpeckleBaseList(
-    IRawConversion<MapPoint, List<Base>> pointFeatureConverter,
-    IRawConversion<Multipoint, List<Base>> multiPointFeatureConverter,
-    IRawConversion<Polyline, List<Base>> polylineFeatureConverter,
-    IRawConversion<Polygon, List<Base>> polygonFeatureConverter
+    IRawConversion<MapPoint, List<SOG.Point>> pointFeatureConverter,
+    IRawConversion<Multipoint, List<SOG.Point>> multiPointFeatureConverter,
+    IRawConversion<Polyline, List<SOG.Polyline>> polylineFeatureConverter,
+    IRawConversion<Polygon, List<GisPolygonGeometry>> polygonFeatureConverter
   )
   {
     _pointFeatureConverter = pointFeatureConverter;

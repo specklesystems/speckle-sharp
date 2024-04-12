@@ -1,11 +1,10 @@
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Objects.GIS;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, List<Base>>
+public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, List<GisPolygonGeometry>>
 {
   private readonly IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
@@ -14,10 +13,10 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, List<Bas
     _segmentConverter = segmentConverter;
   }
 
-  public List<Base> RawConvert(Polygon target)
+  public List<GisPolygonGeometry> RawConvert(Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
-    List<Base> polygonList = new();
+    List<GisPolygonGeometry> polygonList = new();
     int partCount = target.PartCount;
 
     GisPolygonGeometry polygon = new() { voids = new List<SOG.Polyline>() };

@@ -4,7 +4,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PointFeatureToSpeckleConverter : IRawConversion<MapPoint, List<Base>>
+public class PointFeatureToSpeckleConverter : IRawConversion<MapPoint, List<SOG.Point>>
 {
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
 
@@ -13,7 +13,7 @@ public class PointFeatureToSpeckleConverter : IRawConversion<MapPoint, List<Base
     _pointConverter = pointConverter;
   }
 
-  public List<Base> RawConvert(MapPoint target)
+  public List<SOG.Point> RawConvert(MapPoint target)
   {
     return new() { _pointConverter.RawConvert(target) };
   }

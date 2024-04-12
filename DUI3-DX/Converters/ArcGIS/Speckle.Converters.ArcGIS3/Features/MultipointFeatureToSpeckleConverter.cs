@@ -4,7 +4,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipointFeatureToSpeckleConverter : IRawConversion<Multipoint, List<Base>>
+public class MultipointFeatureToSpeckleConverter : IRawConversion<Multipoint, List<SOG.Point>>
 {
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
 
@@ -13,9 +13,9 @@ public class MultipointFeatureToSpeckleConverter : IRawConversion<Multipoint, Li
     _pointConverter = pointConverter;
   }
 
-  public List<Base> RawConvert(Multipoint target)
+  public List<SOG.Point> RawConvert(Multipoint target)
   {
-    List<Base> multipoint = new();
+    List<SOG.Point> multipoint = new();
     foreach (MapPoint point in target.Points)
     {
       multipoint.Add(_pointConverter.RawConvert(point));
