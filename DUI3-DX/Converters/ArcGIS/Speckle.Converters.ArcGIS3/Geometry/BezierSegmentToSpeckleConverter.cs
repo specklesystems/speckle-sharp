@@ -1,6 +1,5 @@
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 
@@ -19,8 +18,6 @@ public class BezierSegmentToSpeckleConverter : IRawConversion<CubicBezierSegment
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
-
-  public Base Convert(object target) => RawConvert((CubicBezierSegment)target);
 
   public SOG.Polyline RawConvert(CubicBezierSegment target)
   {

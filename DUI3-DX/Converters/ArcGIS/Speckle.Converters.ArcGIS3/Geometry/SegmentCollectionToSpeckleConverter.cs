@@ -2,7 +2,6 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
@@ -25,8 +24,6 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ReadOnlySegmen
     _arcConverter = arcConverter;
     _bezierConverter = bezierConverter;
   }
-
-  public Base Convert(object target) => RawConvert((ReadOnlySegmentCollection)target);
 
   public SOG.Polyline RawConvert(ReadOnlySegmentCollection target)
   {

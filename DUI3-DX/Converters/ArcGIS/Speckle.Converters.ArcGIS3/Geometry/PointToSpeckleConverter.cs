@@ -1,6 +1,5 @@
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 
@@ -14,8 +13,6 @@ public class PointToSpeckleConverter : IRawConversion<MapPoint, SOG.Point>
   {
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((MapPoint)target);
 
   public SOG.Point RawConvert(MapPoint target)
   {

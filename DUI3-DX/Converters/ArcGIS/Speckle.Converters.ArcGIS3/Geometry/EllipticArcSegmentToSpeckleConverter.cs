@@ -1,6 +1,5 @@
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 
@@ -19,8 +18,6 @@ public class EllipticArcToSpeckleConverter : IRawConversion<EllipticArcSegment, 
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
-
-  public Base Convert(object target) => RawConvert((EllipticArcSegment)target);
 
   public SOG.Polyline RawConvert(EllipticArcSegment target)
   {

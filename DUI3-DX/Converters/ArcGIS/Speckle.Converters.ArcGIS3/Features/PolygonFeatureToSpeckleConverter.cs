@@ -4,7 +4,7 @@ using Objects.GIS;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, List<GisPolygonGeometry>>
+public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>>
 {
   private readonly IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
@@ -13,7 +13,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<Polygon, List<Gis
     _segmentConverter = segmentConverter;
   }
 
-  public List<GisPolygonGeometry> RawConvert(Polygon target)
+  public IReadOnlyList<GisPolygonGeometry> RawConvert(Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
     List<GisPolygonGeometry> polygonList = new();

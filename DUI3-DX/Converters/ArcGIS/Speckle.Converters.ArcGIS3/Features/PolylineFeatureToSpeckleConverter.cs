@@ -3,7 +3,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class PolyineFeatureToSpeckleConverter : IRawConversion<Polyline, List<SOG.Polyline>>
+public class PolyineFeatureToSpeckleConverter : IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>>
 {
   private readonly IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
@@ -12,7 +12,7 @@ public class PolyineFeatureToSpeckleConverter : IRawConversion<Polyline, List<SO
     _segmentConverter = segmentConverter;
   }
 
-  public List<SOG.Polyline> RawConvert(Polyline target)
+  public IReadOnlyList<SOG.Polyline> RawConvert(Polyline target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     List<SOG.Polyline> polylineList = new();
