@@ -35,9 +35,12 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
+    // POC: This is where the top level base-layer name is set. Could be abstracted or injected in the context?
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
-    var objectsToConvert = rootObject.TraverseWithPath(obj => obj is not Collection);
+    var objectsToConvert = rootObject
+      .TraverseWithPath(obj => obj is not Collection)
+      .Where(obj => obj.Item2 is not Collection);
 
     var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
@@ -54,54 +57,73 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
-    var rootLayerName = baseLayerName;
-    // POC: This Find method was flagged as obsolete and I found no obvious way to work around it.
-    // Silencing it for now but we should find a way to fix this.
-#pragma warning disable CS0618 // Type or member is obsolete
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(rootLayerName, true);
-#pragma warning restore CS0618 // Type or member is obsolete
+    RhinoDoc doc = _contextStack.Current.Document;
 
+    var rootLayerIndex = doc.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
+
+    // Cleans up any previously received objects
+    // POC: We could move this out into a separate service for testing and re-use.
     if (rootLayerIndex >= 0)
     {
-      foreach (var layer in _contextStack.Current.Document.Layers[rootLayerIndex].GetChildren())
+      Layer documentLayer = doc.Layers[rootLayerIndex];
+      Layer[]? childLayers = documentLayer.GetChildren();
+      if (childLayers != null)
       {
-        // Cleans up any previously received objects
-        _contextStack.Current.Document.Layers.Purge(layer.Index, false);
+        foreach (var layer in childLayers)
+        {
+          doc.Layers.Purge(layer.Index, false);
+        }
       }
     }
 
     var cache = new Dictionary<string, int>();
-    rootLayerIndex = _contextStack.Current.Document.Layers.Add(new Layer { Name = rootLayerName });
-    cache.Add(rootLayerName, rootLayerIndex);
+    rootLayerIndex = doc.Layers.Add(new Layer { Name = baseLayerName });
+    cache.Add(baseLayerName, rootLayerIndex);
 
     var newObjectIds = new List<string>();
     var count = 0;
     var listObjects = objects.ToList();
+
+    // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
+    var conversionExceptions = new List<Exception>();
+
     foreach ((List<string> path, Base baseObj) in objects)
     {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      var fullLayerName = string.Join("::", path);
-      var layerIndex = cache.TryGetValue(fullLayerName, out int value)
-        ? value
-        : GetAndCreateLayerFromPath(path, rootLayerName, cache);
-
-      onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
-
-      var converted = _toHostConverter.Convert(baseObj);
-      if (converted is GeometryBase newObject)
+      try
       {
-        var newObjectGuid = _contextStack.Current.Document.Objects.Add(
-          newObject,
-          new ObjectAttributes { LayerIndex = layerIndex }
-        );
-        newObjectIds.Add(newObjectGuid.ToString());
-      }
+        cancellationToken.ThrowIfCancellationRequested();
 
-      // POC:  else something weird happened? a block maybe? also, blocks are treated like $$$ now tbh so i won't dive into them
-      throw new SpeckleException(
-        $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-      );
+        var fullLayerName = string.Join("::", path);
+        var layerIndex = cache.TryGetValue(fullLayerName, out int value)
+          ? value
+          : GetAndCreateLayerFromPath(path, baseLayerName, cache);
+
+        onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
+
+        var converted = _toHostConverter.Convert(baseObj);
+
+        if (converted is GeometryBase newObject)
+        {
+          var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+          newObjectIds.Add(newObjectGuid.ToString());
+          continue;
+        }
+
+        // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
+        throw new SpeckleException(
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
+        );
+      }
+      catch (Exception e) when (!e.IsFatal())
+      {
+        conversionExceptions.Add(e);
+      }
+    }
+
+    if (conversionExceptions.Count != 0)
+    {
+      // POC: Both the message and the handling of this should be engineered taking into account error reporting in DUI becoming better.
+      throw new AggregateException("Some conversions failed. Please check inner exceptions.", conversionExceptions);
     }
 
     return newObjectIds;
