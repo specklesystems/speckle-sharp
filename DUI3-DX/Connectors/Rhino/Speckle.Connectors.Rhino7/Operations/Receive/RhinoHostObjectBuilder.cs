@@ -36,6 +36,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     CancellationToken cancellationToken
   )
   {
+    // POC: This is where the top level base-layer name is set. Could be abstracted or injected in the context?
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
     var objectsToConvert = rootObject
@@ -62,6 +63,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var rootLayerIndex = doc.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
 
     // Cleans up any previously received objects
+    // POC: We could move this out into a separate service for testing and re-use.
     if (rootLayerIndex >= 0)
     {
       Layer documentLayer = doc.Layers[rootLayerIndex];

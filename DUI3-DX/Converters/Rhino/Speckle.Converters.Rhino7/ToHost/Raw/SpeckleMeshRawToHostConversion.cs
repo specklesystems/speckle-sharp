@@ -34,12 +34,17 @@ public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
     return m;
   }
 
-  private static void AssignMeshFaces(SOG.Mesh target, RG.Mesh m)
+  // POC: We should abstract this into the `Mesh` class, or some utility class adjacent to it
+  //      All converters need to do this so it's going to be a source of repetition
+  //      and it is directly tied to how we serialise the data in the mesh.
+  private void AssignMeshFaces(SOG.Mesh target, RG.Mesh m)
   {
     int i = 0;
     while (i < target.faces.Count)
     {
       int n = target.faces[i];
+      // For backwards compatibility. Old meshes will have "0" for triangle face, "1" for quad face.
+      // Newer meshes have "3" for triangle face, "4" for quad" face and "5...n" for n-gon face.
       if (n < 3)
       {
         n += 3; // 0 -> 3, 1 -> 4
@@ -78,7 +83,7 @@ public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
     m.Faces.CullDegenerateFaces();
   }
 
-  private static void AssignTextureCoordinates(SOG.Mesh target, RG.Mesh m)
+  private void AssignTextureCoordinates(SOG.Mesh target, RG.Mesh m)
   {
     var textureCoordinates = new RG.Point2f[target.TextureCoordinatesCount];
     for (int ti = 0; ti < target.TextureCoordinatesCount; ti++)
