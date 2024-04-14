@@ -5,6 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
+[NameAndRankValue(nameof(RG.ArcCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public sealed class RhinoArcCurveToSpeckleConverter : HostToSpeckleGeometryBaseConversion<RG.ArcCurve, Base> // POC: Must return base because an ArcCurve can be an arc or a circle.
 {
   public RhinoArcCurveToSpeckleConverter(

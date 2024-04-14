@@ -4,6 +4,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
+[NameAndRankValue(nameof(RG.PolylineCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public sealed class RhinoPolylineCurveConverter : HostToSpeckleGeometryBaseConversion<RG.PolylineCurve, SOG.Polyline>
 {
   public RhinoPolylineCurveConverter(

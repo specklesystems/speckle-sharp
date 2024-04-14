@@ -4,6 +4,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
+[NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public sealed class RhinoMeshToSpeckleConverter : HostToSpeckleGeometryBaseConversion<RG.Mesh, SOG.Mesh>
 {
   public RhinoMeshToSpeckleConverter(

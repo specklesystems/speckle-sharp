@@ -1,7 +1,6 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
@@ -28,6 +27,11 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
   public SOG.Curve RawConvert(RG.NurbsCurve target)
   {
     target.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
+    if (target.IsClosed)
+    {
+      poly.Add(poly[0]);
+    }
+
     SOG.Polyline displayValue = _polylineConverter.RawConvert(poly);
 
     var nurbsCurve = target.ToNurbsCurve();

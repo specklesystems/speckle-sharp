@@ -5,7 +5,6 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7;
 
-[NameAndRankValue(nameof(TIn), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public abstract class HostToSpeckleGeometryBaseConversion<TIn, TOut> : IHostObjectToSpeckleConversion
   where TIn : RG.GeometryBase
   where TOut : Base

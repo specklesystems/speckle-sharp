@@ -47,7 +47,7 @@ public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SO
     return result;
   }
 
-  public List<List<SOG.ControlPoint>> ControlPointsToSpeckle(RG.Collections.NurbsSurfacePointList controlPoints)
+  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(RG.Collections.NurbsSurfacePointList controlPoints)
   {
     var points = new List<List<SOG.ControlPoint>>();
     for (var i = 0; i < controlPoints.CountU; i++)

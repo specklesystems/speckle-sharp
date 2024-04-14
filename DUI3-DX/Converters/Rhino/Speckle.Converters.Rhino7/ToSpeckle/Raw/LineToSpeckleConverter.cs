@@ -4,7 +4,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>
+public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>, IRawConversion<RG.LineCurve, SOG.Line>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -32,4 +32,6 @@ public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>
       domain = new SOP.Interval(0, target.Length),
       bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox))
     };
+
+  public SOG.Line RawConvert(RG.LineCurve target) => RawConvert(target.Line);
 }

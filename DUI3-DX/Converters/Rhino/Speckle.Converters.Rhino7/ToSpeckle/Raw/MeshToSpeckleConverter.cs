@@ -49,7 +49,7 @@ public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
 
     var colors = target.VertexColors.Select(cl => cl.ToArgb()).ToList();
     var volume = target.IsClosed ? target.Volume() : 0;
-    var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))); // POC: Why do we use accurate BBox? it's slower.
+    var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(false)));
 
     return new SOG.Mesh(vertexCoordinates, faces, colors, textureCoordinates, _contextStack.Current.SpeckleUnits)
     {

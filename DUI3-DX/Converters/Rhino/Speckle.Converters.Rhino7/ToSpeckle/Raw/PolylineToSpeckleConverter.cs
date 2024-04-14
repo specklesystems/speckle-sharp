@@ -1,11 +1,12 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-public class PolylineToSpeckleConverter : IRawConversion<RG.Polyline, SOG.Polyline>
+public class PolylineToSpeckleConverter
+  : IRawConversion<RG.Polyline, SOG.Polyline>,
+    IRawConversion<RG.PolylineCurve, SOG.Polyline>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -24,8 +25,6 @@ public class PolylineToSpeckleConverter : IRawConversion<RG.Polyline, SOG.Polyli
 
   public SOG.Polyline RawConvert(RG.Polyline target)
   {
-    // POC: Original polyline conversion had a domain as input, as well as the side-effect of returning a `Line` if the polyline had 2 points only.
-
     var box = _boxConverter.RawConvert(new RG.Box(target.BoundingBox));
     var points = target.Select(pt => _pointConverter.RawConvert(pt)).ToList();
 
@@ -43,4 +42,6 @@ public class PolylineToSpeckleConverter : IRawConversion<RG.Polyline, SOG.Polyli
       length = target.Length
     };
   }
+
+  public SOG.Polyline RawConvert(RG.PolylineCurve target) => RawConvert(target.ToPolyline());
 }

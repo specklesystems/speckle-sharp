@@ -4,7 +4,6 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-// POC: not sure I like the place of the default rank
 public class PlaneToSpeckleConverter : IRawConversion<RG.Plane, SOG.Plane>
 {
   private readonly IRawConversion<RG.Vector3d, SOG.Vector> _vectorConverter;

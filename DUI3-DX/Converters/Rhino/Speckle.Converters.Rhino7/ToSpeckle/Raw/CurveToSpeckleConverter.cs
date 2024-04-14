@@ -5,6 +5,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
+// POC: This converter decides which specific curve conversion to use. IIndex may be a better choice.
 public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>
 {
   private readonly IRawConversion<RG.PolyCurve, SOG.Polycurve> _polyCurveConverter;
