@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
 {
@@ -24,8 +24,6 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
-
-  public Base Convert(object target) => RawConvert((RG.NurbsCurve)target);
 
   public SOG.Curve RawConvert(RG.NurbsCurve target)
   {

@@ -5,6 +5,7 @@ using Speckle.Converters.Common.Objects;
 using Rhino;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Rhino7.ToHost;
+using Speckle.Converters.Rhino7.ToSpeckle;
 
 namespace Speckle.Converters.Rhino7.DependencyInjection;
 

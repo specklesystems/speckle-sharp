@@ -25,8 +25,6 @@ public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SO
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.NurbsSurface)target);
-
   public SOG.Surface RawConvert(RG.NurbsSurface target)
   {
     var result = new SOG.Surface

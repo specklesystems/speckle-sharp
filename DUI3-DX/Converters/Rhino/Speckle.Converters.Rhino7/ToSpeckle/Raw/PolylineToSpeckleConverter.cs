@@ -22,8 +22,6 @@ public class PolylineToSpeckleConverter : IRawConversion<RG.Polyline, SOG.Polyli
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Polyline)target);
-
   public SOG.Polyline RawConvert(RG.Polyline target)
   {
     // POC: Original polyline conversion had a domain as input, as well as the side-effect of returning a `Line` if the polyline had 2 points only.
