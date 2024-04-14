@@ -41,10 +41,9 @@ public class AutofacRhinoConverterModule : Module
     builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
-      .As<IFactory<string, IHostObjectToSpeckleConversion>>();
+      .As<IFactory<string, IHostObjectToSpeckleConversion>>()
+      .InstancePerLifetimeScope();
 
-    // To Host
-    // POC: Missing Unit converter
     builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
     builder
       .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()

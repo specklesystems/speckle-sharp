@@ -4,7 +4,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
+namespace Speckle.Converters.Rhino7;
 
 public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleObjectToHostConversion
   where TIn : Base

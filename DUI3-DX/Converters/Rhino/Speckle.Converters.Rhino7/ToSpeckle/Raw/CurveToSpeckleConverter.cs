@@ -46,24 +46,19 @@ public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>
       return _polyCurveConverter.RawConvert(polyCurve);
     }
 
-    if (target.IsCircle(tolerance) && target.IsClosed)
+    if (target is RG.ArcCurve arcCurve)
     {
-      if (target.TryGetCircle(out var getObj, tolerance))
+      if (arcCurve.IsCompleteCircle)
       {
+        target.TryGetCircle(out var getObj, tolerance);
         var cir = _circleConverter.RawConvert(getObj);
         cir.domain = _intervalConverter.RawConvert(target.Domain);
         return cir;
       }
-    }
 
-    if (target.IsArc(tolerance))
-    {
-      if (target.TryGetArc(out var getObj, tolerance))
-      {
-        var arc = _arcConverter.RawConvert(getObj);
-        arc.domain = _intervalConverter.RawConvert(target.Domain);
-        return arc;
-      }
+      var arc = _arcConverter.RawConvert(arcCurve.Arc);
+      arc.domain = _intervalConverter.RawConvert(target.Domain);
+      return arc;
     }
 
     if (target.IsEllipse(tolerance) && target.IsClosed)
