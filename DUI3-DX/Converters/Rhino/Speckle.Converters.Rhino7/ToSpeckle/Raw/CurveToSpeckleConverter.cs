@@ -1,88 +1,42 @@
 ﻿using Objects;
-using Rhino;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 // POC: CNX-9278 This converter decides which specific curve conversion to use. IIndex may be a better choice.
-public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>
+public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>, IRawConversion<RG.Curve, Base>
 {
   private readonly IRawConversion<RG.PolyCurve, SOG.Polycurve> _polyCurveConverter;
-  private readonly IRawConversion<RG.Circle, SOG.Circle> _circleConverter;
-  private readonly IRawConversion<RG.Arc, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<RG.Ellipse, SOG.Ellipse> _ellipseConverter;
-  private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
+  private readonly IRawConversion<RG.ArcCurve, ICurve> _arcCurveConverter;
+  private readonly IRawConversion<RG.PolylineCurve, SOG.Polyline> _polylineConverter;
   private readonly IRawConversion<RG.NurbsCurve, SOG.Curve> _nurbsCurveConverter;
-  private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly IRawConversion<RG.LineCurve, SOG.Line> _lineCurveConverter;
 
   public CurveToSpeckleConverter(
     IRawConversion<RG.PolyCurve, SOG.Polycurve> polyCurveConverter,
-    IRawConversion<RG.Circle, SOG.Circle> circleConverter,
-    IRawConversion<RG.Arc, SOG.Arc> arcConverter,
-    IRawConversion<RG.Ellipse, SOG.Ellipse> ellipseConverter,
-    IRawConversion<RG.Polyline, SOG.Polyline> polylineConverter,
+    IRawConversion<RG.ArcCurve, ICurve> arcCurveConverter,
+    IRawConversion<RG.PolylineCurve, SOG.Polyline> polylineConverter,
     IRawConversion<RG.NurbsCurve, SOG.Curve> nurbsCurveConverter,
-    IRawConversion<RG.Interval, SOP.Interval> intervalConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    IRawConversion<RG.LineCurve, SOG.Line> lineCurveConverter
   )
   {
     _polyCurveConverter = polyCurveConverter;
-    _circleConverter = circleConverter;
-    _arcConverter = arcConverter;
-    _ellipseConverter = ellipseConverter;
+    _arcCurveConverter = arcCurveConverter;
     _polylineConverter = polylineConverter;
     _nurbsCurveConverter = nurbsCurveConverter;
-    _intervalConverter = intervalConverter;
-    _contextStack = contextStack;
+    _lineCurveConverter = lineCurveConverter;
   }
 
-  public ICurve RawConvert(RG.Curve target)
-  {
-    var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
-
-    if (target is RG.PolyCurve polyCurve)
+  public ICurve RawConvert(RG.Curve target) =>
+    target switch
     {
-      return _polyCurveConverter.RawConvert(polyCurve);
-    }
+      RG.PolyCurve polyCurve => _polyCurveConverter.RawConvert(polyCurve),
+      RG.ArcCurve arcCurve => _arcCurveConverter.RawConvert(arcCurve),
+      RG.PolylineCurve polylineCurve => _polylineConverter.RawConvert(polylineCurve),
+      RG.LineCurve lineCurve => _lineCurveConverter.RawConvert(lineCurve),
+      _ => _nurbsCurveConverter.RawConvert(target.ToNurbsCurve())
+    };
 
-    if (target is RG.ArcCurve arcCurve)
-    {
-      if (arcCurve.IsCompleteCircle)
-      {
-        target.TryGetCircle(out var getObj, tolerance);
-        var cir = _circleConverter.RawConvert(getObj);
-        cir.domain = _intervalConverter.RawConvert(target.Domain);
-        return cir;
-      }
-
-      var arc = _arcConverter.RawConvert(arcCurve.Arc);
-      arc.domain = _intervalConverter.RawConvert(target.Domain);
-      return arc;
-    }
-
-    if (target.IsEllipse(tolerance) && target.IsClosed)
-    {
-      target.TryGetPlane(out RG.Plane pln, tolerance);
-      if (target.TryGetEllipse(pln, out var getObj, tolerance))
-      {
-        var ellipse = _ellipseConverter.RawConvert(getObj);
-        ellipse.domain = _intervalConverter.RawConvert(target.Domain);
-        return ellipse;
-      }
-    }
-
-    if (target.IsLinear(tolerance) || target.IsPolyline())
-    {
-      if (target.TryGetPolyline(out var getObj))
-      {
-        var polyline = _polylineConverter.RawConvert(getObj);
-        polyline.domain = _intervalConverter.RawConvert(target.Domain);
-        return polyline;
-      }
-    }
-
-    return _nurbsCurveConverter.RawConvert(target.ToNurbsCurve());
-  }
+  Base IRawConversion<RG.Curve, Base>.RawConvert(RG.Curve target) => (Base)RawConvert(target);
 }

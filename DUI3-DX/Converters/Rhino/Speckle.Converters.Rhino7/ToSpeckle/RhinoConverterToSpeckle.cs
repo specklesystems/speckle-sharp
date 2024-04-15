@@ -1,4 +1,3 @@
-using Rhino.DocObjects;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -17,32 +16,14 @@ public class RhinoConverterToSpeckle : ISpeckleConverterToSpeckle
 
   public Base Convert(object target)
   {
-    if (target is not RhinoObject rhinoObject)
+    var type = target.GetType();
+    var objectConverter = _toSpeckle.ResolveInstance(type.Name);
+
+    if (objectConverter == null)
     {
-      throw new NotSupportedException(
-        $"Conversion of {target.GetType().Name} to Speckle is not supported. Only objects that inherit from RhinoObject are."
-      );
+      throw new NotSupportedException($"No conversion found for {type.Name}");
     }
 
-    Type type = rhinoObject.Geometry.GetType();
-
-    try
-    {
-      var objectConverter = _toSpeckle.ResolveInstance(type.Name);
-
-      if (objectConverter == null)
-      {
-        throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
-      }
-
-      var convertedObject = objectConverter.Convert(rhinoObject.Geometry);
-
-      return convertedObject;
-    }
-    catch (SpeckleConversionException e)
-    {
-      Console.WriteLine(e);
-      throw; // Just rethrowing for now, Logs may be needed here.
-    }
+    return objectConverter.Convert(target);
   }
 }
