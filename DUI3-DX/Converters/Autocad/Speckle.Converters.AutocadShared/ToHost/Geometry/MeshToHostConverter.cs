@@ -8,8 +8,9 @@ using System.Collections.Generic;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
-// POC: there is a transaction error, ingoring for now to not crash acad!
-// [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+// POC: there is a random transaction memory error!
+
+[NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
@@ -39,6 +40,7 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
     }
 
     ADB.PolyFaceMesh mesh = new();
+
     using (ADB.Transaction tr = _contextStack.Current.Document.TransactionManager.StartTransaction())
     {
       mesh.SetDatabaseDefaults();
