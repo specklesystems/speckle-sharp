@@ -8,7 +8,6 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
-using System.Collections;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
