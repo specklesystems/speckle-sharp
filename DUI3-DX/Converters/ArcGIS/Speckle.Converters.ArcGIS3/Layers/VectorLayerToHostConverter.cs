@@ -1,75 +1,152 @@
+using ArcGIS.Core.Data;
+using ArcGIS.Core.Data.DDL;
+using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Core;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
 [NameAndRankValue(nameof(VectorLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<VectorLayer, object>
+public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<VectorLayer, Task<string>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IRawConversion<Base, ArcGIS.Core.Geometry.Geometry> _gisGeometryConverter;
 
-  public VectorLayerToHostConverter(IConversionContextStack<Map, Unit> contextStack)
+  public VectorLayerToHostConverter(
+    IConversionContextStack<Map, Unit> contextStack,
+    IRawConversion<Base, ArcGIS.Core.Geometry.Geometry> gisGeometryConverter
+  )
   {
     _contextStack = contextStack;
+    _gisGeometryConverter = gisGeometryConverter;
   }
 
   public object Convert(Base target) => RawConvert((VectorLayer)target);
 
-  public object RawConvert(VectorLayer target)
+  public Task<string> RawConvert(VectorLayer target)
   {
-    /*
-    // Use Speckle geodatabase
-    var fGdbPath = Directory.GetParent(Project.Current.URI).ToString();
-    var fGdbName = "Speckle5.gdb";
-    FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new FileGeodatabaseConnectionPath(
-      new Uri(fGdbPath + "\\" + fGdbName)
-    );
-    Geodatabase geodatabase = SchemaBuilder.CreateGeodatabase(fileGeodatabaseConnectionPath);
-
-    ////////////////////// https://pro.arcgis.com/en/pro-app/3.1/sdk/api-reference/topic40923.html
-    string featureDatasetName = "featureDatasetName";
-    string featureClassName = target.name;
-
-    SchemaBuilder schemaBuilder = new SchemaBuilder(geodatabase);
-
-    // Create a FeatureDataset token
-    FeatureDatasetDescription featureDatasetDescription = new FeatureDatasetDescription(
-      featureDatasetName,
-      SpatialReferences.WGS84
-    );
-    FeatureDatasetToken featureDatasetToken = schemaBuilder.Create(featureDatasetDescription);
-
-    // Create a FeatureClass description
-    FeatureClassDescription featureClassDescription = new FeatureClassDescription(
-      featureClassName,
-      new List<FieldDescription>()
-      {
-        new FieldDescription("Id", FieldType.Integer),
-        new FieldDescription("Address", FieldType.String)
-      },
-      new ShapeDescription(GeometryType.Point, SpatialReferences.WGS84)
-    );
-
-    // Create a FeatureClass inside a FeatureDataset
-    FeatureClassToken featureClassToken = schemaBuilder.Create(
-      new FeatureDatasetDescription(featureDatasetToken),
-      featureClassDescription
-    );
-    // Build status
-    bool buildStatus = schemaBuilder.Build();
-    // Build errors
-    if (!buildStatus)
+    string message = string.Empty;
+    try
     {
-      IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
-    }
-    */
-    // POC: Bake here converted objects into ArcGIS Map.
-    // POC: add here baked arcgis objects into list that we will return
+      return QueuedTask.Run(() =>
+      {
+        // Use Speckle geodatabase
+        var fGdbPath = Directory.GetParent(Project.Current.URI).ToString();
+        var fGdbName = "Speckle.gdb";
+        FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new FileGeodatabaseConnectionPath(
+          new Uri(fGdbPath + "\\" + fGdbName)
+        );
+        Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
+        SchemaBuilder schemaBuilder = new(geodatabase);
 
-    return null;
+        string featureClassName = target.name.Replace(" ", "_");
+        SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(target.crs.wkt.ToString());
+
+        GeometryType geomType = new();
+        if (target.nativeGeomType == null)
+        {
+          throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
+        }
+        else
+        {
+          if (target.nativeGeomType.ToLower().Contains("point"))
+          {
+            geomType = GeometryType.Multipoint;
+          }
+          else if (target.nativeGeomType.ToLower().Contains("polyline"))
+          {
+            geomType = GeometryType.Polyline;
+          }
+          else if (target.nativeGeomType.ToLower().Contains("polygon"))
+          {
+            geomType = GeometryType.Polygon;
+          }
+          else if (target.nativeGeomType.ToLower().Contains("multipatch"))
+          {
+            geomType = GeometryType.Multipatch;
+          }
+          // throw new
+        }
+
+        ///////////////////
+
+        // Create a FeatureClass description
+        List<FieldDescription> fields = new();
+        var fieldAdded = new List<string>();
+        foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
+        {
+          if (!fieldAdded.Contains(field.Key) && field.Key != "OBJECTID")
+          {
+            // fields.Add(new FieldDescription(field, FieldType.Integer));
+            fields.Add(FieldDescription.CreateStringField(field.Key, 255)); // (int)(long)target.attributes[field.Value]));
+            fieldAdded.Add(field.Key);
+          }
+        }
+
+        FeatureClassDescription featureClassDescription =
+          new(featureClassName, fields, new ShapeDescription(geomType, spatialRef));
+
+        FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
+        // Build status
+        bool buildStatus = schemaBuilder.Build();
+        if (!buildStatus)
+        {
+          IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
+        }
+
+        // Add features to the FeatureClass
+        FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
+        if (geomType == GeometryType.Multipoint) // for now only points
+        {
+          geodatabase.ApplyEdits(() =>
+          {
+            foreach (GisFeature feat in target.elements)
+            {
+              using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
+              {
+                foreach (string field in fieldAdded)
+                {
+                  try
+                  {
+                    rowBuffer[field] = feat.attributes[field].ToString();
+                  }
+                  catch (GeodatabaseFieldException ex) { }
+                  catch (NullReferenceException ex)
+                  {
+                    rowBuffer[field] = null;
+                  }
+                }
+
+                if (feat.geometry != null)
+                {
+                  //foreach (var geometryPart in feat.geometry)
+                  //{
+                  // move overall shape creation outside the loop
+                  var geometryPart = feat.geometry[0];
+                  ArcGIS.Core.Geometry.Geometry nativeShape = _gisGeometryConverter.RawConvert(geometryPart);
+                  rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
+                  //break;
+                  //}
+                }
+                newFeatureClass.CreateRow(rowBuffer).Dispose();
+              }
+            }
+          });
+        }
+        return featureClassName;
+      });
+      // throw new InvalidOperationException("Something went wrong");
+    }
+    catch (GeodatabaseException exObj)
+    {
+      throw new InvalidOperationException("Something went wrong: {exObj.Message}");
+    }
   }
 }

@@ -10,6 +10,7 @@ using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -42,9 +43,8 @@ public class HostObjectBuilder : IHostObjectBuilder
     ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
 
     ///////////////////////// create and add Geodatabase to a project
-    string newGDBPath = Project.Current.URI;
-    var fGdbPath = Directory.GetParent(newGDBPath).ToString();
-    var fGdbName = "Speckle5.gdb";
+    var fGdbPath = Directory.GetParent(Project.Current.URI).ToString();
+    var fGdbName = "Speckle.gdb";
 
     var utils = new ArcGISProjectUtils();
     Task task = utils.addDatabaseToProject(fGdbPath, fGdbName);
@@ -64,17 +64,20 @@ public class HostObjectBuilder : IHostObjectBuilder
 
       try
       {
-        // POC: Question to Kate -> Conversion returns already baked objects?? If so we do not necessarily need below loop?
-        object converted = converter.Convert(obj); // NULL right now returns Polyline, should return Feature class/Raster
-        List<object> flattened = Utilities.FlattenToNativeConversionResult(converted); // not necessary
+        // BAKE OBJECTS HERE
 
-        foreach (var conversionResult in flattened)
+        QueuedTask.Run(() =>
         {
-          if (conversionResult == null)
+          var converted = converter.Convert(obj);
+          if (converted is Task<string> task)
           {
-            continue;
+            string uri = task.Result;
+            objectIds.Add(obj.id);
+            // TODO: get map from context instead
+            LayerFactory.Instance.CreateLayer(new Uri($"{fGdbPath}\\{fGdbName}\\{uri}"), MapView.Active.Map);
           }
-        }
+        });
+
         onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count());
       }
       catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable

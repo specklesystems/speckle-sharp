@@ -13,8 +13,12 @@ public class ArcGISProjectUtils
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new FileGeodatabaseConnectionPath(
       new Uri(fGdbPath + "\\" + fGdbName)
     );
-    // Create actual database in the specified Path
-    Geodatabase geodatabase = SchemaBuilder.CreateGeodatabase(fileGeodatabaseConnectionPath);
+    // Create actual database in the specified Path unless already exists
+    try
+    {
+      Geodatabase geodatabase = SchemaBuilder.CreateGeodatabase(fileGeodatabaseConnectionPath);
+    }
+    catch (ArcGIS.Core.Data.Exceptions.GeodatabaseWorkspaceException) { }
 
     /// Add a folder connection to a project
     Item folderToAdd = ItemFactory.Instance.Create(fGdbPath);
