@@ -8,6 +8,7 @@ namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Curve, ADB.Curve>
 {
   private readonly IRawConversion<SOG.Curve, AG.NurbCurve3d> _curveConverter;
+
   public CurveToHostConverter(IRawConversion<SOG.Curve, AG.NurbCurve3d> curveConverter)
   {
     _curveConverter = curveConverter;
@@ -15,8 +16,5 @@ public class CurveToHostConverter : ISpeckleObjectToHostConversion, IRawConversi
 
   public object Convert(Base target) => RawConvert((SOG.Curve)target);
 
-  public ADB.Curve RawConvert(SOG.Curve target)
-  {
-    return ADB.Curve.CreateFromGeCurve(_curveConverter.RawConvert(target));
-  }
+  public ADB.Curve RawConvert(SOG.Curve target) => ADB.Curve.CreateFromGeCurve(_curveConverter.RawConvert(target));
 }

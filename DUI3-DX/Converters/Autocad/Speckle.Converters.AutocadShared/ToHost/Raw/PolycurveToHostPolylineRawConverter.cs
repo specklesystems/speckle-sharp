@@ -48,6 +48,10 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
           // POC: possibly endAngle and startAngle null?
           var angle = arc.endAngle - arc.startAngle;
           angle = angle < 0 ? angle + 2 * Math.PI : angle;
+          if (angle is null)
+          {
+            throw new ArgumentNullException(nameof(arc), "Cannot convert arc without angle value.");
+          }
           var bulge = Math.Tan((double)angle / 4) * BulgeDirection(arc.startPoint, arc.midPoint, arc.endPoint);
           polyline.AddVertexAt(count, _pointConverter.RawConvert(arc.startPoint).Convert2d(plane), bulge, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)

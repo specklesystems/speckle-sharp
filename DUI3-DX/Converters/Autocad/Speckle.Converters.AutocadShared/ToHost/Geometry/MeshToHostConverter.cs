@@ -26,12 +26,13 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
 
   public object Convert(Base target) => RawConvert((SOG.Mesh)target);
 
+  /// <remarks>Mesh conversion requires transaction since it's vertices needed to be added into database in advance..</remarks>
   public ADB.PolyFaceMesh RawConvert(SOG.Mesh target)
   {
     target.TriangulateMesh(true);
 
     // get vertex points
-    AG.Point3dCollection vertices = new();
+    using AG.Point3dCollection vertices = new();
     List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
     foreach (var point in points)
     {
@@ -109,7 +110,6 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
           tr.AddNewlyCreatedDBObject(face, true);
         }
       }
-
       tr.Commit();
     }
 

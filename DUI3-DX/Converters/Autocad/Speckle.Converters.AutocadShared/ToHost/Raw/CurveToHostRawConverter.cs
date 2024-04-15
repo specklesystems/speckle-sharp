@@ -32,43 +32,45 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
     // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
     // Conversions for autocad need to make sure this is satisfied, otherwise will cause protected mem crash.
     // NOTE: for **closed periodic** curves that have "n" control pts, # of knots should be n + 1. Remove degree = 3 knots from start and end.
-    List<double> _knots = target.knots;
+    List<double> knotList = target.knots;
     if (target.knots.Count == points.Count + target.degree - 1) // handles rhino format curves
     {
-      _knots.Insert(0, _knots[0]);
-      _knots.Insert(_knots.Count - 1, _knots[_knots.Count - 1]);
+      knotList.Insert(0, knotList[0]);
+      knotList.Insert(knotList.Count - 1, knotList[knotList.Count - 1]);
     }
     if (target.closed && target.periodic) // handles closed periodic curves
     {
-      _knots = _knots.GetRange(target.degree, _knots.Count - target.degree * 2);
+      knotList = knotList.GetRange(target.degree, knotList.Count - target.degree * 2);
     }
 
     var knots = new AG.KnotCollection();
-    foreach (var _knot in _knots)
+    foreach (var knot in knotList)
     {
-      knots.Add(_knot);
+      knots.Add(knot);
     }
 
     // process weights
     // NOTE: if all weights are the same, autocad convention is to pass an empty list (this will assign them a value of -1)
-    var _weights = target.weights;
+    var weightsList = target.weights;
     if (target.closed && target.periodic) // handles closed periodic curves
     {
-      _weights = target.weights.GetRange(0, points.Count);
+      weightsList = target.weights.GetRange(0, points.Count);
     }
 
     AG.DoubleCollection weights;
     weights =
-      (_weights.Distinct().Count() == 1) ? new AG.DoubleCollection() : new AG.DoubleCollection(_weights.ToArray());
+      (weightsList.Distinct().Count() == 1)
+        ? new AG.DoubleCollection()
+        : new AG.DoubleCollection(weightsList.ToArray());
 
-    AG.NurbCurve3d _curve = new(target.degree, knots, pointCollection, weights, target.periodic);
+    AG.NurbCurve3d curve = new(target.degree, knots, pointCollection, weights, target.periodic);
     if (target.closed)
     {
-      _curve.MakeClosed();
+      curve.MakeClosed();
     }
 
-    _curve.SetInterval(_intervalConverter.RawConvert(target.domain));
+    curve.SetInterval(_intervalConverter.RawConvert(target.domain));
 
-    return _curve;
+    return curve;
   }
 }

@@ -20,7 +20,7 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
   public PolycurveToHostConverter(
     IRawConversion<SOG.Polycurve, ADB.Polyline> polylineConverter,
     IRawConversion<SOG.Polycurve, List<ADB.Entity>> splineConverter
-    )
+  )
   {
     _polylineConverter = polylineConverter;
     _splineConverter = splineConverter;
@@ -28,7 +28,7 @@ public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
 
   public object Convert(Base target)
   {
-    SOG.Polycurve polycurve = target as SOG.Polycurve;
+    SOG.Polycurve polycurve = (SOG.Polycurve)target;
     bool convertAsSpline = polycurve.segments.Any(s => s is not SOG.Line and not SOG.Arc);
     bool isPlanar = IsPolycurvePlanar(polycurve);
 

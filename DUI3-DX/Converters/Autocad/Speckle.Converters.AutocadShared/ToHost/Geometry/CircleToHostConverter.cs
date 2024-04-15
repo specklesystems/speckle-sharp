@@ -39,6 +39,7 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
     }
     else
     {
+      // POC: looks like it is kind of workaround, should we stick with it or throw error regardless?
       radius = f * Math.Sqrt(target.area / Math.PI);
     }
 
