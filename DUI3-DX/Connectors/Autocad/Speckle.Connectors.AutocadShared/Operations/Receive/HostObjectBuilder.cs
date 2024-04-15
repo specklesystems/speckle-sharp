@@ -8,6 +8,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
+using System.Collections;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
@@ -80,8 +81,7 @@ public class HostObjectBuilder : IHostObjectBuilder
           }
 
           object converted = converter.Convert(obj);
-          // POC: ADB.Polyline is inherited from IEnumerable and it returns vertices.... :/ We need to consider to change list type to IList in below function!
-          List<object> flattened = Core.Models.Utilities.FlattenToNativeConversionResult(converted);
+          List<object> flattened = Utilities.FlattenToNativeConversionResult(converted, typeof(Entity));
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
           {

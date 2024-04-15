@@ -218,8 +218,9 @@ public static class Utilities
   /// This happens, for example, in the case of multiple display value fallbacks for a given object.
   /// </summary>
   /// <param name="item"> Object to flatten</param>
+  /// <param name="nativeType"> Type to not flat if native type inherited from IEnumerable.</param>
   /// <returns> Flattened objects after to native.</returns>
-  public static List<object> FlattenToNativeConversionResult(object item)
+  public static List<object> FlattenToNativeConversionResult(object item, Type nativeType)
   {
     List<object> convertedList = new();
     Stack<object> stack = new();
@@ -229,7 +230,7 @@ public static class Utilities
     {
       object current = stack.Pop();
 
-      if (current is IEnumerable list)
+      if (current.GetType() != nativeType && current is IList list)
       {
         foreach (object subItem in list)
         {
