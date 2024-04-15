@@ -1,21 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Raw;
+
 public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IRawConversion<SOP.Interval, AG.Interval> _intervalConverter;
 
-  public CurveToHostRawConverter(IRawConversion<SOG.Point, AG.Point3d> pointConverter, IRawConversion<SOP.Interval, Interval> intervalConverter)
+  public CurveToHostRawConverter(
+    IRawConversion<SOG.Point, AG.Point3d> pointConverter,
+    IRawConversion<SOP.Interval, AG.Interval> intervalConverter
+  )
   {
     _pointConverter = pointConverter;
     _intervalConverter = intervalConverter;
   }
 
-  public NurbCurve3d RawConvert(SOG.Curve target)
+  public AG.NurbCurve3d RawConvert(SOG.Curve target)
   {
     var points = target.GetPoints().Select(p => _pointConverter.RawConvert(p)).ToList();
     if (target.closed && target.periodic)
@@ -23,7 +26,7 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
       points = points.GetRange(0, points.Count - target.degree);
     }
 
-    var pointCollection = new Point3dCollection(points.ToArray());
+    var pointCollection = new AG.Point3dCollection(points.ToArray());
 
     // process knots
     // NOTE: Autocad defines spline knots  as a vector of size # control points + degree + 1. (# at start and end should match degree)
@@ -40,7 +43,7 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
       _knots = _knots.GetRange(target.degree, _knots.Count - target.degree * 2);
     }
 
-    var knots = new KnotCollection();
+    var knots = new AG.KnotCollection();
     foreach (var _knot in _knots)
     {
       knots.Add(_knot);
@@ -54,10 +57,11 @@ public class CurveToHostRawConverter : IRawConversion<SOG.Curve, AG.NurbCurve3d>
       _weights = target.weights.GetRange(0, points.Count);
     }
 
-    DoubleCollection weights;
-    weights = (_weights.Distinct().Count() == 1) ? new DoubleCollection() : new DoubleCollection(_weights.ToArray());
+    AG.DoubleCollection weights;
+    weights =
+      (_weights.Distinct().Count() == 1) ? new AG.DoubleCollection() : new AG.DoubleCollection(_weights.ToArray());
 
-    NurbCurve3d _curve = new(target.degree, knots, pointCollection, weights, target.periodic);
+    AG.NurbCurve3d _curve = new(target.degree, knots, pointCollection, weights, target.periodic);
     if (target.closed)
     {
       _curve.MakeClosed();

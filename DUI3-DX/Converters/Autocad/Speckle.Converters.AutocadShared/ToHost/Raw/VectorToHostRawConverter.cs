@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -8,9 +7,9 @@ namespace Speckle.Converters.Autocad.ToHost.Raw;
 
 public class VectorToHostRawConverter : IRawConversion<SOG.Vector, AG.Vector3d>
 {
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public VectorToHostRawConverter(IConversionContextStack<Document, UnitsValue> contextStack)
+  public VectorToHostRawConverter(IConversionContextStack<Document, ADB.UnitsValue> contextStack)
   {
     _contextStack = contextStack;
   }

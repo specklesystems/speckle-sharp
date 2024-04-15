@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -6,16 +5,16 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToHostDBArcConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Arc, ADB.Arc>
+public class ArcToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Arc, ADB.Arc>
 {
   private readonly IRawConversion<SOG.Arc, AG.CircularArc3d> _arcConverter;
   private readonly IRawConversion<SOG.Plane, AG.Plane> _planeConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public ArcToHostDBArcConverter(
+  public ArcToHostConverter(
     IRawConversion<SOG.Arc, AG.CircularArc3d> arcConverter,
     IRawConversion<SOG.Plane, AG.Plane> planeConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _arcConverter = arcConverter;

@@ -5,12 +5,12 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToHost.Geometry;
 
 [NameAndRankValue(nameof(SOG.Point), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToHostDBPointConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Point, ADB.DBPoint>
+public class PointToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Point, ADB.DBPoint>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
   private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public PointToHostDBPointConverter(
+  public PointToHostConverter(
     IRawConversion<SOG.Point, AG.Point3d> pointConverter,
     IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )

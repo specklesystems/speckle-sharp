@@ -1,5 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -12,14 +10,14 @@ namespace Speckle.Converters.Autocad.Geometry;
 
 // POC: there is a transaction error, ingoring for now to not crash acad!
 // [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBMeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
+public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
 {
   private readonly IRawConversion<SOG.Point, AG.Point3d> _pointConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public DBMeshToHostConverter(
+  public MeshToHostConverter(
     IRawConversion<SOG.Point, AG.Point3d> pointConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -33,28 +31,28 @@ public class DBMeshToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
     target.TriangulateMesh(true);
 
     // get vertex points
-    Point3dCollection vertices = new();
-    List<Point3d> points = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
+    AG.Point3dCollection vertices = new();
+    List<AG.Point3d> points = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();
     foreach (var point in points)
     {
       vertices.Add(point);
     }
 
-    PolyFaceMesh mesh = new();
-    using (Transaction tr = _contextStack.Current.Document.TransactionManager.StartTransaction())
+    ADB.PolyFaceMesh mesh = new();
+    using (ADB.Transaction tr = _contextStack.Current.Document.TransactionManager.StartTransaction())
     {
       mesh.SetDatabaseDefaults();
 
       // append mesh to blocktable record - necessary before adding vertices and faces
-      var btr = (BlockTableRecord)
-        tr.GetObject(_contextStack.Current.Document.Database.CurrentSpaceId, OpenMode.ForWrite);
+      var btr = (ADB.BlockTableRecord)
+        tr.GetObject(_contextStack.Current.Document.Database.CurrentSpaceId, ADB.OpenMode.ForWrite);
       btr.AppendEntity(mesh);
       tr.AddNewlyCreatedDBObject(mesh, true);
 
       // add polyfacemesh vertices
       for (int i = 0; i < vertices.Count; i++)
       {
-        var vertex = new PolyFaceMeshVertex(points[i]);
+        var vertex = new ADB.PolyFaceMeshVertex(points[i]);
         if (i < target.colors.Count)
         {
           try
@@ -81,10 +79,10 @@ public class DBMeshToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
       int j = 0;
       while (j < target.faces.Count)
       {
-        FaceRecord face;
+        ADB.FaceRecord face;
         if (target.faces[j] == 3) // triangle
         {
-          face = new FaceRecord(
+          face = new ADB.FaceRecord(
             (short)(target.faces[j + 1] + 1),
             (short)(target.faces[j + 2] + 1),
             (short)(target.faces[j + 3] + 1),
@@ -94,7 +92,7 @@ public class DBMeshToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
         }
         else // quad
         {
-          face = new FaceRecord(
+          face = new ADB.FaceRecord(
             (short)(target.faces[j + 1] + 1),
             (short)(target.faces[j + 2] + 1),
             (short)(target.faces[j + 3] + 1),

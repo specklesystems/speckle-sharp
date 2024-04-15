@@ -6,22 +6,24 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Geometry;
 
+/// <summary>
+/// A polycurve has segments as list and it can contain different kind of ICurve objects like Arc, Line, Polyline, Curve etc..
+/// If polycurve segments is consist of only with Arcs and Lines, it can be represented as Polyline in Autucad.
+/// Otherwise we convert it as spline (list of ADB.Entity) that switch cases according to each segment type.
+/// </summary>
 [NameAndRankValue(nameof(SOG.Polycurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolycurveToHostDBPolycurveConverter : ISpeckleObjectToHostConversion
+public class PolycurveToHostConverter : ISpeckleObjectToHostConversion
 {
-  private readonly IRawConversion<SOG.Line, ADB.Line> _lineConverter;
-  private readonly IRawConversion<SOG.Arc, ADB.Arc> _arcConverter;
   private readonly IRawConversion<SOG.Polycurve, ADB.Polyline> _polylineConverter;
+  private readonly IRawConversion<SOG.Polycurve, List<ADB.Entity>> _splineConverter;
 
-  public PolycurveToHostDBPolycurveConverter(
-    IRawConversion<SOG.Line, ADB.Line> lineConverter,
-    IRawConversion<SOG.Arc, ADB.Arc> arcConverter,
-    IRawConversion<SOG.Polycurve, ADB.Polyline> polylineConverter
+  public PolycurveToHostConverter(
+    IRawConversion<SOG.Polycurve, ADB.Polyline> polylineConverter,
+    IRawConversion<SOG.Polycurve, List<ADB.Entity>> splineConverter
     )
   {
-    _lineConverter = lineConverter;
-    _arcConverter = arcConverter;
     _polylineConverter = polylineConverter;
+    _splineConverter = splineConverter;
   }
 
   public object Convert(Base target)
@@ -32,7 +34,7 @@ public class PolycurveToHostDBPolycurveConverter : ISpeckleObjectToHostConversio
 
     if (convertAsSpline || !isPlanar)
     {
-      return null; // POC: handle polycurve as spline here
+      return _splineConverter.RawConvert(polycurve);
     }
     else
     {

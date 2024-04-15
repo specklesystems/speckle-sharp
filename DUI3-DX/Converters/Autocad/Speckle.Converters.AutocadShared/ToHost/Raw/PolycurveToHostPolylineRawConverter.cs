@@ -1,7 +1,5 @@
 using System;
 using System.Linq;
-using Autodesk.AutoCAD.Geometry;
-using Objects.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
@@ -15,18 +13,18 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
   public PolycurveToHostPolylineRawConverter(
     IConversionContextStack<Document, ADB.UnitsValue> contextStack,
     IRawConversion<SOG.Point, AG.Point3d> pointConverter
-    )
+  )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public ADB.Polyline RawConvert(Polycurve target)
+  public ADB.Polyline RawConvert(SOG.Polycurve target)
   {
     ADB.Polyline polyline = new() { Closed = target.closed };
     var plane = new AG.Plane(
-      Point3d.Origin,
-      Vector3d.ZAxis.TransformBy(_contextStack.Current.Document.Editor.CurrentUserCoordinateSystem)
+      AG.Point3d.Origin,
+      AG.Vector3d.ZAxis.TransformBy(_contextStack.Current.Document.Editor.CurrentUserCoordinateSystem)
     );
 
     int count = 0;
@@ -34,7 +32,7 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
     {
       switch (segment)
       {
-        case Line o:
+        case SOG.Line o:
           polyline.AddVertexAt(count, _pointConverter.RawConvert(o.start).Convert2d(plane), 0, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)
           {
@@ -43,19 +41,20 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
 
           count++;
           break;
-        case Arc o:
-          var angle = o.endAngle - o.startAngle;
+        case SOG.Arc arc:
+          // POC: possibly endAngle and startAngle null?
+          var angle = arc.endAngle - arc.startAngle;
           angle = angle < 0 ? angle + 2 * Math.PI : angle;
-          var bulge = Math.Tan((double)angle / 4) * BulgeDirection(o.startPoint, o.midPoint, o.endPoint); // bulge
-          polyline.AddVertexAt(count, _pointConverter.RawConvert(o.startPoint).Convert2d(plane), bulge, 0, 0);
+          var bulge = Math.Tan((double)angle / 4) * BulgeDirection(arc.startPoint, arc.midPoint, arc.endPoint);
+          polyline.AddVertexAt(count, _pointConverter.RawConvert(arc.startPoint).Convert2d(plane), bulge, 0, 0);
           if (!target.closed && count == target.segments.Count - 1)
           {
-            polyline.AddVertexAt(count + 1, _pointConverter.RawConvert(o.endPoint).Convert2d(plane), 0, 0, 0);
+            polyline.AddVertexAt(count + 1, _pointConverter.RawConvert(arc.endPoint).Convert2d(plane), 0, 0, 0);
           }
 
           count++;
           break;
-        case Spiral o:
+        case SOG.Spiral o:
           var vertices = o.displayValue.GetPoints().Select(_pointConverter.RawConvert).ToList();
           foreach (var vertex in vertices)
           {
@@ -64,16 +63,15 @@ public class PolycurveToHostPolylineRawConverter : IRawConversion<SOG.Polycurve,
           }
           break;
         default:
-          return null; // POC: check it!
+          break;
       }
     }
-
 
     return polyline;
   }
 
   // calculates bulge direction: (-) clockwise, (+) counterclockwise
-  private int BulgeDirection(Point start, Point mid, Point end)
+  private int BulgeDirection(SOG.Point start, SOG.Point mid, SOG.Point end)
   {
     // get vectors from points
     double[] v1 = new double[] { end.x - start.x, end.y - start.y, end.z - start.z }; // vector from start to end point
