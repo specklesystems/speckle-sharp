@@ -5,7 +5,7 @@ using Speckle.Converters.Common.Objects;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 [NameAndRankValue(nameof(PointObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class RhinoPointObjectToSpeckleConversion : RhinoObjectToSpeckleConverter<PointObject, RG.Point, SOG.Point>
+public class RhinoPointObjectToSpeckleConversion : RhinoObjectToSpeckleConversion<PointObject, RG.Point, SOG.Point>
 {
   public RhinoPointObjectToSpeckleConversion(IRawConversion<RG.Point, SOG.Point> conversion)
     : base(conversion) { }

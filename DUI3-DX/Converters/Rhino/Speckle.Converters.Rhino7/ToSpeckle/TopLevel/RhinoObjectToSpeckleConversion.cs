@@ -3,14 +3,14 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
-public abstract class RhinoObjectToSpeckleConverter<TTopLevelIn, TInRaw, TOutRaw> : IHostObjectToSpeckleConversion
+public abstract class RhinoObjectToSpeckleConversion<TTopLevelIn, TInRaw, TOutRaw> : IHostObjectToSpeckleConversion
   where TTopLevelIn : Rhino.DocObjects.RhinoObject
   where TInRaw : RG.GeometryBase
   where TOutRaw : Base
 {
   public IRawConversion<TInRaw, TOutRaw> Conversion { get; }
 
-  protected RhinoObjectToSpeckleConverter(IRawConversion<TInRaw, TOutRaw> conversion)
+  protected RhinoObjectToSpeckleConversion(IRawConversion<TInRaw, TOutRaw> conversion)
   {
     Conversion = conversion;
   }
