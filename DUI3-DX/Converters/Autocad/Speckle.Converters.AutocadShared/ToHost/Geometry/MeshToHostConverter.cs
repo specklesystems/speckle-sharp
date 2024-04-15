@@ -65,6 +65,7 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
           }
           catch (System.Exception e) when (!e.IsFatal())
           {
+            // POC: should we warn user?
             // Couldn't set vertex color, but this should not prevent conversion.
           }
         }
