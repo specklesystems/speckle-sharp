@@ -22,7 +22,7 @@ public static class Crypt
   {
     using MemoryStream ms = new();
 
-    new BinaryFormatter().Serialize(ms, input);
+    BinaryFormatter.SerialiseString(ms, input);
 
     using SHA256 sha = SHA256.Create();
     var hash = sha.ComputeHash(ms.ToArray());
