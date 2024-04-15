@@ -7,7 +7,7 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class ArcGISProjectUtils
 {
-  public async Task addDatabaseToProject(string fGdbPath, string fGdbName)
+  public async Task AddDatabaseToProject(string fGdbPath, string fGdbName)
   {
     // Create a FileGeodatabaseConnectionPath with the name of the file geodatabase you wish to create
     FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new FileGeodatabaseConnectionPath(
@@ -17,15 +17,24 @@ public class ArcGISProjectUtils
     try
     {
       Geodatabase geodatabase = SchemaBuilder.CreateGeodatabase(fileGeodatabaseConnectionPath);
+      geodatabase.Dispose();
     }
     catch (ArcGIS.Core.Data.Exceptions.GeodatabaseWorkspaceException) { }
 
-    /// Add a folder connection to a project
+    // Add a folder connection to a project
     Item folderToAdd = ItemFactory.Instance.Create(fGdbPath);
-    bool wasAdded = await QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
+    bool wasAdded = await QueuedTask
+      .Run(() => Project.Current.AddItem(folderToAdd as IProjectItem))
+      .ConfigureAwait(true);
 
-    /// Add a file geodatabase or a SQLite or enterprise database connection to a project
-    Item gdbToAdd = folderToAdd.GetItems().FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName));
-    var addedGeodatabase = await QueuedTask.Run(() => Project.Current.AddItem(gdbToAdd as IProjectItem));
+    // Add a file geodatabase or a SQLite or enterprise database connection to a project
+
+    var gdbToAdd = folderToAdd.GetItems().FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName));
+    if (gdbToAdd is not null)
+    {
+      var addedGeodatabase = await QueuedTask
+        .Run(() => Project.Current.AddItem(gdbToAdd as IProjectItem))
+        .ConfigureAwait(true);
+    }
   }
 }

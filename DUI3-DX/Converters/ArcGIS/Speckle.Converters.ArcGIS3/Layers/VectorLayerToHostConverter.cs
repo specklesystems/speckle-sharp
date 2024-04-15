@@ -33,23 +33,40 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
   public Task<string> RawConvert(VectorLayer target)
   {
     string message = string.Empty;
+    string fGdbPath = string.Empty;
     try
     {
       return QueuedTask.Run(() =>
       {
         // Use Speckle geodatabase
-        var fGdbPath = Directory.GetParent(Project.Current.URI).ToString();
+        try
+        {
+          var parentDirectory = Directory.GetParent(Project.Current.URI);
+          if (parentDirectory == null)
+          {
+            throw new ArgumentException($"Project directory {Project.Current.URI} not found");
+          }
+          fGdbPath = parentDirectory.ToString();
+        }
+        catch (Exception e)
+        {
+          throw;
+        }
+
         var fGdbName = "Speckle.gdb";
-        FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new FileGeodatabaseConnectionPath(
-          new Uri(fGdbPath + "\\" + fGdbName)
-        );
+        FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(fGdbPath + "\\" + fGdbName));
         Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
         SchemaBuilder schemaBuilder = new(geodatabase);
 
         // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
         string featureClassName = $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
 
-        SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(target.crs.wkt.ToString());
+        string wktString = string.Empty;
+        if (target.crs is not null && target.crs.wkt is not null)
+        {
+          wktString = target.crs.wkt.ToString();
+        }
+        SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
         GeometryType geomType = new();
         if (target.nativeGeomType == null)
@@ -79,7 +96,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
         // Create FeatureClass
         List<FieldDescription> fields = new();
-        var fieldAdded = new List<string>();
+        List<string> fieldAdded = new();
         foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
         {
           if (!fieldAdded.Contains(field.Key) && field.Key != "OBJECTID")
@@ -117,23 +134,31 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
           geodatabase.ApplyEdits(() =>
           {
             newFeatureClass.DeleteRows(new QueryFilter());
-            foreach (GisFeature feat in target.elements)
+            foreach (GisFeature feat in target.elements.Cast<GisFeature>())
             {
               using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
               {
                 foreach (string field in fieldAdded)
                 {
+                  // try to assign values to writeable fields
                   try
                   {
-                    rowBuffer[field] = feat.attributes[field].ToString();
+                    if (feat.attributes is not null)
+                    {
+                      var value = feat.attributes[field];
+                      if (value is not null)
+                      {
+                        rowBuffer[field] = value.ToString();
+                      }
+                      else
+                      {
+                        rowBuffer[field] = null;
+                      }
+                    }
                   }
-                  catch (GeodatabaseFieldException ex)
+                  catch (GeodatabaseFieldException)
                   {
                     // non-editable Field, do nothing
-                  }
-                  catch (NullReferenceException ex)
-                  {
-                    rowBuffer[field] = null;
                   }
                 }
 
