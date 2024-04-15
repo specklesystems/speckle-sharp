@@ -1,4 +1,5 @@
 ﻿using Rhino;
+using Rhino.Geometry.Collections;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
@@ -46,7 +47,7 @@ public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SO
     return result;
   }
 
-  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(RG.Collections.NurbsSurfacePointList controlPoints)
+  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(NurbsSurfacePointList controlPoints)
   {
     var points = new List<List<SOG.ControlPoint>>();
     for (var i = 0; i < controlPoints.CountU; i++)
