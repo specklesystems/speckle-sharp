@@ -11,6 +11,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -68,13 +69,22 @@ public class HostObjectBuilder : IHostObjectBuilder
 
         QueuedTask.Run(() =>
         {
-          var converted = converter.Convert(obj);
-          if (converted is Task<string> task)
+          try
           {
-            string uri = task.Result;
-            objectIds.Add(obj.id);
-            // TODO: get map from context instead
-            LayerFactory.Instance.CreateLayer(new Uri($"{fGdbPath}\\{fGdbName}\\{uri}"), MapView.Active.Map);
+            var converted = converter.Convert(obj);
+            if (converted is Task<string> task)
+            {
+              string uri = task.Result;
+              objectIds.Add(obj.id);
+              // TODO: get map from contextStack instead
+              LayerFactory.Instance.CreateLayer(new Uri($"{fGdbPath}\\{fGdbName}\\{uri}"), MapView.Active.Map);
+            }
+          }
+          catch (ArgumentException)
+          {
+            // for the layers with "invalid" names
+            // doesn't do anything actually, but needs to be logged
+            throw;
           }
         });
 

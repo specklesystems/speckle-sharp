@@ -46,7 +46,9 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
         SchemaBuilder schemaBuilder = new(geodatabase);
 
-        string featureClassName = target.name.Replace(" ", "_");
+        // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
+        string featureClassName = $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
+
         SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(target.crs.wkt.ToString());
 
         GeometryType geomType = new();
@@ -72,29 +74,35 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
           {
             geomType = GeometryType.Multipatch;
           }
-          // throw new
+          // throw
         }
 
-        ///////////////////
-
-        // Create a FeatureClass description
+        // Create FeatureClass
         List<FieldDescription> fields = new();
         var fieldAdded = new List<string>();
         foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
         {
           if (!fieldAdded.Contains(field.Key) && field.Key != "OBJECTID")
           {
+            // TODO: choose the right type for Field
+            // TODO check for the frbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+
             // fields.Add(new FieldDescription(field, FieldType.Integer));
             fields.Add(FieldDescription.CreateStringField(field.Key, 255)); // (int)(long)target.attributes[field.Value]));
             fieldAdded.Add(field.Key);
           }
         }
+        try
+        {
+          FeatureClassDescription featureClassDescription =
+            new(featureClassName, fields, new ShapeDescription(geomType, spatialRef));
+          FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
+        }
+        catch (ArgumentException ex)
+        {
+          throw new ArgumentException($"{ex.Message}: {featureClassName}");
+        }
 
-        FeatureClassDescription featureClassDescription =
-          new(featureClassName, fields, new ShapeDescription(geomType, spatialRef));
-
-        FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
-        // Build status
         bool buildStatus = schemaBuilder.Build();
         if (!buildStatus)
         {
@@ -103,10 +111,12 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
         // Add features to the FeatureClass
         FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
-        if (geomType == GeometryType.Multipoint) // for now only points
+        // TODO: repeat for other geometry types
+        if (geomType == GeometryType.Multipoint)
         {
           geodatabase.ApplyEdits(() =>
           {
+            newFeatureClass.DeleteRows(new QueryFilter());
             foreach (GisFeature feat in target.elements)
             {
               using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
@@ -117,7 +127,10 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
                   {
                     rowBuffer[field] = feat.attributes[field].ToString();
                   }
-                  catch (GeodatabaseFieldException ex) { }
+                  catch (GeodatabaseFieldException ex)
+                  {
+                    // non-editable Field, do nothing
+                  }
                   catch (NullReferenceException ex)
                   {
                     rowBuffer[field] = null;
@@ -126,14 +139,13 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
                 if (feat.geometry != null)
                 {
-                  //foreach (var geometryPart in feat.geometry)
-                  //{
-                  // move overall shape creation outside the loop
-                  var geometryPart = feat.geometry[0];
-                  ArcGIS.Core.Geometry.Geometry nativeShape = _gisGeometryConverter.RawConvert(geometryPart);
-                  rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
-                  //break;
-                  //}
+                  foreach (var geometryPart in feat.geometry)
+                  {
+                    // TODO: repeat for all geometries, add as Multipart
+                    ArcGIS.Core.Geometry.Geometry nativeShape = _gisGeometryConverter.RawConvert(geometryPart);
+                    rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
+                    break;
+                  }
                 }
                 newFeatureClass.CreateRow(rowBuffer).Dispose();
               }
@@ -142,11 +154,10 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         }
         return featureClassName;
       });
-      // throw new InvalidOperationException("Something went wrong");
     }
     catch (GeodatabaseException exObj)
     {
-      throw new InvalidOperationException("Something went wrong: {exObj.Message}");
+      throw new InvalidOperationException($"Something went wrong: {exObj.Message}");
     }
   }
 }
