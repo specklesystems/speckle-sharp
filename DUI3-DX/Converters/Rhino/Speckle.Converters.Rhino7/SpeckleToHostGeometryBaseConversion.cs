@@ -28,7 +28,7 @@ public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleO
     var result = _geometryBaseConverter.RawConvert(castedBase);
 
     /*
-     * POC: Looking at a simpler, more performant way of doing unit scaling on `ToNative`
+     * POC: CNX-9270 Looking at a simpler, more performant way of doing unit scaling on `ToNative`
      * by fully relying on the transform capabilities of the HostApp, and only transforming top-level stuff.
      * This may not hold when adding more complex conversions, but it works for now!
      */

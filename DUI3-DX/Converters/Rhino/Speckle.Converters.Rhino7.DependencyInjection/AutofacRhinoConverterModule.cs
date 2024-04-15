@@ -30,7 +30,7 @@ public class AutofacRhinoConverterModule : Module
       .InstancePerLifetimeScope();
 
     /*
-      POC: Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
+      POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
     builder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
@@ -46,7 +46,7 @@ public class AutofacRhinoConverterModule : Module
       .InstancePerLifetimeScope();
 
     /*
-      POC: Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
+      POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
       This will require consolidating across other connectors.
     */
     builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();

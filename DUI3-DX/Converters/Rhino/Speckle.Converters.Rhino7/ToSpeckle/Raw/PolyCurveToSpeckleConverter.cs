@@ -7,7 +7,7 @@ namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 public class PolyCurveToSpeckleConverter : IRawConversion<RG.PolyCurve, SOG.Polycurve>
 {
-  public IRawConversion<RG.Curve, ICurve>? CurveConverter { get; set; } // POC: This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
+  public IRawConversion<RG.Curve, ICurve>? CurveConverter { get; set; } // POC: CNX-9279 This created a circular dependency on the constructor, making it a property allows for the container to resolve it correctly
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
@@ -29,7 +29,7 @@ public class PolyCurveToSpeckleConverter : IRawConversion<RG.PolyCurve, SOG.Poly
     if (!removeNestingSuccess)
     {
       /*
-       * POC: Potentially log as a warning when logger is added.
+       * POC: CNX-9280 Potentially log as a warning when logger is added.
        * Failing to remove nesting could mean something could not be right, but it doesn't mean we didn't manage to convert a valid PolyCurve.
        */
     }

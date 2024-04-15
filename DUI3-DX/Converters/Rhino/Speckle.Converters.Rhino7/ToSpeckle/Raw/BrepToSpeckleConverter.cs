@@ -41,7 +41,7 @@ public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
     var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;
     target.Repair(tol);
 
-    // POC: This should come as part of the user settings in the context object.
+    // POC: CNX-9276 This should come as part of the user settings in the context object.
     // if (PreprocessGeometry)
     // {
     //   brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
@@ -55,7 +55,7 @@ public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
       displayValue.Add(_meshConverter.RawConvert(displayMesh));
     }
 
-    // POC: Swap input material for something coming from the context.
+    // POC: CNX-9277 Swap input material for something coming from the context.
     // if (displayValue != null && mat != null)
     // {
     //   displayValue["renderMaterial"] = mat;
