@@ -3,6 +3,9 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.AutocadShared.ToHost.Raw;
 
+/// <summary>
+/// Polycurve segments might appear in different ICurve types which requires to handle separately for each segment.
+/// </summary>
 public class PolycurveToHostSplineRawConverter : IRawConversion<SOG.Polycurve, List<ADB.Entity>>
 {
   private readonly IRawConversion<SOG.Line, ADB.Line> _lineConverter;
@@ -25,6 +28,7 @@ public class PolycurveToHostSplineRawConverter : IRawConversion<SOG.Polycurve, L
 
   public List<ADB.Entity> RawConvert(SOG.Polycurve target)
   {
+    // POC: Should we join entities?
     var list = new List<ADB.Entity>();
 
     foreach (var segment in target.segments)
