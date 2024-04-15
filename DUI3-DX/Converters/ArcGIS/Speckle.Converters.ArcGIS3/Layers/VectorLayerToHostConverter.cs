@@ -2,10 +2,10 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
+using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -32,29 +32,15 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
   public Task<string> RawConvert(VectorLayer target)
   {
-    string message = string.Empty;
-    string fGdbPath = string.Empty;
     try
     {
       return QueuedTask.Run(() =>
       {
-        // Use Speckle geodatabase
-        try
-        {
-          var parentDirectory = Directory.GetParent(Project.Current.URI);
-          if (parentDirectory == null)
-          {
-            throw new ArgumentException($"Project directory {Project.Current.URI} not found");
-          }
-          fGdbPath = parentDirectory.ToString();
-        }
-        catch (Exception e)
-        {
-          throw;
-        }
+        var projectUtils = new ArcGISProjectUtils();
+        var utils = new FeatureClassUtils();
 
-        var fGdbName = "Speckle.gdb";
-        FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(fGdbPath + "\\" + fGdbName));
+        string databasePath = projectUtils.GetDatabasePath();
+        FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
         Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
         SchemaBuilder schemaBuilder = new(geodatabase);
 
@@ -68,31 +54,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         }
         SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
-        GeometryType geomType = new();
-        if (target.nativeGeomType == null)
-        {
-          throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
-        }
-        else
-        {
-          if (target.nativeGeomType.ToLower().Contains("point"))
-          {
-            geomType = GeometryType.Multipoint;
-          }
-          else if (target.nativeGeomType.ToLower().Contains("polyline"))
-          {
-            geomType = GeometryType.Polyline;
-          }
-          else if (target.nativeGeomType.ToLower().Contains("polygon"))
-          {
-            geomType = GeometryType.Polygon;
-          }
-          else if (target.nativeGeomType.ToLower().Contains("multipatch"))
-          {
-            geomType = GeometryType.Multipatch;
-          }
-          // throw
-        }
+        GeometryType geomType = utils.GetLayerGeometryType(target);
 
         // Create FeatureClass
         List<FieldDescription> fields = new();
@@ -117,6 +79,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         }
         catch (ArgumentException ex)
         {
+          // if name has invalid characters/combinations
           throw new ArgumentException($"{ex.Message}: {featureClassName}");
         }
 
@@ -133,48 +96,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         {
           geodatabase.ApplyEdits(() =>
           {
-            newFeatureClass.DeleteRows(new QueryFilter());
-            foreach (GisFeature feat in target.elements.Cast<GisFeature>())
-            {
-              using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
-              {
-                foreach (string field in fieldAdded)
-                {
-                  // try to assign values to writeable fields
-                  try
-                  {
-                    if (feat.attributes is not null)
-                    {
-                      var value = feat.attributes[field];
-                      if (value is not null)
-                      {
-                        rowBuffer[field] = value.ToString();
-                      }
-                      else
-                      {
-                        rowBuffer[field] = null;
-                      }
-                    }
-                  }
-                  catch (GeodatabaseFieldException)
-                  {
-                    // non-editable Field, do nothing
-                  }
-                }
-
-                if (feat.geometry != null)
-                {
-                  foreach (var geometryPart in feat.geometry)
-                  {
-                    // TODO: repeat for all geometries, add as Multipart
-                    ArcGIS.Core.Geometry.Geometry nativeShape = _gisGeometryConverter.RawConvert(geometryPart);
-                    rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
-                    break;
-                  }
-                }
-                newFeatureClass.CreateRow(rowBuffer).Dispose();
-              }
-            }
+            utils.AddFeaturesToFeatureClass(newFeatureClass, target, fieldAdded, _gisGeometryConverter);
           });
         }
         return featureClassName;

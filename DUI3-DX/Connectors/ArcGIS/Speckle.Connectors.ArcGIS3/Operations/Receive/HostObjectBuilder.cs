@@ -1,6 +1,4 @@
 using System.Diagnostics;
-using System.IO;
-using ArcGIS.Desktop.Core;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
@@ -42,24 +40,11 @@ public class HostObjectBuilder : IHostObjectBuilder
     ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
 
     // create and add Geodatabase to a project
-    string fGdbPath = string.Empty;
-    try
-    {
-      var parentDirectory = Directory.GetParent(Project.Current.URI);
-      if (parentDirectory == null)
-      {
-        throw new ArgumentException($"Project directory {Project.Current.URI} not found");
-      }
-      fGdbPath = parentDirectory.ToString();
-    }
-    catch (Exception e)
-    {
-      throw;
-    }
+    var projectUtils = new ArcGISProjectUtils();
+    var utils = new FeatureClassUtils();
 
-    var fGdbName = "Speckle.gdb";
-    var utils = new ArcGISProjectUtils();
-    Task task = utils.AddDatabaseToProject(fGdbPath, fGdbName);
+    string databasePath = projectUtils.GetDatabasePath();
+    projectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
     IEnumerable<(List<string>, Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
@@ -87,7 +72,7 @@ public class HostObjectBuilder : IHostObjectBuilder
               string uri = task.Result;
               objectIds.Add(obj.id);
               // TODO: get map from contextStack instead
-              LayerFactory.Instance.CreateLayer(new Uri($"{fGdbPath}\\{fGdbName}\\{uri}"), MapView.Active.Map);
+              LayerFactory.Instance.CreateLayer(new Uri($"{databasePath}\\{uri}"), MapView.Active.Map);
             }
           }
           catch (ArgumentException)
