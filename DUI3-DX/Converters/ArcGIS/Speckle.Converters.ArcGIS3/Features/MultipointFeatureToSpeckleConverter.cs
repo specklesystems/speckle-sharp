@@ -1,37 +1,25 @@
 using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
-using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-[NameAndRankValue(nameof(Multipoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MultipointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<Multipoint, Base>
+public class MultipointFeatureToSpeckleConverter : IRawConversion<Multipoint, IReadOnlyList<SOG.Point>>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
 
-  public MultipointFeatureToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<ArcMapPoint, SOG.Point> pointConverter
-  )
+  public MultipointFeatureToSpeckleConverter(IRawConversion<MapPoint, SOG.Point> pointConverter)
   {
-    _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public Base Convert(object target) => RawConvert((Multipoint)target);
-
-  public Base RawConvert(Multipoint target)
+  public IReadOnlyList<SOG.Point> RawConvert(Multipoint target)
   {
-    List<Base> multipoint = new();
-    foreach (ArcMapPoint point in target.Points)
+    List<SOG.Point> multipoint = new();
+    foreach (MapPoint point in target.Points)
     {
       multipoint.Add(_pointConverter.RawConvert(point));
     }
 
-    return multipoint[0];
+    return multipoint;
   }
 }
