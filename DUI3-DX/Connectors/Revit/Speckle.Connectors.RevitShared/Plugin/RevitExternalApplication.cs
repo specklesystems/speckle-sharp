@@ -5,7 +5,6 @@ using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
 using Autofac;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;

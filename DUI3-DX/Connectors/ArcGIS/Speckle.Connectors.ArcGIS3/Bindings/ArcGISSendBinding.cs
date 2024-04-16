@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.ArcGIS.Utils;

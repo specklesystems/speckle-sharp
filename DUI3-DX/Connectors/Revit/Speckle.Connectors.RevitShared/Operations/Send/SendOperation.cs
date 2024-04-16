@@ -2,7 +2,6 @@ using System;
 using Speckle.Core.Models;
 using System.Threading.Tasks;
 using System.Threading;
-using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Converters.RevitShared.Helpers;
