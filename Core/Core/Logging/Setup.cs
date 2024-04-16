@@ -74,7 +74,7 @@ public static class Setup
     Mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
     // POC: this is exploding for me - version problem or possibly some crappy plugin I have (IMH) :(
-    // SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
+    SpeckleLog.Initialize(hostApplication, versionedHostApplication, logConfiguration);
 
     foreach (var account in AccountManager.GetAccounts())
     {
