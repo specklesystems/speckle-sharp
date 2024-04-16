@@ -5,6 +5,9 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bindings;
 
+/// <summary>
+/// POC: This is a class that sanity checks basic bridge functionality. It is required by the frontend's tests page.
+/// </summary>
 public class TestBinding : IBinding
 {
   public string Name { get; set; } = "testBinding";
@@ -14,7 +17,7 @@ public class TestBinding : IBinding
   {
     Parent = bridge;
   }
-  
+
   public string SayHi(string name, int count, bool sayHelloNotHi)
   {
     var baseGreeting = $"{(sayHelloNotHi ? "Hello" : "Hi")} {name}!";
@@ -31,7 +34,13 @@ public class TestBinding : IBinding
 
   public void GoAway() => Debug.WriteLine("Okay, going away.");
 
-  public object GetComplexType() => new { Id = GetHashCode().ToString() + " - I am a string", count = GetHashCode(), thisIsABoolean = false };
+  public object GetComplexType() =>
+    new
+    {
+      Id = GetHashCode().ToString() + " - I am a string",
+      count = GetHashCode(),
+      thisIsABoolean = false
+    };
 
   public void TriggerEvent(string eventName)
   {
