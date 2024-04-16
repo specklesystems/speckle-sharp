@@ -17,7 +17,7 @@ public class RevitConverterToHost : ISpeckleConverterToHost
   public object Convert(Base target)
   {
     ISpeckleObjectToHostConversion conversion =
-      _toHostConversions.ResolveInstance(target.GetType().Name)
+      GetToHostConversion(target.GetType())
       ?? throw new SpeckleConversionException($"No conversion found for {target.GetType().Name}");
 
     object result =
@@ -25,5 +25,20 @@ public class RevitConverterToHost : ISpeckleConverterToHost
       ?? throw new SpeckleConversionException($"Conversion of object with type {target.GetType()} returned null");
 
     return result;
+  }
+
+  private ISpeckleObjectToHostConversion? GetToHostConversion(Type? targetType)
+  {
+    if (targetType is null || targetType == typeof(object))
+    {
+      return null;
+    }
+
+    if (_toHostConversions.ResolveInstance(targetType.Name) is ISpeckleObjectToHostConversion conversion)
+    {
+      return conversion;
+    }
+
+    return GetToHostConversion(targetType.BaseType);
   }
 }

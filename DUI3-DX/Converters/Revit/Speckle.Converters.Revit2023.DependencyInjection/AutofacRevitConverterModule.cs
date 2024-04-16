@@ -39,5 +39,12 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<HostedElementConversionToSpeckle>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ParameterObjectAssigner>().AsSelf().InstancePerLifetimeScope();
+
+    // Register receive operation dependencies
+    builder
+      .RegisterType<TransactionManagementService>()
+      .As<ITransactionManagementService>()
+      .InstancePerLifetimeScope();
+    builder.RegisterType<ErrorPreprocessingService>().AsSelf().InstancePerLifetimeScope();
   }
 }
