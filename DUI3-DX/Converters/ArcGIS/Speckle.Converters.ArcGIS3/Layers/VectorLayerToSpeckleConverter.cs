@@ -4,6 +4,7 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -11,10 +12,15 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
+  private readonly IConversionContextStack<Map, Unit> _contextStack;
 
-  public VectorLayerToSpeckleConverter(IRawConversion<Row, GisFeature> gisFeatureConverter)
+  public VectorLayerToSpeckleConverter(
+    IRawConversion<Row, GisFeature> gisFeatureConverter,
+    IConversionContextStack<Map, Unit> contextStack
+  )
   {
     _gisFeatureConverter = gisFeatureConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target)
@@ -27,10 +33,10 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     var speckleLayer = new VectorLayer();
     var spatialRef = target.GetSpatialReference();
 
-    // TODO: get active map CRS if layer CRS is empty
+    // get active map CRS if layer CRS is empty
     if (spatialRef.Unit is null)
     {
-      // spatialRef = conte
+      spatialRef = _contextStack.Current.Document.SpatialReference;
     }
     speckleLayer.crs = new CRS
     {

@@ -12,14 +12,14 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
   private readonly IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
   private readonly IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
   private readonly IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> _polygonFeatureConverter;
-  private readonly IRawConversion<Multipatch, IReadOnlyList<GisPolygonGeometry>> _multipatchFeatureConverter;
+  private readonly IRawConversion<Multipatch, IReadOnlyList<Base>> _multipatchFeatureConverter;
 
   public GeometryToSpeckleBaseList(
     IRawConversion<MapPoint, SOG.Point> pointToSpeckleConverter,
     IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
     IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
     IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> polygonFeatureConverter,
-    IRawConversion<Multipatch, IReadOnlyList<GisPolygonGeometry>> multipatchFeatureConverter
+    IRawConversion<Multipatch, IReadOnlyList<Base>> multipatchFeatureConverter
   )
   {
     _pointToSpeckleConverter = pointToSpeckleConverter;

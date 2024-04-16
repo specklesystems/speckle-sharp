@@ -2,6 +2,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -27,19 +28,22 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
     var attributes = new Base();
     IReadOnlyList<Field> fields = target.GetFields();
     int i = 0;
-    foreach (Field field in fields)
+
+    // TODO: fix for multipatch
+    if (shape is not Multipatch)
     {
-      string name = field.Name;
-
-      // breaks on Raster Field type
-      if (name != "Shape" && field.FieldType.ToString() != "Raster")
+      foreach (Field field in fields)
       {
-        var value = target.GetOriginalValue(i); // can be null
-        attributes[name] = value;
+        string name = field.Name;
+        // breaks on Raster Field type
+        if (name != "Shape" && field.FieldType.ToString() != "Raster")
+        {
+          var value = target.GetOriginalValue(i); // can be null
+          attributes[name] = value;
+        }
+        i++;
       }
-      i++;
     }
-
     // add displayValue if Multipatch
     /*
   if (shape is Multipatch)
