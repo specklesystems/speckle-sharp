@@ -6,6 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Connectors.Utils.Builders;
 
 // POC: We might consider to put also IRootObjectBuilder interface here in same folder and create concrete classes from it in per connector.
+// POC: We aren't really building a single host object. Should we consider a different name?
 public interface IHostObjectBuilder
 {
   /// <summary>
