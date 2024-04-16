@@ -58,8 +58,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   )
   {
     RhinoDoc doc = _contextStack.Current.Document;
-
-    var rootLayerIndex = doc.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, -1);
 
     // Cleans up any previously received objects
     // POC: We could move this out into a separate service for testing and re-use.
@@ -102,17 +101,15 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
         var converted = _toHostConverter.Convert(baseObj);
 
-        if (converted is GeometryBase newObject)
+        if (converted is not GeometryBase newObject)
         {
-          var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
-          newObjectIds.Add(newObjectGuid.ToString());
-          continue;
+          throw new SpeckleConversionException(
+            $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
+          );
         }
 
-        // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
-        throw new SpeckleException(
-          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-        );
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+        newObjectIds.Add(newObjectGuid.ToString());
       }
       catch (Exception e) when (!e.IsFatal())
       {
@@ -122,7 +119,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     if (conversionExceptions.Count != 0)
     {
-      // POC: Both the message and the handling of this should be engineered taking into account error reporting in DUI becoming better.
       throw new AggregateException("Some conversions failed. Please check inner exceptions.", conversionExceptions);
     }
 
@@ -145,6 +141,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         previousLayer = currentDocument.Layers.FindIndex(value);
         continue;
       }
+
       var cleanNewLayerName = layerName.Replace("{", "").Replace("}", "");
       var newLayer = new Layer { Name = cleanNewLayerName, ParentLayerId = previousLayer.Id };
       var index = currentDocument.Layers.Add(newLayer);
