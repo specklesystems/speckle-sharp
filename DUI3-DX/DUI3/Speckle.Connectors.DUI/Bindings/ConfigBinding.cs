@@ -21,7 +21,6 @@ public class ConfigBinding : IBinding
   private readonly string _connectorName;
   private readonly JsonSerializerSettings _serializerOptions;
 
-
   public ConfigBinding(IBridge bridge, JsonSerializerSettings serializerOptions, string connectorName)
   {
     Parent = bridge;
@@ -55,17 +54,17 @@ public class ConfigBinding : IBinding
   }
 
   private ConnectorConfig SeedConfig()
-  {      
-    var cfg = new ConnectorConfig(); 
+  {
+    var cfg = new ConnectorConfig();
     UpdateConfig(cfg);
     return cfg;
   }
+
   public void UpdateConfig(ConnectorConfig config)
   {
     var str = JsonConvert.SerializeObject(config, _serializerOptions);
     ConfigStorage.UpdateObject(_connectorName, str);
   }
-  
 }
 
 /// <summary>

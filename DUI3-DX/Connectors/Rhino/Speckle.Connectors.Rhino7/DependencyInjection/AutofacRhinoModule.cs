@@ -34,7 +34,7 @@ public class AutofacRhinoModule : Module
     // Register instances initialised by Rhino
     builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
     builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance);
-    
+
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<SpeckleRhinoPanel>().SingleInstance();
