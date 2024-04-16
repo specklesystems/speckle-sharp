@@ -26,6 +26,12 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
   {
     var speckleLayer = new VectorLayer();
     var spatialRef = target.GetSpatialReference();
+
+    // TODO: get active map CRS if layer CRS is empty
+    if (spatialRef.Unit is null)
+    {
+      // spatialRef = conte
+    }
     speckleLayer.crs = new CRS
     {
       wkt = spatialRef.Wkt,

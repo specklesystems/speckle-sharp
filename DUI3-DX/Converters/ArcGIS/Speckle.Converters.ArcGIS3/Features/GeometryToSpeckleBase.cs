@@ -9,21 +9,24 @@ namespace Speckle.Converters.ArcGIS3.Features;
 public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>>
 {
   private readonly IRawConversion<MapPoint, SOG.Point> _pointToSpeckleConverter;
-  private readonly IRawConversion<Multipoint, List<SOG.Point>> _multiPointFeatureConverter;
-  private readonly IRawConversion<Polyline, List<SOG.Polyline>> _polylineFeatureConverter;
-  private readonly IRawConversion<Polygon, List<GisPolygonGeometry>> _polygonFeatureConverter;
+  private readonly IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
+  private readonly IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
+  private readonly IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> _polygonFeatureConverter;
+  private readonly IRawConversion<Multipatch, IReadOnlyList<GisPolygonGeometry>> _multipatchFeatureConverter;
 
   public GeometryToSpeckleBaseList(
     IRawConversion<MapPoint, SOG.Point> pointToSpeckleConverter,
-    IRawConversion<Multipoint, List<SOG.Point>> multiPointFeatureConverter,
-    IRawConversion<Polyline, List<SOG.Polyline>> polylineFeatureConverter,
-    IRawConversion<Polygon, List<GisPolygonGeometry>> polygonFeatureConverter
+    IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
+    IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
+    IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> polygonFeatureConverter,
+    IRawConversion<Multipatch, IReadOnlyList<GisPolygonGeometry>> multipatchFeatureConverter
   )
   {
     _pointToSpeckleConverter = pointToSpeckleConverter;
     _multiPointFeatureConverter = multiPointFeatureConverter;
     _polylineFeatureConverter = polylineFeatureConverter;
     _polygonFeatureConverter = polygonFeatureConverter;
+    _multipatchFeatureConverter = multipatchFeatureConverter;
   }
 
   public IReadOnlyList<Base> RawConvert(ArcGIS.Core.Geometry.Geometry target)
@@ -36,6 +39,7 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
         Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
         Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
         Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
+        Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch),
         _ => throw new NotSupportedException($"No conversion found for {target.GetType().Name}"),
       };
     }
