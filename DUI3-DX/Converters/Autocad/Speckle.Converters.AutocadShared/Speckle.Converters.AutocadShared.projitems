@@ -15,6 +15,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadConverterModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PointToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\ArcToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\CircleToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\EllipseToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\MeshToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\PolylineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BoxToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\PointToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\IntervalToSpeckleRawConverter.cs" />
