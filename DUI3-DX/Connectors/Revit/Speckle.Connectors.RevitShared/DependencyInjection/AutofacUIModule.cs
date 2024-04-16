@@ -57,6 +57,8 @@ public class AutofacUIModule : Module
     // POC: we need to review the scopes and create a document on what the policy is
     // and where the UoW should be
     // register UI bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Revit"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
     builder.RegisterType<SelectionBinding>().As<IBinding>().SingleInstance();

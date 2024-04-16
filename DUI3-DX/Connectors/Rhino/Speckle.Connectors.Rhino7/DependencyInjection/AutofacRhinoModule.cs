@@ -34,7 +34,7 @@ public class AutofacRhinoModule : Module
     // Register instances initialised by Rhino
     builder.RegisterInstance<PlugIn>(SpeckleConnectorsRhino7Plugin.Instance);
     builder.RegisterInstance<Command>(SpeckleConnectorsRhino7Command.Instance);
-
+    
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<SpeckleRhinoPanel>().SingleInstance();
@@ -46,6 +46,8 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Rhino"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
