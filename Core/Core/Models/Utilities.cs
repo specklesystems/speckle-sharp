@@ -229,8 +229,12 @@ public static class Utilities
     while (stack.Count > 0)
     {
       object current = stack.Pop();
+      var currentType = current.GetType();
 
-      if (current.GetType() != nativeType && current is IList list)
+      if (
+        !(currentType.IsAssignableFrom(nativeType) || nativeType.IsAssignableFrom(currentType))
+        && current is IEnumerable list
+      )
       {
         foreach (object subItem in list)
         {

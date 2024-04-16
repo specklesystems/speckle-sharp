@@ -43,6 +43,8 @@ public sealed class UtilitiesTests
     public void Remove(T item) => _items.Remove(item);
   }
 
+  class ParentTestEnumerable<T> : TestEnumerable<T> { }
+
   [Test]
   public void FlattenToNativeConversion()
   {
@@ -57,7 +59,7 @@ public sealed class UtilitiesTests
       new() // obj 3
     };
 
-    var testEnum = new TestEnumerable<object>() { new() };
+    var testEnum = new ParentTestEnumerable<object>() { new(), new() };
 
     var nestedObjectsWithEnumerableInherited = new List<object>()
     {
