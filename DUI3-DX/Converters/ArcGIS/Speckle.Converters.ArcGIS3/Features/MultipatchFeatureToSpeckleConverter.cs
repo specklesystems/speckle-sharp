@@ -89,7 +89,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          throw new ArgumentException("Multipatch part conversion di not succeed");
+          throw new ArgumentException("Multipatch part conversion did not succeed");
         }
       }
       else if (patchType == PatchType.TriangleFan)
@@ -111,7 +111,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          throw new ArgumentException("Multipatch part conversion di not succeed");
+          throw new ArgumentException("Multipatch part conversion did not succeed");
         }
       }
       // in case of RingMultipatch - return GisPolygonGeometry instead of Meshes

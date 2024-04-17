@@ -2,7 +2,10 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
-using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
+using Speckle.Newtonsoft.Json.Linq;
+using Objects;
+using System.Collections.Generic;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -23,41 +26,36 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
   {
     var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
     var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
-
-    // get attributes
     var attributes = new Base();
-    IReadOnlyList<Field> fields = target.GetFields();
-    int i = 0;
 
-    // TODO: fix for multipatch
-    if (shape is not Multipatch)
+    QueuedTask.Run(() =>
     {
+      IReadOnlyList<Field> fields = target.GetFields();
       foreach (Field field in fields)
       {
         string name = field.Name;
-        // breaks on Raster Field type
-        if (name != "Shape" && field.FieldType.ToString() != "Raster")
+        // Shape is geometry itself
+        if (name != "Shape")
         {
-          var value = target.GetOriginalValue(i); // can be null
-          attributes[name] = value;
+          try
+          {
+            var value = target[name];
+            attributes[name] = value; // can be null
+          }
+          catch (ArgumentException)
+          {
+            // TODO: log in the conversion errors list
+            attributes[name] = null;
+          }
         }
-        i++;
       }
-    }
-    // add displayValue if Multipatch
-    /*
-  if (shape is Multipatch)
-  {
-    List<SOG.Mesh> displayValue = new();
-    foreach (GisPolygonGeometry geom in speckleShapes.Cast<GisPolygonGeometry>())
+    });
+
+    // re-shape the GisFeature, if shapes is a list of Meshes
+    if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
     {
-      (Multipatch)shape.
-      SOG.Polyline boundary = geom.boundary;
+      return new GisFeature(attributes, speckleShapes);
     }
-    return new GisFeature(speckleShapes, attributes, displayValue);
-    }
-    
-    */
     return new GisFeature(speckleShapes, attributes);
   }
 }

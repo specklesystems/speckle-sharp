@@ -52,14 +52,36 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     foreach (Field field in fields)
     {
       string name = field.Name;
-      // breaks on Raster Field type when assigning indiv. GisFeature values
-      if (name != "Shape" && field.FieldType.ToString() != "Raster")
+
+      if (name == "Shape")
       {
-        attributes[name] = field.FieldType;
+        continue;
       }
+      // TODO more field filters (e.g. visible only)
+      attributes[name] = field.FieldType;
     }
     speckleLayer.attributes = attributes;
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
+
+    // get a simple geometry type 
+    string spekleGeometryType = string.Empty;
+    if (speckleLayer.nativeGeomType.ToLower().Contains("point"))
+    {
+      spekleGeometryType = "Point";
+    }
+    else if (speckleLayer.nativeGeomType.ToLower().Contains("polyline"))
+    {
+      spekleGeometryType = "Polyline";
+    }
+    else if (speckleLayer.nativeGeomType.ToLower().Contains("polygon"))
+    {
+      spekleGeometryType = "Polygon";
+    }
+    else if (speckleLayer.nativeGeomType.ToLower().Contains("multipatch"))
+    {
+      spekleGeometryType = "Multipatch";
+    }
+
 
     // search the rows
 
@@ -73,12 +95,19 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          var element = _gisFeatureConverter.RawConvert(row);
+          GisFeature element = _gisFeatureConverter.RawConvert(row);
           speckleLayer.elements.Add(element);
+          if (spekleGeometryType == "Multipatch" && element.geometry != null && element.displayValue != null && element.geometry.Count > 0 && element.displayValue.Count == 0)
+          {
+            spekleGeometryType = "Polygon";
+          }
         }
       }
-
-      return speckleLayer;
     }
+
+    // differentiate between Ring Multipatches and Mesh Multipatches
+    if (speckleLayer.nativeGeomType.Contains("Multipatch") && )
+
+    return speckleLayer;
   }
 }
