@@ -221,11 +221,15 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// Returns all the objects in the store. Note: do not use for large collections.
   /// </summary>
   /// <returns></returns>
+  /// <remarks>This function uses a separate <see cref="SqliteConnection"/> so is safe to call concurrently (unlike most other transport functions)</remarks>
   internal IEnumerable<string> GetAllObjects()
   {
     CancellationToken.ThrowIfCancellationRequested();
 
-    using var command = new SqliteCommand("SELECT * FROM objects", Connection);
+    using SqliteConnection connection = new(_connectionString);
+    connection.Open();
+
+    using var command = new SqliteCommand("SELECT * FROM objects", connection);
 
     using var reader = command.ExecuteReader();
     while (reader.Read())
