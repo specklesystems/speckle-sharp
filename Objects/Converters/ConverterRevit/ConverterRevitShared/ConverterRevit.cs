@@ -728,8 +728,8 @@ public partial class ConverterRevit : ISpeckleConverter
       case Other.MappedBlockWrapper o:
         return MappedBlockWrapperToNative(o);
       // gis
-      case GisFeature o:
-        return GisFeatureToNative(o);
+      case PolygonElement o:
+        return PolygonElementToNative(o);
 
 #if (REVIT2024)
       case RevitToposolid o:
@@ -906,6 +906,7 @@ public partial class ConverterRevit : ISpeckleConverter
       Other.MappedBlockWrapper => true,
       Organization.DataTable _ => true,
       // GIS
+      PolygonElement _ => true,
       GisFeature _ => true,
       _ => false,
     };
