@@ -20,6 +20,11 @@ public class ParameterValueExtractor
 
   public object? GetValue(Parameter parameter)
   {
+    if (!parameter.HasValue)
+    {
+      return null;
+    }
+
     return parameter.StorageType switch
     {
       StorageType.Double => GetValueAsDouble(parameter),

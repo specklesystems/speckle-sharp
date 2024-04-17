@@ -39,8 +39,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ToSpeckleConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\HostedElementConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\SendSelection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\CachingService.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Services\ICachingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\RevitToSpeckleUnitConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ToSpeckleScalingService.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
