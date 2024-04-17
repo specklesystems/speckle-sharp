@@ -5,18 +5,18 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Autocad.Extensions;
 using System.Linq;
+using Autodesk.AutoCAD.Geometry;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
 /// <summary>
 /// The <see cref="Polyline2d"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
-/// Polyline2ds of type <see cref="Poly2dType.SimplePoly"/> will be converted as <see cref="Polyline"/>.
+/// <see cref="Polyline2d"/> of type <see cref="Poly2dType.SimplePoly"/> will be converted as <see cref="Polyline"/>.
 /// </summary>
 /// <remarks>
 /// <see cref="Polyline2d"/> of type <see cref="Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
-/// <see cref="Polyline2d"/> of type <see cref="Poly2dType.FitCurvePoly"/> will have only <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
-/// <see cref="Polyline2d"/> of type <see cref="Poly2dType.CubicSplinePoly"/> and <see cref="Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident Polyline2d objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// <see cref="Polyline2d"/> of type <see cref="Poly2dType.FitCurvePoly"/>, <see cref="Poly2dType.CubicSplinePoly"/> and <see cref="Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
+/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline2d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
@@ -78,18 +78,19 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     List<double> value = new();
     List<double> bulges = new();
     List<double> tangents = new();
+    Point3dCollection vertices3D = new();
     List<Vertex2d> vertices = target
       .GetSubEntities<Vertex2d>(OpenMode.ForRead, _contextStack.Current.Document.TransactionManager.TopTransaction)
       .ToList();
 
-    for (int i = 0; i < vertices.Count(); i++)
+    for (int i = 0; i < vertices.Count; i++)
     {
       Vertex2d vertex = vertices[i];
 
       // get vertex value in the Global Coordinate System (GCS).
       value.AddRange(vertex.Position.ToArray());
 
-      // get the bulge and tangent
+      // get the bulge and tangent, and 3d point for displayvalue
       bulges.Add(vertex.Bulge);
       tangents.Add(vertex.Tangent);
 
@@ -105,6 +106,13 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       }
     }
 
+    // POC: retrieve spline display value here for database-resident polylines by connecting all vertex points
+    SOG.Polyline displayvalue;
+    if (target.Database is not null)
+    {
+      target.Explode()
+    }
+
     // get the spline curve segment
     // TODO: need to confirm that this retrieves the correct spline. We may need to construct the spline curve manually from vertex enumeration
     SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
@@ -118,6 +126,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
         segments = new List<Objects.ICurve>() { spline },
         value = value,
         bulges = bulges,
+        tangents = tangents,
         plane = plane,
         polyType = polyType,
         closed = target.Closed,

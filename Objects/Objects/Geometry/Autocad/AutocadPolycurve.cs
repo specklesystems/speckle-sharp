@@ -8,7 +8,6 @@ namespace Objects.Geometry.Autocad;
 /// </summary>
 /// <remarks>
 /// <see cref="AutocadPolyType.Light"/> will have only <see cref="Line"/>s and <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
-/// <see cref="AutocadPolyType.Simple2d"/> type will have only <see cref="Line"/>s and <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.Simple3d"/> type will have only <see cref="Line"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.FitCurve2d"/> type will only have <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.CubicSpline2d"/>, <see cref="AutocadPolyType.CubicSpline3d"/>, <see cref="AutocadPolyType.QuadSpline2d"/>, and <see cref="AutocadPolyType.QuadSpline3d"/> types will have only a single <see cref="Curve"/>s in <see cref="Polycurve.segments"/>.

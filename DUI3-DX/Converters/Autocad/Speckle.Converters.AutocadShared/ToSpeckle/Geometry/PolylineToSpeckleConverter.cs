@@ -14,7 +14,9 @@ namespace Speckle.Converters.Autocad.Geometry;
 /// <see cref="Polyline"/> is of type <see cref="SOG.Autocad.AutocadPolyType.Light"/> and will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolylineToSpeckleConverter : IHostObjectToSpeckleConversion
+public class PolylineToSpeckleConverter
+  : IHostObjectToSpeckleConversion,
+    IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve>
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;

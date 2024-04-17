@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Common;
@@ -9,14 +8,20 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
-[NameAndRankValue(nameof(ADB.PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBMeshToSpeckleConverter : IHostObjectToSpeckleConversion
+/// <summary>
+/// The <see cref="PolyFaceMesh"/> class converter. Converts to <see cref="SOG.Mesh"/>.
+/// </summary>
+/// <remarks>
+/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// </remarks>
+[NameAndRankValue(nameof(PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public DBMeshToSpeckleConverter(
+  public DBPolyfaceMeshToSpeckleConverter(
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
     IRawConversion<Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, UnitsValue> contextStack
@@ -96,77 +101,6 @@ public class DBMeshToSpeckleConverter : IHostObjectToSpeckleConversion
         bbox = bbox,
         ["faceVisibility"] = faceVisibility
       };
-
-    return speckleMesh;
-  }
-}
-
-[NameAndRankValue(nameof(ADB.SubDMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBSubDMeshToSpeckleConverter : IHostObjectToSpeckleConversion
-{
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
-
-  public DBSubDMeshToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
-  )
-  {
-    _pointConverter = pointConverter;
-    _boxConverter = boxConverter;
-    _contextStack = contextStack;
-  }
-
-  public Base Convert(object target) => RawConvert((ADB.SubDMesh)target);
-
-  public SOG.Mesh RawConvert(ADB.SubDMesh target)
-  {
-    //vertices
-    var vertices = new List<double>(target.Vertices.Count * 3);
-    foreach (Point3d vert in target.Vertices)
-    {
-      vertices.AddRange(_pointConverter.RawConvert(vert).ToList());
-    }
-
-    // faces
-    var faces = new List<int>();
-    int[] faceArr = target.FaceArray.ToArray(); // contains vertex indices
-    int edgeCount = 0;
-    for (int i = 0; i < faceArr.Length; i = i + edgeCount + 1)
-    {
-      List<int> faceVertices = new();
-      edgeCount = faceArr[i];
-      for (int j = i + 1; j <= i + edgeCount; j++)
-      {
-        faceVertices.Add(faceArr[j]);
-      }
-
-      if (edgeCount == 4) // quad face
-      {
-        faces.AddRange(new List<int> { 4, faceVertices[0], faceVertices[1], faceVertices[2], faceVertices[3] });
-      }
-      else // triangle face
-      {
-        faces.AddRange(new List<int> { 3, faceVertices[0], faceVertices[1], faceVertices[2] });
-      }
-    }
-
-    // colors
-    var colors = target.VertexColorArray
-      .Select(
-        o =>
-          System.Drawing.Color
-            .FromArgb(System.Convert.ToInt32(o.Red), System.Convert.ToInt32(o.Green), System.Convert.ToInt32(o.Blue))
-            .ToArgb()
-      )
-      .ToList();
-
-    // bbox
-    SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
-
-    SOG.Mesh speckleMesh = new(vertices, faces, colors, null, _contextStack.Current.SpeckleUnits) { bbox = bbox };
 
     return speckleMesh;
   }
