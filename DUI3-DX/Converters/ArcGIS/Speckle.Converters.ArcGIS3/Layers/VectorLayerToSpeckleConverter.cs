@@ -31,20 +31,19 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
   public VectorLayer RawConvert(FeatureLayer target)
   {
     var speckleLayer = new VectorLayer();
-    var spatialRef = target.GetSpatialReference();
 
-    // get active map CRS if layer CRS is empty
-    if (spatialRef.Unit is null)
-    {
-      spatialRef = _contextStack.Current.Document.SpatialReference;
-    }
+    // get document CRS (for writing geometry coords)
+    var spatialRef = _contextStack.Current.Document.SpatialReference;
     speckleLayer.crs = new CRS
     {
       wkt = spatialRef.Wkt,
       name = spatialRef.Name,
       units_native = spatialRef.Unit.ToString(),
     };
+
+    // other properties
     speckleLayer.name = target.Name;
+    speckleLayer.units = _contextStack.Current.SpeckleUnits;
 
     // get feature class fields
     var attributes = new Base();
@@ -52,7 +51,6 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     foreach (Field field in fields)
     {
       string name = field.Name;
-
       if (name == "Shape")
       {
         continue;
@@ -83,7 +81,6 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     }
 
     // search the rows
-
     // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
     // This means we need to be carefully adding using statements based on the API documentation coming from each method/class
 
