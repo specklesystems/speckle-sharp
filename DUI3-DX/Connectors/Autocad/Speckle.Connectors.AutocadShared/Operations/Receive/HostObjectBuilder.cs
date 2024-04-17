@@ -80,7 +80,7 @@ public class HostObjectBuilder : IHostObjectBuilder
           }
 
           object converted = converter.Convert(obj);
-          List<object> flattened = Utilities.FlattenToNativeConversionResult(converted, typeof(Entity));
+          List<object> flattened = Utilities.FlattenToHostConversionResult(converted, new[] { typeof(Entity) });
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
           {

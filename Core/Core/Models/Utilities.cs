@@ -218,9 +218,9 @@ public static class Utilities
   /// This happens, for example, in the case of multiple display value fallbacks for a given object.
   /// </summary>
   /// <param name="item"> Object to flatten</param>
-  /// <param name="nativeType"> Type to not flat if native type inherited from IEnumerable.</param>
-  /// <returns> Flattened objects after to native.</returns>
-  public static List<object> FlattenToNativeConversionResult(object item, Type nativeType)
+  /// <param name="ignoredTypes"> Types to not flat if current type inherited from any of them.</param>
+  /// <returns> Flattened objects after to host.</returns>
+  public static List<object> FlattenToHostConversionResult(object item, IEnumerable<Type>? ignoredTypes = null)
   {
     List<object> convertedList = new();
     Stack<object> stack = new();
@@ -230,11 +230,14 @@ public static class Utilities
     {
       object current = stack.Pop();
       var currentType = current.GetType();
+      var shouldFlatten = true;
 
-      if (
-        !(currentType.IsAssignableFrom(nativeType) || nativeType.IsAssignableFrom(currentType))
-        && current is IEnumerable list
-      )
+      if (ignoredTypes is not null)
+      {
+        shouldFlatten = !ignoredTypes.Any(t => t.IsAssignableFrom(currentType));
+      }
+
+      if (shouldFlatten && current is IEnumerable list)
       {
         foreach (object subItem in list)
         {

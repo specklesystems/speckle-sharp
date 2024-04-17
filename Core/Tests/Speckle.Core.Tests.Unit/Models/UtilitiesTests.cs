@@ -59,7 +59,7 @@ public sealed class UtilitiesTests
       new() // obj 3
     };
 
-    var testEnum = new ParentTestEnumerable<object>() { new(), new() };
+    var parentTestEnum = new ParentTestEnumerable<object>() { new(), new() };
 
     var nestedObjectsWithEnumerableInherited = new List<object>()
     {
@@ -67,24 +67,35 @@ public sealed class UtilitiesTests
       {
         new(), // obj 1
         new(), // obj 2
-        testEnum // obj 3
+        parentTestEnum // obj 3
       },
       new() // obj 4
     };
 
-    var singleObjectFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(
-      singleObject,
-      typeof(TestEnumerable<object>)
-    );
-    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(
-      nestedObjects,
-      typeof(TestEnumerable<object>)
-    );
-    var nestedObjectsWithEnumerableInheritedFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(
-      nestedObjectsWithEnumerableInherited,
-      typeof(TestEnumerable<object>)
+    var parentTestEnumFlattenedWithoutIgnoredTypes = Core.Models.Utilities.FlattenToHostConversionResult(
+      parentTestEnum
     );
 
+    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
+      parentTestEnum,
+      new[] { typeof(TestEnumerable<object>) }
+    );
+
+    var singleObjectFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
+      singleObject,
+      new[] { typeof(TestEnumerable<object>) }
+    );
+    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
+      nestedObjects,
+      new[] { typeof(TestEnumerable<object>) }
+    );
+    var nestedObjectsWithEnumerableInheritedFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
+      nestedObjectsWithEnumerableInherited,
+      new[] { typeof(TestEnumerable<object>) }
+    );
+
+    Assert.That(parentTestEnumFlattenedWithoutIgnoredTypes.Count, Is.EqualTo(2));
+    Assert.That(parentTestEnumFlattened.Count, Is.EqualTo(1));
     Assert.That(singleObjectFlattened.Count, Is.EqualTo(1));
     Assert.That(nestedObjectsFlattened.Count, Is.EqualTo(3));
     Assert.That(nestedObjectsWithEnumerableInheritedFlattened.Count, Is.EqualTo(4));
