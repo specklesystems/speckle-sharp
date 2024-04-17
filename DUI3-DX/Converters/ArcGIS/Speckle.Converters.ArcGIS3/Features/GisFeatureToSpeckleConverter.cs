@@ -3,9 +3,6 @@ using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
-using Speckle.Newtonsoft.Json.Linq;
-using Objects;
-using System.Collections.Generic;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -51,11 +48,12 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       }
     });
 
-    // re-shape the GisFeature, if shapes is a list of Meshes
+    // re-shape the GisFeature: if shapes is a list of Meshes, set them as DisplayValue
     if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
     {
       return new GisFeature(attributes, speckleShapes);
     }
+    // otherwise set shapes as Geometries
     return new GisFeature(speckleShapes, attributes);
   }
 }

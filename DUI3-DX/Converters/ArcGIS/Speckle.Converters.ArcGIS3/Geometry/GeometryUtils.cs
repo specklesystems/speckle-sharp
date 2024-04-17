@@ -24,7 +24,7 @@ public class GeometryUtils
     {
       throw new ArgumentException("Not enough points for polygon orientation check");
     }
-    if (points[0] != points[points.Count - 1])
+    if (points[0] != points[^1])
     {
       points.Add(points[0]);
     }

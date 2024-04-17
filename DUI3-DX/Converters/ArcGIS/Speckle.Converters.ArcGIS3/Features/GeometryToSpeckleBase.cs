@@ -39,7 +39,7 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
         Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
         Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
         Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
-        Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch),
+        Multipatch multipatch => _multipatchFeatureConverter.RawConvert(multipatch), // GisPolygonGeometry or Mesh
         _ => throw new NotSupportedException($"No conversion found for {target.GetType().Name}"),
       };
     }

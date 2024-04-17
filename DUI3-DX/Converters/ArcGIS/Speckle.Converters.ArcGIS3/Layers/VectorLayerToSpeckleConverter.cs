@@ -63,7 +63,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     speckleLayer.attributes = attributes;
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
-    // get a simple geometry type 
+    // get a simple geometry type
     string spekleGeometryType = string.Empty;
     if (speckleLayer.nativeGeomType.ToLower().Contains("point"))
     {
@@ -82,7 +82,6 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
       spekleGeometryType = "Multipatch";
     }
 
-
     // search the rows
 
     // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
@@ -97,7 +96,15 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         {
           GisFeature element = _gisFeatureConverter.RawConvert(row);
           speckleLayer.elements.Add(element);
-          if (spekleGeometryType == "Multipatch" && element.geometry != null && element.displayValue != null && element.geometry.Count > 0 && element.displayValue.Count == 0)
+
+          // differentiate between Ring Multipatches and Mesh Multipatches
+          if (
+            spekleGeometryType == "Multipatch"
+            && element.geometry != null
+            && element.displayValue != null
+            && element.geometry.Count > 0
+            && element.displayValue.Count == 0
+          )
           {
             spekleGeometryType = "Polygon";
           }
@@ -105,8 +112,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
       }
     }
 
-    // differentiate between Ring Multipatches and Mesh Multipatches
-    if (speckleLayer.nativeGeomType.Contains("Multipatch") && )
+    speckleLayer.geomType = spekleGeometryType;
 
     return speckleLayer;
   }
