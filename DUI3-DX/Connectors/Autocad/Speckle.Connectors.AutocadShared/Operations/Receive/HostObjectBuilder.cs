@@ -80,12 +80,13 @@ public class HostObjectBuilder : IHostObjectBuilder
           }
 
           object converted = converter.Convert(obj);
-          List<object> flattened = Utilities.FlattenToHostConversionResult(converted, new[] { typeof(Entity) });
+          List<object> flattened = Utilities.FlattenToHostConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
           {
             if (conversionResult == null)
             {
+              // POC: This needed to be double checked why we check null and continue
               continue;
             }
 

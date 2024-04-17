@@ -217,10 +217,12 @@ public static class Utilities
   /// Utility function to flatten a conversion result that might have nested lists of objects.
   /// This happens, for example, in the case of multiple display value fallbacks for a given object.
   /// </summary>
+  /// <remarks>
+  ///   Assuming native objects are not inherited from IList.
+  /// </remarks>
   /// <param name="item"> Object to flatten</param>
-  /// <param name="ignoredTypes"> Types to not flat if current type inherited from any of them.</param>
   /// <returns> Flattened objects after to host.</returns>
-  public static List<object> FlattenToHostConversionResult(object item, IEnumerable<Type>? ignoredTypes = null)
+  public static List<object> FlattenToHostConversionResult(object item)
   {
     List<object> convertedList = new();
     Stack<object> stack = new();
@@ -229,15 +231,7 @@ public static class Utilities
     while (stack.Count > 0)
     {
       object current = stack.Pop();
-      var currentType = current.GetType();
-      var shouldFlatten = true;
-
-      if (ignoredTypes is not null)
-      {
-        shouldFlatten = !ignoredTypes.Any(t => t.IsAssignableFrom(currentType));
-      }
-
-      if (shouldFlatten && current is IEnumerable list)
+      if (current is IList list)
       {
         foreach (object subItem in list)
         {

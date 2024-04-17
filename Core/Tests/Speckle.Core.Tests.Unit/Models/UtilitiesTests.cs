@@ -72,29 +72,13 @@ public sealed class UtilitiesTests
       new() // obj 4
     };
 
-    var parentTestEnumFlattenedWithoutIgnoredTypes = Core.Models.Utilities.FlattenToHostConversionResult(
-      parentTestEnum
-    );
-
-    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
-      parentTestEnum,
-      new[] { typeof(TestEnumerable<object>) }
-    );
-
-    var singleObjectFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
-      singleObject,
-      new[] { typeof(TestEnumerable<object>) }
-    );
-    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
-      nestedObjects,
-      new[] { typeof(TestEnumerable<object>) }
-    );
+    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(parentTestEnum);
+    var singleObjectFlattened = Core.Models.Utilities.FlattenToHostConversionResult(singleObject);
+    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToHostConversionResult(nestedObjects);
     var nestedObjectsWithEnumerableInheritedFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
-      nestedObjectsWithEnumerableInherited,
-      new[] { typeof(TestEnumerable<object>) }
+      nestedObjectsWithEnumerableInherited
     );
 
-    Assert.That(parentTestEnumFlattenedWithoutIgnoredTypes.Count, Is.EqualTo(2));
     Assert.That(parentTestEnumFlattened.Count, Is.EqualTo(1));
     Assert.That(singleObjectFlattened.Count, Is.EqualTo(1));
     Assert.That(nestedObjectsFlattened.Count, Is.EqualTo(3));
