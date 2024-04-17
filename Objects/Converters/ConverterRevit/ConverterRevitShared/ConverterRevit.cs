@@ -907,7 +907,6 @@ public partial class ConverterRevit : ISpeckleConverter
       Organization.DataTable _ => true,
       // GIS
       PolygonElement _ => true,
-      GisFeature _ => true,
       _ => false,
     };
     if (objRes)
