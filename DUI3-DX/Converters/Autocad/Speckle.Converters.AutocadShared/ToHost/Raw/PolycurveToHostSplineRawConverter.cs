@@ -28,6 +28,7 @@ public class PolycurveToHostSplineRawConverter : IRawConversion<SOG.Polycurve, L
 
   public List<ADB.Entity> RawConvert(SOG.Polycurve target)
   {
+    // POC: We can improve this once we have IIndex of raw converters and we can get rid of case converters?
     // POC: Should we join entities?
     var list = new List<ADB.Entity>();
 
