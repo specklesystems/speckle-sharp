@@ -8,7 +8,6 @@ using System.Collections.Generic;
 
 namespace Speckle.Converters.Autocad.Geometry;
 
-// POC: there is a random transaction memory error! Visit ticket -> https://spockle.atlassian.net/browse/CNX-9282
 [NameAndRankValue(nameof(SOG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Mesh, ADB.PolyFaceMesh>
 {
