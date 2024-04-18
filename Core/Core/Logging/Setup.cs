@@ -78,6 +78,7 @@ public static class Setup
     foreach (var account in AccountManager.GetAccounts())
     {
       Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);
+      Analytics.IdentifyProfile(account.GetHashedEmail(), hostApplication);
     }
   }
 

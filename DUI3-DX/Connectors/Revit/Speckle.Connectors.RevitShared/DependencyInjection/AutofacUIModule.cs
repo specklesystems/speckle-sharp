@@ -4,6 +4,7 @@ using Autofac;
 using CefSharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
@@ -75,11 +76,11 @@ public class AutofacUIModule : Module
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
 
-    // POC: this needs to considering, and should either be re-instated/fixed and relates to where the UoW is.
-    //builder
-    //  .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-    //  .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-    //  .InstancePerLifetimeScope();
+    // POC: needs interafacing out
+    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
+
+    // POC: this can be injected in maybe a common place, perhaps a module in Speckle.Converters.Common.DependencyInjection
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
 
     // POC: logging factory couldn't be added, which is the recommendation, due to janky dependencies
     // having a SpeckleLogging service, might be interesting, if a service can listen on a local port or use named pipes
