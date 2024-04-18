@@ -10,9 +10,19 @@ namespace Speckle.Core.Helpers;
 public static class BinaryFormatter
 {
   /// <summary>
-  /// Leading bytes on a BinaryFormatter (should be consistent, though I haven't found an actual definition)
+  /// Leading bytes on a BinaryFormatter as defined here: 
+  /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/a7e578d3-400a-4249-9424-7529d10d1b3c 
+  /// and here: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/eb503ca5-e1f6-4271-a7ee-c4ca38d07996
   /// </summary>
-  private static readonly byte[] s_prefix = new byte[] { 0, 1, 0, 0, 0, 255, 255, 255, 255, 1, 0, 0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0 };
+  private static readonly byte[] s_prefix = new byte[] { 
+      0,                   // RecordTypeEnum (always 0)
+      1,   0,   0,   0,    // Root ID, Id of the incoming string (see below)
+    255, 255, 255, 255,    // Header ID
+      1,   0,   0,   0,    // Major Version
+      0,   0,   0,   0,    // Minor Version
+      6,                   // RecordTypeEnum for string - must be 6
+      1,   0,   0,   0     // Id of the upcoming string, 1 as there is no other string.
+  };
   /// <summary>
   /// Indicates end of file
   /// </summary>
