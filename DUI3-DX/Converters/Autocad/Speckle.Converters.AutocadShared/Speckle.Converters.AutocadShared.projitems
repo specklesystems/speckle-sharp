@@ -16,7 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\BoxToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\MeshToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PolycurveToHostSplineRawConverter.cs" />
-    <Compile Include="..\Speckle.Converters.AutocadShared\ToHost\Geometry\CircleToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\CircleToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\ArcToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\CurveToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\EllipseToHostConverter.cs" />
