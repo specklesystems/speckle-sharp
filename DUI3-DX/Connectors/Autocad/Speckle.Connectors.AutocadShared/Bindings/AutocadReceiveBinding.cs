@@ -37,10 +37,9 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   public void CancelReceive(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
 
-  public Task Receive(string modelCardId)
+  public async Task Receive(string modelCardId)
   {
-    Parent.RunOnMainThread(async () => await ReceiveInternal(modelCardId).ConfigureAwait(false));
-    return Task.CompletedTask;
+    await ReceiveInternal(modelCardId).ConfigureAwait(false);
   }
 
   private async Task ReceiveInternal(string modelCardId)
