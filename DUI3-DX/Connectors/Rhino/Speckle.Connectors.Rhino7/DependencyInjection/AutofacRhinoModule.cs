@@ -81,6 +81,7 @@ public class AutofacRhinoModule : Module
       {
         Error = (_, args) =>
         {
+          // POC: we should probably do a bit more than just swallowing this!
           Console.WriteLine("*** JSON ERROR: " + args.ErrorContext);
         },
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -94,6 +95,7 @@ public class AutofacRhinoModule : Module
 
   private static void RegisterLoggerFactory(ContainerBuilder builder)
   {
+    // POC: will likely need refactoring with our reporting pattern.
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)

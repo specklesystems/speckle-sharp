@@ -71,9 +71,10 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private async Task HandleSend(string modelCardId)
   {
-    // POC this is where we need to begin UoW
-    // i.e. we resolve the UoW
+    // POC: should THIS be where we begin the UoW
 
+    // POC: probably the CTS SHOULD be injected as InstancePerLifetimeScope and then
+    // it can be injected where needed instead of passing it around like a bomb :D
     CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
     if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)

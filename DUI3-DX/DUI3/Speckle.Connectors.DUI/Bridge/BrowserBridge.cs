@@ -103,6 +103,7 @@ public class BrowserBridge : IBridge
 
     // Whenever the ui will call run method inside .net, it will post a message to this action block.
     // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
+    // POC: I wonder if TL exception handler should be living here...
     _actionBlock = new ActionBlock<RunMethodArgs>(
       args => ExecuteMethod(args.MethodName, args.RequestId, args.MethodArgs),
       new ExecutionDataflowBlockOptions
