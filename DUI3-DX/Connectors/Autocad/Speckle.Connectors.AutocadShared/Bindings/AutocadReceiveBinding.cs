@@ -39,11 +39,6 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   public async Task Receive(string modelCardId)
   {
-    await ReceiveInternal(modelCardId).ConfigureAwait(false);
-  }
-
-  private async Task ReceiveInternal(string modelCardId)
-  {
     try
     {
       // Init cancellation token source -> Manager also cancel it if exist before
@@ -64,7 +59,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
           modelCard.ModelName,
           modelCard.SelectedVersionId,
           cts.Token,
-          (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
+          onOperationProgressed: (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
         .ConfigureAwait(false);
 
@@ -73,6 +68,8 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
     catch (OperationCanceledException)
     {
       // POC: not sure here need to handle anything. UI already aware it cancelled operation visually.
+      // POC: JEDD: We should not update the UI until this exception is caught, we don't want to show the UI as cancelled
+      // until the actual operation is cancelled (thrown exception).
       return;
     }
     catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
