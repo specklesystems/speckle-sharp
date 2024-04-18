@@ -24,7 +24,7 @@ public class ConfigBinding : IBinding
   public ConfigBinding(IBridge bridge, JsonSerializerSettings serializerOptions, string connectorName)
   {
     Parent = bridge;
-    ConfigStorage = new SQLiteTransport(scope: "DUI3Config");
+    ConfigStorage = new SQLiteTransport(scope: "DUI3Config"); // POC: maybe inject? (if we ever want to use a different storage for configs later down the line)
     _connectorName = connectorName;
     _serializerOptions = serializerOptions;
   }
