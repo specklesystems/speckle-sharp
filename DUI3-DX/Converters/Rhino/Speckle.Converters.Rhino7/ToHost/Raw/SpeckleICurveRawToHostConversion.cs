@@ -7,8 +7,7 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
 {
   private readonly IRawConversion<SOG.Line, RG.LineCurve> _lineConverter;
   private readonly IRawConversion<SOG.Arc, RG.ArcCurve> _arcConverter;
-
-  //private readonly IRawConversion<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
+  private readonly IRawConversion<SOG.Ellipse, RG.NurbsCurve> _ellipseConverter;
   private readonly IRawConversion<SOG.Spiral, RG.PolylineCurve> _spiralConverter;
   private readonly IRawConversion<SOG.Circle, RG.ArcCurve> _circleConverter;
   private readonly IRawConversion<SOG.Polyline, RG.PolylineCurve> _polylineConverter;
@@ -18,7 +17,7 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
   public SpeckleICurveRawToHostConversion(
     IRawConversion<SOG.Line, RG.LineCurve> lineConverter,
     IRawConversion<SOG.Arc, RG.ArcCurve> arcConverter,
-    //IRawConversion<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
+    IRawConversion<SOG.Ellipse, RG.NurbsCurve> ellipseConverter,
     IRawConversion<SOG.Spiral, RG.PolylineCurve> spiralConverter,
     IRawConversion<SOG.Circle, RG.ArcCurve> circleConverter,
     IRawConversion<SOG.Polyline, RG.PolylineCurve> polylineConverter,
@@ -28,7 +27,7 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
   {
     _lineConverter = lineConverter;
     _arcConverter = arcConverter;
-    //_ellipseConverter = ellipseConverter;
+    _ellipseConverter = ellipseConverter;
     _spiralConverter = spiralConverter;
     _circleConverter = circleConverter;
     _polylineConverter = polylineConverter;
@@ -42,7 +41,7 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
       SOG.Line line => _lineConverter.RawConvert(line),
       SOG.Arc arc => _arcConverter.RawConvert(arc),
       SOG.Circle circle => _circleConverter.RawConvert(circle),
-      // SOG.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
+      SOG.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
       SOG.Spiral spiral => _spiralConverter.RawConvert(spiral),
       SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
       SOG.Curve curve => _nurbsCurveConverter.RawConvert(curve),

@@ -4,9 +4,7 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class SpeckleSurfaceRawToHostConversion : IRawConversion<SOG.Surface, RG.NurbsSurface>
 {
-  public RG.NurbsSurface RawConvert(SOG.Surface target) => throw new NotImplementedException();
-
-  public RG.NurbsSurface SurfaceToNative(SOG.Surface target)
+  public RG.NurbsSurface RawConvert(SOG.Surface target)
   {
     // Create rhino surface
     var points = target.GetControlPoints().ToList();

@@ -38,12 +38,7 @@ public class SpecklePolylineRawToHostConversion
   RG.PolylineCurve IRawConversion<SOG.Polyline, RG.PolylineCurve>.RawConvert(SOG.Polyline target)
   {
     var poly = RawConvert(target).ToPolylineCurve();
-
-    if (target.domain != null)
-    {
-      poly.Domain = _intervalConverter.RawConvert(target.domain);
-    }
-
+    poly.Domain = _intervalConverter.RawConvert(target.domain);
     return poly;
   }
 }
