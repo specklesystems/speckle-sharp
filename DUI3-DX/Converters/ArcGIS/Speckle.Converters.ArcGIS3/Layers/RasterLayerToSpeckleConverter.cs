@@ -9,7 +9,7 @@ using ArcGIS.Core.Data.Raster;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
-[NameAndRankValue(nameof(FeatureLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(RasterLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class RasterLayerToSpeckleConverter
   : IHostObjectToSpeckleConversion,
     IRawConversion<RasterLayer, SGIS.RasterLayer>
