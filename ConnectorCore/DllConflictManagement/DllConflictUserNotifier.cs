@@ -1,17 +1,18 @@
 using System.Text;
+using Speckle.DllConflictManagement.Analytics;
+using Speckle.DllConflictManagement.EventEmitter;
 
 namespace Speckle.DllConflictManagement;
 
 public abstract class DllConflictUserNotifier
 {
   private readonly DllConflictManager _dllConflictManager;
+  private readonly DllConflictEventEmitter _eventEmitter;
 
-  public event EventHandler<LoggingEventArgs> OnError;
-  public event EventHandler<LoggingEventArgs> OnInfo;
-
-  protected DllConflictUserNotifier(DllConflictManager dllConflictManager)
+  protected DllConflictUserNotifier(DllConflictManager dllConflictManager, DllConflictEventEmitter eventEmitter)
   {
     _dllConflictManager = dllConflictManager;
+    _eventEmitter = eventEmitter;
   }
 
   public void NotifyUserOfMissingMethodException(MemberAccessException ex)
@@ -21,31 +22,45 @@ public abstract class DllConflictUserNotifier
 
   private void NotifyUserOfException(AssemblyConflictInfo? identifiedConflictingAssemblyInfo, Exception ex)
   {
-    OnInfo?.Invoke(this, new LoggingEventArgs("An exception was thrown that is likely caused by a dll conflict.", ex));
-
     StringBuilder sb = new();
     if (identifiedConflictingAssemblyInfo is not null)
     {
       AddSingleDependencyErrorToStringBuilder(sb, identifiedConflictingAssemblyInfo);
     }
-    else if (
-      _dllConflictManager.AllConflictInfo.ToList() is List<AssemblyConflictInfo> conflictInfos
-      && conflictInfos.Count > 0
-    )
+    else if (_dllConflictManager.AllConflictInfo.Count > 0)
     {
       sb.AppendLine("This is likely due to one of the following dependency conflicts");
-      AddMultipleDependencyErrorsToStringBuilder(sb, conflictInfos);
+      AddMultipleDependencyErrorsToStringBuilder(sb, _dllConflictManager.AllConflictInfo);
     }
     else
     {
-      OnError?.Invoke(
-        this,
+      _eventEmitter.EmitError(
         new LoggingEventArgs(
           "A type load exception was thrown, but the conflict manager did not detect any conflicts",
           ex
         )
       );
     }
+
+    Dictionary<string, object?> eventParameters =
+      new()
+      {
+        { "name", "DllConflictExceptionDialogShown" },
+        { "conflictExceptionMessage", ex.Message },
+        { "conflictExceptionType", ex.GetType().FullName },
+        { "identifiedConflictingAssemblyName", identifiedConflictingAssemblyInfo?.SpeckleDependencyAssemblyName.Name },
+        { "speckleVersion", identifiedConflictingAssemblyInfo?.SpeckleDependencyAssemblyName.Version },
+        { "loadedVersion", identifiedConflictingAssemblyInfo?.ConflictingAssembly.GetName().Version },
+        { "loadedDependencyLocation", identifiedConflictingAssemblyInfo?.GetConflictingExternalAppName() },
+      };
+
+    if (identifiedConflictingAssemblyInfo is null)
+    {
+      eventParameters["numDetectedConflicts"] = _dllConflictManager.AllConflictInfo.Count;
+      eventParameters["allDetectedConflicts"] = _dllConflictManager.AllConflictInfoAsStrings.ToList();
+    }
+
+    _eventEmitter.EmitAction(new ActionEventArgs(nameof(Events.DUIAction), eventParameters));
 
     ShowDialog("Conflict Report 🔥", "Speckle failed to load due to a dependency mismatch error.", sb.ToString());
   }
@@ -84,12 +99,20 @@ public abstract class DllConflictUserNotifier
   {
     List<AssemblyConflictInfo> conflictInfoNotIgnored = _dllConflictManager
       .GetConflictInfoThatUserHasntSuppressedWarningsFor()
+      .Where(conflict => !conflict.SpeckleDependencyAssemblyName.Name.StartsWith("System.")) // ignore system dlls for now
       .ToList();
 
     if (conflictInfoNotIgnored.Count == 0)
     {
       return;
     }
+
+    _eventEmitter.EmitAction(
+      new ActionEventArgs(
+        nameof(Events.DUIAction),
+        new() { { "name", "DllConflictWarningDialogShown" }, { "conflicts", conflictInfoNotIgnored }, }
+      )
+    );
 
     StringBuilder sb = new();
     AddMultipleDependencyErrorsToStringBuilder(sb, conflictInfoNotIgnored);
@@ -103,6 +126,9 @@ public abstract class DllConflictUserNotifier
 
     if (doNotWarnAgain)
     {
+      _eventEmitter.EmitAction(
+        new ActionEventArgs(nameof(Events.DUIAction), new() { { "name", "Do not warn about dll conflicts checked" } })
+      );
       _dllConflictManager.SupressFutureAssemblyConflictWarnings(conflictInfoNotIgnored);
     }
   }

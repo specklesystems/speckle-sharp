@@ -1,4 +1,6 @@
 using System.Reflection;
+using Speckle.DllConflictManagement.Analytics;
+using Speckle.DllConflictManagement.EventEmitter;
 
 namespace Speckle.DllConflictManagement;
 
@@ -6,15 +8,19 @@ public sealed class DllConflictManager
 {
   private readonly Dictionary<string, AssemblyConflictInfo> _assemblyConflicts = new();
   private readonly DllConflictManagmentOptionsLoader _optionsLoader;
+  private readonly DllConflictEventEmitter _eventEmitter;
   private readonly string[] _assemblyPathFragmentsToIgnore;
-  public IEnumerable<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
+  public ICollection<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
+  public IEnumerable<string> AllConflictInfoAsStrings => _assemblyConflicts.Values.Select(con => con.ToString());
 
   public DllConflictManager(
     DllConflictManagmentOptionsLoader optionsLoader,
+    DllConflictEventEmitter eventEmitter,
     params string[] assemblyPathFragmentsToIgnore
   )
   {
     _optionsLoader = optionsLoader;
+    _eventEmitter = eventEmitter;
     _assemblyPathFragmentsToIgnore = assemblyPathFragmentsToIgnore;
   }
 
@@ -32,6 +38,16 @@ public sealed class DllConflictManager
       loadedAssembliesDict[assembly.GetName().Name] = assembly;
     }
     LoadAssemblyAndDependencies(providedAssembly, loadedAssembliesDict, new HashSet<string>());
+
+    if (AllConflictInfo.Count > 0)
+    {
+      _eventEmitter.EmitAction(
+        new ActionEventArgs(
+          nameof(Events.DUIAction),
+          new() { { "name", "DllConflictsDetected" }, { "conflicts", AllConflictInfoAsStrings.ToList() }, }
+        )
+      );
+    }
   }
 
   private void LoadAssemblyAndDependencies(
@@ -55,16 +71,8 @@ public sealed class DllConflictManager
 
       if (loadedAssemblies.TryGetValue(assemblyName.Name, out Assembly? loadedAssembly))
       {
-        bool shouldIgnore = false;
-        foreach (var pathFragment in _assemblyPathFragmentsToIgnore)
-        {
-          if (loadedAssembly.Location.Contains(pathFragment))
-          {
-            shouldIgnore = true;
-            break;
-          }
-        }
-        if (loadedAssembly.GetName().Version != assemblyName.Version && !shouldIgnore)
+        bool shouldSkip = ShouldSkipCheckingConflictBecauseOfAssemblyLocation(loadedAssembly);
+        if (!shouldSkip && !MajorAndMinorVersionsEqual(loadedAssembly.GetName().Version, assemblyName.Version))
         {
           _assemblyConflicts[assemblyName.Name] = new(assemblyName, loadedAssembly);
           continue; // if we already know there is a conflict here, no need to continue iterating dependencies
@@ -84,6 +92,24 @@ public sealed class DllConflictManager
         LoadAssemblyAndDependencies(loadedAssembly, loadedAssemblies, visitedAssemblies);
       }
     }
+  }
+
+  private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly loadedAssembly)
+  {
+    foreach (var pathFragment in _assemblyPathFragmentsToIgnore)
+    {
+      if (loadedAssembly.Location.Contains(pathFragment))
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static bool MajorAndMinorVersionsEqual(Version version1, Version version2)
+  {
+    return version1.Major == version2.Major && version1.Minor == version2.Minor;
   }
 
   private Assembly? GetLoadedAssembly(AssemblyName assemblyName)

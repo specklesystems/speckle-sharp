@@ -1,12 +1,13 @@
 using Autodesk.Revit.UI;
 using Speckle.DllConflictManagement;
+using Speckle.DllConflictManagement.EventEmitter;
 
 namespace ConnectorRevit.Entry;
 
 internal sealed class RevitDllConflictUserNotifier : DllConflictUserNotifier
 {
-  public RevitDllConflictUserNotifier(DllConflictManager dllConflictManager)
-    : base(dllConflictManager) { }
+  public RevitDllConflictUserNotifier(DllConflictManager dllConflictManager, DllConflictEventEmitter eventEmitter)
+    : base(dllConflictManager, eventEmitter) { }
 
   protected override void ShowDialog(string title, string heading, string body)
   {

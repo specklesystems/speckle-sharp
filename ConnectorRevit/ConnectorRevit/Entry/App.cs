@@ -16,6 +16,9 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using ConnectorRevit.Entry;
 using Speckle.DllConflictManagement;
+using Speckle.DllConflictManagement.Serialization;
+using Speckle.DllConflictManagement.Analytics;
+using Speckle.DllConflictManagement.EventEmitter;
 
 namespace Speckle.ConnectorRevit.Entry;
 
@@ -35,21 +38,23 @@ public class App : IExternalApplication
     AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
     System.Windows.Forms.Application.ThreadException += Application_ThreadException;
 
-    var dllPath = Path.GetDirectoryName(typeof(DllConflictManager).Assembly.Location);
+    DllConflictEventEmitter eventEmitter = new();
+    ISerializer serializer = new SystemTextJsonSerializer();
+    AnalyticsWithoutDependencies analytics = new(eventEmitter, serializer, "Revit", GetRevitVersion());
+    eventEmitter.OnAction += analytics.TrackEvent;
 
+    DllConflictManagmentOptionsLoader optionsLoader = new(serializer, "Revit", GetRevitVersion());
     // ignore dll conflicts when dll lives in GAC because they are noisy and not an issue (at least in revit)
-    DllConflictManagmentOptionsLoader optionsLoader = GetOptionsLoader();
-    DllConflictManager conflictManager = new(optionsLoader, "Microsoft.Net\\assembly\\GAC_MSIL\\");
-    conflictManager.DetectConflictsWithAssembliesInCurrentDomain(typeof(App).Assembly);
-    RevitDllConflictUserNotifier conflictNotifier = new(conflictManager);
+    DllConflictManager conflictManager = new(optionsLoader, eventEmitter, "Microsoft.Net\\assembly\\GAC_MSIL\\");
+    RevitDllConflictUserNotifier conflictNotifier = new(conflictManager, eventEmitter);
 
     try
     {
-      InitializeLogger();
-      conflictNotifier.OnError += (obj, args) => SpeckleLog.Logger.Error(args.Exception, args.ContextMessage);
-      conflictNotifier.OnInfo += (obj, args) => SpeckleLog.Logger.Information(args.Exception, args.ContextMessage);
+      conflictManager.DetectConflictsWithAssembliesInCurrentDomain(typeof(App).Assembly);
+      InitializeCore();
 
-      InitializeConnector();
+      UnsubscibeFromDllConflictEventsWithDependencyFreeResources(eventEmitter, analytics);
+      SubscibeToDllConflictEventsWithCoreResources(eventEmitter);
 
       //Always initialize RevitTask ahead of time within Revit API context
       APIContext.Initialize(application);
@@ -72,23 +77,45 @@ public class App : IExternalApplication
       conflictNotifier.NotifyUserOfMissingMethodException(ex);
       return Result.Failed;
     }
+    finally
+    {
+      eventEmitter.BeginEmit();
+    }
   }
 
-  private static DllConflictManagmentOptionsLoader GetOptionsLoader()
+  private static void UnsubscibeFromDllConflictEventsWithDependencyFreeResources(
+    DllConflictEventEmitter eventEmitter,
+    AnalyticsWithoutDependencies analytics
+  )
   {
-    string revitVersion;
+    eventEmitter.OnAction -= analytics.TrackEvent;
+  }
+
+  private static void SubscibeToDllConflictEventsWithCoreResources(DllConflictEventEmitter eventEmitter)
+  {
+    eventEmitter.OnError += (obj, args) => SpeckleLog.Logger.Error(args.Exception, args.ContextMessage);
+    eventEmitter.OnInfo += (obj, args) => SpeckleLog.Logger.Information(args.Exception, args.ContextMessage);
+
+    eventEmitter.OnAction += (obj, args) =>
+    {
+      _ = Enum.TryParse(args.EventName, out Analytics.Events eventName);
+      Analytics.TrackEvent(eventName, args.EventProperties);
+    };
+  }
+
+  private static string GetRevitVersion()
+  {
 #if REVIT2020
-    revitVersion = "2020";
+    return "2020";
 #elif REVIT2021
-    revitVersion = "2021";
+    return "2021";
 #elif REVIT2022
-    revitVersion = "2022";
+    return "2022";
 #elif REVIT2023
-    revitVersion = "2023";
+    return "2023";
 #elif REVIT2024
-    revitVersion = "2024";
+    return "2024";
 #endif
-    return new DllConflictManagmentOptionsLoader("Revit", revitVersion);
   }
 
   private void ControlledApplication_ApplicationInitialized(
@@ -318,7 +345,7 @@ public class App : IExternalApplication
     }
   }
 
-  private void InitializeLogger()
+  private void InitializeCore()
   {
     Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
   }

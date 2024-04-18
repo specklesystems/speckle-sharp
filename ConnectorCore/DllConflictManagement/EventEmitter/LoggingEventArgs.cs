@@ -1,4 +1,4 @@
-namespace Speckle.DllConflictManagement;
+﻿namespace Speckle.DllConflictManagement.EventEmitter;
 
 public class LoggingEventArgs : EventArgs
 {
