@@ -52,6 +52,8 @@ public class AutofacAutocadModule : Module
     // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Autocad"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();

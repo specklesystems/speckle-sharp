@@ -34,6 +34,8 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "ArcGIS"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();

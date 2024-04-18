@@ -19,9 +19,9 @@ public abstract class DocumentModelStore : DiscriminatedObject
 
   private readonly JsonSerializerSettings _serializerOptions;
 
-  protected DocumentModelStore(JsonSerializerSettings serializerOption)
+  protected DocumentModelStore(JsonSerializerSettings serializerOptions)
   {
-    _serializerOptions = serializerOption;
+    _serializerOptions = serializerOptions;
   }
 
   /// <summary>
