@@ -46,6 +46,7 @@ public class AutofacAutocadModule : Module
 
     // Operations
     builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
