@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Api;
 using System.Threading.Tasks;
