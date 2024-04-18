@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -40,7 +41,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var objectsToConvert = rootObject
       .TraverseWithPath(obj => obj is not Collection)
-      .Where(obj => obj.Item2 is not Collection);
+      .Where(obj => obj.Item2 is not Collection && obj.Item2 is not DisplayStyle && obj.Item2 is not RenderMaterial);
 
     var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
