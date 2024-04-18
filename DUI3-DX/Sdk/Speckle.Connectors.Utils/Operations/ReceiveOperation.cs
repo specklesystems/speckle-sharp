@@ -38,18 +38,12 @@ public sealed class ReceiveOperation
 
     // 3 - Get commit object from server
     using Client apiClient = new(account);
-    ServerTransport transport = new(account, projectId);
-    Commit? version =
-      await apiClient.CommitGet(projectId, versionId, cancellationToken).ConfigureAwait(true)
-      ?? throw new SpeckleException($"Failed to receive commit: {versionId} from server)");
+    Commit version = await apiClient.CommitGet(projectId, versionId, cancellationToken).ConfigureAwait(true);
 
-    Base? commitObject =
-      await Speckle.Core.Api.Operations
-        .Receive(version.referencedObject, cancellationToken: cancellationToken, remoteTransport: transport)
-        .ConfigureAwait(true)
-      ?? throw new SpeckleException(
-        $"Failed to receive commit: {version.id} objects from server: {nameof(Operations)} returned null"
-      );
+    using ServerTransport transport = new(account, projectId);
+    Base commitObject = await Speckle.Core.Api.Operations
+      .Receive(version.referencedObject, transport, cancellationToken: cancellationToken)
+      .ConfigureAwait(true);
 
     cancellationToken.ThrowIfCancellationRequested();
 
