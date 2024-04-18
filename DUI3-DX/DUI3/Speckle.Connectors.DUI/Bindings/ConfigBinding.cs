@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.Serialization;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Core.Transports;
