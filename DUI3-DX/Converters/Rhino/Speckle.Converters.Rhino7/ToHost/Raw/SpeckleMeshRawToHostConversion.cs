@@ -7,9 +7,9 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
 {
-  private readonly IRawConversion<IList<double>, Point3dList> _pointListConverter;
+  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
 
-  public SpeckleMeshRawToHostConversion(IRawConversion<IList<double>, Point3dList> pointListConverter)
+  public SpeckleMeshRawToHostConversion(IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
   }

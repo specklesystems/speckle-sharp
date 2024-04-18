@@ -4,9 +4,9 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
-public class FlatPointListRawToHostConversion : IRawConversion<IList<double>, Point3dList>
+public class FlatPointListRawToHostConversion : IRawConversion<IReadOnlyList<double>, Point3dList>
 {
-  public Point3dList RawConvert(IList<double> target)
+  public Point3dList RawConvert(IReadOnlyList<double> target)
   {
     if (target.Count % 3 != 0)
     {

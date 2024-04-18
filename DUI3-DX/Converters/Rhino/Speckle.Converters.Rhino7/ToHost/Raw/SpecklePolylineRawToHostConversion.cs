@@ -7,11 +7,11 @@ public class SpecklePolylineRawToHostConversion
   : IRawConversion<SOG.Polyline, RG.Polyline>,
     IRawConversion<SOG.Polyline, RG.PolylineCurve>
 {
-  private readonly IRawConversion<IList<double>, Point3dList> _pointListConverter;
+  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
   public SpecklePolylineRawToHostConversion(
-    IRawConversion<IList<double>, Point3dList> pointListConverter,
+    IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )
   {
