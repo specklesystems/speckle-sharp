@@ -4,6 +4,7 @@ using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Rhino7.ToHost.TopLevel;
 
+[NameAndRankValue(nameof(SOG.Brep), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class SpeckleBrepToHostBrepConversion : SpeckleToHostGeometryBaseConversion<SOG.Brep, RG.Brep>
 {
   public SpeckleBrepToHostBrepConversion(
