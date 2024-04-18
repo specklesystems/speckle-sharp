@@ -9,14 +9,14 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
 {
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
   private readonly IRawConversion<ICurve, RG.Curve> _curveConverter;
-  private readonly IRawConversion<SOG.Surface, RG.Surface> _surfaceConverter;
+  private readonly IRawConversion<SOG.Surface, RG.NurbsSurface> _surfaceConverter;
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
   public SpeckleBrepRawToHostConversion(
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
     IRawConversion<ICurve, RG.Curve> curveConverter,
-    IRawConversion<SOG.Surface, RG.Surface> surfaceConverter,
+    IRawConversion<SOG.Surface, RG.NurbsSurface> surfaceConverter,
     IRawConversion<SOG.Point, RG.Point3d> pointConverter,
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter
   )
@@ -45,7 +45,7 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
     target.Faces.ForEach(face => ConvertSpeckleBrepFace(rhinoBrep, face));
     target.Loops.ForEach(loop => ConvertSpeckleBrepLoop(rhinoBrep, loop, tolerance));
 
-    rhinoBrep.Repair(tolerance);
+    rhinoBrep.Repair(tolerance); // Repair fixes tolerance issues with the Brep if the scaling lead to some rounding error.
 
     return rhinoBrep;
   }
