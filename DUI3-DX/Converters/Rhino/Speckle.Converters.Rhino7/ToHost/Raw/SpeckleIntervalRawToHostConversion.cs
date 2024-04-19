@@ -6,7 +6,7 @@ public class SpeckleIntervalRawToHostConversion : IRawConversion<SOP.Interval, R
 {
   public RG.Interval RawConvert(SOP.Interval target)
   {
-    if (!target.start.HasValue || !target.end.HasValue) // POC: I hate interval start/end being nullable. Makes no sense.
+    if (!target.start.HasValue || !target.end.HasValue) // POC: CNX-9272 Interval start and end being nullable makes no sense.
     {
       throw new ArgumentException("Interval start/end cannot be null");
     }

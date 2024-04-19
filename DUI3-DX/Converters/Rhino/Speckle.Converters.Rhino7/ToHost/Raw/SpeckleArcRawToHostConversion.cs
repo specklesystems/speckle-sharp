@@ -26,7 +26,7 @@ public class SpeckleArcRawToHostConversion : IRawConversion<SOG.Arc, RG.Arc>, IR
     return rhinoArc;
   }
 
-  // POC: Potential code-smell by directly implementing the interface. We should discuss this further but
+  // POC: CNX-9271 Potential code-smell by directly implementing the interface. We should discuss this further but
   // since we're using the interfaces instead of the direct type, this may not be an issue.
   RG.ArcCurve IRawConversion<SOG.Arc, RG.ArcCurve>.RawConvert(SOG.Arc target)
   {
