@@ -1,12 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 
@@ -27,34 +25,25 @@ public sealed class ReceiveOperation
     string projectName,
     string modelName,
     string versionId,
-    CancellationTokenSource cts,
+    CancellationToken cancellationToken,
     Action<string, double?>? onOperationProgressed = null
   )
   {
     // 2 - Check account exist
-    Account account =
-      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
-      ?? throw new SpeckleAccountManagerException();
+    Account account = AccountManager.GetAccount(accountId);
 
     // 3 - Get commit object from server
-    Client apiClient = new(account);
-    ServerTransport transport = new(account, projectId);
-    Commit? version =
-      await apiClient.CommitGet(projectId, versionId, cts.Token).ConfigureAwait(false)
-      ?? throw new SpeckleException($"Failed to receive commit: {versionId} from server)");
+    using Client apiClient = new(account);
+    Commit version = await apiClient.CommitGet(projectId, versionId, cancellationToken).ConfigureAwait(false);
 
-    Base? commitObject =
-      await Speckle.Core.Api.Operations
-        .Receive(version.referencedObject, cancellationToken: cts.Token, remoteTransport: transport)
-        .ConfigureAwait(false)
-      ?? throw new SpeckleException(
-        $"Failed to receive commit: {version.id} objects from server: {nameof(Operations)} returned null"
-      );
+    using ServerTransport transport = new(account, projectId);
+    Base commitObject = await Speckle.Core.Api.Operations
+      .Receive(version.referencedObject, transport, cancellationToken: cancellationToken)
+      .ConfigureAwait(false);
 
-    apiClient.Dispose();
-    cts.Token.ThrowIfCancellationRequested();
+    cancellationToken.ThrowIfCancellationRequested();
 
     // 4 - Convert objects
-    return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cts);
+    return _hostObjectBuilder.Build(commitObject, projectName, modelName, onOperationProgressed, cancellationToken);
   }
 }

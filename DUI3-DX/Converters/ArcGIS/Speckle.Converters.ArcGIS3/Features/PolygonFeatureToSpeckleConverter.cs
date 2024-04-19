@@ -1,36 +1,21 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
-using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 using Objects.GIS;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-[NameAndRankValue(nameof(ACG.Polygon), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ACG.Polygon, Base>
+public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IReadOnlyList<GisPolygonGeometry>>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
 
-  public PolygonFeatureToSpeckleConverter(
-    IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ArcMapPoint, SOG.Point> pointConverter,
-    IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter
-  )
+  public PolygonFeatureToSpeckleConverter(IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline> segmentConverter)
   {
-    _contextStack = contextStack;
-    _pointConverter = pointConverter;
     _segmentConverter = segmentConverter;
   }
 
-  public Base Convert(object target) => RawConvert((ACG.Polygon)target);
-
-  public Base RawConvert(ACG.Polygon target)
+  public IReadOnlyList<GisPolygonGeometry> RawConvert(ACG.Polygon target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic30235.html
-    List<Base> polygonList = new();
+    List<GisPolygonGeometry> polygonList = new();
     int partCount = target.PartCount;
 
     GisPolygonGeometry polygon = new() { voids = new List<SOG.Polyline>() };
@@ -56,6 +41,6 @@ public class PolygonFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, 
     }
     polygonList.Add(polygon);
 
-    return polygonList[0];
+    return polygonList;
   }
 }

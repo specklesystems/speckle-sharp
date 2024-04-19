@@ -15,11 +15,11 @@ using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.ArcGIS3;
 using Speckle.Core.Transports;
-using ArcGIS.Core.Geometry;
 using Speckle.Connectors.ArcGIS.Operations.Receive;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -37,6 +37,8 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "ArcGIS"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
@@ -62,14 +64,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();
 
     // Register converter factory
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
-      .As<IScopedFactory<ISpeckleConverterToHost>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
   }
 
   //poc: dupe code

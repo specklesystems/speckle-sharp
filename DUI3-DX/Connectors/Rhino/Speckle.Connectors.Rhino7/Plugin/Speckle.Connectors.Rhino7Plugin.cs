@@ -1,16 +1,12 @@
 ﻿using System;
-
 using System.IO;
 using System.Reflection;
-using Autofac;
 using Rhino.PlugIns;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using Speckle.Connectors.Rhino7.DependencyInjection;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
-using Speckle.Converters.Common.DependencyInjection;
-using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
@@ -50,11 +46,12 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 
       Container = new AutofacContainer(new StorageInfo());
-      Container.PreBuildEvent += ContainerPreBuildEvent;
 
       // Register Settings
       var rhinoSettings = new RhinoSettings(HostApplications.Rhino, HostAppVersion.v7);
 
+      // POC: We must load the Rhino connector module manually because we only search for DLL files when calling `LoadAutofacModules`,
+      // but the Rhino connector has `.rhp` as it's extension.
       Container
         .AddModule(new AutofacRhinoModule())
         .LoadAutofacModules(rhinoSettings.Modules)
@@ -70,7 +67,7 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
     catch (Exception e) when (!e.IsFatal())
     {
       errorMessage = e.ToFormattedString();
-      return LoadReturnCode.ErrorNoDialog;
+      return LoadReturnCode.ErrorShowDialog;
     }
   }
 
@@ -98,10 +95,5 @@ public class SpeckleConnectorsRhino7Plugin : PlugIn
     }
 
     return assembly;
-  }
-
-  private void ContainerPreBuildEvent(object sender, ContainerBuilder containerBuilder)
-  {
-    containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
   }
 }

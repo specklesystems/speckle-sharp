@@ -16,11 +16,11 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public class RootObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _converterFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-  public RootObjectBuilder(IScopedFactory<ISpeckleConverterToSpeckle> converterFactory)
+  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
   {
-    _converterFactory = converterFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
   }
 
   public Base Build(
@@ -51,6 +51,11 @@ public class RootObjectBuilder
     CancellationToken cancellationToken = default
   )
   {
+    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
+    // begin the unit of work
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
+    var converter = uow.Service;
+
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
@@ -86,7 +91,6 @@ public class RootObjectBuilder
       }*/
       try
       {
-        var converter = _converterFactory.ResolveScopedInstance();
         Base converted = converter.Convert(rhinoObject);
         converted.applicationId = applicationId;
 
@@ -167,63 +171,4 @@ public class RootObjectBuilder
     layerCollectionCache[layer.Index] = previousCollection;
     return previousCollection;
   }
-
-  //private static Collection ConvertObjects(
-  //  List<RhinoObject> rhinoObjects,
-  //  ISpeckleConverterToSpeckle converter,
-  //  Action<string, double?>? onOperationProgressed = null,
-  //  CancellationToken ct = default
-  //)
-  //{
-  //  var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
-  //  int count = 0;
-
-  //  Dictionary<int, Collection> layerCollectionCache = new();
-  //  // TODO: Handle blocks.
-  //  foreach (RhinoObject rhinoObject in rhinoObjects)
-  //  {
-  //    ct.ThrowIfCancellationRequested();
-
-  //    // 1. get object layer
-  //    var layer = RhinoDoc.ActiveDoc.Layers[rhinoObject.Attributes.LayerIndex];
-
-  //    // 2. get or create a nested collection for it
-  //    var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
-  //    var applicationId = rhinoObject.Id.ToString();
-
-  //    // 3. get from cache or convert:
-  //    // What we actually do here is check if the object has been previously converted AND has not changed.
-  //    // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
-  //    /*Base converted;
-  //    if (
-  //      !modelCard.ChangedObjectIds.Contains(applicationId)
-  //      && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
-  //    )
-  //    {
-  //      converted = value;
-  //    }
-  //    else
-  //    {
-  //      converted = converter.ConvertToSpeckle(rhinoObject);
-  //      converted.applicationId = applicationId;
-  //    }*/
-
-  //    var converted = converter.ConvertToSpeckle(rhinoObject);
-  //    converted.applicationId = applicationId;
-
-  //    // 4. add to host
-  //    collectionHost.elements.Add(converted);
-  //    //_basicConnectorBinding.Commands.SetModelProgress(
-  //    //  modelCard.ModelCardId,
-  //    //  new ModelCardProgress { Status = "Converting", Progress = (double)++count / rhinoObjects.Count }
-  //    //);
-  //    onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
-
-  //    // NOTE: useful for testing ui states, pls keep for now so we can easily uncomment
-  //    // Thread.Sleep(550);
-  //  }
-
-  //  // 5. profit
-  //  return rootObjectCollection;
-  //}
 }

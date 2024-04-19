@@ -1,11 +1,9 @@
 using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
-using Rhino;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -18,11 +16,12 @@ using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.Rhino7.Plugin;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Transports;
-using Speckle.Converters.Common;
-using Speckle.Converters.Rhino7;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Rhino7.Operations.Receive;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -47,11 +46,13 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Rhino"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoSendBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
+    builder.RegisterType<RhinoReceiveBinding>().As<IBinding>().SingleInstance();
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
@@ -62,14 +63,14 @@ public class AutofacRhinoModule : Module
 
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().SingleInstance();
+    builder.RegisterType<ReceiveOperation>().SingleInstance();
+
+    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().SingleInstance();
+
     builder.RegisterType<RootObjectBuilder>().SingleInstance();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
-    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
 
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
@@ -80,6 +81,7 @@ public class AutofacRhinoModule : Module
       {
         Error = (_, args) =>
         {
+          // POC: we should probably do a bit more than just swallowing this!
           Console.WriteLine("*** JSON ERROR: " + args.ErrorContext);
         },
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -93,6 +95,7 @@ public class AutofacRhinoModule : Module
 
   private static void RegisterLoggerFactory(ContainerBuilder builder)
   {
+    // POC: will likely need refactoring with our reporting pattern.
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)

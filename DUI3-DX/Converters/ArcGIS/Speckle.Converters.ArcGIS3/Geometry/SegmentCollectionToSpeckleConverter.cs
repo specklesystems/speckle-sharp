@@ -1,24 +1,19 @@
 using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(ACG.ReadOnlySegmentCollection), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class SegmentCollectionToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
+public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> _arcConverter;
   private readonly IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
   public SegmentCollectionToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ArcMapPoint, SOG.Point> pointConverter,
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
     IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> arcConverter,
     IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> bezierConverter
   )
@@ -28,8 +23,6 @@ public class SegmentCollectionToSpeckleConverter
     _arcConverter = arcConverter;
     _bezierConverter = bezierConverter;
   }
-
-  public Base Convert(object target) => RawConvert((ACG.ReadOnlySegmentCollection)target);
 
   public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
   {

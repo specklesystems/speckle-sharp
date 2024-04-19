@@ -64,7 +64,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
           modelCard.ProjectName,
           modelCard.ModelName,
           modelCard.SelectedVersionId,
-          cts,
+          cts.Token,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
         .ConfigureAwait(false);

@@ -15,7 +15,7 @@ public interface IHostObjectBuilder
   /// <param name="projectName">Project of the model.</param>
   /// <param name="modelName">Name of the model.</param>
   /// <param name="onOperationProgressed"> Action to update UI progress bar.</param>
-  /// <param name="cts">Cancellation token that passed from top -> ReceiveBinding.</param>
+  /// <param name="cancellationToken">Cancellation token that passed from top -> ReceiveBinding.</param>
   /// <returns> List of application ids.</returns> // POC: Where we will return these ids will matter later when we target to also cache received application ids.
   /// <remarks>Project and model name are needed for now to construct host app objects into related layers or filters.
   /// POC: we might consider later to have HostObjectBuilderContext? that might hold all possible data we will need.</remarks>
@@ -24,6 +24,6 @@ public interface IHostObjectBuilder
     string projectName,
     string modelName,
     Action<string, double?>? onOperationProgressed,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   );
 }

@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
-using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials;
 
@@ -12,8 +11,12 @@ namespace Speckle.Core.Credentials;
 [ComVisible(true)]
 public class Account : IEquatable<Account>
 {
-  private string _id { get; set; }
+  private string _id;
 
+  /// <remarks>
+  /// The account id is unique to user and server url.
+  /// </remarks>
+  /// <exception cref="InvalidOperationException">Account object invalid: missing required info</exception>
   public string id
   {
     get
@@ -22,7 +25,7 @@ public class Account : IEquatable<Account>
       {
         if (serverInfo == null || userInfo == null)
         {
-          throw new SpeckleException("Incomplete account info: cannot generate id.");
+          throw new InvalidOperationException("Incomplete account info: cannot generate id.");
         }
 
         _id = Crypt.Md5(userInfo.email + serverInfo.url, "X2");

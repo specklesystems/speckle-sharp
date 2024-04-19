@@ -1,29 +1,22 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(ACG.EllipticArcSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipticArcToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<ACG.EllipticArcSegment, SOG.Polyline>
+public class EllipticArcToSpeckleConverter : IRawConversion<ACG.EllipticArcSegment, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public EllipticArcToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ArcMapPoint, SOG.Point> pointConverter
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
-
-  public Base Convert(object target) => RawConvert((ACG.EllipticArcSegment)target);
 
   public SOG.Polyline RawConvert(ACG.EllipticArcSegment target)
   {
@@ -53,7 +46,7 @@ public class EllipticArcToSpeckleConverter
     {
       // Calculate the point along the arc
       double angle = angleStart + coeff * fullAngle * (i / (double)numVertices);
-      ArcMapPoint pointOnArc = ACG.MapPointBuilderEx.CreateMapPoint(
+      ACG.MapPoint pointOnArc = ACG.MapPointBuilderEx.CreateMapPoint(
         target.CenterPoint.X + target.SemiMajorAxis * Math.Cos(angle),
         target.CenterPoint.Y + target.SemiMinorAxis * Math.Sin(angle),
         target.SpatialReference

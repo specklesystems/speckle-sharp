@@ -13,27 +13,21 @@ namespace Speckle.Connectors.Autocad.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToHost> _speckleConverterToHostFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadLayerManager _autocadLayerManager;
 
-  public HostObjectBuilder(
-    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory,
-    AutocadLayerManager autocadLayerManager
-  )
+  public HostObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, AutocadLayerManager autocadLayerManager)
   {
-    _speckleConverterToHostFactory = speckleConverterToHostFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _autocadLayerManager = autocadLayerManager;
   }
 
-  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationTokenSource cts)
+  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationToken cancellationToken)
   {
     List<(List<string>, Base)> objectsToConvert = new();
     foreach ((List<string> objPath, Base obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
     {
-      if (cts.IsCancellationRequested)
-      {
-        throw new OperationCanceledException(cts.Token);
-      }
+      cancellationToken.ThrowIfCancellationRequested();
 
       if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
       {
@@ -49,17 +43,20 @@ public class HostObjectBuilder : IHostObjectBuilder
     string projectName,
     string modelName,
     Action<string, double?>? onOperationProgressed,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   )
   {
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
-    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
+    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
+    // begin the unit of work
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToHost>();
+    var converter = uow.Service;
 
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(projectName, modelName);
-    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cts);
+    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cancellationToken);
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     HashSet<string> uniqueLayerNames = new();
@@ -71,10 +68,7 @@ public class HostObjectBuilder : IHostObjectBuilder
     {
       foreach ((List<string> path, Base obj) in objectsWithPath)
       {
-        if (cts.IsCancellationRequested)
-        {
-          throw new OperationCanceledException(cts.Token);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         try
         {

@@ -1,29 +1,22 @@
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
-using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(ACG.CubicBezierSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BezierSegmentToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<ACG.CubicBezierSegment, SOG.Polyline>
+public class BezierSegmentToSpeckleConverter : IRawConversion<ACG.CubicBezierSegment, SOG.Polyline>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public BezierSegmentToSpeckleConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<ArcMapPoint, SOG.Point> pointConverter
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
-
-  public Base Convert(object target) => RawConvert((ACG.CubicBezierSegment)target);
 
   public SOG.Polyline RawConvert(ACG.CubicBezierSegment target)
   {
@@ -49,7 +42,7 @@ public class BezierSegmentToSpeckleConverter
         + 3 * (1 - t) * t * t * target.ControlPoint2.Y
         + t * t * t * target.EndPoint.Y;
 
-      ArcMapPoint pointOnCurve = ACG.MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
+      ACG.MapPoint pointOnCurve = ACG.MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
       points.Add(_pointConverter.RawConvert(pointOnCurve));
     }
 
