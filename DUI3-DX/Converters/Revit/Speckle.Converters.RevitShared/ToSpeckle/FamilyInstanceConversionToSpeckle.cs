@@ -1,7 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Autodesk.Revit.DB;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -11,20 +10,14 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<DB.FamilyInstance, Base>
 {
   private readonly IRawConversion<DB.Element, SOBR.RevitElement> _elementConverter;
-  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> _beamConverter;
-  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> _columnConverter;
-  private readonly IEnumerable<IConditionalToSpeckleConverter<FamilyInstance>> _conditionalConverters;
+  private readonly IEnumerable<IConditionalToSpeckleConverter<DB.FamilyInstance>> _conditionalConverters;
 
   public FamilyInstanceConversionToSpeckle(
     IRawConversion<DB.Element, SOBR.RevitElement> elementConverter,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> beamConverter,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> columnConverter,
     IEnumerable<IConditionalToSpeckleConverter<DB.FamilyInstance>> conditionalConverters
   )
   {
     _elementConverter = elementConverter;
-    _beamConverter = beamConverter;
-    _columnConverter = columnConverter;
     _conditionalConverters = conditionalConverters;
   }
 
@@ -38,8 +31,11 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
       }
     }
 
-    throw new SpeckleConversionException(
-      $"No conditional converters registered that could convert object of type {target.GetType()}"
-    );
+    // POC: return generic element conversion or throw?
+    //
+    //throw new SpeckleConversionException(
+    //  $"No conditional converters registered that could convert object of type {target.GetType()}"
+    //);
+    return _elementConverter.RawConvert(target);
   }
 }

@@ -79,11 +79,11 @@ internal class RevitExternalApplication : IExternalApplication
     // IRawConversions should be separately injectable (and not Require an IHostObject... or NameAndRank attribute)
     // Name and Rank can become ConversionRank or something and be optional (otherwise it is rank 0)
     containerBuilder.RegisterTypesInAssemblyAsInterface(
-      typeof(RevitConverterToHost).Assembly,
+      typeof(RevitConverterToSpeckle).Assembly,
       typeof(IRawConversion<,>)
     );
     containerBuilder.RegisterTypesInAssemblyAsInterface(
-      typeof(RevitConverterToHost).Assembly,
+      typeof(RevitConverterToSpeckle).Assembly,
       typeof(IConditionalToSpeckleConverter<>)
     );
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
