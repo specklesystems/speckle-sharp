@@ -4,7 +4,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.Rhino7;
 
-// POC: Suppressed naming warning for now, but we should evaluate if we should follow this or disable it.
+// POC: CNX-9268 Suppressed naming warning for now, but we should evaluate if we should follow this or disable it.
 [SuppressMessage(
   "Naming",
   "CA1711:Identifiers should not have incorrect suffix",

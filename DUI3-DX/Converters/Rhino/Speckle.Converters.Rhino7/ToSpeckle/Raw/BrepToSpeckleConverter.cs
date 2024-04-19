@@ -4,12 +4,10 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Brep), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Brep, SOG.Brep>
+public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Curve, ICurve> _curveConverter;
@@ -38,14 +36,17 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Brep)target);
-
+  /// <summary>
+  /// Converts a Brep object to a Speckle Brep object.
+  /// </summary>
+  /// <param name="target">The Brep object to convert.</param>
+  /// <returns>The converted Speckle Brep object.</returns>
   public SOG.Brep RawConvert(RG.Brep target)
   {
     var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;
     target.Repair(tol);
 
-    // POC: This should come as part of the user settings in the context object.
+    // POC: CNX-9276 This should come as part of the user settings in the context object.
     // if (PreprocessGeometry)
     // {
     //   brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
@@ -59,7 +60,7 @@ public class BrepToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
       displayValue.Add(_meshConverter.RawConvert(displayMesh));
     }
 
-    // POC: Swap input material for something coming from the context.
+    // POC: CNX-9277 Swap input material for something coming from the context.
     // if (displayValue != null && mat != null)
     // {
     //   displayValue["renderMaterial"] = mat;

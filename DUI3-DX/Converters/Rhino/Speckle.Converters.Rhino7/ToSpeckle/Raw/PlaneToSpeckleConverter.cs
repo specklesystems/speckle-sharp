@@ -1,13 +1,10 @@
 using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-// POC: not sure I like the place of the default rank
-[NameAndRankValue(nameof(Rhino.Geometry.Plane), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Plane, SOG.Plane>
+public class PlaneToSpeckleConverter : IRawConversion<RG.Plane, SOG.Plane>
 {
   private readonly IRawConversion<RG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
@@ -24,8 +21,11 @@ public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConve
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Plane)target);
-
+  /// <summary>
+  /// Converts an instance of Rhino Plane to Speckle Plane.
+  /// </summary>
+  /// <param name="target">The instance of Rhino Plane to convert.</param>
+  /// <returns>The converted instance of Speckle Plane.</returns>
   public SOG.Plane RawConvert(RG.Plane target) =>
     new(
       _pointConverter.RawConvert(target.Origin),

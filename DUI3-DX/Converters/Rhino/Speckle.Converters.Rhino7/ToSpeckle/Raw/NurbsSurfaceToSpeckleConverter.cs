@@ -1,14 +1,11 @@
 ﻿using Rhino;
+using Rhino.Geometry.Collections;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.NurbsSurface), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class NurbsSurfaceToSpeckleConverter
-  : IHostObjectToSpeckleConversion,
-    IRawConversion<RG.NurbsSurface, SOG.Surface>
+public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SOG.Surface>
 {
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
@@ -28,8 +25,11 @@ public class NurbsSurfaceToSpeckleConverter
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.NurbsSurface)target);
-
+  /// <summary>
+  /// Converts a NurbsSurface object to a Surface object.
+  /// </summary>
+  /// <param name="target">The NurbsSurface object to convert.</param>
+  /// <returns>A Surface object representing the converted NurbsSurface.</returns>
   public SOG.Surface RawConvert(RG.NurbsSurface target)
   {
     var result = new SOG.Surface
@@ -52,7 +52,7 @@ public class NurbsSurfaceToSpeckleConverter
     return result;
   }
 
-  public List<List<SOG.ControlPoint>> ControlPointsToSpeckle(RG.Collections.NurbsSurfacePointList controlPoints)
+  private List<List<SOG.ControlPoint>> ControlPointsToSpeckle(NurbsSurfacePointList controlPoints)
   {
     var points = new List<List<SOG.ControlPoint>>();
     for (var i = 0; i < controlPoints.CountU; i++)
