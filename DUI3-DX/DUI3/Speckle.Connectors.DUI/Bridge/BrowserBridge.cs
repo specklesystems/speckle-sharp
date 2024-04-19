@@ -40,7 +40,9 @@ public class BrowserBridge : IBridge
 
   private readonly ILogger<BrowserBridge> _logger;
 
-  // POC: what is this excatly?
+  /// <summary>
+  /// Action that opens up the developer tools of the respective browser we're using. While webview2 allows for "right click, inspect", cefsharp does not - hence the need for this.
+  /// </summary>
   public Action ShowDevToolsAction { get; set; }
 
   public string FrontendBoundName { get; private set; }
@@ -101,6 +103,7 @@ public class BrowserBridge : IBridge
 
     // Whenever the ui will call run method inside .net, it will post a message to this action block.
     // This conveniently executes the code outside the UI thread and does not block during long operations (such as sending).
+    // POC: I wonder if TL exception handler should be living here...
     _actionBlock = new ActionBlock<RunMethodArgs>(
       args => ExecuteMethod(args.MethodName, args.RequestId, args.MethodArgs),
       new ExecutionDataflowBlockOptions

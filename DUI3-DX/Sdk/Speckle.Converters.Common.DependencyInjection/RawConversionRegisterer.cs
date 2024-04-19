@@ -33,7 +33,11 @@ public static class RawConversionRegisterer
 
     foreach (var conversionInterface in rawConversionInterfaces)
     {
-      containerBuilder.RegisterType(type).As(conversionInterface).InstancePerLifetimeScope();
+      containerBuilder
+        .RegisterType(type)
+        .As(conversionInterface)
+        .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
+        .InstancePerLifetimeScope();
     }
   }
 }

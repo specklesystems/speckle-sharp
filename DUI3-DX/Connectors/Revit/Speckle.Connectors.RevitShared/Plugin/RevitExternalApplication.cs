@@ -14,7 +14,9 @@ namespace Speckle.Connectors.Revit.Plugin;
 internal class RevitExternalApplication : IExternalApplication
 {
   private IRevitPlugin? _revitPlugin;
-  private AutofacContainer? _container;
+
+  // POC: temp change to test
+  public static AutofacContainer? _container;
 
   // POC: this is getting hard coded - need a way of injecting it
   //      I am beginning to think the shared project is not the way

@@ -46,12 +46,15 @@ public class AutofacAutocadModule : Module
 
     // Operations
     builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
     // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Autocad"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<AutocadBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<AutocadSelectionBinding>().As<IBinding>().SingleInstance();
@@ -69,14 +72,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadSelectionFilter>().As<ISendFilter>().InstancePerDependency();
 
     // Register converter factory
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
-      .As<IScopedFactory<ISpeckleConverterToHost>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections;
+using NUnit.Framework;
 using Speckle.Core.Helpers;
 
 namespace Speckle.Core.Tests.Unit.Models;
@@ -43,10 +44,29 @@ public sealed class UtilitiesTests
       new() // obj 3
     };
 
-    var singleObjectFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(singleObject);
-    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToNativeConversionResult(nestedObjects);
+    var testEnum = new List<object>() { new(), new() }.Select(o => o);
 
+    var nestedObjectsWithEnumerableInherited = new List<object>()
+    {
+      new List<object>()
+      {
+        new(), // obj 1
+        new(), // obj 2
+        testEnum // obj 3
+      },
+      new() // obj 4
+    };
+
+    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(testEnum);
+    var singleObjectFlattened = Core.Models.Utilities.FlattenToHostConversionResult(singleObject);
+    var nestedObjectsFlattened = Core.Models.Utilities.FlattenToHostConversionResult(nestedObjects);
+    var nestedObjectsWithEnumerableInheritedFlattened = Core.Models.Utilities.FlattenToHostConversionResult(
+      nestedObjectsWithEnumerableInherited
+    );
+
+    Assert.That(parentTestEnumFlattened.Count, Is.EqualTo(1));
     Assert.That(singleObjectFlattened.Count, Is.EqualTo(1));
     Assert.That(nestedObjectsFlattened.Count, Is.EqualTo(3));
+    Assert.That(nestedObjectsWithEnumerableInheritedFlattened.Count, Is.EqualTo(4));
   }
 }

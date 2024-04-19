@@ -16,7 +16,6 @@ public class SpecklePlaneRawToHostConversion : IRawConversion<SOG.Plane, RG.Plan
     _vectorConverter = vectorConverter;
   }
 
-  // POC: Super simplified, must check original conversion
   public RG.Plane RawConvert(SOG.Plane target) =>
     new(
       _pointConverter.RawConvert(target.origin),
