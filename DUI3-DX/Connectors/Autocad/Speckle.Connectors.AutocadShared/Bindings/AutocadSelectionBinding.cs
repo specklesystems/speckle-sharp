@@ -51,6 +51,7 @@ public class AutocadSelectionBinding : ISelectionBinding
     // POC: Will be addressed to move it into AutocadContext!
     Document doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
+    List<string> objectTypes = new();
     if (doc != null)
     {
       PromptSelectionResult selection = doc.Editor.SelectImplied();
@@ -66,6 +67,7 @@ public class AutocadSelectionBinding : ISelectionBinding
           }
 
           var handleString = dbObject.Handle.Value.ToString();
+          objectTypes.Add(dbObject.GetType().Name);
           objs.Add(handleString);
         }
 
@@ -73,6 +75,11 @@ public class AutocadSelectionBinding : ISelectionBinding
         tr.Dispose();
       }
     }
-    return new SelectionInfo { SelectedObjectIds = objs, Summary = $"{objs.Count} objects" };
+    List<string> flatObjectTypes = objectTypes.Select(o => o).Distinct().ToList();
+    return new SelectionInfo
+    {
+      SelectedObjectIds = objs,
+      Summary = $"{objs.Count} objects ({string.Join(", ", flatObjectTypes)})"
+    };
   }
 }
