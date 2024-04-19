@@ -1,23 +1,14 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
-using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointToHostConverter : IRawConversion<SOG.Point, Multipoint>
+[NameAndRankValue(nameof(ACG.MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class PointToHostConverter : IRawConversion<SOG.Point, ACG.Multipoint>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-
-  public PointToHostConverter(IConversionContextStack<Map, Unit> contextStack)
+  public ACG.Multipoint RawConvert(SOG.Point target)
   {
-    _contextStack = contextStack;
-  }
-
-  public Multipoint RawConvert(SOG.Point target)
-  {
-    MapPoint mapPoint = new MapPointBuilderEx(target.x, target.y, target.z).ToGeometry();
-    return new MultipointBuilderEx(mapPoint).ToGeometry();
+    ACG.MapPoint mapPoint = new ACG.MapPointBuilderEx(target.x, target.y, target.z).ToGeometry();
+    return new ACG.MultipointBuilderEx(mapPoint).ToGeometry();
   }
 }

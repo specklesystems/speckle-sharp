@@ -7,9 +7,10 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class ArcGISProjectUtils
 {
+  private const string FGDB_NAME = "Speckle.gdb";
+
   public string GetDatabasePath()
   {
-    string fGdbName = "Speckle.gdb";
     string fGdbPath;
     try
     {
@@ -24,7 +25,7 @@ public class ArcGISProjectUtils
     {
       throw;
     }
-    return $"{fGdbPath}\\{fGdbName}";
+    return $"{fGdbPath}\\{FGDB_NAME}";
   }
 
   public string AddDatabaseToProject(string databasePath)
@@ -46,8 +47,10 @@ public class ArcGISProjectUtils
     var parentFolder = Directory.GetParent(databasePath);
     if (parentFolder == null)
     {
+      // POC: customize the exception type
       throw new ArgumentException($"Invalid path: {databasePath}");
     }
+
     string parentFolderPath = parentFolder.ToString();
     var fGdbName = databasePath.Replace(parentFolderPath + "\\", "");
 
@@ -61,6 +64,7 @@ public class ArcGISProjectUtils
     {
       var addedGeodatabase = QueuedTask.Run(() => Project.Current.AddItem(gdbToAdd as IProjectItem));
     }
+
     return fGdbName;
   }
 }

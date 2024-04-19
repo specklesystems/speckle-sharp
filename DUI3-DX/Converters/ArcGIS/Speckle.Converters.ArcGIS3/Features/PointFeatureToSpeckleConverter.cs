@@ -1,4 +1,3 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
@@ -6,23 +5,23 @@ using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-[NameAndRankValue(nameof(MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<MapPoint, Base>
+[NameAndRankValue(nameof(ACG.MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class PointFeatureToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ACG.MapPoint, Base>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
-  public PointFeatureToSpeckleConverter(IConversionContextStack<Map, Unit> contextStack)
+  public PointFeatureToSpeckleConverter(IConversionContextStack<Map, ACG.Unit> contextStack)
   {
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((MapPoint)target);
+  public Base Convert(object target) => RawConvert((ACG.MapPoint)target);
 
-  public Base RawConvert(MapPoint target)
+  public Base RawConvert(ACG.MapPoint target)
   {
     if (
-      GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
-      is not MapPoint reprojectedPt
+      ACG.GeometryEngine.Instance.Project(target, _contextStack.Current.Document.SpatialReference)
+      is not ACG.MapPoint reprojectedPt
     )
     {
       throw new SpeckleConversionException(

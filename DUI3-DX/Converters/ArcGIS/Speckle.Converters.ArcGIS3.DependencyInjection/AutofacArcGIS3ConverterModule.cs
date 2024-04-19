@@ -14,8 +14,8 @@ public class AutofacArcGISConverterModule : Module
   protected override void Load(ContainerBuilder builder)
   {
     // most things should be InstancePerLifetimeScope so we get one per operation
-    builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
-    builder.RegisterType<ArcGISConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
+    builder.RegisterType<ArcGISConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
+    builder.RegisterType<ArcGISConverterToHost>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
 
     // single stack per conversion
     builder
@@ -26,9 +26,11 @@ public class AutofacArcGISConverterModule : Module
     // factory for conversions
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
-      .As<IFactory<string, IHostObjectToSpeckleConversion>>();
+      .As<IFactory<string, IHostObjectToSpeckleConversion>>()
+      .InstancePerLifetimeScope();
     builder
       .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
-      .As<IFactory<string, ISpeckleObjectToHostConversion>>();
+      .As<IFactory<string, ISpeckleObjectToHostConversion>>()
+      .InstancePerLifetimeScope();
   }
 }

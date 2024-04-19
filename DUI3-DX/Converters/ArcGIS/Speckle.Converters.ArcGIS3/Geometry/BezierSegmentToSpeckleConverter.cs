@@ -1,4 +1,3 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
@@ -7,16 +6,16 @@ using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(CubicBezierSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(ACG.CubicBezierSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class BezierSegmentToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<CubicBezierSegment, SOG.Polyline>
+    IRawConversion<ACG.CubicBezierSegment, SOG.Polyline>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
 
   public BezierSegmentToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
+    IConversionContextStack<Map, ACG.Unit> contextStack,
     IRawConversion<ArcMapPoint, SOG.Point> pointConverter
   )
   {
@@ -24,9 +23,9 @@ public class BezierSegmentToSpeckleConverter
     _pointConverter = pointConverter;
   }
 
-  public Base Convert(object target) => RawConvert((CubicBezierSegment)target);
+  public Base Convert(object target) => RawConvert((ACG.CubicBezierSegment)target);
 
-  public SOG.Polyline RawConvert(CubicBezierSegment target)
+  public SOG.Polyline RawConvert(ACG.CubicBezierSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -50,7 +49,7 @@ public class BezierSegmentToSpeckleConverter
         + 3 * (1 - t) * t * t * target.ControlPoint2.Y
         + t * t * t * target.EndPoint.Y;
 
-      ArcMapPoint pointOnCurve = MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
+      ArcMapPoint pointOnCurve = ACG.MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
       points.Add(_pointConverter.RawConvert(pointOnCurve));
     }
 

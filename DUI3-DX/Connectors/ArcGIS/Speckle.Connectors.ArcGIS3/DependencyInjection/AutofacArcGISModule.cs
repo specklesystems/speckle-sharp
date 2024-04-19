@@ -44,7 +44,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
 
     // Operations
-    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<ReceiveOperation>().AsSelf().InstancePerLifetimeScope();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();

@@ -50,12 +50,13 @@ public class FeatureClassUtils
         {
           foreach (var geometryPart in feat.geometry)
           {
-            // TODO: repeat for all geometries, add as Multipart
+            // POC: TODO: repeat for all geometries, add as Multipart
             ArcGIS.Core.Geometry.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryPart);
             rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
             break;
           }
         }
+        // POC: TODO add option for non-geometry features
         newFeatureClass.CreateRow(rowBuffer).Dispose();
       }
     }

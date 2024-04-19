@@ -1,4 +1,3 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
@@ -7,16 +6,16 @@ using ArcMapPoint = ArcGIS.Core.Geometry.MapPoint;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(EllipticArcSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(ACG.EllipticArcSegment), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class EllipticArcToSpeckleConverter
   : IHostObjectToSpeckleConversion,
-    IRawConversion<EllipticArcSegment, SOG.Polyline>
+    IRawConversion<ACG.EllipticArcSegment, SOG.Polyline>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly IRawConversion<ArcMapPoint, SOG.Point> _pointConverter;
 
   public EllipticArcToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
+    IConversionContextStack<Map, ACG.Unit> contextStack,
     IRawConversion<ArcMapPoint, SOG.Point> pointConverter
   )
   {
@@ -24,9 +23,9 @@ public class EllipticArcToSpeckleConverter
     _pointConverter = pointConverter;
   }
 
-  public Base Convert(object target) => RawConvert((EllipticArcSegment)target);
+  public Base Convert(object target) => RawConvert((ACG.EllipticArcSegment)target);
 
-  public SOG.Polyline RawConvert(EllipticArcSegment target)
+  public SOG.Polyline RawConvert(ACG.EllipticArcSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -54,7 +53,7 @@ public class EllipticArcToSpeckleConverter
     {
       // Calculate the point along the arc
       double angle = angleStart + coeff * fullAngle * (i / (double)numVertices);
-      ArcMapPoint pointOnArc = MapPointBuilderEx.CreateMapPoint(
+      ArcMapPoint pointOnArc = ACG.MapPointBuilderEx.CreateMapPoint(
         target.CenterPoint.X + target.SemiMajorAxis * Math.Cos(angle),
         target.CenterPoint.Y + target.SemiMinorAxis * Math.Sin(angle),
         target.SpatialReference

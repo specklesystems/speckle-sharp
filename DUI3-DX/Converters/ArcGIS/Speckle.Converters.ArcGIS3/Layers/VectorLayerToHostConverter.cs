@@ -30,6 +30,8 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
   public object Convert(Base target) => RawConvert((VectorLayer)target);
 
+  private const string FID_FIELD_NAME = "OBJECTID";
+
   public Task<string> RawConvert(VectorLayer target)
   {
     try
@@ -44,6 +46,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
         SchemaBuilder schemaBuilder = new(geodatabase);
 
+        // getting rid of forbidden symbols in the class name:
         // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
         string featureClassName = $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
 
@@ -61,10 +64,10 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         List<string> fieldAdded = new();
         foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
         {
-          if (!fieldAdded.Contains(field.Key) && field.Key != "OBJECTID")
+          if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
           {
-            // TODO: choose the right type for Field
-            // TODO check for the frbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+            // POC: TODO: choose the right type for Field
+            // TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
 
             // fields.Add(new FieldDescription(field, FieldType.Integer));
             fields.Add(FieldDescription.CreateStringField(field.Key, 255)); // (int)(long)target.attributes[field.Value]));
@@ -86,6 +89,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
         bool buildStatus = schemaBuilder.Build();
         if (!buildStatus)
         {
+          // POC: log somewhere the error in building the feature class
           IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
         }
 
@@ -104,6 +108,7 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
     }
     catch (GeodatabaseException exObj)
     {
+      // POC: review the exception
       throw new InvalidOperationException($"Something went wrong: {exObj.Message}");
     }
   }
