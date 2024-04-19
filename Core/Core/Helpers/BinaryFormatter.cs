@@ -35,6 +35,11 @@ public static class BinaryFormatter
   /// <param name="value">String to serialise</param>
   public static void SerialiseString(MemoryStream ms, string value)
   {
+    if (value is null)
+    {
+      throw new ArgumentNullException(nameof(value));
+    }
+
     ms.Write(s_prefix,0, s_prefix.Length);
 
     var utf8bytes = Encoding.UTF8.GetBytes(value);
@@ -54,7 +59,7 @@ public static class BinaryFormatter
   /// <exception cref="ArgumentException"></exception>
   private static byte[] EncodeLength(int length)
   {
-    if (length is < 0 or > 2147483647)
+    if (length is < 0 or > int.MaxValue)
     {
       throw new ArgumentException("Length must be between 0 and 2147483647 inclusive.");
     }

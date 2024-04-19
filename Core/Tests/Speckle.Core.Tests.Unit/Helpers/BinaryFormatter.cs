@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using NUnit.Framework;
 using Speckle.Core.Helpers;
 
@@ -7,35 +8,89 @@ namespace Speckle.Core.Tests.Unit.Helpers;
 [TestOf(nameof(BinaryFormatter))]
 public class BinaryFormatterTests
 {
-  const string JSON = /*lang=json,strict*/ """{"totalChildrenCount":0,"applicationId":null,"speckle_type":"Base","string prop":"simple test case","numerical prop":123}""";
-  const string WEIRDO = "ާ5D쬣ڍtr/_ţ:󺆌ᚤ䯆#ϻϥoÈȳ3\U0006e92cݽ\U00085ee7ꨖ$\U000c372e։v뾀Ƽچ\r\n썴ϐܔȜbG헙󳄶֚<ݝЃě\U000e6af0D\ud7a9ǦH\U000529adr\U0001ce21֔􉴨\U00019423!溉ł.\U000df40dʾښ7\r\nͭit\U0006cecaӊ󻱱l󻰨Ǎ䔚\u169dּ¶\U0004c9ff\U0008eab7ﮯ&\U000190a3囎ơЍ\U0001973a맇꾒\U00039ee8I`\U00041df1C@\U000dbeb1\r\nU赂͡󷧓¾蚉\U000d4636譄ʹ\U000924fdZ\U000aa470ုvv\U0009f2d8렾ΚD󱩧ƽ\u2bf9ꎞ\U000398f9ӏ\U000e0b14簮\U0001377f갑_N\r\nS34+\U000a19e2Սь̱峺ʏ͊寞XZ꼎亖ѱ[̝\u05ee\U0009b408庹\U00067996ޖߎ\U000633da䃔Ϲяꁫȿ";
-
   [Test]
-  public void BasicBinaryFormatterParityTest() => CompareTechniques(JSON);
+  public void ZeroLengthStringParityCheck() => CompareTechniques(new string('b', 0));
 
+  /// <summary>
+  /// Refer to https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/10b218f5-9b2b-4947-b4b7-07725a2c8127 for the specifics of this requirement.
+  /// </summary>
   [Test]
-  public void WeirdBinaryFormatterParityTest() => CompareTechniques(WEIRDO);
+  public void SingleByteLengthStorageParityCheck() => CompareTechniques(new string('b', 127));
 
-
+  /// <summary>
+  /// Refer to https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/10b218f5-9b2b-4947-b4b7-07725a2c8127 for the specifics of this requirement.
+  /// </summary>
   [Test]
-  public void ShortStringBinaryFormatterParityTest() => CompareTechniques(new string('b', 5));
+  public void TwoByteLengthStorageParityCheck() => CompareTechniques(new string('b', 128));
 
+  /// <summary>
+  /// Refer to https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/10b218f5-9b2b-4947-b4b7-07725a2c8127 for the specifics of this requirement.
+  /// </summary>
   [Test]
-  public void LongStringBinaryFormatterParityTest() => CompareTechniques(new string('b', 500000));
+  public void ThreeByteLengthStorageParityCheck() => CompareTechniques(new string('b', 16384));
+
+  /// <summary>
+  /// Refer to https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/10b218f5-9b2b-4947-b4b7-07725a2c8127 for the specifics of this requirement.
+  /// </summary>
+  [Test]
+  public void FourByteLengthStorageParityCheck() => CompareTechniques(new string('b', 2097152));
+
+  /// <summary>
+  /// Refer to https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/10b218f5-9b2b-4947-b4b7-07725a2c8127 for the specifics of this requirement.
+  /// </summary>
+  [Test]
+  public void FiveByteLengthStorageParityCheck() => CompareTechniques(new string('b', 268435456));
+
+  /// <summary>
+  /// Assets that null behaviour is the same between both techniques.
+  /// </summary>
+  [Test]
+  public void NullStringParityCheck()
+  {
+    using (MemoryStream ms = new())
+    {
+      Assert.Throws<ArgumentNullException>(() => BinaryFormatter.SerialiseString(ms, null));
+    }
+
+    using (MemoryStream ms2 = new())
+    {
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
+      Assert.Throws<ArgumentNullException>(() => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms2, null));
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
+    };
+  }
 
   private static void CompareTechniques(string str)
   {
-    using MemoryStream ms = new();
+    byte[] ourHash;
+    byte[] msHash;
 
-    BinaryFormatter.SerialiseString(ms, str);
+    using (MemoryStream ms = new())
+    {
 
-    using MemoryStream ms2 = new();
+      BinaryFormatter.SerialiseString(ms, str);
+
+      using SHA256 sha = SHA256.Create();
+#pragma warning disable CA1850 // Prefer static 'HashData' method over 'ComputeHash'  <- note that this probably indicates this should be changed in Helpers/Crypt.cs
+      ourHash = sha.ComputeHash(ms.ToArray());
+#pragma warning restore CA1850 // Prefer static 'HashData' method over 'ComputeHash'
+
+    }
+
+    using (MemoryStream ms2 = new())
+    {
 
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
-    new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms2, str);
+      new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms2, str);
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
 
-    Assert.That(ms.ToArray(), Is.EquivalentTo(ms2.ToArray()));
+      using SHA256 sha = SHA256.Create();
+#pragma warning disable CA1850 // Prefer static 'HashData' method over 'ComputeHash'  <- note that this probably indicates this should be changed in Helpers/Crypt.cs
+      msHash = sha.ComputeHash(ms2.ToArray());
+#pragma warning restore CA1850 // Prefer static 'HashData' method over 'ComputeHash'
+    };
+
+    Assert.That(ourHash, Is.EquivalentTo(msHash));
   }
 
 
