@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using ArcGIS.Desktop.Mapping;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
@@ -13,16 +12,16 @@ namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToHost> _speckleConverterToHostFactory;
+  private readonly ISpeckleConverterToHost _toHostConverter;
 
   // private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public HostObjectBuilder(
-    IScopedFactory<ISpeckleConverterToHost> speckleConverterToHostFactory //,
+    ISpeckleConverterToHost toHostConverter
   // IConversionContextStack<Map, Unit> contextStack
   )
   {
-    _speckleConverterToHostFactory = speckleConverterToHostFactory;
+    _toHostConverter = toHostConverter;
     // _contextStack = contextStack;
   }
 
@@ -31,13 +30,11 @@ public class HostObjectBuilder : IHostObjectBuilder
     string projectName,
     string modelName,
     Action<string, double?>? onOperationProgressed,
-    CancellationTokenSource cts
+    CancellationToken cancellationToken
   )
   {
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
-
-    ISpeckleConverterToHost converter = _speckleConverterToHostFactory.ResolveScopedInstance();
 
     // create and add Geodatabase to a project
     var projectUtils = new ArcGISProjectUtils();
@@ -53,9 +50,9 @@ public class HostObjectBuilder : IHostObjectBuilder
     int count = 0;
     foreach ((List<string> path, Base obj) in objectsWithPath)
     {
-      if (cts.IsCancellationRequested)
+      if (cancellationToken.IsCancellationRequested)
       {
-        throw new OperationCanceledException(cts.Token);
+        throw new OperationCanceledException(cancellationToken);
       }
 
       try
@@ -66,7 +63,7 @@ public class HostObjectBuilder : IHostObjectBuilder
         {
           try
           {
-            var converted = converter.Convert(obj);
+            var converted = _toHostConverter.Convert(obj);
             if (converted is Task<string> task)
             {
               string uri = task.Result;

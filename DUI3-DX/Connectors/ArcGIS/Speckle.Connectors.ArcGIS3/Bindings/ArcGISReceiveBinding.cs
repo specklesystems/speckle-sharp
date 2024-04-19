@@ -1,4 +1,4 @@
-﻿using Speckle.Connectors.ArcGIS.Utils;
+using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models.Card;
@@ -53,7 +53,7 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
           modelCard.ProjectName,
           modelCard.ModelName,
           modelCard.SelectedVersionId,
-          cts,
+          cts.Token,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress)
         )
         .ConfigureAwait(false);
