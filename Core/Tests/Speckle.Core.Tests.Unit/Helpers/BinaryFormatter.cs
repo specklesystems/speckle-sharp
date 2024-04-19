@@ -49,9 +49,7 @@ public class BinaryFormatterTests
   {
     using (MemoryStream ms = new())
     {
-      Assert.Throws<ArgumentNullException>(
-        () => BinaryFormatter.SerialiseString(ms, null)
-      );
+      Assert.Throws<ArgumentNullException>(() => BinaryFormatter.SerialiseString(ms, null));
     }
 
     using (MemoryStream ms2 = new())

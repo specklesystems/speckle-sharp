@@ -10,8 +10,8 @@ namespace Speckle.Core.Helpers;
 public static class BinaryFormatter
 {
   /// <summary>
-  /// Leading bytes on a BinaryFormatter as defined here: 
-  /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/a7e578d3-400a-4249-9424-7529d10d1b3c 
+  /// Leading bytes on a BinaryFormatter as defined here:
+  /// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/a7e578d3-400a-4249-9424-7529d10d1b3c
   /// and here: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-nrbf/eb503ca5-e1f6-4271-a7ee-c4ca38d07996
   /// </summary>
   private static readonly byte[] s_prefix = new byte[] { 
