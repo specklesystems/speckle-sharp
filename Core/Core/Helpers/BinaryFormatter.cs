@@ -26,7 +26,7 @@ public static class BinaryFormatter
   /// <summary>
   /// Indicates end of file
   /// </summary>
-  private const byte SUFFIX = 11;
+  private const byte ENDOFFILE = 11;
 
   /// <summary>
   /// Mimics the behaviour of System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize() when applied to a single string record.
@@ -42,7 +42,7 @@ public static class BinaryFormatter
     ms.Write(encodedLength, 0,encodedLength.Length);
 
     ms.Write(utf8bytes, 0, utf8bytes.Length);
-    ms.WriteByte(SUFFIX);
+    ms.WriteByte(ENDOFFILE);
   }
 
 
