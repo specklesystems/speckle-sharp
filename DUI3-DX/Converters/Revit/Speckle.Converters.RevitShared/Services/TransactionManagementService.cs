@@ -1,6 +1,5 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Core.Logging;
 
 namespace Speckle.Converters.RevitShared.Services;
 
@@ -10,17 +9,12 @@ namespace Speckle.Converters.RevitShared.Services;
 /// </summary>
 public sealed class TransactionManagementService : ITransactionManagementService
 {
-  private readonly Lazy<RevitConversionContextStack> _lazyContextStack;
-  private readonly ErrorPreprocessingService _errorPreprocessingService;
-  private Document Document => _lazyContextStack.Value.Current.Document.Document;
+  private readonly RevitConversionContextStack _contextStack;
+  private Document Document => _contextStack.Current.Document.Document;
 
-  public TransactionManagementService(
-    ErrorPreprocessingService revitErrorPreprocessingService,
-    Lazy<RevitConversionContextStack> lazyContextStack
-  )
+  public TransactionManagementService(RevitConversionContextStack contextStack)
   {
-    _errorPreprocessingService = revitErrorPreprocessingService;
-    _lazyContextStack = lazyContextStack;
+    _contextStack = contextStack;
   }
 
   private TransactionGroup? _transactionGroup;
@@ -72,7 +66,8 @@ public sealed class TransactionManagementService : ITransactionManagementService
     {
       _transaction = new Transaction(Document, "Speckle Transaction");
       var failOpts = _transaction.GetFailureHandlingOptions();
-      failOpts.SetFailuresPreprocessor(_errorPreprocessingService);
+      // POC: make sure to implement and add the failure preprocessor
+      //failOpts.SetFailuresPreprocessor(_errorPreprocessingService);
       failOpts.SetClearAfterRollback(true);
       _transaction.SetFailureHandlingOptions(failOpts);
       _transaction.Start();
@@ -87,50 +82,26 @@ public sealed class TransactionManagementService : ITransactionManagementService
       && _subTransaction.GetStatus() == TransactionStatus.Started
     )
     {
-      HandleFailedCommit(_subTransaction.Commit());
+      var status = _subTransaction.Commit();
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
       _subTransaction.Dispose();
     }
     if (_transaction != null && _transaction.IsValidObject && _transaction.GetStatus() == TransactionStatus.Started)
     {
       var status = _transaction.Commit();
-      HandleFailedCommit(status);
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
       _transaction.Dispose();
       return status;
     }
     return TransactionStatus.Uninitialized;
-  }
-
-  private void HandleFailedCommit(TransactionStatus status)
-  {
-    if (status == TransactionStatus.RolledBack)
-    {
-      var numTotalErrors = _errorPreprocessingService.CommitErrorsDict.Sum(kvp => kvp.Value);
-      var numUniqueErrors = _errorPreprocessingService.CommitErrorsDict.Keys.Count;
-
-      var exception = _errorPreprocessingService.GetException();
-      if (exception == null)
-      {
-        SpeckleLog.Logger.Fatal(
-          "Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions",
-          numUniqueErrors,
-          numTotalErrors
-        );
-      }
-      else
-      {
-        SpeckleLog.Logger.Fatal(
-          exception,
-          "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.",
-          numUniqueErrors,
-          numTotalErrors
-        );
-      }
-
-      throw exception
-        ?? new SpeckleException(
-          $"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."
-        );
-    }
   }
 
   public void RollbackTransaction()
@@ -161,7 +132,11 @@ public sealed class TransactionManagementService : ITransactionManagementService
     if (_subTransaction != null && _subTransaction.IsValidObject)
     {
       var status = _subTransaction.Commit();
-      HandleFailedCommit(status);
+      if (status != TransactionStatus.Committed)
+      {
+        // POC: handle failed commit
+        //HandleFailedCommit(status);
+      }
       _subTransaction.Dispose();
       return status;
     }
@@ -199,7 +174,7 @@ public sealed class TransactionManagementService : ITransactionManagementService
       catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
-        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
+        // POC: logging
       }
       finally
       {
@@ -217,7 +192,7 @@ public sealed class TransactionManagementService : ITransactionManagementService
       catch (Autodesk.Revit.Exceptions.ApplicationException ex)
       {
         // ignore because we're just going to rollback
-        SpeckleLog.Logger.Warning(ex, "Error occured in temporary transaction");
+        // POC: logging
       }
       finally
       {

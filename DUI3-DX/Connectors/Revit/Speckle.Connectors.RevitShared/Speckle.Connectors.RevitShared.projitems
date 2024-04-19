@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HostApp\RevitDocumentStore.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacUIModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\RevitContextAccessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\RevitHostObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\IRootObjectSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectBuilder.cs" />

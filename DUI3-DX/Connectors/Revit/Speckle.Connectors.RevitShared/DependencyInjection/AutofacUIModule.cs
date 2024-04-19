@@ -78,8 +78,10 @@ public class AutofacUIModule : Module
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
 
-    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    // receive operation and dependencies
+    builder.RegisterType<ReceiveOperation>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RevitHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
+    builder.RegisterType<RevitContextAccessor>().As<ISyncToMainThread>().SingleInstance();
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
