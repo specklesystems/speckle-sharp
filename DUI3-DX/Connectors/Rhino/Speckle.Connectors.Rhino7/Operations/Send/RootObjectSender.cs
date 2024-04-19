@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Connectors.Utils.Operations;
@@ -37,10 +36,7 @@ internal sealed class RootObjectSender : IRootObjectSender
 
     onOperationProgressed?.Invoke("Uploading...", null);
 
-    // POC: FETCHING ACCOUNTS BY ID ONLY IS UNSAFE, we should filter by server first, but the server info is not stored on the ModelCard
-    Account account =
-      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
-      ?? throw new SpeckleAccountManagerException();
+    Account account = AccountManager.GetAccount(accountId);
 
     ITransport transport = _transportFactory(account, projectId);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
