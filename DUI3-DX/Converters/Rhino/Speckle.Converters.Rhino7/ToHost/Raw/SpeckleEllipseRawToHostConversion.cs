@@ -18,6 +18,12 @@ public class SpeckleEllipseRawToHostConversion
     _intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts an instance of <see cref="SOG.Ellipse"/> to an <see cref="RG.Ellipse"/> while preserving geometric properties.
+  /// </summary>
+  /// <param name="target">The <see cref="SOG.Ellipse"/> instance to be converted.</param>
+  /// <returns>The resulting <see cref="RG.Ellipse"/> after conversion.</returns>
+  /// <exception cref="InvalidOperationException">Thrown when <see cref="SOG.Ellipse.firstRadius"/> or <see cref="SOG.Ellipse.secondRadius"/> properties are null.</exception>
   public RG.Ellipse RawConvert(SOG.Ellipse target)
   {
     if (!target.firstRadius.HasValue || !target.secondRadius.HasValue)
@@ -32,6 +38,13 @@ public class SpeckleEllipseRawToHostConversion
     );
   }
 
+  /// <summary>
+  /// Converts the provided <see cref="SOG.Ellipse"/> into a <see cref="RG.NurbsCurve"/> representation.
+  /// </summary>
+  /// <param name="target">The <see cref="SOG.Ellipse"/> to convert.</param>
+  /// <returns>
+  /// A <see cref="RG.NurbsCurve"/> that represents the provided <see cref="SOG.Ellipse"/>.
+  /// </returns>
   RG.NurbsCurve IRawConversion<SOG.Ellipse, RG.NurbsCurve>.RawConvert(SOG.Ellipse target)
   {
     var rhinoEllipse = RawConvert(target);

@@ -2,6 +2,11 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
+/// <summary>
+/// This class is responsible for converting a <see cref="SOG.Circle"/> into <see cref="RG.Circle"/> and <see cref="RG.ArcCurve"/> objects.
+/// Implements the <see cref="IRawConversion{TIn, TOut}"/> interface,
+/// providing implementation for <see cref="SOG.Circle"/> to <see cref="RG.Circle"/> and <see cref="RG.ArcCurve"/> conversion.
+/// </summary>
 public class SpeckleCircleRawToHostConversion
   : IRawConversion<SOG.Circle, RG.Circle>,
     IRawConversion<SOG.Circle, RG.ArcCurve>
@@ -9,6 +14,15 @@ public class SpeckleCircleRawToHostConversion
   private readonly IRawConversion<SOG.Plane, RG.Plane> _planeConverter;
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 
+  /// <summary>
+  /// Constructs a new instance of the <see cref="SpeckleCircleRawToHostConversion"/> class.
+  /// </summary>
+  /// <param name="intervalConverter">
+  /// An implementation of <see cref="IRawConversion{TIn, TOut}"/> used to convert <see cref="SOP.Interval"/> into <see cref="RG.Interval"/>.
+  /// </param>
+  /// <param name="planeConverter">
+  /// An implementation of <see cref="IRawConversion{TIn, TOut}"/> used to convert <see cref="SOG.Plane"/> into <see cref="RG.Plane"/>.
+  /// </param>
   public SpeckleCircleRawToHostConversion(
     IRawConversion<SOP.Interval, RG.Interval> intervalConverter,
     IRawConversion<SOG.Plane, RG.Plane> planeConverter
@@ -18,6 +32,14 @@ public class SpeckleCircleRawToHostConversion
     _planeConverter = planeConverter;
   }
 
+  /// <summary>
+  /// Converts the given <see cref="SOG.Circle"/> object into a <see cref="RG.Circle"/> object.
+  /// </summary>
+  /// <param name="target">The <see cref="SOG.Circle"/> object to convert.</param>
+  /// <returns>The resulting <see cref="RG.Circle"/> object.</returns>
+  /// <exception cref="ArgumentNullException">
+  /// Thrown when the radius of the given <see cref="SOG.Circle"/> object is null.
+  /// </exception>
   public RG.Circle RawConvert(SOG.Circle target)
   {
     if (target.radius == null)

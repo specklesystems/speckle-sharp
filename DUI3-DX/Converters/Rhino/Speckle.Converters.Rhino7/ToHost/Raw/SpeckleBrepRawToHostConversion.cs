@@ -50,6 +50,17 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
     return rhinoBrep;
   }
 
+  /// <summary>
+  /// Converts a Speckle <see cref="SOG.BrepLoop"/> to a Rhino <see cref="RG.BrepLoop"/> and adds it to the provided <see cref="RG.Brep"/>.
+  /// </summary>
+  /// <remarks>
+  /// A <see cref="SOG.BrepLoop"/> consists of individual trims. There are special cases for singular trims and trims with defined edge indices.
+  /// Note that edge cases in Brep structures are not fully covered by this method and should be reviewed for robustness improvement.
+  /// This operation alters the state of the provided <see cref="RG.Brep"/> by adding a new loop.
+  /// </remarks>
+  /// <param name="rhinoBrep">The <see cref="RG.Brep"/> where the new loop will be added.</param>
+  /// <param name="speckleLoop">The <see cref="SOG.BrepLoop"/> to be converted and added to <paramref name="rhinoBrep"/>.</param>
+  /// <param name="tol">The tolerance factor used when adding trims and setting their tolerances.</param>
   private void ConvertSpeckleBrepLoop(RG.Brep rhinoBrep, SOG.BrepLoop speckleLoop, double tol)
   {
     var f = rhinoBrep.Faces[speckleLoop.FaceIndex];
@@ -92,6 +103,17 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
       });
   }
 
+  /// <summary>
+  /// Converts a Speckle BrepEdge into a Rhino BrepEdge within a Rhino Brep.
+  /// </summary>
+  /// <param name="rhinoBrep">The Rhino Brep to which the converted BrepEdge will be added.</param>
+  /// <param name="speckleEdge">The Speckle BrepEdge to convert.</param>
+  /// <param name="tolerance">The tolerance for the conversion.</param>
+  /// <remarks>
+  /// If the domain of the Speckle BrepEdge is null or matches the curve's domain, it is assumed that the edge
+  /// is untrimmed, and hence added directly as a reference to the curve it points to.
+  /// If the edge is trimmed, it is added based on vertices and subdomain using the supplied tolerance
+  /// </remarks>
   private void ConvertSpeckleBrepEdge(RG.Brep rhinoBrep, SOG.BrepEdge speckleEdge, double tolerance)
   {
     if (
@@ -116,6 +138,11 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
     }
   }
 
+  /// <summary>
+  /// Converts a <see cref="SOG.BrepFace"/> into a <see cref="RG.BrepFace"/> and adds it to the provided <see cref="RG.Brep"/>.
+  /// </summary>
+  /// <param name="rhinoBrep">The Rhinoceros brep geometry to which the converted face is added.</param>
+  /// <param name="speckleFace">The Speckle brep face to be converted and added.</param>
   private void ConvertSpeckleBrepFace(RG.Brep rhinoBrep, SOG.BrepFace speckleFace)
   {
     var f = rhinoBrep.Faces.Add(speckleFace.SurfaceIndex);
