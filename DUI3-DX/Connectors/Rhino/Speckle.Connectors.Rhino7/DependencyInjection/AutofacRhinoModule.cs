@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -63,11 +64,12 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
     builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
-    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerMatchingLifetimeScope();
+    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
     builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();

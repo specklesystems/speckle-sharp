@@ -21,14 +21,14 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
   public CancellationManager CancellationManager { get; set; }
 
   private readonly DocumentModelStore _store;
-  private readonly UnitOfWorkFactory _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   public ReceiveBindingUICommands Commands { get; }
 
   public RhinoReceiveBinding(
     DocumentModelStore store,
     CancellationManager cancellationManager,
     IBridge parent,
-    UnitOfWorkFactory unitOfWorkFactory
+    IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     Parent = parent;

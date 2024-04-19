@@ -28,7 +28,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
-  private readonly UnitOfWorkFactory _unitOfWorkFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
 
@@ -48,7 +48,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     RhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
-    UnitOfWorkFactory unitOfWorkFactory,
+    IUnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager
   )
   {
