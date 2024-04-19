@@ -65,6 +65,7 @@ public class AutofacRhinoModule : Module
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerMatchingLifetimeScope();
 

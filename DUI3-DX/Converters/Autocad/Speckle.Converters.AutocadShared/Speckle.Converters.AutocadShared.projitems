@@ -13,14 +13,29 @@
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConverterToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AutocadToSpeckleUnitConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadConverterModule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\BoxToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\MeshToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PolycurveToHostSplineRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\CircleToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\ArcToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\CurveToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\EllipseToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\IntervalToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\LineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PolycurveToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\ArcToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\CurveToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\IntervalToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PlaneToHostRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\PlaneToSpeckleConverter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToHostConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\PointToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PolylineToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\LineToHostConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PolycurveToHostPolylineRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\VectorToHostRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Geometry\VectorToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Raw\PointToHostRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToHost\Geometry\PointToHostConverter.cs" />
   </ItemGroup>
 </Project>

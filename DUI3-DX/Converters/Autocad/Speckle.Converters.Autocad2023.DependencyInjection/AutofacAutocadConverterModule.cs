@@ -1,10 +1,12 @@
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Converters.Autocad;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Autodesk.AutoCAD.DatabaseServices;
 
-namespace Speckle.Converters.Autocad.DependencyInjection;
+namespace Speckle.Converters.Autocad2023.DependencyInjection;
 
 public class AutofacAutocadConverterModule : Module
 {
