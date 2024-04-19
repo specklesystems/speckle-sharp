@@ -68,7 +68,7 @@ public class AutofacUIModule : Module
     builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
     // send operation and dependencies
-    builder.RegisterType<SendOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SendOperation>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<SendSelection>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ToSpeckleConvertedObjectsCache>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
@@ -77,9 +77,6 @@ public class AutofacUIModule : Module
 
     // register
     builder.RegisterType<RevitDocumentStore>().SingleInstance();
-
-    // POC: needs interafacing out
-    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
 
     // POC: this can be injected in maybe a common place, perhaps a module in Speckle.Converters.Common.DependencyInjection
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
