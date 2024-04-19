@@ -1,12 +1,10 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Line), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Line, SOG.Line>
+public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>, IRawConversion<RG.LineCurve, SOG.Line>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -23,8 +21,14 @@ public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Line)target);
-
+  /// <summary>
+  /// Converts a Rhino Line object to a Speckle Line object.
+  /// </summary>
+  /// <param name="target">The Rhino Line object to convert.</param>
+  /// <returns>The converted Speckle Line object.</returns>
+  /// <remarks>
+  /// ⚠️ This conversion assumes the domain of a line is (0, LENGTH), as Rhino Lines do not have domain. If you want the domain preserved use LineCurve conversions instead.
+  /// </remarks>
   public SOG.Line RawConvert(RG.Line target) =>
     new(
       _pointConverter.RawConvert(target.From),
@@ -36,4 +40,6 @@ public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
       domain = new SOP.Interval(0, target.Length),
       bbox = _boxConverter.RawConvert(new RG.Box(target.BoundingBox))
     };
+
+  public SOG.Line RawConvert(RG.LineCurve target) => RawConvert(target.Line);
 }

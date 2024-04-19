@@ -1,12 +1,10 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.NurbsCurve), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class NurbsCurveConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.NurbsCurve, SOG.Curve>
+public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
 {
   private readonly IRawConversion<RG.Polyline, SOG.Polyline> _polylineConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
@@ -26,11 +24,24 @@ public class NurbsCurveConverter : IHostObjectToSpeckleConversion, IRawConversio
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.NurbsCurve)target);
-
+  /// <summary>
+  /// Converts a NurbsCurve object to a Speckle Curve object.
+  /// </summary>
+  /// <param name="target">The NurbsCurve object to convert.</param>
+  /// <returns>The converted Speckle Curve object.</returns>
+  /// <remarks>
+  /// ⚠️ This conversion does not respect Rhino knot vector structure.
+  /// It adds 1 extra knot at the start and end of the vector by repeating the first and last value.
+  /// This is because Rhino's standard of (controlPoints + degree + 1) wasn't followed on other software.
+  /// </remarks>
   public SOG.Curve RawConvert(RG.NurbsCurve target)
   {
     target.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);
+    if (target.IsClosed)
+    {
+      poly.Add(poly[0]);
+    }
+
     SOG.Polyline displayValue = _polylineConverter.RawConvert(poly);
 
     var nurbsCurve = target.ToNurbsCurve();

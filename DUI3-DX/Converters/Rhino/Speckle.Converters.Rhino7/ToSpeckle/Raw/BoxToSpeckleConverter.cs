@@ -1,12 +1,10 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Box), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class BoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Box, SOG.Box>
+public class BoxToSpeckleConverter : IRawConversion<RG.Box, SOG.Box>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<RG.Interval, SOP.Interval> _intervalConverter;
@@ -23,8 +21,11 @@ public class BoxToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Box)target);
-
+  /// <summary>
+  /// Converts a Rhino Box object to a Speckle Box object.
+  /// </summary>
+  /// <param name="target">The Rhino Box object to convert.</param>
+  /// <returns>The converted Speckle Box object.</returns>
   public SOG.Box RawConvert(RG.Box target) =>
     new(
       _planeConverter.RawConvert(target.Plane),

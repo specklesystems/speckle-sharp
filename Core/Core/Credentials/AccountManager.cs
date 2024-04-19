@@ -234,15 +234,22 @@ public static class AccountManager
     return serverUrl;
   }
 
+  /// <param name="id">The Id of the account to fetch</param>
+  /// <returns></returns>
+  /// <exception cref="SpeckleAccountManagerException">Account with <paramref name="id"/> was not found</exception>
+  public static Account GetAccount(string id)
+  {
+    return GetAccounts().FirstOrDefault(acc => acc.id == id)
+      ?? throw new SpeckleAccountManagerException($"Account {id} not found");
+  }
+
   /// <summary>
   /// Upgrades an account from the account.serverInfo.movedFrom account to the account.serverInfo.movedTo account
   /// </summary>
   /// <param name="id">Id of the account to upgrade</param>
   public static async Task UpgradeAccount(string id)
   {
-    var account =
-      GetAccounts().FirstOrDefault(acc => acc.id == id)
-      ?? throw new SpeckleAccountManagerException($"Account {id} not found");
+    Account account = GetAccount(id);
 
     if (account.serverInfo.migration.movedTo is not Uri upgradeUri)
     {

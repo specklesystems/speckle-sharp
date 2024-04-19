@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -59,11 +59,11 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   )
   {
     RhinoDoc doc = _contextStack.Current.Document;
-    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, -1);
+    var rootLayerIndex = _contextStack.Current.Document.Layers.Find(Guid.Empty, baseLayerName, RhinoMath.UnsetIntIndex);
 
-    // Cleans up any previously received objects
     // POC: We could move this out into a separate service for testing and re-use.
-    if (rootLayerIndex >= 0)
+    // Cleans up any previously received objects
+    if (rootLayerIndex == RhinoMath.UnsetIntIndex)
     {
       Layer documentLayer = doc.Layers[rootLayerIndex];
       Layer[]? childLayers = documentLayer.GetChildren();

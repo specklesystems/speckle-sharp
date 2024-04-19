@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.ArcGIS.Utils;
@@ -22,7 +21,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public IBridge Parent { get; }
 
   private readonly ArcGISDocumentStore _store;
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _speckleConverterToSpeckleFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
   private readonly CancellationManager _cancellationManager;
   private readonly SendOperation _sendOperation;
 
@@ -34,13 +33,13 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
     IBridge parent,
-    IScopedFactory<ISpeckleConverterToSpeckle> speckleConverterToSpeckleFactory,
+    IUnitOfWorkFactory unitOfWorkFactory,
     SendOperation sendOperation,
     CancellationManager cancellationManager
   )
   {
     _store = store;
-    _speckleConverterToSpeckleFactory = speckleConverterToSpeckleFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _sendOperation = sendOperation;
     _cancellationManager = cancellationManager;
 
@@ -140,7 +139,6 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public void Dispose()
   {
     IsDisposed = true;
-    _speckleConverterToSpeckleFactory.Dispose();
   }
 
   public bool IsDisposed { get; private set; }

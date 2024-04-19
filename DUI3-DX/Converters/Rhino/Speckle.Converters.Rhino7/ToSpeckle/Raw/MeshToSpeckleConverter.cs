@@ -1,12 +1,11 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
 [NameAndRankValue(nameof(RG.Mesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Mesh, SOG.Mesh>
+public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -23,8 +22,12 @@ public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Mesh)target);
-
+  /// <summary>
+  /// Converts a Rhino Mesh to a Speckle Mesh.
+  /// </summary>
+  /// <param name="target">The Rhino Mesh to be converted.</param>
+  /// <returns>The converted Speckle Mesh.</returns>
+  /// <exception cref="SpeckleConversionException">Thrown when the Rhino Mesh has 0 vertices or faces.</exception>
   public SOG.Mesh RawConvert(RG.Mesh target)
   {
     if (target.Vertices.Count == 0 || target.Faces.Count == 0)
@@ -52,7 +55,7 @@ public class MeshToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConver
 
     var colors = target.VertexColors.Select(cl => cl.ToArgb()).ToList();
     var volume = target.IsClosed ? target.Volume() : 0;
-    var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(true))); // POC: Why do we use accurate BBox? it's slower.
+    var bbox = _boxConverter.RawConvert(new RG.Box(target.GetBoundingBox(false)));
 
     return new SOG.Mesh(vertexCoordinates, faces, colors, textureCoordinates, _contextStack.Current.SpeckleUnits)
     {

@@ -1,12 +1,10 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Arc, SOG.Arc>
+public class ArcToSpeckleConverter : IRawConversion<RG.Arc, SOG.Arc>
 {
   private readonly IRawConversion<RG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
@@ -26,8 +24,14 @@ public class ArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConvers
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Arc)target);
-
+  /// <summary>
+  /// Converts a Rhino Arc object to a Speckle Arc object.
+  /// </summary>
+  /// <param name="target">The Rhino Arc object to convert.</param>
+  /// <returns>The converted Speckle Arc object.</returns>
+  /// <remarks>
+  /// This method assumes the domain of the arc is (0,1) as Arc types in Rhino do not have domain. You may want to request a conversion from ArcCurve instead.
+  /// </remarks>
   public SOG.Arc RawConvert(RG.Arc target) =>
     new(
       _planeConverter.RawConvert(target.Plane),

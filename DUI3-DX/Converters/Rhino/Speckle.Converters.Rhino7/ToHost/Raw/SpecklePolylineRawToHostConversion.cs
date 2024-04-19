@@ -33,7 +33,7 @@ public class SpecklePolylineRawToHostConversion
     return poly;
   }
 
-  // POC: Potential code-smell by directly implementing the interface. We should discuss this further but
+  // POC: CNX-9271 Potential code-smell by directly implementing the interface. We should discuss this further but
   // since we're using the interfaces instead of the direct type, this may not be an issue.
   RG.PolylineCurve IRawConversion<SOG.Polyline, RG.PolylineCurve>.RawConvert(SOG.Polyline target)
   {

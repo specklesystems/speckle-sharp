@@ -1,12 +1,10 @@
 ﻿using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.Geometry;
+namespace Speckle.Converters.Rhino7.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(RG.Ellipse), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class EllipseToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<RG.Ellipse, SOG.Ellipse>
+public class EllipseToSpeckleConverter : IRawConversion<RG.Ellipse, SOG.Ellipse>
 {
   private readonly IRawConversion<RG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<RG.Box, SOG.Box> _boxConverter;
@@ -23,8 +21,14 @@ public class EllipseToSpeckleConverter : IHostObjectToSpeckleConversion, IRawCon
     _contextStack = contextStack;
   }
 
-  public Base Convert(object target) => RawConvert((RG.Ellipse)target);
-
+  /// <summary>
+  /// Converts a Rhino Ellipse to a Speckle Ellipse.
+  /// </summary>
+  /// <param name="target">The Rhino Ellipse to convert.</param>
+  /// <returns>The converted Speckle Ellipse.</returns>
+  /// <remarks>
+  /// ⚠️ Rhino ellipses are not curves. The result is a mathematical representation of an ellipse that can be converted into NURBS for display.
+  /// </remarks>
   public SOG.Ellipse RawConvert(RG.Ellipse target)
   {
     var nurbsCurve = target.ToNurbsCurve();
