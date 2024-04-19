@@ -21,25 +21,19 @@ namespace Speckle.Converters.Autocad.Geometry;
 public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;
   private readonly IRawConversion<ADB.Spline, SOG.Curve> _splineConverter;
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
   private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
   public Polyline3dToSpeckleConverter(
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<AG.LineSegment3d, SOG.Line> lineConverter,
     IRawConversion<ADB.Spline, SOG.Curve> splineConverter,
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
     IRawConversion<Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
   {
     _pointConverter = pointConverter;
-    _lineConverter = lineConverter;
     _splineConverter = splineConverter;
-    _planeConverter = planeConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
@@ -63,13 +57,14 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
         break;
     }
 
-    // get all vertex data
+    // get all vertex data except control vertices
     List<double> value = new();
     List<PolylineVertex3d> vertices = target
       .GetSubEntities<PolylineVertex3d>(
         OpenMode.ForRead,
         _contextStack.Current.Document.TransactionManager.TopTransaction
       )
+      .Where(e => e.VertexType != Vertex3dType.ControlVertex) // Do not collect control points
       .ToList();
 
     List<Objects.ICurve> segments = new();
@@ -99,10 +94,26 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
     // TODO: need to confirm that this retrieves the correct spline. We may need to construct the spline curve manually from vertex enumeration
     if (polyType is not SOG.Autocad.AutocadPolyType.Simple3d)
     {
+      // add first 3 coordinate to last for display value polyline for spline
+      if (target.Closed)
+      {
+        var firstPoint = value.Take(3).ToList();
+        value.AddRange(firstPoint);
+      }
+
       SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
       spline.displayValue = value.ConvertToSpecklePolyline(_contextStack);
 
       segments.Add(spline);
+    }
+    else
+    {
+      if (target.Closed)
+      {
+        SOG.Point start = _pointConverter.RawConvert(vertices.First().Position);
+        SOG.Point end = _pointConverter.RawConvert(vertices.Last().Position);
+        segments.Add(new SOG.Line(start, end, _contextStack.Current.SpeckleUnits));
+      }
     }
 
     SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
@@ -115,7 +126,7 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
         polyType = polyType,
         closed = target.Closed,
         length = target.Length,
-        area = target.Area,
+        // area = target.Area, // POC: Polyline3d throws runtime error for get_Area() for sure
         bbox = bbox,
         units = _contextStack.Current.SpeckleUnits
       };
