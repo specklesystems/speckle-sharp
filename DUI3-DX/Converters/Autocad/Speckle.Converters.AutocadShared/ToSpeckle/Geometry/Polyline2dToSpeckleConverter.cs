@@ -110,7 +110,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     SOG.Polyline displayvalue;
     if (target.Database is not null)
     {
-      target.Explode()
+      // target.Explode()
     }
 
     // get the spline curve segment

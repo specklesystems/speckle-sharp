@@ -5,7 +5,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion
+public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Plane, SOG.Plane>
 {
   private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;

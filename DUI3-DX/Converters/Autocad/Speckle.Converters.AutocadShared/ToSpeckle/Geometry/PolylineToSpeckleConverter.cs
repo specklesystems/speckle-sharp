@@ -69,8 +69,9 @@ public class PolylineToSpeckleConverter
         case SegmentType.Arc:
           segments.Add(_arcConverter.RawConvert(target.GetArcSegmentAt(i)));
           break;
-        default:
-          throw new InvalidOperationException("Polyline had an invalid segment of type Empty, Point, or Coincident.");
+        // POC: commented out claire's exception here because it breaks the conversion seems unnecessarily.. TBD
+        // default:
+        //   throw new InvalidOperationException("Polyline had an invalid segment of type Empty, Point, or Coincident.");
       }
     }
 

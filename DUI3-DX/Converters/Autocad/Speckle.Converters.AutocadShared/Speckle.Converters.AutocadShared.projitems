@@ -27,6 +27,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\geometry\Polyline2dToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)tospeckle\geometry\PolylineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\BoxToSpeckleRawConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\CircularArc3dToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\LineSegment3dToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\PointToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Raw\IntervalToSpeckleRawConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\Geometry\LineToSpeckleConverter.cs" />
