@@ -29,7 +29,7 @@ public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
     AssignMeshFaces(target, m);
     AssignTextureCoordinates(target, m);
 
-    // POC: CNS-9273 There was a piece of code here about Merging co-planar faces that I've removed for now as this setting does not exist yet.
+    // POC: CNX-9273 There was a piece of code here about Merging co-planar faces that I've removed for now as this setting does not exist yet.
 
     return m;
   }
