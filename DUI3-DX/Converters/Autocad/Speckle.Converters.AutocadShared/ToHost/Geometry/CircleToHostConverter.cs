@@ -30,19 +30,14 @@ public class CircleToHostConverter : ISpeckleObjectToHostConversion, IRawConvers
   {
     AG.Vector3d normal = _vectorConverter.RawConvert(target.plane.normal);
     AG.Point3d origin = _pointConverter.RawConvert(target.plane.origin);
-
     double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
-    double radius;
-    if (target.radius is double targetRadius)
+
+    if (target.radius is null)
     {
-      radius = f * targetRadius;
-    }
-    else
-    {
-      // POC: looks like it is kind of workaround, should we stick with it or throw error regardless?
-      radius = f * Math.Sqrt(target.area / Math.PI);
+      throw new ArgumentNullException(nameof(target), "Cannot convert circle without radius value.");
     }
 
+    var radius = f * (double)target.radius;
     return new(origin, normal, radius);
   }
 }

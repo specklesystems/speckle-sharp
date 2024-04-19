@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using NUnit.Framework;
 using Speckle.Core.Helpers;
 
@@ -30,21 +30,6 @@ public sealed class UtilitiesTests
     Assert.That(upper, Is.EqualTo(expected.ToUpper()));
   }
 
-  class TestEnumerable<T> : IEnumerable<T>
-  {
-    private readonly List<T> _items = new List<T>();
-
-    public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-    public void Add(T item) => _items.Add(item);
-
-    public void Remove(T item) => _items.Remove(item);
-  }
-
-  class ParentTestEnumerable<T> : TestEnumerable<T> { }
-
   [Test]
   public void FlattenToNativeConversion()
   {
@@ -59,7 +44,7 @@ public sealed class UtilitiesTests
       new() // obj 3
     };
 
-    var parentTestEnum = new ParentTestEnumerable<object>() { new(), new() };
+    var testEnum = new List<object>() { new(), new() }.Select(o => o);
 
     var nestedObjectsWithEnumerableInherited = new List<object>()
     {
@@ -67,12 +52,12 @@ public sealed class UtilitiesTests
       {
         new(), // obj 1
         new(), // obj 2
-        parentTestEnum // obj 3
+        testEnum // obj 3
       },
       new() // obj 4
     };
 
-    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(parentTestEnum);
+    var parentTestEnumFlattened = Core.Models.Utilities.FlattenToHostConversionResult(testEnum);
     var singleObjectFlattened = Core.Models.Utilities.FlattenToHostConversionResult(singleObject);
     var nestedObjectsFlattened = Core.Models.Utilities.FlattenToHostConversionResult(nestedObjects);
     var nestedObjectsWithEnumerableInheritedFlattened = Core.Models.Utilities.FlattenToHostConversionResult(

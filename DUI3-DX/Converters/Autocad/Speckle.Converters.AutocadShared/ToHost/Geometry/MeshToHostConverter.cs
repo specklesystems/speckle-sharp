@@ -25,7 +25,9 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
 
   public object Convert(Base target) => RawConvert((SOG.Mesh)target);
 
-  /// <remarks>Mesh conversion requires transaction since it's vertices needed to be added into database in advance..</remarks>
+  /// <remarks>
+  /// Mesh conversion requires transaction since it's vertices needed to be added into database in advance..
+  /// </remarks>
   public ADB.PolyFaceMesh RawConvert(SOG.Mesh target)
   {
     target.TriangulateMesh(true);
@@ -40,76 +42,74 @@ public class MeshToHostConverter : ISpeckleObjectToHostConversion, IRawConversio
 
     ADB.PolyFaceMesh mesh = new();
 
-    using (ADB.Transaction tr = _contextStack.Current.Document.TransactionManager.StartTransaction())
+    ADB.Transaction tr = _contextStack.Current.Document.TransactionManager.TopTransaction;
+
+    mesh.SetDatabaseDefaults();
+
+    // append mesh to blocktable record - necessary before adding vertices and faces
+    var btr = (ADB.BlockTableRecord)
+      tr.GetObject(_contextStack.Current.Document.Database.CurrentSpaceId, ADB.OpenMode.ForWrite);
+    btr.AppendEntity(mesh);
+    tr.AddNewlyCreatedDBObject(mesh, true);
+
+    // add polyfacemesh vertices
+    for (int i = 0; i < vertices.Count; i++)
     {
-      mesh.SetDatabaseDefaults();
-
-      // append mesh to blocktable record - necessary before adding vertices and faces
-      var btr = (ADB.BlockTableRecord)
-        tr.GetObject(_contextStack.Current.Document.Database.CurrentSpaceId, ADB.OpenMode.ForWrite);
-      btr.AppendEntity(mesh);
-      tr.AddNewlyCreatedDBObject(mesh, true);
-
-      // add polyfacemesh vertices
-      for (int i = 0; i < vertices.Count; i++)
+      var vertex = new ADB.PolyFaceMeshVertex(points[i]);
+      if (i < target.colors.Count)
       {
-        var vertex = new ADB.PolyFaceMeshVertex(points[i]);
-        if (i < target.colors.Count)
+        try
         {
-          try
+          if (System.Drawing.Color.FromArgb(target.colors[i]) is System.Drawing.Color color)
           {
-            if (System.Drawing.Color.FromArgb(target.colors[i]) is System.Drawing.Color color)
-            {
-              vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
-            }
-          }
-          catch (System.Exception e) when (!e.IsFatal())
-          {
-            // POC: should we warn user?
-            // Couldn't set vertex color, but this should not prevent conversion.
+            vertex.Color = Autodesk.AutoCAD.Colors.Color.FromRgb(color.R, color.G, color.B);
           }
         }
-
-        if (vertex.IsNewObject)
+        catch (System.Exception e) when (!e.IsFatal())
         {
-          mesh.AppendVertex(vertex);
-          tr.AddNewlyCreatedDBObject(vertex, true);
+          // POC: should we warn user?
+          // Couldn't set vertex color, but this should not prevent conversion.
         }
       }
 
-      // add polyfacemesh faces. vertex index starts at 1 sigh
-      int j = 0;
-      while (j < target.faces.Count)
+      if (vertex.IsNewObject)
       {
-        ADB.FaceRecord face;
-        if (target.faces[j] == 3) // triangle
-        {
-          face = new ADB.FaceRecord(
-            (short)(target.faces[j + 1] + 1),
-            (short)(target.faces[j + 2] + 1),
-            (short)(target.faces[j + 3] + 1),
-            0
-          );
-          j += 4;
-        }
-        else // quad
-        {
-          face = new ADB.FaceRecord(
-            (short)(target.faces[j + 1] + 1),
-            (short)(target.faces[j + 2] + 1),
-            (short)(target.faces[j + 3] + 1),
-            (short)(target.faces[j + 4] + 1)
-          );
-          j += 5;
-        }
-
-        if (face.IsNewObject)
-        {
-          mesh.AppendFaceRecord(face);
-          tr.AddNewlyCreatedDBObject(face, true);
-        }
+        mesh.AppendVertex(vertex);
+        tr.AddNewlyCreatedDBObject(vertex, true);
       }
-      tr.Commit();
+    }
+
+    // add polyfacemesh faces. vertex index starts at 1 sigh
+    int j = 0;
+    while (j < target.faces.Count)
+    {
+      ADB.FaceRecord face;
+      if (target.faces[j] == 3) // triangle
+      {
+        face = new ADB.FaceRecord(
+          (short)(target.faces[j + 1] + 1),
+          (short)(target.faces[j + 2] + 1),
+          (short)(target.faces[j + 3] + 1),
+          0
+        );
+        j += 4;
+      }
+      else // quad
+      {
+        face = new ADB.FaceRecord(
+          (short)(target.faces[j + 1] + 1),
+          (short)(target.faces[j + 2] + 1),
+          (short)(target.faces[j + 3] + 1),
+          (short)(target.faces[j + 4] + 1)
+        );
+        j += 5;
+      }
+
+      if (face.IsNewObject)
+      {
+        mesh.AppendFaceRecord(face);
+        tr.AddNewlyCreatedDBObject(face, true);
+      }
     }
 
     return mesh;
