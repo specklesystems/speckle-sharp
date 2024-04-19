@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,7 +13,7 @@ namespace Speckle.DllConflictManagement.Analytics;
 ///  A version of the Analytics class in Core that doesn't have any dependencies. This class will load and subscribe
 ///  to the eventEmitter's Action event, but will hopefully get unsubscribed and replaced by the full version in Core
 /// </summary>
-public class AnalyticsWithoutDependencies
+public sealed class AnalyticsWithoutDependencies
 {
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";
   private const string MIXPANEL_SERVER = "https://analytics.speckle.systems";
@@ -44,35 +43,8 @@ public class AnalyticsWithoutDependencies
     _serializer = serializer;
     _hostApplication = hostApplication;
     _hostApplicationVersion = hostApplicationVersion;
-    //_hashedEmail = NetworkInterface
-    //  .GetAllNetworkInterfaces()
-    //  .Where(
-    //    nic =>
-    //      nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
-    //  )
-    //  .Select(nic => nic.GetPhysicalAddress().ToString())
-    //  .FirstOrDefault();
-
+    _hashedEmail = "undefined";
     _hashedServer = "no-account-server";
-  }
-
-  private static string? TryGetAccountIdFromNetwork()
-  {
-    try
-    {
-      return NetworkInterface
-        .GetAllNetworkInterfaces()
-        .Where(
-          nic =>
-            nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
-        )
-        .Select(nic => nic.GetPhysicalAddress().ToString())
-        .FirstOrDefault();
-    }
-    catch (NetworkInformationException)
-    {
-      return null;
-    }
   }
 
   /// <summary>
@@ -117,11 +89,11 @@ public class AnalyticsWithoutDependencies
     bool isAction = true
   )
   {
-    //if (!IsReleaseMode)
-    //{
-    //  //only track in prod
-    //  return;
-    //}
+    if (!IsReleaseMode)
+    {
+      //only track in prod
+      return;
+    }
 
     try
     {
