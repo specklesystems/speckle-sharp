@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -20,20 +21,20 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
   public CancellationManager CancellationManager { get; set; }
 
   private readonly DocumentModelStore _store;
-  private readonly ReceiveOperation _receiveOperation;
+  private readonly UnitOfWorkFactory _unitOfWorkFactory;
   public ReceiveBindingUICommands Commands { get; }
 
   public RhinoReceiveBinding(
     DocumentModelStore store,
     CancellationManager cancellationManager,
     IBridge parent,
-    ReceiveOperation receiveOperation
+    UnitOfWorkFactory unitOfWorkFactory
   )
   {
     Parent = parent;
     _store = store;
+    _unitOfWorkFactory = unitOfWorkFactory;
     CancellationManager = cancellationManager;
-    _receiveOperation = receiveOperation;
     Commands = new ReceiveBindingUICommands(parent);
   }
 
@@ -41,6 +42,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
 
   public async Task Receive(string modelCardId)
   {
+    using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
       // Init cancellation token source -> Manager also cancel it if exist before
@@ -53,7 +55,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
       }
 
       // Receive host objects
-      IEnumerable<string> receivedObjectIds = await _receiveOperation
+      IEnumerable<string> receivedObjectIds = await unitOfWork.Service
         .Execute(
           modelCard.AccountId, // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId,

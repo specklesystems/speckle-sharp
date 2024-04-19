@@ -56,21 +56,20 @@ public class AutofacRhinoModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
-    builder.RegisterType<SendOperation>().SingleInstance();
-    builder.RegisterType<ReceiveOperation>().SingleInstance();
+    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
 
-    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().SingleInstance();
+    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerMatchingLifetimeScope();
 
-    builder.RegisterType<RootObjectBuilder>().SingleInstance();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
-
-    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
+    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

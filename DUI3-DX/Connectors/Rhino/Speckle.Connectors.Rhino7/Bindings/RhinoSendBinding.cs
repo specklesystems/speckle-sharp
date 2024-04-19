@@ -14,6 +14,7 @@ using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using System.Threading.Tasks;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Rhino7.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
@@ -27,8 +28,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly RhinoIdleManager _idleManager;
+  private readonly UnitOfWorkFactory _unitOfWorkFactory;
   private readonly List<ISendFilter> _sendFilters;
-  private readonly SendOperation _sendOperation;
   private readonly CancellationManager _cancellationManager;
 
   /// <summary>
@@ -47,14 +48,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     RhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
-    SendOperation sendOperation,
+    UnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager
   )
   {
     _store = store;
     _idleManager = idleManager;
+    _unitOfWorkFactory = unitOfWorkFactory;
     _sendFilters = sendFilters.ToList();
-    _sendOperation = sendOperation;
     _cancellationManager = cancellationManager;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
@@ -130,6 +131,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   )]
   public async Task Send(string modelCardId)
   {
+    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
@@ -141,7 +143,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      string versionId = await _sendOperation
+      string versionId = await unitOfWork.Service
         .Execute(
           modelCard.SendFilter,
           modelCard.AccountId,
