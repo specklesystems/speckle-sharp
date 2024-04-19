@@ -132,9 +132,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       }
 
       // 2 - Check account exist
-      Account account =
-        AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == modelCard.AccountId)
-        ?? throw new SpeckleAccountManagerException();
+      Account account = AccountManager.GetAccount(modelCard.AccountId);
 
       // 3 - Get elements to convert
       List<(DBObject obj, string applicationId)> autocadObjects =

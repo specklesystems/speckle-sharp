@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Connectors.Utils.Builders;
@@ -33,9 +32,7 @@ public sealed class ReceiveOperation
   )
   {
     // 2 - Check account exist
-    Account account =
-      AccountManager.GetAccounts().FirstOrDefault(acc => acc.id == accountId)
-      ?? throw new SpeckleAccountManagerException();
+    Account account = AccountManager.GetAccount(accountId);
 
     // 3 - Get commit object from server
     using Client apiClient = new(account);
