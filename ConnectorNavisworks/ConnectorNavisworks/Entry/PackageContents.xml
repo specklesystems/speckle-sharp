@@ -24,9 +24,14 @@
 		<ComponentEntry AppName="SpeckleNavisworks" AppType="ManagedPlugin" Version="0.1.0"
 						ModuleName="./Contents/v20/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2023" />
 	</Components>
-	<Components>
-		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw21" SeriesMax="Nw21" />
-		<ComponentEntry AppName="SpeckleNavisworks" AppType="ManagedPlugin" Version="0.1.0"
-						ModuleName="./Contents/v21/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2024" />
-	</Components>
+    <Components>
+        <RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw21" SeriesMax="Nw21" />
+        <ComponentEntry AppName="SpeckleNavisworks" AppType="ManagedPlugin" Version="0.1.0"
+                        ModuleName="./Contents/v21/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2024" />
+    </Components>
+    <Components>
+        <RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw22" SeriesMax="Nw22" />
+        <ComponentEntry AppName="SpeckleNavisworks" AppType="ManagedPlugin" Version="0.1.0"
+                        ModuleName="./Contents/v22/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2025" />
+    </Components>
 </ApplicationPackage>

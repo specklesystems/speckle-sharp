@@ -28,10 +28,7 @@ public class AutofacRhinoConverterModule : Module
     // To Speckle
     builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
     builder.RegisterType<RhinoConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToSpeckle>>()
-      .As<IScopedFactory<ISpeckleConverterToSpeckle>>()
-      .InstancePerLifetimeScope();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
 
     /*
       POC: Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
@@ -45,10 +42,6 @@ public class AutofacRhinoConverterModule : Module
     // To Host
     // POC: Missing Unit converter
     builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
-    builder
-      .RegisterType<ScopedFactory<ISpeckleConverterToHost>>()
-      .As<IScopedFactory<ISpeckleConverterToHost>>()
-      .InstancePerLifetimeScope();
 
     /*
       POC: Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.

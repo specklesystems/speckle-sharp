@@ -62,6 +62,20 @@ public class CredentialInfrastructure
     Assert.That(accs, Has.Count.GreaterThanOrEqualTo(3)); // Tests are adding three accounts, you might have extra accounts on your machine when testing :D
   }
 
+  [Test]
+  public void GetAccount_ById()
+  {
+    var result = AccountManager.GetAccount(s_testAccount1.id);
+
+    Assert.That(result, Is.EqualTo(s_testAccount1));
+  }
+
+  [Test]
+  public void GetAccount_ById_ThrowsWhenNotFound()
+  {
+    Assert.Throws<SpeckleAccountManagerException>(() => AccountManager.GetAccount("Non_existent_id"));
+  }
+
   public static IEnumerable<Account> TestCases()
   {
     SetUp();

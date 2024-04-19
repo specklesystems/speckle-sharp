@@ -11,11 +11,11 @@ namespace Speckle.Connectors.ArcGis.Operations.Send;
 /// </summary>
 public class RootObjectBuilder
 {
-  private readonly IScopedFactory<ISpeckleConverterToSpeckle> _converterFactory;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-  public RootObjectBuilder(IScopedFactory<ISpeckleConverterToSpeckle> converterFactory)
+  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
   {
-    _converterFactory = converterFactory;
+    _unitOfWorkFactory = unitOfWorkFactory;
   }
 
   public Base Build(
@@ -73,11 +73,15 @@ public class RootObjectBuilder
     CancellationToken cancellationToken = default
   )
   {
+    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
+    // begin the unit of work
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
+    var converter = uow.Service;
+
     // var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };
     int count = 0;
 
     Collection rootObjectCollection = new(); //TODO: Collections
-    ISpeckleConverterToSpeckle converter = _converterFactory.ResolveScopedInstance();
 
     foreach ((MapMember mapMember, List<long> objectIds) in mapMembers)
     {

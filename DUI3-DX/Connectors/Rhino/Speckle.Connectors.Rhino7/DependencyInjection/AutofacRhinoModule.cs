@@ -46,6 +46,8 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<RhinoIdleManager>().SingleInstance();
 
     // Register bindings
+    builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
+    builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "Rhino"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RhinoBasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
     builder.RegisterType<RhinoSelectionBinding>().As<IBinding>().SingleInstance();
@@ -79,6 +81,7 @@ public class AutofacRhinoModule : Module
       {
         Error = (_, args) =>
         {
+          // POC: we should probably do a bit more than just swallowing this!
           Console.WriteLine("*** JSON ERROR: " + args.ErrorContext);
         },
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -92,6 +95,7 @@ public class AutofacRhinoModule : Module
 
   private static void RegisterLoggerFactory(ContainerBuilder builder)
   {
+    // POC: will likely need refactoring with our reporting pattern.
     var serilogLogger = new LoggerConfiguration().MinimumLevel
       .Debug()
       .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
