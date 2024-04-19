@@ -21,6 +21,11 @@ public class BoxToSpeckleConverter : IRawConversion<RG.Box, SOG.Box>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino Box object to a Speckle Box object.
+  /// </summary>
+  /// <param name="target">The Rhino Box object to convert.</param>
+  /// <returns>The converted Speckle Box object.</returns>
   public SOG.Box RawConvert(RG.Box target) =>
     new(
       _planeConverter.RawConvert(target.Plane),

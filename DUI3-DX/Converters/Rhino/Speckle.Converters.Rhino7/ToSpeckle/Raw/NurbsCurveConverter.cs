@@ -24,6 +24,16 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a NurbsCurve object to a Speckle Curve object.
+  /// </summary>
+  /// <param name="target">The NurbsCurve object to convert.</param>
+  /// <returns>The converted Speckle Curve object.</returns>
+  /// <remarks>
+  /// ⚠️ This conversion does not respect Rhino knot vector structure.
+  /// It adds 1 extra knot at the start and end of the vector by repeating the first and last value.
+  /// This is because Rhino's standard of (controlPoints + degree + 1) wasn't followed on other software.
+  /// </remarks>
   public SOG.Curve RawConvert(RG.NurbsCurve target)
   {
     target.ToPolyline(0, 1, 0, 0, 0, 0.1, 0, 0, true).TryGetPolyline(out var poly);

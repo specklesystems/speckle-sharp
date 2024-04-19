@@ -24,6 +24,14 @@ public class ArcToSpeckleConverter : IRawConversion<RG.Arc, SOG.Arc>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino Arc object to a Speckle Arc object.
+  /// </summary>
+  /// <param name="target">The Rhino Arc object to convert.</param>
+  /// <returns>The converted Speckle Arc object.</returns>
+  /// <remarks>
+  /// This method assumes the domain of the arc is (0,1) as Arc types in Rhino do not have domain. You may want to request a conversion from ArcCurve instead.
+  /// </remarks>
   public SOG.Arc RawConvert(RG.Arc target) =>
     new(
       _planeConverter.RawConvert(target.Plane),

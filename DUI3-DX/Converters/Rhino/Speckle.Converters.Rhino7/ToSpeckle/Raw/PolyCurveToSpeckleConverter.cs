@@ -23,17 +23,17 @@ public class PolyCurveToSpeckleConverter : IRawConversion<RG.PolyCurve, SOG.Poly
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino PolyCurve to a Speckle Polycurve.
+  /// </summary>
+  /// <param name="target">The Rhino PolyCurve to convert.</param>
+  /// <returns>The converted Speckle Polycurve.</returns>
+  /// <remarks>
+  /// This method removes the nesting of the PolyCurve by duplicating the segments at a granular level.
+  /// All PolyLIne, PolyCurve and NURBS curves with G1 discontinuities will be broken down.
+  /// </remarks>
   public SOG.Polycurve RawConvert(RG.PolyCurve target)
   {
-    var removeNestingSuccess = target.RemoveNesting();
-    if (!removeNestingSuccess)
-    {
-      /*
-       * POC: CNX-9280 Potentially log as a warning when logger is added.
-       * Failing to remove nesting could mean something could not be right, but it doesn't mean we didn't manage to convert a valid PolyCurve.
-       */
-    }
-
     var myPoly = new SOG.Polycurve
     {
       closed = target.IsClosed,

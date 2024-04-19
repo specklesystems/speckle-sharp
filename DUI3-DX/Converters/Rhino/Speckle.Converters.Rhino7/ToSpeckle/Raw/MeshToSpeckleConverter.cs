@@ -22,6 +22,12 @@ public class MeshToSpeckleConverter : IRawConversion<RG.Mesh, SOG.Mesh>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino Mesh to a Speckle Mesh.
+  /// </summary>
+  /// <param name="target">The Rhino Mesh to be converted.</param>
+  /// <returns>The converted Speckle Mesh.</returns>
+  /// <exception cref="SpeckleConversionException">Thrown when the Rhino Mesh has 0 vertices or faces.</exception>
   public SOG.Mesh RawConvert(RG.Mesh target)
   {
     if (target.Vertices.Count == 0 || target.Faces.Count == 0)

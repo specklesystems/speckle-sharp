@@ -14,6 +14,11 @@ public class ControlPointToSpeckleConverter : IRawConversion<RG.ControlPoint, SO
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a ControlPoint object to a Speckle ControlPoint object.
+  /// </summary>
+  /// <param name="target">The ControlPoint object to convert.</param>
+  /// <returns>The converted Speckle ControlPoint object.</returns>
   public SOG.ControlPoint RawConvert(RG.ControlPoint target) =>
     new(target.Location.X, target.Location.Y, target.Location.Z, target.Weight, _contextStack.Current.SpeckleUnits);
 

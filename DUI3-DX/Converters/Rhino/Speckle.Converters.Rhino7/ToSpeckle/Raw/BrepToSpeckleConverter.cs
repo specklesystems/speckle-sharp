@@ -36,6 +36,11 @@ public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Brep object to a Speckle Brep object.
+  /// </summary>
+  /// <param name="target">The Brep object to convert.</param>
+  /// <returns>The converted Speckle Brep object.</returns>
   public SOG.Brep RawConvert(RG.Brep target)
   {
     var tol = _contextStack.Current.Document.ModelAbsoluteTolerance;

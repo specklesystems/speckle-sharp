@@ -21,6 +21,14 @@ public class CircleToSpeckleConverter : IRawConversion<RG.Circle, SOG.Circle>
 
   public Base Convert(object target) => RawConvert((RG.Circle)target);
 
+  /// <summary>
+  /// Converts a RG.Circle object to a SOG.Circle object.
+  /// </summary>
+  /// <param name="target">The RG.Circle object to convert.</param>
+  /// <returns>The converted SOG.Circle object.</returns>
+  /// <remarks>
+  /// ⚠️ This conversion assumes the domain of a circle is (0,1) as Rhino Circle types do not have a domain. If you want to preserve the domain use ArcCurve conversion instead.
+  /// </remarks>
   public SOG.Circle RawConvert(RG.Circle target) =>
     new(_planeConverter.RawConvert(target.Plane), target.Radius, _contextStack.Current.SpeckleUnits)
     {

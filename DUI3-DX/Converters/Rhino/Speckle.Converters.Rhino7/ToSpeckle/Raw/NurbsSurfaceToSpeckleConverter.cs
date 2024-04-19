@@ -25,6 +25,11 @@ public class NurbsSurfaceToSpeckleConverter : IRawConversion<RG.NurbsSurface, SO
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a NurbsSurface object to a Surface object.
+  /// </summary>
+  /// <param name="target">The NurbsSurface object to convert.</param>
+  /// <returns>A Surface object representing the converted NurbsSurface.</returns>
   public SOG.Surface RawConvert(RG.NurbsSurface target)
   {
     var result = new SOG.Surface

@@ -26,6 +26,16 @@ public class ArcCurveToSpeckleConverter : IRawConversion<RG.ArcCurve, ICurve>, I
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts an RG.ArcCurve to an ICurve.
+  /// </summary>
+  /// <param name="target">The RG.ArcCurve to convert.</param>
+  /// <returns>The converted ICurve.</returns>
+  /// <remarks>
+  /// ⚠️ If the provided ArcCurve is a complete circle, a Speckle Circle will be returned.
+  /// Otherwise, the output will be a Speckle Arc. <br/>
+  /// ✅ This method preserves the domain of the original ArcCurve.<br/>
+  /// </remarks>
   public ICurve RawConvert(RG.ArcCurve target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;
@@ -45,5 +55,7 @@ public class ArcCurveToSpeckleConverter : IRawConversion<RG.ArcCurve, ICurve>, I
 
   // POC: CNX-9275 Need to implement this because ICurve and Base are not related, this one is needed at the top-level, the other is for better typed experience.
   //      This also causes us to have to force cast ICurve to Base as a result, which is expected to always succeed but not nice.
+  /// <inheritdoc cref="RawConvert"/>
+  /// <returns> The converted ICurve with a cast to <see cref="Base"/> object</returns>
   Base IRawConversion<RG.ArcCurve, Base>.RawConvert(RG.ArcCurve target) => (Base)RawConvert(target);
 }

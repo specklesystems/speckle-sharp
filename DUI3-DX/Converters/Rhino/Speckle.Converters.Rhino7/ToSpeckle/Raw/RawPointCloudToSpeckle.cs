@@ -18,6 +18,11 @@ public class RawPointCloudToSpeckle : IRawConversion<RG.PointCloud, SOG.Pointclo
     _boxConverter = boxConverter;
   }
 
+  /// <summary>
+  /// Converts a Rhino PointCloud object to a Speckle Pointcloud object.
+  /// </summary>
+  /// <param name="target">The Rhino PointCloud object to convert.</param>
+  /// <returns>The converted Speckle Pointcloud object.</returns>
   public SOG.Pointcloud RawConvert(RG.PointCloud target) =>
     new()
     {

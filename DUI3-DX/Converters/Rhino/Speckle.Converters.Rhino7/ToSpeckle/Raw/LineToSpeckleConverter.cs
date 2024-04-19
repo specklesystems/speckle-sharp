@@ -21,6 +21,14 @@ public class LineToSpeckleConverter : IRawConversion<RG.Line, SOG.Line>, IRawCon
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino Line object to a Speckle Line object.
+  /// </summary>
+  /// <param name="target">The Rhino Line object to convert.</param>
+  /// <returns>The converted Speckle Line object.</returns>
+  /// <remarks>
+  /// ⚠️ This conversion assumes the domain of a line is (0, LENGTH), as Rhino Lines do not have domain. If you want the domain preserved use LineCurve conversions instead.
+  /// </remarks>
   public SOG.Line RawConvert(RG.Line target) =>
     new(
       _pointConverter.RawConvert(target.From),

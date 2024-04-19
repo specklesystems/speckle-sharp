@@ -28,6 +28,15 @@ public class CurveToSpeckleConverter : IRawConversion<RG.Curve, ICurve>, IRawCon
     _lineCurveConverter = lineCurveConverter;
   }
 
+  /// <summary>
+  /// Converts a Rhino curve to a Speckle ICurve.
+  /// </summary>
+  /// <param name="target">The Rhino curve to convert.</param>
+  /// <returns>The Speckle curve.</returns>
+  /// <remarks>
+  /// This is the main converter when the type of curve you input or output does not matter to the caller.<br/>
+  /// ⚠️ If an unsupported type of Curve is input, it will be converted to NURBS.
+  /// </remarks>
   public ICurve RawConvert(RG.Curve target) =>
     target switch
     {

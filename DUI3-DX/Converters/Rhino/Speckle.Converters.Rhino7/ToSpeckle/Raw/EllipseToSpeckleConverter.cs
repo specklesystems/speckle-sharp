@@ -21,6 +21,14 @@ public class EllipseToSpeckleConverter : IRawConversion<RG.Ellipse, SOG.Ellipse>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino Ellipse to a Speckle Ellipse.
+  /// </summary>
+  /// <param name="target">The Rhino Ellipse to convert.</param>
+  /// <returns>The converted Speckle Ellipse.</returns>
+  /// <remarks>
+  /// ⚠️ Rhino ellipses are not curves. The result is a mathematical representation of an ellipse that can be converted into NURBS for display.
+  /// </remarks>
   public SOG.Ellipse RawConvert(RG.Ellipse target)
   {
     var nurbsCurve = target.ToNurbsCurve();

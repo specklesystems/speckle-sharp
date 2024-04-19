@@ -13,6 +13,11 @@ public class PointToSpeckleConverter : IRawConversion<RG.Point3d, SOG.Point>, IR
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts a Rhino 3D point to a Speckle point.
+  /// </summary>
+  /// <param name="target">The Rhino 3D point to convert.</param>
+  /// <returns>The converted Speckle point.</returns>
   public SOG.Point RawConvert(RG.Point3d target) =>
     new(target.X, target.Y, target.Z, _contextStack.Current.SpeckleUnits);
 

@@ -21,6 +21,11 @@ public class PlaneToSpeckleConverter : IRawConversion<RG.Plane, SOG.Plane>
     _contextStack = contextStack;
   }
 
+  /// <summary>
+  /// Converts an instance of Rhino Plane to Speckle Plane.
+  /// </summary>
+  /// <param name="target">The instance of Rhino Plane to convert.</param>
+  /// <returns>The converted instance of Speckle Plane.</returns>
   public SOG.Plane RawConvert(RG.Plane target) =>
     new(
       _pointConverter.RawConvert(target.Origin),
