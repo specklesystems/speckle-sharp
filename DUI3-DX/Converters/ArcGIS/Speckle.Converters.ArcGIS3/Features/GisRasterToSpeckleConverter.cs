@@ -1,7 +1,6 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Objects.GIS;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Core.Data.Raster;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
@@ -43,20 +42,6 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
     var pixelType = target.GetPixelType(); // e.g. UCHAR
     var xyOrigin = target.PixelToMap(0, 0);
 
-    QueuedTask.Run(() =>
-    {
-      // maybe unnecessary
-      var rasterTbl = target.GetAttributeTable();
-      if (rasterTbl != null)
-      {
-        var cursor = rasterTbl.Search();
-        while (cursor.MoveNext())
-        {
-          var row = cursor.Current;
-        }
-      }
-    });
-
     RasterElement rasterElement =
       new(bandCount, new List<string>(), xOrigin, yOrigin, xSize, ySize, xResolution, yResolution, new List<float?>());
 
@@ -66,6 +51,7 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
 
     List<double> newCoords = new();
     List<int> newFaces = new();
+    List<int> newColors = new();
 
     // Get a pixel block for quicker reading and read from pixel top left pixel
     PixelBlock block = target.CreatePixelBlock(target.GetWidth(), target.GetHeight());
@@ -92,37 +78,50 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
       }
       rasterElement.noDataValue.Add(noDataVal);
 
-      //
-      if (i == 0) // band index
+      // currently get mesh colors only for the first band
+      if (i == 0)
       {
-        newFaces = pixelsList.SelectMany((_, ind) => new List<int>() { 3, ind, ind + 1, ind + 2 }).ToList(); //.Select(s => s + n)) ;
+        // int cellsToRender = 10000;
+        newFaces = pixelsList
+          .SelectMany((_, ind) => new List<int>() { 4, 4 * ind, 4 * ind + 1, 4 * ind + 2, 4 * ind + 3 })
+          .ToList();
+        //.GetRange(0, 5 * (xSize - 1) * (ySize - 1));
+        //.GetRange(0, 5 * cellsToRender);
+
         newCoords = pixelsList
           .SelectMany(
             (_, ind) =>
               new List<double>()
               {
-                xOrigin + xResolution * (ind % xSize - 1),
-                yOrigin - yResolution * (int)Math.Floor((double)ind / xSize),
+                xOrigin + xResolution * (ind % ySize),
+                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize),
                 0,
-                xOrigin + xResolution * (ind % xSize),
-                yOrigin - yResolution * ((int)Math.Floor((double)ind / xSize) + 1),
+                xOrigin + xResolution * (ind % ySize),
+                yOrigin - yResolution * ((int)Math.Floor((double)ind / ySize) + 1),
                 0,
-                xOrigin + xResolution * (ind % xSize + 1),
-                yOrigin - yResolution * ((int)Math.Floor((double)ind / xSize) + 2),
+                xOrigin + xResolution * (ind % ySize + 1),
+                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize + 1),
                 0,
-                xOrigin + xResolution * (ind % xSize + 2),
-                yOrigin - yResolution * ((int)Math.Floor((double)ind / xSize) + 3),
+                xOrigin + xResolution * (ind % ySize + 1),
+                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize),
                 0
-              }
+              } //.Where((_, ind) => (ind + 1) % xSize != 0 && ind + 1 != ySize)
           )
           .ToList();
-        rasterElement["@(10000)weird_field"] = newFaces;
-        rasterElement["@(10000)weird_field2"] = newCoords;
-        //x => new List<byte>() { 4, x. });
+        //.GetRange(0, 12 * cellsToRender);
+
+        var pixMin = pixelsList.Min();
+        var pixMax = pixelsList.Max();
+        newColors = pixelsList
+          .Select((_, ind) => 3 * 255 / 100 * (pixelsList[ind] - pixMin) / (pixMax - pixMin))
+          .Select((x, ind) => (255 << 24) | (x << 16) | (x << 8) | x)
+          .SelectMany(x => new List<int>() { x, x, x, x })
+          .ToList();
+        //.GetRange(0, 4 * cellsToRender);
       }
     }
 
-    SOG.Mesh mesh = new(newCoords, newFaces, null, null, _contextStack.Current.SpeckleUnits, null) { };
+    SOG.Mesh mesh = new(newCoords, newFaces, newColors, null, _contextStack.Current.SpeckleUnits, null) { };
     rasterElement.displayValue = new List<SOG.Mesh>() { mesh };
 
     return rasterElement;
