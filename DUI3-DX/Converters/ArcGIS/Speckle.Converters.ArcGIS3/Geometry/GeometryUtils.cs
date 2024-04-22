@@ -1,3 +1,5 @@
+using ArcGIS.Core.CIM;
+
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
 public class GeometryUtils
@@ -13,6 +15,11 @@ public class GeometryUtils
       return false;
     }
     return true;
+  }
+
+  public int RGBToInt(CIMRGBColor color)
+  {
+    return (255 << 24) | ((int)Math.Round(color.R) << 16) | ((int)Math.Round(color.G) << 8) | (int)Math.Round(color.B);
   }
 
   public bool IsClockwisePolygon(List<SOG.Point> points)

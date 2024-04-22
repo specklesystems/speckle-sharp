@@ -1,0 +1,88 @@
+using Speckle.Converters.Common.Objects;
+using Speckle.Core.Models;
+using Objects.GIS;
+using Speckle.Converters.Common;
+using ArcGIS.Desktop.Mapping;
+using ArcGIS.Core.Geometry;
+using ArcGIS.Core.Data.Analyst3D;
+using ArcGIS.Core.CIM;
+using Speckle.Converters.ArcGIS3.Geometry;
+
+namespace Speckle.Converters.ArcGIS3.Layers;
+
+[NameAndRankValue(nameof(LasDatasetLayer), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+public class PointCloudToSpeckleConverter
+  : IHostObjectToSpeckleConversion,
+    IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
+{
+  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<Envelope, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Map, Unit> _contextStack;
+
+  public PointCloudToSpeckleConverter(
+    IRawConversion<MapPoint, SOG.Point> pointConverter,
+    IRawConversion<Envelope, SOG.Box> boxConverter,
+    IConversionContextStack<Map, Unit> contextStack
+  )
+  {
+    _pointConverter = pointConverter;
+    _boxConverter = boxConverter;
+    _contextStack = contextStack;
+  }
+
+  public Base Convert(object target)
+  {
+    return RawConvert((LasDatasetLayer)target);
+  }
+
+  public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
+  {
+    VectorLayer speckleLayer = new();
+    GeometryUtils geomUtils = new();
+
+    // get document CRS (for writing geometry coords)
+    var spatialRef = _contextStack.Current.Document.SpatialReference;
+    speckleLayer.crs = new CRS
+    {
+      wkt = spatialRef.Wkt,
+      name = spatialRef.Name,
+      units_native = spatialRef.Unit.ToString(),
+    };
+
+    // other properties
+    speckleLayer.name = target.Name;
+    speckleLayer.units = _contextStack.Current.SpeckleUnits;
+    speckleLayer.nativeGeomType = target.MapLayerType.ToString();
+    speckleLayer.geomType = "Pointcloud";
+
+    // prepare data for pointcloud
+    List<SOG.Point> specklePts = new();
+    List<int> speckleColors = new();
+
+    using (LasPointCursor ptCursor = target.SearchPoints(new ArcGIS.Core.Data.Analyst3D.LasPointFilter()))
+    {
+      while (ptCursor.MoveNext() && specklePts.Count < 20000)
+      {
+        // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
+        using (LasPoint pt = ptCursor.Current)
+        {
+          specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
+          int color = geomUtils.RGBToInt(pt.RGBColor);
+          speckleColors.Add(color);
+        }
+      }
+    }
+
+    SOG.Pointcloud cloud =
+      new()
+      {
+        points = specklePts.SelectMany(pt => new List<double>() { pt.x, pt.y, pt.z }).ToList(),
+        colors = speckleColors,
+        bbox = _boxConverter.RawConvert(target.QueryExtent()),
+        units = _contextStack.Current.SpeckleUnits
+      };
+
+    speckleLayer.elements.Add(cloud);
+    return speckleLayer;
+  }
+}

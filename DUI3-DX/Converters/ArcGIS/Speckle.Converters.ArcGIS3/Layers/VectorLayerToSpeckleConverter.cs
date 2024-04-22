@@ -30,7 +30,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 
   public VectorLayer RawConvert(FeatureLayer target)
   {
-    var speckleLayer = new VectorLayer();
+    VectorLayer speckleLayer = new();
 
     // get document CRS (for writing geometry coords)
     var spatialRef = _contextStack.Current.Document.SpatialReference;
