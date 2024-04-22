@@ -40,7 +40,10 @@ public class ArcGISSelectionBinding : ISelectionBinding
       throw new SpeckleException("No data to send");
     }
 
-    List<string> objectTypes = selectedMembers.Select(o => o.GetType().ToString()).Distinct().ToList();
+    List<string> objectTypes = selectedMembers
+      .Select(o => o.GetType().ToString().Split(".").Last())
+      .Distinct()
+      .ToList();
     return new SelectionInfo
     {
       SelectedObjectIds = selectedMembers.Select(x => x.URI).ToList(),

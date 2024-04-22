@@ -85,11 +85,13 @@ public class RootObjectBuilder
       {
         // POC: DO something with the exception
         Console.WriteLine(e);
+        continue;
       }
       catch (NotSupportedException e)
       {
         // POC: DO something with the exception
         Console.WriteLine(e);
+        continue;
       }
 
       converted.applicationId = applicationId;
