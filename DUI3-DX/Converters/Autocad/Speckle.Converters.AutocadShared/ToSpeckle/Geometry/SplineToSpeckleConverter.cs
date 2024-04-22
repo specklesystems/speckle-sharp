@@ -117,7 +117,7 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
               OpenMode.ForRead,
               _contextStack.Current.Document.TransactionManager.TopTransaction
             )
-            // .Where(e => e.VertexType != Vertex3dType.ControlVertex) // POC: need to do similar as below if we have control points?
+            .Where(e => e.VertexType != Vertex2dType.SplineControlVertex) // POC: not validated yet!
             .SelectMany(o => o.Position.ToArray())
             .ToList();
 

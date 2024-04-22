@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 
 [NameAndRankValue(nameof(ADB.Arc), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class DBArcToSpeckleConverter : IHostObjectToSpeckleConversion
+public class DBArcToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Arc, SOG.Arc>
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;

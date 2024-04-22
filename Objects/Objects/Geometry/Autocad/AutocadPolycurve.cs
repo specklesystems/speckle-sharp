@@ -65,6 +65,8 @@ public enum AutocadPolyType
   /// Polyline type is the Autocad Polyline class
   Light,
 
+  Simple2d,
+
   Simple3d,
 
   /// The Autocad Polyline2d fit curve poly type. Constructed with pairs of arcs with continuous tangents.
