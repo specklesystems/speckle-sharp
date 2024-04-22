@@ -14,6 +14,36 @@ namespace Speckle.Core.Models.GraphTraversal;
 )]
 public static class DefaultTraversal
 {
+  public static GraphTraversal TypesAreKing()
+  {
+    var convertableRule = TraversalRule
+      .NewTraversalRule()
+      .When(b => b.GetType() != typeof(Base))
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => ElementsPropAliases);
+
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
+  }
+
+  /// <summary>
+  /// Default traversal rule that ideally should be used by all connectors
+  /// </summary>
+  /// <remarks>
+  /// Treats convertable objects <see cref="ISpeckleConverter.CanConvertToNative"/> and objects with displayValues as "convertable" such that only elements and dynamic props will be traversed
+  /// </remarks>
+  /// <param name="converter"></param>
+  /// <returns></returns>
+  public static GraphTraversal ExistingTraversal(Func<Base, bool> canConvertToNative)
+  {
+    var convertableRule = TraversalRule
+      .NewTraversalRule()
+      .When(b => canConvertToNative(b))
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => ElementsPropAliases);
+
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
+  }
+
   /// <summary>
   /// Default traversal rule that ideally should be used by all connectors
   /// </summary>
