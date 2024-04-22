@@ -36,9 +36,16 @@ public partial class SpeckleRhinoPanel : UserControl
     //TODO: Pass bindings to browser bridge here!
     foreach (Lazy<IBinding> lazyBinding in _bindings)
     {
-      var binding = lazyBinding.Value;
-      binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
-      Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
+      try
+      {
+        var binding = lazyBinding.Value;
+        binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
+        Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
+      }
+      catch (Exception exception) when (!exception.IsFatal())
+      {
+        Console.Error.WriteLine(exception); // POC: If something throws here, it get's lost in the ether and DUI fails to initialise completely.
+      }
     }
   }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Rhino.Commands;
 using Rhino.PlugIns;
 using Serilog;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -56,22 +57,22 @@ public class AutofacRhinoModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
     builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
-    builder.RegisterType<SendOperation>().SingleInstance();
-    builder.RegisterType<ReceiveOperation>().SingleInstance();
+    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
+    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
-    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().SingleInstance();
+    builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
-    builder.RegisterType<RootObjectBuilder>().SingleInstance();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
-
-    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
+    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

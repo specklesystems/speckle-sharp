@@ -22,9 +22,11 @@ public class AutofacRhinoConverterModule : Module
     builder.RegisterRawConversions();
 
     // To Speckle
-    builder.RegisterType<RhinoToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<UnitSystem>>().SingleInstance();
-    builder.RegisterType<RhinoConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
-    builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
+    builder
+      .RegisterType<RhinoToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<UnitSystem>>()
+      .InstancePerLifetimeScope();
+    builder.RegisterType<RhinoConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
 
     /*
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
@@ -36,7 +38,7 @@ public class AutofacRhinoConverterModule : Module
       .As<IFactory<string, IHostObjectToSpeckleConversion>>()
       .InstancePerLifetimeScope();
 
-    builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
+    builder.RegisterType<RhinoConverterToHost>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
 
     /*
       POC: CNX-9267 Moved the Injection of converters into the converter module. Not sure if this is 100% right, as this doesn't just register the conversions within this converter, but any conversions found in any Speckle.*.dll file.
@@ -45,6 +47,7 @@ public class AutofacRhinoConverterModule : Module
     builder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
     builder
       .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
-      .As<IFactory<string, ISpeckleObjectToHostConversion>>();
+      .As<IFactory<string, ISpeckleObjectToHostConversion>>()
+      .InstancePerLifetimeScope();
   }
 }
