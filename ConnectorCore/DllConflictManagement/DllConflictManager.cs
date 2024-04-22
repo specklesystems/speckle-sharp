@@ -11,7 +11,7 @@ public sealed class DllConflictManager
   private readonly DllConflictEventEmitter _eventEmitter;
   private readonly string[] _assemblyPathFragmentsToIgnore;
   public ICollection<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
-  public IEnumerable<string> AllConflictInfoAsStrings => _assemblyConflicts.Values.Select(con => con.ToString());
+  public ICollection<AssemblyConflictInfoDto> AllConflictInfoAsDtos => _assemblyConflicts.Values.ToDtos().ToList();
 
   public DllConflictManager(
     DllConflictManagmentOptionsLoader optionsLoader,
@@ -44,7 +44,7 @@ public sealed class DllConflictManager
       _eventEmitter.EmitAction(
         new ActionEventArgs(
           nameof(Events.DUIAction),
-          new() { { "name", "DllConflictsDetected" }, { "conflicts", AllConflictInfoAsStrings.ToList() }, }
+          new() { { "name", "DllConflictsDetected" }, { "conflicts", AllConflictInfoAsDtos.ToList() }, }
         )
       );
     }

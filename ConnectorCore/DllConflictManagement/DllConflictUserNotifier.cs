@@ -57,7 +57,7 @@ public abstract class DllConflictUserNotifier
     if (identifiedConflictingAssemblyInfo is null)
     {
       eventParameters["numDetectedConflicts"] = _dllConflictManager.AllConflictInfo.Count;
-      eventParameters["allDetectedConflicts"] = _dllConflictManager.AllConflictInfoAsStrings.ToList();
+      eventParameters["allDetectedConflicts"] = _dllConflictManager.AllConflictInfoAsDtos.ToList();
     }
 
     _eventEmitter.EmitAction(new ActionEventArgs(nameof(Events.DUIAction), eventParameters));

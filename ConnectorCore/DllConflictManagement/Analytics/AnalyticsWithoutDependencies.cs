@@ -18,16 +18,6 @@ public sealed class AnalyticsWithoutDependencies
   private const string MIXPANEL_TOKEN = "acd87c5a50b56df91a795e999812a3a4";
   private const string MIXPANEL_SERVER = "https://analytics.speckle.systems";
   private readonly ISerializer _serializer;
-
-  /// <summary>
-  /// Hashed email
-  /// </summary>
-  private readonly string _hashedEmail;
-
-  /// <summary>
-  /// Hashed server URL
-  /// </summary>
-  private readonly string _hashedServer;
   private readonly string _hostApplication;
   private readonly string _hostApplicationVersion;
   private readonly DllConflictEventEmitter _eventEmitter;
@@ -43,8 +33,6 @@ public sealed class AnalyticsWithoutDependencies
     _serializer = serializer;
     _hostApplication = hostApplication;
     _hostApplicationVersion = hostApplicationVersion;
-    _hashedEmail = "undefined";
-    _hashedServer = "no-account-server";
   }
 
   /// <summary>
@@ -89,19 +77,19 @@ public sealed class AnalyticsWithoutDependencies
     bool isAction = true
   )
   {
-    if (!IsReleaseMode)
-    {
-      //only track in prod
-      return;
-    }
+    //if (!IsReleaseMode)
+    //{
+    //  //only track in prod
+    //  return;
+    //}
 
     try
     {
       var executingAssembly = Assembly.GetExecutingAssembly();
       var properties = new Dictionary<string, object>
       {
-        { "distinct_id", _hashedEmail },
-        { "server_id", _hashedServer },
+        { "distinct_id", "undefined" },
+        { "server_id", "no-account-server" },
         { "token", MIXPANEL_TOKEN },
         { "hostApp", _hostApplication },
         { "hostAppVersion", _hostApplicationVersion },
