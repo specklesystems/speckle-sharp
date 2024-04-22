@@ -43,7 +43,7 @@ public class RootObjectBuilder
   /// <remarks>
   /// This method must be called on the MCT. Use QueuedTask. Run.
   /// </remarks>
-  private IReadOnlyList<MapMember> GetSelection(Map map)
+  private Dictionary<MapMember, List<long>> GetSelection(Map map)
   {
     // var allMembers = map.GetMapMembersAsFlattenedList();
 
@@ -56,8 +56,7 @@ public class RootObjectBuilder
     //    - plus, some MapMembers work differently (raster layers, voxel layers, pointclound layers) etc.
     // - getting selection is an async operation, needs to be done on the main thread, and returns the full object, not just an ID
 
-    // List<MapMember> selectedMemberUrls = map.GetSelection().ToDictionary().Select(x => x.Key).ToList();
-    IReadOnlyList<MapMember> selectedMemberUrls = map.GetMapMembersAsFlattenedList(); //.GetSelection().ToDictionary().Select(x => x.Key).ToList();
+    var selectedMemberUrls = map.GetSelection().ToDictionary();
 
     if (selectedMemberUrls.Count == 0)
     {
@@ -69,7 +68,7 @@ public class RootObjectBuilder
 
   //poc: semi dupe
   private Collection ConvertObjects(
-    IReadOnlyList<MapMember> mapMembers,
+    IReadOnlyDictionary<MapMember, List<long>> mapMembers,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
   )
@@ -84,35 +83,32 @@ public class RootObjectBuilder
 
     Collection rootObjectCollection = new(); //TODO: Collections
 
-    foreach (MapMember mapMember in mapMembers)
+    foreach ((MapMember mapMember, List<long> objectIds) in mapMembers)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
-      if (mapMember is Layer layer && layer.IsVisibleInView(MapView.Active))
+      var collectionHost = rootObjectCollection;
+      var applicationId = mapMember.ToString();
+
+      try
       {
-        var collectionHost = rootObjectCollection;
-        var applicationId = mapMember.ToString();
+        Base converted = converter.Convert(mapMember);
+        converted.applicationId = applicationId;
 
-        try
-        {
-          Base converted = converter.Convert(mapMember);
-          converted.applicationId = applicationId;
-
-          // add to host
-          collectionHost.elements.Add(converted);
-          onOperationProgressed?.Invoke("Converting", (double)++count / mapMembers.Count);
-        }
-        // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
-        catch (SpeckleConversionException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-        }
-        catch (NotSupportedException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-        }
+        // add to host
+        collectionHost.elements.Add(converted);
+        onOperationProgressed?.Invoke("Converting", (double)++count / mapMembers.Count);
+      }
+      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
+      catch (SpeckleConversionException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
+      }
+      catch (NotSupportedException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
       }
     }
 
