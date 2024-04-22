@@ -99,6 +99,10 @@ public class BrepToSpeckleConverter : IRawConversion<RG.Brep, SOG.Brep>
     var loops = ConvertBrepLoops(target, speckleBrep);
     var trims = ConvertBrepTrims(target, speckleBrep);
 
+    speckleBrep.Faces = faces;
+    speckleBrep.Edges = edges;
+    speckleBrep.Loops = loops;
+    speckleBrep.Trims = trims;
     return speckleBrep;
   }
 
