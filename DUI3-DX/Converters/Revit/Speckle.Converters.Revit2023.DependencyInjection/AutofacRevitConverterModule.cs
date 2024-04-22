@@ -29,7 +29,10 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<ToSpeckleScalingService>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RevitConversionContextStack>().AsSelf().InstancePerLifetimeScope();
 
-    builder.RegisterType<RevitToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<ForgeTypeId>>().SingleInstance();
+    builder
+      .RegisterType<RevitToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<ForgeTypeId>>()
+      .InstancePerLifetimeScope();
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<CachingService>().AsSelf().InstancePerLifetimeScope();
