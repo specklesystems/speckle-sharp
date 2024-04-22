@@ -77,6 +77,12 @@ public class App : IExternalApplication
       conflictNotifier.NotifyUserOfMissingMethodException(ex);
       return Result.Failed;
     }
+    catch (Exception ex)
+    {
+      eventEmitter.EmitError(new("Failed to load Speckle app", ex));
+      NotifyUserOfErrorStartingConnector(ex);
+      throw;
+    }
     finally
     {
       eventEmitter.BeginEmit();

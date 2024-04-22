@@ -39,15 +39,17 @@ public sealed class DllConflictManager
     }
     LoadAssemblyAndDependencies(providedAssembly, loadedAssembliesDict, new HashSet<string>());
 
-    if (AllConflictInfo.Count > 0)
-    {
-      _eventEmitter.EmitAction(
-        new ActionEventArgs(
-          nameof(Events.DUIAction),
-          new() { { "name", "DllConflictsDetected" }, { "conflicts", AllConflictInfoAsDtos.ToList() }, }
-        )
-      );
-    }
+    _eventEmitter.EmitAction(
+      new ActionEventArgs(
+        nameof(Events.DUIAction),
+        new()
+        {
+          { "name", "DllConflictsDetected" },
+          { "numConflicts", AllConflictInfo.Count },
+          { "conflicts", AllConflictInfoAsDtos.ToList() },
+        }
+      )
+    );
   }
 
   private void LoadAssemblyAndDependencies(

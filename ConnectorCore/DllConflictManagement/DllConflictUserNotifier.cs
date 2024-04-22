@@ -110,7 +110,13 @@ public abstract class DllConflictUserNotifier
     _eventEmitter.EmitAction(
       new ActionEventArgs(
         nameof(Events.DUIAction),
-        new() { { "name", "DllConflictWarningDialogShown" }, { "conflicts", conflictInfoNotIgnored }, }
+        new()
+        {
+          { "name", "DllConflictsDetected" },
+          { "dialogShown", true },
+          { "numConflicts", conflictInfoNotIgnored.Count },
+          { "conflicts", conflictInfoNotIgnored.ToDtos().ToList() },
+        }
       )
     );
 

@@ -29,7 +29,7 @@ internal sealed class RevitDllConflictUserNotifier : DllConflictUserNotifier
     dialog.MainInstruction = heading;
     dialog.MainContent = body;
 
-    dialog.ExtraCheckBoxText = "Do not warn about this conflict again";
+    dialog.ExtraCheckBoxText = "Do not warn about these conflicts again";
     dialog.CommonButtons = TaskDialogCommonButtons.Ok;
 
     _ = dialog.Show();

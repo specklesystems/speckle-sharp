@@ -16,20 +16,18 @@ public sealed class AssemblyConflictInfoDto
     string fullPath
   )
   {
-    SpeckleDependencyAssemblyName = speckleDependencyAssemblyName.FullName;
-    SpeckleDependencyAssemblyVersion = speckleDependencyAssemblyName.Version;
-    ConflictingAssemblyName = conflictingAssembly.FullName;
-    ConflictingAssemblyVersion = conflictingAssembly.Version;
+    ConflictingAssemblyName = conflictingAssembly.Name;
+    ConflictingAssemblyVersion = conflictingAssembly.Version.ToString();
+    SpeckleExpectedVersion = speckleDependencyAssemblyName.Version.ToString();
     FolderName = folderName;
-    FullPath = fullPath;
+    Path = fullPath;
   }
 
-  public string SpeckleDependencyAssemblyName { get; }
-  public Version SpeckleDependencyAssemblyVersion { get; }
+  public string SpeckleExpectedVersion { get; }
   public string ConflictingAssemblyName { get; }
-  public Version ConflictingAssemblyVersion { get; }
+  public string ConflictingAssemblyVersion { get; }
   public string FolderName { get; }
-  public string FullPath { get; }
+  public string Path { get; }
 }
 
 public static class AssemblyConflictInfoExtensions
@@ -40,7 +38,7 @@ public static class AssemblyConflictInfoExtensions
       assemblyConflictInfo.SpeckleDependencyAssemblyName,
       assemblyConflictInfo.ConflictingAssembly.GetName(),
       assemblyConflictInfo.GetConflictingExternalAppName(),
-      assemblyConflictInfo.ConflictingAssembly.Location
+      GetPathFromAutodeskOrFullPath(assemblyConflictInfo.ConflictingAssembly.Location)
     );
   }
 
@@ -52,5 +50,18 @@ public static class AssemblyConflictInfoExtensions
     {
       yield return assemblyConflictInfo.ToDto();
     }
+  }
+
+  private static readonly string[] separator = new[] { "Autodesk" };
+
+  private static string GetPathFromAutodeskOrFullPath(string fullPath)
+  {
+    string[] splitOnAutodesk = fullPath.Split(separator, StringSplitOptions.None);
+
+    if (splitOnAutodesk.Length == 2)
+    {
+      return splitOnAutodesk[1];
+    }
+    return fullPath;
   }
 }
