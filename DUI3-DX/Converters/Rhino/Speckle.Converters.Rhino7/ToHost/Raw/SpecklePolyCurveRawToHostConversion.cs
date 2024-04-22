@@ -5,7 +5,7 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class SpecklePolyCurveRawToHostConversion : IRawConversion<SOG.Polycurve, RG.PolyCurve>
 {
-  public IRawConversion<ICurve, RG.Curve>? CurveConverter { get; set; } // POC: Circular dependency injected by the container using property.
+  public IRawConversion<ICurve, RG.Curve>? CurveConverter { get; set; } // POC: CNX-9311 Circular dependency injected by the container using property.
 
   private readonly IRawConversion<SOP.Interval, RG.Interval> _intervalConverter;
 

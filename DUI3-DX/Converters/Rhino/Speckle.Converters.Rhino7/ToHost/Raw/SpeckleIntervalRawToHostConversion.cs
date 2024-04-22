@@ -18,7 +18,6 @@ public class SpeckleIntervalRawToHostConversion : IRawConversion<SOP.Interval, R
       throw new ArgumentException("Interval start/end cannot be null");
     }
 
-    // POC: Interval conversions used to have a unit input, but it was only used in `Box` so we can deal with that on the parent.
     return new RG.Interval(target.start.Value, target.end.Value);
   }
 }
