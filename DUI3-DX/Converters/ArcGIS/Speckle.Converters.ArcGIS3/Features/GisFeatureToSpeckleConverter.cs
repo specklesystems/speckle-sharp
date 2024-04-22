@@ -21,10 +21,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 
   public GisFeature RawConvert(Row target)
   {
-    var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
-    var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
     var attributes = new Base();
-
     QueuedTask.Run(() =>
     {
       IReadOnlyList<Field> fields = target.GetFields();
@@ -48,12 +45,22 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       }
     });
 
-    // re-shape the GisFeature: if shapes is a list of Meshes, set them as DisplayValue
-    if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
+    try
     {
-      return new GisFeature(attributes, speckleShapes);
+      var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
+      var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
+
+      // re-shape the GisFeature: if shapes is a list of Meshes, set them as DisplayValue
+      if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
+      {
+        return new GisFeature(attributes, speckleShapes);
+      }
+      // otherwise set shapes as Geometries
+      return new GisFeature(speckleShapes, attributes);
     }
-    // otherwise set shapes as Geometries
-    return new GisFeature(speckleShapes, attributes);
+    catch (KeyNotFoundException) // if no geometry
+    {
+      return new GisFeature(attributes);
+    }
   }
 }

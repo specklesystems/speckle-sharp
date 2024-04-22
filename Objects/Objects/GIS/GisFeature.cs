@@ -7,6 +7,11 @@ public class GisFeature : Base
 {
   public GisFeature() { }
 
+  public GisFeature(Base attributes)
+  {
+    this.attributes = attributes;
+  }
+
   public GisFeature(List<Base> geometry, Base attributes)
   {
     this.geometry = geometry;
