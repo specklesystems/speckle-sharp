@@ -26,7 +26,7 @@ public class GisFeatureToHostConverter : IRawConversion<Base, ArcGIS.Core.Geomet
     _polygonConverter = polygonConverter;
   }
 
-  public ArcGIS.Core.Geometry.Geometry RawConvert(Base target)
+  public ACG.Geometry RawConvert(Base target)
   {
     if (target.speckle_type.ToLower().Contains("point"))
     {
@@ -34,11 +34,11 @@ public class GisFeatureToHostConverter : IRawConversion<Base, ArcGIS.Core.Geomet
     }
     else if (target.speckle_type.ToLower().Contains("polyline"))
     {
-      // TODO
+      // POC: TODO
     }
     else if (target.speckle_type.ToLower().Contains("polygon"))
     {
-      // TODO
+      // POC: TODO
     }
     else
     {
@@ -46,6 +46,6 @@ public class GisFeatureToHostConverter : IRawConversion<Base, ArcGIS.Core.Geomet
     }
     throw new SpeckleConversionException($"Conversion of geometry {target} failed");
   }
-  // TODO: Add case for NonGeometry Feature (table entry)
+  // POC: TODO: Add case for NonGeometry Feature (table entry)
   // IF geometry layer, but no geometry found: throw new SpeckleConversionException($"Feature {target} contains no geometry");
 }

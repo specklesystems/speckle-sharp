@@ -5,7 +5,7 @@ using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
-public class ArcGISProjectUtils
+public class ArcGISProjectUtils : IArcGISProjectUtils
 {
   private const string FGDB_NAME = "Speckle.gdb";
 
@@ -21,10 +21,18 @@ public class ArcGISProjectUtils
       }
       fGdbPath = parentDirectory.ToString();
     }
-    catch (Exception)
+    catch (Exception ex)
+      when (ex
+          is IOException
+            or UnauthorizedAccessException
+            or ArgumentException
+            or NotSupportedException
+            or System.Security.SecurityException
+      )
     {
       throw;
     }
+
     return $"{fGdbPath}\\{FGDB_NAME}";
   }
 
@@ -40,7 +48,7 @@ public class ArcGISProjectUtils
     }
     catch (ArcGIS.Core.Data.Exceptions.GeodatabaseWorkspaceException)
     {
-      // already exists, do nothing
+      // geodatabase already exists, do nothing
     }
 
     // Add a folder connection to a project
@@ -56,12 +64,14 @@ public class ArcGISProjectUtils
 
     string fGdbPath = parentFolder.ToString();
     Item folderToAdd = ItemFactory.Instance.Create(fGdbPath);
+    // POC: QueuedTask
     QueuedTask.Run(() => Project.Current.AddItem(folderToAdd as IProjectItem));
 
     // Add a file geodatabase or a SQLite or enterprise database connection to a project
     var gdbToAdd = folderToAdd.GetItems().FirstOrDefault(folderItem => folderItem.Name.Equals(fGdbName));
     if (gdbToAdd is not null)
     {
+      // POC: QueuedTask
       var addedGeodatabase = QueuedTask.Run(() => Project.Current.AddItem(gdbToAdd as IProjectItem));
     }
 

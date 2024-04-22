@@ -1,6 +1,5 @@
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
-using ArcGIS.Core.Geometry;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -8,13 +7,13 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
-public class FeatureClassUtils
+public class FeatureClassUtils : IFeatureClassUtils
 {
   public void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     VectorLayer target,
     List<string> fieldAdded,
-    IRawConversion<Base, ArcGIS.Core.Geometry.Geometry> gisGeometryConverter
+    IRawConversion<Base, ACG.Geometry> gisGeometryConverter
   )
   {
     newFeatureClass.DeleteRows(new QueryFilter());
@@ -51,7 +50,7 @@ public class FeatureClassUtils
           foreach (var geometryPart in feat.geometry)
           {
             // POC: TODO: repeat for all geometries, add as Multipart
-            ArcGIS.Core.Geometry.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryPart);
+            ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryPart);
             rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
             break;
           }
@@ -62,30 +61,31 @@ public class FeatureClassUtils
     }
   }
 
-  public GeometryType GetLayerGeometryType(VectorLayer target)
+  public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
-    GeometryType geomType = new();
+    ACG.GeometryType geomType = new();
     if (target.nativeGeomType == null)
     {
       throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
     else
     {
+      // POC: find better pattern
       if (target.nativeGeomType.ToLower().Contains("point"))
       {
-        geomType = GeometryType.Multipoint;
+        geomType = ACG.GeometryType.Multipoint;
       }
       else if (target.nativeGeomType.ToLower().Contains("polyline"))
       {
-        geomType = GeometryType.Polyline;
+        geomType = ACG.GeometryType.Polyline;
       }
       else if (target.nativeGeomType.ToLower().Contains("polygon"))
       {
-        geomType = GeometryType.Polygon;
+        geomType = ACG.GeometryType.Polygon;
       }
       else if (target.nativeGeomType.ToLower().Contains("multipatch"))
       {
-        geomType = GeometryType.Multipatch;
+        geomType = ACG.GeometryType.Multipatch;
       }
       // throw
     }

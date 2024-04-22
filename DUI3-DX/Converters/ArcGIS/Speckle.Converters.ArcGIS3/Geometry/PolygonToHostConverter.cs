@@ -9,7 +9,7 @@ public class PolygonToHostConverter : IRawConversion<GisPolygonGeometry, ACG.Pol
 {
   public ACG.Polygon RawConvert(GisPolygonGeometry target)
   {
-    // TODO: To replace with actual geometry
+    // POC: TODO: To replace with actual geometry
     List<ACG.Coordinate2D> newCoordinates =
       new()
       {
