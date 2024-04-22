@@ -5,9 +5,9 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class LevelConversionToSpeckle : IRawConversion<DB.Level, SOBR.RevitLevel>
 {
-  private readonly ToSpeckleScalingService _scalingService;
+  private readonly ScalingServiceToSpeckle _scalingService;
 
-  public LevelConversionToSpeckle(ToSpeckleScalingService scalingService)
+  public LevelConversionToSpeckle(ScalingServiceToSpeckle scalingService)
   {
     _scalingService = scalingService;
   }

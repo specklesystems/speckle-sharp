@@ -5,12 +5,12 @@ namespace Speckle.Converters.RevitShared.Services;
 
 // POC: feels like this is a context thing and we should be calculating this occasionally?
 // needs some thought as to how it could be be done, could leave as is for now
-public sealed class ToSpeckleScalingService
+public sealed class ScalingServiceToSpeckle
 {
   private readonly double _defaultLengthConversionFactor;
 
   // POC: this seems like the reverse relationship
-  public ToSpeckleScalingService(RevitConversionContextStack contextStack)
+  public ScalingServiceToSpeckle(RevitConversionContextStack contextStack)
   {
     // POC: this is accurate for the current context stack
     Units documentUnits = contextStack.Current.Document.Document.GetUnits();

@@ -10,10 +10,10 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // maybe also better as an extension method, but maybe is fine?
 public class ParameterValueExtractor
 {
-  private readonly ToSpeckleScalingService _scalingService;
+  private readonly ScalingServiceToSpeckle _scalingService;
   private readonly Dictionary<string, HashSet<BuiltInParameter>> _uniqueIdToUsedParameterSetMap = new();
 
-  public ParameterValueExtractor(ToSpeckleScalingService scalingService)
+  public ParameterValueExtractor(ScalingServiceToSpeckle scalingService)
   {
     _scalingService = scalingService;
   }

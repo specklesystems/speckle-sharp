@@ -25,7 +25,7 @@ public class AutofacRevitConverterModule : Module
       .SingleInstance();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
-    builder.RegisterType<ToSpeckleScalingService>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RevitConversionContextStack>().AsSelf().InstancePerLifetimeScope();
 
     // POC: check with CI speckler but this AsImplementedInterfaces() seems wrong or non-specific here
