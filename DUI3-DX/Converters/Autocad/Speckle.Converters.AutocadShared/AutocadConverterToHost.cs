@@ -9,10 +9,15 @@ namespace Speckle.Converters.Autocad;
 public class AutocadConverterToHost : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public AutocadConverterToHost(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public AutocadConverterToHost(
+    IFactory<string, ISpeckleObjectToHostConversion> toHost,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
+  )
   {
     _toHost = toHost;
+    _contextStack = contextStack;
   }
 
   public object Convert(Base target)
@@ -21,16 +26,19 @@ public class AutocadConverterToHost : ISpeckleConverterToHost
 
     try
     {
-      var objectConverter = _toHost.ResolveInstance(type.Name);
-
-      if (objectConverter == null)
+      using (var tr = _contextStack.Current.Document.Database.TransactionManager.StartTransaction())
       {
-        throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+        var objectConverter = _toHost.ResolveInstance(type.Name);
+
+        if (objectConverter == null)
+        {
+          throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+        }
+
+        var convertedObject = objectConverter.Convert(target);
+        tr.Commit();
+        return convertedObject;
       }
-
-      var convertedObject = objectConverter.Convert(target);
-
-      return convertedObject;
     }
     catch (SpeckleConversionException e)
     {
