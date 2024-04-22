@@ -54,9 +54,10 @@ public static class ConversionTypesInjector
       // POC: not sure yet if...
       // * This should be an array of types
       // * Whether the scope should be modified or modifiable
-      // * Whether this is in the write project... hmmm
+      // * Whether this is in the right project... hmmm
       // POC: IsAssignableFrom()
       var secondaryType = first.type.GetInterface(typeof(IRawConversion<,>).Name);
+
       // POC: should we explode if no found?
       if (secondaryType != null)
       {

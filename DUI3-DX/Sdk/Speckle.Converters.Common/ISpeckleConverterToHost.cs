@@ -2,7 +2,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common;
 
-public interface ISpeckleConverterToHost
+public interface ISpeckleConverterToHost<out TOut>
+  where TOut : class
 {
-  object Convert(Base target);
+  TOut Convert(Base target);
 }

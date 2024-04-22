@@ -2,19 +2,20 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Rhino.Runtime;
 
 namespace Speckle.Converters.Rhino7.ToHost;
 
-public class RhinoConverterToHost : ISpeckleConverterToHost
+public class RhinoConverterToHost : ISpeckleConverterToHost<CommonObject>
 {
-  private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
+  private readonly IFactory<string, ISpeckleObjectToHostConversion<CommonObject>> _toHost;
 
-  public RhinoConverterToHost(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public RhinoConverterToHost(IFactory<string, ISpeckleObjectToHostConversion<CommonObject>> toHost)
   {
     _toHost = toHost;
   }
 
-  public object Convert(Base target)
+  public CommonObject Convert(Base target)
   {
     var typeName = target.GetType().Name;
     var objectConverter = _toHost.ResolveInstance(typeName);

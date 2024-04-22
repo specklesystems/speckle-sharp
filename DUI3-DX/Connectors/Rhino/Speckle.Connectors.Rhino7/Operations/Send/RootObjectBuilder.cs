@@ -5,6 +5,7 @@ using Rhino.DocObjects;
 using Rhino;
 using Speckle.Core.Models;
 using System.Threading;
+using Rhino.Runtime;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
@@ -53,7 +54,7 @@ public class RootObjectBuilder
   {
     // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
     // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
+    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle<CommonObject>>();
     var converter = uow.Service;
 
     var rootObjectCollection = new Collection { name = RhinoDoc.ActiveDoc.Name ?? "Unnamed document" };

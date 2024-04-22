@@ -48,6 +48,7 @@ internal class RevitExternalApplication : IExternalApplication
     {
       // POC: not sure what this is doing...  could be messing up our Aliasing????
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+
       _container = new AutofacContainer(new StorageInfo());
       _container.PreBuildEvent += _container_PreBuildEvent;
 

@@ -1,4 +1,5 @@
 ﻿using Rhino;
+using Rhino.Runtime;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -6,11 +7,11 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Rhino7;
 
-public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleObjectToHostConversion
+public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleObjectToHostConversion<CommonObject>
   where TIn : Base
   where TOut : RG.GeometryBase
 {
-  protected IConversionContextStack<RhinoDoc, UnitSystem> ContextStack { get; private set; }
+  protected IConversionContextStack<RhinoDoc, UnitSystem> ContextStack { get; }
   private readonly IRawConversion<TIn, TOut> _geometryBaseConverter;
 
   protected SpeckleToHostGeometryBaseConversion(
@@ -22,7 +23,7 @@ public abstract class SpeckleToHostGeometryBaseConversion<TIn, TOut> : ISpeckleO
     _geometryBaseConverter = geometryBaseConverter;
   }
 
-  public object Convert(Base target)
+  public CommonObject Convert(Base target)
   {
     var castedBase = (TIn)target;
     var result = _geometryBaseConverter.RawConvert(castedBase);

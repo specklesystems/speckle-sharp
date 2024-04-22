@@ -6,6 +6,7 @@ using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Rhino.Runtime;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
@@ -16,11 +17,11 @@ namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
 public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
-  private readonly ISpeckleConverterToHost _toHostConverter;
+  private readonly ISpeckleConverterToHost<CommonObject> _toHostConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
 
   public RhinoHostObjectBuilder(
-    ISpeckleConverterToHost toHostConverter,
+    ISpeckleConverterToHost<CommonObject> toHostConverter,
     IConversionContextStack<RhinoDoc, UnitSystem> contextStack
   )
   {

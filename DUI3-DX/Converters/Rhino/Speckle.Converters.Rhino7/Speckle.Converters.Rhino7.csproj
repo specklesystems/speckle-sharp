@@ -12,6 +12,12 @@
       CS8618;
     </WarningsNotAsErrors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Include must be the fully qualified .NET type name of the Attribute to create. -->
+    <AssemblyAttribute Include="Speckle.Converters.Common.SpeckleConversionAssembly">
+    </AssemblyAttribute>
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>

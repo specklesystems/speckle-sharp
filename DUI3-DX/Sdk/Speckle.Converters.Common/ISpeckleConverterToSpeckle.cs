@@ -2,7 +2,8 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common;
 
-public interface ISpeckleConverterToSpeckle
+public interface ISpeckleConverterToSpeckle<in TIn>
+  where TIn : class
 {
-  Base Convert(object target);
+  Base Convert(TIn target);
 }

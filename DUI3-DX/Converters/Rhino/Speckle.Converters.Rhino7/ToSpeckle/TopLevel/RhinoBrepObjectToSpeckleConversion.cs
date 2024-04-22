@@ -1,4 +1,5 @@
 ﻿using Rhino.DocObjects;
+using Rhino.Runtime;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -6,7 +7,7 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Rhino7.ToSpeckle.TopLevel;
 
 [NameAndRankValue(nameof(BrepObject), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class RhinoBrepObjectToSpeckleConversion : IHostObjectToSpeckleConversion
+public class RhinoBrepObjectToSpeckleConversion : IHostObjectToSpeckleConversion<CommonObject>
 {
   private readonly IRawConversion<RG.Brep, SOG.Brep> _curveConverter;
 
@@ -15,7 +16,7 @@ public class RhinoBrepObjectToSpeckleConversion : IHostObjectToSpeckleConversion
     _curveConverter = curveConverter;
   }
 
-  public Base Convert(object target)
+  public Base Convert(CommonObject target)
   {
     var curveObject = (BrepObject)target;
     var speckleCurve = _curveConverter.RawConvert(curveObject.BrepGeometry);

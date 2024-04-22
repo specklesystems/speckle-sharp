@@ -6,7 +6,8 @@ namespace Speckle.Converters.Common.Objects;
 // * begin scope: https://stackoverflow.com/questions/49595198/autofac-resolving-through-factory-methods
 // Interceptors?
 
-public interface IHostObjectToSpeckleConversion
+public interface IHostObjectToSpeckleConversion<in TIn>
+  where TIn : class
 {
-  Base Convert(object target);
+  Base Convert(TIn target);
 }
