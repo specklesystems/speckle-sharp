@@ -8,13 +8,15 @@ using System.Threading;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
 
 namespace Speckle.Connectors.Rhino7.Operations.Send;
 
 /// <summary>
 /// Stateless builder object to turn an <see cref="ISendFilter"/> into a <see cref="Base"/> object
 /// </summary>
-public class RootObjectBuilder
+public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
@@ -24,29 +26,26 @@ public class RootObjectBuilder
   }
 
   public Base Build(
-    ISendFilter sendFilter,
+    IEnumerable<RhinoObject> objects,
+    SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
   {
-    List<RhinoObject> rhinoObjects = sendFilter
-      .GetObjectIds()
-      .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
-      .Where(obj => obj != null)
-      .ToList();
-
-    if (rhinoObjects.Count == 0)
+    IEnumerable<RhinoObject> rhinoObjects = objects as RhinoObject[] ?? objects.ToArray();
+    if (!rhinoObjects.Any())
     {
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    Base commitObject = ConvertObjects(rhinoObjects, onOperationProgressed, ct);
+    Base commitObject = ConvertObjects(rhinoObjects.ToList(), sendInfo, onOperationProgressed, ct);
 
     return commitObject;
   }
 
   private Collection ConvertObjects(
     List<RhinoObject> rhinoObjects,
+    SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
   )
@@ -72,27 +71,25 @@ public class RootObjectBuilder
       var collectionHost = GetHostObjectCollection(layerCollectionCache, layer, rootObjectCollection);
       var applicationId = rhinoObject.Id.ToString();
 
-      // get from cache or convert:
-      // POC: We're not using the cache here yet but should once the POC is working.
-      // What we actually do here is check if the object has been previously converted AND has not changed.
-      // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
-      /*Base converted;
-      if (
-        !modelCard.ChangedObjectIds.Contains(applicationId)
-        && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
-      )
-      {
-        converted = value;
-      }
-      else
-      {
-        converted = converter.ConvertToSpeckle(rhinoObject);
-        converted.applicationId = applicationId;
-      }*/
       try
       {
-        Base converted = converter.Convert(rhinoObject);
-        converted.applicationId = applicationId;
+        // get from cache or convert:
+        // POC: We're not using the cache here yet but should once the POC is working.
+        // What we actually do here is check if the object has been previously converted AND has not changed.
+        // If that's the case, we insert in the host collection just its object reference which has been saved from the prior conversion.
+        Base converted;
+        if (
+          !sendInfo.ChangedObjectIds.Contains(applicationId)
+          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value)
+        )
+        {
+          converted = value;
+        }
+        else
+        {
+          converted = converter.Convert(rhinoObject);
+          converted.applicationId = applicationId;
+        }
 
         // add to host
         collectionHost.elements.Add(converted);

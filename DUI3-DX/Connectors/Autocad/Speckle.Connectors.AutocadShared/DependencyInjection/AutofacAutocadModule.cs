@@ -18,9 +18,11 @@ using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Autocad.Filters;
 using Speckle.Connectors.Autocad.Operations.Receive;
+using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -45,12 +47,17 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
 
     // Operations
-    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().SingleInstance();
+    builder.RegisterType<ReceiveOperation>().SingleInstance();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
-    // POC: Register here also RootObjectBuilder as IRootObjectBuilder
+    builder
+      .RegisterType<RootObjectBuilder>()
+      .As<IRootObjectBuilder<(DBObject obj, string applicationId)>>()
+      .SingleInstance();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
 
     // Register bindings
     builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
@@ -73,6 +80,8 @@ public class AutofacAutocadModule : Module
 
     // Register converter factory
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
+
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

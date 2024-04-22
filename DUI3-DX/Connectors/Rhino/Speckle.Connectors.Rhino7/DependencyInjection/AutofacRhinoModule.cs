@@ -2,6 +2,7 @@ using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Rhino.Commands;
+using Rhino.DocObjects;
 using Rhino.PlugIns;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
@@ -65,14 +66,16 @@ public class AutofacRhinoModule : Module
 
     // register send operation and dependencies
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
-    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<SendOperation<RhinoObject>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
     builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
 
     builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
-    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().As<IRootObjectBuilder<RhinoObject>>().SingleInstance();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

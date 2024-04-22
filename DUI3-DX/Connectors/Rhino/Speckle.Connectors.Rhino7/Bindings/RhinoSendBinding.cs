@@ -15,8 +15,10 @@ using Speckle.Core.Logging;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using System.Threading.Tasks;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Connectors.Rhino7.Operations.Send;
+using Rhino.DocObjects;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.Rhino7.Bindings;
 
@@ -30,6 +32,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   private readonly RhinoIdleManager _idleManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly List<ISendFilter> _sendFilters;
+  private readonly SendOperation<RhinoObject> _sendOperation;
   private readonly CancellationManager _cancellationManager;
 
   /// <summary>
@@ -40,14 +43,14 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   /// <summary>
   /// Keeps track of previously converted objects as a dictionary of (applicationId, object reference).
   /// </summary>
-  /// POC: Commented out this for now, relates to change tracking feature
-  // private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
+  private readonly Dictionary<string, ObjectReference> _convertedObjectReferences = new();
 
   public RhinoSendBinding(
     DocumentModelStore store,
     RhinoIdleManager idleManager,
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
+    SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
     CancellationManager cancellationManager
   )
@@ -55,6 +58,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _store = store;
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
+    _sendOperation = sendOperation;
     _sendFilters = sendFilters.ToList();
     _cancellationManager = cancellationManager;
     Parent = parent;
@@ -131,7 +135,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   )]
   public async Task Send(string modelCardId)
   {
-    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
+    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation<RhinoObject>>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
@@ -143,18 +147,40 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      string versionId = await unitOfWork.Service
+      List<RhinoObject> rhinoObjects = modelCard.SendFilter
+        .GetObjectIds()
+        .Select(id => RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id)))
+        .Where(obj => obj != null)
+        .ToList();
+
+      var sendInfo = new SendInfo()
+      {
+        AccountId = modelCard.AccountId,
+        ProjectId = modelCard.ProjectId,
+        ModelId = modelCard.ModelId,
+        ConvertedObjects = _convertedObjectReferences,
+        ChangedObjectIds = modelCard.ChangedObjectIds
+      };
+
+      var sendResult = await _sendOperation
         .Execute(
-          modelCard.SendFilter,
-          modelCard.AccountId,
-          modelCard.ProjectId,
-          modelCard.ModelId,
+          rhinoObjects,
+          sendInfo,
           (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
           cts.Token
         )
         .ConfigureAwait(false);
 
-      Commands.SetModelCreatedVersionId(modelCardId, versionId);
+      // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
+      foreach (var kvp in sendResult.convertedReferences)
+      {
+        _convertedObjectReferences[kvp.Key + modelCard.ProjectId] = kvp.Value;
+      }
+
+      // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
+      modelCard.ChangedObjectIds = new();
+
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
@@ -179,14 +205,17 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   private void RunExpirationChecks()
   {
     List<SenderModelCard> senders = _store.GetSenders();
+    string[] objectIdsList = ChangedObjectIds.ToArray();
     List<string> expiredSenderIds = new();
 
-    foreach (var sender in senders)
+    foreach (SenderModelCard modelCard in senders)
     {
-      bool isExpired = sender.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
+      var intersection = modelCard.SendFilter.GetObjectIds().Intersect(objectIdsList).ToList();
+      bool isExpired = modelCard.SendFilter.CheckExpiry(ChangedObjectIds.ToArray());
       if (isExpired)
       {
-        expiredSenderIds.Add(sender.ModelCardId);
+        expiredSenderIds.Add(modelCard.ModelCardId);
+        modelCard.ChangedObjectIds.UnionWith(intersection);
       }
     }
 
