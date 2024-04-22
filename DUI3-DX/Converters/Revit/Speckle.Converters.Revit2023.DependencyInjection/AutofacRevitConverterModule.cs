@@ -26,7 +26,7 @@ public class AutofacRevitConverterModule : Module
       .SingleInstance();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
-    builder.RegisterType<ToSpeckleScalingService>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<RevitConversionContextStack>().AsSelf().InstancePerLifetimeScope();
 
     builder
@@ -35,7 +35,6 @@ public class AutofacRevitConverterModule : Module
       .InstancePerLifetimeScope();
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<CachingService>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<HostedElementConversionToSpeckle>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ParameterObjectAssigner>().AsSelf().InstancePerLifetimeScope();
