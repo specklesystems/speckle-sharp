@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -9,12 +8,12 @@ public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, IRawCo
 {
   private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public PlaneToSpeckleRawConverter(
     IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _vectorConverter = vectorConverter;

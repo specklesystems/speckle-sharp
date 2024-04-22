@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
@@ -18,7 +17,6 @@ public class PolylineToSpeckleConverter
   : IHostObjectToSpeckleConversion,
     IRawConversion<ADB.Polyline, SOG.Autocad.AutocadPolycurve>
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;
   private readonly IRawConversion<AG.CircularArc3d, SOG.Arc> _arcConverter;
   private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
@@ -26,7 +24,6 @@ public class PolylineToSpeckleConverter
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
   public PolylineToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
     IRawConversion<AG.LineSegment3d, SOG.Line> lineConverter,
     IRawConversion<AG.CircularArc3d, SOG.Arc> arcConverter,
     IRawConversion<AG.Plane, SOG.Plane> planeConverter,
@@ -34,7 +31,6 @@ public class PolylineToSpeckleConverter
     IConversionContextStack<Document, UnitsValue> contextStack
   )
   {
-    _pointConverter = pointConverter;
     _lineConverter = lineConverter;
     _arcConverter = arcConverter;
     _planeConverter = planeConverter;

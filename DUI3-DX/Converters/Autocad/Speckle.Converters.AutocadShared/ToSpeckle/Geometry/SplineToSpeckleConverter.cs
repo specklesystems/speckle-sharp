@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Autocad.Extensions;
 using Speckle.Converters.Common;
@@ -12,19 +11,16 @@ namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 [NameAndRankValue(nameof(ADB.Spline), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Spline, SOG.Curve>
 {
-  private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<AG.Interval, SOP.Interval> _intervalConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public SplineToSpeckleConverter(
-    IRawConversion<AG.Point3d, SOG.Point> pointConverter,
     IRawConversion<AG.Interval, SOP.Interval> intervalConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
-    _pointConverter = pointConverter;
     _intervalConverter = intervalConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
@@ -35,7 +31,7 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
   public SOG.Curve RawConvert(ADB.Spline target)
   {
     // get nurbs and geo data
-    NurbsData data = target.NurbsData;
+    ADB.NurbsData data = target.NurbsData;
 
     // HACK: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
     bool periodicClosed = false;
@@ -103,38 +99,6 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
       weights.AddRange(weights.GetRange(0, target.Degree));
     }
 
-    // POC: get display value if this is a database-resident spline
-    // POC: if this is called by another converter that has created a spline, assumes the display value is set by that converter
-    SOG.Polyline display = null;
-    if (target.Database is not null)
-    {
-      ADB.Curve polySpline = target.ToPolylineWithPrecision(10, false, false);
-      List<double> verticesList = new();
-      switch (polySpline)
-      {
-        case ADB.Polyline2d o:
-          verticesList = o.GetSubEntities<Vertex2d>(
-              OpenMode.ForRead,
-              _contextStack.Current.Document.TransactionManager.TopTransaction
-            )
-            .Where(e => e.VertexType != Vertex2dType.SplineControlVertex) // POC: not validated yet!
-            .SelectMany(o => o.Position.ToArray())
-            .ToList();
-
-          break;
-        case ADB.Polyline3d o:
-          verticesList = o.GetSubEntities<PolylineVertex3d>(
-              OpenMode.ForRead,
-              _contextStack.Current.Document.TransactionManager.TopTransaction
-            )
-            .Where(e => e.VertexType != Vertex3dType.ControlVertex)
-            .SelectMany(o => o.Position.ToArray())
-            .ToList();
-          break;
-      }
-      display = verticesList.ConvertToSpecklePolyline(_contextStack);
-    }
-
     // set nurbs curve info
     var curve = new SOG.Curve
     {
@@ -151,11 +115,44 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
       units = _contextStack.Current.SpeckleUnits
     };
 
-    if (display is not null)
+    // POC: get display value if this is a database-resident spline
+    // POC: if this is called by another converter that has created a spline, assumes the display value is set by that converter
+    if (target.Database is not null)
     {
-      curve.displayValue = display;
+      curve.displayValue = GetDisplayValue(target);
     }
 
     return curve;
+  }
+
+  // POC: we might have DisplayValue converter/mapper?
+  private SOG.Polyline GetDisplayValue(ADB.Spline spline)
+  {
+    ADB.Curve polySpline = spline.ToPolylineWithPrecision(10, false, false);
+    List<double> verticesList = new();
+    switch (polySpline)
+    {
+      case ADB.Polyline2d o:
+        verticesList = o.GetSubEntities<ADB.Vertex2d>(
+            ADB.OpenMode.ForRead,
+            _contextStack.Current.Document.TransactionManager.TopTransaction
+          )
+          .Where(e => e.VertexType != ADB.Vertex2dType.SplineControlVertex) // POC: not validated yet!
+          .SelectMany(o => o.Position.ToArray())
+          .ToList();
+
+        break;
+      case ADB.Polyline3d o:
+        verticesList = o.GetSubEntities<ADB.PolylineVertex3d>(
+            ADB.OpenMode.ForRead,
+            _contextStack.Current.Document.TransactionManager.TopTransaction
+          )
+          .Where(e => e.VertexType != ADB.Vertex3dType.ControlVertex)
+          .SelectMany(o => o.Position.ToArray())
+          .ToList();
+        break;
+    }
+
+    return verticesList.ConvertToSpecklePolyline(_contextStack);
   }
 }

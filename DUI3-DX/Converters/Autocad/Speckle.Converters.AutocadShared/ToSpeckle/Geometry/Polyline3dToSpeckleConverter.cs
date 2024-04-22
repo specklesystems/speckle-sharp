@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -10,11 +9,11 @@ using Autodesk.AutoCAD.Geometry;
 namespace Speckle.Converters.Autocad.Geometry;
 
 /// <summary>
-/// The <see cref="Polyline3d"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
+/// The <see cref="ADB.Polyline3d"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
 /// </summary>
 /// <remarks>
-/// <see cref="Polyline3d"/> of type <see cref="Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s in <see cref="SOG.Polycurve.segments"/>.
-/// <see cref="Polyline3d"/> of type <see cref="Poly2dType.CubicSplinePoly"/> and <see cref="Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline3d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline3d"/> of type <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
 /// The IHostObjectToSpeckleConversion inheritance should only expect database-resident Polyline2d objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline3d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
@@ -22,14 +21,14 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
   private readonly IRawConversion<ADB.Spline, SOG.Curve> _splineConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public Polyline3dToSpeckleConverter(
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
     IRawConversion<ADB.Spline, SOG.Curve> splineConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -46,25 +45,25 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
     var polyType = SOG.Autocad.AutocadPolyType.Unknown;
     switch (target.PolyType)
     {
-      case Poly3dType.SimplePoly:
+      case ADB.Poly3dType.SimplePoly:
         polyType = SOG.Autocad.AutocadPolyType.Simple3d;
         break;
-      case Poly3dType.CubicSplinePoly:
+      case ADB.Poly3dType.CubicSplinePoly:
         polyType = SOG.Autocad.AutocadPolyType.CubicSpline3d;
         break;
-      case Poly3dType.QuadSplinePoly:
+      case ADB.Poly3dType.QuadSplinePoly:
         polyType = SOG.Autocad.AutocadPolyType.QuadSpline3d;
         break;
     }
 
     // get all vertex data except control vertices
     List<double> value = new();
-    List<PolylineVertex3d> vertices = target
-      .GetSubEntities<PolylineVertex3d>(
-        OpenMode.ForRead,
+    List<ADB.PolylineVertex3d> vertices = target
+      .GetSubEntities<ADB.PolylineVertex3d>(
+        ADB.OpenMode.ForRead,
         _contextStack.Current.Document.TransactionManager.TopTransaction
       )
-      .Where(e => e.VertexType != Vertex3dType.ControlVertex) // Do not collect control points
+      .Where(e => e.VertexType != ADB.Vertex3dType.ControlVertex) // Do not collect control points
       .ToList();
 
     List<Objects.ICurve> segments = new();

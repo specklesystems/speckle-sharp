@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -9,22 +8,22 @@ using Speckle.Core.Models;
 namespace Speckle.Converters.Autocad.Geometry;
 
 /// <summary>
-/// The <see cref="PolyFaceMesh"/> class converter. Converts to <see cref="SOG.Mesh"/>.
+/// The <see cref="ADB.PolyFaceMesh"/> class converter. Converts to <see cref="SOG.Mesh"/>.
 /// </summary>
 /// <remarks>
-/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
+/// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.PolyFaceMesh"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
-[NameAndRankValue(nameof(PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
+[NameAndRankValue(nameof(ADB.PolyFaceMesh), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public DBPolyfaceMeshToSpeckleConverter(
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -40,18 +39,18 @@ public class DBPolyfaceMeshToSpeckleConverter : IHostObjectToSpeckleConversion
     List<int> faces = new();
     List<int> faceVisibility = new();
     List<int> colors = new();
-    using (Transaction tr = _contextStack.Current.Document.Database.TransactionManager.StartTransaction())
+    using (ADB.Transaction tr = _contextStack.Current.Document.Database.TransactionManager.StartTransaction())
     {
-      foreach (ObjectId id in target)
+      foreach (ADB.ObjectId id in target)
       {
-        DBObject obj = tr.GetObject(id, OpenMode.ForRead);
+        ADB.DBObject obj = tr.GetObject(id, ADB.OpenMode.ForRead);
         switch (obj)
         {
-          case PolyFaceMeshVertex o:
+          case ADB.PolyFaceMeshVertex o:
             dbVertices.Add(o.Position);
             colors.Add(o.Color.ColorValue.ToArgb());
             break;
-          case FaceRecord o:
+          case ADB.FaceRecord o:
             List<int> indices = new();
             List<int> hidden = new();
             for (short i = 0; i < 4; i++)

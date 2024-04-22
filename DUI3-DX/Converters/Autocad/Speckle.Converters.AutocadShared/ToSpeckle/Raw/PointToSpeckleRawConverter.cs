@@ -1,14 +1,13 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
-using Autodesk.AutoCAD.DatabaseServices;
 
 namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
 public class PointToSpeckleRawConverter : IRawConversion<AG.Point3d, SOG.Point>
 {
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public PointToSpeckleRawConverter(IConversionContextStack<Document, UnitsValue> contextStack)
+  public PointToSpeckleRawConverter(IConversionContextStack<Document, ADB.UnitsValue> contextStack)
   {
     _contextStack = contextStack;
   }

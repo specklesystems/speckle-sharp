@@ -1,4 +1,3 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -9,13 +8,13 @@ namespace Speckle.Converters.Autocad.ToSpeckle.Geometry;
 public class LineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<ADB.Line, SOG.Line>
 {
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IRawConversion<ADB.Extents3d, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
   public LineToSpeckleConverter(
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IRawConversion<Extents3d, SOG.Box> boxConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IRawConversion<ADB.Extents3d, SOG.Box> boxConverter,
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _pointConverter = pointConverter;
