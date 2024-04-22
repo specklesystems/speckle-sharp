@@ -67,7 +67,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
     builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
-    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
+    builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
 
     builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
