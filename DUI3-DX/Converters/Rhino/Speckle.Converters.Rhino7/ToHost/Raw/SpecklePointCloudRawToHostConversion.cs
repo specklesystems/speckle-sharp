@@ -13,10 +13,15 @@ public class SpecklePointCloudRawToHostConversion : IRawConversion<SOG.Pointclou
     _pointListConverter = pointListConverter;
   }
 
+  /// <summary>
+  /// Converts raw Speckle point cloud data to Rhino PointCloud object.
+  /// </summary>
+  /// <param name="target">The raw Speckle Pointcloud object to convert.</param>
+  /// <returns>The converted Rhino PointCloud object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.PointCloud RawConvert(SOG.Pointcloud target)
   {
     var rhinoPoints = _pointListConverter.RawConvert(target.points);
-
     var rhinoPointCloud = new RG.PointCloud(rhinoPoints);
 
     if (target.colors.Count == rhinoPoints.Count)

@@ -35,6 +35,13 @@ public class SpeckleICurveRawToHostConversion : IRawConversion<ICurve, RG.Curve>
     _nurbsCurveConverter = nurbsCurveConverter;
   }
 
+  /// <summary>
+  /// Converts a given ICurve object to an RG.Curve object.
+  /// </summary>
+  /// <param name="target">The ICurve object to convert.</param>
+  /// <returns>The converted RG.Curve object.</returns>
+  /// <exception cref="NotSupportedException">Thrown when the conversion is not supported for the given type of curve.</exception>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.Curve RawConvert(ICurve target) =>
     target switch
     {

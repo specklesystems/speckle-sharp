@@ -14,6 +14,12 @@ public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
     _pointListConverter = pointListConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle mesh object to a Rhino mesh object.
+  /// </summary>
+  /// <param name="target">The Speckle mesh object to convert.</param>
+  /// <returns>A Rhino mesh object converted from the Speckle mesh.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.Mesh RawConvert(SOG.Mesh target)
   {
     target.AlignVerticesWithTexCoordsByIndex();

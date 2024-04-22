@@ -17,6 +17,13 @@ public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.Nu
     _intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle NurbsCurve object to a Rhino NurbsCurve object.
+  /// </summary>
+  /// <param name="target">The Speckle NurbsCurve object to be converted.</param>
+  /// <returns>The converted Rhino NurbsCurve object.</returns>
+  /// <exception cref="SpeckleConversionException">Thrown when the conversion fails.</exception>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.NurbsCurve RawConvert(SOG.Curve target)
   {
     var rhinoPoints = target.GetPoints().Select(o => _pointConverter.RawConvert(o)).ToList();

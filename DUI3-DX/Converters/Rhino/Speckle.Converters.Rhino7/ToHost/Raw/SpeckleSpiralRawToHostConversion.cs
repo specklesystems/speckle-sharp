@@ -16,6 +16,12 @@ public class SpeckleSpiralRawToHostConversion : IRawConversion<SOG.Spiral, RG.Po
     _intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle Spiral object to a Rhino PolylineCurve object.
+  /// </summary>
+  /// <param name="target">The Speckle Spiral object to be converted.</param>
+  /// <returns>A Rhino PolylineCurve object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.PolylineCurve RawConvert(SOG.Spiral target)
   {
     var result = _polylineConverter.RawConvert(target.displayValue);

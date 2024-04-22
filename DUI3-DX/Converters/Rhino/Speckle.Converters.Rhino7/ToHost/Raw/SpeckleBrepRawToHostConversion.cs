@@ -28,6 +28,18 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
     _intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle <see cref="SOG.Brep"/> to a Rhino <see cref="RG.Brep"/>.
+  /// </summary>
+  /// <remarks>
+  /// This method converts a Speckle Brep object to its equivalent Rhino Brep representation.
+  /// The conversion process includes converting individual curves, trims, surfaces, and vertices.
+  /// The resulting Rhino Brep is returned.
+  /// Note that the conversion does not cover all edge cases in Brep structures, therefore it is recommended to review the resulting Brep for robustness improvement.
+  /// </remarks>
+  /// <param name="target">The Speckle Brep object to be converted.</param>
+  /// <returns>The equivalent Rhino Brep object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.Brep RawConvert(SOG.Brep target)
   {
     var tolerance = _contextStack.Current.Document.ModelAbsoluteTolerance;

@@ -14,6 +14,12 @@ public class SpecklePolyCurveRawToHostConversion : IRawConversion<SOG.Polycurve,
     _intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts a SpecklePolyCurve object to a Rhino PolyCurve object.
+  /// </summary>
+  /// <param name="target">The SpecklePolyCurve object to convert.</param>
+  /// <returns>The converted Rhino PolyCurve object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.PolyCurve RawConvert(SOG.Polycurve target)
   {
     RG.PolyCurve result = new();

@@ -40,6 +40,8 @@ public class SpeckleCircleRawToHostConversion
   /// <exception cref="ArgumentNullException">
   /// Thrown when the radius of the given <see cref="SOG.Circle"/> object is null.
   /// </exception>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
+  /// <remarks><br/>⚠️ This conversion does not preserve the curve domain. If you need it preserved you must request a conversion to <see cref="RG.ArcCurve"/> conversion instead</remarks>
   public RG.Circle RawConvert(SOG.Circle target)
   {
     if (target.radius == null)

@@ -24,6 +24,8 @@ public class SpeckleEllipseRawToHostConversion
   /// <param name="target">The <see cref="SOG.Ellipse"/> instance to be converted.</param>
   /// <returns>The resulting <see cref="RG.Ellipse"/> after conversion.</returns>
   /// <exception cref="InvalidOperationException">Thrown when <see cref="SOG.Ellipse.firstRadius"/> or <see cref="SOG.Ellipse.secondRadius"/> properties are null.</exception>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
+  /// <remarks><br/>⚠️ This conversion does not preserve the curve domain. If you need it preserved you must request a conversion to <see cref="RG.NurbsCurve"/> conversion instead</remarks>
   public RG.Ellipse RawConvert(SOG.Ellipse target)
   {
     if (!target.firstRadius.HasValue || !target.secondRadius.HasValue)
