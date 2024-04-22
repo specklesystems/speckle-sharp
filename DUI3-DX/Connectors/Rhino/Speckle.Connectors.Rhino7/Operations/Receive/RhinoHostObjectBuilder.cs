@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -40,7 +41,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var objectsToConvert = rootObject
       .TraverseWithPath(obj => obj is not Collection)
-      .Where(obj => obj.Item2 is not Collection);
+      .Where(obj => obj.Item2 is not Collection && obj.Item2 is not DisplayStyle && obj.Item2 is not RenderMaterial);
 
     var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
@@ -101,17 +102,15 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
         var converted = _toHostConverter.Convert(baseObj);
 
-        if (converted is GeometryBase newObject)
+        if (converted is not GeometryBase newObject)
         {
-          var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
-          newObjectIds.Add(newObjectGuid.ToString());
-          continue;
+          throw new SpeckleConversionException(
+            $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
+          );
         }
 
-        // POC:  else something weird happened? a block maybe? We should stop on our tracks if we reach this.
-        throw new SpeckleException(
-          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-        );
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+        newObjectIds.Add(newObjectGuid.ToString());
       }
       catch (Exception e) when (!e.IsFatal())
       {

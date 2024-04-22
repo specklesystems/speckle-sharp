@@ -16,6 +16,12 @@ public class SpecklePlaneRawToHostConversion : IRawConversion<SOG.Plane, RG.Plan
     _vectorConverter = vectorConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle Plane object to a Rhino Plane object.
+  /// </summary>
+  /// <param name="target">The Speckle Plane object to be converted.</param>
+  /// <returns>The converted Rhino Plane object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.Plane RawConvert(SOG.Plane target) =>
     new(
       _pointConverter.RawConvert(target.origin),
