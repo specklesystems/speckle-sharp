@@ -1,8 +1,9 @@
 using ArcGIS.Desktop.Mapping;
-using Speckle.Core.Models;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace Speckle.Connectors.ArcGis.Operations.Send;
 
@@ -19,7 +20,7 @@ public class RootObjectBuilder
   }
 
   public Base Build(
-    //ISendFilter sendFilter,
+    ISendFilter sendFilter,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
@@ -28,48 +29,21 @@ public class RootObjectBuilder
     {
       throw new SpeckleException("No Map currently active");
     }
-    var selectedObjects = GetSelection(MapView.Active.Map);
 
-    // if (selectedObjects.Count == 0)
-    // {
-    //   throw new InvalidOperationException("No objects were found. Please update your send filter!");
-    // }
+    List<string> selectedObjects = sendFilter.GetObjectIds().Where(obj => obj != null).ToList();
 
-    Base commitObject = ConvertObjects(selectedObjects, onOperationProgressed, ct);
-
-    return commitObject;
-  }
-
-  /// <remarks>
-  /// This method must be called on the MCT. Use QueuedTask. Run.
-  /// </remarks>
-  private IReadOnlyList<MapMember> GetSelection(Map map)
-  {
-    // var allMembers = map.GetMapMembersAsFlattenedList();
-
-    //POC: Right now, we're not using the send filter
-    // We're still undecided how we handle MapMember vs objectId when converting
-    // + the ArcGIS api breaks some assumptions we've made
-    // e.g.
-    // - There isn't a single type of ID to uniquely identify objects
-    //    - MapMembers are identifiable by uri, but objects on a MapMember have an objectId which is their index in the MapMember
-    //    - plus, some MapMembers work differently (raster layers, voxel layers, pointclound layers) etc.
-    // - getting selection is an async operation, needs to be done on the main thread, and returns the full object, not just an ID
-
-    // List<MapMember> selectedMemberUrls = map.GetSelection().ToDictionary().Select(x => x.Key).ToList();
-    IReadOnlyList<MapMember> selectedMemberUrls = map.GetMapMembersAsFlattenedList(); //.GetSelection().ToDictionary().Select(x => x.Key).ToList();
-
-    if (selectedMemberUrls.Count == 0)
+    if (selectedObjects.Count == 0)
     {
-      throw new SpeckleException("No data to send");
+      throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    return selectedMemberUrls;
+    Base commitObject = ConvertObjects(selectedObjects, onOperationProgressed, ct);
+    return commitObject;
   }
 
   //poc: semi dupe
   private Collection ConvertObjects(
-    IReadOnlyList<MapMember> mapMembers,
+    IReadOnlyList<string> uriList,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
   )
@@ -84,36 +58,44 @@ public class RootObjectBuilder
 
     Collection rootObjectCollection = new(); //TODO: Collections
 
-    foreach (MapMember mapMember in mapMembers)
+    foreach (string uri in uriList)
     {
       cancellationToken.ThrowIfCancellationRequested();
+      var collectionHost = rootObjectCollection;
+      var applicationId = uri;
 
-      if (mapMember is Layer layer && layer.IsVisibleInView(MapView.Active))
+      Base converted = new();
+
+      MapMember mapMember = MapView.Active.Map.FindLayer(uri);
+      if (mapMember is null)
       {
-        var collectionHost = rootObjectCollection;
-        var applicationId = mapMember.ToString();
-
-        try
-        {
-          Base converted = converter.Convert(mapMember);
-          converted.applicationId = applicationId;
-
-          // add to host
-          collectionHost.elements.Add(converted);
-          onOperationProgressed?.Invoke("Converting", (double)++count / mapMembers.Count);
-        }
-        // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
-        catch (SpeckleConversionException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-        }
-        catch (NotSupportedException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-        }
+        mapMember = MapView.Active.Map.FindStandaloneTable(uri);
       }
+      if (mapMember is null)
+      {
+        continue;
+      }
+
+      try
+      {
+        converted = converter.Convert(mapMember);
+      }
+      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
+      catch (SpeckleConversionException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
+      }
+      catch (NotSupportedException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
+      }
+
+      converted.applicationId = applicationId;
+      // add to host
+      collectionHost.elements.Add(converted);
+      onOperationProgressed?.Invoke("Converting", (double)++count / uriList.Count);
     }
 
     return rootObjectCollection;
