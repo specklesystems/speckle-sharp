@@ -63,7 +63,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     // POC: We could move this out into a separate service for testing and re-use.
     // Cleans up any previously received objects
-    if (rootLayerIndex == RhinoMath.UnsetIntIndex)
+    if (rootLayerIndex != RhinoMath.UnsetIntIndex)
     {
       Layer documentLayer = doc.Layers[rootLayerIndex];
       Layer[]? childLayers = documentLayer.GetChildren();
