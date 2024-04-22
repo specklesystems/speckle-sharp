@@ -2,6 +2,9 @@
 
 namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
+/// <summary>
+/// Converts a SpeckleArcRaw object to a Rhino.Geometry.Arc object or Rhino.Geometry.ArcCurve object.
+/// </summary>
 public class SpeckleArcRawToHostConversion : IRawConversion<SOG.Arc, RG.Arc>, IRawConversion<SOG.Arc, RG.ArcCurve>
 {
   private readonly IRawConversion<SOG.Point, RG.Point3d> _pointConverter;
@@ -16,6 +19,13 @@ public class SpeckleArcRawToHostConversion : IRawConversion<SOG.Arc, RG.Arc>, IR
     this._intervalConverter = intervalConverter;
   }
 
+  /// <summary>
+  /// Converts a <see cref="SOG.Arc"/> object to a <see cref="RG.Arc"/> object.
+  /// </summary>
+  /// <param name="target">The Speckle Arc object to convert.</param>
+  /// <returns>The converted <see cref="RG.Arc"/> object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
+  /// <remarks><br/>⚠️ This method does not preserve the original curve domain</remarks>
   public RG.Arc RawConvert(SOG.Arc target)
   {
     var rhinoArc = new RG.Arc(
@@ -26,18 +36,19 @@ public class SpeckleArcRawToHostConversion : IRawConversion<SOG.Arc, RG.Arc>, IR
     return rhinoArc;
   }
 
-  // POC: Potential code-smell by directly implementing the interface. We should discuss this further but
+  // POC: CNX-9271 Potential code-smell by directly implementing the interface. We should discuss this further but
   // since we're using the interfaces instead of the direct type, this may not be an issue.
+  /// <summary>
+  /// Converts a <see cref="SOG.Arc"/> object to a <see cref="RG.ArcCurve"/> object.
+  /// </summary>
+  /// <param name="target">The <see cref="SOG.Arc"/> object to convert.</param>
+  /// <returns>The converted <see cref="RG.ArcCurve"/> object.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
+  /// <remarks><br/>⚠️ Converting to <see cref="RG.ArcCurve"/> instead of <see cref="RG.Arc"/> preserves the domain of the curve.</remarks>
   RG.ArcCurve IRawConversion<SOG.Arc, RG.ArcCurve>.RawConvert(SOG.Arc target)
   {
     var rhinoArc = RawConvert(target);
-    var arcCurve = new RG.ArcCurve(rhinoArc);
-
-    if (target.domain != null)
-    {
-      arcCurve.Domain = _intervalConverter.RawConvert(target.domain);
-    }
-
+    var arcCurve = new RG.ArcCurve(rhinoArc) { Domain = _intervalConverter.RawConvert(target.domain) };
     return arcCurve;
   }
 }

@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Speckle.Core.Transports;
 
 namespace Speckle.Core.Tests.Unit.Transports;
@@ -126,6 +127,35 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
     Assert.That(_sqlite.GetAllObjects().ToList(), Has.All.Contains(UPDATE_STRING));
     //Assert that objects were only updated once
     Assert.That(_sqlite.GetAllObjects().ToList(), Has.All.Length.EqualTo(length + UPDATE_STRING.Length));
+  }
+
+  [Test]
+  [Repeat(10)]
+  [TestCase(6, 32)]
+  [Description(
+    $"Tests that the {nameof(SQLiteTransport.GetAllObjects)} function can be called concurrently from multiple threads"
+  )]
+  public void GetAllObjects_IsThreadSafe(int dataSize, int parallelism)
+  {
+    foreach (int i in Enumerable.Range(0, dataSize))
+    {
+      _sqlite.SaveObjectSync(i.ToString(), Guid.NewGuid().ToString());
+    }
+
+    List<string>[] results = new List<string>[parallelism];
+    Parallel.ForEach(
+      Enumerable.Range(0, parallelism),
+      i =>
+      {
+        results[i] = _sqlite.GetAllObjects().ToList();
+      }
+    );
+
+    foreach (var result in results)
+    {
+      Assert.That(result, Is.EquivalentTo(results[0]));
+      Assert.That(result, Has.Count.EqualTo(dataSize));
+    }
   }
 
   public void Dispose()

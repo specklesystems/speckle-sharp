@@ -7,13 +7,19 @@ namespace Speckle.Converters.Rhino7.ToHost.Raw;
 
 public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
 {
-  private readonly IRawConversion<IList<double>, Point3dList> _pointListConverter;
+  private readonly IRawConversion<IReadOnlyList<double>, Point3dList> _pointListConverter;
 
-  public SpeckleMeshRawToHostConversion(IRawConversion<IList<double>, Point3dList> pointListConverter)
+  public SpeckleMeshRawToHostConversion(IRawConversion<IReadOnlyList<double>, Point3dList> pointListConverter)
   {
     _pointListConverter = pointListConverter;
   }
 
+  /// <summary>
+  /// Converts a Speckle mesh object to a Rhino mesh object.
+  /// </summary>
+  /// <param name="target">The Speckle mesh object to convert.</param>
+  /// <returns>A Rhino mesh object converted from the Speckle mesh.</returns>
+  /// <remarks>⚠️ This conversion does NOT perform scaling.</remarks>
   public RG.Mesh RawConvert(SOG.Mesh target)
   {
     target.AlignVerticesWithTexCoordsByIndex();
@@ -29,12 +35,12 @@ public class SpeckleMeshRawToHostConversion : IRawConversion<SOG.Mesh, RG.Mesh>
     AssignMeshFaces(target, m);
     AssignTextureCoordinates(target, m);
 
-    // POC: There was a piece of code here about Merging co-planar faces that I've removed for now as this setting does not exist yet.
+    // POC: CNX-9273 There was a piece of code here about Merging co-planar faces that I've removed for now as this setting does not exist yet.
 
     return m;
   }
 
-  // POC: We should abstract this into the `Mesh` class, or some utility class adjacent to it
+  // POC: CNX-9274 We should abstract this into the `Mesh` class, or some utility class adjacent to it
   //      All converters need to do this so it's going to be a source of repetition
   //      and it is directly tied to how we serialise the data in the mesh.
   private void AssignMeshFaces(SOG.Mesh target, RG.Mesh m)
