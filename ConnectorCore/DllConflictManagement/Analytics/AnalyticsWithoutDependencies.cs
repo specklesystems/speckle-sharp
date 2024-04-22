@@ -77,11 +77,11 @@ public sealed class AnalyticsWithoutDependencies
     bool isAction = true
   )
   {
-    //if (!IsReleaseMode)
-    //{
-    //  //only track in prod
-    //  return;
-    //}
+    if (!IsReleaseMode)
+    {
+      //only track in prod
+      return;
+    }
 
     try
     {
