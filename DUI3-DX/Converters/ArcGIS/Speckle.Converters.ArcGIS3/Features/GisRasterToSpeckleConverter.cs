@@ -37,7 +37,7 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
     int xSize = target.GetWidth();
     int ySize = target.GetHeight();
     float xResolution = (float)cellSize.Item1;
-    float yResolution = (float)cellSize.Item2;
+    float yResolution = -1 * (float)cellSize.Item2;
 
     var pixelType = target.GetPixelType(); // e.g. UCHAR
     var xyOrigin = target.PixelToMap(0, 0);
@@ -68,7 +68,14 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
       Array pixels2D = block.GetPixelData(i, false);
       List<byte> pixelsList = pixels2D.Cast<byte>().ToList();
       pixelValsPerBand.Add(pixelsList);
-      rasterElement[$"@(10000){bandName}"] = pixelsList;
+
+      // transpose to match QGIS data structure
+      var transposedPixelList = Enumerable
+        .Range(0, ySize)
+        .SelectMany((_, ind) => Enumerable.Range(0, xSize).Select(x => pixels2D.GetValue(x, ind)))
+        .ToArray();
+
+      rasterElement[$"@(10000){bandName}_values"] = transposedPixelList;
 
       // null or float for noDataValue
       float? noDataVal = null;
@@ -90,16 +97,16 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
             new List<double>()
             {
               xOrigin + xResolution * (int)Math.Floor((double)ind / ySize),
-              yOrigin - yResolution * (ind % ySize),
+              yOrigin + yResolution * (ind % ySize),
               0,
               xOrigin + xResolution * ((int)Math.Floor((double)ind / ySize) + 1),
-              yOrigin - yResolution * (ind % ySize),
+              yOrigin + yResolution * (ind % ySize),
               0,
               xOrigin + xResolution * (int)Math.Floor((double)ind / ySize + 1),
-              yOrigin - yResolution * (ind % ySize + 1),
+              yOrigin + yResolution * (ind % ySize + 1),
               0,
               xOrigin + xResolution * (int)Math.Floor((double)ind / ySize),
-              yOrigin - yResolution * (ind % ySize + 1),
+              yOrigin + yResolution * (ind % ySize + 1),
               0
             }
         )
