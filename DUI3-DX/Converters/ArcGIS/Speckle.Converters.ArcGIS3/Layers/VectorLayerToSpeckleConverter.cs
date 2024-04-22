@@ -62,7 +62,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
     // get a simple geometry type
-    string spekleGeometryType = string.Empty;
+    string spekleGeometryType = "None";
     if (speckleLayer.nativeGeomType.ToLower().Contains("point"))
     {
       spekleGeometryType = "Point";

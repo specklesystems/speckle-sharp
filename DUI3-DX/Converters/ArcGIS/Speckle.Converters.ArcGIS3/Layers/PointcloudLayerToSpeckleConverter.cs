@@ -58,17 +58,53 @@ public class PointCloudToSpeckleConverter
     // prepare data for pointcloud
     List<SOG.Point> specklePts = new();
     List<int> speckleColors = new();
+    var renderer = target.GetRenderers()[0];
 
     using (LasPointCursor ptCursor = target.SearchPoints(new ArcGIS.Core.Data.Analyst3D.LasPointFilter()))
     {
-      while (ptCursor.MoveNext() && specklePts.Count < 20000)
+      while (ptCursor.MoveNext())
       {
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (LasPoint pt = ptCursor.Current)
         {
           specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
-          int color = geomUtils.RGBToInt(pt.RGBColor);
-          speckleColors.Add(color);
+
+          // get color
+          int color = 0;
+          string classCode = pt.ClassCode.ToString();
+          if (renderer is CIMTinUniqueValueRenderer uniqueRenderer)
+          {
+            foreach (CIMUniqueValueGroup group in uniqueRenderer.Groups)
+            {
+              if (color != 0)
+              {
+                break;
+              }
+              foreach (CIMUniqueValueClass groupClass in group.Classes)
+              {
+                if (color != 0)
+                {
+                  break;
+                }
+                for (int i = 0; i < groupClass.Values.Length; i++)
+                {
+                  if (classCode == groupClass.Values[i].FieldValues[0])
+                  {
+                    CIMColor symbolColor = groupClass.Symbol.Symbol.GetColor();
+                    color = geomUtils.CIMColorToInt(symbolColor);
+                    speckleColors.Add(color);
+                    break;
+                  }
+                }
+              }
+            }
+          }
+          else
+          {
+            color = geomUtils.RGBToInt(pt.RGBColor);
+            speckleColors.Add(color);
+          }
+          //
         }
       }
     }

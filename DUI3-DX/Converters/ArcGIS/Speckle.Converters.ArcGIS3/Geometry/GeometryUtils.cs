@@ -22,6 +22,14 @@ public class GeometryUtils
     return (255 << 24) | ((int)Math.Round(color.R) << 16) | ((int)Math.Round(color.G) << 8) | (int)Math.Round(color.B);
   }
 
+  public int CIMColorToInt(CIMColor color)
+  {
+    return (255 << 24)
+      | ((int)Math.Round(color.Values[0]) << 16)
+      | ((int)Math.Round(color.Values[1]) << 8)
+      | (int)Math.Round(color.Values[2]);
+  }
+
   public bool IsClockwisePolygon(List<SOG.Point> points)
   {
     bool isClockwise;
