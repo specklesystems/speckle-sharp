@@ -17,13 +17,13 @@ public class ArcGISSelectionBinding : ISelectionBinding
   {
     Parent = parent;
 
+    // example: https://github.com/Esri/arcgis-pro-sdk-community-samples/blob/master/Map-Authoring/QueryBuilderControl/DefinitionQueryDockPaneViewModel.cs
     MapViewEventArgs args = new(MapView.Active);
     TOCSelectionChangedEvent.Subscribe(OnSelectionChanged, true);
   }
 
   private void OnSelectionChanged(MapViewEventArgs args)
   {
-    // example: https://github.com/Esri/arcgis-pro-sdk-community-samples/blob/master/Map-Authoring/QueryBuilderControl/DefinitionQueryDockPaneViewModel.cs
     SelectionInfo selInfo = GetSelection();
     Parent?.Send(SELECTION_EVENT, selInfo);
   }

@@ -34,7 +34,7 @@ public class RootObjectBuilder
 
     if (selectedObjects.Count == 0)
     {
-      throw new InvalidOperationException("No objects were found. Please update your send filter!");
+      throw new InvalidOperationException("No layers were found. Please update your send filter!");
     }
 
     Base commitObject = ConvertObjects(selectedObjects, onOperationProgressed, ct);
