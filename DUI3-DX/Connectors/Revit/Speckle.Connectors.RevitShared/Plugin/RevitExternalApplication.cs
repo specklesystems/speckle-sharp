@@ -82,10 +82,6 @@ internal class RevitExternalApplication : IExternalApplication
       typeof(RevitConverterToSpeckle).Assembly,
       typeof(IRawConversion<,>)
     );
-    containerBuilder.RegisterTypesInAssemblyAsInterface(
-      typeof(RevitConverterToSpeckle).Assembly,
-      typeof(IConditionalToSpeckleConverter<>)
-    );
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }

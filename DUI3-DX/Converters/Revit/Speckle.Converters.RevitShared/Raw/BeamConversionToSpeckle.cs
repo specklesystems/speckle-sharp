@@ -1,8 +1,6 @@
-using Autodesk.Revit.DB;
 using Objects;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
 
@@ -11,9 +9,8 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 // POC: There is no validation on this converter to prevent conversion from "not a Revit Beam" to a Speckle Beam.
 // This will definitely explode if we tried. Goes back to the `CanConvert` functionality conversation.
 // As-is, what we are saying is that it can take "any Family Instance" and turn it into a Speckle.RevitBeam, which is far from correct.
-public class BeamConversionToSpeckle
-  : IRawConversion<DB.FamilyInstance, SOBR.RevitBeam>,
-    IConditionalToSpeckleConverter<DB.FamilyInstance>
+// CNX-9312
+public class BeamConversionToSpeckle : IRawConversion<DB.FamilyInstance, SOBR.RevitBeam>
 {
   private readonly IRawConversion<DB.Location, Base> _locationConverter;
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
@@ -35,14 +32,6 @@ public class BeamConversionToSpeckle
     _displayValueExtractor = displayValueExtractor;
     _parameterObjectAssigner = parameterObjectAssigner;
   }
-
-  public bool CanConvert(FamilyInstance target)
-  {
-    return target.Category.GetBuiltInCategory() == BuiltInCategory.OST_StructuralFraming
-      && target.StructuralType == DB.Structure.StructuralType.Beam;
-  }
-
-  public Base ConvertToSpeckle(FamilyInstance target) => RawConvert(target);
 
   public SOBR.RevitBeam RawConvert(DB.FamilyInstance target)
   {

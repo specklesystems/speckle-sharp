@@ -1,5 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
@@ -10,25 +11,25 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<DB.FamilyInstance, Base>
 {
   private readonly IRawConversion<DB.Element, SOBR.RevitElement> _elementConverter;
-  private readonly IEnumerable<IConditionalToSpeckleConverter<DB.FamilyInstance>> _conditionalConverters;
+  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> _beamConversion;
 
   public FamilyInstanceConversionToSpeckle(
     IRawConversion<DB.Element, SOBR.RevitElement> elementConverter,
-    IEnumerable<IConditionalToSpeckleConverter<DB.FamilyInstance>> conditionalConverters
+    IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> beamConversion
   )
   {
     _elementConverter = elementConverter;
-    _conditionalConverters = conditionalConverters;
+    _beamConversion = beamConversion;
   }
 
   public override Base RawConvert(DB.FamilyInstance target)
   {
-    foreach (var conditionalConverter in _conditionalConverters)
+    if (
+      target.Category.GetBuiltInCategory() == DB.BuiltInCategory.OST_StructuralFraming
+      && target.StructuralType == DB.Structure.StructuralType.Beam
+    )
     {
-      if (conditionalConverter.CanConvert(target))
-      {
-        return conditionalConverter.ConvertToSpeckle(target);
-      }
+      return _beamConversion.RawConvert(target);
     }
 
     // POC: return generic element conversion or throw?
