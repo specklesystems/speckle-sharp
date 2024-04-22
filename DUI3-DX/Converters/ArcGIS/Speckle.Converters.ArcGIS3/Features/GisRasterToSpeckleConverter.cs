@@ -46,27 +46,28 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
       new(bandCount, new List<string>(), xOrigin, yOrigin, xSize, ySize, xResolution, yResolution, new List<float?>());
 
     // prepare to construct a mesh
-    List<double> vertices = new();
-    List<int> faces = new();
-
     List<double> newCoords = new();
     List<int> newFaces = new();
     List<int> newColors = new();
 
-    // Get a pixel block for quicker reading and read from pixel top left pixel
-    PixelBlock block = target.CreatePixelBlock(target.GetWidth(), target.GetHeight());
-    target.Read(0, 0, block);
+    // store band values for renderer
+    List<List<byte>> pixelValsPerBand = new();
 
     for (int i = 0; i < bandCount; i++)
     {
+      // Get a pixel block for quicker reading and read from pixel top left pixel
+      PixelBlock block = target.CreatePixelBlock(target.GetWidth(), target.GetHeight());
+      target.Read(0, 0, block);
+
       RasterBandDefinition bandDef = target.GetBand(i).GetDefinition();
       string bandName = bandDef.GetName();
       rasterElement.band_names.Add(bandName);
 
       // Read 2-dimensional pixel values into 1-dimensional byte array
-      Array pixels2D = block.GetPixelData(i, false);
       // TODO: format to list of float
+      Array pixels2D = block.GetPixelData(i, false);
       List<byte> pixelsList = pixels2D.Cast<byte>().ToList();
+      pixelValsPerBand.Add(pixelsList);
       rasterElement[$"@(10000){bandName}"] = pixelsList;
 
       // null or float for noDataValue
@@ -78,46 +79,70 @@ public class GisRasterToSpeckleConverter : IRawConversion<Raster, RasterElement>
       }
       rasterElement.noDataValue.Add(noDataVal);
 
-      // currently get mesh colors only for the first band
-      if (i == 0)
+      // construct mesh
+      newFaces = pixelsList
+        .SelectMany((_, ind) => new List<int>() { 4, 4 * ind, 4 * ind + 1, 4 * ind + 2, 4 * ind + 3 })
+        .ToList();
+
+      newCoords = pixelsList
+        .SelectMany(
+          (_, ind) =>
+            new List<double>()
+            {
+              xOrigin + xResolution * (int)Math.Floor((double)ind / ySize),
+              yOrigin - yResolution * (ind % ySize),
+              0,
+              xOrigin + xResolution * ((int)Math.Floor((double)ind / ySize) + 1),
+              yOrigin - yResolution * (ind % ySize),
+              0,
+              xOrigin + xResolution * (int)Math.Floor((double)ind / ySize + 1),
+              yOrigin - yResolution * (ind % ySize + 1),
+              0,
+              xOrigin + xResolution * (int)Math.Floor((double)ind / ySize),
+              yOrigin - yResolution * (ind % ySize + 1),
+              0
+            }
+        )
+        .ToList();
+
+      // Construct colors only once, when i=last band index
+      // ATM, RGB for 3 or 4 bands, greyscale from 1st band for anything else
+      if (i == bandCount - 1)
       {
-        // int cellsToRender = 10000;
-        newFaces = pixelsList
-          .SelectMany((_, ind) => new List<int>() { 4, 4 * ind, 4 * ind + 1, 4 * ind + 2, 4 * ind + 3 })
-          .ToList();
-        //.GetRange(0, 5 * (xSize - 1) * (ySize - 1));
-        //.GetRange(0, 5 * cellsToRender);
-
-        newCoords = pixelsList
-          .SelectMany(
-            (_, ind) =>
-              new List<double>()
-              {
-                xOrigin + xResolution * (ind % ySize),
-                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize),
-                0,
-                xOrigin + xResolution * (ind % ySize),
-                yOrigin - yResolution * ((int)Math.Floor((double)ind / ySize) + 1),
-                0,
-                xOrigin + xResolution * (ind % ySize + 1),
-                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize + 1),
-                0,
-                xOrigin + xResolution * (ind % ySize + 1),
-                yOrigin - yResolution * (int)Math.Floor((double)ind / ySize),
-                0
-              } //.Where((_, ind) => (ind + 1) % xSize != 0 && ind + 1 != ySize)
-          )
-          .ToList();
-        //.GetRange(0, 12 * cellsToRender);
-
-        var pixMin = pixelsList.Min();
-        var pixMax = pixelsList.Max();
-        newColors = pixelsList
-          .Select((_, ind) => 3 * 255 / 100 * (pixelsList[ind] - pixMin) / (pixMax - pixMin))
-          .Select((x, ind) => (255 << 24) | (x << 16) | (x << 8) | x)
-          .SelectMany(x => new List<int>() { x, x, x, x })
-          .ToList();
-        //.GetRange(0, 4 * cellsToRender);
+        if (bandCount == 3 || bandCount == 4) // RGB
+        {
+          var pixMin0 = pixelValsPerBand[0].Min();
+          var pixMax0 = pixelValsPerBand[0].Max();
+          var pixMin1 = pixelValsPerBand[1].Min();
+          var pixMax1 = pixelValsPerBand[1].Max();
+          var pixMin2 = pixelValsPerBand[2].Min();
+          var pixMax2 = pixelValsPerBand[2].Max();
+          newColors = pixelsList
+            .Select(
+              (_, ind) =>
+                (255 << 24)
+                | (255 * (pixelValsPerBand[0][ind] - pixMin0) / (pixMax0 - pixMin0) << 16)
+                | (255 * (pixelValsPerBand[1][ind] - pixMin1) / (pixMax1 - pixMin1) << 8)
+                | 255 * (pixelValsPerBand[2][ind] - pixMin2) / (pixMax2 - pixMin2)
+            )
+            .SelectMany(x => new List<int>() { x, x, x, x })
+            .ToList();
+        }
+        else // greyscale
+        {
+          var pixMin = pixelValsPerBand[0].Min();
+          var pixMax = pixelValsPerBand[0].Max();
+          newColors = pixelsList
+            .Select(
+              (_, ind) =>
+                (255 << 24)
+                | (255 * (pixelValsPerBand[0][ind] - pixMin) / (pixMax - pixMin) << 16)
+                | (255 * (pixelValsPerBand[0][ind] - pixMin) / (pixMax - pixMin) << 8)
+                | 255 * (pixelValsPerBand[0][ind] - pixMin) / (pixMax - pixMin)
+            )
+            .SelectMany(x => new List<int>() { x, x, x, x })
+            .ToList();
+        }
       }
     }
 
