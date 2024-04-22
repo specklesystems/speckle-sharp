@@ -30,7 +30,9 @@ public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.Nu
 
     RG.NurbsCurve? nurbsCurve = RG.NurbsCurve.Create(false, target.degree, rhinoPoints);
 
+#pragma warning disable CA1508
     if (nurbsCurve == null) // POC: CNX-9272 Nullability is wrong here, cannot remove this warning but code is required.
+#pragma warning restore CA1508
     {
       throw new SpeckleConversionException("Attempt to create Nurbs Curve failed with no explanation from Rhino");
     }
