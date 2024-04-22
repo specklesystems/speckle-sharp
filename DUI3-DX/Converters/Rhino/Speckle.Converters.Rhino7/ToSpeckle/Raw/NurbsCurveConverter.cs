@@ -55,9 +55,7 @@ public class NurbsCurveConverter : IRawConversion<RG.NurbsCurve, SOG.Curve>
     var myCurve = new SOG.Curve(displayValue, _contextStack.Current.SpeckleUnits)
     {
       weights = nurbsCurve.Points.Select(ctp => ctp.Weight).ToList(),
-      points = nurbsCurve.Points
-        .SelectMany(ctp => new[] { ctp.Location.X, ctp.Location.Y, ctp.Location.Z, ctp.Weight })
-        .ToList(),
+      points = nurbsCurve.Points.SelectMany(ctp => new[] { ctp.Location.X, ctp.Location.Y, ctp.Location.Z }).ToList(),
       knots = knots,
       degree = nurbsCurve.Degree,
       periodic = nurbsCurve.IsPeriodic,

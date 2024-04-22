@@ -49,7 +49,8 @@ public class PolylineToSpeckleConverter
     {
       bbox = box,
       length = target.Length,
-      domain = new(0, target.Length)
+      domain = new(0, target.Length),
+      closed = target.IsClosed
     };
   }
 
