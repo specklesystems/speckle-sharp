@@ -1,7 +1,7 @@
 using ArcGIS.Desktop.Framework;
 using ArcGIS.Desktop.Framework.Contracts;
 
-namespace Speckle.Connectors.ArcGIS.HostApp;
+namespace Speckle.Connectors.ArcGIS;
 
 internal class SpeckleDUI3ViewModel : DockPane
 {

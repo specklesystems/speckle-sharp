@@ -76,7 +76,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       // otherwise set shapes as Geometries
       return new GisFeature(speckleShapes, attributes);
     }
-    catch (KeyNotFoundException) // if no geometry
+    catch (ArgumentOutOfRangeException) // if no geometry
     {
       return new GisFeature(attributes);
     }

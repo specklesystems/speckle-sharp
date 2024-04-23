@@ -17,6 +17,7 @@ using Speckle.Converters.ArcGIS3;
 using Speckle.Core.Transports;
 using ArcGIS.Core.Geometry;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.ArcGIS.Filters;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -38,11 +39,15 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "ArcGIS"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
+    builder.RegisterType<ArcGISSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+
+    // register send filters
+    builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().SingleInstance();
