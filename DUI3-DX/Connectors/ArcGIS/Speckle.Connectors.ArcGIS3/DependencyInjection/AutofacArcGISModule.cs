@@ -45,26 +45,29 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ArcGISSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISReceiveBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
+    builder
+      .RegisterType<ArcGISToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<Unit>>()
+      .InstancePerLifetimeScope();
 
     // Operations
     builder.RegisterType<ReceiveOperation>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
+    builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().InstancePerLifetimeScope();
 
     // Object Builders
-    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
+    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
     // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // binding dependencies
-    builder.RegisterType<CancellationManager>().InstancePerDependency();
+    builder.RegisterType<CancellationManager>().InstancePerLifetimeScope();
 
     // register send filters
-    builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerDependency();
+    builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerLifetimeScope();
 
     // register send operation and dependencies
-    builder.RegisterType<SendOperation>().SingleInstance();
-    builder.RegisterType<RootObjectBuilder>().SingleInstance();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
 
     //POC: how tf does this work?
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();
