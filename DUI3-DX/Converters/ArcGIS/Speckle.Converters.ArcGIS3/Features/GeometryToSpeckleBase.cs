@@ -1,4 +1,3 @@
-using ArcGIS.Core.Geometry;
 using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -8,16 +7,16 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>>
 {
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointToSpeckleConverter;
-  private readonly IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
-  private readonly IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
-  private readonly IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> _polygonFeatureConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointToSpeckleConverter;
+  private readonly IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
+  private readonly IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
+  private readonly IRawConversion<ACG.Polygon, IReadOnlyList<GisPolygonGeometry>> _polygonFeatureConverter;
 
   public GeometryToSpeckleBaseList(
-    IRawConversion<MapPoint, SOG.Point> pointToSpeckleConverter,
-    IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
-    IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
-    IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> polygonFeatureConverter
+    IRawConversion<ACG.MapPoint, SOG.Point> pointToSpeckleConverter,
+    IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
+    IRawConversion<ACG.Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
+    IRawConversion<ACG.Polygon, IReadOnlyList<GisPolygonGeometry>> polygonFeatureConverter
   )
   {
     _pointToSpeckleConverter = pointToSpeckleConverter;
@@ -32,10 +31,10 @@ public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geo
     {
       return target switch
       {
-        MapPoint point => new List<SOG.Point>() { _pointToSpeckleConverter.RawConvert(point) },
-        Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
-        Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
-        Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
+        ACG.MapPoint point => new List<SOG.Point>() { _pointToSpeckleConverter.RawConvert(point) },
+        ACG.Multipoint multipoint => _multiPointFeatureConverter.RawConvert(multipoint),
+        ACG.Polyline polyline => _polylineFeatureConverter.RawConvert(polyline),
+        ACG.Polygon polygon => _polygonFeatureConverter.RawConvert(polygon),
         _ => throw new NotSupportedException($"No conversion found for {target.GetType().Name}"),
       };
     }

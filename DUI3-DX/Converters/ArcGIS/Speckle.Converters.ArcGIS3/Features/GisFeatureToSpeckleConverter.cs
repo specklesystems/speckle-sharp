@@ -7,11 +7,9 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 {
-  private readonly IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> _geometryConverter;
+  private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
 
-  public GisFeatureToSpeckleConverter(
-    IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>> geometryConverter
-  )
+  public GisFeatureToSpeckleConverter(IRawConversion<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
   {
     _geometryConverter = geometryConverter;
   }
@@ -20,7 +18,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 
   public GisFeature RawConvert(Row target)
   {
-    var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
+    var shape = (ACG.Geometry)target["Shape"];
     var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
     // get attributes
