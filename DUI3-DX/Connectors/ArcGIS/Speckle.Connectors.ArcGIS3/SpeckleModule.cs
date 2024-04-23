@@ -4,7 +4,6 @@ using ArcGIS.Desktop.Framework;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.ArcGIS.DependencyInjection;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -38,11 +37,7 @@ internal class SpeckleModule : Module
     // Register Settings
     var arcgisSettings = new ArcGISSettings(HostApplications.ArcGIS, HostAppVersion.v3);
 
-    Container
-      .AddModule(new AutofacArcGISModule())
-      .LoadAutofacModules(arcgisSettings.Modules)
-      .AddSingletonInstance(arcgisSettings)
-      .Build();
+    Container.LoadAutofacModules(arcgisSettings.Modules).AddSingletonInstance(arcgisSettings).Build();
   }
 
   /// <summary>
