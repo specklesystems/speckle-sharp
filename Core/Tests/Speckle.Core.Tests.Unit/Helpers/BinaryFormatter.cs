@@ -56,8 +56,7 @@ public class BinaryFormatterTests
     {
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
       Assert.Throws<ArgumentNullException>(
-        () =>
-          new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms2, null)
+        () => new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter().Serialize(ms2, null)
       );
 #pragma warning restore SYSLIB0011 // Type or member is obsolete
     }
