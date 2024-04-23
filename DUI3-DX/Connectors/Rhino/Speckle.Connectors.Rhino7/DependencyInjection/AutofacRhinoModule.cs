@@ -20,6 +20,7 @@ using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
@@ -38,7 +39,7 @@ public class AutofacRhinoModule : Module
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
-    builder.RegisterType<SpeckleRhinoPanel>().SingleInstance();
+    builder.RegisterType<Dui3ControlWebView>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types

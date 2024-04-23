@@ -1,4 +1,5 @@
 using Rhino;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.HostApp;
 using Speckle.Connectors.Rhino7.Interfaces;
 using Speckle.Connectors.Rhino7.Plugin;
@@ -8,10 +9,10 @@ namespace Speckle.Connectors.Rhino7.DependencyInjection;
 public class RhinoPlugin : IRhinoPlugin
 {
   private readonly RhinoIdleManager _idleManager;
-  private readonly SpeckleRhinoPanel _panel;
+  private readonly Dui3ControlWebView _panel;
   private readonly RhinoSettings _settings;
 
-  public RhinoPlugin(SpeckleRhinoPanel panel, RhinoSettings settings, RhinoIdleManager idleManager)
+  public RhinoPlugin(Dui3ControlWebView panel, RhinoSettings settings, RhinoIdleManager idleManager)
   {
     _panel = panel;
     _settings = settings;

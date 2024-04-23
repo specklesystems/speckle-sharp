@@ -10,6 +10,7 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Connectors.Autocad.Interfaces;
+using Speckle.Connectors.DUI.WebView;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
@@ -51,7 +52,7 @@ public class AutocadCommand
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
     _autocadPlugin.Initialise();
 
-    var panelWebView = Container.Resolve<Dui3PanelWebView>();
+    var panelWebView = Container.Resolve<Dui3ControlWebView>();
 
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
 
