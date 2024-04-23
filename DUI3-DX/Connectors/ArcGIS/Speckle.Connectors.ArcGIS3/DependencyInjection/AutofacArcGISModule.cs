@@ -49,6 +49,7 @@ public class AutofacArcGISModule : Module
 
     // Operations
     builder.RegisterType<ReceiveOperation>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();

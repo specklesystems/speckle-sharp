@@ -53,8 +53,8 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
           // getting rid of forbidden symbols in the class name:
           // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
-          string featureClassName =
-            $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
+          string featureClassName = target.id;
+          //  $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
 
           string wktString = string.Empty;
           if (target.crs is not null && target.crs.wkt is not null)
