@@ -1,5 +1,6 @@
 using System.Reflection;
 using Speckle.DllConflictManagement.Analytics;
+using Speckle.DllConflictManagement.ConflictManagementOptions;
 using Speckle.DllConflictManagement.EventEmitter;
 
 namespace Speckle.DllConflictManagement;
@@ -198,13 +199,13 @@ public sealed class DllConflictManager
   {
     if (obj == null)
     {
-      throw new ArgumentNullException("obj");
+      throw new ArgumentNullException(nameof(obj));
     }
 
     FieldInfo fi =
       obj.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
       ?? throw new ArgumentOutOfRangeException(
-        "propName",
+        nameof(fieldName),
         string.Format("Property {0} was not found in Type {1}", fieldName, obj.GetType().FullName)
       );
 

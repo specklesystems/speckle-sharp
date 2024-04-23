@@ -19,6 +19,7 @@ using Speckle.DllConflictManagement;
 using Speckle.DllConflictManagement.Serialization;
 using Speckle.DllConflictManagement.Analytics;
 using Speckle.DllConflictManagement.EventEmitter;
+using Speckle.DllConflictManagement.ConflictManagementOptions;
 
 namespace Speckle.ConnectorRevit.Entry;
 

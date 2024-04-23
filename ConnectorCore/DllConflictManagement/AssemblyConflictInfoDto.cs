@@ -52,11 +52,11 @@ public static class AssemblyConflictInfoExtensions
     }
   }
 
-  private static readonly string[] separator = new[] { "Autodesk" };
+  private static readonly string[] s_separator = new[] { "Autodesk" };
 
   private static string GetPathFromAutodeskOrFullPath(string fullPath)
   {
-    string[] splitOnAutodesk = fullPath.Split(separator, StringSplitOptions.None);
+    string[] splitOnAutodesk = fullPath.Split(s_separator, StringSplitOptions.None);
 
     if (splitOnAutodesk.Length == 2)
     {

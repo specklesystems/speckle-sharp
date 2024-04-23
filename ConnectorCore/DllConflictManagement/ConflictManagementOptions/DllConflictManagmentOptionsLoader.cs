@@ -1,7 +1,6 @@
-using Speckle.DllConflictManagement.ConflictManagementOptions;
 using Speckle.DllConflictManagement.Serialization;
 
-namespace Speckle.DllConflictManagement;
+namespace Speckle.DllConflictManagement.ConflictManagementOptions;
 
 public sealed class DllConflictManagmentOptionsLoader
 {

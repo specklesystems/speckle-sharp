@@ -55,7 +55,7 @@ public sealed class AnalyticsWithoutDependencies
   /// <param name="eventName">Name of the even</param>
   /// <param name="customProperties">Additional parameters to pass in to event</param>
   /// <param name="isAction">True if it's an action performed by a logged user</param>
-  public void TrackEvent(Events eventName, Dictionary<string, object>? customProperties = null, bool isAction = true)
+  public void TrackEvent(Events eventName, Dictionary<string, object?>? customProperties = null, bool isAction = true)
   {
     Task.Run(async () => await TrackEventAsync(eventName, customProperties, isAction).ConfigureAwait(false));
   }
@@ -73,7 +73,7 @@ public sealed class AnalyticsWithoutDependencies
   )]
   private async Task TrackEventAsync(
     Events eventName,
-    Dictionary<string, object>? customProperties = null,
+    Dictionary<string, object?>? customProperties = null,
     bool isAction = true
   )
   {
@@ -86,7 +86,7 @@ public sealed class AnalyticsWithoutDependencies
     try
     {
       var executingAssembly = Assembly.GetExecutingAssembly();
-      var properties = new Dictionary<string, object>
+      var properties = new Dictionary<string, object?>
       {
         { "distinct_id", "undefined" },
         { "server_id", "no-account-server" },
@@ -108,7 +108,7 @@ public sealed class AnalyticsWithoutDependencies
 
       if (customProperties != null)
       {
-        foreach (KeyValuePair<string, object> customProp in customProperties)
+        foreach (KeyValuePair<string, object?> customProp in customProperties)
         {
           properties[customProp.Key] = customProp.Value;
         }
