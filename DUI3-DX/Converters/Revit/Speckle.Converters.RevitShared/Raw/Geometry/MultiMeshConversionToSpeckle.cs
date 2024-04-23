@@ -3,12 +3,15 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class MeshConversionToSpeckle : IRawConversion<List<DB.Mesh>, List<SOG.Mesh>>
+public class MultiMeshConversionToSpeckle : IRawConversion<List<DB.Mesh>, List<SOG.Mesh>>
 {
   private readonly RevitConversionContextStack _contextStack;
   private readonly MeshDataTriangulator _meshDataTriangulator;
 
-  public MeshConversionToSpeckle(RevitConversionContextStack contextStack, MeshDataTriangulator meshDataTriangulator)
+  public MultiMeshConversionToSpeckle(
+    RevitConversionContextStack contextStack,
+    MeshDataTriangulator meshDataTriangulator
+  )
   {
     _contextStack = contextStack;
     _meshDataTriangulator = meshDataTriangulator;
