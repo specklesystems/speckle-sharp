@@ -2,6 +2,7 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Core.Geometry;
+using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
@@ -42,71 +43,76 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
     try
     {
       // POC: define the best place to start QueuedTask (entire receive or per converter)
-      string databasePath = _arcGISProjectUtils.GetDatabasePath();
-      FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
-      Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
-      SchemaBuilder schemaBuilder = new(geodatabase);
-
-      // getting rid of forbidden symbols in the class name:
-      // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
-      string featureClassName = target.id;
-      //  $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
-
-      string wktString = string.Empty;
-      if (target.crs is not null && target.crs.wkt is not null)
-      {
-        wktString = target.crs.wkt.ToString();
-      }
-      SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
-
-      GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
-
-      // Create FeatureClass
-      List<FieldDescription> fields = new();
-      List<string> fieldAdded = new();
-      foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
-      {
-        if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      return QueuedTask
+        .Run(() =>
         {
-          // POC: TODO: choose the right type for Field
-          // TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+          string databasePath = _arcGISProjectUtils.GetDatabasePath();
+          FileGeodatabaseConnectionPath fileGeodatabaseConnectionPath = new(new Uri(databasePath));
+          Geodatabase geodatabase = new(fileGeodatabaseConnectionPath);
+          SchemaBuilder schemaBuilder = new(geodatabase);
 
-          // POC: assemble constants in a shared place
-          // fields.Add(new FieldDescription(field, FieldType.Integer));
-          fields.Add(FieldDescription.CreateStringField(field.Key, 255)); // (int)(long)target.attributes[field.Value]));
-          fieldAdded.Add(field.Key);
-        }
-      }
-      try
-      {
-        FeatureClassDescription featureClassDescription =
-          new(featureClassName, fields, new ShapeDescription(geomType, spatialRef));
-        FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
-      }
-      catch (ArgumentException ex)
-      {
-        // if name has invalid characters/combinations
-        throw new ArgumentException($"{ex.Message}: {featureClassName}");
-      }
+          // getting rid of forbidden symbols in the class name:
+          // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
+          string featureClassName = target.id;
+          //  $"{target.id}___{target.name.Replace(" ", "_").Replace("%", "_").Replace("*", "_")}";
 
-      bool buildStatus = schemaBuilder.Build();
-      if (!buildStatus)
-      {
-        // POC: log somewhere the error in building the feature class
-        IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
-      }
+          string wktString = string.Empty;
+          if (target.crs is not null && target.crs.wkt is not null)
+          {
+            wktString = target.crs.wkt.ToString();
+          }
+          SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
-      // Add features to the FeatureClass
-      FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
-      // TODO: repeat for other geometry types
-      if (geomType == GeometryType.Multipoint)
-      {
-        geodatabase.ApplyEdits(() =>
-        {
-          _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, target, fieldAdded, _gisGeometryConverter);
-        });
-      }
-      return featureClassName;
+          GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
+
+          // Create FeatureClass
+          List<FieldDescription> fields = new();
+          List<string> fieldAdded = new();
+          foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
+          {
+            if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+            {
+              // POC: TODO: choose the right type for Field
+              // TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+
+              // POC: assemble constants in a shared place
+              // fields.Add(new FieldDescription(field, FieldType.Integer));
+              fields.Add(FieldDescription.CreateStringField(field.Key, 255)); // (int)(long)target.attributes[field.Value]));
+              fieldAdded.Add(field.Key);
+            }
+          }
+          try
+          {
+            FeatureClassDescription featureClassDescription =
+              new(featureClassName, fields, new ShapeDescription(geomType, spatialRef));
+            FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
+          }
+          catch (ArgumentException ex)
+          {
+            // if name has invalid characters/combinations
+            throw new ArgumentException($"{ex.Message}: {featureClassName}");
+          }
+
+          bool buildStatus = schemaBuilder.Build();
+          if (!buildStatus)
+          {
+            // POC: log somewhere the error in building the feature class
+            IReadOnlyList<string> errors = schemaBuilder.ErrorMessages;
+          }
+
+          // Add features to the FeatureClass
+          FeatureClass newFeatureClass = geodatabase.OpenDataset<FeatureClass>(featureClassName);
+          // TODO: repeat for other geometry types
+          if (geomType == GeometryType.Multipoint)
+          {
+            geodatabase.ApplyEdits(() =>
+            {
+              _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, target, fieldAdded, _gisGeometryConverter);
+            });
+          }
+          return featureClassName;
+        })
+        .Result;
     }
     catch (GeodatabaseException exObj)
     {
