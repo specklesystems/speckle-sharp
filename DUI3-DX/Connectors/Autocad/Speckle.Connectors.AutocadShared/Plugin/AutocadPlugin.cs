@@ -7,10 +7,10 @@ namespace Speckle.Connectors.Autocad.Plugin;
 public class AutocadPlugin : IAutocadPlugin
 {
   private readonly AutocadIdleManager _idleManager;
-  private readonly Dui3ControlWebView _panel;
+  private readonly DUI3ControlWebView _panel;
   private readonly AutocadSettings _settings;
 
-  public AutocadPlugin(Dui3ControlWebView panel, AutocadSettings settings, AutocadIdleManager idleManager)
+  public AutocadPlugin(DUI3ControlWebView panel, AutocadSettings settings, AutocadIdleManager idleManager)
   {
     _panel = panel;
     _settings = settings;

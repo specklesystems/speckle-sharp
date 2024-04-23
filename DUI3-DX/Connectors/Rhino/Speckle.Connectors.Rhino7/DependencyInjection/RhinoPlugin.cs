@@ -9,10 +9,10 @@ namespace Speckle.Connectors.Rhino7.DependencyInjection;
 public class RhinoPlugin : IRhinoPlugin
 {
   private readonly RhinoIdleManager _idleManager;
-  private readonly Dui3ControlWebView _panel;
+  private readonly DUI3ControlWebView _panel;
   private readonly RhinoSettings _settings;
 
-  public RhinoPlugin(Dui3ControlWebView panel, RhinoSettings settings, RhinoIdleManager idleManager)
+  public RhinoPlugin(DUI3ControlWebView panel, RhinoSettings settings, RhinoIdleManager idleManager)
   {
     _panel = panel;
     _settings = settings;

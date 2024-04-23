@@ -34,7 +34,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
-    builder.RegisterType<Dui3ControlWebView>().SingleInstance();
+    builder.RegisterType<DUI3ControlWebView>().SingleInstance();
     builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
 
     // Register bindings

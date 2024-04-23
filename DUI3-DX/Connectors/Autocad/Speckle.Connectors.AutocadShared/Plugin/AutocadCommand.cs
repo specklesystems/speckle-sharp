@@ -52,7 +52,7 @@ public class AutocadCommand
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
     _autocadPlugin.Initialise();
 
-    var panelWebView = Container.Resolve<Dui3ControlWebView>();
+    var panelWebView = Container.Resolve<DUI3ControlWebView>();
 
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
 

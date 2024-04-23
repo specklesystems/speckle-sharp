@@ -12,6 +12,6 @@ public class SpeckleDUI3Wrapper : UserControl
 
   private void Initialize()
   {
-    Content = SpeckleModule.Current.Container.Resolve<Dui3ControlWebView>();
+    Content = SpeckleModule.Current.Container.Resolve<DUI3ControlWebView>();
   }
 }
