@@ -46,19 +46,22 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     speckleLayer.units = _contextStack.Current.SpeckleUnits;
 
     // get feature class fields
-    var attributes = new Base();
-    IReadOnlyList<Field> fields = target.GetTable().GetDefinition().GetFields();
-    foreach (Field field in fields)
+    var layerAttributes = new Base();
+    var dispayTable = target as IDisplayTable;
+    IReadOnlyList<FieldDescription> fieldDescriptions = dispayTable.GetFieldDescriptions();
+    foreach (FieldDescription field in fieldDescriptions)
     {
       string name = field.Name;
       if (name == "Shape")
       {
         continue;
       }
-      // TODO more field filters (e.g. visible only)
-      attributes[name] = field.FieldType;
+      if (field.IsVisible)
+      {
+        layerAttributes[name] = field.Type;
+      }
     }
-    speckleLayer.attributes = attributes;
+    speckleLayer.attributes = layerAttributes;
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
     // get a simple geometry type
@@ -92,7 +95,14 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         using (Row row = rowCursor.Current)
         {
           GisFeature element = _gisFeatureConverter.RawConvert(row);
-          speckleLayer.elements.Add(element);
+
+          // replace "attributes", to remove non-visible layer attributes
+          Base elementAttributes = new();
+          foreach (FieldDescription field in fieldDescriptions)
+          {
+            elementAttributes[field.Name] = element.attributes[field.Name];
+          }
+          element.attributes = elementAttributes;
 
           // differentiate between Ring Multipatches and Mesh Multipatches
           if (
@@ -105,6 +115,8 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
           {
             spekleGeometryType = "Polygon";
           }
+
+          speckleLayer.elements.Add(element);
         }
       }
     }

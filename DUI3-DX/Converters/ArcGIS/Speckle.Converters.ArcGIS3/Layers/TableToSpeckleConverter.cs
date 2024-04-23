@@ -40,11 +40,11 @@ public class StandaloneTableToSpeckleConverter
     var fieldDescriptions = dispayTable.GetFieldDescriptions();
     foreach (var field in fieldDescriptions)
     {
-      // POC: if (field.IsVisible) // add later when consistent with VectorLayer fields
-      // {
-      string name = field.Name;
-      attributes[name] = field.Type;
-      // }
+      if (field.IsVisible)
+      {
+        string name = field.Name;
+        attributes[name] = field.Type;
+      }
     }
 
     speckleLayer.attributes = attributes;
@@ -58,6 +58,15 @@ public class StandaloneTableToSpeckleConverter
         using (Row row = rowCursor.Current)
         {
           GisFeature element = _gisFeatureConverter.RawConvert(row);
+
+          // replace "attributes", to remove non-visible layer attributes
+          Base elementAttributes = new();
+          foreach (FieldDescription field in fieldDescriptions)
+          {
+            elementAttributes[field.Name] = element.attributes[field.Name];
+          }
+          element.attributes = elementAttributes;
+
           speckleLayer.elements.Add(element);
         }
       }

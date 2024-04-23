@@ -5,7 +5,10 @@ namespace Objects.GIS;
 
 public class GisFeature : Base
 {
-  public GisFeature() { }
+  public GisFeature()
+  {
+    attributes = new Base();
+  }
 
   public GisFeature(Base attributes)
   {
@@ -36,5 +39,5 @@ public class GisFeature : Base
 
   [DetachProperty]
   public List<Base>? displayValue { get; set; }
-  public Base? attributes { get; set; }
+  public Base attributes { get; set; }
 }
