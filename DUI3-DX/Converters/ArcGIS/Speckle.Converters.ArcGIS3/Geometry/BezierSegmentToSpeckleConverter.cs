@@ -1,25 +1,24 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class BezierSegmentToSpeckleConverter : IRawConversion<CubicBezierSegment, SOG.Polyline>
+public class BezierSegmentToSpeckleConverter : IRawConversion<ACG.CubicBezierSegment, SOG.Polyline>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public BezierSegmentToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter
+    IConversionContextStack<Map, ACG.Unit> contextStack,
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public SOG.Polyline RawConvert(CubicBezierSegment target)
+  public SOG.Polyline RawConvert(ACG.CubicBezierSegment target)
   {
     // Determine the number of vertices to create along the arc
     int numVertices = Math.Max((int)target.Length, 3); // Determine based on desired segment length or other criteria
@@ -43,7 +42,7 @@ public class BezierSegmentToSpeckleConverter : IRawConversion<CubicBezierSegment
         + 3 * (1 - t) * t * t * target.ControlPoint2.Y
         + t * t * t * target.EndPoint.Y;
 
-      MapPoint pointOnCurve = MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
+      ACG.MapPoint pointOnCurve = ACG.MapPointBuilderEx.CreateMapPoint(x, y, target.SpatialReference);
       points.Add(_pointConverter.RawConvert(pointOnCurve));
     }
 
