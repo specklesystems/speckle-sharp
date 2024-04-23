@@ -168,8 +168,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
-      // 6 - Create Version
-      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
