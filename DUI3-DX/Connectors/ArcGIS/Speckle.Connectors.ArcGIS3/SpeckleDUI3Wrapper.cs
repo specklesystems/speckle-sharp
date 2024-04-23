@@ -1,6 +1,7 @@
 using System.Windows.Controls;
+using Speckle.Connectors.ArcGIS.HostApp;
 
-namespace Speckle.Connectors.ArcGIS.HostApp;
+namespace Speckle.Connectors.ArcGIS;
 
 public class SpeckleDUI3Wrapper : UserControl
 {
