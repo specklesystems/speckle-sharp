@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -24,7 +25,7 @@ public sealed partial class DUI3ControlWebView : UserControl
   {
     if (!Browser.IsInitialized)
     {
-      throw new SpeckleException("Failed to execute script, Webview2 is not initialized yet.");
+      throw new InvalidOperationException("Failed to execute script, Webview2 is not initialized yet.");
     }
 
     Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
