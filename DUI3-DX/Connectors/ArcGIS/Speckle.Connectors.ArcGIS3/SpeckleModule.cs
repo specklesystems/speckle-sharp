@@ -4,7 +4,6 @@ using ArcGIS.Desktop.Framework;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.ArcGIS.DependencyInjection;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
