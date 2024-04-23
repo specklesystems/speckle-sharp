@@ -4,7 +4,6 @@ using Objects.GIS;
 using ArcGIS.Core.Data;
 using Speckle.Converters.ArcGIS3.Geometry;
 using ArcGIS.Core.Data.Exceptions;
-using ArcGIS.Desktop.Mapping;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
