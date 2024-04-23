@@ -9,12 +9,12 @@ public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
 {
   private readonly RevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
-  private readonly ToSpeckleScalingService _scalingService;
+  private readonly ScalingServiceToSpeckle _scalingService;
 
   public LineConversionToSpeckle(
     RevitConversionContextStack contextStack,
     IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
-    ToSpeckleScalingService scalingService
+    ScalingServiceToSpeckle scalingService
   )
   {
     _contextStack = contextStack;
