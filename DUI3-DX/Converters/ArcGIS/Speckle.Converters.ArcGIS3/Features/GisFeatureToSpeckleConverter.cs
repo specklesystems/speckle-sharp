@@ -50,10 +50,28 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       var shape = (ArcGIS.Core.Geometry.Geometry)target["Shape"];
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
-      // re-shape the GisFeature: if shapes is a list of Meshes, set them as DisplayValue
+      // re-shape the GisFeature:
+      // if shapes is a list of Meshes, set them as DisplayValue instead of geometry
       if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
       {
-        return new GisFeature(attributes, speckleShapes);
+        var displayVal = speckleShapes;
+        return new GisFeature(attributes, displayVal);
+      }
+      // if shapes is a list of GisPolygonGeometry, create DisplayValue for those with no voids
+      if (speckleShapes.Count > 0 && speckleShapes[0] is GisPolygonGeometry)
+      {
+        List<Base> displayVal = new();
+        foreach (var poly in speckleShapes)
+        {
+          if (poly is GisPolygonGeometry polygon && polygon.voids.Count == 0)
+          {
+            int ptCount = polygon.boundary.GetPoints().Count;
+            List<int> faces = new() { ptCount };
+            faces.AddRange(Enumerable.Range(0, ptCount).ToList());
+            displayVal.Add(new SOG.Mesh(polygon.boundary.value, faces));
+          }
+        }
+        return new GisFeature(speckleShapes, attributes, displayVal);
       }
       // otherwise set shapes as Geometries
       return new GisFeature(speckleShapes, attributes);

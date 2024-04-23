@@ -36,13 +36,15 @@ public class StandaloneTableToSpeckleConverter
 
     // get feature class fields
     var attributes = new Base();
-    IReadOnlyList<Field> fields = target.GetDefinition().GetFields();
+    /*
+    IReadOnlyList<Field> fields = target.GetFields();
     foreach (Field field in fields)
     {
       string name = field.Name;
       // TODO more field filters (e.g. visible only)
       attributes[name] = field.FieldType;
     }
+    */
     speckleLayer.attributes = attributes;
     string spekleGeometryType = "None";
 
