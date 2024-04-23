@@ -1,5 +1,5 @@
 using System.IO;
-using Speckle.Core.Kits; // POC: this dependency should be removed, it causes to load all kits?
+using Speckle.Core.Kits; // POC: Must go https://spockle.atlassian.net/browse/CNX-9325
 
 namespace Speckle.Connectors.Autocad.HostApp;
 

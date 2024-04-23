@@ -123,6 +123,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   {
     try
     {
+      using var uow = _unitOfWorkFactory.Resolve<SendOperation<(DBObject obj, string applicationId)>>();
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
@@ -150,7 +151,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         SourceApplication = _autocadSettings.HostAppInfo.Name
       };
 
-      var sendResult = await _sendOperation
+      var sendResult = await uow.Service
         .Execute(
           autocadObjects,
           sendInfo,

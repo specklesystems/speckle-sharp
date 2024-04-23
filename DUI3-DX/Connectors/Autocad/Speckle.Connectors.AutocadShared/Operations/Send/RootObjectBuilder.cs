@@ -12,6 +12,7 @@ namespace Speckle.Connectors.Autocad.Operations.Send;
 public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applicationId)>
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly string[] _documentPathSeparator = { "\\" };
 
   public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
   {
@@ -33,13 +34,14 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
     Collection modelWithLayers =
       new()
       {
-        name = Application.DocumentManager.CurrentDocument.Name
-          .Split(s_separator, StringSplitOptions.None)
+        name = Application.DocumentManager.CurrentDocument.Name // POC: https://spockle.atlassian.net/browse/CNX-9319
+          .Split(_documentPathSeparator, StringSplitOptions.None)
           .Reverse()
           .First(),
         collectionType = "root"
       };
 
+    // Cached dictionary to create Collection for autocad entity layers. We first look if collection exists. If so use it otherwise create new one for that layer.
     Dictionary<string, Collection> collectionCache = new();
     int count = 0;
 
@@ -55,7 +57,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
         Base converted;
         if (
           !sendInfo.ChangedObjectIds.Contains(applicationId)
-          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value)
+          && sendInfo.ConvertedObjects.TryGetValue(applicationId + sendInfo.ProjectId, out ObjectReference value) // POC: Interface out constructing keys here to use it otherplaces with a same code. -> https://spockle.atlassian.net/browse/CNX-9313
         )
         {
           converted = value;
@@ -103,6 +105,4 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
 
     return modelWithLayers;
   }
-
-  private static readonly string[] s_separator = new[] { "\\" };
 }

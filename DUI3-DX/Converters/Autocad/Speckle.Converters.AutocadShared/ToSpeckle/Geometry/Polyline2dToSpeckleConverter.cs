@@ -200,6 +200,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
   {
     nextPoint = segment.EndPoint;
 
+    // POC: will be reconsidered when we started back and forth testing on AutocadPolycurve https://spockle.atlassian.net/browse/CNX-9327
     if (connectionPoint == null)
     {
       return segment;

@@ -32,19 +32,20 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
     CancellationToken ct = default
   )
   {
-    IEnumerable<RhinoObject> rhinoObjects = objects as RhinoObject[] ?? objects.ToArray();
+    var rhinoObjects = objects.ToList();
     if (!rhinoObjects.Any())
     {
+      // POC: not sure if we would want to throw in here?
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    Base commitObject = ConvertObjects(rhinoObjects.ToList(), sendInfo, onOperationProgressed, ct);
+    Base commitObject = ConvertObjects(rhinoObjects, sendInfo, onOperationProgressed, ct);
 
     return commitObject;
   }
 
   private Collection ConvertObjects(
-    List<RhinoObject> rhinoObjects,
+    IEnumerable<RhinoObject> rhinoObjects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
@@ -61,7 +62,8 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
     Dictionary<int, Collection> layerCollectionCache = new(); // POC: This seems to always start empty, so it's not caching anything out here.
 
     // POC: Handle blocks.
-    foreach (RhinoObject rhinoObject in rhinoObjects)
+    IEnumerable<RhinoObject> rhinoObjectsList = rhinoObjects.ToList();
+    foreach (RhinoObject rhinoObject in rhinoObjectsList)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -93,7 +95,7 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
         // add to host
         collectionHost.elements.Add(converted);
-        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
+        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjectsList.Count());
       }
       // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
       catch (SpeckleConversionException e)

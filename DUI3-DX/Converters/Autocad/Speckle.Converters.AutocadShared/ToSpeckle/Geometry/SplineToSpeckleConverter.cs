@@ -33,7 +33,7 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
     // get nurbs and geo data
     ADB.NurbsData data = target.NurbsData;
 
-    // HACK: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
+    // POC: HACK: check for incorrectly closed periodic curves (this seems like acad bug, has resulted from receiving rhino curves)
     bool periodicClosed = false;
     double length = 0;
     SOP.Interval domain = new();

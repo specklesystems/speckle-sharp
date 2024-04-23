@@ -48,7 +48,7 @@ public class AutocadSelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
-    // POC: Will be addressed to move it into AutocadContext!
+    // POC: Will be addressed to move it into AutocadContext! https://spockle.atlassian.net/browse/CNX-9319
     Document doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
     List<string> objectTypes = new();

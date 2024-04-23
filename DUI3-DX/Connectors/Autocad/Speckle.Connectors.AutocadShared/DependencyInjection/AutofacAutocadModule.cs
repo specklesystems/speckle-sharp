@@ -47,7 +47,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
 
     // Operations
-    builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().SingleInstance();
+    builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().SingleInstance();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
