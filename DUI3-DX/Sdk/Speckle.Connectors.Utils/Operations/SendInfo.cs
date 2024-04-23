@@ -8,6 +8,7 @@ public struct SendInfo
   public string AccountId { get; set; }
   public string ProjectId { get; set; }
   public string ModelId { get; set; }
+  public string SourceApplication { get; set; }
   public Dictionary<string, ObjectReference> ConvertedObjects { get; set; }
   public HashSet<string> ChangedObjectIds { get; set; }
 }

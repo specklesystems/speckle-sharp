@@ -51,7 +51,7 @@ public sealed class RootObjectSender : IRootObjectSender
         {
           streamId = sendInfo.ProjectId,
           branchName = sendInfo.ModelId,
-          sourceApplication = "Rhino",
+          sourceApplication = sendInfo.SourceApplication,
           objectId = sendResult.rootObjId
         },
         ct

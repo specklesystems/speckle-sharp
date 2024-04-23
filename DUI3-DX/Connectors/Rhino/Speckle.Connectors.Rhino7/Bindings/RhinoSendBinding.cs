@@ -34,6 +34,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
   private readonly List<ISendFilter> _sendFilters;
   private readonly SendOperation<RhinoObject> _sendOperation;
   private readonly CancellationManager _cancellationManager;
+  private readonly RhinoSettings _rhinoSettings;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -52,6 +53,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     IEnumerable<ISendFilter> sendFilters,
     SendOperation<RhinoObject> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory,
+    RhinoSettings rhinoSettings,
     CancellationManager cancellationManager
   )
   {
@@ -60,6 +62,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendOperation = sendOperation;
     _sendFilters = sendFilters.ToList();
+    _rhinoSettings = rhinoSettings;
     _cancellationManager = cancellationManager;
     Parent = parent;
     Commands = new SendBindingUICommands(parent); // POC: Commands are tightly coupled with their bindings, at least for now, saves us injecting a factory.
@@ -159,7 +162,8 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         ProjectId = modelCard.ProjectId,
         ModelId = modelCard.ModelId,
         ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds
+        ChangedObjectIds = modelCard.ChangedObjectIds,
+        SourceApplication = _rhinoSettings.HostAppInfo.Name
       };
 
       var sendResult = await _sendOperation

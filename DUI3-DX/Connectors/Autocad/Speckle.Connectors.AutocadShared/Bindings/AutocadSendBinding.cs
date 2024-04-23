@@ -6,7 +6,6 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Operations;
@@ -27,6 +26,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly AutocadSettings _autocadSettings;
   private readonly SendOperation<(DBObject obj, string applicationId)> _sendOperation;
 
   /// <summary>
@@ -45,6 +45,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
+    AutocadSettings autocadSettings,
     SendOperation<(DBObject obj, string applicationId)> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory
   )
@@ -53,6 +54,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
     _sendOperation = sendOperation;
+    _autocadSettings = autocadSettings;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
 
@@ -130,10 +132,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      // 2 - Check account exist
-      Account account = AccountManager.GetAccount(modelCard.AccountId);
-
-      // 3 - Get elements to convert
+      // Get elements to convert
       List<(DBObject obj, string applicationId)> autocadObjects =
         Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.GetObjectIds());
       if (autocadObjects.Count == 0)
@@ -147,7 +146,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         ProjectId = modelCard.ProjectId,
         ModelId = modelCard.ModelId,
         ConvertedObjects = _convertedObjectReferences,
-        ChangedObjectIds = modelCard.ChangedObjectIds
+        ChangedObjectIds = modelCard.ChangedObjectIds,
+        SourceApplication = _autocadSettings.HostAppInfo.Name
       };
 
       var sendResult = await _sendOperation
