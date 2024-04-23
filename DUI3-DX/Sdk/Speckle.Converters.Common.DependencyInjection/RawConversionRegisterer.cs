@@ -1,3 +1,4 @@
+using System.Reflection;
 using Autofac;
 using Speckle.Converters.Common.Objects;
 
@@ -39,5 +40,28 @@ public static class RawConversionRegisterer
         .PropertiesAutowired(PropertyWiringOptions.AllowCircularDependencies)
         .InstancePerLifetimeScope();
     }
+  }
+
+  public static ContainerBuilder RegisterTypesInAssemblyAsInterface(
+    this ContainerBuilder containerBuilder,
+    Assembly assembly,
+    Type interfaceType
+  )
+  {
+    bool isGeneric = interfaceType.IsGenericType;
+    foreach (var type in assembly.GetTypes().Where(type => type.IsClass && !type.IsAbstract))
+    {
+      IEnumerable<Type> interfaceTypes = type.GetInterfaces();
+      interfaceTypes = isGeneric
+        ? interfaceTypes.Where(it => it.IsGenericType && it.GetGenericTypeDefinition() == interfaceType)
+        : interfaceTypes.Where(it => it == interfaceType);
+
+      foreach (var iterfaceTypeMatch in interfaceTypes)
+      {
+        containerBuilder.RegisterType(type).As(iterfaceTypeMatch).InstancePerLifetimeScope();
+      }
+    }
+
+    return containerBuilder;
   }
 }
