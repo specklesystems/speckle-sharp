@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
@@ -80,12 +80,13 @@ public class HostObjectBuilder : IHostObjectBuilder
           }
 
           object converted = converter.Convert(obj);
-          List<object> flattened = Core.Models.Utilities.FlattenToNativeConversionResult(converted);
+          List<object> flattened = Utilities.FlattenToHostConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
           {
             if (conversionResult == null)
             {
+              // POC: This needed to be double checked why we check null and continue
               continue;
             }
 

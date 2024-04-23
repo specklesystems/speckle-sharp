@@ -7,16 +7,16 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GeometryToSpeckleBaseList : IRawConversion<ArcGIS.Core.Geometry.Geometry, IReadOnlyList<Base>>
 {
-  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointToSpeckleConverter;
-  private readonly IRawConversion<ACG.Multipoint, List<SOG.Point>> _multiPointFeatureConverter;
-  private readonly IRawConversion<ACG.Polyline, List<SOG.Polyline>> _polylineFeatureConverter;
-  private readonly IRawConversion<ACG.Polygon, List<GisPolygonGeometry>> _polygonFeatureConverter;
+  private readonly IRawConversion<MapPoint, SOG.Point> _pointToSpeckleConverter;
+  private readonly IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> _multiPointFeatureConverter;
+  private readonly IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> _polylineFeatureConverter;
+  private readonly IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> _polygonFeatureConverter;
 
   public GeometryToSpeckleBaseList(
-    IRawConversion<ACG.MapPoint, SOG.Point> pointToSpeckleConverter,
-    IRawConversion<ACG.Multipoint, List<SOG.Point>> multiPointFeatureConverter,
-    IRawConversion<ACG.Polyline, List<SOG.Polyline>> polylineFeatureConverter,
-    IRawConversion<ACG.Polygon, List<GisPolygonGeometry>> polygonFeatureConverter
+    IRawConversion<MapPoint, SOG.Point> pointToSpeckleConverter,
+    IRawConversion<Multipoint, IReadOnlyList<SOG.Point>> multiPointFeatureConverter,
+    IRawConversion<Polyline, IReadOnlyList<SOG.Polyline>> polylineFeatureConverter,
+    IRawConversion<Polygon, IReadOnlyList<GisPolygonGeometry>> polygonFeatureConverter
   )
   {
     _pointToSpeckleConverter = pointToSpeckleConverter;

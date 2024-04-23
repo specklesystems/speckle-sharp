@@ -41,6 +41,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "ArcGIS"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
+    builder.RegisterType<ArcGISSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISReceiveBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
@@ -54,6 +55,9 @@ public class AutofacArcGISModule : Module
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
+
+    // register send filters
+    builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
     builder.RegisterType<SendOperation>().SingleInstance();

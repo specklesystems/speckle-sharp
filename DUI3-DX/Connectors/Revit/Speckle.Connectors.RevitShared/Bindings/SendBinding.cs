@@ -15,6 +15,7 @@ using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
+using Speckle.Autofac.DependencyInjection;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -26,24 +27,21 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   // POC: does it need injecting?
   private HashSet<string> ChangedObjectIds { get; set; } = new();
 
-  // POC: update SendOperation to be interfaced out and could be shared implementation
-  // could be abstract implementation
-  // In the context of the SEND operation, we're only ever expecting ONE conversion
-  private readonly SendOperation _sendOperation;
   private readonly IRevitIdleManager _idleManager;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
   public SendBinding(
     IRevitIdleManager idleManager,
     RevitContext revitContext,
     RevitDocumentStore store,
     IBridge bridge,
-    SendOperation sendOperation
+    IUnitOfWorkFactory unitOfWorkFactory
   )
     : base("sendBinding", store, bridge, revitContext)
   {
     _idleManager = idleManager;
+    _unitOfWorkFactory = unitOfWorkFactory;
     Commands = new SendBindingUICommands(bridge);
-    _sendOperation = sendOperation;
 
     // TODO expiry events
     // TODO filters need refresh events
@@ -71,8 +69,6 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   private async Task HandleSend(string modelCardId)
   {
-    // POC: should THIS be where we begin the UoW
-
     // POC: probably the CTS SHOULD be injected as InstancePerLifetimeScope and then
     // it can be injected where needed instead of passing it around like a bomb :D
     CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
@@ -82,7 +78,9 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
       throw new InvalidOperationException("No publish model card was found.");
     }
 
-    string versionId = await _sendOperation
+    using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
+
+    string versionId = await sendOperation.Service
       .Execute(
         modelCard.SendFilter,
         modelCard.AccountId,
