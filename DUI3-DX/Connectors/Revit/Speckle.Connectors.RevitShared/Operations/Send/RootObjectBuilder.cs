@@ -47,7 +47,14 @@ public class RootObjectBuilder
         continue;
       }
 
-      commitObject[obj.UniqueId] = _converter.Convert(obj);
+      try
+      {
+        commitObject[obj.UniqueId] = _converter.Convert(obj);
+      }
+      catch (SpeckleConversionException ex)
+      {
+        // POC: logging
+      }
     }
 
     return commitObject;
