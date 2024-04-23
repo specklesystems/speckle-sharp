@@ -2,10 +2,9 @@
   "solution": {
     "path": "..\\All.sln",
     "projects": [
-      "..\\batch-uploader\\ClientSDK\\BatchUploader.ClientSdk\\BatchUploader.ClientSdk.csproj",
-      "BatchUploadOperationDriver\\BatchUploadOperationDriver.csproj",
       "ConnectorCore\\BatchUploader.OperationDriver\\BatchUploader.OperationDriver.csproj",
       "ConnectorCore\\BatchUploader.Sdk\\BatchUploader.Sdk.csproj",
+      "ConnectorCore\\DllConflictManagement\\DllConflictManagement.csproj",
       "ConnectorRevit\\ConnectorRevit2020\\ConnectorRevit2020.csproj",
       "ConnectorRevit\\ConnectorRevit2021\\ConnectorRevit2021.csproj",
       "ConnectorRevit\\ConnectorRevit2022\\ConnectorRevit2022.csproj",
