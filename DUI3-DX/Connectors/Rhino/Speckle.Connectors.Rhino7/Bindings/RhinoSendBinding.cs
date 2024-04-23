@@ -166,7 +166,7 @@ public sealed class RhinoSendBinding : ISendBinding, ICancelable
         SourceApplication = _rhinoSettings.HostAppInfo.Name
       };
 
-      var sendResult = await _sendOperation
+      var sendResult = await unitOfWork.Service
         .Execute(
           rhinoObjects,
           sendInfo,
