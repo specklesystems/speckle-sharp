@@ -58,6 +58,7 @@ public class PointCloudToSpeckleConverter
 
     // prepare data for pointcloud
     List<SOG.Point> specklePts = new();
+    List<double> values = new();
     List<int> speckleColors = new();
     var renderer = target.GetRenderers()[0];
 
@@ -68,6 +69,7 @@ public class PointCloudToSpeckleConverter
         using (LasPoint pt = ptCursor.Current)
         {
           specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
+          values.Add(pt.ClassCode);
 
           // get color
           int color = 0;
@@ -114,6 +116,7 @@ public class PointCloudToSpeckleConverter
       {
         points = specklePts.SelectMany(pt => new List<double>() { pt.x, pt.y, pt.z }).ToList(),
         colors = speckleColors,
+        sizes = values,
         bbox = _boxConverter.RawConvert(target.QueryExtent()),
         units = _contextStack.Current.SpeckleUnits
       };
