@@ -2,7 +2,6 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;

@@ -4,6 +4,7 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Converters.ArcGIS3.Geometry;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -19,6 +20,7 @@ public class AutofacArcGISConverterModule : Module
     builder.RegisterType<ArcGISConverterToHost>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
     builder.RegisterType<FeatureClassUtils>().As<IFeatureClassUtils>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISProjectUtils>().As<IArcGISProjectUtils>().InstancePerLifetimeScope();
+    builder.RegisterType<GeometryUtils>().As<IGeometryUtils>().InstancePerLifetimeScope();
 
     // single stack per conversion
     builder

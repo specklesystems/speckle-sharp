@@ -40,7 +40,7 @@ public class StandaloneTableToSpeckleConverter
     var fieldDescriptions = dispayTable.GetFieldDescriptions();
     foreach (var field in fieldDescriptions)
     {
-      // if (field.IsVisible) // add later when consistent with VectorLayer fields
+      // POC: if (field.IsVisible) // add later when consistent with VectorLayer fields
       // {
       string name = field.Name;
       attributes[name] = field.Type;
@@ -49,12 +49,6 @@ public class StandaloneTableToSpeckleConverter
 
     speckleLayer.attributes = attributes;
     string spekleGeometryType = "None";
-
-    var cursor = dispayTable.Search();
-    if (cursor is RowCursor validCursor)
-    {
-      //
-    }
 
     using (RowCursor rowCursor = dispayTable.Search())
     {

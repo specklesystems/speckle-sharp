@@ -2,7 +2,7 @@ using ArcGIS.Core.CIM;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class GeometryUtils
+public class GeometryUtils : IGeometryUtils
 {
   public bool ValidateMesh(SOG.Mesh mesh)
   {

@@ -1,6 +1,5 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Geometry;
@@ -18,16 +17,19 @@ public class PointCloudToSpeckleConverter
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<Envelope, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IGeometryUtils _geomUtils;
 
   public PointCloudToSpeckleConverter(
     IRawConversion<MapPoint, SOG.Point> pointConverter,
     IRawConversion<Envelope, SOG.Box> boxConverter,
-    IConversionContextStack<Map, Unit> contextStack
+    IConversionContextStack<Map, Unit> contextStack,
+    IGeometryUtils geomUtils
   )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
+    _geomUtils = geomUtils;
   }
 
   public Base Convert(object target)
@@ -37,12 +39,11 @@ public class PointCloudToSpeckleConverter
 
   public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
   {
-    VectorLayer speckleLayer = new();
-    GeometryUtils geomUtils = new();
+    SGIS.VectorLayer speckleLayer = new();
 
     // get document CRS (for writing geometry coords)
     var spatialRef = _contextStack.Current.Document.SpatialReference;
-    speckleLayer.crs = new CRS
+    speckleLayer.crs = new SGIS.CRS
     {
       wkt = spatialRef.Wkt,
       name = spatialRef.Name,
@@ -64,7 +65,6 @@ public class PointCloudToSpeckleConverter
     {
       while (ptCursor.MoveNext())
       {
-        // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (LasPoint pt = ptCursor.Current)
         {
           specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
@@ -91,7 +91,7 @@ public class PointCloudToSpeckleConverter
                   if (classCode == groupClass.Values[i].FieldValues[0])
                   {
                     CIMColor symbolColor = groupClass.Symbol.Symbol.GetColor();
-                    color = geomUtils.CIMColorToInt(symbolColor);
+                    color = _geomUtils.CIMColorToInt(symbolColor);
                     speckleColors.Add(color);
                     break;
                   }
@@ -101,7 +101,7 @@ public class PointCloudToSpeckleConverter
           }
           else
           {
-            color = geomUtils.RGBToInt(pt.RGBColor);
+            color = _geomUtils.RGBToInt(pt.RGBColor);
             speckleColors.Add(color);
           }
           //

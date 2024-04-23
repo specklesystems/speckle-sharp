@@ -13,16 +13,19 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
   private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IGeometryUtils _geomUtils;
 
   public MultipatchFeatureToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
     IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> segmentConverter,
-    IRawConversion<MapPoint, SOG.Point> pointConverter
+    IRawConversion<MapPoint, SOG.Point> pointConverter,
+    IGeometryUtils geomUtils
   )
   {
     _contextStack = contextStack;
     _segmentConverter = segmentConverter;
     _pointConverter = pointConverter;
+    _geomUtils = geomUtils;
   }
 
   public IReadOnlyList<Base> RawConvert(Multipatch target)
@@ -31,8 +34,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
     int partCount = target.PartCount;
 
     // placeholder, needs to be declared in order to be used in the Ring patch type
-    GisPolygonGeometry polygonGeom = new() { voids = new List<SOG.Polyline>() };
-    GeometryUtils geomUtils = new();
+    GisPolygonGeometry polygonGeom = new() { };
 
     for (int idx = 0; idx < partCount; idx++)
     {
@@ -60,7 +62,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             pointCoords.Clear();
           }
         }
-        if (geomUtils.ValidateMesh(mesh))
+        if (_geomUtils.ValidateMesh(mesh))
         {
           meshList.Add(mesh);
         }
@@ -83,7 +85,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             pointCoords.Clear();
           }
         }
-        if (geomUtils.ValidateMesh(mesh))
+        if (_geomUtils.ValidateMesh(mesh))
         {
           meshList.Add(mesh);
         }
@@ -105,7 +107,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             mesh.faces.AddRange(new List<int>() { 3, 0, count - 2, count - 1 });
           }
         }
-        if (geomUtils.ValidateMesh(mesh))
+        if (_geomUtils.ValidateMesh(mesh))
         {
           meshList.Add(mesh);
         }
@@ -142,9 +144,6 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
       }
       else if (patchType == PatchType.Ring)
       {
-        // every outer ring is oriented clockwise
-        bool isClockwise = true;
-
         List<SOG.Point> allPatchPts = new();
         for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
         {
@@ -155,12 +154,11 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
           {
             allPatchPts.Add(convertedPt);
           }
-          else if (count == 3) // enough points to check polygon orientation
-          {
-            isClockwise = geomUtils.IsClockwisePolygon(allPatchPts);
-          }
         }
         SOG.Polyline polyline = new(pointCoords, _contextStack.Current.SpeckleUnits) { };
+
+        // every outer ring is oriented clockwise
+        bool isClockwise = _geomUtils.IsClockwisePolygon(allPatchPts);
         if (!isClockwise)
         {
           // add void to existing polygon
@@ -181,11 +179,6 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
       else
       {
         throw new NotSupportedException($"Patch type {patchType} is not supported");
-      }
-
-      if (idx > 2)
-      {
-        // break;
       }
     }
 
