@@ -36,23 +36,27 @@ public class StandaloneTableToSpeckleConverter
 
     // get feature class fields
     var attributes = new Base();
-    /*
-    IReadOnlyList<Field> fields = target.GetFields();
-    foreach (Field field in fields)
+    var dispayTable = target as IDisplayTable;
+    var fieldDescriptions = dispayTable.GetFieldDescriptions();
+    foreach (var field in fieldDescriptions)
     {
+      // if (field.IsVisible) // add later when consistent with VectorLayer fields
+      // {
       string name = field.Name;
-      // TODO more field filters (e.g. visible only)
-      attributes[name] = field.FieldType;
+      attributes[name] = field.Type;
+      // }
     }
-    */
+
     speckleLayer.attributes = attributes;
     string spekleGeometryType = "None";
 
-    // search the rows
-    // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
-    // This means we need to be carefully adding using statements based on the API documentation coming from each method/class
+    var cursor = dispayTable.Search();
+    if (cursor is RowCursor validCursor)
+    {
+      //
+    }
 
-    using (RowCursor rowCursor = target.Search())
+    using (RowCursor rowCursor = dispayTable.Search())
     {
       while (rowCursor.MoveNext())
       {

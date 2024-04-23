@@ -2,7 +2,6 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
-using ArcGIS.Desktop.Framework.Threading.Tasks;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -19,29 +18,26 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 
   public GisFeature RawConvert(Row target)
   {
+    // get attributes
     var attributes = new Base();
-    QueuedTask.Run(() =>
+    IReadOnlyList<Field> fields = target.GetFields();
+    foreach (Field field in fields)
     {
-      IReadOnlyList<Field> fields = target.GetFields();
-      foreach (Field field in fields)
+      string name = field.Name;
+      if (name != "Shape") // ignore the field with geometry itself
       {
-        string name = field.Name;
-        // Shape is geometry itself
-        if (name != "Shape")
+        try
         {
-          try
-          {
-            var value = target[name];
-            attributes[name] = value; // can be null
-          }
-          catch (ArgumentException)
-          {
-            // TODO: log in the conversion errors list
-            attributes[name] = null;
-          }
+          var value = target[name];
+          attributes[name] = value; // can be null
+        }
+        catch (ArgumentException)
+        {
+          // TODO: log in the conversion errors list
+          attributes[name] = null;
         }
       }
-    });
+    }
 
     try
     {
@@ -55,6 +51,8 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
         var displayVal = speckleShapes;
         return new GisFeature(attributes, displayVal);
       }
+      // TODO: counter-clockwise orientation for up-facing mesh faces
+      /*
       // if shapes is a list of GisPolygonGeometry, create DisplayValue for those with no voids
       if (speckleShapes.Count > 0 && speckleShapes[0] is GisPolygonGeometry)
       {
@@ -71,6 +69,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
         }
         return new GisFeature(speckleShapes, attributes, displayVal);
       }
+      */
       // otherwise set shapes as Geometries
       return new GisFeature(speckleShapes, attributes);
     }

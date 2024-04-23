@@ -39,6 +39,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
         polygon.voids.Add(polyline);
       }
     }
+    // TODO: if no voids, force boundary orientation to counter-clockwise
     polygonList.Add(polygon);
 
     return polygonList;
