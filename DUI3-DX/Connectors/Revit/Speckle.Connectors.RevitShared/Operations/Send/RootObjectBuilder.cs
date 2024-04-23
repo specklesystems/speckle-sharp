@@ -18,7 +18,6 @@ public class RootObjectBuilder
   private readonly RevitConversionContextStack _contextStack;
 
   public RootObjectBuilder(
-    // POC: need to resolve where the UoW should be and whether this is with the SpeckleConverterToSpeckle or something else
     ISpeckleConverterToSpeckle converter,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     RevitConversionContextStack contextStack
@@ -42,6 +41,7 @@ public class RootObjectBuilder
 
     foreach (Element obj in objects)
     {
+      ct.ThrowIfCancellationRequested();
       if (_convertedObjectsCache.ContainsBaseConvertedFromId(obj.UniqueId))
       {
         continue;
