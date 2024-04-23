@@ -72,7 +72,6 @@ public class AutocadSelectionBinding : ISelectionBinding
         }
 
         tr.Commit();
-        tr.Dispose();
       }
     }
     List<string> flatObjectTypes = objectTypes.Select(o => o).Distinct().ToList();
