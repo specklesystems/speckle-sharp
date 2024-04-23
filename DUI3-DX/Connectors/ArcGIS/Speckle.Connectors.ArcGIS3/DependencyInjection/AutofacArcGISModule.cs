@@ -20,6 +20,7 @@ using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using ArcGIS.Core.Geometry;
+using Speckle.Connectors.ArcGIS.Filters;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
