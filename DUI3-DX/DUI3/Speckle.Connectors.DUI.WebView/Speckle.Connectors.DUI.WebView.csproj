@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Sdk\Speckle.Connectors.Utils\Speckle.Connectors.Utils.csproj" />
     <ProjectReference Include="..\Speckle.Connectors.DUI\Speckle.Connectors.DUI.csproj" />
   </ItemGroup>
 </Project>
