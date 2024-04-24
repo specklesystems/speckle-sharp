@@ -2,6 +2,7 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.Rhino7.ToHost;
 
@@ -17,15 +18,39 @@ public class RhinoConverterToHost : ISpeckleConverterToHost
   public object Convert(Base target)
   {
     var typeName = target.GetType().Name;
-    var objectConverter = _toHost.ResolveInstance(typeName);
 
-    if (objectConverter == null)
+    // Direct conversion if a converter is found
+    var objectConverter = _toHost.ResolveInstance(typeName);
+    if (objectConverter != null)
     {
-      throw new NotSupportedException($"No conversion found for {typeName}");
+      return objectConverter.Convert(target);
     }
 
-    var convertedObject = objectConverter.Convert(target);
+    // Fallback to display value if it exists.
+    var displayValue = target.TryGetDisplayValue<Base>();
+    if (displayValue != null)
+    {
+      return FallbackToDisplayValue(displayValue);
+    }
 
-    return convertedObject;
+    // Throw instead of null-return!
+    throw new NotSupportedException($"No conversion found for {typeName}");
+  }
+
+  private object FallbackToDisplayValue(IEnumerable<Base> displayValue)
+  {
+    // Create a temp Displayable object that handles the displayValue.
+    var tempDisplayableObject = new DisplayableObject(displayValue.ToList());
+
+    var displayableObjectConverter = _toHost.ResolveInstance(nameof(DisplayableObject));
+
+    // It is not guaranteed that a fallback converter has been registered in all connectors
+    if (displayableObjectConverter == null)
+    {
+      throw new NotSupportedException($"No converter for fallback displayable objects was found.");
+    }
+
+    // Run the conversion, which will (or could?) return an `IEnumerable`. We don't care at this point, connector will.
+    return displayableObjectConverter.Convert(tempDisplayableObject);
   }
 }

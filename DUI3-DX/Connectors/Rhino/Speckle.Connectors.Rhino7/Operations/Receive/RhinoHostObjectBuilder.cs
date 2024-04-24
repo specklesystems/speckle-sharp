@@ -82,7 +82,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       Layer[]? childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
-        foreach (var layer in childLayers)
+        foreach (var layer in childLayers.Reverse())
         {
           doc.Layers.Purge(layer.Index, false);
         }
@@ -106,24 +106,21 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var fullLayerName = string.Join("::", path);
+        var fullLayerName = string.Join(Layer.PathSeparator, path);
         var layerIndex = cache.TryGetValue(fullLayerName, out int value)
           ? value
           : GetAndCreateLayerFromPath(path, baseLayerName, cache);
 
         onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
 
-        var converted = _toHostConverter.Convert(baseObj);
+        var result = _toHostConverter.Convert(baseObj);
 
-        if (converted is not GeometryBase newObject)
-        {
-          throw new SpeckleConversionException(
-            $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-          );
-        }
-
-        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
-        newObjectIds.Add(newObjectGuid.ToString());
+        var conversionIds = HandleConversionResult(result, baseObj, layerIndex);
+        newObjectIds.AddRange(conversionIds);
+      }
+      catch (OperationCanceledException)
+      {
+        throw;
       }
       catch (Exception e) when (!e.IsFatal())
       {
@@ -137,6 +134,42 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     }
 
     return newObjectIds;
+  }
+
+  private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
+  {
+    var doc = _contextStack.Current.Document;
+    List<string> newObjectIds = new();
+    switch (conversionResult)
+    {
+      case IEnumerable<GeometryBase> list:
+      {
+        Group group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
+        newObjectIds.Add(group.Id.ToString());
+        break;
+      }
+      case GeometryBase newObject:
+      {
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+        newObjectIds.Add(newObjectGuid.ToString());
+        break;
+      }
+      default:
+        throw new SpeckleConversionException(
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {conversionResult.GetType().Name}"
+        );
+    }
+
+    return newObjectIds;
+  }
+
+  private Group BakeObjectsAsGroup(string groupName, IEnumerable<GeometryBase> list, int layerIndex)
+  {
+    var doc = _contextStack.Current.Document;
+    var objectIds = list.Select(obj => doc.Objects.Add(obj, new ObjectAttributes { LayerIndex = layerIndex }));
+    var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
+    var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
+    return group;
   }
 
   // POC: This is the original DUI3 function, this will grow over time as we add more conversions that are missing, so it should be refactored out into an ILayerManager or some sort of service.
