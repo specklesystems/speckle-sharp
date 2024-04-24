@@ -153,6 +153,6 @@ public class SplineToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConv
         break;
     }
 
-    return verticesList.ConvertToSpecklePolyline(_contextStack);
+    return verticesList.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
   }
 }

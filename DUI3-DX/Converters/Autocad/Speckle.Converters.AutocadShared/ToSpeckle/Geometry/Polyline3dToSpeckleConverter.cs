@@ -101,7 +101,7 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
       }
 
       SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
-      spline.displayValue = value.ConvertToSpecklePolyline(_contextStack);
+      spline.displayValue = value.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
 
       segments.Add(spline);
     }
