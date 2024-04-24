@@ -273,7 +273,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-connector-mac:
     macos:
-      xcode: 12.5.1
+      xcode: 15.3.0
     resource_class: macos.m1.medium.gen1
     parameters:
       slnname:
@@ -580,7 +580,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-archicad-add-on-mac: # build Archicad C++ add-on
     macos:
-      xcode: 12.5.1
+      xcode: 15.3.0
     resource_class: macos.m1.medium.gen1
     parameters:
       archicadversion:
