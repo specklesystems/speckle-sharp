@@ -4,7 +4,6 @@ using Autodesk.AutoCAD.Windows;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.Autocad.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
@@ -41,11 +40,7 @@ public class AutocadCommand
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
-    Container
-      .AddModule(new AutofacAutocadModule())
-      .LoadAutofacModules(autocadSettings.Modules)
-      .AddSingletonInstance(autocadSettings)
-      .Build();
+    Container.LoadAutofacModules(autocadSettings.Modules).AddSingletonInstance(autocadSettings).Build();
 
     // Resolve root plugin object and initialise.
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
