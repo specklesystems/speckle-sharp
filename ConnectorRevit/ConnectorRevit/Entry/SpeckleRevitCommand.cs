@@ -90,24 +90,6 @@ public class SpeckleRevitCommand : IExternalCommand
       App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
       _panel.Init();
     }
-    created = DockablePane.PaneExists(PanelId);
-
-    //if revit was launched double-clicking on a Revit file, we're screwed
-    //could maybe show the old window?
-    if (!created && App.AppInstance.Application.Documents.Size > 0)
-    {
-      TaskDialog mainDialog = new("Dockable Panel Issue");
-      mainDialog.MainInstruction = "Dockable Panel Issue";
-      mainDialog.MainContent =
-        "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
-        + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
-
-      // Set footer text. Footer text is usually used to link to the help document.
-      mainDialog.FooterText =
-        "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">" + "Click here for more info</a>";
-
-      mainDialog.Show();
-    }
   }
 
   public static void CreateOrFocusSpeckle(bool showWindow = true)
