@@ -28,7 +28,8 @@ public class HostObjectBuilder : IHostObjectBuilder
     _traversalFunction = traversalFunction;
   }
 
-  private IEnumerable<Collection> GetCollectionPath(TraversalContext context)
+  //todo: move somewhere shared  + unit test
+  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
   {
     TraversalContext? head = context;
     do
@@ -39,6 +40,28 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
       head = head.Parent;
     } while (head != null);
+  }
+
+  //todo: move somewhere shared + unit test
+  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
+  {
+    TraversalContext head = context;
+    do
+    {
+      if (head.PropName == null)
+      {
+        break;
+      }
+      yield return head.PropName;
+    } while (true);
+  }
+
+  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
+  {
+    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
+    string[] path = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+
+    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
   }
 
   public IEnumerable<string> Build(
@@ -76,10 +99,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
         try
         {
-          string layerFullName = _autocadLayerManager.LayerFullName(
-            baseLayerPrefix,
-            string.Join("-", GetCollectionPath(tc).Select(c => c.name))
-          );
+          string layerFullName = GetLayerPath(tc, baseLayerPrefix);
 
           if (uniqueLayerNames.Add(layerFullName))
           {
