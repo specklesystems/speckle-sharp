@@ -28,42 +28,6 @@ public class HostObjectBuilder : IHostObjectBuilder
     _traversalFunction = traversalFunction;
   }
 
-  //todo: move somewhere shared  + unit test
-  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
-  {
-    TraversalContext? head = context;
-    do
-    {
-      if (head.Current is Collection c)
-      {
-        yield return c;
-      }
-      head = head.Parent;
-    } while (head != null);
-  }
-
-  //todo: move somewhere shared + unit test
-  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
-  {
-    TraversalContext head = context;
-    do
-    {
-      if (head.PropName == null)
-      {
-        break;
-      }
-      yield return head.PropName;
-    } while (true);
-  }
-
-  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
-  {
-    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
-    string[] path = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
-
-    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
-  }
-
   public IEnumerable<string> Build(
     Base rootObject,
     string projectName,
@@ -132,5 +96,41 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
     }
     return handleValues;
+  }
+
+  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
+  {
+    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
+    string[] path = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+
+    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
+  }
+
+  //todo: move somewhere shared  + unit test
+  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
+  {
+    TraversalContext? head = context;
+    do
+    {
+      if (head.Current is Collection c)
+      {
+        yield return c;
+      }
+      head = head.Parent;
+    } while (head != null);
+  }
+
+  //todo: move somewhere shared + unit test
+  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
+  {
+    TraversalContext head = context;
+    do
+    {
+      if (head.PropName == null)
+      {
+        break;
+      }
+      yield return head.PropName;
+    } while (true);
   }
 }
