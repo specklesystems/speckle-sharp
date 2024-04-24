@@ -52,7 +52,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
   // POC: Potentially refactor out into an IObjectBaker.
   private List<string> BakeObjects(
-    IEnumerable<(List<string>, Base)> objects,
+    IEnumerable<(string[], Base)> objects,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed,
     CancellationToken cancellationToken
@@ -87,7 +87,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
     var conversionExceptions = new List<Exception>();
 
-    foreach ((List<string> path, Base baseObj) in objects)
+    foreach ((string[] path, Base baseObj) in objects)
     {
       try
       {
@@ -127,7 +127,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
   }
 
   // POC: This is the original DUI3 function, this will grow over time as we add more conversions that are missing, so it should be refactored out into an ILayerManager or some sort of service.
-  private int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
+  private int GetAndCreateLayerFromPath(string[] path, string baseLayerName, Dictionary<string, int> cache)
   {
     var currentLayerName = baseLayerName;
     RhinoDoc currentDocument = _contextStack.Current.Document;

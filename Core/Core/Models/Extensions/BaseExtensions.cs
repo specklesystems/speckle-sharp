@@ -232,10 +232,7 @@ public static class BaseExtensions
   /// </summary>
   /// <param name="recursionBreaker"> Delegate condition to stop traverse.</param>
   /// <returns>List of base objects with their collection path.</returns>
-  public static IEnumerable<(List<string>, Base)> TraverseWithPath(
-    this Base root,
-    BaseRecursionBreaker recursionBreaker
-  )
+  public static IEnumerable<(string[], Base)> TraverseWithPath(this Base root, BaseRecursionBreaker recursionBreaker)
   {
     var stack = new Stack<(List<string>, Base)>();
     stack.Push((new List<string>(), root));
@@ -243,7 +240,7 @@ public static class BaseExtensions
     while (stack.Count > 0)
     {
       (List<string> path, Base current) = stack.Pop();
-      yield return (path, current);
+      yield return (path.ToArray(), current);
 
       if (recursionBreaker(current))
       {
