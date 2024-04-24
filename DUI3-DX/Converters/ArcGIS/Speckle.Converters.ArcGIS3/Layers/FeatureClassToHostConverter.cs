@@ -66,13 +66,20 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
         if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
         {
           // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
-
-          if (field.Value is not null)
+          try
           {
-            fields.Add(new FieldDescription(field.Key, (FieldType)field.Value));
-            fieldAdded.Add(field.Key);
+            FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)(long)field.Value);
+            if (field.Value is not null)
+            {
+              fields.Add(new FieldDescription(field.Key, fieldType));
+              fieldAdded.Add(field.Key);
+            }
+            else
+            {
+              // log missing field
+            }
           }
-          else
+          catch (GeodatabaseFieldException ex)
           {
             // log missing field
           }

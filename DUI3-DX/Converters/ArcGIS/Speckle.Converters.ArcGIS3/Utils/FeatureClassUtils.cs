@@ -31,7 +31,8 @@ public class FeatureClassUtils : IFeatureClassUtils
               var value = feat.attributes[field];
               if (value is not null)
               {
-                rowBuffer[field] = value.ToString();
+                // POC: get actual value in a correct format
+                rowBuffer[field] = value;
               }
               else
               {
@@ -42,6 +43,11 @@ public class FeatureClassUtils : IFeatureClassUtils
           catch (GeodatabaseFieldException)
           {
             // non-editable Field, do nothing
+          }
+          catch (GeodatabaseFeatureException)
+          {
+            // log error!
+            rowBuffer[field] = null;
           }
         }
 
@@ -67,37 +73,55 @@ public class FeatureClassUtils : IFeatureClassUtils
     }
   }
 
+  public FieldType GetFieldTypeFromInt(int fieldType)
+  {
+    foreach (FieldType type in Enum.GetValues(typeof(FieldType)))
+    {
+      if ((int)type == fieldType)
+      {
+        return type;
+      }
+    }
+    throw new GeodatabaseFieldException($"Field type '{fieldType}' is not valid");
+  }
+
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
+    string originalGeomType = target.geomType;
     ACG.GeometryType geomType;
-    if (target.geomType == null)
+
+    if (originalGeomType == null)
+    {
+      originalGeomType = target.nativeGeomType;
+    }
+    if (originalGeomType == null)
     {
       throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
     else
     {
       // POC: find better pattern
-      if (target.geomType.ToLower().Contains("none"))
+      if (originalGeomType.ToLower().Contains("none"))
       {
         geomType = ACG.GeometryType.Unknown;
       }
-      else if (target.geomType.ToLower().Contains("pointcloud"))
+      else if (originalGeomType.ToLower().Contains("pointcloud"))
       {
         geomType = ACG.GeometryType.Unknown;
       }
-      else if (target.geomType.ToLower().Contains("point"))
+      else if (originalGeomType.ToLower().Contains("point"))
       {
         geomType = ACG.GeometryType.Multipoint;
       }
-      else if (target.geomType.ToLower().Contains("polyline"))
+      else if (originalGeomType.ToLower().Contains("polyline"))
       {
         geomType = ACG.GeometryType.Polyline;
       }
-      else if (target.geomType.ToLower().Contains("polygon"))
+      else if (originalGeomType.ToLower().Contains("polygon"))
       {
         geomType = ACG.GeometryType.Polygon;
       }
-      else if (target.geomType.ToLower().Contains("multipatch"))
+      else if (originalGeomType.ToLower().Contains("multipatch"))
       {
         geomType = ACG.GeometryType.Multipatch;
       }

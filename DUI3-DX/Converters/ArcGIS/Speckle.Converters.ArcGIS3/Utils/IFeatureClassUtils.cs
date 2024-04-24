@@ -13,6 +13,6 @@ public interface IFeatureClassUtils
     List<string> fieldAdded,
     IRawConversion<Base, ACG.Geometry> gisGeometryConverter
   );
-
-  ACG.GeometryType GetLayerGeometryType(VectorLayer target);
+  public FieldType GetFieldTypeFromInt(int fieldType);
+  public ACG.GeometryType GetLayerGeometryType(VectorLayer target);
 }
