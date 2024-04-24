@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
@@ -41,9 +43,20 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var objectsToConvert = rootObject
       .TraverseWithPath(obj => obj is not Collection)
-      .Where(obj => obj.Item2 is not Collection && obj.Item2 is not DisplayStyle && obj.Item2 is not RenderMaterial);
+      .Where(obj => obj.Item2 is not Collection);
 
-    var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
+    var newTraversalObjectsToConvert = DefaultTraversal
+      .TypesAreKing()
+      .Traverse(rootObject)
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current))
+      .Where(obj => obj.Current is not Collection);
+
+    var convertedIds = BakeObjects(
+      newTraversalObjectsToConvert,
+      baseLayerName,
+      onOperationProgressed,
+      cancellationToken
+    );
 
     _contextStack.Current.Document.Views.Redraw();
 
@@ -150,5 +163,40 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       previousLayer = currentDocument.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this
     }
     return previousLayer.Index;
+  }
+
+  //todo: move somewhere shared  + unit test
+  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
+  {
+    TraversalContext? head = context;
+    do
+    {
+      if (head.Current is Collection c)
+      {
+        yield return c;
+      }
+      head = head.Parent;
+    } while (head != null);
+  }
+
+  //todo: move somewhere shared + unit test
+  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
+  {
+    TraversalContext head = context;
+    do
+    {
+      if (head.PropName == null)
+      {
+        break;
+      }
+      yield return head.PropName;
+    } while (true);
+  }
+
+  private string[] GetLayerPath(TraversalContext context)
+  {
+    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
+    var reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+    return reverseOrderPath.Reverse().ToArray();
   }
 }
