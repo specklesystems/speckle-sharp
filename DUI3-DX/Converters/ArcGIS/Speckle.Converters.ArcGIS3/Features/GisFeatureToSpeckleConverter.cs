@@ -35,8 +35,8 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       {
         try
         {
-          var value = target[name];
-          attributes[name] = value; // can be null
+          object? value = target[name];
+          attributes[name] = value;
         }
         catch (ArgumentException)
         {
@@ -46,7 +46,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       }
     }
 
-    try
+    if (fields.Select(x => x.Name).ToList().Contains("Shape"))
     {
       var shape = (ACG.Geometry)target["Shape"];
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
@@ -67,9 +67,9 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
         {
           if (poly is GisPolygonGeometry polygon && polygon.voids.Count == 0)
           {
-            // counter-clockwise orientation for up-facing mesh faces
+            // ensure counter-clockwise orientation for up-facing mesh faces
+            bool isClockwise = _geomUtils.IsClockwisePolygon(polygon.boundary);
             List<SOG.Point> boundaryPts = polygon.boundary.GetPoints();
-            bool isClockwise = _geomUtils.IsClockwisePolygon(boundaryPts);
             if (isClockwise)
             {
               boundaryPts.Reverse();
@@ -92,7 +92,8 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       // otherwise set shapes as Geometries
       return new GisFeature(speckleShapes, attributes);
     }
-    catch (Exception ex) when (ex is ArgumentOutOfRangeException or GeodatabaseFieldException) // if no geometry
+    // catch (Exception ex) when (ex is ArgumentOutOfRangeException or GeodatabaseFieldException) // if no geometry
+    else
     {
       return new GisFeature(attributes);
     }

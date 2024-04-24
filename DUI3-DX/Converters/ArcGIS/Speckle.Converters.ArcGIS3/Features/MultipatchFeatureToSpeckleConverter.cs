@@ -68,7 +68,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          throw new ArgumentException("Multipatch part conversion di not succeed");
+          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
         }
       }
       else if (patchType == PatchType.Triangles)
@@ -91,7 +91,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          throw new ArgumentException("Multipatch part conversion did not succeed");
+          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
         }
       }
       else if (patchType == PatchType.TriangleFan)
@@ -113,7 +113,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          throw new ArgumentException("Multipatch part conversion did not succeed");
+          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
         }
       }
       // in case of RingMultipatch - return GisPolygonGeometry instead of Meshes
@@ -144,21 +144,15 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
       }
       else if (patchType == PatchType.Ring)
       {
-        List<SOG.Point> allPatchPts = new();
         for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
         {
           var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
           pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-          count = ptIdx - ptStartIndex + 1;
-          if (count < 3)
-          {
-            allPatchPts.Add(convertedPt);
-          }
         }
         SOG.Polyline polyline = new(pointCoords, _contextStack.Current.SpeckleUnits) { };
 
         // every outer ring is oriented clockwise
-        bool isClockwise = _geomUtils.IsClockwisePolygon(allPatchPts);
+        bool isClockwise = _geomUtils.IsClockwisePolygon(polyline);
         if (!isClockwise)
         {
           // add void to existing polygon

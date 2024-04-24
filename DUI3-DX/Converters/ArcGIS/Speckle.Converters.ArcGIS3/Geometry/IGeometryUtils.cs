@@ -10,5 +10,5 @@ public interface IGeometryUtils
 
   public int CIMColorToInt(CIMColor color);
 
-  public bool IsClockwisePolygon(List<SOG.Point> points);
+  public bool IsClockwisePolygon(SOG.Polyline polyline);
 }

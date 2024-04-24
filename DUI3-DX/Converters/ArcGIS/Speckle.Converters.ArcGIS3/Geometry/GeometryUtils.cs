@@ -30,10 +30,12 @@ public class GeometryUtils : IGeometryUtils
       | (int)Math.Round(color.Values[2]);
   }
 
-  public bool IsClockwisePolygon(List<SOG.Point> points)
+  public bool IsClockwisePolygon(SOG.Polyline polyline)
   {
     bool isClockwise;
     double sum = 0;
+
+    List<SOG.Point> points = polyline.GetPoints();
 
     if (points.Count < 3)
     {
