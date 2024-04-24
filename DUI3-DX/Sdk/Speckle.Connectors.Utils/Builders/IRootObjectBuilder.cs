@@ -9,7 +9,7 @@ namespace Speckle.Connectors.Utils.Builders;
 public interface IRootObjectBuilder<T>
 {
   public Base Build(
-    IEnumerable<T> objects,
+    IReadOnlyList<T> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default

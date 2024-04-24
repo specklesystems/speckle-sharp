@@ -20,7 +20,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
   }
 
   public Base Build(
-    IEnumerable<(DBObject obj, string applicationId)> objects,
+    IReadOnlyList<(DBObject obj, string applicationId)> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
@@ -87,7 +87,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
           collection.elements.Add(converted);
         }
 
-        onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count());
+        onOperationProgressed?.Invoke("Converting", (double)++count / objects.Count);
       }
       catch (SpeckleConversionException e)
       {

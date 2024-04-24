@@ -25,7 +25,7 @@ public sealed class SendOperation<T>
   }
 
   public async Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Execute(
-    IEnumerable<T> objects,
+    IReadOnlyList<T> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default

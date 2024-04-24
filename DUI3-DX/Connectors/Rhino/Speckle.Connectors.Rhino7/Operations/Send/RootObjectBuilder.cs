@@ -26,26 +26,25 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
   }
 
   public Base Build(
-    IEnumerable<RhinoObject> objects,
+    IReadOnlyList<RhinoObject> objects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   )
   {
-    var rhinoObjects = objects.ToList();
-    if (!rhinoObjects.Any())
+    if (!objects.Any())
     {
       // POC: not sure if we would want to throw in here?
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    Base commitObject = ConvertObjects(rhinoObjects, sendInfo, onOperationProgressed, ct);
+    Base commitObject = ConvertObjects(objects, sendInfo, onOperationProgressed, ct);
 
     return commitObject;
   }
 
   private Collection ConvertObjects(
-    IEnumerable<RhinoObject> rhinoObjects,
+    IReadOnlyList<RhinoObject> rhinoObjects,
     SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken cancellationToken = default
@@ -62,8 +61,7 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
     Dictionary<int, Collection> layerCollectionCache = new(); // POC: This seems to always start empty, so it's not caching anything out here.
 
     // POC: Handle blocks.
-    IEnumerable<RhinoObject> rhinoObjectsList = rhinoObjects.ToList();
-    foreach (RhinoObject rhinoObject in rhinoObjectsList)
+    foreach (RhinoObject rhinoObject in rhinoObjects)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
@@ -95,7 +93,7 @@ public class RootObjectBuilder : IRootObjectBuilder<RhinoObject>
 
         // add to host
         collectionHost.elements.Add(converted);
-        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjectsList.Count());
+        onOperationProgressed?.Invoke("Converting", (double)++count / rhinoObjects.Count);
       }
       // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
       catch (SpeckleConversionException e)
