@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
-using Speckle.Core.Models.Extensions;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
@@ -15,27 +15,30 @@ public class HostObjectBuilder : IHostObjectBuilder
 {
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadLayerManager _autocadLayerManager;
+  private readonly GraphTraversal _traversalFunction;
 
-  public HostObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, AutocadLayerManager autocadLayerManager)
+  public HostObjectBuilder(
+    IUnitOfWorkFactory unitOfWorkFactory,
+    AutocadLayerManager autocadLayerManager,
+    GraphTraversal traversalFunction
+  )
   {
     _unitOfWorkFactory = unitOfWorkFactory;
     _autocadLayerManager = autocadLayerManager;
+    _traversalFunction = traversalFunction;
   }
 
-  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationToken cancellationToken)
+  private IEnumerable<Collection> GetCollectionPath(TraversalContext context)
   {
-    List<(List<string>, Base)> objectsToConvert = new();
-    foreach ((List<string> objPath, Base obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
+    TraversalContext? head = context;
+    do
     {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
+      if (head.Current is Collection c)
       {
-        objectsToConvert.Add((objPath, obj));
+        yield return c;
       }
-    }
-
-    return objectsToConvert;
+      head = head.Parent;
+    } while (head != null);
   }
 
   public IEnumerable<string> Build(
@@ -56,7 +59,8 @@ public class HostObjectBuilder : IHostObjectBuilder
 
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(projectName, modelName);
-    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cancellationToken);
+    var traversalGraph = _traversalFunction.Traverse(rootObject).ToArray();
+
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     HashSet<string> uniqueLayerNames = new();
@@ -66,20 +70,23 @@ public class HostObjectBuilder : IHostObjectBuilder
     // POC: Will be addressed to move it into AutocadContext!
     using (TransactionContext.StartTransaction(Application.DocumentManager.MdiActiveDocument))
     {
-      foreach ((List<string> path, Base obj) in objectsWithPath)
+      foreach (TraversalContext tc in traversalGraph)
       {
         cancellationToken.ThrowIfCancellationRequested();
 
         try
         {
-          string layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
+          string layerFullName = _autocadLayerManager.LayerFullName(
+            baseLayerPrefix,
+            string.Join("-", GetCollectionPath(tc).Select(c => c.name))
+          );
 
           if (uniqueLayerNames.Add(layerFullName))
           {
             _autocadLayerManager.CreateLayerOrPurge(layerFullName);
           }
 
-          object converted = converter.Convert(obj);
+          object converted = converter.Convert(tc.Current);
           List<object> flattened = Utilities.FlattenToHostConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
@@ -95,7 +102,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             handleValues.Add(conversionResult.Handle.Value.ToString());
           }
 
-          onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count);
+          onOperationProgressed?.Invoke("Converting", (double)++count / traversalGraph.Length);
         }
         catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
         {

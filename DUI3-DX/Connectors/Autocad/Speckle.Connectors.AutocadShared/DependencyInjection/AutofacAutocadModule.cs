@@ -21,6 +21,7 @@ using Speckle.Connectors.Autocad.Operations.Receive;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -46,6 +47,7 @@ public class AutofacAutocadModule : Module
 
     // Operations
     builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterInstance(DefaultTraversal.TypesAreKing());
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
