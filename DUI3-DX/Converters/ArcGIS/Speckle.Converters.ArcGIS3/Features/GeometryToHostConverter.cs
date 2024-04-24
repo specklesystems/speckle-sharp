@@ -6,46 +6,46 @@ using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisFeatureToHostConverter : IRawConversion<Base, ArcGIS.Core.Geometry.Geometry>
+public class GeometryToHostConverter : IRawConversion<Base, ACG.Geometry>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
   private readonly IRawConversion<SOG.Point, ACG.Multipoint> _pointConverter;
   private readonly IRawConversion<GisPolygonGeometry, ACG.Polygon> _polygonConverter;
+  private readonly IRawConversion<SOG.Mesh, ACG.Multipatch> _multipatchConverter;
 
-  public GisFeatureToHostConverter(
+  public GeometryToHostConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
     IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter,
     IRawConversion<SOG.Point, ACG.Multipoint> pointConverter,
-    IRawConversion<GisPolygonGeometry, ACG.Polygon> polygonConverter
+    IRawConversion<GisPolygonGeometry, ACG.Polygon> polygonConverter,
+    IRawConversion<SOG.Mesh, ACG.Multipatch> multipatchConverter
   )
   {
     _contextStack = contextStack;
     _polylineConverter = polylineConverter;
     _pointConverter = pointConverter;
     _polygonConverter = polygonConverter;
+    _multipatchConverter = multipatchConverter;
   }
 
   public ACG.Geometry RawConvert(Base target)
   {
-    if (target.speckle_type.ToLower().Contains("point"))
+    try
     {
-      return _pointConverter.RawConvert((SOG.Point)target);
+      return target switch
+      {
+        SOG.Point point => _pointConverter.RawConvert(point),
+        SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
+        GisPolygonGeometry geometry => _polygonConverter.RawConvert(geometry),
+        SOG.Mesh mesh => _multipatchConverter.RawConvert(mesh),
+        _ => throw new NotSupportedException($"No conversion found for {target.speckle_type}"),
+      };
     }
-    else if (target.speckle_type.ToLower().Contains("polyline"))
+    catch (SpeckleConversionException e)
     {
-      // POC: TODO
+      Console.WriteLine(e);
+      throw; // log errors
     }
-    else if (target.speckle_type.ToLower().Contains("polygon"))
-    {
-      // POC: TODO
-    }
-    else
-    {
-      throw new SpeckleConversionException($"Unknown geometry type {target.speckle_type}");
-    }
-    throw new SpeckleConversionException($"Conversion of geometry {target} failed");
   }
-  // POC: TODO: Add case for NonGeometry Feature (table entry)
-  // IF geometry layer, but no geometry found: throw new SpeckleConversionException($"Feature {target} contains no geometry");
 }

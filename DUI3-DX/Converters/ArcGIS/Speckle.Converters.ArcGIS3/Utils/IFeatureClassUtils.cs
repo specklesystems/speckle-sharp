@@ -9,7 +9,7 @@ public interface IFeatureClassUtils
 {
   void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
-    VectorLayer target,
+    List<GisFeature> gisFeatures,
     List<string> fieldAdded,
     IRawConversion<Base, ACG.Geometry> gisGeometryConverter
   );

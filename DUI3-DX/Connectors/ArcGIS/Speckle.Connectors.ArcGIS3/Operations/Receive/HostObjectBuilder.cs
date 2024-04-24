@@ -70,7 +70,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             if (converted is string uri)
             {
               objectIds.Add(obj.id);
-              // TODO: get map from contextStack instead
+              // POC: TODO: get map from contextStack instead
               LayerFactory.Instance.CreateLayer(new Uri($"{databasePath}\\{uri}"), MapView.Active.Map);
             }
           }

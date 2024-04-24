@@ -3,7 +3,6 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-[NameAndRankValue(nameof(ACG.MapPoint), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointToHostConverter : IRawConversion<SOG.Point, ACG.Multipoint>
 {
   public ACG.Multipoint RawConvert(SOG.Point target)
