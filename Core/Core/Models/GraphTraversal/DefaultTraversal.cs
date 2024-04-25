@@ -16,26 +16,26 @@ public static class DefaultTraversal
 {
   public static GraphTraversal CreateTraversalFunc()
   {
-    var convertableRule = TraversalBuilderReturn
+    var convertableRule = TraversalRule
       .NewTraversalRule()
       .When(b => b.GetType() != typeof(Base))
       .When(HasDisplayValue)
       .ContinueTraversing(_ => ElementsPropAliases);
 
-    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule.ShouldReturnInOutput(false));
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule.ShouldReturnToOutput(false));
   }
 
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
   #region Helper Functions
 
   //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
-  private static readonly ITraversalRule s_ignoreResultsRule = TraversalBuilderReturn
+  private static readonly ITraversalRule s_ignoreResultsRule = TraversalRule
     .NewTraversalRule()
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
     .ContinueTraversing(None);
 
   public static ITraversalBuilderReturn DefaultRule =>
-    TraversalBuilderReturn.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
+    TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
 
   public static readonly IReadOnlyList<string> ElementsPropAliases = new[] { "elements", "@elements" };
 
@@ -157,7 +157,7 @@ public static class DefaultTraversal
   [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
   public static GraphTraversal CreateLegacyTraverseFunc(Func<Base, bool> canConvertToNative)
   {
-    var convertableRule = TraversalBuilderReturn
+    var convertableRule = TraversalRule
       .NewTraversalRule()
       .When(b => canConvertToNative(b))
       .When(HasDisplayValue)
@@ -180,7 +180,7 @@ public static class DefaultTraversal
   [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
   public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
   {
-    var convertableRule = TraversalBuilderReturn
+    var convertableRule = TraversalRule
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
@@ -200,7 +200,7 @@ public static class DefaultTraversal
   [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
   public static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
   {
-    var bimElementRule = TraversalBuilderReturn
+    var bimElementRule = TraversalRule
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .ContinueTraversing(ElementsAliases);

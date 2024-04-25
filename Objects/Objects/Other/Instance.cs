@@ -36,12 +36,12 @@ public abstract class Instance : Base
   // helper method that scans an Instance for all transformable geometry and nested instances
   protected virtual IEnumerable<Base> GetTransformableGeometry()
   {
-    var displayValueRule = TraversalBuilderReturn
+    var displayValueRule = TraversalRule
       .NewTraversalRule()
       .When(DefaultTraversal.HasDisplayValue)
       .ContinueTraversing(_ => DefaultTraversal.DisplayValueAndElementsPropAliases);
 
-    var instanceRule = TraversalBuilderReturn
+    var instanceRule = TraversalRule
       .NewTraversalRule()
       .When(b => b is Instance instance && instance != null)
       .ContinueTraversing(DefaultTraversal.None);

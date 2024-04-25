@@ -8,19 +8,13 @@ namespace Speckle.Core.Models.GraphTraversal;
 /// Specifies what members to traverse if any provided <see cref="_conditions"/> are met.
 /// </summary>
 /// <remarks>Follows the builder pattern to ensure that a rule is complete before usable, see usages</remarks>
-public sealed class TraversalBuilderReturn : ITraversalBuilderReturn, ITraversalBuilderTraverse
+public sealed class TraversalRule : ITraversalBuilderReturn, ITraversalBuilderTraverse
 {
   private readonly List<WhenCondition> _conditions;
   private SelectMembers? _membersToTraverse;
   public bool ShouldReturn { get; private set; } = true;
 
-  public ITraversalRule ShouldReturnInOutput(bool shouldReturn = true)
-  {
-    ShouldReturn = shouldReturn;
-    return this;
-  }
-
-  private TraversalBuilderReturn()
+  private TraversalRule()
   {
     _conditions = new List<WhenCondition>();
   }
@@ -28,6 +22,12 @@ public sealed class TraversalBuilderReturn : ITraversalBuilderReturn, ITraversal
   public ITraversalBuilderReturn ContinueTraversing(SelectMembers membersToTraverse)
   {
     this._membersToTraverse = membersToTraverse;
+    return this;
+  }
+
+  public ITraversalRule ShouldReturnToOutput(bool shouldReturn = true)
+  {
+    ShouldReturn = shouldReturn;
     return this;
   }
 
@@ -58,7 +58,7 @@ public sealed class TraversalBuilderReturn : ITraversalBuilderReturn, ITraversal
   /// <returns>a new Traversal Rule to be initialised using the Builder Pattern interfaces</returns>
   public static ITraversalBuilderWhen NewTraversalRule()
   {
-    return new TraversalBuilderReturn();
+    return new TraversalRule();
   }
 }
 
@@ -101,5 +101,5 @@ public interface ITraversalBuilderReturn : ITraversalRule
   /// <seealso cref="ITraversalRule.MembersToTraverse"/>
   /// <param name="shouldReturn">value to set <see cref="ITraversalRule.ShouldReturn"/></param>
   /// <returns>Traversal rule in a usable state</returns>
-  ITraversalRule ShouldReturnInOutput(bool shouldReturn = true);
+  ITraversalRule ShouldReturnToOutput(bool shouldReturn = true);
 }
