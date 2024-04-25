@@ -1,5 +1,5 @@
 using System.IO;
-using Speckle.Core.Kits;
+using Speckle.Core.Kits; // POC: Must go https://spockle.atlassian.net/browse/CNX-9325
 
 namespace Speckle.Connectors.Autocad.HostApp;
 

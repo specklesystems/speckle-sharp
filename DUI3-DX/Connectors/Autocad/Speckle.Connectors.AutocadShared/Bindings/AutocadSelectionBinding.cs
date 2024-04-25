@@ -48,9 +48,10 @@ public class AutocadSelectionBinding : ISelectionBinding
 
   public SelectionInfo GetSelection()
   {
-    // POC: Will be addressed to move it into AutocadContext!
+    // POC: Will be addressed to move it into AutocadContext! https://spockle.atlassian.net/browse/CNX-9319
     Document doc = Application.DocumentManager.MdiActiveDocument;
     List<string> objs = new();
+    List<string> objectTypes = new();
     if (doc != null)
     {
       PromptSelectionResult selection = doc.Editor.SelectImplied();
@@ -66,13 +67,18 @@ public class AutocadSelectionBinding : ISelectionBinding
           }
 
           var handleString = dbObject.Handle.Value.ToString();
+          objectTypes.Add(dbObject.GetType().Name);
           objs.Add(handleString);
         }
 
         tr.Commit();
-        tr.Dispose();
       }
     }
-    return new SelectionInfo { SelectedObjectIds = objs, Summary = $"{objs.Count} objects" };
+    List<string> flatObjectTypes = objectTypes.Select(o => o).Distinct().ToList();
+    return new SelectionInfo
+    {
+      SelectedObjectIds = objs,
+      Summary = $"{objs.Count} objects ({string.Join(", ", flatObjectTypes)})"
+    };
   }
 }
