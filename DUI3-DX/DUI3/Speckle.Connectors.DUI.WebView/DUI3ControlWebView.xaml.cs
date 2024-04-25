@@ -1,21 +1,17 @@
+using System;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using Speckle.Connectors.DUI.Bindings;
-using Speckle.Core.Logging;
 
-namespace Speckle.Connectors.ArcGIS.HostApp;
+namespace Speckle.Connectors.DUI.WebView;
 
-//poc: dupe code
-
-/// <summary>
-/// Interaction logic for WebViewBrowserView.xaml
-/// </summary>
-public partial class SpeckleDUI3 : UserControl
+public sealed partial class DUI3ControlWebView : UserControl
 {
-  private readonly IEnumerable<Lazy<IBinding>> _bindings;
+  private readonly IReadOnlyCollection<IBinding> _bindings;
 
-  public SpeckleDUI3(IEnumerable<Lazy<IBinding>> bindings)
+  public DUI3ControlWebView(IReadOnlyCollection<IBinding> bindings)
   {
     _bindings = bindings;
     InitializeComponent();
@@ -28,7 +24,7 @@ public partial class SpeckleDUI3 : UserControl
   {
     if (!Browser.IsInitialized)
     {
-      throw new SpeckleException("Failed to execute script, Webview2 is not initialized yet.");
+      throw new InvalidOperationException("Failed to execute script, Webview2 is not initialized yet.");
     }
 
     Browser.Dispatcher.Invoke(() => Browser.ExecuteScriptAsync(script), DispatcherPriority.Background);
@@ -36,12 +32,9 @@ public partial class SpeckleDUI3 : UserControl
 
   private void OnInitialized(object? sender, CoreWebView2InitializationCompletedEventArgs e)
   {
-    //TODO: Pass bindings to browser bridge here!
-    foreach (Lazy<IBinding> lazyBinding in _bindings)
+    foreach (IBinding binding in _bindings)
     {
-      var binding = lazyBinding.Value;
       binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
-      Console.WriteLine();
       Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
     }
   }

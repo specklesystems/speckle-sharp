@@ -1,21 +1,19 @@
-using Autodesk.AutoCAD.DatabaseServices;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Autocad.Geometry;
+namespace Speckle.Converters.Autocad.ToSpeckle.Raw;
 
-[NameAndRankValue(nameof(AG.Plane), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
-public class PlaneToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Plane, SOG.Plane>
+public class PlaneToSpeckleRawConverter : IHostObjectToSpeckleConversion, IRawConversion<AG.Plane, SOG.Plane>
 {
   private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<AG.Point3d, SOG.Point> _pointConverter;
-  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
+  private readonly IConversionContextStack<Document, ADB.UnitsValue> _contextStack;
 
-  public PlaneToSpeckleConverter(
+  public PlaneToSpeckleRawConverter(
     IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
     IRawConversion<AG.Point3d, SOG.Point> pointConverter,
-    IConversionContextStack<Document, UnitsValue> contextStack
+    IConversionContextStack<Document, ADB.UnitsValue> contextStack
   )
   {
     _vectorConverter = vectorConverter;

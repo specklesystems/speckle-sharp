@@ -6,15 +6,10 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Utils.Cancellation;
-using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common;
-using Speckle.Core.Transports;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Api;
 using Speckle.Core.Models;
-using System.Diagnostics;
 using ICancelable = System.Reactive.Disposables.ICancelable;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 
@@ -31,6 +26,8 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly AutocadSettings _autocadSettings;
+  private readonly SendOperation<(DBObject obj, string applicationId)> _sendOperation;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -48,12 +45,16 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IBridge parent,
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
+    AutocadSettings autocadSettings,
+    SendOperation<(DBObject obj, string applicationId)> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     _store = store;
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
+    _sendOperation = sendOperation;
+    _autocadSettings = autocadSettings;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();
 
@@ -122,6 +123,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   {
     try
     {
+      using var uow = _unitOfWorkFactory.Resolve<SendOperation<(DBObject obj, string applicationId)>>();
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
       CancellationTokenSource cts = _cancellationManager.InitCancellationTokenSource(modelCardId);
 
@@ -131,10 +133,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      // 2 - Check account exist
-      Account account = AccountManager.GetAccount(modelCard.AccountId);
-
-      // 3 - Get elements to convert
+      // Get elements to convert
       List<(DBObject obj, string applicationId)> autocadObjects =
         Application.DocumentManager.CurrentDocument.GetObjects(modelCard.SendFilter.GetObjectIds());
       if (autocadObjects.Count == 0)
@@ -142,16 +141,24 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No objects were found. Please update your send filter!");
       }
 
-      // 4 - Convert objects
-      Base commitObject = ConvertObjects(autocadObjects, modelCard, cts.Token);
+      var sendInfo = new SendInfo()
+      {
+        AccountId = modelCard.AccountId,
+        ProjectId = modelCard.ProjectId,
+        ModelId = modelCard.ModelId,
+        ConvertedObjects = _convertedObjectReferences,
+        ChangedObjectIds = modelCard.ChangedObjectIds,
+        SourceApplication = _autocadSettings.HostAppInfo.Name
+      };
 
-      cts.Token.ThrowIfCancellationRequested();
-
-      // 5 - Serialize and Send objects
-      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Uploading..." });
-
-      var transport = new ServerTransport(account, modelCard.ProjectId);
-      var sendResult = await SendHelper.Send(commitObject, transport, true, null, cts.Token).ConfigureAwait(true);
+      var sendResult = await uow.Service
+        .Execute(
+          autocadObjects,
+          sendInfo,
+          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          cts.Token
+        )
+        .ConfigureAwait(false);
 
       // Store the converted references in memory for future send operations, overwriting the existing values for the given application id.
       foreach (var kvp in sendResult.convertedReferences)
@@ -162,26 +169,7 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
       // It's important to reset the model card's list of changed obj ids so as to ensure we accurately keep track of changes between send operations.
       modelCard.ChangedObjectIds = new();
 
-      // 6 - Create Version
-      Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = "Linking version to model..." });
-
-      // 7 - Create the version (commit)
-      Client apiClient = new(account);
-      string versionId = await apiClient
-        .CommitCreate(
-          new CommitCreateInput
-          {
-            streamId = modelCard.ProjectId,
-            branchName = modelCard.ModelId,
-            sourceApplication = "Autocad",
-            objectId = sendResult.rootObjId
-          },
-          cts.Token
-        )
-        .ConfigureAwait(true);
-
-      Commands.SetModelCreatedVersionId(modelCardId, versionId);
-      apiClient.Dispose();
+      Commands.SetModelCreatedVersionId(modelCardId, sendResult.rootObjId);
     }
     catch (OperationCanceledException)
     {
@@ -193,92 +181,9 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     }
   }
 
-  private Base ConvertObjects(
-    List<(DBObject obj, string applicationId)> dbObjects,
-    SenderModelCard modelCard,
-    CancellationToken cancellationToken
-  )
+  private void OnSendOperationProgress(string modelCardId, string status, double? progress)
   {
-    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
-    // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
-    var converter = uow.Service;
-
-    Collection modelWithLayers =
-      new()
-      {
-        name = Application.DocumentManager.CurrentDocument.Name
-          .Split(s_separator, StringSplitOptions.None)
-          .Reverse()
-          .First(),
-        collectionType = "root"
-      };
-
-    Dictionary<string, Collection> collectionCache = new();
-    int count = 0;
-
-    foreach ((DBObject obj, string applicationId) tuple in dbObjects)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      var dbObject = tuple.obj;
-      var applicationId = tuple.applicationId;
-
-      try
-      {
-        Base converted;
-        if (
-          !modelCard.ChangedObjectIds.Contains(applicationId)
-          && _convertedObjectReferences.TryGetValue(applicationId + modelCard.ProjectId, out ObjectReference value)
-        )
-        {
-          converted = value;
-        }
-        else
-        {
-          converted = converter.Convert(dbObject);
-
-          if (converted == null)
-          {
-            continue;
-          }
-
-          converted.applicationId = applicationId;
-        }
-
-        // Create and add a collection for each layer if not done so already.
-        if ((tuple.obj as Entity)?.Layer is string layer)
-        {
-          if (!collectionCache.TryGetValue(layer, out Collection? collection))
-          {
-            collection = new Collection() { name = layer, collectionType = "layer" };
-            collectionCache[layer] = collection;
-            modelWithLayers.elements.Add(collectionCache[layer]);
-          }
-
-          collection.elements.Add(converted);
-        }
-
-        Commands.SetModelProgress(
-          modelCard.ModelCardId,
-          new ModelCardProgress() { Status = "Converting", Progress = (double)++count / dbObjects.Count }
-        );
-      }
-      catch (SpeckleConversionException e)
-      {
-        Console.WriteLine(e);
-      }
-      catch (NotSupportedException e)
-      {
-        Console.WriteLine(e);
-      }
-      catch (Exception e) when (!e.IsFatal())
-      {
-        Debug.WriteLine(e.Message);
-      }
-    }
-
-    return modelWithLayers;
+    Commands.SetModelProgress(modelCardId, new ModelCardProgress { Status = status, Progress = progress });
   }
 
   public void CancelSend(string modelCardId) => _cancellationManager.CancelOperation(modelCardId);
@@ -289,6 +194,4 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   }
 
   public bool IsDisposed { get; private set; }
-
-  private static readonly string[] s_separator = new[] { "\\" };
 }

@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 
-namespace Speckle.Connectors.Rhino7.Operations.Send;
+namespace Speckle.Connectors.Utils.Operations;
 
 /// <summary>
 /// Contract for the send operation that handles an assembled <see cref="Base"/> object.
@@ -12,11 +13,9 @@ namespace Speckle.Connectors.Rhino7.Operations.Send;
 /// </summary>
 public interface IRootObjectSender
 {
-  public Task<string> Send(
+  public Task<(string rootObjId, Dictionary<string, ObjectReference> convertedReferences)> Send(
     Base commitObject,
-    string accountId,
-    string projectId,
-    string modelId,
+    SendInfo sendInfo,
     Action<string, double?>? onOperationProgressed = null,
     CancellationToken ct = default
   );
