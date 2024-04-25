@@ -10,10 +10,15 @@ namespace Speckle.Converters.Autocad;
 public class AutocadConverterToSpeckle : ISpeckleConverterToSpeckle
 {
   private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
-  public AutocadConverterToSpeckle(IFactory<string, IHostObjectToSpeckleConversion> toSpeckle)
+  public AutocadConverterToSpeckle(
+    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IConversionContextStack<Document, UnitsValue> contextStack
+  )
   {
     _toSpeckle = toSpeckle;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target)
@@ -29,16 +34,22 @@ public class AutocadConverterToSpeckle : ISpeckleConverterToSpeckle
 
     try
     {
-      var objectConverter = _toSpeckle.ResolveInstance(type.Name);
-
-      if (objectConverter == null)
+      using (var l = _contextStack.Current.Document.LockDocument())
       {
-        throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+        using (var tr = _contextStack.Current.Document.Database.TransactionManager.StartTransaction())
+        {
+          var objectConverter = _toSpeckle.ResolveInstance(type.Name);
+
+          if (objectConverter == null)
+          {
+            throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+          }
+
+          var convertedObject = objectConverter.Convert(dbObject);
+          tr.Commit();
+          return convertedObject;
+        }
       }
-
-      var convertedObject = objectConverter.Convert(dbObject);
-
-      return convertedObject;
     }
     catch (SpeckleConversionException e)
     {
