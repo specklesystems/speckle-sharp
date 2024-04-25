@@ -48,8 +48,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var newTraversalObjectsToConvert = DefaultTraversal
       .TypesAreKing()
       .Traverse(rootObject)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current))
-      .Where(obj => obj.Current is not Collection);
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current));
 
     var convertedIds = BakeObjects(
       newTraversalObjectsToConvert,
@@ -82,9 +81,13 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       Layer[]? childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
-        foreach (var layer in childLayers.Reverse())
+        foreach (var layer in childLayers)
         {
-          doc.Layers.Purge(layer.Index, false);
+          var purgeSuccess = doc.Layers.Purge(layer.Index, true);
+          if (!purgeSuccess)
+          {
+            Console.WriteLine($"Failed to purge layer: {layer}");
+          }
         }
       }
     }
@@ -100,6 +103,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
     var conversionExceptions = new List<Exception>();
 
+    doc.Views.RedrawEnabled = false;
     foreach ((string[] path, Base baseObj) in objects)
     {
       try
@@ -127,6 +131,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         conversionExceptions.Add(e);
       }
     }
+    doc.Views.RedrawEnabled = true;
 
     if (conversionExceptions.Count != 0)
     {
