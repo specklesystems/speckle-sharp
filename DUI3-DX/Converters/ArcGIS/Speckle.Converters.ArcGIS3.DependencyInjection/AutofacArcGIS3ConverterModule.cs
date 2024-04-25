@@ -20,6 +20,11 @@ public class AutofacArcGISConverterModule : Module
     builder.RegisterType<FeatureClassUtils>().As<IFeatureClassUtils>().InstancePerLifetimeScope();
     builder.RegisterType<ArcGISProjectUtils>().As<IArcGISProjectUtils>().InstancePerLifetimeScope();
 
+    builder
+      .RegisterType<ArcGISToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<Unit>>()
+      .InstancePerLifetimeScope();
+
     // single stack per conversion
     builder
       .RegisterType<ArcGISConversionContextStack>()
