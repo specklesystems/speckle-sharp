@@ -4,13 +4,13 @@ using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class SingleMeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
+public class MeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 {
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
   private readonly IRawConversion<DB.Material, RenderMaterial> _materialConverter;
   private readonly RevitConversionContextStack _contextStack;
 
-  public SingleMeshConversionToSpeckle(
+  public MeshConversionToSpeckle(
     RevitConversionContextStack contextStack,
     IRawConversion<DB.XYZ, SOG.Point> xyzToPointConverter,
     IRawConversion<DB.Material, RenderMaterial> materialConverter
