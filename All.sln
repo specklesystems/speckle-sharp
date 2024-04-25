@@ -562,6 +562,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Speckle.Converters.Autocad2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Converters.Autocad2023.DependencyInjection", "DUI3-DX\Converters\Autocad\Speckle.Converters.Autocad2023.DependencyInjection\Speckle.Converters.Autocad2023.DependencyInjection.csproj", "{D940853C-003A-482C-BDB0-665367F274A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Speckle.Connectors.DUI.WebView", "DUI3-DX\DUI3\Speckle.Connectors.DUI.WebView\Speckle.Connectors.DUI.WebView.csproj", "{7420652C-3046-4F38-BE64-9B9E69D76FA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -2812,6 +2814,22 @@ Global
 		{D940853C-003A-482C-BDB0-665367F274A0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D940853C-003A-482C-BDB0-665367F274A0}.Release|x64.ActiveCfg = Release|Any CPU
 		{D940853C-003A-482C-BDB0-665367F274A0}.Release|x64.Build.0 = Release|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Debug|x64.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release|x64.ActiveCfg = Release|Any CPU
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -3031,6 +3049,7 @@ Global
 		{9ADD1B7A-6401-4202-8613-F668E2FBC0A4} = {804E065F-914C-414A-AF84-009312C3CFF6}
 		{631C295A-7CCF-4B42-8686-7034E31469E7} = {804E065F-914C-414A-AF84-009312C3CFF6}
 		{D940853C-003A-482C-BDB0-665367F274A0} = {804E065F-914C-414A-AF84-009312C3CFF6}
+		{7420652C-3046-4F38-BE64-9B9E69D76FA2} = {FD4D6594-D81E-456F-8F2E-35B09E04A755}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
