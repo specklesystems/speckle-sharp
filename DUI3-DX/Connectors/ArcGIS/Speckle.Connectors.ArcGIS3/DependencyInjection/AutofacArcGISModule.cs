@@ -59,7 +59,7 @@ public class AutofacArcGISModule : Module
     // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // binding dependencies
-    builder.RegisterType<CancellationManager>().InstancePerLifetimeScope();
+    builder.RegisterType<CancellationManager>().InstancePerDependency();
 
     // register send filters
     builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerLifetimeScope();
