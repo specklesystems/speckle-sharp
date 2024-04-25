@@ -1,7 +1,3 @@
-// 1. -> Meshes triangulation
-// 2. -> Splitting geometry output between Geometry and DisplayValue
-// 3. -> Simplify Multipatch, Pointcloud, Raster approach
-
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
 using Objects.GIS;

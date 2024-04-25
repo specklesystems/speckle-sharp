@@ -59,50 +59,47 @@ public class RootObjectBuilder
 
     Collection rootObjectCollection = new(); //TODO: Collections
 
-    QueuedTask.Run(() =>
+    foreach (string uri in uriList)
     {
-      foreach (string uri in uriList)
+      cancellationToken.ThrowIfCancellationRequested();
+      var collectionHost = rootObjectCollection;
+      var applicationId = uri;
+
+      Base converted = new();
+
+      MapMember mapMember = MapView.Active.Map.FindLayer(uri);
+      if (mapMember is null)
       {
-        cancellationToken.ThrowIfCancellationRequested();
-        var collectionHost = rootObjectCollection;
-        var applicationId = uri;
-
-        Base converted = new();
-
-        MapMember mapMember = MapView.Active.Map.FindLayer(uri);
-        if (mapMember is null)
-        {
-          mapMember = MapView.Active.Map.FindStandaloneTable(uri);
-        }
-        if (mapMember is null)
-        {
-          continue;
-        }
-
-        try
-        {
-          converted = converter.Convert(mapMember);
-        }
-        // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
-        catch (SpeckleConversionException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-          continue;
-        }
-        catch (NotSupportedException e)
-        {
-          // POC: DO something with the exception
-          Console.WriteLine(e);
-          continue;
-        }
-
-        converted.applicationId = applicationId;
-        // add to host
-        collectionHost.elements.Add(converted);
-        onOperationProgressed?.Invoke("Converting", (double)++count / uriList.Count);
+        mapMember = MapView.Active.Map.FindStandaloneTable(uri);
       }
-    });
+      if (mapMember is null)
+      {
+        continue;
+      }
+
+      try
+      {
+        converted = converter.Convert(mapMember);
+      }
+      // POC: Exception handling on conversion logic must be revisited after several connectors have working conversions
+      catch (SpeckleConversionException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
+        continue;
+      }
+      catch (NotSupportedException e)
+      {
+        // POC: DO something with the exception
+        Console.WriteLine(e);
+        continue;
+      }
+
+      converted.applicationId = applicationId;
+      // add to host
+      collectionHost.elements.Add(converted);
+      onOperationProgressed?.Invoke("Converting", (double)++count / uriList.Count);
+    }
 
     return rootObjectCollection;
   }

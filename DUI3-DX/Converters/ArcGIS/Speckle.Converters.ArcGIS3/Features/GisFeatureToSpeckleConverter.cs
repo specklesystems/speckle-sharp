@@ -1,13 +1,12 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Objects.GIS;
 using ArcGIS.Core.Data;
 using Speckle.Converters.ArcGIS3.Geometry;
 using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
+public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
 {
   private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
 
@@ -18,7 +17,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 
   public Base Convert(object target) => RawConvert((Row)target);
 
-  public GisFeature RawConvert(Row target)
+  public SGIS.GisFeature RawConvert(Row target)
   {
     // get attributes
     var attributes = new Base();
@@ -49,7 +48,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
     // return GisFeatures that don't have geometry
     if (!hasGeometry)
     {
-      return new GisFeature(attributes);
+      return new SGIS.GisFeature(attributes);
     }
     else
     {
@@ -57,17 +56,21 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
       // if geometry is primitive
-      if (speckleShapes.Count > 0 && speckleShapes[0] is not GisPolygonGeometry)
+      if (
+        speckleShapes.Count > 0
+        && speckleShapes[0] is not SGIS.GisPolygonGeometry
+        && speckleShapes[0] is not SGIS.GisMultipatchGeometry
+      )
       {
-        return new GisFeature(speckleShapes, attributes);
+        return new SGIS.GisFeature(speckleShapes, attributes);
       }
-      // if geometry is GisPolygonGeometry, add DisplayValue to the feature
+      // if geometry is Polygon or Multipatch, add DisplayValue to the feature
       else
       {
         List<Base> displayVal = new();
         foreach (var shp in speckleShapes)
         {
-          if (shp is GisPolygonGeometry polygon)
+          if (shp is SGIS.GisPolygonGeometry polygon)
           {
             try
             {
@@ -79,13 +82,37 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
               continue;
             }
           }
+          else if (shp is SGIS.GisPolygonGeometry3d polygon3d)
+          {
+            try
+            {
+              SOG.Mesh displayMesh = polygon3d.CreateDisplayMeshForPolygon3d();
+              displayVal.Add(displayMesh);
+            }
+            catch (SpeckleConversionException)
+            {
+              continue;
+            }
+          }
+          else if (shp is SGIS.GisMultipatchGeometry multipatch)
+          {
+            try
+            {
+              SOG.Mesh displayMesh = multipatch.CreateDisplayMeshForMultipatch();
+              displayVal.Add(displayMesh);
+            }
+            catch (SpeckleConversionException)
+            {
+              continue;
+            }
+          }
         }
         // add display value ONLY if meshes were generates for each geometry part
         if (speckleShapes.Count == displayVal.Count)
         {
-          return new GisFeature(speckleShapes, attributes, displayVal);
+          return new SGIS.GisFeature(speckleShapes, attributes, displayVal);
         }
-        return new GisFeature(speckleShapes, attributes);
+        return new SGIS.GisFeature(speckleShapes, attributes);
       }
     }
   }

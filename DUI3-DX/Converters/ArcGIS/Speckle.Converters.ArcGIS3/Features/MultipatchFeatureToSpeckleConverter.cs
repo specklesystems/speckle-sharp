@@ -1,6 +1,4 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
-using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Core.Models;
@@ -8,141 +6,91 @@ using Speckle.Converters.ArcGIS3.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IReadOnlyList<Base>>
+public class MultipatchFeatureToSpeckleConverter : IRawConversion<ACG.Multipatch, IReadOnlyList<Base>>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
   public MultipatchFeatureToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter
+    IConversionContextStack<Map, ACG.Unit> contextStack,
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
     _pointConverter = pointConverter;
   }
 
-  public IReadOnlyList<Base> RawConvert(Multipatch target)
+  public IReadOnlyList<Base> RawConvert(ACG.Multipatch target)
   {
-    List<Base> meshList = new();
-    int partCount = target.PartCount;
-
+    List<Base> converted = new();
     // placeholder, needs to be declared in order to be used in the Ring patch type
-    GisPolygonGeometry polygonGeom = new() { };
+    SGIS.GisPolygonGeometry3d polygonGeom = new() { };
 
-    for (int idx = 0; idx < partCount; idx++)
+    // convert and store all multipatch points per Part
+    List<List<SOG.Point>> allPoints = new();
+    for (int idx = 0; idx < target.PartCount; idx++)
     {
-      SOG.Mesh mesh = new() { units = _contextStack.Current.SpeckleUnits };
+      List<SOG.Point> pointList = new();
       int ptStartIndex = target.GetPatchStartPointIndex(idx);
       int ptCount = target.GetPatchPointCount(idx);
-      List<double> pointCoords = new();
+      for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
+      {
+        pointList.Add(_pointConverter.RawConvert(target.Points[ptIdx]));
+      }
+      allPoints.Add(pointList);
+    }
 
+    for (int idx = 0; idx < target.PartCount; idx++)
+    {
       // get the patch type to get the point arrangement in the mesh
       // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic27403.html
-      PatchType patchType = target.GetPatchType(idx);
+      ACG.PatchType patchType = target.GetPatchType(idx);
+      int ptCount = target.GetPatchPointCount(idx);
 
-      int count;
-      if (patchType == PatchType.TriangleStrip)
+      if (patchType == ACG.PatchType.TriangleStrip)
       {
-        for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
-        {
-          var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
-          pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-          count = ptIdx - ptStartIndex + 1;
-          if (count > 2) // every new point adds a triangle
-          {
-            mesh.faces.AddRange(new List<int>() { 3, count - 3, count - 2, count - 1 });
-            mesh.vertices.AddRange(pointCoords);
-            pointCoords.Clear();
-          }
-        }
-        if (mesh.ValidateMesh())
-        {
-          meshList.Add(mesh);
-        }
-        else
-        {
-          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
-        }
+        SGIS.GisMultipatchGeometry multipatch = target.CompleteMultipatchTriangleStrip(allPoints, idx);
+        multipatch.units = _contextStack.Current.SpeckleUnits;
+        converted.Add(multipatch);
       }
-      else if (patchType == PatchType.Triangles)
+      else if (patchType == ACG.PatchType.Triangles)
       {
-        for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
-        {
-          var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
-          pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-          count = ptIdx - ptStartIndex + 1;
-          if (count % 3 == 0) // every 3 new points is a new triangle
-          {
-            mesh.faces.AddRange(new List<int>() { 3, count - 3, count - 2, count - 1 });
-            mesh.vertices.AddRange(pointCoords);
-            pointCoords.Clear();
-          }
-        }
-        if (mesh.ValidateMesh())
-        {
-          meshList.Add(mesh);
-        }
-        else
-        {
-          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
-        }
+        SGIS.GisMultipatchGeometry multipatch = target.CompleteMultipatchTriangles(allPoints, idx);
+        multipatch.units = _contextStack.Current.SpeckleUnits;
+        converted.Add(multipatch);
       }
-      else if (patchType == PatchType.TriangleFan)
+      else if (patchType == ACG.PatchType.TriangleFan)
       {
-        for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
-        {
-          var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
-          pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-          count = ptIdx - ptStartIndex + 1;
-          if (count > 2) // every new point adds a triangle (originates from 0)
-          {
-            mesh.vertices.AddRange(pointCoords);
-            mesh.faces.AddRange(new List<int>() { 3, 0, count - 2, count - 1 });
-          }
-        }
-        if (mesh.ValidateMesh())
-        {
-          meshList.Add(mesh);
-        }
-        else
-        {
-          throw new SpeckleConversionException("Multipatch part conversion did not succeed: invalid mesh generated");
-        }
+        SGIS.GisMultipatchGeometry multipatch = target.CompleteMultipatchTriangleFan(allPoints, idx);
+        multipatch.units = _contextStack.Current.SpeckleUnits;
+        converted.Add(multipatch);
       }
-      // in case of RingMultipatch - return GisPolygonGeometry instead of Meshes
-      else if (patchType == PatchType.FirstRing)
+      // in case of RingMultipatch - return GisPolygonGeometry3d
+      // the following Patch Parts cannot be pushed to external method, as they will possibly, add voids/rings to the same GisPolygon
+      else if (patchType == ACG.PatchType.FirstRing)
       {
         // chech if there were already Polygons, add them to list
         if (polygonGeom.boundary != null)
         {
-          meshList.Add(polygonGeom);
+          converted.Add(polygonGeom);
         }
 
-        // first ring means a start of a new GisPolygon
+        // first ring means a start of a new GisPolygonGeometry3d
         polygonGeom = new() { voids = new List<SOG.Polyline>() };
+        List<double> pointCoords = allPoints[idx].SelectMany(x => new List<double>() { x.x, x.y, x.z }).ToList();
 
-        for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
-        {
-          var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
-          pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-        }
         SOG.Polyline polyline = new(pointCoords, _contextStack.Current.SpeckleUnits) { };
         polygonGeom.boundary = polyline;
 
         // if it's already the last part, add to list
-        if (idx == partCount - 1)
+        if (idx == target.PartCount - 1)
         {
-          meshList.Add(polygonGeom);
+          converted.Add(polygonGeom);
         }
       }
-      else if (patchType == PatchType.Ring)
+      else if (patchType == ACG.PatchType.Ring)
       {
-        for (int ptIdx = ptStartIndex; ptIdx < ptStartIndex + ptCount; ptIdx++)
-        {
-          var convertedPt = _pointConverter.RawConvert(target.Points[ptIdx]);
-          pointCoords.AddRange(new List<double>() { convertedPt.x, convertedPt.y, convertedPt.z });
-        }
+        List<double> pointCoords = allPoints[idx].SelectMany(x => new List<double>() { x.x, x.y, x.z }).ToList();
         SOG.Polyline polyline = new(pointCoords, _contextStack.Current.SpeckleUnits) { };
 
         // every outer ring is oriented clockwise
@@ -154,14 +102,14 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         }
         else
         {
-          // add existing polygon to list, start a new polygon
-          meshList.Add(polygonGeom);
+          // add existing polygon to list, start a new polygon with a boundary
+          converted.Add(polygonGeom);
           polygonGeom = new() { voids = new List<SOG.Polyline>(), boundary = polyline };
         }
         // if it's already the last part, add to list
-        if (idx == partCount - 1)
+        if (idx == target.PartCount - 1)
         {
-          meshList.Add(polygonGeom);
+          converted.Add(polygonGeom);
         }
       }
       else
@@ -169,7 +117,6 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         throw new NotSupportedException($"Patch type {patchType} is not supported");
       }
     }
-
-    return meshList;
+    return converted;
   }
 }

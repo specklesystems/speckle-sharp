@@ -5,13 +5,13 @@ using Speckle.Core.Models;
 
 namespace Objects.GIS;
 
-public class GisPolygonGeometry : Base
+public class GisPolygonGeometry3d : Base
 {
   public string units { get; set; }
   public Polyline boundary { get; set; }
   public List<Polyline> voids { get; set; }
 
-  public GisPolygonGeometry()
+  public GisPolygonGeometry3d()
   {
     voids = new List<Polyline>();
     units = Units.Meters;
