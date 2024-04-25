@@ -43,7 +43,7 @@ public class StandaloneTableToSpeckleConverter
       if (field.IsVisible)
       {
         string name = field.Name;
-        attributes[name] = field.Type;
+        attributes[name] = (int)field.Type;
       }
     }
 

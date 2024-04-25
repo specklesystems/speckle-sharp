@@ -1,4 +1,5 @@
 using ArcGIS.Core.CIM;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
@@ -52,5 +53,30 @@ public static class GeometryUtils
     }
     isClockwise = sum > 0;
     return isClockwise;
+  }
+
+  public static SOG.Mesh CreateDisplayMeshForPolygon(this SGIS.GisPolygonGeometry polygon)
+  {
+    if (polygon.voids.Count == 0)
+    {
+      // ensure counter-clockwise orientation for up-facing mesh faces
+      bool isClockwise = polygon.boundary.IsClockwisePolygon();
+      List<SOG.Point> boundaryPts = polygon.boundary.GetPoints();
+      if (isClockwise)
+      {
+        boundaryPts.Reverse();
+      }
+
+      // generate Mesh
+      int ptCount = boundaryPts.Count;
+      List<int> faces = new() { ptCount };
+      faces.AddRange(Enumerable.Range(0, ptCount).ToList());
+
+      return new SOG.Mesh(boundaryPts.SelectMany(x => new List<double> { x.x, x.y, x.z }).ToList(), faces);
+    }
+    else
+    {
+      throw new SpeckleConversionException("Cannot generate display value for polygons with voids");
+    }
   }
 }

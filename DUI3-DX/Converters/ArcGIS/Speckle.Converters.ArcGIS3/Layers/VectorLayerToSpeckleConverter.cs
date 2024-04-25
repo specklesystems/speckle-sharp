@@ -80,7 +80,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         {
           continue;
         }
-        allLayerAttributes[name] = field.Type;
+        allLayerAttributes[name] = (int)field.Type;
       }
     }
     speckleLayer.attributes = allLayerAttributes;

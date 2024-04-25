@@ -3,6 +3,7 @@ using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
 using Speckle.Converters.ArcGIS3.Geometry;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -21,6 +22,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
   {
     // get attributes
     var attributes = new Base();
+    bool hasGeometry = false;
     IReadOnlyList<Field> fields = target.GetFields();
     foreach (Field field in fields)
     {
@@ -38,58 +40,53 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
           attributes[name] = null;
         }
       }
+      else
+      {
+        hasGeometry = true;
+      }
     }
 
-    if (fields.Select(x => x.Name).ToList().Contains("Shape"))
+    // return GisFeatures that don't have geometry
+    if (!hasGeometry)
+    {
+      return new GisFeature(attributes);
+    }
+    else
     {
       var shape = (ACG.Geometry)target["Shape"];
       var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
 
-      // re-shape the GisFeature:
-      // if shapes is a list of Meshes, set them as DisplayValue instead of geometry
-      if (speckleShapes.Count > 0 && speckleShapes[0] is SOG.Mesh)
+      // if geometry is primitive
+      if (speckleShapes.Count > 0 && speckleShapes[0] is not GisPolygonGeometry)
       {
-        var displayVal = speckleShapes;
-        return new GisFeature(attributes, displayVal);
+        return new GisFeature(speckleShapes, attributes);
       }
-
-      // if shapes is a list of GisPolygonGeometry, create DisplayValue for those with no voids
-      if (speckleShapes.Count > 0 && speckleShapes[0] is GisPolygonGeometry)
+      // if geometry is GisPolygonGeometry, add DisplayValue to the feature
+      else
       {
         List<Base> displayVal = new();
-        foreach (var poly in speckleShapes)
+        foreach (var shp in speckleShapes)
         {
-          if (poly is GisPolygonGeometry polygon && polygon.voids.Count == 0)
+          if (shp is GisPolygonGeometry polygon)
           {
-            // ensure counter-clockwise orientation for up-facing mesh faces
-            bool isClockwise = polygon.boundary.IsClockwisePolygon();
-            List<SOG.Point> boundaryPts = polygon.boundary.GetPoints();
-            if (isClockwise)
+            try
             {
-              boundaryPts.Reverse();
+              SOG.Mesh displayMesh = polygon.CreateDisplayMeshForPolygon();
+              displayVal.Add(displayMesh);
             }
-
-            // generate Mesh
-            int ptCount = boundaryPts.Count;
-            List<int> faces = new() { ptCount };
-            faces.AddRange(Enumerable.Range(0, ptCount).ToList());
-
-            displayVal.Add(
-              new SOG.Mesh(boundaryPts.SelectMany(x => new List<double> { x.x, x.y, x.z }).ToList(), faces)
-            );
+            catch (SpeckleConversionException)
+            {
+              continue;
+            }
           }
         }
-        // POC: how to deal with multiploygons, where not all would have displayValue? Will they not be all received in other apps?
-        return new GisFeature(speckleShapes, attributes, displayVal);
+        // add display value ONLY if meshes were generates for each geometry part
+        if (speckleShapes.Count == displayVal.Count)
+        {
+          return new GisFeature(speckleShapes, attributes, displayVal);
+        }
+        return new GisFeature(speckleShapes, attributes);
       }
-
-      // otherwise set shapes as Geometries
-      return new GisFeature(speckleShapes, attributes);
-    }
-    // catch (Exception ex) when (ex is ArgumentOutOfRangeException or GeodatabaseFieldException) // if no geometry
-    else
-    {
-      return new GisFeature(attributes);
     }
   }
 }

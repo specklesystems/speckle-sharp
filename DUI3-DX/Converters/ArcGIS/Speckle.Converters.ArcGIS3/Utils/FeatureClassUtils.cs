@@ -1,8 +1,6 @@
-// 1. ->Meshes triangulation
+// 1. -> Meshes triangulation
 // 2. -> Splitting geometry output between Geometry and DisplayValue
 // 3. -> Simplify Multipatch, Pointcloud, Raster approach
-// 4. Send correct Integers (convert from bytes)
-// 5. -> Change Interface into Statics
 
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
