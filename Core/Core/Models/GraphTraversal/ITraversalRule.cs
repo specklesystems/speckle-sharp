@@ -19,6 +19,9 @@ public interface ITraversalRule
   /// <param name="o"></param>
   /// <returns></returns>
   public bool DoesRuleHold(Base o);
+
+  ITraversalRule ShouldReturnToOutput(bool shouldReturn = true);
+  public bool ShouldReturn { get; }
 }
 
 /// <summary>
@@ -41,4 +44,8 @@ public sealed class DefaultRule : ITraversalRule
   {
     return true;
   }
+
+  public ITraversalRule ShouldReturnToOutput(bool shouldReturn = true) => throw new System.NotImplementedException();
+
+  public bool ShouldReturn { get; }
 }

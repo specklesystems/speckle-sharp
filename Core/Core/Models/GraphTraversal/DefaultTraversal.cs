@@ -20,9 +20,10 @@ public static class DefaultTraversal
       .NewTraversalRule()
       .When(b => b.GetType() != typeof(Base))
       .When(HasDisplayValue)
-      .ContinueTraversing(_ => ElementsPropAliases);
+      .ContinueTraversing(_ => ElementsPropAliases)
+      .ShouldReturnToOutput();
 
-    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule.ShouldReturnToOutput(false));
   }
 
   /// <summary>
@@ -108,10 +109,8 @@ public static class DefaultTraversal
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
     .ContinueTraversing(None);
 
-  public static readonly ITraversalRule DefaultRule = TraversalRule
-    .NewTraversalRule()
-    .When(_ => true)
-    .ContinueTraversing(Members());
+  public static ITraversalRule DefaultRule =>
+    TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members()).ShouldReturnToOutput(false);
 
   public static readonly IReadOnlyList<string> ElementsPropAliases = new[] { "elements", "@elements" };
 

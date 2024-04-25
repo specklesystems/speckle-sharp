@@ -12,6 +12,7 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
 {
   private readonly List<WhenCondition> _conditions;
   private SelectMembers _membersToTraverse;
+  public bool ShouldReturn { get; private set; }
 
   private TraversalRule()
   {
@@ -21,6 +22,12 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
   public ITraversalRule ContinueTraversing(SelectMembers membersToTraverse)
   {
     this._membersToTraverse = membersToTraverse;
+    return this;
+  }
+
+  public ITraversalRule ShouldReturnToOutput(bool shouldReturn = true)
+  {
+    ShouldReturn = shouldReturn;
     return this;
   }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Rhino7.Operations.Receive;
 
@@ -41,9 +43,20 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var objectsToConvert = rootObject
       .TraverseWithPath(obj => obj is not Collection)
-      .Where(obj => obj.Item2 is not Collection && obj.Item2 is not DisplayStyle && obj.Item2 is not RenderMaterial);
+      .Where(obj => obj.Item2 is not Collection);
 
-    var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
+    var newTraversalObjectsToConvert = DefaultTraversal
+      .TypesAreKing()
+      .Traverse(rootObject)
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current))
+      .Where(obj => obj.Current is not Collection);
+
+    var convertedIds = BakeObjects(
+      newTraversalObjectsToConvert,
+      baseLayerName,
+      onOperationProgressed,
+      cancellationToken
+    );
 
     _contextStack.Current.Document.Views.Redraw();
 
@@ -52,7 +65,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
   // POC: Potentially refactor out into an IObjectBaker.
   private List<string> BakeObjects(
-    IEnumerable<(List<string>, Base)> objects,
+    IEnumerable<(string[], Base)> objects,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed,
     CancellationToken cancellationToken
@@ -69,7 +82,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       Layer[]? childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
-        foreach (var layer in childLayers)
+        foreach (var layer in childLayers.Reverse())
         {
           doc.Layers.Purge(layer.Index, false);
         }
@@ -87,30 +100,27 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
     var conversionExceptions = new List<Exception>();
 
-    foreach ((List<string> path, Base baseObj) in objects)
+    foreach ((string[] path, Base baseObj) in objects)
     {
       try
       {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var fullLayerName = string.Join("::", path);
+        var fullLayerName = string.Join(Layer.PathSeparator, path);
         var layerIndex = cache.TryGetValue(fullLayerName, out int value)
           ? value
           : GetAndCreateLayerFromPath(path, baseLayerName, cache);
 
         onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
 
-        var converted = _toHostConverter.Convert(baseObj);
+        var result = _toHostConverter.Convert(baseObj);
 
-        if (converted is not GeometryBase newObject)
-        {
-          throw new SpeckleConversionException(
-            $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {converted.GetType().Name}"
-          );
-        }
-
-        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
-        newObjectIds.Add(newObjectGuid.ToString());
+        var conversionIds = HandleConversionResult(result, baseObj, layerIndex);
+        newObjectIds.AddRange(conversionIds);
+      }
+      catch (OperationCanceledException)
+      {
+        throw;
       }
       catch (Exception e) when (!e.IsFatal())
       {
@@ -126,8 +136,44 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     return newObjectIds;
   }
 
+  private IReadOnlyList<string> HandleConversionResult(object conversionResult, Base originalObject, int layerIndex)
+  {
+    var doc = _contextStack.Current.Document;
+    List<string> newObjectIds = new();
+    switch (conversionResult)
+    {
+      case IEnumerable<GeometryBase> list:
+      {
+        Group group = BakeObjectsAsGroup(originalObject.id, list, layerIndex);
+        newObjectIds.Add(group.Id.ToString());
+        break;
+      }
+      case GeometryBase newObject:
+      {
+        var newObjectGuid = doc.Objects.Add(newObject, new ObjectAttributes { LayerIndex = layerIndex });
+        newObjectIds.Add(newObjectGuid.ToString());
+        break;
+      }
+      default:
+        throw new SpeckleConversionException(
+          $"Unexpected result from conversion: Expected {nameof(GeometryBase)} but instead got {conversionResult.GetType().Name}"
+        );
+    }
+
+    return newObjectIds;
+  }
+
+  private Group BakeObjectsAsGroup(string groupName, IEnumerable<GeometryBase> list, int layerIndex)
+  {
+    var doc = _contextStack.Current.Document;
+    var objectIds = list.Select(obj => doc.Objects.Add(obj, new ObjectAttributes { LayerIndex = layerIndex }));
+    var groupIndex = _contextStack.Current.Document.Groups.Add(groupName, objectIds);
+    var group = _contextStack.Current.Document.Groups.FindIndex(groupIndex);
+    return group;
+  }
+
   // POC: This is the original DUI3 function, this will grow over time as we add more conversions that are missing, so it should be refactored out into an ILayerManager or some sort of service.
-  private int GetAndCreateLayerFromPath(List<string> path, string baseLayerName, Dictionary<string, int> cache)
+  private int GetAndCreateLayerFromPath(string[] path, string baseLayerName, Dictionary<string, int> cache)
   {
     var currentLayerName = baseLayerName;
     RhinoDoc currentDocument = _contextStack.Current.Document;
@@ -150,5 +196,40 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       previousLayer = currentDocument.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this
     }
     return previousLayer.Index;
+  }
+
+  //todo: move somewhere shared  + unit test
+  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
+  {
+    TraversalContext? head = context;
+    do
+    {
+      if (head.Current is Collection c)
+      {
+        yield return c;
+      }
+      head = head.Parent;
+    } while (head != null);
+  }
+
+  //todo: move somewhere shared + unit test
+  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
+  {
+    TraversalContext head = context;
+    do
+    {
+      if (head.PropName == null)
+      {
+        break;
+      }
+      yield return head.PropName;
+    } while (true);
+  }
+
+  private string[] GetLayerPath(TraversalContext context)
+  {
+    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
+    var reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+    return reverseOrderPath.Reverse().ToArray();
   }
 }
