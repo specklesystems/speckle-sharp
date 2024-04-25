@@ -5,8 +5,8 @@ namespace Speckle.Core.Models.GraphTraversal;
 public static class TraversalContextExtensions
 {
   /// <summary>
-  /// Walks up the tree, returning <see cref="TraversalContext{T}.PropName"/> values, starting with <paramref name="context"/>,
-  /// walking up <see cref="TraversalContext{T}.Parent"/> nodes
+  /// Walks up the tree, returning <see cref="TraversalContext.PropName"/> values, starting with <paramref name="context"/>,
+  /// walking up <see cref="TraversalContext.Parent"/> nodes
   /// </summary>
   /// <param name="context"></param>
   /// <returns></returns>
@@ -27,7 +27,7 @@ public static class TraversalContextExtensions
 
   /// <summary>
   /// Walks up the tree, returning all <typeparamref name="T"/> typed ascendant, starting the <typeparamref name="T"/> closest <paramref name="context"/>,
-  /// walking up <see cref="TraversalContext{T}.Parent"/> nodes
+  /// walking up <see cref="TraversalContext.Parent"/> nodes
   /// </summary>
   /// <param name="context"></param>
   /// <returns></returns>
@@ -44,6 +44,4 @@ public static class TraversalContextExtensions
       head = head.Parent;
     } while (head != null);
   }
-
-  //TODO: unit test
 }
