@@ -17,19 +17,16 @@ public class PointCloudToSpeckleConverter
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
   private readonly IRawConversion<Envelope, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IGeometryUtils _geomUtils;
 
   public PointCloudToSpeckleConverter(
     IRawConversion<MapPoint, SOG.Point> pointConverter,
     IRawConversion<Envelope, SOG.Box> boxConverter,
-    IConversionContextStack<Map, Unit> contextStack,
-    IGeometryUtils geomUtils
+    IConversionContextStack<Map, Unit> contextStack
   )
   {
     _pointConverter = pointConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
-    _geomUtils = geomUtils;
   }
 
   public Base Convert(object target)
@@ -93,7 +90,7 @@ public class PointCloudToSpeckleConverter
                   if (classCode == groupClass.Values[i].FieldValues[0])
                   {
                     CIMColor symbolColor = groupClass.Symbol.Symbol.GetColor();
-                    color = _geomUtils.CIMColorToInt(symbolColor);
+                    color = symbolColor.CIMColorToInt();
                     speckleColors.Add(color);
                     break;
                   }
@@ -103,7 +100,7 @@ public class PointCloudToSpeckleConverter
           }
           else
           {
-            color = _geomUtils.RGBToInt(pt.RGBColor);
+            color = pt.RGBColor.RGBToInt();
             speckleColors.Add(color);
           }
           //

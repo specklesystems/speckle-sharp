@@ -11,21 +11,15 @@ namespace Speckle.Converters.ArcGIS3.Features;
 public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IReadOnlyList<Base>>
 {
   private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> _segmentConverter;
   private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
-  private readonly IGeometryUtils _geomUtils;
 
   public MultipatchFeatureToSpeckleConverter(
     IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<ReadOnlySegmentCollection, SOG.Polyline> segmentConverter,
-    IRawConversion<MapPoint, SOG.Point> pointConverter,
-    IGeometryUtils geomUtils
+    IRawConversion<MapPoint, SOG.Point> pointConverter
   )
   {
     _contextStack = contextStack;
-    _segmentConverter = segmentConverter;
     _pointConverter = pointConverter;
-    _geomUtils = geomUtils;
   }
 
   public IReadOnlyList<Base> RawConvert(Multipatch target)
@@ -62,7 +56,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             pointCoords.Clear();
           }
         }
-        if (_geomUtils.ValidateMesh(mesh))
+        if (mesh.ValidateMesh())
         {
           meshList.Add(mesh);
         }
@@ -85,7 +79,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             pointCoords.Clear();
           }
         }
-        if (_geomUtils.ValidateMesh(mesh))
+        if (mesh.ValidateMesh())
         {
           meshList.Add(mesh);
         }
@@ -107,7 +101,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
             mesh.faces.AddRange(new List<int>() { 3, 0, count - 2, count - 1 });
           }
         }
-        if (_geomUtils.ValidateMesh(mesh))
+        if (mesh.ValidateMesh())
         {
           meshList.Add(mesh);
         }
@@ -152,7 +146,7 @@ public class MultipatchFeatureToSpeckleConverter : IRawConversion<Multipatch, IR
         SOG.Polyline polyline = new(pointCoords, _contextStack.Current.SpeckleUnits) { };
 
         // every outer ring is oriented clockwise
-        bool isClockwise = _geomUtils.IsClockwisePolygon(polyline);
+        bool isClockwise = polyline.IsClockwisePolygon();
         if (!isClockwise)
         {
           // add void to existing polygon

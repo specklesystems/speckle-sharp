@@ -3,22 +3,16 @@ using Speckle.Core.Models;
 using Objects.GIS;
 using ArcGIS.Core.Data;
 using Speckle.Converters.ArcGIS3.Geometry;
-using ArcGIS.Core.Data.Exceptions;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
 {
   private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
-  private readonly IGeometryUtils _geomUtils;
 
-  public GisFeatureToSpeckleConverter(
-    IRawConversion<ACG.Geometry, IReadOnlyList<Base>> geometryConverter,
-    IGeometryUtils geomUtils
-  )
+  public GisFeatureToSpeckleConverter(IRawConversion<ACG.Geometry, IReadOnlyList<Base>> geometryConverter)
   {
     _geometryConverter = geometryConverter;
-    _geomUtils = geomUtils;
   }
 
   public Base Convert(object target) => RawConvert((Row)target);
@@ -68,7 +62,7 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
           if (poly is GisPolygonGeometry polygon && polygon.voids.Count == 0)
           {
             // ensure counter-clockwise orientation for up-facing mesh faces
-            bool isClockwise = _geomUtils.IsClockwisePolygon(polygon.boundary);
+            bool isClockwise = polygon.boundary.IsClockwisePolygon();
             List<SOG.Point> boundaryPts = polygon.boundary.GetPoints();
             if (isClockwise)
             {

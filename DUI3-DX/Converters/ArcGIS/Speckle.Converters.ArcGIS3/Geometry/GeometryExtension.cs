@@ -2,9 +2,9 @@ using ArcGIS.Core.CIM;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class GeometryUtils : IGeometryUtils
+public static class GeometryUtils
 {
-  public bool ValidateMesh(SOG.Mesh mesh)
+  public static bool ValidateMesh(this SOG.Mesh mesh)
   {
     if (mesh.vertices.Count < 3)
     {
@@ -17,12 +17,12 @@ public class GeometryUtils : IGeometryUtils
     return true;
   }
 
-  public int RGBToInt(CIMRGBColor color)
+  public static int RGBToInt(this CIMRGBColor color)
   {
     return (255 << 24) | ((int)Math.Round(color.R) << 16) | ((int)Math.Round(color.G) << 8) | (int)Math.Round(color.B);
   }
 
-  public int CIMColorToInt(CIMColor color)
+  public static int CIMColorToInt(this CIMColor color)
   {
     return (255 << 24)
       | ((int)Math.Round(color.Values[0]) << 16)
@@ -30,7 +30,7 @@ public class GeometryUtils : IGeometryUtils
       | (int)Math.Round(color.Values[2]);
   }
 
-  public bool IsClockwisePolygon(SOG.Polyline polyline)
+  public static bool IsClockwisePolygon(this SOG.Polyline polyline)
   {
     bool isClockwise;
     double sum = 0;

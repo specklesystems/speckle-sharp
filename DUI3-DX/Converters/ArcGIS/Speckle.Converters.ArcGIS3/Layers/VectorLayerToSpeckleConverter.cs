@@ -68,26 +68,27 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     speckleLayer.units = _contextStack.Current.SpeckleUnits;
 
     // get feature class fields
-    var layerAttributes = new Base();
+    var allLayerAttributes = new Base();
     var dispayTable = target as IDisplayTable;
     IReadOnlyList<FieldDescription> fieldDescriptions = dispayTable.GetFieldDescriptions();
     foreach (FieldDescription field in fieldDescriptions)
     {
-      string name = field.Name;
-      if (name == "Shape")
-      {
-        continue;
-      }
       if (field.IsVisible)
       {
-        layerAttributes[name] = field.Type;
+        string name = field.Name;
+        if (name == "Shape")
+        {
+          continue;
+        }
+        allLayerAttributes[name] = field.Type;
       }
     }
-    speckleLayer.attributes = layerAttributes;
+    speckleLayer.attributes = allLayerAttributes;
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
     // get a simple geometry type
     string spekleGeometryType = SpeckleGeometryType(speckleLayer.nativeGeomType);
+    speckleLayer.geomType = spekleGeometryType;
 
     // search the rows
     // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
@@ -102,19 +103,20 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         {
           GisFeature element = _gisFeatureConverter.RawConvert(row);
 
-          // replace "attributes", to remove non-visible layer attributes
+          // replace element "attributes", to remove those non-visible on Layer level
           Base elementAttributes = new();
           foreach (FieldDescription field in fieldDescriptions)
           {
-            elementAttributes[field.Name] = element.attributes[field.Name];
+            if (field.IsVisible)
+            {
+              elementAttributes[field.Name] = element.attributes[field.Name];
+            }
           }
           element.attributes = elementAttributes;
           speckleLayer.elements.Add(element);
         }
       }
     }
-
-    speckleLayer.geomType = spekleGeometryType;
 
     return speckleLayer;
   }
