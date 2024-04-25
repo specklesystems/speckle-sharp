@@ -1,4 +1,4 @@
-﻿using Objects;
+using Objects;
 using Rhino;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
@@ -57,7 +57,8 @@ public class SpeckleBrepRawToHostConversion : IRawConversion<SOG.Brep, RG.Brep>
     target.Faces.ForEach(face => ConvertSpeckleBrepFace(rhinoBrep, face));
     target.Loops.ForEach(loop => ConvertSpeckleBrepLoop(rhinoBrep, loop, tolerance));
 
-    rhinoBrep.Repair(tolerance); // Repair fixes tolerance issues with the Brep if the scaling lead to some rounding error.
+    //poc: repair is quite slow, we're experimenting to see if we can avoid calling it
+    // rhinoBrep.Repair(tolerance); // Repair fixes tolerance issues with the Brep if the scaling lead to some rounding error.
 
     return rhinoBrep;
   }
