@@ -17,7 +17,7 @@ public class GraphTraversalTests
   [Test]
   public void Traverse_TraversesListMembers()
   {
-    var traverseListsRule = TraversalRule
+    var traverseListsRule = TraversalBuilderReturn
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
@@ -49,7 +49,7 @@ public class GraphTraversalTests
   [Test]
   public void Traverse_TraversesDictMembers()
   {
-    var traverseListsRule = TraversalRule
+    var traverseListsRule = TraversalBuilderReturn
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
@@ -81,7 +81,7 @@ public class GraphTraversalTests
   [Test]
   public void Traverse_TraversesDynamic()
   {
-    var traverseListsRule = TraversalRule
+    var traverseListsRule = TraversalBuilderReturn
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(x => x.GetMembers(DynamicBaseMemberType.Dynamic).Select(kvp => kvp.Key));
@@ -114,7 +114,7 @@ public class GraphTraversalTests
     var expectTraverse = new Base { id = "List Member" };
     var expectIgnored = new Base { id = "Not List Member" };
 
-    var traverseListsRule = TraversalRule
+    var traverseListsRule = TraversalBuilderReturn
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(x => x.GetMembers(DynamicBaseMemberType.Dynamic).Select(kvp => kvp.Key));

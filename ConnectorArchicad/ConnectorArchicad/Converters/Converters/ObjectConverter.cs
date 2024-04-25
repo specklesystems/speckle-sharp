@@ -99,7 +99,7 @@ public sealed class Object : IConverter
       return membersToTraverse;
     }
 
-    var traversalRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(AllAliases);
+    var traversalRule = TraversalBuilderReturn.NewTraversalRule().When(_ => true).ContinueTraversing(AllAliases);
 
     return new ArchicadGeometryCollector(traversalRule);
   }

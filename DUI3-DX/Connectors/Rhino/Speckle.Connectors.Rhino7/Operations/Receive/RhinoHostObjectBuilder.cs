@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Objects.Other;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -48,7 +46,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     // POC: This is the new proposed traversal
     var newTraversalObjectsToConvert = DefaultTraversal
-      .TypesAreKing()
+      .CreateTraversalFunc()
       .Traverse(rootObject)
       .Where(obj => obj.Current is not Collection)
       .Select(ctx => (GetLayerPath(ctx), ctx.Current));
@@ -208,38 +206,10 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     return previousLayer.Index;
   }
 
-  //todo: move somewhere shared  + unit test
-  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
-  {
-    TraversalContext? head = context;
-    do
-    {
-      if (head.Current is Collection c)
-      {
-        yield return c;
-      }
-      head = head.Parent;
-    } while (head != null);
-  }
-
-  //todo: move somewhere shared + unit test
-  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
-  {
-    TraversalContext head = context;
-    do
-    {
-      if (head.PropName == null)
-      {
-        break;
-      }
-      yield return head.PropName;
-    } while (true);
-  }
-
   private string[] GetLayerPath(TraversalContext context)
   {
-    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
-    var reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
     return reverseOrderPath.Reverse().ToArray();
   }
 }

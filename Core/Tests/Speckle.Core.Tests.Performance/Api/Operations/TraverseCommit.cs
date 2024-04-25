@@ -21,7 +21,7 @@ public class TraverseCommit
     await dataSource.SeedTransport(DataComplexity).ConfigureAwait(false);
     _testData = await dataSource.DeserializeBase().ConfigureAwait(false);
 
-    var convertableRule = TraversalRule
+    var convertableRule = TraversalBuilderReturn
       .NewTraversalRule()
       .When(b => b.speckle_type.Contains("Geometry"))
       .When(DefaultTraversal.HasDisplayValue)
