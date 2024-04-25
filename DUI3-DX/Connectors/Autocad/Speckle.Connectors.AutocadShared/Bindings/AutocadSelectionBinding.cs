@@ -19,10 +19,16 @@ public class AutocadSelectionBinding : ISelectionBinding
   {
     Parent = parent;
 
+    // POC: Use here Context for doc. In converters it's OK but we are still lacking to use context into bindings.
+    // It is with the case of if binding created with already a document
+    // This is valid when user opens acad file directly double clicking
+    TryRegisterDocumentForSelection(Application.DocumentManager.MdiActiveDocument);
     Application.DocumentManager.DocumentActivated += (sender, e) => OnDocumentChanged(e.Document);
   }
 
-  private void OnDocumentChanged(Document document)
+  private void OnDocumentChanged(Document document) => TryRegisterDocumentForSelection(document);
+
+  private void TryRegisterDocumentForSelection(Document document)
   {
     if (document == null)
     {

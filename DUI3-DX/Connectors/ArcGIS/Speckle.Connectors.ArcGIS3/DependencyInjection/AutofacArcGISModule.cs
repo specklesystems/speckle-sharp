@@ -22,6 +22,11 @@ using Speckle.Connectors.Utils.Operations;
 using ArcGIS.Core.Geometry;
 using Speckle.Connectors.ArcGIS.Filters;
 
+// POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
+// This should go whenever it is aligned.
+using IRootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.IRootObjectSender;
+using RootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.RootObjectSender;
+
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
 public class AutofacArcGISModule : Module
