@@ -41,10 +41,12 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     // POC: This is where the top level base-layer name is set. Could be abstracted or injected in the context?
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
+    // POC: This is the traversal from the original DUI3
     var objectsToConvert = rootObject
       .TraverseWithPath(obj => obj is not Collection)
       .Where(obj => obj.Item2 is not Collection);
 
+    // POC: This is the new proposed traversal
     var newTraversalObjectsToConvert = DefaultTraversal
       .TypesAreKing()
       .Traverse(rootObject)
@@ -52,7 +54,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       .Select(ctx => (GetLayerPath(ctx), ctx.Current));
 
     var convertedIds = BakeObjects(
-      newTraversalObjectsToConvert,
+      newTraversalObjectsToConvert, // POC: Both traversal IEnumerables can be swapped here to see the different behaviour in Rhino
       baseLayerName,
       onOperationProgressed,
       cancellationToken
