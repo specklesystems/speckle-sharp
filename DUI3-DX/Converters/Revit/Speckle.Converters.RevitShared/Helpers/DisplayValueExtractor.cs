@@ -1,4 +1,3 @@
-using Autodesk.Revit.DB;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 using Mesh = Objects.Geometry.Mesh;
@@ -8,22 +7,21 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // POC: class is kind of big and could do with breaking down
 public sealed class DisplayValueExtractor
 {
-  private readonly IRawConversion<List<DB.Solid>, List<Mesh>> _solidsConversion;
-  private readonly IRawConversion<List<DB.Mesh>, List<Mesh>> _meshConversion;
+  private readonly IRawConversion<DB.Solid, List<Mesh>> _solidConversion;
+  private readonly IRawConversion<DB.Mesh, Mesh> _meshConversion;
 
   public DisplayValueExtractor(
-    IRawConversion<List<Solid>, List<Mesh>> solidsConversion,
-    IRawConversion<List<DB.Mesh>, List<Mesh>> meshConversion
+    IRawConversion<DB.Solid, List<Mesh>> solidConversion,
+    IRawConversion<DB.Mesh, Mesh> meshConversion
   )
   {
-    _solidsConversion = solidsConversion;
+    _solidConversion = solidConversion;
     _meshConversion = meshConversion;
   }
 
   public List<Mesh> GetDisplayValue(
     DB.Element element,
     DB.Options? options = null,
-    bool isConvertedAsInstance = false,
     // POC: should this be part of the context?
     DB.Transform? transform = null
   )
@@ -31,11 +29,11 @@ public sealed class DisplayValueExtractor
     var displayMeshes = new List<Mesh>();
 
     // test if the element is a group first
-    if (element is Group g)
+    if (element is DB.Group g)
     {
       foreach (var id in g.GetMemberIds())
       {
-        var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
+        var groupMeshes = GetDisplayValue(element.Document.GetElement(id), options);
         displayMeshes.AddRange(groupMeshes);
       }
       return displayMeshes;
@@ -44,60 +42,29 @@ public sealed class DisplayValueExtractor
     var (solids, meshes) = GetSolidsAndMeshesFromElement(element, options, transform);
 
     // convert meshes and solids
-    displayMeshes.AddRange(_meshConversion.RawConvert(meshes));
-    displayMeshes.AddRange(_solidsConversion.RawConvert(solids));
+    foreach (var mesh in meshes)
+    {
+      displayMeshes.Add(_meshConversion.RawConvert(mesh));
+    }
+
+    foreach (var solid in solids)
+    {
+      displayMeshes.AddRange(_solidConversion.RawConvert(solid));
+    }
 
     return displayMeshes;
   }
 
-  /// <summary>
-  /// Retreives the meshes on an element to use as the speckle displayvalue
-  /// </summary>
-  /// <param name="element"></param>
-  /// <param name="isConvertedAsInstance">Some FamilyInstance elements are treated as proper Instance objects, while others are not. For those being converted as Instance objects, retrieve their display value untransformed by the instance transform or by the selected document reference point.</param>
-  /// <returns></returns>
-  /// <remarks>
-  /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
-  /// </remarks>
-  private List<Mesh> GetElementDisplayValue(
+  private (List<DB.Solid>, List<DB.Mesh>) GetSolidsAndMeshesFromElement(
     DB.Element element,
-    Options? options = null,
-    bool isConvertedAsInstance = false,
+    DB.Options? options,
     DB.Transform? transform = null
   )
   {
-    var displayMeshes = new List<Mesh>();
-
-    // test if the element is a group first
-    if (element is Group g)
-    {
-      foreach (var id in g.GetMemberIds())
-      {
-        var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
-        displayMeshes.AddRange(groupMeshes);
-      }
-      return displayMeshes;
-    }
-
-    var (solids, meshes) = GetSolidsAndMeshesFromElement(element, options, transform);
-
-    // convert meshes and solids
-    displayMeshes.AddRange(_meshConversion.RawConvert(meshes));
-    displayMeshes.AddRange(_solidsConversion.RawConvert(solids));
-
-    return displayMeshes;
-  }
-
-  private (List<Solid>, List<DB.Mesh>) GetSolidsAndMeshesFromElement(
-    Element element,
-    Options? options,
-    Transform? transform = null
-  )
-  {
     //options = ViewSpecificOptions ?? options ?? new Options() { DetailLevel = DetailLevelSetting };
-    options ??= new Options() { DetailLevel = ViewDetailLevel.Fine };
+    options ??= new DB.Options { DetailLevel = DB.ViewDetailLevel.Fine };
 
-    GeometryElement geom;
+    DB.GeometryElement geom;
     try
     {
       geom = element.get_Geometry(options);
@@ -109,7 +76,7 @@ public sealed class DisplayValueExtractor
       geom = element.get_Geometry(options);
     }
 
-    var solids = new List<Solid>();
+    var solids = new List<DB.Solid>();
     var meshes = new List<DB.Mesh>();
 
     if (geom != null)
@@ -137,11 +104,11 @@ public sealed class DisplayValueExtractor
   /// <param name="meshes"></param>
   /// <param name="geom"></param>
   private void SortGeometry(
-    Element element,
-    List<Solid> solids,
+    DB.Element element,
+    List<DB.Solid> solids,
     List<DB.Mesh> meshes,
-    GeometryElement geom,
-    Transform? inverseTransform = null
+    DB.GeometryElement geom,
+    DB.Transform? inverseTransform = null
   )
   {
     var topLevelSolidsCount = 0;
@@ -150,13 +117,13 @@ public sealed class DisplayValueExtractor
     var topLevelGeomInstanceCount = 0;
     bool hasSymbolGeometry = false;
 
-    foreach (GeometryObject geomObj in geom)
+    foreach (DB.GeometryObject geomObj in geom)
     {
       // POC: switch could possibly become factory and IIndex<,> pattern and move conversions to
       // separate IComeConversionInterfaces
       switch (geomObj)
       {
-        case Solid solid:
+        case DB.Solid solid:
           // skip invalid solid
           if (
             solid.Faces.Size == 0
@@ -170,7 +137,7 @@ public sealed class DisplayValueExtractor
           if (inverseTransform != null)
           {
             topLevelSolidsCount++;
-            solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+            solid = DB.SolidUtils.CreateTransformed(solid, inverseTransform);
           }
 
           solids.Add(solid);
@@ -189,7 +156,7 @@ public sealed class DisplayValueExtractor
 
           meshes.Add(mesh);
           break;
-        case GeometryInstance instance:
+        case DB.GeometryInstance instance:
           // element transforms should not be carried down into nested geometryInstances.
           // Nested geomInstances should have their geom retreived with GetInstanceGeom, not GetSymbolGeom
           if (inverseTransform != null)
@@ -206,7 +173,7 @@ public sealed class DisplayValueExtractor
             SortGeometry(element, solids, meshes, instance.GetInstanceGeometry());
           }
           break;
-        case GeometryElement geometryElement:
+        case DB.GeometryElement geometryElement:
           if (inverseTransform != null)
           {
             topLevelGeomElementCount++;
@@ -230,7 +197,7 @@ public sealed class DisplayValueExtractor
 
   // POC: should be hoovered up with the new reporting, logging, exception philosophy
   private static void LogInstanceMeshRetrievalWarnings(
-    Element element,
+    DB.Element element,
     int topLevelSolidsCount,
     int topLevelMeshesCount,
     int topLevelGeomElementCount,
@@ -272,7 +239,7 @@ public sealed class DisplayValueExtractor
   /// <summary>
   /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
   /// </summary>
-  private readonly Dictionary<string, GraphicsStyle> _graphicStyleCache = new();
+  private readonly Dictionary<string, DB.GraphicsStyle> _graphicStyleCache = new();
 
   /// <summary>
   /// Exclude light source cones and potentially other geometries by their graphic style
@@ -280,18 +247,18 @@ public sealed class DisplayValueExtractor
   /// <param name="id"></param>
   /// <param name="doc"></param>
   /// <returns></returns>
-  private bool IsSkippableGraphicStyle(ElementId id, Document doc)
+  private bool IsSkippableGraphicStyle(DB.ElementId id, DB.Document doc)
   {
     if (!_graphicStyleCache.ContainsKey(id.ToString()))
     {
-      _graphicStyleCache.Add(id.ToString(), (GraphicsStyle)doc.GetElement(id));
+      _graphicStyleCache.Add(id.ToString(), (DB.GraphicsStyle)doc.GetElement(id));
     }
 
     var graphicStyle = _graphicStyleCache[id.ToString()];
 
     if (
       graphicStyle != null
-      && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)BuiltInCategory.OST_LightingFixtureSource
+      && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)DB.BuiltInCategory.OST_LightingFixtureSource
     )
     {
       return true;

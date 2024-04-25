@@ -42,7 +42,7 @@ public class SingleMeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 
   private List<double> GetSpeckleMeshVertexData(DB.Mesh target)
   {
-    var vertices = new List<double>();
+    var vertices = new List<double>(target.Vertices.Count * 3);
 
     foreach (var vert in target.Vertices)
     {
@@ -54,7 +54,7 @@ public class SingleMeshConversionToSpeckle : IRawConversion<DB.Mesh, SOG.Mesh>
 
   private List<int> GetSpeckleMeshFaceData(DB.Mesh target)
   {
-    var faces = new List<int>();
+    var faces = new List<int>(target.NumTriangles * 4);
     for (int i = 0; i < target.NumTriangles; i++)
     {
       var triangle = target.get_Triangle(i);
