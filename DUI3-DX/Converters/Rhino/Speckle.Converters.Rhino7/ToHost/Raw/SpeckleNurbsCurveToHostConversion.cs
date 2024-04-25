@@ -34,7 +34,7 @@ public class SpeckleNurbsCurveToHostConversion : IRawConversion<SOG.Curve, RG.Nu
     for (int i = 2, j = 0; i < target.points.Count; i += 3, j++)
     {
       var pt = new RG.Point3d(target.points[i - 2], target.points[i - 1], target.points[i]); // Skip the point converter for performance
-      nurbsCurve.Points.SetPoint(i, pt, target.weights[j]);
+      nurbsCurve.Points.SetPoint(j, pt, target.weights[j]);
     }
 
     // check knot multiplicity to match Rhino's standard of (# control points + degree - 1)

@@ -48,6 +48,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var newTraversalObjectsToConvert = DefaultTraversal
       .TypesAreKing()
       .Traverse(rootObject)
+      .Where(obj => obj.Current is not Collection)
       .Select(ctx => (GetLayerPath(ctx), ctx.Current));
 
     var convertedIds = BakeObjects(
@@ -81,6 +82,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       Layer[]? childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
+        doc.Views.RedrawEnabled = false;
         foreach (var layer in childLayers)
         {
           var purgeSuccess = doc.Layers.Purge(layer.Index, true);
@@ -89,6 +91,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
             Console.WriteLine($"Failed to purge layer: {layer}");
           }
         }
+        doc.Views.RedrawEnabled = true;
       }
     }
 
