@@ -86,19 +86,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RevitShared", "RevitShared"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RevitSharedResources", "RevitSharedResources\RevitSharedResources.shproj", "{071F914C-F473-4FB2-9FAF-98632AFB164B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2024", "RevitSharedResources2024\RevitSharedResources2024.csproj", "{49579A07-BB79-4C79-B9EB-E03C5C2A83CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2024", "RevitSharedResources2024\RevitSharedResources2024.csproj", "{49579A07-BB79-4C79-B9EB-E03C5C2A83CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2023", "RevitSharedResources2023\RevitSharedResources2023.csproj", "{44F6AEDD-D875-46D8-9286-1D6A0201AFF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2023", "RevitSharedResources2023\RevitSharedResources2023.csproj", "{44F6AEDD-D875-46D8-9286-1D6A0201AFF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2022", "RevitSharedResources2022\RevitSharedResources2022.csproj", "{57C2D297-25D4-472B-9034-A106A6E39C24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2022", "RevitSharedResources2022\RevitSharedResources2022.csproj", "{57C2D297-25D4-472B-9034-A106A6E39C24}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2021", "RevitSharedResources2021\RevitSharedResources2021.csproj", "{11D1995A-6FEF-4843-A1D7-A5F6B3592891}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2021", "RevitSharedResources2021\RevitSharedResources2021.csproj", "{11D1995A-6FEF-4843-A1D7-A5F6B3592891}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2020", "RevitSharedResources2020\RevitSharedResources2020.csproj", "{1C053AF2-BC74-4538-B250-62C6B54380EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources2020", "RevitSharedResources2020\RevitSharedResources2020.csproj", "{1C053AF2-BC74-4538-B250-62C6B54380EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchUploader.Sdk", "..\ConnectorCore\BatchUploader.Sdk\BatchUploader.Sdk.csproj", "{2018D167-8A0E-495B-B7F9-F952530C1B87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BatchUploader.Sdk", "..\ConnectorCore\BatchUploader.Sdk\BatchUploader.Sdk.csproj", "{2018D167-8A0E-495B-B7F9-F952530C1B87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchUploader.OperationDriver", "..\ConnectorCore\BatchUploader.OperationDriver\BatchUploader.OperationDriver.csproj", "{1D6D5E82-0CE2-4291-9871-A94EDFD546BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BatchUploader.OperationDriver", "..\ConnectorCore\BatchUploader.OperationDriver\BatchUploader.OperationDriver.csproj", "{1D6D5E82-0CE2-4291-9871-A94EDFD546BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DllConflictManagement", "..\ConnectorCore\DllConflictManagement\DllConflictManagement.csproj", "{C80CA5EC-22BB-44A8-8800-54675218EB2B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -395,6 +397,14 @@ Global
 		{1D6D5E82-0CE2-4291-9871-A94EDFD546BE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D6D5E82-0CE2-4291-9871-A94EDFD546BE}.Release|x64.ActiveCfg = Release|Any CPU
 		{1D6D5E82-0CE2-4291-9871-A94EDFD546BE}.Release|x64.Build.0 = Release|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Debug|x64.Build.0 = Debug|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Release|x64.ActiveCfg = Release|Any CPU
+		{C80CA5EC-22BB-44A8-8800-54675218EB2B}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -450,12 +460,18 @@ Global
 		SolutionGuid = {650BE642-C7CC-4FF5-9EE5-8C57BF553143}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RevitSharedResources\RevitSharedResources.projitems*{071f914c-f473-4fb2-9faf-98632afb164b}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTestsShared\ConverterRevitTestsShared.projitems*{1085f4b5-fdad-4ff8-b144-dddbd9454f55}*SharedItemsImports = 13
+		RevitSharedResources\RevitSharedResources.projitems*{11d1995a-6fef-4843-a1d7-a5f6b3592891}*SharedItemsImports = 5
+		RevitSharedResources\RevitSharedResources.projitems*{1c053af2-bc74-4538-b250-62c6b54380ef}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{236cff40-7dda-4cc5-84a9-b1df6f0985ef}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{240ead7e-ef10-482a-b299-3b85b64b032f}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
 		ConnectorRevit\ConnectorRevit.projitems*{42f3bf97-0b1c-4595-886a-3157151393f2}*SharedItemsImports = 5
+		RevitSharedResources\RevitSharedResources.projitems*{44f6aedd-d875-46d8-9286-1d6a0201aff6}*SharedItemsImports = 5
+		RevitSharedResources\RevitSharedResources.projitems*{49579a07-bb79-4c79-b9eb-e03c5c2a83ca}*SharedItemsImports = 5
+		RevitSharedResources\RevitSharedResources.projitems*{57c2d297-25d4-472b-9034-a106a6e39c24}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTestsShared\ConverterRevitTestsShared.projitems*{5f2e1759-74a8-4da6-ad11-906ebef6b587}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13

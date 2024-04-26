@@ -134,6 +134,12 @@ public class AutomationContext
         }
       )
       .ConfigureAwait(false);
+
+    if (!string.IsNullOrEmpty(versionId))
+    {
+      AutomationResult.ResultVersions.Add(versionId);
+    }
+
     return versionId;
   }
 
