@@ -80,12 +80,6 @@ public static class GeometryUtils
     }
   }
 
-  public static SOG.Mesh CreateDisplayMeshForPolygon3d(this SGIS.GisPolygonGeometry3d polygon3d)
-  {
-    // POC: todo
-    throw new SpeckleConversionException("TODO");
-  }
-
   public static SOG.Mesh CreateDisplayMeshForMultipatch(this SGIS.GisMultipatchGeometry multipatch)
   {
     // POC: todo

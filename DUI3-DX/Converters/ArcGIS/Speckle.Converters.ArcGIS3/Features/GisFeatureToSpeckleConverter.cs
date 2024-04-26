@@ -15,7 +15,38 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
     _geometryConverter = geometryConverter;
   }
 
-  public Base Convert(object target) => RawConvert((Row)target);
+  private List<Base> GenerateFeatureDisplayValueList(List<Base> speckleShapes)
+  {
+    List<Base> displayVal = new();
+    foreach (var shp in speckleShapes)
+    {
+      if (shp is SGIS.GisPolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
+      {
+        try
+        {
+          SOG.Mesh displayMesh = polygon.CreateDisplayMeshForPolygon();
+          displayVal.Add(displayMesh);
+        }
+        catch (SpeckleConversionException)
+        {
+          break;
+        }
+      }
+      else if (shp is SGIS.GisMultipatchGeometry multipatch)
+      {
+        try
+        {
+          SOG.Mesh displayMesh = multipatch.CreateDisplayMeshForMultipatch();
+          displayVal.Add(displayMesh);
+        }
+        catch (SpeckleConversionException)
+        {
+          break;
+        }
+      }
+    }
+    return displayVal;
+  }
 
   public SGIS.GisFeature RawConvert(Row target)
   {
@@ -67,47 +98,9 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
       // if geometry is Polygon or Multipatch, add DisplayValue to the feature
       else
       {
-        List<Base> displayVal = new();
-        foreach (var shp in speckleShapes)
-        {
-          if (shp is SGIS.GisPolygonGeometry polygon)
-          {
-            try
-            {
-              SOG.Mesh displayMesh = polygon.CreateDisplayMeshForPolygon();
-              displayVal.Add(displayMesh);
-            }
-            catch (SpeckleConversionException)
-            {
-              continue;
-            }
-          }
-          else if (shp is SGIS.GisPolygonGeometry3d polygon3d)
-          {
-            try
-            {
-              SOG.Mesh displayMesh = polygon3d.CreateDisplayMeshForPolygon3d();
-              displayVal.Add(displayMesh);
-            }
-            catch (SpeckleConversionException)
-            {
-              continue;
-            }
-          }
-          else if (shp is SGIS.GisMultipatchGeometry multipatch)
-          {
-            try
-            {
-              SOG.Mesh displayMesh = multipatch.CreateDisplayMeshForMultipatch();
-              displayVal.Add(displayMesh);
-            }
-            catch (SpeckleConversionException)
-            {
-              continue;
-            }
-          }
-        }
-        // add display value ONLY if meshes were generates for each geometry part
+        List<Base> displayVal = GenerateFeatureDisplayValueList(speckleShapes);
+        // add display value ONLY if meshes were generates for all geometry parts
+        // otherwise those without displayValue will be lost both in Viewer and in fallback Receive conversions
         if (speckleShapes.Count == displayVal.Count)
         {
           return new SGIS.GisFeature(speckleShapes, attributes, displayVal);
