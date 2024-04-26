@@ -14,6 +14,5 @@ public class GisPolygonGeometry : Base
   public GisPolygonGeometry()
   {
     voids = new List<Polyline>();
-    units = Units.Meters;
   }
 }

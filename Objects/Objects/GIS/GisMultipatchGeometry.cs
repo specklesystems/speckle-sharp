@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.GIS;
@@ -13,6 +12,7 @@ public class GisMultipatchGeometry : Base
 
   public GisMultipatchGeometry()
   {
-    units = Units.Meters;
+    faces = new List<int>();
+    vertices = new List<double>();
   }
 }

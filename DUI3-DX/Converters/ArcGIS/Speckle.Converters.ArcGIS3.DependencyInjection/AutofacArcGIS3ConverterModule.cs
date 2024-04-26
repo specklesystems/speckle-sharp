@@ -4,7 +4,6 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.ArcGIS3.Geometry;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
