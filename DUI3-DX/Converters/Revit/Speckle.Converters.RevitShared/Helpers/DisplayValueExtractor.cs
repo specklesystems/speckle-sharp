@@ -1,32 +1,28 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
-using Mesh = Objects.Geometry.Mesh;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
 // POC: class is kind of big and could do with breaking down
 public sealed class DisplayValueExtractor
 {
-  private readonly IRawConversion<DB.Solid, List<Mesh>> _solidConversion;
-  private readonly IRawConversion<DB.Mesh, Mesh> _meshConversion;
+  private readonly IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> _meshByMaterialConverter;
 
   public DisplayValueExtractor(
-    IRawConversion<DB.Solid, List<Mesh>> solidConversion,
-    IRawConversion<DB.Mesh, Mesh> meshConversion
+    IRawConversion<Dictionary<DB.ElementId, List<DB.Mesh>>, List<SOG.Mesh>> meshByMaterialConverter
   )
   {
-    _solidConversion = solidConversion;
-    _meshConversion = meshConversion;
+    _meshByMaterialConverter = meshByMaterialConverter;
   }
 
-  public List<Mesh> GetDisplayValue(
+  public List<SOG.Mesh> GetDisplayValue(
     DB.Element element,
     DB.Options? options = null,
     // POC: should this be part of the context?
     DB.Transform? transform = null
   )
   {
-    var displayMeshes = new List<Mesh>();
+    var displayMeshes = new List<SOG.Mesh>();
 
     // test if the element is a group first
     if (element is DB.Group g)
@@ -41,18 +37,43 @@ public sealed class DisplayValueExtractor
 
     var (solids, meshes) = GetSolidsAndMeshesFromElement(element, options, transform);
 
-    // convert meshes and solids
+    var meshesByMaterial = GetMeshesByMaterial(meshes, solids);
+
+    return _meshByMaterialConverter.RawConvert(meshesByMaterial);
+  }
+
+  private static Dictionary<DB.ElementId, List<DB.Mesh>> GetMeshesByMaterial(
+    List<DB.Mesh> meshes,
+    List<DB.Solid> solids
+  )
+  {
+    var meshesByMaterial = new Dictionary<DB.ElementId, List<DB.Mesh>>();
     foreach (var mesh in meshes)
     {
-      displayMeshes.Add(_meshConversion.RawConvert(mesh));
+      var materialId = mesh.MaterialElementId;
+      if (!meshesByMaterial.ContainsKey(materialId))
+      {
+        meshesByMaterial[materialId] = new List<DB.Mesh>();
+      }
+
+      meshesByMaterial[materialId].Add(mesh);
     }
 
     foreach (var solid in solids)
     {
-      displayMeshes.AddRange(_solidConversion.RawConvert(solid));
+      foreach (DB.Face face in solid.Faces)
+      {
+        var materialId = face.MaterialElementId;
+        if (!meshesByMaterial.ContainsKey(materialId))
+        {
+          meshesByMaterial[materialId] = new List<DB.Mesh>();
+        }
+
+        meshesByMaterial[materialId].Add(face.Triangulate());
+      }
     }
 
-    return displayMeshes;
+    return meshesByMaterial;
   }
 
   private (List<DB.Solid>, List<DB.Mesh>) GetSolidsAndMeshesFromElement(
