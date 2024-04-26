@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Objects;
 using Objects.BuiltElements.Revit;
+using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
@@ -52,6 +53,8 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
       target,
       BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
     );
+
+    // POC : what to do instead of falling back to default value
     speckleColumn.topLevel = _levelConverter.RawConvert(topLevel);
     speckleColumn.baseOffset =
       _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM) ?? 0;
@@ -66,14 +69,9 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
       speckleColumn.rotation = locationPoint.Rotation;
     }
 
-    speckleColumn.baseLine = GetBaseCurve(target, speckleColumn);
-
-    // POC: in existing connector, we fallback to generic element if something weird happens like we can't find
-    // a vaild baseLine. I'm guessing we don't want to do that anymore. At least not here.
-    //if (speckleColumn.baseLine == null)
-    //{
-    //  return RevitElementToSpeckle(revitColumn, out notes);
-    //}
+    speckleColumn.baseLine =
+      GetBaseCurve(target, speckleColumn.topLevel.elevation, speckleColumn.topOffset)
+      ?? throw new SpeckleConversionException("Unable to find a valid baseCurve for column");
 
     speckleColumn.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
@@ -82,7 +80,7 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
     return speckleColumn;
   }
 
-  private ICurve? GetBaseCurve(DB.FamilyInstance target, RevitColumn speckleColumn)
+  private ICurve? GetBaseCurve(DB.FamilyInstance target, double topLevelElevation, double topLevelOffset)
   {
     Base baseGeometry = _locationConverter.RawConvert(target.Location);
     ICurve? baseCurve = baseGeometry as ICurve;
@@ -103,15 +101,9 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
       //  return RevitInstanceToSpeckle(revitColumn, out notes, null);
       //}
 
-      var elevation = speckleColumn.topLevel?.elevation ?? speckleColumn.level.elevation;
       return new SOG.Line(
         basePoint,
-        new SOG.Point(
-          basePoint.x,
-          basePoint.y,
-          elevation + speckleColumn.topOffset,
-          _contextStack.Current.SpeckleUnits
-        ),
+        new SOG.Point(basePoint.x, basePoint.y, topLevelElevation + topLevelOffset, _contextStack.Current.SpeckleUnits),
         _contextStack.Current.SpeckleUnits
       );
     }

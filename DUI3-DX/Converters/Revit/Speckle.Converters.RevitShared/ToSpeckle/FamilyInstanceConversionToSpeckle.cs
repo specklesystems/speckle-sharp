@@ -1,6 +1,5 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
@@ -27,21 +26,12 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
 
   public override Base RawConvert(DB.FamilyInstance target)
   {
-    // POC: we are doing both of these checks in the current connector. Is that necessary
-    if (
-      target.Category.GetBuiltInCategory() == DB.BuiltInCategory.OST_StructuralFraming
-      && target.StructuralType == DB.Structure.StructuralType.Beam
-    )
+    if (target.StructuralType == DB.Structure.StructuralType.Beam)
     {
       return _beamConversion.RawConvert(target);
     }
 
-    // POC: in current connector, we checking for either of these conditions while for beams we are doing both.
-    // Which is necessary? All my testing shows that both of these conditions are true for columns
-    if (
-      target.Category.GetBuiltInCategory() is DB.BuiltInCategory.OST_Columns or DB.BuiltInCategory.OST_StructuralColumns
-      || target.StructuralType == DB.Structure.StructuralType.Column
-    )
+    if (target.StructuralType == DB.Structure.StructuralType.Column)
     {
       return _columnConversion.RawConvert(target);
     }
