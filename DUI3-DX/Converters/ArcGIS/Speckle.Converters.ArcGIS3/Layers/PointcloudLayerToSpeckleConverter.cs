@@ -34,6 +34,44 @@ public class PointCloudToSpeckleConverter
     return RawConvert((LasDatasetLayer)target);
   }
 
+  private int GetPointColor(LasPoint pt, object renderer)
+  {
+    // get color
+    int color = 0;
+    string classCode = pt.ClassCode.ToString();
+    if (renderer is CIMTinUniqueValueRenderer uniqueRenderer)
+    {
+      foreach (CIMUniqueValueGroup group in uniqueRenderer.Groups)
+      {
+        if (color != 0)
+        {
+          break;
+        }
+        foreach (CIMUniqueValueClass groupClass in group.Classes)
+        {
+          if (color != 0)
+          {
+            break;
+          }
+          for (int i = 0; i < groupClass.Values.Length; i++)
+          {
+            if (classCode == groupClass.Values[i].FieldValues[0])
+            {
+              CIMColor symbolColor = groupClass.Symbol.Symbol.GetColor();
+              color = symbolColor.CIMColorToInt();
+              break;
+            }
+          }
+        }
+      }
+    }
+    else
+    {
+      color = pt.RGBColor.RGBToInt();
+    }
+    return color;
+  }
+
   public SGIS.VectorLayer RawConvert(LasDatasetLayer target)
   {
     SGIS.VectorLayer speckleLayer = new();
@@ -67,43 +105,8 @@ public class PointCloudToSpeckleConverter
         {
           specklePts.Add(_pointConverter.RawConvert(pt.ToMapPoint()));
           values.Add(pt.ClassCode);
-
-          // get color
-          int color = 0;
-          string classCode = pt.ClassCode.ToString();
-          if (renderer is CIMTinUniqueValueRenderer uniqueRenderer)
-          {
-            foreach (CIMUniqueValueGroup group in uniqueRenderer.Groups)
-            {
-              if (color != 0)
-              {
-                break;
-              }
-              foreach (CIMUniqueValueClass groupClass in group.Classes)
-              {
-                if (color != 0)
-                {
-                  break;
-                }
-                for (int i = 0; i < groupClass.Values.Length; i++)
-                {
-                  if (classCode == groupClass.Values[i].FieldValues[0])
-                  {
-                    CIMColor symbolColor = groupClass.Symbol.Symbol.GetColor();
-                    color = symbolColor.CIMColorToInt();
-                    speckleColors.Add(color);
-                    break;
-                  }
-                }
-              }
-            }
-          }
-          else
-          {
-            color = pt.RGBColor.RGBToInt();
-            speckleColors.Add(color);
-          }
-          //
+          int color = GetPointColor(pt, renderer);
+          speckleColors.Add(color);
         }
       }
     }
