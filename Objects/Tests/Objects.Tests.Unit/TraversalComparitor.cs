@@ -48,9 +48,9 @@ public class TraversalComparitor
     List<Base> Traverse(GraphTraversal func) =>
       func.Traverse(data).Select(tc => tc.current).Where(CanConvertToNative).ToList();
 
-    var actual = Traverse(DefaultTraversal.TypesAreKing());
+    var actual = Traverse(DefaultTraversal.CreateTraversalFunc());
 
-    var expected = Traverse(DefaultTraversal.ExistingTraversal(CanConvertToNative));
+    var expected = Traverse(DefaultTraversal.CreateLegacyTraverseFunc(CanConvertToNative));
 
     Assert.That(actual, Is.EquivalentTo(expected).Using<Base>(new BaseComparer()));
   }

@@ -100,37 +100,9 @@ public class HostObjectBuilder : IHostObjectBuilder
 
   private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
   {
-    var collectionBasedPath = GetCollectionPath(context).Select(c => c.name).ToArray();
-    string[] path = collectionBasedPath.Any() ? collectionBasedPath : GetPropertyPath(context).ToArray();
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] path = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
 
-    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
-  }
-
-  //todo: move somewhere shared  + unit test
-  private static IEnumerable<Collection> GetCollectionPath(TraversalContext context)
-  {
-    TraversalContext? head = context;
-    do
-    {
-      if (head.Current is Collection c)
-      {
-        yield return c;
-      }
-      head = head.Parent;
-    } while (head != null);
-  }
-
-  //todo: move somewhere shared + unit test
-  private static IEnumerable<string> GetPropertyPath(TraversalContext context)
-  {
-    TraversalContext head = context;
-    do
-    {
-      if (head.PropName == null)
-      {
-        break;
-      }
-      yield return head.PropName;
-    } while (true);
+    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
   }
 }

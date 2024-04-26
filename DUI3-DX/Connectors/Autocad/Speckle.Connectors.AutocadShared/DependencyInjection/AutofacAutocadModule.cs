@@ -50,7 +50,7 @@ public class AutofacAutocadModule : Module
     // Operations
     builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
-    builder.RegisterInstance(DefaultTraversal.TypesAreKing());
+    builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders

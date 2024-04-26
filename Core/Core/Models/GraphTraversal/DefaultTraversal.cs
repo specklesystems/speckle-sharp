@@ -14,90 +14,15 @@ namespace Speckle.Core.Models.GraphTraversal;
 )]
 public static class DefaultTraversal
 {
-  public static GraphTraversal TypesAreKing()
+  public static GraphTraversal CreateTraversalFunc()
   {
     var convertableRule = TraversalRule
       .NewTraversalRule()
       .When(b => b.GetType() != typeof(Base))
       .When(HasDisplayValue)
-      .ContinueTraversing(_ => ElementsPropAliases)
-      .ShouldReturnToOutput();
+      .ContinueTraversing(_ => ElementsPropAliases);
 
     return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule.ShouldReturnToOutput(false));
-  }
-
-  /// <summary>
-  /// Default traversal rule that ideally should be used by all connectors
-  /// </summary>
-  /// <remarks>
-  /// Treats convertable objects <see cref="ISpeckleConverter.CanConvertToNative"/> and objects with displayValues as "convertable" such that only elements and dynamic props will be traversed
-  /// </remarks>
-  /// <param name="converter"></param>
-  /// <returns></returns>
-  public static GraphTraversal ExistingTraversal(Func<Base, bool> canConvertToNative)
-  {
-    var convertableRule = TraversalRule
-      .NewTraversalRule()
-      .When(b => canConvertToNative(b))
-      .When(HasDisplayValue)
-      .ContinueTraversing(_ => ElementsPropAliases);
-
-    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
-  }
-
-  /// <summary>
-  /// Default traversal rule that ideally should be used by all connectors
-  /// </summary>
-  /// <remarks>
-  /// Treats convertable objects <see cref="ISpeckleConverter.CanConvertToNative"/> and objects with displayValues as "convertable" such that only elements and dynamic props will be traversed
-  /// </remarks>
-  /// <param name="converter"></param>
-  /// <returns></returns>
-  public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
-  {
-    var convertableRule = TraversalRule
-      .NewTraversalRule()
-      .When(converter.CanConvertToNative)
-      .When(HasDisplayValue)
-      .ContinueTraversing(_ => ElementsPropAliases);
-
-    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
-  }
-
-  /// <summary>
-  /// Traverses until finds a convertable object then HALTS deeper traversal
-  /// </summary>
-  /// <remarks>
-  /// Current Revit connector does traversal,
-  /// so this traversal is a shallow traversal for directly convertable objects,
-  /// and a deep traversal for all other types
-  /// </remarks>
-  /// <param name="converter"></param>
-  /// <returns></returns>
-  public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
-  {
-    var convertableRule = TraversalRule
-      .NewTraversalRule()
-      .When(converter.CanConvertToNative)
-      .When(HasDisplayValue)
-      .ContinueTraversing(None);
-
-    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
-  }
-
-  /// <summary>
-  /// Traverses until finds a convertable object (or fallback) then traverses members
-  /// </summary>
-  /// <param name="converter"></param>
-  /// <returns></returns>
-  public static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
-  {
-    var bimElementRule = TraversalRule
-      .NewTraversalRule()
-      .When(converter.CanConvertToNative)
-      .ContinueTraversing(ElementsAliases);
-
-    return new GraphTraversal(bimElementRule, s_ignoreResultsRule, DefaultRule);
   }
 
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
@@ -109,8 +34,8 @@ public static class DefaultTraversal
     .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
     .ContinueTraversing(None);
 
-  public static ITraversalRule DefaultRule =>
-    TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members()).ShouldReturnToOutput(false);
+  public static ITraversalBuilderReturn DefaultRule =>
+    TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
 
   public static readonly IReadOnlyList<string> ElementsPropAliases = new[] { "elements", "@elements" };
 
@@ -187,6 +112,8 @@ public static class DefaultTraversal
 
   #endregion
 
+  #region Legacy function varients
+
   [Obsolete("Renamed to " + nameof(ElementsPropAliases))]
   [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   public static IReadOnlyList<string> elementsPropAliases => ElementsPropAliases;
@@ -207,4 +134,79 @@ public static class DefaultTraversal
   [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Obsolete")]
   [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Obsolete")]
   public static string[] displayValueAndElementsPropAliases => DisplayValueAndElementsPropAliases;
+
+  /// <summary><inheritdoc cref="CreateLegacyTraverseFunc"/></summary>
+  /// <remarks><inheritdoc cref="CreateLegacyTraverseFunc"/></remarks>
+  /// <param name="converter"></param>
+  /// <returns></returns>
+  [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
+  public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
+  {
+    return CreateLegacyTraverseFunc(converter.CanConvertToNative);
+  }
+
+  /// <summary>
+  /// Legacy traversal rule that was dependent on the converter
+  /// </summary>
+  /// <remarks>
+  /// Treats convertable objects <see cref="ISpeckleConverter.CanConvertToNative"/> and objects with displayValues as "convertable" such that only elements and dynamic props will be traversed
+  /// New code should use <see cref="CreateTraversalFunc"/> instead.
+  /// </remarks>
+  /// <param name="canConvertToNative"></param>
+  /// <returns></returns>
+  [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
+  public static GraphTraversal CreateLegacyTraverseFunc(Func<Base, bool> canConvertToNative)
+  {
+    var convertableRule = TraversalRule
+      .NewTraversalRule()
+      .When(b => canConvertToNative(b))
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => ElementsPropAliases);
+
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
+  }
+
+  /// <summary>
+  /// Traverses until finds a convertable object then HALTS deeper traversal
+  /// </summary>
+  /// <remarks>
+  /// The DUI2 Revit connector does traversal,
+  /// so this traversal is a shallow traversal for directly convertable objects,
+  /// and a deep traversal for all other types
+  /// New code should use <see cref="CreateTraversalFunc"/> instead.
+  /// </remarks>
+  /// <param name="converter"></param>
+  /// <returns></returns>
+  [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
+  public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
+  {
+    var convertableRule = TraversalRule
+      .NewTraversalRule()
+      .When(converter.CanConvertToNative)
+      .When(HasDisplayValue)
+      .ContinueTraversing(None);
+
+    return new GraphTraversal(convertableRule, s_ignoreResultsRule, DefaultRule);
+  }
+
+  /// <summary>
+  /// Traverses until finds a convertable object (or fallback) then traverses members
+  /// </summary>
+  /// <remarks>
+  /// New code should use <see cref="CreateTraversalFunc"/> instead.
+  /// </remarks>
+  /// <param name="converter"></param>
+  /// <returns></returns>
+  [Obsolete($"Consider using {nameof(CreateTraversalFunc)}")]
+  public static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
+  {
+    var bimElementRule = TraversalRule
+      .NewTraversalRule()
+      .When(converter.CanConvertToNative)
+      .ContinueTraversing(ElementsAliases);
+
+    return new GraphTraversal(bimElementRule, s_ignoreResultsRule, DefaultRule);
+  }
+
+  #endregion
 }
