@@ -5,8 +5,6 @@ using ArcGIS.Core.Data.Raster;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Geometry;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
