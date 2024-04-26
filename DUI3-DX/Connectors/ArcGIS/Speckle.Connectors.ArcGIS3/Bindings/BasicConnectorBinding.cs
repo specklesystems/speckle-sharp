@@ -1,4 +1,5 @@
 using System.Reflection;
+using ArcGIS.Desktop.Core;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
@@ -42,9 +43,9 @@ public class BasicConnectorBinding : IBasicConnectorBinding
   public DocumentInfo GetDocumentInfo() =>
     new()
     {
-      Location = "",
-      Name = "",
-      Id = ""
+      Location = Project.Current.URI,
+      Name = Project.Current.Name,
+      Id = Project.Current.Name,
     };
 
   public DocumentModelStore GetDocumentState() => _store;
