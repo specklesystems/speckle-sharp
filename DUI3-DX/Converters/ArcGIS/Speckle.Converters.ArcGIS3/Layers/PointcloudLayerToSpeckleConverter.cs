@@ -2,7 +2,6 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
-using ArcGIS.Core.Geometry;
 using ArcGIS.Core.Data.Analyst3D;
 using ArcGIS.Core.CIM;
 using Speckle.Converters.ArcGIS3.Geometry;
@@ -14,14 +13,14 @@ public class PointCloudToSpeckleConverter
   : IHostObjectToSpeckleConversion,
     IRawConversion<LasDatasetLayer, SGIS.VectorLayer>
 {
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
-  private readonly IRawConversion<Envelope, SOG.Box> _boxConverter;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.Envelope, SOG.Box> _boxConverter;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
 
   public PointCloudToSpeckleConverter(
-    IRawConversion<MapPoint, SOG.Point> pointConverter,
-    IRawConversion<Envelope, SOG.Box> boxConverter,
-    IConversionContextStack<Map, Unit> contextStack
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
+    IRawConversion<ACG.Envelope, SOG.Box> boxConverter,
+    IConversionContextStack<Map, ACG.Unit> contextStack
   )
   {
     _pointConverter = pointConverter;
@@ -97,7 +96,7 @@ public class PointCloudToSpeckleConverter
     List<int> speckleColors = new();
     var renderer = target.GetRenderers()[0];
 
-    using (LasPointCursor ptCursor = target.SearchPoints(new ArcGIS.Core.Data.Analyst3D.LasPointFilter()))
+    using (LasPointCursor ptCursor = target.SearchPoints(new LasPointFilter()))
     {
       while (ptCursor.MoveNext())
       {
