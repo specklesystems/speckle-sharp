@@ -1,6 +1,5 @@
 using System.Reflection;
 using ArcGIS.Desktop.Core;
-using ArcGIS.Desktop.Mapping;
 using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
