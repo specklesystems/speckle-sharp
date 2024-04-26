@@ -2,6 +2,7 @@ using System;
 using Autofac;
 using Microsoft.Extensions.Logging;
 using Rhino.Commands;
+using Rhino.DocObjects;
 using Rhino.PlugIns;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
@@ -20,6 +21,7 @@ using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
@@ -38,7 +40,7 @@ public class AutofacRhinoModule : Module
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
-    builder.RegisterType<SpeckleRhinoPanel>().SingleInstance();
+    builder.RegisterType<DUI3ControlWebView>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types
@@ -65,14 +67,16 @@ public class AutofacRhinoModule : Module
 
     // register send operation and dependencies
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
-    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<SendOperation<RhinoObject>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
     builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
 
     builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
 
-    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().As<IRootObjectBuilder<RhinoObject>>().SingleInstance();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()

@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Plugin;
 
 namespace Speckle.Connectors.Rhino7.HostApp;
@@ -9,7 +10,7 @@ public class SpeckleRhinoPanelHost : RhinoWindows.Controls.WpfElementHost
   private readonly uint _docSn;
 
   public SpeckleRhinoPanelHost(uint docSn)
-    : base(SpeckleConnectorsRhino7Plugin.Instance.Container?.Resolve<SpeckleRhinoPanel>(), null)
+    : base(SpeckleConnectorsRhino7Plugin.Instance.Container?.Resolve<DUI3ControlWebView>(), null)
   {
     _docSn = docSn;
   }

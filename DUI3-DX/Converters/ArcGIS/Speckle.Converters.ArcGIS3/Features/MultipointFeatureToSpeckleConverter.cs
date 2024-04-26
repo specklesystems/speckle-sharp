@@ -1,21 +1,20 @@
-using ArcGIS.Core.Geometry;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class MultipointFeatureToSpeckleConverter : IRawConversion<Multipoint, IReadOnlyList<SOG.Point>>
+public class MultipointFeatureToSpeckleConverter : IRawConversion<ACG.Multipoint, IReadOnlyList<SOG.Point>>
 {
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
 
-  public MultipointFeatureToSpeckleConverter(IRawConversion<MapPoint, SOG.Point> pointConverter)
+  public MultipointFeatureToSpeckleConverter(IRawConversion<ACG.MapPoint, SOG.Point> pointConverter)
   {
     _pointConverter = pointConverter;
   }
 
-  public IReadOnlyList<SOG.Point> RawConvert(Multipoint target)
+  public IReadOnlyList<SOG.Point> RawConvert(ACG.Multipoint target)
   {
     List<SOG.Point> multipoint = new();
-    foreach (MapPoint point in target.Points)
+    foreach (ACG.MapPoint point in target.Points)
     {
       multipoint.Add(_pointConverter.RawConvert(point));
     }

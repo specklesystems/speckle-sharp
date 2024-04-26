@@ -70,7 +70,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
-    using var unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
+    using IUnitOfWork<SendOperation> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before

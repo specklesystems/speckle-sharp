@@ -1,22 +1,21 @@
-using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class SegmentCollectionToSpeckleConverter : IRawConversion<ReadOnlySegmentCollection, SOG.Polyline>
+public class SegmentCollectionToSpeckleConverter : IRawConversion<ACG.ReadOnlySegmentCollection, SOG.Polyline>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<MapPoint, SOG.Point> _pointConverter;
-  private readonly IRawConversion<EllipticArcSegment, SOG.Polyline> _arcConverter;
-  private readonly IRawConversion<CubicBezierSegment, SOG.Polyline> _bezierConverter;
+  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
+  private readonly IRawConversion<ACG.MapPoint, SOG.Point> _pointConverter;
+  private readonly IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> _arcConverter;
+  private readonly IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> _bezierConverter;
 
   public SegmentCollectionToSpeckleConverter(
-    IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<MapPoint, SOG.Point> pointConverter,
-    IRawConversion<EllipticArcSegment, SOG.Polyline> arcConverter,
-    IRawConversion<CubicBezierSegment, SOG.Polyline> bezierConverter
+    IConversionContextStack<Map, ACG.Unit> contextStack,
+    IRawConversion<ACG.MapPoint, SOG.Point> pointConverter,
+    IRawConversion<ACG.EllipticArcSegment, SOG.Polyline> arcConverter,
+    IRawConversion<ACG.CubicBezierSegment, SOG.Polyline> bezierConverter
   )
   {
     _contextStack = contextStack;
@@ -25,7 +24,7 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ReadOnlySegmen
     _bezierConverter = bezierConverter;
   }
 
-  public SOG.Polyline RawConvert(ReadOnlySegmentCollection target)
+  public SOG.Polyline RawConvert(ACG.ReadOnlySegmentCollection target)
   {
     // https://pro.arcgis.com/en/pro-app/latest/sdk/api-reference/topic8480.html
     double len = 0;
@@ -38,16 +37,16 @@ public class SegmentCollectionToSpeckleConverter : IRawConversion<ReadOnlySegmen
       // do something specific per segment type
       switch (segment.SegmentType)
       {
-        case SegmentType.Line:
+        case ACG.SegmentType.Line:
           points.Add(_pointConverter.RawConvert(segment.StartPoint));
           points.Add(_pointConverter.RawConvert(segment.EndPoint));
           break;
-        case SegmentType.Bezier:
-          var segmentBezier = (CubicBezierSegment)segment;
+        case ACG.SegmentType.Bezier:
+          var segmentBezier = (ACG.CubicBezierSegment)segment;
           points.AddRange(_bezierConverter.RawConvert(segmentBezier).GetPoints());
           break;
-        case SegmentType.EllipticArc:
-          var segmentElliptic = (EllipticArcSegment)segment;
+        case ACG.SegmentType.EllipticArc:
+          var segmentElliptic = (ACG.EllipticArcSegment)segment;
           points.AddRange(_arcConverter.RawConvert(segmentElliptic).GetPoints());
           break;
       }
