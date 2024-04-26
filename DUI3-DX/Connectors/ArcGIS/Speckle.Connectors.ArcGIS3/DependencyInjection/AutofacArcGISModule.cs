@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.Bindings;
-using Speckle.Connectors.ArcGIS.HostApp;
 using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -15,8 +14,18 @@ using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.ArcGIS3;
 using Speckle.Core.Transports;
-using ArcGIS.Core.Geometry;
+using Speckle.Connectors.ArcGIS.Operations.Receive;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
+using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Operations;
+using ArcGIS.Core.Geometry;
+using Speckle.Connectors.ArcGIS.Filters;
+
+// POC: This is a temp reference to root object senders to tweak CI failing after having generic interfaces into common project.
+// This should go whenever it is aligned.
+using IRootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.IRootObjectSender;
+using RootObjectSender = Speckle.Connectors.ArcGis.Operations.Send.RootObjectSender;
 
 namespace Speckle.Connectors.ArcGIS.DependencyInjection;
 
@@ -30,7 +39,7 @@ public class AutofacArcGISModule : Module
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); //TODO: Verify why we need one bridge instance per dependency.
 
-    builder.RegisterType<SpeckleDUI3>().SingleInstance();
+    builder.RegisterType<DUI3ControlWebView>().SingleInstance();
     builder.RegisterType<ArcGISDocumentStore>().SingleInstance();
 
     // Register bindings
@@ -38,16 +47,32 @@ public class AutofacArcGISModule : Module
     builder.RegisterType<ConfigBinding>().As<IBinding>().SingleInstance().WithParameter("connectorName", "ArcGIS"); // POC: Easier like this for now, should be cleaned up later
     builder.RegisterType<AccountBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<BasicConnectorBinding>().As<IBinding>().As<IBasicConnectorBinding>().SingleInstance();
+    builder.RegisterType<ArcGISSelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<ArcGISSendBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<ArcGISToSpeckleUnitConverter>().As<IHostToSpeckleUnitConverter<Unit>>().SingleInstance();
+    builder.RegisterType<ArcGISReceiveBinding>().As<IBinding>().SingleInstance();
+    builder
+      .RegisterType<ArcGISToSpeckleUnitConverter>()
+      .As<IHostToSpeckleUnitConverter<Unit>>()
+      .InstancePerLifetimeScope();
+
+    // Operations
+    builder.RegisterType<ReceiveOperation>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().InstancePerLifetimeScope();
+
+    // Object Builders
+    builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();
+    // POC: Register here also RootObjectBuilder as IRootObjectBuilder
 
     // binding dependencies
     builder.RegisterType<CancellationManager>().InstancePerDependency();
 
+    // register send filters
+    builder.RegisterType<ArcGISSelectionFilter>().As<ISendFilter>().InstancePerLifetimeScope();
+
     // register send operation and dependencies
-    builder.RegisterType<SendOperation>().SingleInstance();
-    builder.RegisterType<RootObjectBuilder>().SingleInstance();
-    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
+    builder.RegisterType<SendOperation>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectBuilder>().InstancePerLifetimeScope();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().InstancePerLifetimeScope();
 
     //POC: how tf does this work?
     builder.RegisterType<ServerTransport>().As<ITransport>().SingleInstance();

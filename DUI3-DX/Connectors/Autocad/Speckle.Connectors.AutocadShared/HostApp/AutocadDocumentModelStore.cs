@@ -23,6 +23,12 @@ public class AutocadDocumentStore : DocumentModelStore
     if (Application.DocumentManager.MdiActiveDocument != null)
     {
       IsDocumentInit = true;
+      // POC: this logic might go when we have document management in context
+      // It is with the case of if binding created with already a document
+      // This is valid when user opens acad file directly double clicking
+      _previousDocName = Application.DocumentManager.MdiActiveDocument.Name;
+      _saveToDocSubTracker.Add(Application.DocumentManager.MdiActiveDocument.Name);
+      OnDocumentChanged();
     }
 
     Application.DocumentManager.DocumentToBeDestroyed += (_, _) => WriteToFile();

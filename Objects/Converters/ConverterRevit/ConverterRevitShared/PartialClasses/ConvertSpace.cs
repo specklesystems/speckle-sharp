@@ -133,9 +133,16 @@ public partial class ConverterRevit
     }
 
     TrySetParam(revitSpace, BuiltInParameter.ROOM_UPPER_LEVEL, upperLimit);
-
-    revitSpace.LimitOffset = ScaleToNative(speckleSpace.topOffset, speckleSpace.units);
-    revitSpace.BaseOffset = ScaleToNative(speckleSpace.baseOffset, speckleSpace.units);
+    TrySetParam(
+      revitSpace,
+      BuiltInParameter.ROOM_UPPER_OFFSET,
+      ScaleToNative(speckleSpace.topOffset, speckleSpace.units)
+    );
+    TrySetParam(
+      revitSpace,
+      BuiltInParameter.ROOM_LOWER_OFFSET,
+      ScaleToNative(speckleSpace.baseOffset, speckleSpace.units)
+    );
   }
 
   /// <summary>

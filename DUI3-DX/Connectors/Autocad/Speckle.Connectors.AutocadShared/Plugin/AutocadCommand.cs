@@ -4,12 +4,12 @@ using Autodesk.AutoCAD.Windows;
 using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
-using Speckle.Connectors.Autocad.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Kits;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Connectors.Autocad.Interfaces;
+using Speckle.Connectors.DUI.WebView;
 
 namespace Speckle.Connectors.Autocad.Plugin;
 
@@ -41,17 +41,13 @@ public class AutocadCommand
 
     var autocadSettings = new AutocadSettings(HostApplications.AutoCAD, HostAppVersion.v2023);
 
-    Container
-      .AddModule(new AutofacAutocadModule())
-      .LoadAutofacModules(autocadSettings.Modules)
-      .AddSingletonInstance(autocadSettings)
-      .Build();
+    Container.LoadAutofacModules(autocadSettings.Modules).AddSingletonInstance(autocadSettings).Build();
 
     // Resolve root plugin object and initialise.
     _autocadPlugin = Container.Resolve<IAutocadPlugin>();
     _autocadPlugin.Initialise();
 
-    var panelWebView = Container.Resolve<Dui3PanelWebView>();
+    var panelWebView = Container.Resolve<DUI3ControlWebView>();
 
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
 

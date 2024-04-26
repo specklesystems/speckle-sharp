@@ -3,7 +3,6 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Utils;
-using Speckle.Connectors.ArcGIS.Filters;
 using Speckle.Connectors.ArcGis.Operations.Send;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Core.Logging;
@@ -22,8 +21,8 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   private readonly ArcGISDocumentStore _store;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory; // POC: unused? :D
+  private readonly List<ISendFilter> _sendFilters;
   private readonly CancellationManager _cancellationManager;
-  private readonly SendOperation _sendOperation;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -33,24 +32,21 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public ArcGISSendBinding(
     ArcGISDocumentStore store,
     IBridge parent,
+    IEnumerable<ISendFilter> sendFilters,
     IUnitOfWorkFactory unitOfWorkFactory,
-    SendOperation sendOperation,
     CancellationManager cancellationManager
   )
   {
     _store = store;
     _unitOfWorkFactory = unitOfWorkFactory;
-    _sendOperation = sendOperation;
+    _sendFilters = sendFilters.ToList();
     _cancellationManager = cancellationManager;
 
     Parent = parent;
     Commands = new SendBindingUICommands(parent);
   }
 
-  public List<ISendFilter> GetSendFilters()
-  {
-    return new List<ISendFilter> { new ArcGISSelectionFilter { IsDefault = true } };
-  }
+  public List<ISendFilter> GetSendFilters() => _sendFilters;
 
   public List<CardSetting> GetSendSettings()
   {
@@ -74,6 +70,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
   public async Task Send(string modelCardId)
   {
     //poc: dupe code between connectors
+    using IUnitOfWork<SendOperation> unitOfWork = _unitOfWorkFactory.Resolve<SendOperation>();
     try
     {
       // 0 - Init cancellation token source -> Manager also cancel it if exist before
@@ -85,9 +82,9 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
         throw new InvalidOperationException("No publish model card was found.");
       }
 
-      string versionId = await _sendOperation
+      string versionId = await unitOfWork.Service
         .Execute(
-          //modelCard.SendFilter,
+          modelCard.SendFilter,
           modelCard.AccountId,
           modelCard.ProjectId,
           modelCard.ModelId,

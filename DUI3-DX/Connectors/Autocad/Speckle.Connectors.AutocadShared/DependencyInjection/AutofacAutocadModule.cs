@@ -18,9 +18,12 @@ using Speckle.Connectors.Autocad.Interfaces;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.Autocad.Filters;
 using Speckle.Connectors.Autocad.Operations.Receive;
+using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Transports;
 
 namespace Speckle.Connectors.Autocad.DependencyInjection;
 
@@ -32,7 +35,7 @@ public class AutofacAutocadModule : Module
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
-    builder.RegisterType<Dui3PanelWebView>().SingleInstance();
+    builder.RegisterType<DUI3ControlWebView>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types
@@ -45,12 +48,17 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<AutocadIdleManager>().SingleInstance();
 
     // Operations
-    builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
+    builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().InstancePerLifetimeScope();
+    builder.RegisterType<ReceiveOperation>().SingleInstance();
     builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
-    // POC: Register here also RootObjectBuilder as IRootObjectBuilder
+    builder
+      .RegisterType<RootObjectBuilder>()
+      .As<IRootObjectBuilder<(DBObject obj, string applicationId)>>()
+      .SingleInstance();
+    builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
 
     // Register bindings
     builder.RegisterType<TestBinding>().As<IBinding>().SingleInstance();
@@ -73,6 +81,8 @@ public class AutofacAutocadModule : Module
 
     // Register converter factory
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
+
+    builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
   }
 
   private static JsonSerializerSettings GetJsonSerializerSettings()
