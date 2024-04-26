@@ -49,7 +49,7 @@ public class PolylineToSpeckleConverter
     for (int i = 0; i < target.NumberOfVertices; i++)
     {
       // get vertex value in the Object Coordinate System (OCS)
-      AG.Point2d vertex = target.GetPoint2dAt(i);
+      AG.Point3d vertex = target.GetPoint3dAt(i);
       value.AddRange(vertex.ToArray());
 
       // get the bulge
