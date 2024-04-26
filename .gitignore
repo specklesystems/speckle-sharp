@@ -377,3 +377,5 @@ ConnectorNavisworks/ConnectorNavisworks/Sample Models
 ConnectorArchicad/AddOn/Build*
 **/dist/
 
+
+**/yarn.lock

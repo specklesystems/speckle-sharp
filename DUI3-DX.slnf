@@ -1,0 +1,38 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Integration\\Speckle.Core.Tests.Integration.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Performance\\Speckle.Core.Tests.Performance.csproj",
+      "Core\\Tests\\Speckle.Core.Tests.Unit\\Speckle.Core.Tests.Unit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DUI3-DX\\Connectors\\ArcGIS\\Speckle.Connectors.ArcGIS3\\Speckle.Connectors.ArcGIS3.csproj",
+      "DUI3-DX\\Connectors\\Autocad\\Speckle.Connectors.Autocad2023\\Speckle.Connectors.Autocad2023.csproj",
+      "DUI3-DX\\Connectors\\Autocad\\Speckle.Connectors.AutocadShared\\Speckle.Connectors.AutocadShared.shproj",
+      "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.Revit2023\\Speckle.Connectors.Revit2023.csproj",
+      "DUI3-DX\\Connectors\\Revit\\Speckle.Connectors.RevitShared\\Speckle.Connectors.RevitShared.shproj",
+      "DUI3-DX\\Connectors\\Rhino\\Speckle.Connectors.Rhino7\\Speckle.Connectors.Rhino7.csproj",
+      "DUI3-DX\\Converters\\ArcGIS\\Speckle.Converters.ArcGIS3.DependencyInjection\\Speckle.Converters.ArcGIS3.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\ArcGIS\\Speckle.Converters.ArcGIS3\\Speckle.Converters.ArcGIS3.csproj",
+      "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2023.DependencyInjection\\Speckle.Converters.Autocad2023.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.Autocad2023\\Speckle.Converters.Autocad2023.csproj",
+      "DUI3-DX\\Converters\\Autocad\\Speckle.Converters.AutocadShared\\Speckle.Converters.AutocadShared.shproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023.DependencyInjection\\Speckle.Converters.Revit2023.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.Revit2023\\Speckle.Converters.Revit2023.csproj",
+      "DUI3-DX\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
+      "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7.DependencyInjection\\Speckle.Converters.Rhino7.DependencyInjection.csproj",
+      "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7\\Speckle.Converters.Rhino7.csproj",
+      "DUI3-DX\\DUI3\\Speckle.Connectors.DUI.WebView\\Speckle.Connectors.DUI.WebView.csproj",
+      "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
+      "DUI3-DX\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
+      "DUI3-DX\\Objects\\Speckle.Objects.Revit\\Speckle.Objects.Revit.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Autofac\\Speckle.Autofac.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Connectors.Utils\\Speckle.Connectors.Utils.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common.DependencyInjection\\Speckle.Converters.Common.DependencyInjection.csproj",
+      "DUI3-DX\\Sdk\\Speckle.Converters.Common\\Speckle.Converters.Common.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Objects.Tests.Unit\\Objects.Tests.Unit.csproj"
+    ]
+  }
+}

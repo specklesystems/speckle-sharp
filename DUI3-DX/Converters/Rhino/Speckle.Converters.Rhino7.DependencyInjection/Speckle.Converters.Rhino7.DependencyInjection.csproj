@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common.DependencyInjection\Speckle.Converters.Common.DependencyInjection.csproj" PrivateAssets="All"/>
+    <ProjectReference Include="..\..\..\Converters\Rhino\Speckle.Converters.Rhino7\Speckle.Converters.Rhino7.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RhinoCommon" Version="7.13.21348.13001"/>
+  </ItemGroup>
+</Project>

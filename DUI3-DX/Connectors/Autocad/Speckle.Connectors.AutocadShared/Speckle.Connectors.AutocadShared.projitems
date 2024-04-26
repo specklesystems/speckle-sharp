@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>55E65D72-2FE8-4E61-891C-16A4D551CCF7</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Speckle.Connectors.AutocadShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSelectionBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadReceiveBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadSendBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\AutocadBasicConnectorBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DependencyInjection\AutofacAutocadModule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Filters\AutocadSelectionFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadDocumentModelStore.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadIdleManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadLayerManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\AutocadSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DatabaseExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\DocumentExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EditorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\Extensions\EntityExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HostApp\TransactionContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Receive\HostObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operations\Send\RootObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadExtensionApplication.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAutocadPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Plugin\AutocadCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Interfaces\" />
+  </ItemGroup>
+</Project>
