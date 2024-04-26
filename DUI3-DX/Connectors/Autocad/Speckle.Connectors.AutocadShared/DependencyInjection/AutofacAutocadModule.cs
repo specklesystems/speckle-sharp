@@ -20,6 +20,7 @@ using Speckle.Connectors.Autocad.Filters;
 using Speckle.Connectors.Autocad.Operations.Receive;
 using Speckle.Connectors.Autocad.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
+using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Models.GraphTraversal;
@@ -35,7 +36,7 @@ public class AutofacAutocadModule : Module
 
     // Register DUI3 related stuff
     builder.RegisterInstance(GetJsonSerializerSettings()).SingleInstance();
-    builder.RegisterType<Dui3PanelWebView>().SingleInstance();
+    builder.RegisterType<DUI3ControlWebView>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency(); // POC: Each binding should have it's own bridge instance
 
     // Register other connector specific types

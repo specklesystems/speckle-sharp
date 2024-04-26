@@ -23,6 +23,7 @@
       "DUI3-DX\\Converters\\Revit\\Speckle.Converters.RevitShared\\Speckle.Converters.RevitShared.shproj",
       "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7.DependencyInjection\\Speckle.Converters.Rhino7.DependencyInjection.csproj",
       "DUI3-DX\\Converters\\Rhino\\Speckle.Converters.Rhino7\\Speckle.Converters.Rhino7.csproj",
+      "DUI3-DX\\DUI3\\Speckle.Connectors.DUI.WebView\\Speckle.Connectors.DUI.WebView.csproj",
       "DUI3-DX\\DUI3\\Speckle.Connectors.DUI\\Speckle.Connectors.DUI.csproj",
       "DUI3-DX\\Objects\\Speckle.Objects.Common\\Speckle.Objects.Common.csproj",
       "DUI3-DX\\Objects\\Speckle.Objects.Revit\\Speckle.Objects.Revit.csproj",
