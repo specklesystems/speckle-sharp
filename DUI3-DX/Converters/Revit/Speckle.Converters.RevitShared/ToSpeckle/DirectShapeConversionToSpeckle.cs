@@ -11,42 +11,26 @@ namespace Speckle.Converters.Revit2023.ToSpeckle;
 public class DirectShapeConversionToSpeckle : BaseConversionToSpeckle<DB.DirectShape, SOBR.DirectShape>
 {
   private readonly RevitConversionContextStack _contextStack;
-
-  private readonly IRawConversion<DB.Mesh, SOG.Mesh> _meshConverter;
-  private readonly IRawConversion<DB.Solid, List<SOG.Mesh>> _solidConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly DisplayValueExtractor _displayValueExtractor;
 
   public DirectShapeConversionToSpeckle(
-    IRawConversion<DB.Mesh, SOG.Mesh> meshConverter,
     ParameterObjectAssigner parameterObjectAssigner,
-    IRawConversion<DB.Solid, List<SOG.Mesh>> solidConverter,
-    RevitConversionContextStack contextStack
+    RevitConversionContextStack contextStack,
+    DisplayValueExtractor displayValueExtractor
   )
   {
-    _meshConverter = meshConverter;
     _parameterObjectAssigner = parameterObjectAssigner;
-    _solidConverter = solidConverter;
     _contextStack = contextStack;
+    _displayValueExtractor = displayValueExtractor;
   }
 
   public override SOBR.DirectShape RawConvert(DB.DirectShape target)
   {
     var category = target.Category.GetBuiltInCategory().GetSchemaBuilderCategoryFromBuiltIn();
-    var element = target.get_Geometry(new DB.Options());
 
-    var geometries = new List<Base>(); // POC: This could be an list of meshes.
-    foreach (var geometryObject in element)
-    {
-      switch (geometryObject)
-      {
-        case DB.Mesh mesh:
-          geometries.Add(_meshConverter.RawConvert(mesh));
-          break;
-        case DB.Solid solid:
-          geometries.AddRange(_solidConverter.RawConvert(solid));
-          break;
-      }
-    }
+    // POC: Making the analogy that the DisplayValue is the same as the Geometries is only valid while we don't support Solids on send.
+    var geometries = _displayValueExtractor.GetDisplayValue(target).Cast<Base>().ToList();
 
     SOBR.DirectShape result =
       new(target.Name, category, geometries)
