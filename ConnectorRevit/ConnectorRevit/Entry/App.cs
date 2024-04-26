@@ -31,6 +31,10 @@ public class App : IExternalApplication
   public static UIControlledApplication UICtrlApp { get; set; }
 
   private bool _initialized;
+  private static readonly string[] s_assemblyPathFragmentsToIgnore = new string[]
+  {
+    "Microsoft.Net\\assembly\\GAC_MSIL\\"
+  };
 
   public Result OnStartup(UIControlledApplication application)
   {
@@ -44,13 +48,19 @@ public class App : IExternalApplication
     UICtrlApp.ControlledApplication.DocumentOpening += ControlledApplication_DocumentOpening;
 
     DllConflictEventEmitter eventEmitter = new();
-    ISerializer serializer = new SystemTextJsonSerializer();
+    ISerializer serializer = new SpeckleNewtonsoftSerializer();
     AnalyticsWithoutDependencies analytics = new(eventEmitter, serializer, "Revit", GetRevitVersion());
     eventEmitter.OnAction += analytics.TrackEvent;
 
     DllConflictManagmentOptionsLoader optionsLoader = new(serializer, "Revit", GetRevitVersion());
     // ignore dll conflicts when dll lives in GAC because they are noisy and not an issue (at least in revit)
-    DllConflictManager conflictManager = new(optionsLoader, eventEmitter, "Microsoft.Net\\assembly\\GAC_MSIL\\");
+    DllConflictManager conflictManager =
+      new(
+        optionsLoader,
+        eventEmitter,
+        s_assemblyPathFragmentsToIgnore,
+        new string[] { $"C:\\Program Files\\Autodesk\\Revit {GetRevitVersion()}" }
+      );
     RevitDllConflictUserNotifier conflictNotifier = new(conflictManager, eventEmitter);
 
     try
