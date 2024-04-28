@@ -31,7 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\LineConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveArrayConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\MeshConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\NurbSplineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\NurbsSplineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PlaneToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PointCloudToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PointConversionToSpeckle.cs" />

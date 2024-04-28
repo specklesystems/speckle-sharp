@@ -23,7 +23,7 @@ public class AutofacRevitConverterModule : Module
     builder
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
       .As<IFactory<string, IHostObjectToSpeckleConversion>>()
-      .SingleInstance();
+      .InstancePerLifetimeScope();
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
@@ -43,7 +43,7 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<ReferencePointConverter>().As<IReferencePointConverter>().InstancePerLifetimeScope();
     builder.RegisterType<RevitConversionSettings>().AsSelf().InstancePerLifetimeScope();
 
-    builder.RegisterType<RevitVersionConversionHelper>().As<IRevitVersionConversionHelper>().SingleInstance();
+    builder.RegisterType<RevitVersionConversionHelper>().As<IRevitVersionConversionHelper>().InstancePerLifetimeScope();
 
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();

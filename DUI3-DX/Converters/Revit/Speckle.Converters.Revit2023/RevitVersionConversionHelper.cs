@@ -12,6 +12,7 @@ public class RevitVersionConversionHelper : IRevitVersionConversionHelper
     }
     catch (Autodesk.Revit.Exceptions.ApplicationException)
     {
+      // POC: is this actually a good assumption?
       return true;
     }
   }
