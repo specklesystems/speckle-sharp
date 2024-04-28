@@ -14,8 +14,8 @@ public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
   private readonly IRawConversion<DB.Line, SOG.Line> _lineConverter;
   private readonly IRawConversion<DB.Arc, SOG.Arc> _arcConverter;
   private readonly IRawConversion<DB.Ellipse, SOG.Ellipse> _ellipseConverter;
+  private readonly IRawConversion<DB.NurbSpline, SOG.Curve> _nurbsConverter;
 
-  //private readonly IRawConversion<DB.NurbSpline, SOG.Line> _nurbsConverter;
   //private readonly IRawConversion<DB.HermiteSpline, SOG.Line> _hermiteConverter;
 
   public CurveConversionToSpeckle(
@@ -36,7 +36,7 @@ public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
       DB.Line line => _lineConverter.RawConvert(line),
       DB.Arc arc => _arcConverter.RawConvert(arc),
       DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
-      //DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),
+      DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),
       //DB.HermiteSpline hermite => _hermiteConverter.RawConvert(hermite),
       _ => throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}")
     };

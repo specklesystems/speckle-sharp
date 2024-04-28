@@ -43,6 +43,8 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<ReferencePointConverter>().As<IReferencePointConverter>().InstancePerLifetimeScope();
     builder.RegisterType<RevitConversionSettings>().AsSelf().InstancePerLifetimeScope();
 
+    builder.RegisterType<RevitVersionConversionHelper>().As<IRevitVersionConversionHelper>().SingleInstance();
+
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();
