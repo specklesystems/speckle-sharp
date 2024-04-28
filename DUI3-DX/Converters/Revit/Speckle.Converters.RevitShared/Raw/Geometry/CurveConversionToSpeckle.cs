@@ -13,18 +13,20 @@ public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
 
   private readonly IRawConversion<DB.Line, SOG.Line> _lineConverter;
   private readonly IRawConversion<DB.Arc, SOG.Arc> _arcConverter;
+  private readonly IRawConversion<DB.Ellipse, SOG.Ellipse> _ellipseConverter;
 
-  //private readonly IRawConversion<DB.Ellipse, SOG.Line> _ellipseConverter;
   //private readonly IRawConversion<DB.NurbSpline, SOG.Line> _nurbsConverter;
   //private readonly IRawConversion<DB.HermiteSpline, SOG.Line> _hermiteConverter;
 
   public CurveConversionToSpeckle(
     IRawConversion<DB.Line, SOG.Line> lineConverter,
-    IRawConversion<DB.Arc, SOG.Arc> arcConverter
+    IRawConversion<DB.Arc, SOG.Arc> arcConverter,
+    IRawConversion<DB.Ellipse, SOG.Ellipse> ellipseConverter
   )
   {
     _lineConverter = lineConverter;
     _arcConverter = arcConverter;
+    _ellipseConverter = ellipseConverter;
   }
 
   public ICurve RawConvert(DB.Curve target)
