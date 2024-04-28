@@ -19,6 +19,10 @@ public sealed class ScalingServiceToSpeckle
     _defaultLengthConversionFactor = ScaleStatic(1, lengthUnitsTypeId);
   }
 
+  // POC: throughout Revit conversions there's lots of comparison to check the units are valid
+  // atm we seem to be expecting that this is correct and that the scaling will be fixed for the duration
+  // of a conversion, but...  I have some concerns that the units and the conversion may change, for instance, for linked documents?
+  // this needs to be considered and perahps scaling should be part of the context, or at least part of the IRevitConversionContextStack
   public double ScaleLength(double length) => length * _defaultLengthConversionFactor;
 
   // POC: not sure about this???
