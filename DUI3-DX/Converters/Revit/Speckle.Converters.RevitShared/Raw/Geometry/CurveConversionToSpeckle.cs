@@ -35,7 +35,7 @@ public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
     {
       DB.Line line => _lineConverter.RawConvert(line),
       DB.Arc arc => _arcConverter.RawConvert(arc),
-      //DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
+      DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
       //DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),
       //DB.HermiteSpline hermite => _hermiteConverter.RawConvert(hermite),
       _ => throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}")
