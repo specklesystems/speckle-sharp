@@ -9,12 +9,12 @@ public class ReferencePointConverter : IReferencePointConverter
   private const string REFPOINT_PROJECT_BASE = "Project Base";
   private const string REFPOINT_SURVEY = "Survey";
 
-  private readonly RevitSettings _revitSettings;
+  private readonly RevitConversionSettings _revitSettings;
   private readonly IRevitConversionContextStack _contextStack;
 
   private Dictionary<string, DB.Transform> _docTransforms = new();
 
-  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitSettings revitSettings)
+  public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings)
   {
     _contextStack = contextStack;
     _revitSettings = revitSettings;

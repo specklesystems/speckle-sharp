@@ -41,6 +41,7 @@ public class AutofacRevitConverterModule : Module
       .InstancePerLifetimeScope();
 
     builder.RegisterType<ReferencePointConverter>().As<IReferencePointConverter>().InstancePerLifetimeScope();
+    builder.RegisterType<RevitConversionSettings>().AsSelf().InstancePerLifetimeScope();
 
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
