@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\ArcToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\EllipseToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\HermiteSplineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\LineConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveArrayConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\MeshConversionToSpeckle.cs" />

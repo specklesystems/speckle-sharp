@@ -6,8 +6,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-// POC: have changed this to ICurve but not sure if that's the right thing to do. Certain;y CurveConversionToSpeckle is returning ICurve
-public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, ICurve>
+public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, SOG.Curve>
 {
   private readonly IRevitVersionConversionHelper _conversionHelper;
   private readonly IRevitConversionContextStack _contextStack;
@@ -27,7 +26,7 @@ public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, ICurv
     _scalingService = scalingService;
   }
 
-  public ICurve RawConvert(DB.NurbSpline nurbsSpline)
+  public SOG.Curve RawConvert(DB.NurbSpline nurbsSpline)
   {
     var units = _contextStack.Current.SpeckleUnits;
 
