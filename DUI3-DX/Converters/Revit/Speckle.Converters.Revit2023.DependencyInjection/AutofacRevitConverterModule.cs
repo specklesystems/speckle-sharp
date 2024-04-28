@@ -27,12 +27,21 @@ public class AutofacRevitConverterModule : Module
 
     // POC: do we need ToSpeckleScalingService as is, do we need to interface it out?
     builder.RegisterType<ScalingServiceToSpeckle>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<RevitConversionContextStack>().AsSelf().InstancePerLifetimeScope();
+
+    // POC: the concrete type can come out if we remove all the reference to it
+    builder
+      .RegisterType<RevitConversionContextStack>()
+      .As<IRevitConversionContextStack>()
+      .AsSelf()
+      .InstancePerLifetimeScope();
 
     builder
       .RegisterType<RevitToSpeckleUnitConverter>()
       .As<IHostToSpeckleUnitConverter<ForgeTypeId>>()
       .InstancePerLifetimeScope();
+
+    builder.RegisterType<ReferencePointConverter>().As<IReferencePointConverter>().InstancePerLifetimeScope();
+
     builder.RegisterType<ParameterValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<MeshDataTriangulator>().AsSelf().InstancePerLifetimeScope();

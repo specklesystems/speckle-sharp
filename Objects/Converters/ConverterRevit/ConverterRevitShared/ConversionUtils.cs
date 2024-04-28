@@ -842,9 +842,9 @@ public partial class ConverterRevit
   /// </summary>
   /// <param name="p"></param>
   /// <returns></returns>
-  public XYZ ToExternalCoordinates(XYZ p, bool isPoint, Document doc)
+  public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
   {
-    var rpt = GetDocReferencePointTransform(doc);
+    var rpt = GetDocReferencePointTransform(Doc);
     return (isPoint) ? rpt.Inverse.OfPoint(p) : rpt.Inverse.OfVector(p);
   }
 

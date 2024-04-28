@@ -128,12 +128,12 @@ public partial class ConverterRevit
   public Vector VectorToSpeckle(
     XYZ pt,
     Document doc,
-    string units = null,
-    bool doNotTransformWithReferencePoint = false
+    string units = null
+  //bool doNotTransformWithReferencePoint = false
   )
   {
     var u = units ?? ModelUnits;
-    var extPt = doNotTransformWithReferencePoint ? pt : ToExternalCoordinates(pt, false, doc);
+    var extPt = ToExternalCoordinates(pt, false, doc); // doNotTransformWithReferencePoint ? pt : ToExternalCoordinates(pt, false, doc);
     var pointToSpeckle = new Vector(
       u == Units.None ? extPt.X : ScaleToSpeckle(extPt.X),
       u == Units.None ? extPt.Y : ScaleToSpeckle(extPt.Y),

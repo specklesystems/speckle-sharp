@@ -36,6 +36,7 @@ public sealed class CurveArrayConversionToSpeckle : IRawConversion<DB.CurveArray
     polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
 
     polycurve.segments.AddRange(curves.Select(x => _curveConverter.RawConvert(x)));
+
     return polycurve;
   }
 }
