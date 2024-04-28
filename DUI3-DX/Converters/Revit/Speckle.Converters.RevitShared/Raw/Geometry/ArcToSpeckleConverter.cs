@@ -28,7 +28,6 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
 
   public ICurve RawConvert(DB.Arc arc)
   {
-    var units = _contextStack.Current.SpeckleUnits;
     // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
     var arcPlane = DB.Plane.CreateByOriginAndBasis(arc.Center, arc.XDirection, arc.YDirection);
     DB.XYZ center = arc.Center;
@@ -49,7 +48,7 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
       startAngle,
       endAngle,
       endAngle - startAngle,
-      units
+      _contextStack.Current.SpeckleUnits
     );
     a.endPoint = _xyzToPointConverter.RawConvert(end);
     a.startPoint = _xyzToPointConverter.RawConvert(start);
