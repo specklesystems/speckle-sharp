@@ -33,8 +33,6 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
 
   public object Convert(Base target) => RawConvert((VectorLayer)target);
 
-  private const string FID_FIELD_NAME = "OBJECTID";
-
   public FeatureClass RawConvert(VectorLayer target)
   {
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
@@ -53,39 +51,24 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
     // create Fields
-    List<FieldDescription> fields = new();
-    List<string> fieldAdded = new();
+    List<FieldDescription> fields = _featureClassUtils.GetFieldsFromSpeckleLayer(target);
+    List<string> fieldAdded = fields.Select(x => x.Name).ToList();
 
-    foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
-    {
-      if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
-      {
-        // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
-        try
-        {
-          if (field.Value is not null)
-          {
-            FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)(long)field.Value);
-            if (fieldType != FieldType.Raster)
-            {
-              fields.Add(new FieldDescription(field.Key, fieldType));
-              fieldAdded.Add(field.Key);
-            }
-          }
-          else
-          {
-            // log missing field
-          }
-        }
-        catch (GeodatabaseFieldException)
-        {
-          // log missing field
-        }
-      }
-    }
     // getting rid of forbidden symbols in the class name: adding a letter in the beginning
     // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
-    string featureClassName = "x" + target.id;
+    string featureClassName = "speckleID_" + target.id;
+
+    // delete FeatureClass if already exists
+    foreach (FeatureClassDefinition fClassDefinition in geodatabase.GetDefinitions<FeatureClassDefinition>())
+    {
+      // will cause GeodatabaseCatalogDatasetException if doesn't exist in the database
+      if (fClassDefinition.GetName() == featureClassName)
+      {
+        FeatureClassDescription existingDescription = new(fClassDefinition);
+        schemaBuilder.Delete(existingDescription);
+        schemaBuilder.Build();
+      }
+    }
 
     // Create FeatureClass
     try

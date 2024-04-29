@@ -4,11 +4,14 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
+using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class FeatureClassUtils : IFeatureClassUtils
 {
+  private const string FID_FIELD_NAME = "OBJECTID";
+
   public void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
@@ -16,7 +19,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
-    newFeatureClass.DeleteRows(new QueryFilter());
+    // newFeatureClass.DeleteRows(new QueryFilter());
     foreach (GisFeature feat in gisFeatures)
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
@@ -25,30 +28,36 @@ public class FeatureClassUtils : IFeatureClassUtils
         foreach (string field in fieldAdded)
         {
           // try to assign values to writeable fields
-          try
+
+          if (feat.attributes is not null)
           {
-            if (feat.attributes is not null)
+            var value = feat.attributes[field];
+            if (value is not null)
             {
-              var value = feat.attributes[field];
-              if (value is not null)
+              // POC: get actual value in a correct format
+              try
               {
-                // POC: get actual value in a correct format
                 rowBuffer[field] = value;
               }
-              else
+              catch (GeodatabaseFeatureException)
               {
+                //'The value type is incompatible.'
+                // log error!
                 rowBuffer[field] = null;
               }
+              catch (GeodatabaseGeneralException)
+              {
+                // field doen't exist: ideally should not be happening
+              }
+              catch (GeodatabaseFieldException)
+              {
+                // non-editable Field, do nothing
+              }
             }
-          }
-          catch (GeodatabaseFieldException)
-          {
-            // non-editable Field, do nothing
-          }
-          catch (GeodatabaseFeatureException)
-          {
-            // log error!
-            rowBuffer[field] = null;
+            else
+            {
+              rowBuffer[field] = null;
+            }
           }
         }
 
@@ -76,6 +85,41 @@ public class FeatureClassUtils : IFeatureClassUtils
       }
     }
     throw new GeodatabaseFieldException($"Field type '{fieldType}' is not valid");
+  }
+
+  public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target)
+  {
+    List<FieldDescription> fields = new();
+    List<string> fieldAdded = new();
+
+    foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
+    {
+      if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      {
+        // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+        try
+        {
+          if (field.Value is not null)
+          {
+            FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
+            if (fieldType != FieldType.Raster)
+            {
+              fields.Add(new FieldDescription(field.Key, fieldType));
+              fieldAdded.Add(field.Key);
+            }
+          }
+          else
+          {
+            // log missing field
+          }
+        }
+        catch (GeodatabaseFieldException)
+        {
+          // log missing field
+        }
+      }
+    }
+    return fields;
   }
 
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
