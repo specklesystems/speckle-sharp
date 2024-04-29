@@ -21,6 +21,7 @@ public partial class ConverterRevit
     @base["level"] = ConvertAndCacheLevel(revitGroup, BuiltInParameter.GROUP_LEVEL);
 
     AddHostedDependentElements(revitGroup, @base, elIdsToConvert.ToList());
+    GetAllRevitParamsAndIds(@base, revitGroup);
     return @base;
   }
 

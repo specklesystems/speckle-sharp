@@ -1,3 +1,4 @@
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.ArcGIS.Utils;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
@@ -14,22 +15,23 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
   public string Name { get; } = "receiveBinding";
   private readonly CancellationManager _cancellationManager;
   private readonly ArcGISDocumentStore _store;
-  private readonly ReceiveOperation _receiveOperation;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+
   public ReceiveBindingUICommands Commands { get; }
   public IBridge Parent { get; }
 
   public ArcGISReceiveBinding(
     ArcGISDocumentStore store,
     IBridge parent,
-    ReceiveOperation receiveOperation,
-    CancellationManager cancellationManager
+    CancellationManager cancellationManager,
+    IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     _store = store;
     _cancellationManager = cancellationManager;
-    _receiveOperation = receiveOperation;
     Parent = parent;
     Commands = new ReceiveBindingUICommands(parent);
+    _unitOfWorkFactory = unitOfWorkFactory;
   }
 
   public async Task Receive(string modelCardId)
@@ -45,8 +47,10 @@ public sealed class ArcGISReceiveBinding : IReceiveBinding, ICancelable
         throw new InvalidOperationException("No download model card was found.");
       }
 
+      using IUnitOfWork<ReceiveOperation> unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
+
       // Receive host objects
-      IEnumerable<string> receivedObjectIds = await _receiveOperation
+      IEnumerable<string> receivedObjectIds = await unitOfWork.Service
         .Execute(
           modelCard.AccountId, // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId,
