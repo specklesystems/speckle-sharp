@@ -12,10 +12,79 @@ public class FeatureClassUtils : IFeatureClassUtils
 {
   private const string FID_FIELD_NAME = "OBJECTID";
 
+  public object? FieldValueToNativeType(FieldType fieldType, object? value)
+  {
+    // Geometry: ignored
+    // Blob, Raster, TimestampOffset, XML: converted to String (field type already converted to String on Send)
+    switch (fieldType)
+    {
+      case FieldType.GUID:
+        return value;
+      case FieldType.OID:
+        return value;
+    }
+
+    if (value is not null)
+    {
+      try
+      {
+        switch (fieldType)
+        {
+          case FieldType.Single:
+            return (float)(double)value;
+          case FieldType.Integer:
+            // need this step because sent "ints" seem to be received as "longs"
+            return (int)(long)value;
+          case FieldType.BigInteger:
+            return (long)value;
+          case FieldType.SmallInteger:
+            return (short)(long)value;
+          case FieldType.Double:
+            return (double)value;
+        }
+      }
+      catch (InvalidCastException)
+      {
+        return value;
+      }
+
+      var stringValue = value.ToString();
+      if (stringValue is not null)
+      {
+        try
+        {
+          switch (fieldType)
+          {
+            case FieldType.String:
+              return stringValue;
+            case FieldType.Date:
+              return DateTime.Parse(stringValue);
+            case FieldType.DateOnly:
+              return DateOnly.Parse(stringValue);
+            case FieldType.TimeOnly:
+              return TimeOnly.Parse(stringValue);
+            case FieldType.Blob:
+              return stringValue;
+            case FieldType.TimestampOffset:
+              return stringValue;
+            case FieldType.XML:
+              return stringValue;
+          }
+        }
+        catch (InvalidCastException)
+        {
+          return value;
+        }
+      }
+    }
+
+    return value;
+  }
+
   public void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
-    List<string> fieldAdded,
+    List<FieldDescription> fields,
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
@@ -25,25 +94,26 @@ public class FeatureClassUtils : IFeatureClassUtils
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
         // get attributes
-        foreach (string field in fieldAdded)
+        foreach (FieldDescription field in fields)
         {
           // try to assign values to writeable fields
-
           if (feat.attributes is not null)
           {
-            var value = feat.attributes[field];
+            string key = field.Name;
+            FieldType fieldType = field.FieldType;
+            var value = feat.attributes[key];
             if (value is not null)
             {
-              // POC: get actual value in a correct format
+              // POC: get all values in a correct format
               try
               {
-                rowBuffer[field] = value;
+                rowBuffer[key] = FieldValueToNativeType(fieldType, value);
               }
               catch (GeodatabaseFeatureException)
               {
                 //'The value type is incompatible.'
                 // log error!
-                rowBuffer[field] = null;
+                rowBuffer[key] = null;
               }
               catch (GeodatabaseGeneralException)
               {
@@ -56,7 +126,7 @@ public class FeatureClassUtils : IFeatureClassUtils
             }
             else
             {
-              rowBuffer[field] = null;
+              rowBuffer[key] = null;
             }
           }
         }
@@ -81,6 +151,15 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       if ((int)type == fieldType)
       {
+        if (
+          type == FieldType.Blob
+          || type == FieldType.Raster
+          || type == FieldType.XML
+          || type == FieldType.TimestampOffset
+        )
+        {
+          return FieldType.String;
+        }
         return type;
       }
     }
@@ -102,11 +181,8 @@ public class FeatureClassUtils : IFeatureClassUtils
           if (field.Value is not null)
           {
             FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
-            if (fieldType != FieldType.Raster)
-            {
-              fields.Add(new FieldDescription(field.Key, fieldType));
-              fieldAdded.Add(field.Key);
-            }
+            fields.Add(new FieldDescription(field.Key, fieldType));
+            fieldAdded.Add(field.Key);
           }
           else
           {

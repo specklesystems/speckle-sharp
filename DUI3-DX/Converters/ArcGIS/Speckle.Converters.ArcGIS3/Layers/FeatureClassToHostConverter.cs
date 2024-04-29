@@ -97,7 +97,7 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
       List<GisFeature> gisFeatures = target.elements.Select(x => (GisFeature)x).ToList();
       geodatabase.ApplyEdits(() =>
       {
-        _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, gisFeatures, fieldAdded, _gisGeometryConverter);
+        _featureClassUtils.AddFeaturesToFeatureClass(newFeatureClass, gisFeatures, fields, _gisGeometryConverter);
       });
 
       return newFeatureClass;

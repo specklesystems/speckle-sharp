@@ -62,10 +62,27 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
         try
         {
           object? value = target[name];
+          // to not break serializer (DateOnly) and to simplify complex types
+          if (
+            (
+              field.FieldType == FieldType.DateOnly
+              || field.FieldType == FieldType.TimeOnly
+              || field.FieldType == FieldType.Raster
+              || field.FieldType == FieldType.Blob
+              || field.FieldType == FieldType.XML
+              || field.FieldType == FieldType.TimestampOffset
+            )
+            && value != null
+          )
+          {
+            attributes[name] = value.ToString();
+            continue;
+          }
           attributes[name] = value;
         }
         catch (ArgumentException)
         {
+          // e.g. for ignored "raster" field: 'Value does not fall within the expected range.'
           // TODO: log in the conversion errors list
           attributes[name] = null;
         }

@@ -11,9 +11,10 @@ public interface IFeatureClassUtils
   void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
-    List<string> fieldAdded,
+    List<FieldDescription> fields,
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   );
+  public object? FieldValueToNativeType(FieldType fieldType, object? value);
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target);
   public FieldType GetFieldTypeFromInt(int fieldType);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);

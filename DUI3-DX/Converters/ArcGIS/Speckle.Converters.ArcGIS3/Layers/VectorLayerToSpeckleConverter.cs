@@ -5,6 +5,7 @@ using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Geometry;
+using Speckle.Converters.ArcGIS3.Utils;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -13,13 +14,16 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
+  private readonly IFeatureClassUtils _featureClassUtils;
 
   public VectorLayerToSpeckleConverter(
     IRawConversion<Row, GisFeature> gisFeatureConverter,
+    IFeatureClassUtils featureClassUtils,
     IConversionContextStack<Map, Unit> contextStack
   )
   {
     _gisFeatureConverter = gisFeatureConverter;
+    _featureClassUtils = featureClassUtils;
     _contextStack = contextStack;
   }
 
@@ -80,7 +84,8 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         {
           continue;
         }
-        allLayerAttributes[name] = (int)field.Type;
+        FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)field.Type);
+        allLayerAttributes[name] = (int)fieldType;
       }
     }
     speckleLayer.attributes = allLayerAttributes;
