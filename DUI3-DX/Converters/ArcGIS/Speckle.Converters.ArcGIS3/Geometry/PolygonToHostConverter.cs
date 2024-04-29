@@ -25,6 +25,6 @@ public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometr
     {
       throw new SpeckleConversionException("Feature contains no geometry");
     }
-    return new ACG.PolygonBuilderEx(polyList, ACG.AttributeFlags.None).ToGeometry();
+    return new ACG.PolygonBuilderEx(polyList, ACG.AttributeFlags.HasZ).ToGeometry();
   }
 }

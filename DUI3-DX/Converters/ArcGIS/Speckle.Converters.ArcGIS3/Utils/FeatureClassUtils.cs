@@ -21,6 +21,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
+        // get attributes
         foreach (string field in fieldAdded)
         {
           // try to assign values to writeable fields
@@ -51,15 +52,16 @@ public class FeatureClassUtils : IFeatureClassUtils
           }
         }
 
+        // get geometries
         if (feat.geometry != null)
         {
           List<Base> geometryToConvert = feat.geometry;
           ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryToConvert);
           rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
-          break;
         }
         // POC: TODO add option for non-geometry features
         newFeatureClass.CreateRow(rowBuffer).Dispose();
+        // break;
       }
     }
   }

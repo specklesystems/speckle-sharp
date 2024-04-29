@@ -61,13 +61,13 @@ public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.G
     }
     try
     {
-      foreach (var item in target)
+      if (target.Count > 0)
       {
-        return item switch
+        return target[0] switch
         {
           SOG.Point point => _multipointConverter.RawConvert(pointList),
           SOG.Polyline polyline => _polylineConverter.RawConvert(polylineList),
-          SGIS.GisPolygonGeometry3d geometry => _polygon3dConverter.RawConvert(polygon3dList),
+          SGIS.GisPolygonGeometry3d geometry3d => _polygon3dConverter.RawConvert(polygon3dList),
           SGIS.GisPolygonGeometry geometry => _polygonConverter.RawConvert(polygonList),
           SGIS.GisMultipatchGeometry mesh => _multipatchConverter.RawConvert(multipatchList),
           _ => throw new NotSupportedException($"No conversion found"),

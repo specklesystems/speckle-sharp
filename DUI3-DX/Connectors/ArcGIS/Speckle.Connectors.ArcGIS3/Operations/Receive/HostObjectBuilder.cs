@@ -62,7 +62,7 @@ public class HostObjectBuilder : IHostObjectBuilder
         // BAKE OBJECTS HERE
 
         // POC: QueuedTask
-        QueuedTask.Run(() =>
+        var task = QueuedTask.Run(() =>
         {
           try
           {
@@ -71,7 +71,11 @@ public class HostObjectBuilder : IHostObjectBuilder
             {
               objectIds.Add(obj.id);
               // POC: TODO: get map from contextStack instead
-              LayerFactory.Instance.CreateLayer(new Uri($"{databasePath}\\{uri}"), MapView.Active.Map);
+              LayerFactory.Instance.CreateLayer(
+                new Uri($"{databasePath}\\{uri}"),
+                MapView.Active.Map,
+                layerName: ((Collection)obj).name
+              );
             }
           }
           catch (ArgumentException)
@@ -81,6 +85,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             throw;
           }
         });
+        task.Wait(cancellationToken);
 
         onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count());
       }
