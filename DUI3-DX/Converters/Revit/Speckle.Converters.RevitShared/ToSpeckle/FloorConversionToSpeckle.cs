@@ -11,5 +11,5 @@ namespace Speckle.Converters.Common;
 [NameAndRankValue(nameof(DB.Floor), 0)]
 public class FloorConversionToSpeckle : IHostObjectToSpeckleConversion
 {
-  public Base Convert(object target) => throw new NotImplementedException();
+  public Base Convert(object target) => throw new SpeckleConversionException();
 }
