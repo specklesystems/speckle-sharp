@@ -46,10 +46,14 @@ public class AutocadPolycurve : Polycurve
   public List<double>? tangents { get; set; }
 
   /// <summary>
-  /// The plane of the Autocad Polyline or Polyline2d. Should be null for Polyline3d.
+  /// The normal of the plane of the Autocad Polyline or Polyline2d. Should be null for Polyline3d.
   /// </summary>
-  /// <remarks></remarks>
-  public Plane? plane { get; set; }
+  public Vector? normal { get; set; }
+
+  /// <summary>
+  /// The distance from the plane to the origin of the Autocad Polyline or Polyline2d. Should be null for Polyline3d.
+  /// </summary>
+  public double? elevation { get; set; }
 
   public AutocadPolyType polyType { get; set; }
 }

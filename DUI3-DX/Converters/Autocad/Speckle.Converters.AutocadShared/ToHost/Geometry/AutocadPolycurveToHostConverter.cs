@@ -1,4 +1,4 @@
-﻿using Objects.Geometry.Autocad;
+using Objects.Geometry.Autocad;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -27,17 +27,8 @@ public class AutocadPolycurveToHostConverter : ISpeckleObjectToHostConversion
   {
     SOG.Autocad.AutocadPolycurve polycurve = (SOG.Autocad.AutocadPolycurve)target;
 
-    if (polycurve.value.Count % 3 != 0)
-    {
-      throw new SpeckleConversionException(
-        $"{nameof(SOG.Autocad.AutocadPolycurve)}.{nameof(polycurve.value)} list is malformed: expected length to be multiple of 3"
-      );
-    }
-
     if (polycurve.polyType == AutocadPolyType.Light)
     {
-      // POC: Anti-POC because there is nothing we can do about ADB.Polyline. This object can be 3d as planar and we can convert to speckle with 3d vertices
-      // but there is no API that you can create ADB.Polyline from this 3d points. It only accepts 2d... 😠
       return _polylineConverter.RawConvert(polycurve);
     }
     else if (
