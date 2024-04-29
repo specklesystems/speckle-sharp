@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisplayValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BeamConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ColumnConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\CurveArrArrayToSpecklePolycurveConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\LineConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveArrayConversionToSpeckle.cs" />

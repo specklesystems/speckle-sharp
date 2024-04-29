@@ -4,7 +4,6 @@ using Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 
@@ -17,33 +16,30 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
 {
   private readonly IRawConversion<DB.Curve, ICurve> _curveConverter;
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.CurveArray, SOG.Polycurve> _curveArrayConverter;
+  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly RevitConversionContextStack _contextStack;
   private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly ISpeckleConverterToSpeckle _converter;
 
   public WallConversionToSpeckle(
     IRawConversion<DB.Curve, ICurve> curveConverter,
     IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
+    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
     RevitConversionContextStack contextStack,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
-    IRawConversion<DB.CurveArray, SOG.Polycurve> curveArrayConverter,
-    HostedElementConversionToSpeckle hostedElementConverter,
     ParameterObjectAssigner parameterObjectAssigner,
     ISpeckleConverterToSpeckle converter
   )
   {
     _curveConverter = curveConverter;
     _levelConverter = levelConverter;
+    _curveArrArrayConverter = curveArrArrayConverter;
     _contextStack = contextStack;
     _parameterValueExtractor = parameterValueExtractor;
     _displayValueExtractor = displayValueExtractor;
-    _curveArrayConverter = curveArrayConverter;
-    _hostedElementConverter = hostedElementConverter;
     _parameterObjectAssigner = parameterObjectAssigner;
     _converter = converter;
   }
@@ -61,7 +57,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     return speckleWall;
   }
 
-  private void AssignSpecificParameters(Wall target, RevitWall speckleWall)
+  private void AssignSpecificParameters(DB.Wall target, RevitWall speckleWall)
   {
     if (target.Location is not DB.LocationCurve locationCurve)
     {
@@ -95,7 +91,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     speckleWall.flipped = target.Flipped;
   }
 
-  private List<Base> GetChildElements(Wall target)
+  private List<Base> GetChildElements(DB.Wall target)
   {
     List<Base> wallChildren = new();
     if (target.CurtainGrid is DB.CurtainGrid grid)
@@ -111,7 +107,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     return wallChildren;
   }
 
-  private IEnumerable<Base> ConvertElements(IEnumerable<ElementId> elementIds)
+  private IEnumerable<Base> ConvertElements(IEnumerable<DB.ElementId> elementIds)
   {
     foreach (DB.ElementId elementId in elementIds)
     {
@@ -119,7 +115,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     }
   }
 
-  private void AssignDisplayValue(Wall target, RevitWall speckleWall)
+  private void AssignDisplayValue(DB.Wall target, RevitWall speckleWall)
   {
     if (target.CurtainGrid is null)
     {
@@ -147,34 +143,19 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
 
   private void AssignVoids(DB.Wall target, SOBR.RevitWall speckleWall)
   {
-    List<DB.CurveArray> voids = GetWallVoids(target);
-    List<SOG.Polycurve> polycurves = voids.Select(v => _curveArrayConverter.RawConvert(v)).ToList();
-
-    if (polycurves.Count > 0)
+    DB.CurveArrArray? profile = ((DB.Sketch)target.Document.GetElement(target.SketchId))?.Profile;
+    if (profile is null)
     {
-      speckleWall["voids"] = polycurves;
-    }
-  }
-
-  private List<DB.CurveArray> GetWallVoids(DB.Wall wall)
-  {
-    List<DB.CurveArray> curveArrays = new();
-    var profile = ((DB.Sketch)_contextStack.Current.Document.Document.GetElement(wall.SketchId))?.Profile;
-
-    if (profile == null)
-    {
-      return curveArrays;
+      return;
     }
 
-    for (var i = 1; i < profile.Size; i++)
-    {
-      var segments = profile.get_Item(i);
-      if (segments.Cast<DB.Curve>().Count() > 2)
-      {
-        curveArrays.Add(segments);
-      }
-    }
+    List<SOG.Polycurve> polycurves = _curveArrArrayConverter.RawConvert(profile);
 
-    return curveArrays;
+    if (polycurves.Count > 1)
+    {
+      // POC: we have been assuming that the first curve is the element and the rest of the curves are openings
+      // this isn't always true
+      speckleWall["voids"] = polycurves.Skip(1);
+    }
   }
 }
