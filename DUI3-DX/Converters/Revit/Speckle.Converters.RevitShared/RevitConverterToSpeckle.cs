@@ -33,7 +33,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 
     if (objectConverter == null)
     {
-      throw new NotSupportedException($"No conversion found for {target.GetType().Name}");
+      throw new SpeckleConversionException($"No conversion found for {target.GetType().Name}");
     }
 
     Base result =
