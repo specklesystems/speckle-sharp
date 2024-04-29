@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
 
@@ -24,10 +25,12 @@ public class HostedElementConversionToSpeckle
 
   public List<Base> GetHostedElementsConverted(Element host)
   {
+    return GetHostedElementsConvertedFromIds(host, host.GetHostedElementIds());
+  }
+
+  public List<Base> GetHostedElementsConvertedFromIds(Element host, IList<ElementId> hostedElementIds)
+  {
     var convertedHostedElements = new List<Base>();
-
-    var hostedElementIds = GetHostedElementIds(host);
-
     foreach (var elemId in hostedElementIds)
     {
       var element = host.Document.GetElement(elemId);
@@ -40,33 +43,5 @@ public class HostedElementConversionToSpeckle
     }
 
     return convertedHostedElements;
-  }
-
-  private static IList<ElementId> GetHostedElementIds(Element host)
-  {
-    IList<ElementId> ids;
-    if (host is HostObject hostObject)
-    {
-      ids = hostObject.FindInserts(true, false, false, false);
-    }
-    else
-    {
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter(
-        new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_CLines,
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
-        },
-        true
-      );
-      ids = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
-    }
-
-    // dont include host elementId
-    ids.Remove(host.Id);
-
-    return ids;
   }
 }

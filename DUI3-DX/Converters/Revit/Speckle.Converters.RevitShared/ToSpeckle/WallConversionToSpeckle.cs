@@ -4,6 +4,9 @@ using Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using Autodesk.Revit.DB;
+using Speckle.Converters.RevitShared.Extensions;
+using Objects.BuiltElements.Revit;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -20,6 +23,7 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly ISpeckleConverterToSpeckle _converter;
 
   public WallConversionToSpeckle(
     IRawConversion<DB.Curve, ICurve> curveConverter,
@@ -29,7 +33,8 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     DisplayValueExtractor displayValueExtractor,
     IRawConversion<DB.CurveArray, SOG.Polycurve> curveArrayConverter,
     HostedElementConversionToSpeckle hostedElementConverter,
-    ParameterObjectAssigner parameterObjectAssigner
+    ParameterObjectAssigner parameterObjectAssigner,
+    ISpeckleConverterToSpeckle converter
   )
   {
     _curveConverter = curveConverter;
@@ -40,12 +45,24 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     _curveArrayConverter = curveArrayConverter;
     _hostedElementConverter = hostedElementConverter;
     _parameterObjectAssigner = parameterObjectAssigner;
+    _converter = converter;
   }
 
   public override SOBR.RevitWall RawConvert(DB.Wall target)
   {
     SOBR.RevitWall speckleWall = new() { family = target.WallType.FamilyName.ToString(), type = target.WallType.Name };
 
+    AssignSpecificParameters(target, speckleWall);
+    AssignVoids(target, speckleWall);
+    AssignHostedElements(speckleWall, GetChildElements(target));
+    AssignDisplayValue(target, speckleWall);
+    _parameterObjectAssigner.AssignParametersToBase(target, speckleWall);
+
+    return speckleWall;
+  }
+
+  private void AssignSpecificParameters(Wall target, RevitWall speckleWall)
+  {
     if (target.Location is not DB.LocationCurve locationCurve)
     {
       throw new SpeckleConversionException(
@@ -76,31 +93,55 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     speckleWall.structural =
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;
-
-    speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
-
-    AssignVoids(target, speckleWall);
-    AssignHostedElements(target, speckleWall);
-
-    _parameterObjectAssigner.AssignParametersToBase(target, speckleWall);
-
-    return speckleWall;
   }
 
-  // POC: not sure
-  private void AssignHostedElements(DB.Wall target, SOBR.RevitWall speckleWall)
+  private List<Base> GetChildElements(Wall target)
   {
-    List<Base> hostedObjects = _hostedElementConverter.GetHostedElementsConverted(target);
-    if (hostedObjects.Count > 0)
+    List<Base> wallChildren = new();
+    if (target.CurtainGrid is DB.CurtainGrid grid)
     {
-      if (speckleWall.GetDetachedProp("elements") is List<Base> elements)
-      {
-        elements.AddRange(hostedObjects);
-      }
-      else
-      {
-        speckleWall.SetDetachedProp("elements", hostedObjects);
-      }
+      wallChildren.AddRange(ConvertElements(grid.GetMullionIds()));
+      wallChildren.AddRange(ConvertElements(grid.GetPanelIds()));
+    }
+    else if (target.IsStackedWall)
+    {
+      wallChildren.AddRange(ConvertElements(target.GetStackedWallMemberIds()));
+    }
+    wallChildren.AddRange(ConvertElements(target.GetHostedElementIds()));
+    return wallChildren;
+  }
+
+  private IEnumerable<Base> ConvertElements(IEnumerable<ElementId> elementIds)
+  {
+    foreach (DB.ElementId elementId in elementIds)
+    {
+      yield return _converter.Convert(_contextStack.Current.Document.Document.GetElement(elementId));
+    }
+  }
+
+  private void AssignDisplayValue(Wall target, RevitWall speckleWall)
+  {
+    if (target.CurtainGrid is null)
+    {
+      speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
+    }
+    speckleWall.displayValue = new List<SOG.Mesh>();
+  }
+
+  private void AssignHostedElements(SOBR.RevitWall speckleWall, List<Base> hostedObjects)
+  {
+    if (hostedObjects.Count == 0)
+    {
+      return;
+    }
+
+    if (speckleWall.GetDetachedProp("elements") is List<Base> elements)
+    {
+      elements.AddRange(hostedObjects);
+    }
+    else
+    {
+      speckleWall.SetDetachedProp("elements", hostedObjects);
     }
   }
 

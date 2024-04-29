@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CategoryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />

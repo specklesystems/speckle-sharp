@@ -29,7 +29,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   // if it cannot be converted then we should throw
   public Base Convert(object target)
   {
-    var objectConverter = _toSpeckle.ResolveInstance(target.GetType().Name);
+    var objectConverter = GetConversionForObject(target.GetType());
 
     if (objectConverter == null)
     {
@@ -48,5 +48,20 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     }
 
     return result;
+  }
+
+  private IHostObjectToSpeckleConversion? GetConversionForObject(Type objectType)
+  {
+    if (objectType == typeof(object))
+    {
+      return null;
+    }
+
+    if (_toSpeckle.ResolveInstance(objectType.Name) is IHostObjectToSpeckleConversion conversion)
+    {
+      return conversion;
+    }
+
+    return GetConversionForObject(objectType.BaseType);
   }
 }
