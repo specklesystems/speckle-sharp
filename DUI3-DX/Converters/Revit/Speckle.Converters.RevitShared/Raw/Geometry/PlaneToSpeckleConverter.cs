@@ -17,15 +17,15 @@ public class PlaneToSpeckleConverter : IRawConversion<DB.Plane, SOG.Plane>
   {
     _contextStack = contextStack;
     _xyzToPointConverter = xyzToPointConverter;
-    _xyzToPointConverter = xyzToPointConverter;
+    _xyzToVectorConverter = xyzToVectorConverter;
   }
 
-  public SOG.Plane RawConvert(DB.Plane plane)
+  public SOG.Plane RawConvert(DB.Plane target)
   {
-    var origin = _xyzToPointConverter.RawConvert(plane.Origin);
-    var normal = _xyzToVectorConverter.RawConvert(plane.Normal);
-    var xdir = _xyzToVectorConverter.RawConvert(plane.XVec);
-    var ydir = _xyzToVectorConverter.RawConvert(plane.YVec);
+    var origin = _xyzToPointConverter.RawConvert(target.Origin);
+    var normal = _xyzToVectorConverter.RawConvert(target.Normal);
+    var xdir = _xyzToVectorConverter.RawConvert(target.XVec);
+    var ydir = _xyzToVectorConverter.RawConvert(target.YVec);
 
     return new SOG.Plane(origin, normal, xdir, ydir, _contextStack.Current.SpeckleUnits);
   }

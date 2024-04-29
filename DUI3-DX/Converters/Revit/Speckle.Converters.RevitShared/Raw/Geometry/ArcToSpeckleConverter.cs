@@ -26,25 +26,25 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
     _scalingService = scalingService;
   }
 
-  public ICurve RawConvert(DB.Arc arc)
+  public ICurve RawConvert(DB.Arc target)
   {
     // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
-    var arcPlane = DB.Plane.CreateByOriginAndBasis(arc.Center, arc.XDirection, arc.YDirection);
-    DB.XYZ center = arc.Center;
+    var arcPlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection);
+    DB.XYZ center = target.Center;
 
-    DB.XYZ dir0 = (arc.GetEndPoint(0) - center).Normalize();
-    DB.XYZ dir1 = (arc.GetEndPoint(1) - center).Normalize();
+    DB.XYZ dir0 = (target.GetEndPoint(0) - center).Normalize();
+    DB.XYZ dir1 = (target.GetEndPoint(1) - center).Normalize();
 
-    DB.XYZ start = arc.Evaluate(0, true);
-    DB.XYZ end = arc.Evaluate(1, true);
-    DB.XYZ mid = arc.Evaluate(0.5, true);
+    DB.XYZ start = target.Evaluate(0, true);
+    DB.XYZ end = target.Evaluate(1, true);
+    DB.XYZ mid = target.Evaluate(0.5, true);
 
-    double startAngle = arc.XDirection.AngleOnPlaneTo(dir0, arc.Normal);
-    double endAngle = arc.XDirection.AngleOnPlaneTo(dir1, arc.Normal);
+    double startAngle = target.XDirection.AngleOnPlaneTo(dir0, target.Normal);
+    double endAngle = target.XDirection.AngleOnPlaneTo(dir1, target.Normal);
 
     var a = new SOG.Arc(
       _planeConverter.RawConvert(arcPlane),
-      _scalingService.ScaleLength(arc.Radius),
+      _scalingService.ScaleLength(target.Radius),
       startAngle,
       endAngle,
       endAngle - startAngle,
@@ -53,8 +53,8 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
     a.endPoint = _xyzToPointConverter.RawConvert(end);
     a.startPoint = _xyzToPointConverter.RawConvert(start);
     a.midPoint = _xyzToPointConverter.RawConvert(mid);
-    a.length = _scalingService.ScaleLength(arc.Length);
-    a.domain = new Interval(arc.GetEndParameter(0), arc.GetEndParameter(1));
+    a.length = _scalingService.ScaleLength(target.Length);
+    a.domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1));
 
     return a;
   }

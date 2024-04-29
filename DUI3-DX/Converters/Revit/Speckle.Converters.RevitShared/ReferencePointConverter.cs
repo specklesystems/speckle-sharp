@@ -1,7 +1,9 @@
 ﻿using Speckle.Converters.RevitShared;
 using Speckle.Converters.RevitShared.Helpers;
 
-// POC: this could perhaps becomes some RevitDocumentService
+// POC: this could perhaps becomes some RevitDocumentService but also...
+// This reference point feature needs review. We could do with knowing whether this feature is widely used.
+// https://spockle.atlassian.net/browse/CNX-9357
 public class ReferencePointConverter : IReferencePointConverter
 {
   // POC: probably not the best place for this

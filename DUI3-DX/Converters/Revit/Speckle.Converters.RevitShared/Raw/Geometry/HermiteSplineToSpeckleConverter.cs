@@ -12,9 +12,9 @@ public class HerminteSplitToSpeckleConverter : IRawConversion<DB.HermiteSpline, 
     _splineConverter = splineConverter;
   }
 
-  public ICurve RawConvert(DB.HermiteSpline hermiteSpline)
+  public ICurve RawConvert(DB.HermiteSpline target)
   {
-    var nurbs = DB.NurbSpline.Create(hermiteSpline);
+    var nurbs = DB.NurbSpline.Create(target);
     return _splineConverter.RawConvert(nurbs);
   }
 }

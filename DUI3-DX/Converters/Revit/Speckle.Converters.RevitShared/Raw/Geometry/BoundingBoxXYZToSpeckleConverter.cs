@@ -21,14 +21,14 @@ public class BoundingBoxXYZToSpeckleConverter : IRawConversion<DB.BoundingBoxXYZ
     _planeConverter = planeConverter;
   }
 
-  public SOG.Box RawConvert(DB.BoundingBoxXYZ boundingBox)
+  public SOG.Box RawConvert(DB.BoundingBoxXYZ target)
   {
     // convert min and max pts to speckle first
-    var min = _xyzToPointConverter.RawConvert(boundingBox.Min);
-    var max = _xyzToPointConverter.RawConvert(boundingBox.Max);
+    var min = _xyzToPointConverter.RawConvert(target.Min);
+    var max = _xyzToPointConverter.RawConvert(target.Max);
 
     // get the base plane of the bounding box from the transform
-    var transform = boundingBox.Transform;
+    var transform = target.Transform;
     var plane = DB.Plane.CreateByOriginAndBasis(
       transform.Origin,
       transform.BasisX.Normalize(),

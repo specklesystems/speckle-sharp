@@ -20,25 +20,26 @@ public class PointCloudToSpeckleConverter : IRawConversion<DB.PointCloudInstance
     _boundingBoxConverter = boundingBoxConverter;
   }
 
-  public SOG.Pointcloud RawConvert(DB.PointCloudInstance pointCloud)
+  public SOG.Pointcloud RawConvert(DB.PointCloudInstance target)
   {
-    var boundingBox = pointCloud.get_BoundingBox(null);
-    var transform = pointCloud.GetTransform();
+    var boundingBox = target.get_BoundingBox(null);
+    var transform = target.GetTransform();
 
     var minPlane = DB.Plane.CreateByNormalAndOrigin(DB.XYZ.BasisZ, transform.OfPoint(boundingBox.Min));
     var filter = DB.PointClouds.PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { minPlane });
-    var points = pointCloud.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
+    var points = target.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
 
     // POC: complaining about nullability
-    var specklePointCloud = new SOG.Pointcloud();
-    specklePointCloud.points = points
-      .Select(o => _xyzToPointConverter.RawConvert(transform.OfPoint(o)))
-      .SelectMany(o => new List<double>() { o.x, o.y, o.z })
-      .ToList();
-
-    specklePointCloud.colors = points.Select(o => o.Color).ToList();
-    specklePointCloud.units = _contextStack.Current.SpeckleUnits;
-    specklePointCloud.bbox = _boundingBoxConverter.RawConvert(boundingBox);
+    var specklePointCloud = new SOG.Pointcloud
+    {
+      points = points
+        .Select(o => _xyzToPointConverter.RawConvert(transform.OfPoint(o)))
+        .SelectMany(o => new List<double>() { o.x, o.y, o.z })
+        .ToList(),
+      colors = points.Select(o => o.Color).ToList(),
+      units = _contextStack.Current.SpeckleUnits,
+      bbox = _boundingBoxConverter.RawConvert(boundingBox)
+    };
 
     return specklePointCloud;
   }
