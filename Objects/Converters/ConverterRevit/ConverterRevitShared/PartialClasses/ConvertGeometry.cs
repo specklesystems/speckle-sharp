@@ -325,7 +325,7 @@ public partial class ConverterRevit
     speckleCurve.degree = revitCurve.Degree;
     //speckleCurve.periodic = revitCurve.Period;
     speckleCurve.rational = revitCurve.isRational;
-    speckleCurve.closed = RevitVersionHelper.IsCurveCurveClosed(revitCurve);
+    speckleCurve.closed = RevitVersionHelper.IsCurveClosed(revitCurve);
     speckleCurve.units = units ?? ModelUnits;
     speckleCurve.domain = new Interval(revitCurve.GetEndParameter(0), revitCurve.GetEndParameter(1));
     speckleCurve.length = ScaleToSpeckle(revitCurve.Length);

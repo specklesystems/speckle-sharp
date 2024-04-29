@@ -6,7 +6,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class CircleToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
+public class CircleToSpeckleConverter : IRawConversion<DB.Arc, SOG.Circle>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.Plane, SOG.Plane> _planeConverter;
@@ -23,8 +23,10 @@ public class CircleToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
     _scalingService = scalingService;
   }
 
-  public ICurve RawConvert(DB.Arc arc)
+  public SOG.Circle RawConvert(DB.Arc arc)
   {
+    // POC: should we check for arc of 360 and throw? Original CircleToSpeckle did not do this.
+
     // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
     var units = _contextStack.Current.SpeckleUnits;
     var arcPlane = DB.Plane.CreateByNormalAndOrigin(arc.Normal, arc.Center);
