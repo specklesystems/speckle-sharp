@@ -1,46 +1,79 @@
 using ArcGIS.Desktop.Mapping;
-using Objects.GIS;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GeometryToHostConverter : IRawConversion<Base, ACG.Geometry>
+public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.Geometry>
 {
   private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
-  private readonly IRawConversion<SOG.Point, ACG.Multipoint> _pointConverter;
-  private readonly IRawConversion<GisPolygonGeometry, ACG.Polygon> _polygonConverter;
-  private readonly IRawConversion<SOG.Mesh, ACG.Multipatch> _multipatchConverter;
+  private readonly IRawConversion<List<SOG.Polyline>, ACG.Polyline> _polylineConverter;
+  private readonly IRawConversion<List<SOG.Point>, ACG.Multipoint> _multipointConverter;
+  private readonly IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch> _polygon3dConverter;
+  private readonly IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon> _polygonConverter;
+  private readonly IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> _multipatchConverter;
 
   public GeometryToHostConverter(
     IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter,
-    IRawConversion<SOG.Point, ACG.Multipoint> pointConverter,
-    IRawConversion<GisPolygonGeometry, ACG.Polygon> polygonConverter,
-    IRawConversion<SOG.Mesh, ACG.Multipatch> multipatchConverter
+    IRawConversion<List<SOG.Polyline>, ACG.Polyline> polylineConverter,
+    IRawConversion<List<SOG.Point>, ACG.Multipoint> multipointConverter,
+    IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch> polygon3dConverter,
+    IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon> polygonConverter,
+    IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> multipatchConverter
   )
   {
     _contextStack = contextStack;
     _polylineConverter = polylineConverter;
-    _pointConverter = pointConverter;
+    _multipointConverter = multipointConverter;
+    _polygon3dConverter = polygon3dConverter;
     _polygonConverter = polygonConverter;
     _multipatchConverter = multipatchConverter;
   }
 
-  public ACG.Geometry RawConvert(Base target)
+  public ACG.Geometry RawConvert(IReadOnlyList<Base> target)
   {
+    List<SOG.Point> pointList = new();
+    List<SOG.Polyline> polylineList = new();
+    List<SGIS.GisPolygonGeometry3d> polygon3dList = new();
+    List<SGIS.GisPolygonGeometry> polygonList = new();
+    List<SGIS.GisMultipatchGeometry> multipatchList = new();
+    foreach (var item in target)
+    {
+      switch (item)
+      {
+        case SOG.Point pt:
+          pointList.Add(pt);
+          continue;
+        case SOG.Polyline polyline:
+          polylineList.Add(polyline);
+          continue;
+        case SGIS.GisPolygonGeometry3d polygon3d:
+          polygon3dList.Add(polygon3d);
+          continue;
+        case SGIS.GisPolygonGeometry polygon:
+          polygonList.Add(polygon);
+          continue;
+        case SGIS.GisMultipatchGeometry multipatch:
+          multipatchList.Add(multipatch);
+          continue;
+      }
+    }
     try
     {
-      return target switch
+      foreach (var item in target)
       {
-        SOG.Point point => _pointConverter.RawConvert(point),
-        SOG.Polyline polyline => _polylineConverter.RawConvert(polyline),
-        GisPolygonGeometry geometry => _polygonConverter.RawConvert(geometry),
-        SOG.Mesh mesh => _multipatchConverter.RawConvert(mesh),
-        _ => throw new NotSupportedException($"No conversion found for {target.speckle_type}"),
-      };
+        return item switch
+        {
+          SOG.Point point => _multipointConverter.RawConvert(pointList),
+          SOG.Polyline polyline => _polylineConverter.RawConvert(polylineList),
+          SGIS.GisPolygonGeometry3d geometry => _polygon3dConverter.RawConvert(polygon3dList),
+          SGIS.GisPolygonGeometry geometry => _polygonConverter.RawConvert(polygonList),
+          SGIS.GisMultipatchGeometry mesh => _multipatchConverter.RawConvert(multipatchList),
+          _ => throw new NotSupportedException($"No conversion found"),
+        };
+      }
+      throw new NotSupportedException($"Feature contains no geometry");
     }
     catch (SpeckleConversionException e)
     {

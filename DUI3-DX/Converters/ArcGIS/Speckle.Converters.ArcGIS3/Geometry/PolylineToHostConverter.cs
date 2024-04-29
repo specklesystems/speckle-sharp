@@ -1,12 +1,9 @@
-using ArcGIS.Core.Internal.Geometry;
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class PolylineToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Polyline, ACG.Polyline>
+public class PolylineToHostConverter : IRawConversion<List<SOG.Polyline>, ACG.Polyline>
 {
   private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
 
@@ -15,15 +12,14 @@ public class PolylineToHostConverter : ISpeckleObjectToHostConversion, IRawConve
     _pointConverter = pointConverter;
   }
 
-  public object Convert(Base target) => RawConvert((SOG.Polyline)target);
-
-  public ACG.Polyline RawConvert(SOG.Polyline target)
+  public ACG.Polyline RawConvert(List<SOG.Polyline> target)
   {
-    var points = target.GetPoints().Select(x => _pointConverter.RawConvert(x));
-    PolylineBuilder polyBuilder = new(points);
-    ACG.Polyline polyline = polyBuilder.ToGeometry();
-    polyBuilder.Dispose();
-
-    return polyline;
+    // only 1 geometry expected
+    foreach (SOG.Polyline poly in target)
+    {
+      var points = poly.GetPoints().Select(x => _pointConverter.RawConvert(x));
+      return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
+    }
+    throw new SpeckleConversionException("Feature contains no geometry");
   }
 }

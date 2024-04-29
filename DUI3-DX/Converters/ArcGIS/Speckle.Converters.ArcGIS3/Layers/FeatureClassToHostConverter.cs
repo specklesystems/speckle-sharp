@@ -5,7 +5,6 @@ using ArcGIS.Core.Geometry;
 using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
@@ -14,21 +13,18 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 
 public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureClass>
 {
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
-  private readonly IRawConversion<Base, ACG.Geometry> _gisGeometryConverter;
+  private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IRawConversion<VectorLayer, LasDatasetLayer> _pointcloudLayerConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public FeatureClassToHostConverter(
-    IConversionContextStack<Map, Unit> contextStack,
-    IRawConversion<Base, ACG.Geometry> gisGeometryConverter,
+    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IRawConversion<VectorLayer, LasDatasetLayer> pointcloudLayerConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils
   )
   {
-    _contextStack = contextStack;
     _gisGeometryConverter = gisGeometryConverter;
     _pointcloudLayerConverter = pointcloudLayerConverter;
     _featureClassUtils = featureClassUtils;
@@ -68,9 +64,9 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
           // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
           try
           {
-            FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)(long)field.Value);
             if (field.Value is not null)
             {
+              FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)(long)field.Value);
               fields.Add(new FieldDescription(field.Key, fieldType));
               fieldAdded.Add(field.Key);
             }
@@ -79,7 +75,7 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
               // log missing field
             }
           }
-          catch (GeodatabaseFieldException ex)
+          catch (GeodatabaseFieldException)
           {
             // log missing field
           }

@@ -3,7 +3,7 @@ using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Geometry;
 
-public class MultipatchToHostConverter : IRawConversion<SOG.Mesh, ACG.Multipatch>
+public class MultipatchToHostConverter : IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch>
 {
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
 
@@ -12,7 +12,7 @@ public class MultipatchToHostConverter : IRawConversion<SOG.Mesh, ACG.Multipatch
     _polylineConverter = polylineConverter;
   }
 
-  public ACG.Multipatch RawConvert(SOG.Mesh target)
+  public ACG.Multipatch RawConvert(List<SGIS.GisMultipatchGeometry> target)
   {
     throw new SpeckleConversionException("Something went wrong");
   }

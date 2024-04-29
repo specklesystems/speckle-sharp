@@ -13,7 +13,7 @@ public class FeatureClassUtils : IFeatureClassUtils
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
     List<string> fieldAdded,
-    IRawConversion<Base, ACG.Geometry> gisGeometryConverter
+    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
     newFeatureClass.DeleteRows(new QueryFilter());
@@ -54,18 +54,9 @@ public class FeatureClassUtils : IFeatureClassUtils
         if (feat.geometry != null)
         {
           List<Base> geometryToConvert = feat.geometry;
-          if (feat.geometry.Count == 0 && feat.displayValue is not null && feat.displayValue.Count > 0)
-          {
-            geometryToConvert = feat.displayValue;
-          }
-
-          foreach (var geometryPart in geometryToConvert)
-          {
-            // POC: TODO: repeat for all geometries, add as Multipart
-            ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryPart);
-            rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
-            break;
-          }
+          ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryToConvert);
+          rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
+          break;
         }
         // POC: TODO add option for non-geometry features
         newFeatureClass.CreateRow(rowBuffer).Dispose();
@@ -87,49 +78,45 @@ public class FeatureClassUtils : IFeatureClassUtils
 
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
-    string originalGeomType = target.geomType;
+    string originalGeomType =
+      target.geomType != null ? target.geomType : (target.nativeGeomType != null ? target.nativeGeomType : "");
     ACG.GeometryType geomType;
 
-    if (originalGeomType == null)
-    {
-      originalGeomType = target.nativeGeomType;
-    }
-    if (originalGeomType == null)
+    if (string.IsNullOrEmpty(originalGeomType))
     {
       throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
+
+    // POC: find better pattern
+    if (originalGeomType.ToLower().Contains("none"))
+    {
+      geomType = ACG.GeometryType.Unknown;
+    }
+    else if (originalGeomType.ToLower().Contains("pointcloud"))
+    {
+      geomType = ACG.GeometryType.Unknown;
+    }
+    else if (originalGeomType.ToLower().Contains("point"))
+    {
+      geomType = ACG.GeometryType.Multipoint;
+    }
+    else if (originalGeomType.ToLower().Contains("polyline"))
+    {
+      geomType = ACG.GeometryType.Polyline;
+    }
+    else if (originalGeomType.ToLower().Contains("polygon"))
+    {
+      geomType = ACG.GeometryType.Polygon;
+    }
+    else if (originalGeomType.ToLower().Contains("multipatch"))
+    {
+      geomType = ACG.GeometryType.Multipatch;
+    }
     else
     {
-      // POC: find better pattern
-      if (originalGeomType.ToLower().Contains("none"))
-      {
-        geomType = ACG.GeometryType.Unknown;
-      }
-      else if (originalGeomType.ToLower().Contains("pointcloud"))
-      {
-        geomType = ACG.GeometryType.Unknown;
-      }
-      else if (originalGeomType.ToLower().Contains("point"))
-      {
-        geomType = ACG.GeometryType.Multipoint;
-      }
-      else if (originalGeomType.ToLower().Contains("polyline"))
-      {
-        geomType = ACG.GeometryType.Polyline;
-      }
-      else if (originalGeomType.ToLower().Contains("polygon"))
-      {
-        geomType = ACG.GeometryType.Polygon;
-      }
-      else if (originalGeomType.ToLower().Contains("multipatch"))
-      {
-        geomType = ACG.GeometryType.Multipatch;
-      }
-      else
-      {
-        throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
-      }
+      throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
     }
+
     return geomType;
   }
 }

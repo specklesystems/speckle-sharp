@@ -11,7 +11,7 @@ public interface IFeatureClassUtils
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
     List<string> fieldAdded,
-    IRawConversion<Base, ACG.Geometry> gisGeometryConverter
+    IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   );
   public FieldType GetFieldTypeFromInt(int fieldType);
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target);
