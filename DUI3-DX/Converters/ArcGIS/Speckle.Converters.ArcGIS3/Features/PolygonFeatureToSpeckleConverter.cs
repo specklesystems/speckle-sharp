@@ -18,7 +18,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
     List<GisPolygonGeometry> polygonList = new();
     int partCount = target.PartCount;
 
-    GisPolygonGeometry polygon = new() { voids = new List<SOG.Polyline>() };
+    GisPolygonGeometry polygon = new() { };
     // test each part for "exterior ring"
     for (int idx = 0; idx < partCount; idx++)
     {
@@ -32,7 +32,7 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
         {
           polygonList.Add(polygon);
         }
-        polygon = new() { voids = new List<SOG.Polyline>(), boundary = polyline };
+        polygon = new() { boundary = polyline, voids = new List<SOG.Polyline>() };
       }
       else
       {

@@ -32,6 +32,7 @@ public sealed class SendOperation
     CancellationToken ct = default
   )
   {
+    // POC: decide where to push operations to MCT
     Base commitObject = await QueuedTask
       .Run(() => _baseBuilder.Build(sendFilter, onOperationProgressed, ct))
       .ConfigureAwait(false);
