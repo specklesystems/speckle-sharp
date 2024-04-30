@@ -1,5 +1,6 @@
 using Speckle.Converters.Common.Objects;
 using Objects.GIS;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
@@ -18,8 +19,12 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
     List<GisPolygonGeometry> polygonList = new();
     int partCount = target.PartCount;
 
-    GisPolygonGeometry polygon = new() { };
-    int count = 0;
+    if (partCount == 0)
+    {
+      throw new SpeckleConversionException("ArcGIS Polygon contains no parts");
+    }
+
+    GisPolygonGeometry? polygon = null;
 
     // test each part for "exterior ring"
     for (int idx = 0; idx < partCount; idx++)
@@ -30,19 +35,18 @@ public class PolygonFeatureToSpeckleConverter : IRawConversion<ACG.Polygon, IRea
       bool isExteriorRing = target.IsExteriorRing(idx);
       if (isExteriorRing is true)
       {
-        if (count > 0) // add every former polygon, except first "mock" polygon
-        {
-          polygonList.Add(polygon);
-        }
         polygon = new() { boundary = polyline, voids = new List<SOG.Polyline>() };
-        count += 1;
+        polygonList.Add(polygon);
       }
-      else
+      else // interior part
       {
+        if (polygon == null)
+        {
+          throw new SpeckleConversionException("Invalid ArcGIS Polygon. Interior part preceeding the exterior ring.");
+        }
         polygon.voids.Add(polyline);
       }
     }
-    polygonList.Add(polygon); // add last from the loop
 
     return polygonList;
   }
