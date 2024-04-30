@@ -11,7 +11,7 @@
     <cefSharp:ChromiumWebBrowser
       Name="Browser"
       Grid.Row="0"
-      Address="https://deploy-preview-2076--boisterous-douhua-e3cefb.netlify.app/" />
+      Address="https://boisterous-douhua-e3cefb.netlify.app/" />
   </Grid>
 </Page>
 

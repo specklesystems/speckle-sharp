@@ -122,7 +122,7 @@ internal class RevitPlugin : IRevitPlugin
         );
       }
 
-      _cefSharpPanel.Browser.Load("https://deploy-preview-2076--boisterous-douhua-e3cefb.netlify.app/");
+      _cefSharpPanel.Browser.Load("https://boisterous-douhua-e3cefb.netlify.app/");
 
       // POC: not sure where this comes from
 #if REVIT2020
