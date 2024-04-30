@@ -193,19 +193,19 @@ public static class BaseExtensions
     return speckleObject.TryGetDisplayValue() != null;
   }
 
-  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj)
+  public static IReadOnlyList<T>? TryGetDisplayValue<T>(this Base obj)
     where T : Base
   {
     var rawDisplayValue = obj["displayValue"] ?? obj["@displayValue"];
     return rawDisplayValue switch
     {
       T b => new List<T> { b },
-      IEnumerable enumerable => enumerable.OfType<T>(),
+      IReadOnlyList<T> list => list,
       _ => null
     };
   }
 
-  public static IEnumerable<Base>? TryGetDisplayValue(this Base obj)
+  public static IReadOnlyList<Base>? TryGetDisplayValue(this Base obj)
   {
     return TryGetDisplayValue<Base>(obj);
   }

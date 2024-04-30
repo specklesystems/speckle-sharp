@@ -1,16 +1,15 @@
 ﻿using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
-namespace Speckle.Converters.Rhino7.ToHost;
+namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
-public class RhinoConverterToHost : ISpeckleConverterToHost
+public class ToHostConverterWithFallback : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
 
-  public RhinoConverterToHost(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public ToHostConverterWithFallback(IFactory<string, ISpeckleObjectToHostConversion> toHost)
   {
     _toHost = toHost;
   }
@@ -37,10 +36,10 @@ public class RhinoConverterToHost : ISpeckleConverterToHost
     throw new NotSupportedException($"No conversion found for {typeName}");
   }
 
-  private object FallbackToDisplayValue(IEnumerable<Base> displayValue)
+  private object FallbackToDisplayValue(IReadOnlyList<Base> displayValue)
   {
     // Create a temp Displayable object that handles the displayValue.
-    var tempDisplayableObject = new DisplayableObject(displayValue.ToList());
+    var tempDisplayableObject = new DisplayableObject(displayValue);
 
     var displayableObjectConverter = _toHost.ResolveInstance(nameof(DisplayableObject));
 
