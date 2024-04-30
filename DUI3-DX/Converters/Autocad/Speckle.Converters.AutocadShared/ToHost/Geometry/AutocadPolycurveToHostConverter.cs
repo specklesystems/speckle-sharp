@@ -1,4 +1,3 @@
-using Objects.Geometry.Autocad;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -27,30 +26,24 @@ public class AutocadPolycurveToHostConverter : ISpeckleObjectToHostConversion
   {
     SOG.Autocad.AutocadPolycurve polycurve = (SOG.Autocad.AutocadPolycurve)target;
 
-    if (polycurve.polyType == AutocadPolyType.Light)
+    switch (polycurve.polyType)
     {
-      return _polylineConverter.RawConvert(polycurve);
-    }
-    else if (
-      polycurve.polyType == AutocadPolyType.Simple2d
-      || polycurve.polyType == AutocadPolyType.FitCurve2d
-      || polycurve.polyType == AutocadPolyType.CubicSpline2d
-      || polycurve.polyType == AutocadPolyType.QuadSpline2d
-    )
-    {
-      return _polyline2dConverter.RawConvert(polycurve);
-    }
-    else if (
-      polycurve.polyType == AutocadPolyType.Simple3d
-      || polycurve.polyType == AutocadPolyType.CubicSpline3d
-      || polycurve.polyType == AutocadPolyType.QuadSpline3d
-    )
-    {
-      return _polyline3dConverter.RawConvert(polycurve);
-    }
-    else
-    {
-      throw new SpeckleConversionException("Unknown poly type for AutocadPolycurve");
+      case SOG.Autocad.AutocadPolyType.Light:
+        return _polylineConverter.RawConvert(polycurve);
+
+      case SOG.Autocad.AutocadPolyType.Simple2d:
+      case SOG.Autocad.AutocadPolyType.FitCurve2d:
+      case SOG.Autocad.AutocadPolyType.CubicSpline2d:
+      case SOG.Autocad.AutocadPolyType.QuadSpline2d:
+        return _polyline2dConverter.RawConvert(polycurve);
+
+      case SOG.Autocad.AutocadPolyType.Simple3d:
+      case SOG.Autocad.AutocadPolyType.CubicSpline3d:
+      case SOG.Autocad.AutocadPolyType.QuadSpline3d:
+        return _polyline3dConverter.RawConvert(polycurve);
+
+      default:
+        throw new SpeckleConversionException("Unknown poly type for AutocadPolycurve");
     }
   }
 }

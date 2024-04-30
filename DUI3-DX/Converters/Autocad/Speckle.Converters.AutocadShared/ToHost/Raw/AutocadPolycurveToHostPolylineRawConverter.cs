@@ -27,7 +27,13 @@ public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Aut
       double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
       List<AG.Point2d> points2d = target.value.ConvertToPoint2d(f);
 
-      ADB.Polyline polyline = new() { Normal = _vectorConverter.RawConvert(normal), Elevation = elevation * f };
+      ADB.Polyline polyline =
+        new()
+        {
+          Normal = _vectorConverter.RawConvert(normal),
+          Elevation = elevation * f,
+          Closed = target.closed
+        };
 
       for (int i = 0; i < points2d.Count; i++)
       {

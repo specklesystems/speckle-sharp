@@ -9,11 +9,11 @@ namespace Speckle.Converters.Autocad.Geometry;
 
 /// <summary>
 /// The <see cref="ADB.Polyline2d"/> class converter. Converts to <see cref="SOG.Autocad.AutocadPolycurve"/>.
-/// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will be converted as <see cref="ADB.Polyline"/>.
 /// </summary>
 /// <remarks>
 /// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.SimplePoly"/> will have only <see cref="SOG.Line"/>s and <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
-/// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.FitCurvePoly"/>, <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.FitCurvePoly"/> will have only <see cref="SOG.Arc"/>s in <see cref="SOG.Polycurve.segments"/>.
+/// <see cref="ADB.Polyline2d"/> of type <see cref="ADB.Poly2dType.CubicSplinePoly"/> and <see cref="ADB.Poly2dType.QuadSplinePoly"/> will have only one <see cref="SOG.Curve"/> in <see cref="SOG.Polycurve.segments"/>.
 /// The IHostObjectToSpeckleConversion inheritance should only expect database-resident <see cref="ADB.Polyline2d"/> objects. IRawConversion inheritance can expect non database-resident objects, when generated from other converters.
 /// </remarks>
 [NameAndRankValue(nameof(ADB.Polyline2d), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
@@ -50,31 +50,27 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
 
   public SOG.Autocad.AutocadPolycurve RawConvert(ADB.Polyline2d target)
   {
-    // if this is a simple polyline2d, convert it is a lightweight polyline
-    if (target.PolyType is ADB.Poly2dType.SimplePoly)
-    {
-      using (ADB.Polyline poly = new())
-      {
-        target.UpgradeOpen();
-        poly.ConvertFrom(target, false);
-        return _polylineConverter.RawConvert(poly);
-      }
-    }
-
     // get the poly type
     var polyType = SOG.Autocad.AutocadPolyType.Unknown;
+    bool isSpline = false;
     switch (target.PolyType)
     {
+      case ADB.Poly2dType.SimplePoly:
+        polyType = SOG.Autocad.AutocadPolyType.Simple2d;
+        break;
       case ADB.Poly2dType.FitCurvePoly:
         polyType = SOG.Autocad.AutocadPolyType.FitCurve2d;
         break;
       case ADB.Poly2dType.CubicSplinePoly:
         polyType = SOG.Autocad.AutocadPolyType.CubicSpline2d;
+        isSpline = true;
         break;
       case ADB.Poly2dType.QuadSplinePoly:
         polyType = SOG.Autocad.AutocadPolyType.QuadSpline2d;
+        isSpline = true;
         break;
     }
+
     // get all vertex data
     List<double> value = new();
     List<double> bulges = new();
@@ -84,6 +80,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
         ADB.OpenMode.ForRead,
         _contextStack.Current.Document.TransactionManager.TopTransaction
       )
+      .Where(e => e.VertexType != ADB.Vertex2dType.CurveFitVertex && e.VertexType != ADB.Vertex2dType.SplineFitVertex) // Do not collect fit vertex points, they are not used for creation
       .ToList();
 
     for (int i = 0; i < vertices.Count; i++)
@@ -93,37 +90,66 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       // get vertex value in the Global Coordinate System (GCS).
       value.AddRange(vertex.Position.ToArray());
 
-      // get the bulge and tangent, and 3d point for displayvalue
+      // get the bulge and tangent
       bulges.Add(vertex.Bulge);
       tangents.Add(vertex.Tangent);
     }
 
-    // get the spline curve segment
-    // TODO: need to confirm that this retrieves the correct spline. We may need to construct the spline curve manually from vertex enumeration
-    SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
-    // POC: retrieve spline display value here for database-resident polylines by exploding and retrieving segment endpoints
-    if (target.Database is not null)
+    // explode the polyline, making sure segment directions are oriented correctly
+    // exploded segments will be the polyecurve segments for non-spline poly2ds, and the displayvalue for spline poly2ds
+    List<Objects.ICurve> segments = new();
+    List<double> segmentValues = new();
+    ADB.DBObjectCollection exploded = new();
+    target.Explode(exploded);
+
+    double[] previousPoint = value.Take(3).ToArray();
+    for (int i = 0; i < exploded.Count; i++)
     {
-      List<double> segmentValues = new();
-      ADB.DBObjectCollection exploded = new();
-      target.Explode(exploded);
-      for (int i = 0; i < exploded.Count; i++)
+      if (exploded[i] is ADB.Curve segment)
       {
-        if (exploded[i] is ADB.Curve curve)
+        // for splines, just store point values for display value creation
+        if (isSpline)
         {
-          segmentValues.AddRange(curve.StartPoint.ToArray());
+          segmentValues.AddRange(segment.StartPoint.ToArray());
           if (i == exploded.Count - 1)
           {
-            segmentValues.AddRange(curve.EndPoint.ToArray());
+            segmentValues.AddRange(segment.EndPoint.ToArray());
+          }
+        }
+        // for non-splines, first determine if this segment needs to be reversed
+        // (exploded polyline segments might be in different directions)
+        else
+        {
+          if (!previousPoint.SequenceEqual(segment.StartPoint.ToArray()))
+          {
+            segment.ReverseCurve();
+          }
+
+          previousPoint = segment.EndPoint.ToArray();
+          switch (segment)
+          {
+            case ADB.Arc arc:
+              segments.Add(_arcConverter.RawConvert(arc));
+              break;
+            case ADB.Line line:
+              segments.Add(_lineConverter.RawConvert(line));
+              break;
           }
         }
       }
+    }
 
+    // for splines, convert the spline curve and display value and add to the segments list and
+    if (isSpline)
+    {
+      SOG.Curve spline = _splineConverter.RawConvert(target.Spline);
       SOG.Polyline displayValue = segmentValues.ConvertToSpecklePolyline(_contextStack.Current.SpeckleUnits);
       if (displayValue != null)
       {
         spline.displayValue = displayValue;
       }
+
+      segments.Add(spline);
     }
 
     SOG.Vector normal = _vectorConverter.RawConvert(target.Normal);
@@ -131,7 +157,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
     SOG.Autocad.AutocadPolycurve polycurve =
       new()
       {
-        segments = new List<Objects.ICurve>() { spline },
+        segments = segments,
         value = value,
         bulges = bulges,
         tangents = tangents,
@@ -144,6 +170,7 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
         bbox = bbox,
         units = _contextStack.Current.SpeckleUnits
       };
+
     return polycurve;
   }
 }
