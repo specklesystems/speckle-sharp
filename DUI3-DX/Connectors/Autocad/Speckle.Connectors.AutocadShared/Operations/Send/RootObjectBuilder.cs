@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.Common;
@@ -11,12 +10,12 @@ namespace Speckle.Connectors.Autocad.Operations.Send;
 
 public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applicationId)>
 {
-  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly ISpeckleConverterToSpeckle _converter;
   private readonly string[] _documentPathSeparator = { "\\" };
 
-  public RootObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory)
+  public RootObjectBuilder(ISpeckleConverterToSpeckle converter)
   {
-    _unitOfWorkFactory = unitOfWorkFactory;
+    _converter = converter;
   }
 
   public Base Build(
@@ -26,11 +25,6 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
     CancellationToken ct = default
   )
   {
-    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
-    // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToSpeckle>();
-    var converter = uow.Service;
-
     Collection modelWithLayers =
       new()
       {
@@ -64,7 +58,7 @@ public class RootObjectBuilder : IRootObjectBuilder<(DBObject obj, string applic
         }
         else
         {
-          converted = converter.Convert(dbObject);
+          converted = _converter.Convert(dbObject);
 
           if (converted == null)
           {
