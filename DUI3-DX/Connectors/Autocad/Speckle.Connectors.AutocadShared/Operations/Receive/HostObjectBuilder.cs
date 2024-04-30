@@ -7,6 +7,7 @@ using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Connectors.Utils.Extensions;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
@@ -94,9 +95,7 @@ public class HostObjectBuilder : IHostObjectBuilder
 
   private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
   {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] path = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
-
-    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
+    var path = context.GetCurrentObjectPath();
+    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
   }
 }

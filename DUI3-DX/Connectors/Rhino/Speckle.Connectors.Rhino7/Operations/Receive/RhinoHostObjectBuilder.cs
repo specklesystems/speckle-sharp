@@ -6,6 +6,7 @@ using Rhino;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Connectors.Utils.Builders;
+using Speckle.Connectors.Utils.Extensions;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -49,7 +50,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       .CreateTraversalFunc()
       .Traverse(rootObject)
       .Where(obj => obj.Current is not Collection)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current));
+      .Select(ctx => (ctx.GetCurrentObjectPath(), ctx.Current));
 
     var convertedIds = BakeObjects(
       newTraversalObjectsToConvert, // POC: Both traversal IEnumerables can be swapped here to see the different behaviour in Rhino
@@ -204,12 +205,5 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       previousLayer = currentDocument.Layers.FindIndex(index); // note we need to get the correct id out, hence why we're double calling this
     }
     return previousLayer.Index;
-  }
-
-  private string[] GetLayerPath(TraversalContext context)
-  {
-    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
-    string[] reverseOrderPath = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
-    return reverseOrderPath.Reverse().ToArray();
   }
 }
