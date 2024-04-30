@@ -1,16 +1,20 @@
-﻿using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Objects.Other;
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
-namespace Speckle.Converters.Rhino7.ToHost;
+namespace Speckle.Converters.Common.Converters;
 
-public class RhinoConverterToHost : ISpeckleConverterToHost
+public class DefaultToHostConverter : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
 
-  public RhinoConverterToHost(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public DefaultToHostConverter(IFactory<string, ISpeckleObjectToHostConversion> toHost)
   {
     _toHost = toHost;
   }
@@ -47,6 +51,7 @@ public class RhinoConverterToHost : ISpeckleConverterToHost
     // It is not guaranteed that a fallback converter has been registered in all connectors
     if (displayableObjectConverter == null)
     {
+      // POC: Do we want this to be a very specific exception so it can be handled separately?
       throw new NotSupportedException($"No converter for fallback displayable objects was found.");
     }
 

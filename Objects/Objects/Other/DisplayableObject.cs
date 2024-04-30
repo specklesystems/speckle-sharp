@@ -1,7 +1,10 @@
-﻿using Objects;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Objects.Geometry;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.Rhino7.ToHost;
+namespace Objects.Other;
 
 // POC: This object was created with the purpose of defining a specific subtype of base type the fallback conversion.
 // This will never be serialised and is just used to provide a type to register as the fallback conversion.
@@ -12,7 +15,7 @@ public class DisplayableObject : Base, IDisplayValue<List<Base>>
 {
   public DisplayableObject(IReadOnlyList<Base> displayValue)
   {
-    var hasInvalidGeometries = displayValue.Any(b => b is not (SOG.Line or SOG.Polyline or SOG.Mesh));
+    var hasInvalidGeometries = displayValue.Any(b => b is not (Line or Polyline or Mesh));
 
     if (hasInvalidGeometries)
     {
