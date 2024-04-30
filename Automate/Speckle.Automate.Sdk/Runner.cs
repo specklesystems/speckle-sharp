@@ -150,7 +150,6 @@ public static class AutomationRunner
 
 public class SpeckleSecretProvider : JSchemaGenerationProvider
 {
-
   public override JSchema GetSchema(JSchemaTypeGenerationContext context)
   {
     var attributes = context.MemberProperty?.AttributeProvider?.GetAttributes(false) ?? new List<Attribute>();
