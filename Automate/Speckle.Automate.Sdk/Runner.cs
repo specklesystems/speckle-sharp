@@ -148,6 +148,9 @@ public static class AutomationRunner
   }
 }
 
+// `GetSchema` returning `null` indicates that the given type should not have a customised schema
+#pragma warning disable CS8603
+
 public class SpeckleSecretProvider : JSchemaGenerationProvider
 {
   public override JSchema GetSchema(JSchemaTypeGenerationContext context)
