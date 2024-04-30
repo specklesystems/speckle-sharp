@@ -52,7 +52,7 @@ public class AutofacAutocadModule : Module
     builder.RegisterType<SendOperation<(DBObject obj, string applicationId)>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().AsSelf().SingleInstance();
     builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
-    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance();
+    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance().AutoActivate(); // Auto activation makes SynchronizationContext available right after building. Otherwise we were missing it in UoWs.
 
     // Object Builders
     builder.RegisterType<HostObjectBuilder>().As<IHostObjectBuilder>().InstancePerDependency();
