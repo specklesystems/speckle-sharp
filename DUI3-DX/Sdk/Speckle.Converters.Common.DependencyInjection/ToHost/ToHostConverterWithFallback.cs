@@ -5,42 +5,6 @@ using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
-public sealed class ToHostConverterWithoutFallback : ISpeckleConverterToHost
-{
-  private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
-
-  public ToHostConverterWithoutFallback(IFactory<string, ISpeckleObjectToHostConversion> toHost)
-  {
-    _toHost = toHost;
-  }
-
-  public object Convert(Base target)
-  {
-    if (TryConvert(target, out object? result))
-    {
-      return result!;
-    }
-    throw new NotSupportedException($"No conversion found for {target.GetType()}");
-  }
-
-  internal bool TryConvert(Base target, out object? result)
-  {
-    var typeName = target.GetType().Name;
-
-    // Direct conversion if a converter is found
-    var objectConverter = _toHost.ResolveInstance(typeName);
-    if (objectConverter != null)
-    {
-      result = objectConverter.Convert(target);
-      return true;
-    }
-
-    result = null;
-    return false;
-  }
-}
-
-//TODO: xml docs
 public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
@@ -52,6 +16,20 @@ public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
     _baseConverter = new ToHostConverterWithoutFallback(toHost);
   }
 
+  /// <summary>
+  /// Converts a <see cref="Base"/> instance to a host object.
+  /// </summary>
+  /// <param name="target">The <see cref="Base"/> instance to convert.</param>
+  /// <returns>The converted host object.
+  /// Fallbacks to display value if a direct conversion is not possible.</returns>
+  /// <remarks>
+  /// The conversion is done in the following order of preference:
+  /// 1. Direct conversion using the <see cref="Speckle.Converters.Common.DependencyInjection.ToHost.ToHostConverterWithoutFallback.TryConvert(Base, out object?)"/> method.
+  /// 2. Fallback to display value using the <see cref="Speckle.Core.Models.Extensions.BaseExtensions.TryGetDisplayValue{T}"/> method, if a direct conversion is not possible.
+  ///
+  /// If the direct conversion is not available and there is no displayValue, a <see cref="System.NotSupportedException"/> is thrown.
+  /// </remarks>
+  /// <exception cref="System.NotSupportedException">Thrown when no conversion is found for <paramref name="target"/>.</exception>
   public object Convert(Base target)
   {
     var typeName = target.GetType().Name;
