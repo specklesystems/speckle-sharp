@@ -37,7 +37,15 @@ public class ParameterValueExtractor
     };
   }
 
-  public double? GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
+  public double GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
+  {
+    return GetValueAsDoubleOrNull(element, builtInParameter)
+      ?? throw new SpeckleConversionException(
+        $"Received unexpected null value from builtInParameter {builtInParameter}"
+      );
+  }
+
+  public double? GetValueAsDoubleOrNull(Element element, BuiltInParameter builtInParameter)
   {
     return GetValueGeneric<double?>(
       element,

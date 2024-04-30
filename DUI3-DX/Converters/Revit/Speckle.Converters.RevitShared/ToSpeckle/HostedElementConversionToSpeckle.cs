@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -20,6 +21,22 @@ public class HostedElementConversionToSpeckle
   {
     _convertedObjectsCache = convertedObjectsCache;
     _converter = converter;
+  }
+
+  public void AssignHostedElements(DB.Element element, Base @base)
+  {
+    List<Base> hostedObjects = GetHostedElementsConverted(element);
+    if (hostedObjects.Count > 0)
+    {
+      if (@base.GetDetachedProp("elements") is List<Base> elements)
+      {
+        elements.AddRange(hostedObjects);
+      }
+      else
+      {
+        @base.SetDetachedProp("elements", hostedObjects);
+      }
+    }
   }
 
   public List<Base> GetHostedElementsConverted(Element host)
