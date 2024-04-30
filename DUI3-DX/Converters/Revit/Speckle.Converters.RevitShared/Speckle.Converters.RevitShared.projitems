@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisplayValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BeamConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\BoundarySegmentConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ColumnConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\LineConversionToSpeckle.cs" />
@@ -32,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoomConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategories.cs" />
