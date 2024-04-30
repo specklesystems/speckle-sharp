@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:cefSharp="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+      xmlns:local="clr-namespace:Speckle.Connectors.DUI;assembly=Speckle.Connectors.DUI"
 
       mc:Ignorable="d"
       Title="Panel" Height="450" Width="800">
@@ -11,7 +12,7 @@
     <cefSharp:ChromiumWebBrowser
       Name="Browser"
       Grid.Row="0"
-      Address="https://boisterous-douhua-e3cefb.netlify.app/" />
+      Address="{x:Static local:Url.NetlifyString}" />
   </Grid>
 </Page>
 

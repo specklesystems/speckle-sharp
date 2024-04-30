@@ -122,7 +122,9 @@ internal class RevitPlugin : IRevitPlugin
         );
       }
 
-      _cefSharpPanel.Browser.Load("https://boisterous-douhua-e3cefb.netlify.app/");
+      // POC: Below line seems unneccesary but not removing just in case we did it like this? Maybe check it later
+      //  with some other revit connectors again since CefSharp version is different
+      // _cefSharpPanel.Browser.Load("https://boisterous-douhua-e3cefb.netlify.app/");
 
       // POC: not sure where this comes from
 #if REVIT2020
