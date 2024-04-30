@@ -1,8 +1,10 @@
 using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json.Schema.Generation;
 using Newtonsoft.Json.Serialization;
+using Speckle.Automate.Sdk.DataAnnotations;
 using Speckle.Automate.Sdk.Schema;
 using Speckle.Core.Logging;
 
@@ -131,6 +133,7 @@ public static class AutomationRunner
       (schemaFilePath) =>
       {
         JSchemaGenerator generator = new() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+        generator.GenerationProviders.Add(new SpeckleSecretProvider());
         JSchema schema = generator.Generate(typeof(TInput));
         schema.ToString(global::Newtonsoft.Json.Schema.SchemaVersion.Draft2019_09);
         File.WriteAllText(schemaFilePath, schema.ToString());
@@ -144,3 +147,31 @@ public static class AutomationRunner
     return returnCode;
   }
 }
+
+public class SpeckleSecretProvider : JSchemaGenerationProvider
+{
+
+  public override JSchema GetSchema(JSchemaTypeGenerationContext context)
+  {
+    var attributes = context.MemberProperty?.AttributeProvider?.GetAttributes(false) ?? new List<Attribute>();
+    var isSecretString = attributes.Any(att => att is SecretAttribute);
+
+    if (isSecretString)
+    {
+      return CreateSchemaWithWriteOnly(context.ObjectType, context.Required);
+    }
+
+    return null;
+  }
+
+  private JSchema CreateSchemaWithWriteOnly(Type type, Required required)
+  {
+    JSchemaGenerator generator = new();
+    JSchema schema = generator.Generate(type, required != Required.Always);
+
+    schema.WriteOnly = true;
+
+    return schema;
+  }
+}
+
