@@ -7,7 +7,7 @@ namespace Objects.Geometry.Autocad;
 /// A curve that is comprised of line, arc and/or curve segments, representing the Autocad Polyline, Polyline2d, and Polyline3d classes.
 /// </summary>
 /// <remarks>
-/// <see cref="AutocadPolyType.Light"/> will have only <see cref="Line"/>s and <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
+/// <see cref="AutocadPolyType.Light"/> and <see cref="AutocadPolyType.Simple2d"/> types will have only <see cref="Line"/>s and <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.Simple3d"/> type will have only <see cref="Line"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.FitCurve2d"/> type will only have <see cref="Arc"/>s in <see cref="Polycurve.segments"/>.
 /// <see cref="AutocadPolyType.CubicSpline2d"/>, <see cref="AutocadPolyType.CubicSpline3d"/>, <see cref="AutocadPolyType.QuadSpline2d"/>, and <see cref="AutocadPolyType.QuadSpline3d"/> types will have only a single <see cref="Curve"/>s in <see cref="Polycurve.segments"/>.
@@ -23,7 +23,7 @@ public class AutocadPolycurve : Polycurve
   /// Gets or sets the raw coordinates of the vertices.
   /// </summary>
   /// <remarks>
-  /// For <see cref="AutocadPolyType.Light"/> Polylines, these are xy coordinates in the Object Coordinate System (OCS) of the <see cref="plane"/>.
+  /// For <see cref="AutocadPolyType.Light"/> Polylines, these are xy coordinates in the Object Coordinate System (OCS)/>.
   /// For Polyline2d and Polyline3d types, these are xyz coordinates in the Global Coordinate System. fml.
   /// </remarks>
   [DetachProperty, Chunkable(31250)]

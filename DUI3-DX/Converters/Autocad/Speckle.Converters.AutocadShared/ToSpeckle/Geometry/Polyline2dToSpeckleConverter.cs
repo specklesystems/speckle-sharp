@@ -95,14 +95,14 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
       tangents.Add(vertex.Tangent);
     }
 
-    // explode the polyline, making sure segment directions are oriented correctly
+    // explode the polyline
     // exploded segments will be the polyecurve segments for non-spline poly2ds, and the displayvalue for spline poly2ds
+    // NOTE: exploded segments may not be in order or in the correct direction
     List<Objects.ICurve> segments = new();
     List<double> segmentValues = new();
     ADB.DBObjectCollection exploded = new();
     target.Explode(exploded);
 
-    double[] previousPoint = value.Take(3).ToArray();
     for (int i = 0; i < exploded.Count; i++)
     {
       if (exploded[i] is ADB.Curve segment)
@@ -116,16 +116,9 @@ public class Polyline2dToSpeckleConverter : IHostObjectToSpeckleConversion
             segmentValues.AddRange(segment.EndPoint.ToArray());
           }
         }
-        // for non-splines, first determine if this segment needs to be reversed
-        // (exploded polyline segments might be in different directions)
+        // for non-splines, convert the curve and add to segments list
         else
         {
-          if (!previousPoint.SequenceEqual(segment.StartPoint.ToArray()))
-          {
-            segment.ReverseCurve();
-          }
-
-          previousPoint = segment.EndPoint.ToArray();
           switch (segment)
           {
             case ADB.Arc arc:
