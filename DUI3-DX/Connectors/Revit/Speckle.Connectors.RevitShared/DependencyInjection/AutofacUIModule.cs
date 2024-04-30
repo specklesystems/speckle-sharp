@@ -7,16 +7,20 @@ using Serilog;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.DUI.Utils;
 using Speckle.Connectors.Revit.Bindings;
 using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.Revit.Plugin;
+using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Serialization;
+using IRootObjectSender = Speckle.Connectors.Revit.Operations.Send.IRootObjectSender;
+using RootObjectSender = Speckle.Connectors.Revit.Operations.Send.RootObjectSender;
 
 namespace Speckle.Connectors.Revit.DependencyInjection;
 
@@ -55,6 +59,10 @@ public class AutofacUIModule : Module
     builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
+    // Storage Schema
+    builder.RegisterType<DocumentModelStorageSchema>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<IdStorageSchema>().AsSelf().InstancePerLifetimeScope();
+
     // POC: we need to review the scopes and create a document on what the policy is
     // and where the UoW should be
     // register UI bindings
@@ -64,10 +72,11 @@ public class AutofacUIModule : Module
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
     builder.RegisterType<SelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<SendBinding>().As<IBinding>().SingleInstance();
-    builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance();
+    // builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance(); // POC: commenting it out is enough to hide the Load button on UI - enable it later
     builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
     // send operation and dependencies
+    builder.RegisterType<SyncToUIThread>().As<ISyncToMainThread>().SingleInstance().AutoActivate();
     builder.RegisterType<SendOperation>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<SendSelection>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ToSpeckleConvertedObjectsCache>().AsSelf().InstancePerLifetimeScope();
@@ -76,7 +85,7 @@ public class AutofacUIModule : Module
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
 
     // register
-    builder.RegisterType<RevitDocumentStore>().SingleInstance();
+    builder.RegisterType<RevitDocumentStore>().As<DocumentModelStore>().SingleInstance().AsSelf();
 
     // POC: this can be injected in maybe a common place, perhaps a module in Speckle.Converters.Common.DependencyInjection
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
