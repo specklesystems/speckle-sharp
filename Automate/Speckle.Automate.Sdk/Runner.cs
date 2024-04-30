@@ -174,4 +174,3 @@ public class SpeckleSecretProvider : JSchemaGenerationProvider
     return schema;
   }
 }
-
