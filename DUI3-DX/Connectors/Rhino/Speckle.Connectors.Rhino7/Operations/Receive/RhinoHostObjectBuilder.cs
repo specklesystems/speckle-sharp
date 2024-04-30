@@ -18,14 +18,17 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly ISpeckleConverterToHost _toHostConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly GraphTraversal _traverseFunction;
 
   public RhinoHostObjectBuilder(
     ISpeckleConverterToHost toHostConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    GraphTraversal traverseFunction
   )
   {
     _toHostConverter = toHostConverter;
     _contextStack = contextStack;
+    _traverseFunction = traverseFunction;
   }
 
   public IEnumerable<string> Build(
@@ -39,24 +42,12 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     // POC: This is where the top level base-layer name is set. Could be abstracted or injected in the context?
     var baseLayerName = $"Project {projectName}: Model {modelName}";
 
-    // POC: This is the traversal from the original DUI3
-    var objectsToConvert = rootObject
-      .TraverseWithPath(obj => obj is not Collection)
-      .Where(obj => obj.Item2 is not Collection);
-
-    // POC: This is the new proposed traversal
-    var newTraversalObjectsToConvert = DefaultTraversal
-      .CreateTraversalFunc()
+    var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
       .Where(obj => obj.Current is not Collection)
       .Select(ctx => (GetLayerPath(ctx), ctx.Current));
 
-    var convertedIds = BakeObjects(
-      newTraversalObjectsToConvert, // POC: Both traversal IEnumerables can be swapped here to see the different behaviour in Rhino
-      baseLayerName,
-      onOperationProgressed,
-      cancellationToken
-    );
+    var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
     _contextStack.Current.Document.Views.Redraw();
 
