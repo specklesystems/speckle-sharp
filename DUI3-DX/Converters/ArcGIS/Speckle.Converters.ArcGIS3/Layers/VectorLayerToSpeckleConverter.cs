@@ -4,6 +4,7 @@ using Objects.GIS;
 using Speckle.Converters.Common;
 using ArcGIS.Desktop.Mapping;
 using ArcGIS.Core.Data;
+using ArcGIS.Core.Geometry;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
 
@@ -11,10 +12,15 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
+  private readonly IConversionContextStack<Map, Unit> _contextStack;
 
-  public VectorLayerToSpeckleConverter(IRawConversion<Row, GisFeature> gisFeatureConverter)
+  public VectorLayerToSpeckleConverter(
+    IRawConversion<Row, GisFeature> gisFeatureConverter,
+    IConversionContextStack<Map, Unit> contextStack
+  )
   {
     _gisFeatureConverter = gisFeatureConverter;
+    _contextStack = contextStack;
   }
 
   public Base Convert(object target)
@@ -22,35 +28,69 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
     return RawConvert((FeatureLayer)target);
   }
 
+  private string SpeckleGeometryType(string nativeGeometryType)
+  {
+    string spekleGeometryType = "None";
+    if (nativeGeometryType.ToLower().Contains("point"))
+    {
+      spekleGeometryType = "Point";
+    }
+    else if (nativeGeometryType.ToLower().Contains("polyline"))
+    {
+      spekleGeometryType = "Polyline";
+    }
+    else if (nativeGeometryType.ToLower().Contains("polygon"))
+    {
+      spekleGeometryType = "Polygon";
+    }
+    else if (nativeGeometryType.ToLower().Contains("multipatch"))
+    {
+      spekleGeometryType = "Multipatch";
+    }
+    return spekleGeometryType;
+  }
+
   public VectorLayer RawConvert(FeatureLayer target)
   {
-    var speckleLayer = new VectorLayer();
-    var spatialRef = target.GetSpatialReference();
+    VectorLayer speckleLayer = new();
+
+    // get document CRS (for writing geometry coords)
+    var spatialRef = _contextStack.Current.Document.SpatialReference;
     speckleLayer.crs = new CRS
     {
       wkt = spatialRef.Wkt,
       name = spatialRef.Name,
       units_native = spatialRef.Unit.ToString(),
     };
+
+    // other properties
     speckleLayer.name = target.Name;
+    speckleLayer.units = _contextStack.Current.SpeckleUnits;
 
     // get feature class fields
-    var attributes = new Base();
-    IReadOnlyList<Field> fields = target.GetTable().GetDefinition().GetFields();
-    foreach (Field field in fields)
+    var allLayerAttributes = new Base();
+    var dispayTable = target as IDisplayTable;
+    IReadOnlyList<FieldDescription> fieldDescriptions = dispayTable.GetFieldDescriptions();
+    foreach (FieldDescription field in fieldDescriptions)
     {
-      string name = field.Name;
-      // breaks on Raster Field type when assigning indiv. GisFeature values
-      if (name != "Shape" && field.FieldType.ToString() != "Raster")
+      if (field.IsVisible)
       {
-        attributes[name] = field.FieldType;
+        string name = field.Name;
+        if (name == "Shape")
+        {
+          continue;
+        }
+        allLayerAttributes[name] = (int)field.Type;
       }
     }
-    speckleLayer.attributes = attributes;
+    speckleLayer.attributes = allLayerAttributes;
     speckleLayer.nativeGeomType = target.ShapeType.ToString();
 
-    // search the rows
+    // get a simple geometry type
+    string spekleGeometryType = SpeckleGeometryType(speckleLayer.nativeGeomType);
+    speckleLayer.geomType = spekleGeometryType;
 
+    // search the rows
     // RowCursor is IDisposable but is not being correctly picked up by IDE warnings.
     // This means we need to be carefully adding using statements based on the API documentation coming from each method/class
 
@@ -61,12 +101,23 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         // Same IDisposable issue appears to happen on Row class too. Docs say it should always be disposed of manually by the caller.
         using (Row row = rowCursor.Current)
         {
-          var element = _gisFeatureConverter.RawConvert(row);
+          GisFeature element = _gisFeatureConverter.RawConvert(row);
+
+          // replace element "attributes", to remove those non-visible on Layer level
+          Base elementAttributes = new();
+          foreach (FieldDescription field in fieldDescriptions)
+          {
+            if (field.IsVisible)
+            {
+              elementAttributes[field.Name] = element.attributes[field.Name];
+            }
+          }
+          element.attributes = elementAttributes;
           speckleLayer.elements.Add(element);
         }
       }
-
-      return speckleLayer;
     }
+
+    return speckleLayer;
   }
 }

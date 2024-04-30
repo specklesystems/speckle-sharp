@@ -26,15 +26,17 @@ public class AutocadDocumentStore : DocumentModelStore
       // POC: this logic might go when we have document management in context
       // It is with the case of if binding created with already a document
       // This is valid when user opens acad file directly double clicking
-      _previousDocName = Application.DocumentManager.MdiActiveDocument.Name;
-      _saveToDocSubTracker.Add(Application.DocumentManager.MdiActiveDocument.Name);
-      OnDocumentChanged();
+      OnDocChangeInternal(Application.DocumentManager.MdiActiveDocument);
     }
 
+    // Whenever we switch document, it will be triggered for existing one
+    Application.DocumentManager.DocumentToBeDeactivated += (_, _) => WriteToFile();
     Application.DocumentManager.DocumentToBeDestroyed += (_, _) => WriteToFile();
     Application.DocumentManager.DocumentActivated += (_, e) => OnDocChangeInternal(e.Document);
-    Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated += (_, args) =>
-      OnDocChangeInternal((Document)args.DocumentWindow.Document);
+
+    // since below event triggered as secondary, it breaks the logic in OnDocChangeInternal function, leaving it here for now.
+    // Autodesk.AutoCAD.ApplicationServices.Application.DocumentWindowCollection.DocumentWindowActivated += (_, args) =>
+    //  OnDocChangeInternal((Document)args.DocumentWindow.Document);
   }
 
   /// <summary>
