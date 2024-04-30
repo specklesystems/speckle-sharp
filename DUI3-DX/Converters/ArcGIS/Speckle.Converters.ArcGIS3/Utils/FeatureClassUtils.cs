@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.Exceptions;
 using Objects.GIS;
@@ -81,6 +82,58 @@ public class FeatureClassUtils : IFeatureClassUtils
     return value;
   }
 
+  public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat)
+  {
+    foreach (FieldDescription field in fields)
+    {
+      // try to assign values to writeable fields
+      if (feat.attributes is not null)
+      {
+        string key = field.AliasName; // use Alias, as Name is simplified to alphanumeric
+        FieldType fieldType = field.FieldType;
+        var value = feat.attributes[key];
+        if (value is not null)
+        {
+          // POC: get all values in a correct format
+          try
+          {
+            rowBuffer[key] = FieldValueToNativeType(fieldType, value);
+          }
+          catch (GeodatabaseFeatureException)
+          {
+            //'The value type is incompatible.'
+            // log error!
+            rowBuffer[key] = null;
+          }
+          catch (GeodatabaseGeneralException)
+          {
+            // field doen't exist: ideally should not be happening
+          }
+          catch (GeodatabaseFieldException)
+          {
+            // non-editable Field, do nothing
+          }
+        }
+        else
+        {
+          rowBuffer[key] = null;
+        }
+      }
+    }
+    return rowBuffer;
+  }
+
+  public void AddFeaturesToTable(Table newFeatureClass, List<GisFeature> gisFeatures, List<FieldDescription> fields)
+  {
+    foreach (GisFeature feat in gisFeatures)
+    {
+      using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
+      {
+        newFeatureClass.CreateRow(AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
+      }
+    }
+  }
+
   public void AddFeaturesToFeatureClass(
     FeatureClass newFeatureClass,
     List<GisFeature> gisFeatures,
@@ -88,59 +141,23 @@ public class FeatureClassUtils : IFeatureClassUtils
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter
   )
   {
-    // newFeatureClass.DeleteRows(new QueryFilter());
     foreach (GisFeature feat in gisFeatures)
     {
       using (RowBuffer rowBuffer = newFeatureClass.CreateRowBuffer())
       {
-        // get attributes
-        foreach (FieldDescription field in fields)
-        {
-          // try to assign values to writeable fields
-          if (feat.attributes is not null)
-          {
-            string key = field.Name;
-            FieldType fieldType = field.FieldType;
-            var value = feat.attributes[key];
-            if (value is not null)
-            {
-              // POC: get all values in a correct format
-              try
-              {
-                rowBuffer[key] = FieldValueToNativeType(fieldType, value);
-              }
-              catch (GeodatabaseFeatureException)
-              {
-                //'The value type is incompatible.'
-                // log error!
-                rowBuffer[key] = null;
-              }
-              catch (GeodatabaseGeneralException)
-              {
-                // field doen't exist: ideally should not be happening
-              }
-              catch (GeodatabaseFieldException)
-              {
-                // non-editable Field, do nothing
-              }
-            }
-            else
-            {
-              rowBuffer[key] = null;
-            }
-          }
-        }
-
-        // get geometries
         if (feat.geometry != null)
         {
           List<Base> geometryToConvert = feat.geometry;
           ACG.Geometry nativeShape = gisGeometryConverter.RawConvert(geometryToConvert);
           rowBuffer[newFeatureClass.GetDefinition().GetShapeField()] = nativeShape;
         }
-        // POC: TODO add option for non-geometry features
-        newFeatureClass.CreateRow(rowBuffer).Dispose();
-        // break;
+        else
+        {
+          throw new SpeckleConversionException("No geomerty to write");
+        }
+
+        // get attributes
+        newFeatureClass.CreateRow(AssignFieldValuesToRow(rowBuffer, fields, feat)).Dispose();
       }
     }
   }
@@ -166,6 +183,30 @@ public class FeatureClassUtils : IFeatureClassUtils
     throw new GeodatabaseFieldException($"Field type '{fieldType}' is not valid");
   }
 
+  public string CleanCharacters(string key)
+  {
+    Regex rg = new(@"^[a-zA-Z0-9_]*$");
+    if (rg.IsMatch(key))
+    {
+      return key;
+    }
+
+    string result = "";
+    foreach (char c in key)
+    {
+      Regex rg_character = new(@"^[a-zA-Z0-9_]*$");
+      if (rg_character.IsMatch(c.ToString()))
+      {
+        result += c.ToString();
+      }
+      else
+      {
+        result += "_";
+      }
+    }
+    return key.Replace(" ", "_").Replace("%", "_").Replace("$", "_");
+  }
+
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target)
   {
     List<FieldDescription> fields = new();
@@ -180,9 +221,12 @@ public class FeatureClassUtils : IFeatureClassUtils
         {
           if (field.Value is not null)
           {
+            string key = field.Key;
             FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
-            fields.Add(new FieldDescription(field.Key, fieldType));
-            fieldAdded.Add(field.Key);
+
+            FieldDescription fiendDescription = new(CleanCharacters(key), fieldType) { AliasName = key };
+            fields.Add(fiendDescription);
+            fieldAdded.Add(key);
           }
           else
           {

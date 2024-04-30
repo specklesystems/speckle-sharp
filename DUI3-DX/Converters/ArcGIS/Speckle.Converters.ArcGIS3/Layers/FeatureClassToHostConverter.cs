@@ -52,7 +52,6 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
 
     // create Fields
     List<FieldDescription> fields = _featureClassUtils.GetFieldsFromSpeckleLayer(target);
-    List<string> fieldAdded = fields.Select(x => x.Name).ToList();
 
     // getting rid of forbidden symbols in the class name: adding a letter in the beginning
     // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm

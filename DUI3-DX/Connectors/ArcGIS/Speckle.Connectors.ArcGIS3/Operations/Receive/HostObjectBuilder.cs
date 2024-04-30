@@ -7,6 +7,8 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
+using ArcGIS.Desktop.Core.Geoprocessing;
+using ArcGIS.Desktop.Core;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
@@ -71,11 +73,27 @@ public class HostObjectBuilder : IHostObjectBuilder
             {
               objectIds.Add(obj.id);
               // POC: TODO: get map from contextStack instead
-              LayerFactory.Instance.CreateLayer(
-                new Uri($"{databasePath}\\{uri}"),
-                MapView.Active.Map,
-                layerName: ((Collection)obj).name
-              );
+              try
+              {
+                LayerFactory.Instance.CreateLayer(
+                  new Uri($"{databasePath}\\{uri}"),
+                  MapView.Active.Map,
+                  layerName: ((Collection)obj).name
+                );
+              }
+              catch (ArgumentException)
+              {
+                /*
+                // Create table
+                IReadOnlyList<string> createParams = Geoprocessing.MakeValueArray(new object[] { Project.Current.DefaultGeodatabasePath, categoryReportTableName, null, null });
+                IGPResult result = await Geoprocessing.ExecuteToolAsync("management.CreateTable", createParams);
+                if (result.IsFailed)
+                {
+                  MessageBox.Show("Unable to create category assignment table in project workspace", "Category Assignments");
+                  return;
+                }
+                */
+              }
             }
           }
           catch (ArgumentException)

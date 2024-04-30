@@ -13,13 +13,13 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<VectorLayer, string>
 {
   private readonly IRawConversion<VectorLayer, FeatureClass> _featureClassConverter;
-  private readonly IRawConversion<VectorLayer, StandaloneTable> _tableConverter;
+  private readonly IRawConversion<VectorLayer, Table> _tableConverter;
   private readonly IRawConversion<VectorLayer, LasDatasetLayer> _pointcloudLayerConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
 
   public VectorLayerToHostConverter(
     IRawConversion<VectorLayer, FeatureClass> featureClassConverter,
-    IRawConversion<VectorLayer, StandaloneTable> tableConverter,
+    IRawConversion<VectorLayer, Table> tableConverter,
     IRawConversion<VectorLayer, LasDatasetLayer> pointcloudLayerConverter,
     IFeatureClassUtils featureClassUtils
   )
@@ -35,18 +35,19 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
   public string RawConvert(VectorLayer target)
   {
     // check if Speckle VectorLayer should become a FeatureClass, StandaloneTable or PointcloudLayer
+    if (target.geomType == "Pointcloud") // table
+    {
+      return _pointcloudLayerConverter.RawConvert(target).Name;
+    }
+
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
     if (geomType != GeometryType.Unknown) // feature class
     {
       return _featureClassConverter.RawConvert(target).GetName();
     }
-    if (target.geomType == "None") // table
+    else // table
     {
-      return _tableConverter.RawConvert(target).Name;
-    }
-    if (target.geomType == "Pointcloud") // table
-    {
-      return _pointcloudLayerConverter.RawConvert(target).Name;
+      return _tableConverter.RawConvert(target).GetName();
     }
 
     throw new SpeckleConversionException($"Unknown geometry type for layer {target.name}");
