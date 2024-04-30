@@ -5,11 +5,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
+  
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="5.2.0" />
+      <PackageReference Include="Autofac" Version="5.2.0" PrivateAssets="All"/>
     </ItemGroup>
-
+  
     <ItemGroup>
       <ProjectReference Include="..\Speckle.Autofac\Speckle.Autofac.csproj" />
       <ProjectReference Include="..\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
