@@ -5,28 +5,46 @@ namespace Speckle.Converters.ArcGIS3.Geometry;
 
 public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch>
 {
+  private readonly IRawConversion<SOG.Point, ACG.MapPoint> _pointConverter;
   private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
 
-  public Polygon3dToHostConverter(IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter)
+  public Polygon3dToHostConverter(
+    IRawConversion<SOG.Point, ACG.MapPoint> pointConverter,
+    IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter
+  )
   {
+    _pointConverter = pointConverter;
     _polylineConverter = polylineConverter;
   }
 
   public ACG.Multipatch RawConvert(List<SGIS.GisPolygonGeometry3d> target)
   {
-    // TODO: implement multipatch receive
-    List<ACG.Polygon> polyList = new();
-    foreach (SGIS.GisPolygonGeometry poly in target)
+    ACG.MultipatchBuilderEx multipatchPart = new();
+    foreach (SGIS.GisPolygonGeometry3d part in target)
     {
-      // POC: add voids
-      ACG.Polyline boundary = _polylineConverter.RawConvert(poly.boundary);
-      polyList.Add(new ACG.PolygonBuilderEx(boundary).ToGeometry());
+      ACG.Patch newPatch = multipatchPart.MakePatch(ACG.PatchType.FirstRing);
+      List<SOG.Point> boundaryPts = part.boundary.GetPoints();
+      foreach (SOG.Point pt in boundaryPts)
+      {
+        newPatch.AddPoint(_pointConverter.RawConvert(pt));
+      }
+      multipatchPart.Patches.Add(newPatch);
+
+      foreach (SOG.Polyline loop in part.voids)
+      {
+        ACG.Patch newLoopPatch = multipatchPart.MakePatch(ACG.PatchType.Ring);
+        List<SOG.Point> loopPts = loop.GetPoints();
+        foreach (SOG.Point pt in loopPts)
+        {
+          newLoopPatch.AddPoint(_pointConverter.RawConvert(pt));
+        }
+        multipatchPart.Patches.Add(newLoopPatch);
+      }
     }
-    if (polyList.Count == 0)
+    if (multipatchPart.Patches.Count == 0)
     {
-      throw new SpeckleConversionException("Feature contains no geometry");
+      throw new SpeckleConversionException("Conversion was not successful");
     }
-    throw new SpeckleConversionException("Feature contains no geometry");
-    // return new ACG.PolygonBuilderEx(polyList, ACG.AttributeFlags.HasZ).ToGeometry();
+    return multipatchPart.ToGeometry();
   }
 }
