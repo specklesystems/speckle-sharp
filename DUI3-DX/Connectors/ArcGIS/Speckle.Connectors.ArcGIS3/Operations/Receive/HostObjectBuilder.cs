@@ -7,8 +7,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using ArcGIS.Desktop.Framework.Threading.Tasks;
 using Speckle.Converters.ArcGIS3.Utils;
-using ArcGIS.Desktop.Core.Geoprocessing;
-using ArcGIS.Desktop.Core;
 
 namespace Speckle.Connectors.ArcGIS.Operations.Receive;
 
