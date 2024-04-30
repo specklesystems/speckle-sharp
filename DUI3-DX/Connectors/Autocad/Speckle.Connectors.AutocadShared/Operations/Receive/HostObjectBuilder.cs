@@ -58,7 +58,8 @@ public class HostObjectBuilder : IHostObjectBuilder
 
         try
         {
-          string layerFullName = GetLayerPath(tc, baseLayerPrefix);
+          var path = tc.GetCurrentObjectPath();
+          var layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
 
           if (uniqueLayerNames.Add(layerFullName))
           {
@@ -91,11 +92,5 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
     }
     return handleValues;
-  }
-
-  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
-  {
-    var path = context.GetCurrentObjectPath();
-    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
   }
 }

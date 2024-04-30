@@ -19,14 +19,17 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 {
   private readonly ISpeckleConverterToHost _toHostConverter;
   private readonly IConversionContextStack<RhinoDoc, UnitSystem> _contextStack;
+  private readonly GraphTraversal _traversalFunction;
 
   public RhinoHostObjectBuilder(
     ISpeckleConverterToHost toHostConverter,
-    IConversionContextStack<RhinoDoc, UnitSystem> contextStack
+    IConversionContextStack<RhinoDoc, UnitSystem> contextStack,
+    GraphTraversal traversalFunction
   )
   {
     _toHostConverter = toHostConverter;
     _contextStack = contextStack;
+    _traversalFunction = traversalFunction;
   }
 
   public IEnumerable<string> Build(
@@ -46,8 +49,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       .Where(obj => obj.Item2 is not Collection);
 
     // POC: This is the new proposed traversal
-    var newTraversalObjectsToConvert = DefaultTraversal
-      .CreateTraversalFunc()
+    var newTraversalObjectsToConvert = _traversalFunction
       .Traverse(rootObject)
       .Where(obj => obj.Current is not Collection)
       .Select(ctx => (ctx.GetCurrentObjectPath(), ctx.Current));
