@@ -1,16 +1,27 @@
 using System;
+using System.Collections.Generic;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
+using System.Linq;
 using Autofac;
+using Speckle.Connectors.Utils.Reflection;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 using Speckle.Converters.RevitShared;
 
 namespace Speckle.Connectors.Revit.Plugin;
+
+internal class DLlVersion
+{
+  public string Name;
+  public string Version;
+  public List<DLlVersion> dependencyChains = new();
+  public bool skipped = false;
+}
 
 internal class RevitExternalApplication : IExternalApplication
 {
@@ -72,16 +83,22 @@ internal class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
+  static IEnumerable<DLlVersion> Walk(DLlVersion dllv)
+  {
+    var nodes = new Stack<DLlVersion>(new[] { dllv });
+    while (nodes.Any())
+    {
+      DLlVersion node = nodes.Pop();
+      yield return node;
+      foreach (var n in node.dependencyChains)
+        nodes.Push(n);
+    }
+  }
+
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    // POC: refactor the conversions to be simper, this method could be the basis for this
-    // tbe event can probably go
-    // IRawConversions should be separately injectable (and not Require an IHostObject... or NameAndRank attribute)
-    // Name and Rank can become ConversionRank or something and be optional (otherwise it is rank 0)
-    containerBuilder.RegisterTypesInAssemblyAsInterface(
-      typeof(RevitConverterToSpeckle).Assembly,
-      typeof(IRawConversion<,>)
-    );
+    // POC: need to settle on the mechanism and location as to where we should register these services
+    containerBuilder.RegisterRawConversions();
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }

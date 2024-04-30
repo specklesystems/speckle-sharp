@@ -15,6 +15,7 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 /// </summary>
 internal class RootObjectSender : IRootObjectSender
 {
+  // POC: unsure about this factory pattern - a little weakly typed (being a Func)
   private readonly Func<Account, string, ITransport> _transportFactory;
 
   public RootObjectSender(Func<Account, string, ITransport> transportFactory)

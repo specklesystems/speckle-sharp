@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Speckle.Converters.Common;
 using Speckle.Core.Models;
 using System.Threading;
@@ -7,6 +8,7 @@ using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Connectors.Revit.HostApp;
 using System.Linq;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
 
@@ -47,7 +49,15 @@ public class RootObjectBuilder
         continue;
       }
 
-      commitObject[obj.UniqueId] = _converter.Convert(obj);
+      // POC: temporary, the converter needs to be
+      try
+      {
+        commitObject[obj.UniqueId] = _converter.Convert(obj);
+      }
+      catch (Exception ex) when (!ex.IsFatal())
+      {
+        Debug.WriteLine($"Exception during conversion: {ex.Message}");
+      }
     }
 
     return commitObject;

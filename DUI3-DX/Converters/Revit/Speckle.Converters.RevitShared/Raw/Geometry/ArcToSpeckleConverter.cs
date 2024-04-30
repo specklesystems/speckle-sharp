@@ -6,7 +6,7 @@ using Speckle.Converters.RevitShared.Services;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
+public class ArcToSpeckleConverter : IRawConversion<DB.Arc, SOG.Arc>
 {
   private readonly IRevitConversionContextStack _contextStack;
   private readonly IRawConversion<DB.XYZ, SOG.Point> _xyzToPointConverter;
@@ -26,7 +26,7 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, ICurve>
     _scalingService = scalingService;
   }
 
-  public ICurve RawConvert(DB.Arc target)
+  public SOG.Arc RawConvert(DB.Arc target)
   {
     // see https://forums.autodesk.com/t5/revit-api-forum/how-to-retrieve-startangle-and-endangle-of-arc-object/td-p/7637128
     var arcPlane = DB.Plane.CreateByOriginAndBasis(target.Center, target.XDirection, target.YDirection);

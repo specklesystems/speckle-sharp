@@ -59,7 +59,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\WallConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ElementConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConverterToSpeckle.cs" />
   </ItemGroup>
 </Project>

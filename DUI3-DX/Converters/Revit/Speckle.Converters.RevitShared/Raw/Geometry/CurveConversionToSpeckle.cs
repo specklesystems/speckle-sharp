@@ -10,7 +10,7 @@ public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
   private readonly IRawConversion<DB.Arc, SOG.Arc> _arcConverter;
   private readonly IRawConversion<DB.Ellipse, SOG.Ellipse> _ellipseConverter;
   private readonly IRawConversion<DB.NurbSpline, SOG.Curve> _nurbsConverter;
-  private readonly IRawConversion<DB.HermiteSpline, SOG.Curve> _hermiteConverter;
+  private readonly IRawConversion<DB.HermiteSpline, SOG.Curve> _hermiteConverter; // POC: should this be ICurve?
 
   public CurveConversionToSpeckle(
     IRawConversion<DB.Line, SOG.Line> lineConverter,
