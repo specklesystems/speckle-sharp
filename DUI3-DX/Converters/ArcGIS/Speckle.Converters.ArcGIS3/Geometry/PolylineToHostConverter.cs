@@ -20,6 +20,6 @@ public class PolylineToHostConverter : IRawConversion<List<SOG.Polyline>, ACG.Po
       var points = poly.GetPoints().Select(x => _pointConverter.RawConvert(x));
       return new ACG.PolylineBuilderEx(points, ACG.AttributeFlags.HasZ).ToGeometry();
     }
-    throw new SpeckleConversionException("Feature contains no geometry");
+    throw new SpeckleConversionException("Conversion was not successful");
   }
 }

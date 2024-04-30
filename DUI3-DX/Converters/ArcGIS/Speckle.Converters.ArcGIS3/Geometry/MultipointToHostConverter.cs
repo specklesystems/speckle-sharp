@@ -21,7 +21,7 @@ public class MultipointToHostConverter : IRawConversion<List<SOG.Point>, ACG.Mul
     }
     if (pointList.Count == 0)
     {
-      throw new SpeckleConversionException("Feature contains no geometry");
+      throw new SpeckleConversionException("Conversion was not successful");
     }
     return new ACG.MultipointBuilderEx(pointList, ACG.AttributeFlags.HasZ).ToGeometry();
   }
