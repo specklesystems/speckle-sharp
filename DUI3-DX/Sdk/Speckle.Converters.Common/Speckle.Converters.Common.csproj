@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj"/>
     <ProjectReference Include="..\..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
 

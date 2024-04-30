@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Objects\Speckle.Objects.Common\Speckle.Objects.Common.csproj" />
-    <ProjectReference Include="..\..\..\Sdk\Speckle.Autofac\Speckle.Autofac.csproj" />
     <ProjectReference Include="..\..\..\Sdk\Speckle.Converters.Common\Speckle.Converters.Common.csproj" />
     <ProjectReference Include="..\Speckle.Converters.Revit2023\Speckle.Converters.Revit2023.csproj">
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="5.2.0"/>
   </ItemGroup>
 
 </Project>
