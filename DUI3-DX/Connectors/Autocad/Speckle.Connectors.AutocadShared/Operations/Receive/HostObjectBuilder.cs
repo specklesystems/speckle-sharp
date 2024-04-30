@@ -64,7 +64,15 @@ public class HostObjectBuilder : IHostObjectBuilder
             _autocadLayerManager.CreateLayerOrPurge(layerFullName);
           }
 
-          object converted = _converter.Convert(tc.Current);
+          //POC: this transaction used to be called in the converter, We've moved it here to unify converter implementation
+          //POC: Is this transaction 100% needed? we are already inside a transaction?
+          object converted;
+          using (var tr = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction())
+          {
+            converted = _converter.Convert(tc.Current);
+            tr.Commit();
+          }
+
           List<object> flattened = Utilities.FlattenToHostConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
