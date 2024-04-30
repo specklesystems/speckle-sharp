@@ -83,16 +83,11 @@ public class HostObjectBuilder : IHostObjectBuilder
               }
               catch (ArgumentException)
               {
-                /*
-                // Create table
-                IReadOnlyList<string> createParams = Geoprocessing.MakeValueArray(new object[] { Project.Current.DefaultGeodatabasePath, categoryReportTableName, null, null });
-                IGPResult result = await Geoprocessing.ExecuteToolAsync("management.CreateTable", createParams);
-                if (result.IsFailed)
-                {
-                  MessageBox.Show("Unable to create category assignment table in project workspace", "Category Assignments");
-                  return;
-                }
-                */
+                StandaloneTableFactory.Instance.CreateStandaloneTable(
+                  new Uri($"{databasePath}\\{uri}"),
+                  MapView.Active.Map,
+                  tableName: ((Collection)obj).name
+                );
               }
             }
           }
