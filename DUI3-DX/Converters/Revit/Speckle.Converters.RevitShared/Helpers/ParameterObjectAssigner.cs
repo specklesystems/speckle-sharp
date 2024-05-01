@@ -25,13 +25,15 @@ public sealed class ParameterObjectAssigner
   public void AssignParametersToBase(Element target, Base @base)
   {
     Dictionary<string, Parameter> instanceParameters = _parameterValueExtractor.GetAllRemainingParams(target);
-    var elementType = target.Document.GetElement(target.GetTypeId());
+    ElementId elementId = target.GetTypeId();
 
     Base paramBase = new();
     AssignSpeckleParamToBaseObject(instanceParameters, paramBase);
 
-    if (target is not Level) //ignore type props of levels..!
+    // POC: Some elements can have an invalid element type ID, I don't think we want to continue here.
+    if (elementId != ElementId.InvalidElementId && target is not Level) //ignore type props of levels..!
     {
+      var elementType = target.Document.GetElement(elementId);
       // I don't think we should be adding the type parameters to the object like this
       Dictionary<string, Parameter> typeParameters = _parameterValueExtractor.GetAllRemainingParams(elementType);
       AssignSpeckleParamToBaseObject(typeParameters, paramBase, true);

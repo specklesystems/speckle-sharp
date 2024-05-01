@@ -49,14 +49,13 @@ public class RootObjectBuilder
         continue;
       }
 
-      // POC: temporary, the converter needs to be
       try
       {
         commitObject[obj.UniqueId] = _converter.Convert(obj);
       }
-      catch (Exception ex) when (!ex.IsFatal())
+      catch (SpeckleConversionException ex)
       {
-        Debug.WriteLine($"Exception during conversion: {ex.Message}");
+        // POC: logging
       }
     }
 

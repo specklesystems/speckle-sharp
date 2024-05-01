@@ -27,7 +27,6 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
   private readonly CancellationManager _cancellationManager;
   private readonly IUnitOfWorkFactory _unitOfWorkFactory;
   private readonly AutocadSettings _autocadSettings;
-  private readonly SendOperation<(DBObject obj, string applicationId)> _sendOperation;
 
   /// <summary>
   /// Used internally to aggregate the changed objects' id.
@@ -46,14 +45,12 @@ public sealed class AutocadSendBinding : ISendBinding, ICancelable
     IEnumerable<ISendFilter> sendFilters,
     CancellationManager cancellationManager,
     AutocadSettings autocadSettings,
-    SendOperation<(DBObject obj, string applicationId)> sendOperation,
     IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     _store = store;
     _idleManager = idleManager;
     _unitOfWorkFactory = unitOfWorkFactory;
-    _sendOperation = sendOperation;
     _autocadSettings = autocadSettings;
     _cancellationManager = cancellationManager;
     _sendFilters = sendFilters.ToList();

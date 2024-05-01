@@ -1,11 +1,12 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Objects.GIS;
 using ArcGIS.Core.Data;
+using Speckle.Converters.ArcGIS3.Geometry;
+using Speckle.Converters.Common;
 
 namespace Speckle.Converters.ArcGIS3.Features;
 
-public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
+public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
 {
   private readonly IRawConversion<ACG.Geometry, IReadOnlyList<Base>> _geometryConverter;
 
@@ -14,29 +15,98 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, GisFeature>
     _geometryConverter = geometryConverter;
   }
 
-  public Base Convert(object target) => RawConvert((Row)target);
-
-  public GisFeature RawConvert(Row target)
+  private List<Base> GenerateFeatureDisplayValueList(List<Base> speckleShapes)
   {
-    var shape = (ACG.Geometry)target["Shape"];
-    var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
+    List<Base> displayVal = new();
+    foreach (var shp in speckleShapes)
+    {
+      if (shp is SGIS.GisPolygonGeometry polygon) // also will be valid for Polygon3d, as it inherits from Polygon
+      {
+        try
+        {
+          SOG.Mesh displayMesh = polygon.CreateDisplayMeshForPolygon();
+          displayVal.Add(displayMesh);
+        }
+        catch (SpeckleConversionException)
+        {
+          break;
+        }
+      }
+      else if (shp is SGIS.GisMultipatchGeometry multipatch)
+      {
+        try
+        {
+          SOG.Mesh displayMesh = multipatch.CreateDisplayMeshForMultipatch();
+          displayVal.Add(displayMesh);
+        }
+        catch (SpeckleConversionException)
+        {
+          break;
+        }
+      }
+    }
+    return displayVal;
+  }
 
+  public SGIS.GisFeature RawConvert(Row target)
+  {
     // get attributes
     var attributes = new Base();
+    bool hasGeometry = false;
     IReadOnlyList<Field> fields = target.GetFields();
-    int i = 0;
     foreach (Field field in fields)
     {
       string name = field.Name;
-
-      // breaks on Raster Field type
-      if (name != "Shape" && field.FieldType.ToString() != "Raster")
+      if (name != "Shape") // ignore the field with geometry itself
       {
-        var value = target.GetOriginalValue(i); // can be null
-        attributes[name] = value;
+        try
+        {
+          object? value = target[name];
+          attributes[name] = value;
+        }
+        catch (ArgumentException)
+        {
+          // TODO: log in the conversion errors list
+          attributes[name] = null;
+        }
       }
-      i++;
+      else
+      {
+        hasGeometry = true;
+      }
     }
-    return new GisFeature(speckleShapes, attributes);
+
+    // return GisFeatures that don't have geometry
+    if (!hasGeometry)
+    {
+      return new SGIS.GisFeature(attributes);
+    }
+    else
+    {
+      var shape = (ACG.Geometry)target["Shape"];
+      var speckleShapes = _geometryConverter.RawConvert(shape).ToList();
+
+      // if geometry is primitive
+      if (
+        speckleShapes.Count > 0
+        && speckleShapes[0] is not SGIS.GisPolygonGeometry
+        && speckleShapes[0] is not SGIS.GisMultipatchGeometry
+      )
+      {
+        return new SGIS.GisFeature(speckleShapes, attributes);
+      }
+      // if geometry is Polygon or Multipatch, add DisplayValue to the feature
+      else
+      {
+        List<Base> displayVal = GenerateFeatureDisplayValueList(speckleShapes);
+        // add display value ONLY if meshes were generates for all geometry parts
+        // otherwise those without displayValue will be lost both in Viewer and in fallback Receive conversions
+        if (speckleShapes.Count == displayVal.Count)
+        {
+          return new SGIS.GisFeature(speckleShapes, attributes, displayVal);
+        }
+        return new SGIS.GisFeature(speckleShapes, attributes);
+      }
+    }
   }
 }
