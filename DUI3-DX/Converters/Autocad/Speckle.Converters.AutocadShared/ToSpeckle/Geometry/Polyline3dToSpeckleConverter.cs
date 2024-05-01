@@ -63,7 +63,7 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
         ADB.OpenMode.ForRead,
         _contextStack.Current.Document.TransactionManager.TopTransaction
       )
-      .Where(e => e.VertexType != ADB.Vertex3dType.ControlVertex) // Do not collect control points
+      .Where(e => e.VertexType != ADB.Vertex3dType.FitVertex) // Do not collect fit vertex points, they are not used for creation
       .ToList();
 
     List<Objects.ICurve> segments = new();
@@ -90,7 +90,6 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
     }
 
     // get the spline curve segment if this is a spline polyline3d
-    // TODO: need to confirm that this retrieves the correct spline. We may need to construct the spline curve manually from vertex enumeration
     if (polyType is not SOG.Autocad.AutocadPolyType.Simple3d)
     {
       // add first 3 coordinate to last for display value polyline for spline
@@ -125,7 +124,6 @@ public class Polyline3dToSpeckleConverter : IHostObjectToSpeckleConversion
         polyType = polyType,
         closed = target.Closed,
         length = target.Length,
-        // area = target.Area, // POC: Polyline3d throws runtime error for get_Area() for sure
         bbox = bbox,
         units = _contextStack.Current.SpeckleUnits
       };

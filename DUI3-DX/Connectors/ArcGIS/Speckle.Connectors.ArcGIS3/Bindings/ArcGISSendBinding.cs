@@ -48,6 +48,7 @@ public sealed class ArcGISSendBinding : ISendBinding, ICancelable
 
   public List<ISendFilter> GetSendFilters() => _sendFilters;
 
+  // POC: delete this
   public List<CardSetting> GetSendSettings()
   {
     return new List<CardSetting>
