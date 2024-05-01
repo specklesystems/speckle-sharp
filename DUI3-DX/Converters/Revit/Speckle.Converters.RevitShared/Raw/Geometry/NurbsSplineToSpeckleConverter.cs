@@ -36,25 +36,21 @@ public class NurbsSplineToSpeckleConverter : IRawConversion<DB.NurbSpline, SOG.C
       points.AddRange(new List<double> { point.x, point.y, point.z });
     }
 
-    SOG.Curve speckleCurve =
-      new()
-      {
-        weights = target.Weights.Cast<double>().ToList(),
-        points = points,
-        knots = target.Knots.Cast<double>().ToList()
-      };
-    ;
-    speckleCurve.degree = target.Degree;
-    //speckleCurve.periodic = revitCurve.Period; // POC: already commented out, remove?
-    speckleCurve.rational = target.isRational;
-    speckleCurve.closed = _conversionHelper.IsCurveClosed(target);
-    speckleCurve.units = units;
-    speckleCurve.domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1));
-    speckleCurve.length = _scalingService.ScaleLength(target.Length);
-
     var coords = target.Tessellate().SelectMany(xyz => _xyzToPointConverter.RawConvert(xyz).ToList()).ToList();
-    speckleCurve.displayValue = new SOG.Polyline(coords, units);
 
-    return speckleCurve;
+    return new SOG.Curve()
+    {
+      weights = target.Weights.Cast<double>().ToList(),
+      points = points,
+      knots = target.Knots.Cast<double>().ToList(),
+      degree = target.Degree,
+      //speckleCurve.periodic = revitCurve.Period; // POC: already commented out, remove?
+      rational = target.isRational,
+      closed = _conversionHelper.IsCurveClosed(target),
+      units = units,
+      domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1)),
+      length = _scalingService.ScaleLength(target.Length),
+      displayValue = new SOG.Polyline(coords, units)
+    };
   }
 }

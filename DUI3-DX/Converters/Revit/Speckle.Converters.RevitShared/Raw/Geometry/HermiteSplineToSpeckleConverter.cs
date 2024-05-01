@@ -1,4 +1,3 @@
-using Objects;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;

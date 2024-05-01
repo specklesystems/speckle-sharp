@@ -1,5 +1,6 @@
-﻿using Speckle.Converters.RevitShared;
-using Speckle.Converters.RevitShared.Helpers;
+﻿using Speckle.Converters.RevitShared.Helpers;
+
+namespace Speckle.Converters.RevitShared;
 
 // POC: this could perhaps becomes some RevitDocumentService but also...
 // This reference point feature needs review. We could do with knowing whether this feature is widely used.
@@ -14,7 +15,7 @@ public class ReferencePointConverter : IReferencePointConverter
   private readonly RevitConversionSettings _revitSettings;
   private readonly IRevitConversionContextStack _contextStack;
 
-  private Dictionary<string, DB.Transform> _docTransforms = new();
+  private readonly Dictionary<string, DB.Transform> _docTransforms = new();
 
   public ReferencePointConverter(IRevitConversionContextStack contextStack, RevitConversionSettings revitSettings)
   {
@@ -28,7 +29,7 @@ public class ReferencePointConverter : IReferencePointConverter
   public DB.XYZ ConvertToExternalCoordindates(DB.XYZ inbound, bool isPoint)
   {
     var rpt = GetDocReferencePointTransform(_contextStack.Current.Document.Document);
-    return (isPoint) ? rpt.OfPoint(inbound) : rpt.OfVector(inbound);
+    return isPoint ? rpt.OfPoint(inbound) : rpt.OfVector(inbound);
   }
 
   // POC: this might be better in some RevitDocumentService
@@ -55,10 +56,15 @@ public class ReferencePointConverter : IReferencePointConverter
   {
     // first get the main doc base points and reference setting transform
     var referencePointTransform = DB.Transform.Identity;
+
+    // POC: bogus disposal below
+#pragma warning disable CA2000
     var points = new DB.FilteredElementCollector(_contextStack.Current.Document.Document)
       .OfClass(typeof(DB.BasePoint))
       .Cast<DB.BasePoint>()
       .ToList();
+#pragma warning restore CA2000
+
     var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
     var surveyPoint = points.FirstOrDefault(o => o.IsShared);
 
@@ -74,10 +80,12 @@ public class ReferencePointConverter : IReferencePointConverter
         // retrieve the survey point rotation from the project point
         var angle = projectPoint.get_Parameter(DB.BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
 
-        // POC: following is not being disposed :(
+        // POC: following disposed incorrectly or early or maybe a false negative?
+#pragma warning disable CA2000
         referencePointTransform = DB.Transform
           .CreateTranslation(surveyPoint.Position)
           .Multiply(DB.Transform.CreateRotation(DB.XYZ.BasisZ, angle));
+#pragma warning restore CA2000
 
         break;
 

@@ -28,21 +28,18 @@ public class EllipseToSpeckleConverter : IRawConversion<DB.Ellipse, SOG.Ellipse>
     {
       var trim = target.IsBound ? new Interval(target.GetEndParameter(0), target.GetEndParameter(1)) : null;
 
-      var ellipseToSpeckle = new SOG.Ellipse(
-        _planeConverter.RawConvert(basePlane),
+      return new SOG.Ellipse()
+      {
+        plane = _planeConverter.RawConvert(basePlane),
         // POC: scale length correct? seems right?
-        _scalingService.ScaleLength(target.RadiusX),
-        _scalingService.ScaleLength(target.RadiusY),
-        new Interval(0, 2 * Math.PI),
-        trim,
-        _contextStack.Current.SpeckleUnits
-      );
-
-      // POC: correct way to scale?
-      ellipseToSpeckle.length = _scalingService.ScaleLength(target.Length);
-      ellipseToSpeckle.domain = new Interval(0, 1);
-
-      return ellipseToSpeckle;
+        firstRadius = _scalingService.ScaleLength(target.RadiusX),
+        secondRadius = _scalingService.ScaleLength(target.RadiusY),
+        // POC: original EllipseToSpeckle() method was setting this twice
+        domain = new Interval(0, 1),
+        trimDomain = trim,
+        length = _scalingService.ScaleLength(target.Length),
+        units = _contextStack.Current.SpeckleUnits
+      };
     }
   }
 }

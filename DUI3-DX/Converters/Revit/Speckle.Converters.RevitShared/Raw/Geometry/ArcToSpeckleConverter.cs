@@ -1,4 +1,3 @@
-using Objects;
 using Objects.Primitive;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
@@ -42,20 +41,19 @@ public class ArcToSpeckleConverter : IRawConversion<DB.Arc, SOG.Arc>
     double startAngle = target.XDirection.AngleOnPlaneTo(dir0, target.Normal);
     double endAngle = target.XDirection.AngleOnPlaneTo(dir1, target.Normal);
 
-    var a = new SOG.Arc(
-      _planeConverter.RawConvert(arcPlane),
-      _scalingService.ScaleLength(target.Radius),
-      startAngle,
-      endAngle,
-      endAngle - startAngle,
-      _contextStack.Current.SpeckleUnits
-    );
-    a.endPoint = _xyzToPointConverter.RawConvert(end);
-    a.startPoint = _xyzToPointConverter.RawConvert(start);
-    a.midPoint = _xyzToPointConverter.RawConvert(mid);
-    a.length = _scalingService.ScaleLength(target.Length);
-    a.domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1));
-
-    return a;
+    return new SOG.Arc()
+    {
+      plane = _planeConverter.RawConvert(arcPlane),
+      radius = _scalingService.ScaleLength(target.Radius),
+      startAngle = startAngle,
+      endAngle = endAngle,
+      angleRadians = endAngle - startAngle,
+      units = _contextStack.Current.SpeckleUnits,
+      endPoint = _xyzToPointConverter.RawConvert(end),
+      startPoint = _xyzToPointConverter.RawConvert(start),
+      midPoint = _xyzToPointConverter.RawConvert(mid),
+      length = _scalingService.ScaleLength(target.Length),
+      domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1))
+    };
   }
 }
