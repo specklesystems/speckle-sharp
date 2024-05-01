@@ -2,7 +2,7 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
-namespace Speckle.Converters.ArcGIS3.Geometry;
+namespace Speckle.Converters.ArcGIS3.Geometry.ISpeckleObjectToHost;
 
 [NameAndRankValue(nameof(SOG.Point), NameAndRankValueAttribute.SPECKLE_DEFAULT_RANK)]
 public class PointToHostConverter : ISpeckleObjectToHostConversion, IRawConversion<SOG.Point, ACG.MapPoint>
