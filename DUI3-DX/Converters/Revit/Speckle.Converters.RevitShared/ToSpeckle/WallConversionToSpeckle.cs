@@ -77,11 +77,13 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;
 
+    // POC: shouldn't we just do this in the RevitConverterToSpeckle ?
     speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
 
     AssignVoids(target, speckleWall);
     AssignHostedElements(target, speckleWall);
 
+    // POC: shouldn't we just do this in the RevitConverterToSpeckle ?
     _parameterObjectAssigner.AssignParametersToBase(target, speckleWall);
 
     return speckleWall;

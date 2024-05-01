@@ -41,11 +41,14 @@ public class TopographyConversionToSpeckle : BaseConversionToSpeckle<DBA.Topogra
     _parameterObjectAssigner = parameterObjectAssigner;
   }
 
-  public SOBR.RevitTopography RawConvert(DBA.TopographySurface topographySurface)
+  public override SOBR.RevitTopography RawConvert(DBA.TopographySurface target)
   {
     var speckleTopo = new SOBR.RevitTopography();
-    speckleTopo.displayValue = _displayValueExtractor.GetDisplayValue(topographySurface);
-    GetAllRevitParamsAndIds(speckleTopo, revitTopo);
+    speckleTopo.displayValue = _displayValueExtractor.GetDisplayValue(target);
+
+    // POC: shouldn't we just do this in the RevitConverterToSpeckle ?
+    _parameterObjectAssigner.AssignParametersToBase(target, speckleTopo);
+
     return speckleTopo;
   }
 }
