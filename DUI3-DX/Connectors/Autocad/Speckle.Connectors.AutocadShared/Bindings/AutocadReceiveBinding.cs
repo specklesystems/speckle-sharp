@@ -1,3 +1,4 @@
+using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
@@ -16,21 +17,20 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   private readonly DocumentModelStore _store;
   private readonly CancellationManager _cancellationManager;
+  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
   public ReceiveBindingUICommands Commands { get; }
-
-  private readonly ReceiveOperation _receiveOperation;
 
   public AutocadReceiveBinding(
     DocumentModelStore store,
     IBridge parent,
-    ReceiveOperation receiveOperation,
-    CancellationManager cancellationManager
+    CancellationManager cancellationManager,
+    IUnitOfWorkFactory unitOfWorkFactory
   )
   {
     _store = store;
     _cancellationManager = cancellationManager;
-    _receiveOperation = receiveOperation;
+    _unitOfWorkFactory = unitOfWorkFactory;
     Parent = parent;
     Commands = new ReceiveBindingUICommands(parent);
   }
@@ -39,6 +39,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
 
   public async Task Receive(string modelCardId)
   {
+    using var unitOfWork = _unitOfWorkFactory.Resolve<ReceiveOperation>();
     try
     {
       // Init cancellation token source -> Manager also cancel it if exist before
@@ -51,7 +52,7 @@ public sealed class AutocadReceiveBinding : IReceiveBinding, ICancelable
       }
 
       // Receive host objects
-      IEnumerable<string> receivedObjectIds = await _receiveOperation
+      IEnumerable<string> receivedObjectIds = await unitOfWork.Service
         .Execute(
           modelCard.AccountId, // POC: I hear -you are saying why we're passing them separately. Not sure pass the DUI3-> Connectors.DUI project dependency to the SDK-> Connector.Utils
           modelCard.ProjectId,
