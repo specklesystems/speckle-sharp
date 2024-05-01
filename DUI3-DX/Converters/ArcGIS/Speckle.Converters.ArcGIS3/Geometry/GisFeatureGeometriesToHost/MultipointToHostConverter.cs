@@ -1,7 +1,7 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 
-namespace Speckle.Converters.ArcGIS3.Geometry;
+namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
 public class MultipointToHostConverter : IRawConversion<List<SOG.Point>, ACG.Multipoint>
 {

@@ -1,7 +1,7 @@
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.Common;
 
-namespace Speckle.Converters.ArcGIS3.Geometry;
+namespace Speckle.Converters.ArcGIS3.Geometry.GisFeatureGeometriesToHost;
 
 public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon>
 {
