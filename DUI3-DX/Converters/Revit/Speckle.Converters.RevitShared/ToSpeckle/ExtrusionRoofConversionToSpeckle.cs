@@ -8,7 +8,7 @@ using Objects.BuiltElements.Revit;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
-[NameAndRankValue(nameof(DB.RoofBase), 0)]
+[NameAndRankValue(nameof(DB.ExtrusionRoof), 0)]
 public class ExtrusionRoofConversionToSpeckle : BaseConversionToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
 {
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
@@ -56,6 +56,10 @@ public class ExtrusionRoofConversionToSpeckle : BaseConversionToSpeckle<DB.Extru
     );
     speckleExtrusionRoof.level = _levelConverter.RawConvert(level);
     speckleExtrusionRoof.outline = _modelCurveArrayConverter.RawConvert(target.GetProfile());
+
+    var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());
+    speckleExtrusionRoof.type = elementType.Name;
+    speckleExtrusionRoof.family = elementType.FamilyName;
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleExtrusionRoof);
     speckleExtrusionRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);

@@ -8,6 +8,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // POC: needs reviewing, it may be fine, not sure how open/closed it is
 // really if we have to edit a switch statement...
 // maybe also better as an extension method, but maybe is fine?
+// POC: there are a lot of public methods here. Maybe consider consolodating
 public class ParameterValueExtractor
 {
   private readonly ScalingServiceToSpeckle _scalingService;
@@ -106,14 +107,20 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
-  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+  public T? GetValueAsDocumentObjectOrNull<T>(Element element, BuiltInParameter builtInParameter)
     where T : class
   {
     ElementId? elementId = GetValueAsElementId(element, builtInParameter);
     Element paramElement = element.Document.GetElement(elementId);
-    return paramElement as T
+    return paramElement as T;
+  }
+
+  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+    where T : class
+  {
+    return GetValueAsDocumentObjectOrNull<T>(element, builtInParameter)
       ?? throw new SpeckleConversionException(
-        $"Unable to cast retrieved element of type {paramElement.GetType()} to an element of type {typeof(T)}"
+        $"Unable to cast retrieved element of type {builtInParameter} to an element of type {typeof(T)}"
       );
   }
 

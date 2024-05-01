@@ -13,7 +13,7 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
 {
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
-  private readonly IRawConversion<DB.ModelCurveArrArray, List<SOG.Polycurve>> _modelCurveArrArrayConverter;
+  private readonly IRawConversion<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
@@ -21,7 +21,7 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
 
   public FootPrintRootConversionToSpeckle(
     IRawConversion<Level, RevitLevel> levelConverter,
-    IRawConversion<ModelCurveArrArray, List<Polycurve>> modelCurveArrArrayConverter,
+    IRawConversion<ModelCurveArrArray, Polycurve[]> modelCurveArrArrayConverter,
     ParameterValueExtractor parameterValueExtractor,
     DisplayValueExtractor displayValueExtractor,
     HostedElementConversionToSpeckle hostedElementConverter,
@@ -42,7 +42,7 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
       target,
       DB.BuiltInParameter.ROOF_BASE_LEVEL_PARAM
     );
-    var topLevel = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(
+    var topLevel = _parameterValueExtractor.GetValueAsDocumentObjectOrNull<DB.Level>(
       target,
       DB.BuiltInParameter.ROOF_UPTO_LEVEL_PARAM
     );
@@ -54,7 +54,7 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
       new()
       {
         level = _levelConverter.RawConvert(baseLevel),
-        cutOffLevel = _levelConverter.RawConvert(topLevel),
+        cutOffLevel = topLevel is not null ? _levelConverter.RawConvert(topLevel) : null,
         slope = slope
       };
 
@@ -66,6 +66,12 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
 
+    var elementType = (ElementType)target.Document.GetElement(target.GetTypeId());
+    speckleFootprintRoof.type = elementType.Name;
+    speckleFootprintRoof.family = elementType.FamilyName;
+
+    // POC: we are starting to see logic that is happening in all converters. We should definitely consider some
+    // conversion pipeline behavior. Would probably require adding interfaces into objects kit
     _parameterObjectAssigner.AssignParametersToBase(target, speckleFootprintRoof);
     speckleFootprintRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
     _hostedElementConverter.AssignHostedElements(target, speckleFootprintRoof);

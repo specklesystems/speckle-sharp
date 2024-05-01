@@ -28,10 +28,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\MaterialConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrArrayConverterToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrayConverterToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FootPrintRootConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ExtrusionRoofConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoofBaseConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategories.cs" />
