@@ -19,6 +19,10 @@ public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeome
 
   public ACG.Multipatch RawConvert(List<SGIS.GisPolygonGeometry3d> target)
   {
+    if (target.Count == 0)
+    {
+      throw new SpeckleConversionException("Feature contains no geometries");
+    }
     ACG.MultipatchBuilderEx multipatchPart = new();
     foreach (SGIS.GisPolygonGeometry3d part in target)
     {
@@ -40,10 +44,6 @@ public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeome
         }
         multipatchPart.Patches.Add(newLoopPatch);
       }
-    }
-    if (multipatchPart.Patches.Count == 0)
-    {
-      throw new SpeckleConversionException("Conversion was not successful");
     }
     return multipatchPart.ToGeometry();
   }

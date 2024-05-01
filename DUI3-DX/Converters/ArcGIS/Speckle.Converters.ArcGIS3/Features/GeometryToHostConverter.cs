@@ -1,4 +1,3 @@
-using ArcGIS.Desktop.Mapping;
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
@@ -7,23 +6,20 @@ namespace Speckle.Converters.ArcGIS3.Features;
 
 public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.Geometry>
 {
-  private readonly IConversionContextStack<Map, ACG.Unit> _contextStack;
-  private readonly IRawConversion<List<SOG.Polyline>, ACG.Polyline> _polylineConverter;
+  private readonly IRawConversion<SOG.Polyline, ACG.Polyline> _polylineConverter;
   private readonly IRawConversion<List<SOG.Point>, ACG.Multipoint> _multipointConverter;
   private readonly IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch> _polygon3dConverter;
   private readonly IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon> _polygonConverter;
   private readonly IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> _multipatchConverter;
 
   public GeometryToHostConverter(
-    IConversionContextStack<Map, ACG.Unit> contextStack,
-    IRawConversion<List<SOG.Polyline>, ACG.Polyline> polylineConverter,
+    IRawConversion<SOG.Polyline, ACG.Polyline> polylineConverter,
     IRawConversion<List<SOG.Point>, ACG.Multipoint> multipointConverter,
     IRawConversion<List<SGIS.GisPolygonGeometry3d>, ACG.Multipatch> polygon3dConverter,
     IRawConversion<List<SGIS.GisPolygonGeometry>, ACG.Polygon> polygonConverter,
     IRawConversion<List<SGIS.GisMultipatchGeometry>, ACG.Multipatch> multipatchConverter
   )
   {
-    _contextStack = contextStack;
     _polylineConverter = polylineConverter;
     _multipointConverter = multipointConverter;
     _polygon3dConverter = polygon3dConverter;
@@ -66,7 +62,7 @@ public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.G
         return target[0] switch
         {
           SOG.Point point => _multipointConverter.RawConvert(pointList),
-          SOG.Polyline polyline => _polylineConverter.RawConvert(polylineList),
+          SOG.Polyline polyline => _polylineConverter.RawConvert(polylineList[0]),
           SGIS.GisPolygonGeometry3d geometry3d => _polygon3dConverter.RawConvert(polygon3dList),
           SGIS.GisPolygonGeometry geometry => _polygonConverter.RawConvert(polygonList),
           SGIS.GisMultipatchGeometry mesh => _multipatchConverter.RawConvert(multipatchList),

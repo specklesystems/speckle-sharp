@@ -14,6 +14,10 @@ public class MultipatchToHostConverter : IRawConversion<List<SGIS.GisMultipatchG
 
   public ACG.Multipatch RawConvert(List<SGIS.GisMultipatchGeometry> target)
   {
+    if (target.Count == 0)
+    {
+      throw new SpeckleConversionException("Feature contains no geometries");
+    }
     ACG.MultipatchBuilderEx multipatchPart = new();
     foreach (SGIS.GisMultipatchGeometry part in target)
     {
@@ -27,10 +31,6 @@ public class MultipatchToHostConverter : IRawConversion<List<SGIS.GisMultipatchG
         );
       }
       multipatchPart.Patches.Add(newPatch);
-    }
-    if (multipatchPart.Patches.Count == 0)
-    {
-      throw new SpeckleConversionException("Conversion was not successful");
     }
     return multipatchPart.ToGeometry();
   }

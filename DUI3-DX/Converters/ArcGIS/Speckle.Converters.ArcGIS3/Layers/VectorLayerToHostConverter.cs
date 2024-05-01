@@ -34,12 +34,15 @@ public class VectorLayerToHostConverter : ISpeckleObjectToHostConversion, IRawCo
 
   public string RawConvert(VectorLayer target)
   {
-    // check if Speckle VectorLayer should become a FeatureClass, StandaloneTable or PointcloudLayer
-    if (target.geomType == "Pointcloud") // table
+    // pointcloud layers need to be checked separately, because there is no ArcGIS Geometry type
+    // for Pointcloud. In ArcGIS it's a completely different layer class, so "GetLayerGeometryType"
+    // will return "Invalid" type
+    if (target.geomType == "Pointcloud")
     {
       return _pointcloudLayerConverter.RawConvert(target).Name;
     }
 
+    // check if Speckle VectorLayer should become a FeatureClass, StandaloneTable or PointcloudLayer
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
     if (geomType != GeometryType.Unknown) // feature class
     {

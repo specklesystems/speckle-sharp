@@ -14,6 +14,10 @@ public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometr
 
   public ACG.Polygon RawConvert(List<SGIS.GisPolygonGeometry> target)
   {
+    if (target.Count == 0)
+    {
+      throw new SpeckleConversionException("Feature contains no geometries");
+    }
     List<ACG.Polygon> polyList = new();
     foreach (SGIS.GisPolygonGeometry poly in target)
     {
@@ -28,10 +32,6 @@ public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometr
       }
       ACG.Polygon polygon = polyOuterRing.ToGeometry();
       polyList.Add(polygon);
-    }
-    if (polyList.Count == 0)
-    {
-      throw new SpeckleConversionException("Conversion was not successful");
     }
     return new ACG.PolygonBuilderEx(polyList, ACG.AttributeFlags.HasZ).ToGeometry();
   }

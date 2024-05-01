@@ -31,8 +31,6 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     _arcGISProjectUtils = arcGISProjectUtils;
   }
 
-  public object Convert(Base target) => RawConvert((VectorLayer)target);
-
   public FeatureClass RawConvert(VectorLayer target)
   {
     GeometryType geomType = _featureClassUtils.GetLayerGeometryType(target);
@@ -80,7 +78,7 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     catch (ArgumentException ex)
     {
       // if name has invalid characters/combinations
-      throw new ArgumentException($"{ex.Message}: {featureClassName}");
+      throw new ArgumentException($"{ex.Message}: {featureClassName}", ex);
     }
     bool buildStatus = schemaBuilder.Build();
     if (!buildStatus)
@@ -104,7 +102,7 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     catch (GeodatabaseException exObj)
     {
       // POC: review the exception
-      throw new InvalidOperationException($"Something went wrong: {exObj.Message}");
+      throw exObj;
     }
   }
 }

@@ -4,7 +4,6 @@ using ArcGIS.Core.Data;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common.Objects;
-using Speckle.Core.Models;
 using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Layers;
@@ -19,10 +18,6 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
     _featureClassUtils = featureClassUtils;
     _arcGISProjectUtils = arcGISProjectUtils;
   }
-
-  public object Convert(Base target) => RawConvert((VectorLayer)target);
-
-  // private const string FID_FIELD_NAME = "OBJECTID";
 
   public Table RawConvert(VectorLayer target)
   {

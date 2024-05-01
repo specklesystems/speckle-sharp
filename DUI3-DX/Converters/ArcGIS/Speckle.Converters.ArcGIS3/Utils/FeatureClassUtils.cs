@@ -105,10 +105,6 @@ public class FeatureClassUtils : IFeatureClassUtils
             // log error!
             rowBuffer[key] = null;
           }
-          catch (GeodatabaseGeneralException)
-          {
-            // field doen't exist: ideally should not be happening
-          }
           catch (GeodatabaseFieldException)
           {
             // non-editable Field, do nothing
@@ -244,8 +240,7 @@ public class FeatureClassUtils : IFeatureClassUtils
 
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
-    string originalGeomType =
-      target.geomType != null ? target.geomType : (target.nativeGeomType != null ? target.nativeGeomType : "");
+    string? originalGeomType = target.geomType != null ? target.geomType : target.nativeGeomType;
     ACG.GeometryType geomType;
 
     if (string.IsNullOrEmpty(originalGeomType))

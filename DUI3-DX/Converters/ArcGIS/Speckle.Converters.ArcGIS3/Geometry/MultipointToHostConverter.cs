@@ -14,14 +14,14 @@ public class MultipointToHostConverter : IRawConversion<List<SOG.Point>, ACG.Mul
 
   public ACG.Multipoint RawConvert(List<SOG.Point> target)
   {
+    if (target.Count == 0)
+    {
+      throw new SpeckleConversionException("Feature contains no geometries");
+    }
     List<ACG.MapPoint> pointList = new();
     foreach (SOG.Point pt in target)
     {
       pointList.Add(_pointConverter.RawConvert(pt));
-    }
-    if (pointList.Count == 0)
-    {
-      throw new SpeckleConversionException("Conversion was not successful");
     }
     return new ACG.MultipointBuilderEx(pointList, ACG.AttributeFlags.HasZ).ToGeometry();
   }
