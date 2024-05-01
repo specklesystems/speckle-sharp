@@ -14,10 +14,11 @@ namespace Speckle.Connectors.ArcGis.Operations.Send;
 /// </summary>
 internal sealed class RootObjectSender : IRootObjectSender
 {
-  // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding
-  private readonly Func<Account, string, ITransport> _transportFactory;
+  // POC: this is going off the concrete type which is not so great, thoughm this is the example:
+  // see delegate factories: https://autofac.readthedocs.io/en/latest/advanced/delegate-factories.html
+  private readonly ServerTransport.Factory _transportFactory;
 
-  public RootObjectSender(Func<Account, string, ITransport> transportFactory)
+  public RootObjectSender(ServerTransport.Factory transportFactory)
   {
     _transportFactory = transportFactory;
   }
@@ -37,7 +38,7 @@ internal sealed class RootObjectSender : IRootObjectSender
 
     Account account = AccountManager.GetAccount(accountId);
 
-    ITransport transport = _transportFactory(account, projectId);
+    ITransport transport = _transportFactory(account, projectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
     ct.ThrowIfCancellationRequested();

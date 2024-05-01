@@ -16,6 +16,8 @@ namespace Speckle.Core.Transports;
 
 public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
+  public delegate ITransport Factory(Account account, string streamId, int timeoutSeconds, string? blobStorageFolder);
+
   private readonly object _elapsedLock = new();
 
   private Exception? _exception;

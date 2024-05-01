@@ -16,9 +16,9 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 internal class RootObjectSender : IRootObjectSender
 {
   // POC: unsure about this factory pattern - a little weakly typed (being a Func)
-  private readonly Func<Account, string, ITransport> _transportFactory;
+  private readonly ServerTransport.Factory _transportFactory;
 
-  public RootObjectSender(Func<Account, string, ITransport> transportFactory)
+  public RootObjectSender(ServerTransport.Factory transportFactory)
   {
     _transportFactory = transportFactory;
   }
@@ -38,7 +38,7 @@ internal class RootObjectSender : IRootObjectSender
 
     Account account = AccountManager.GetAccount(accountId);
 
-    ITransport transport = _transportFactory(account, projectId);
+    ITransport transport = _transportFactory(account, projectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
     ct.ThrowIfCancellationRequested();
