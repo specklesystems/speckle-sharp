@@ -22,7 +22,7 @@ public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Aut
 
   public ADB.Polyline RawConvert(SOG.Autocad.AutocadPolycurve target)
   {
-    if (target.normal is not SOG.Vector || target.elevation is not double)
+    if (target.normal is null || target.elevation is null)
     {
       throw new System.ArgumentException(
         "Autocad polycurve of type light did not have a valid normal and/or elevation"
