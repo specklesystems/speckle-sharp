@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Speckle.Converters.Autocad.Extensions;
 
@@ -23,7 +24,7 @@ public static class ListExtensions
       throw new System.ArgumentException("Point list of xy values is malformed.");
     }
 
-    List<AG.Point2d> points2d = new();
+    List<AG.Point2d> points2d = new(pointList.Count / 2);
     for (int i = 1; i < pointList.Count; i += 2)
     {
       points2d.Add(new AG.Point2d(pointList[i - 1] * conversionFactor, pointList[i] * conversionFactor));
@@ -40,7 +41,7 @@ public static class ListExtensions
       throw new System.ArgumentException("Point list of xyz values is malformed.");
     }
 
-    List<AG.Point3d> points3d = new();
+    List<AG.Point3d> points3d = new(pointList.Count / 3);
     for (int i = 2; i < pointList.Count; i += 3)
     {
       points3d.Add(
