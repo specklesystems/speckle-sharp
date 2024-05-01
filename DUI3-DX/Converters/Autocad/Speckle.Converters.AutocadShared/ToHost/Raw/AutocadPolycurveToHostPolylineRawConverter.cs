@@ -22,32 +22,30 @@ public class AutocadPolycurveToHostPolylineRawConverter : IRawConversion<SOG.Aut
 
   public ADB.Polyline RawConvert(SOG.Autocad.AutocadPolycurve target)
   {
-    if (target.normal is SOG.Vector normal && target.elevation is double elevation)
-    {
-      double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
-      List<AG.Point2d> points2d = target.value.ConvertToPoint2d(f);
-
-      ADB.Polyline polyline =
-        new()
-        {
-          Normal = _vectorConverter.RawConvert(normal),
-          Elevation = elevation * f,
-          Closed = target.closed
-        };
-
-      for (int i = 0; i < points2d.Count; i++)
-      {
-        var bulge = target.bulges is null ? 0 : target.bulges[i];
-        polyline.AddVertexAt(i, points2d[i], bulge, 0, 0);
-      }
-
-      return polyline;
-    }
-    else
+    if (target.normal is not SOG.Vector || target.elevation is not double)
     {
       throw new System.ArgumentException(
         "Autocad polycurve of type light did not have a valid normal and/or elevation"
       );
     }
+
+    double f = Units.GetConversionFactor(target.units, _contextStack.Current.SpeckleUnits);
+    List<AG.Point2d> points2d = target.value.ConvertToPoint2d(f);
+
+    ADB.Polyline polyline =
+      new()
+      {
+        Normal = _vectorConverter.RawConvert(target.normal),
+        Elevation = (double)target.elevation * f,
+        Closed = target.closed
+      };
+
+    for (int i = 0; i < points2d.Count; i++)
+    {
+      var bulge = target.bulges is null ? 0 : target.bulges[i];
+      polyline.AddVertexAt(i, points2d[i], bulge, 0, 0);
+    }
+
+    return polyline;
   }
 }
