@@ -29,7 +29,6 @@ public class ModelCurveToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.M
       baseCurve = _curveConverter.RawConvert(target.GeometryCurve),
       lineStyle = target.LineStyle.Name,
       elementId = target.Id.ToString(),
-      applicationId = target.UniqueId,
       units = _conversionContext.Current.SpeckleUnits
     };
 

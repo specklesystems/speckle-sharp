@@ -1,7 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Autodesk.Revit.DB;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.RevitShared.Helpers;
 
@@ -41,10 +40,14 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
       ?? throw new SpeckleConversionException($"Conversion of object with type {target.GetType()} returned null");
 
     // POC : where should logic common to most objects go?
-    if (target is Element element)
+    // shouldn't target ALWAYS be DB.Element?
+    if (target is DB.Element element)
     {
       _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
       _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
+
+      // POC: is this the right place?
+      result.applicationId = element.UniqueId;
     }
 
     return result;
