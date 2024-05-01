@@ -13,8 +13,10 @@ public sealed class RevitToSpeckleUnitConverter : IHostToSpeckleUnitConverter<DB
     _unitMapping[DB.UnitTypeId.Millimeters] = Units.Millimeters;
     _unitMapping[DB.UnitTypeId.Centimeters] = Units.Centimeters;
     _unitMapping[DB.UnitTypeId.Meters] = Units.Meters;
+    _unitMapping[DB.UnitTypeId.MetersCentimeters] = Units.Meters;
     _unitMapping[DB.UnitTypeId.Inches] = Units.Inches;
     _unitMapping[DB.UnitTypeId.Feet] = Units.Feet;
+    _unitMapping[DB.UnitTypeId.FeetFractionalInches] = Units.Feet;
   }
 
   // POC: maybe just convert, it's not a Try method
