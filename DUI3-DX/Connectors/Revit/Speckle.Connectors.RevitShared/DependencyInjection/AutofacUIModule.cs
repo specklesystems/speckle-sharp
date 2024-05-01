@@ -64,7 +64,7 @@ public class AutofacUIModule : Module
     builder.RegisterType<BasicConnectorBindingRevit>().As<IBinding>().SingleInstance();
     builder.RegisterType<SelectionBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<SendBinding>().As<IBinding>().SingleInstance();
-    // Hide Load button as Revit connector is publish only for the open alpha.
+    // POC: Hide Load button as Revit connector is publish only for the open alpha.
     //builder.RegisterType<ReceiveBinding>().As<IBinding>().SingleInstance();
     builder.RegisterType<RevitIdleManager>().As<IRevitIdleManager>().SingleInstance();
 
