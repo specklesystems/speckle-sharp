@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\TopographyConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategories.cs" />

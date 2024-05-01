@@ -5,7 +5,7 @@ using Mesh = Objects.Geometry.Mesh;
 
 namespace Speckle.Converters.RevitShared.Helpers;
 
-// POC: class is kind of big and could do with breaking down
+// POC: needs breaking down https://spockle.atlassian.net/browse/CNX-9354
 public sealed class DisplayValueExtractor
 {
   private readonly IRawConversion<List<DB.Solid>, List<Mesh>> _solidsConversion;
