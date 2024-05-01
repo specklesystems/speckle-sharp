@@ -2,7 +2,6 @@ using ArcGIS.Core.Data;
 using ArcGIS.Core.Data.DDL;
 using ArcGIS.Core.Data.Exceptions;
 using ArcGIS.Core.Geometry;
-using ArcGIS.Desktop.Mapping;
 using Objects.GIS;
 using Speckle.Converters.ArcGIS3.Utils;
 using Speckle.Converters.Common.Objects;
@@ -14,19 +13,16 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureClass>
 {
   private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
-  private readonly IRawConversion<VectorLayer, LasDatasetLayer> _pointcloudLayerConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public FeatureClassToHostConverter(
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
-    IRawConversion<VectorLayer, LasDatasetLayer> pointcloudLayerConverter,
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils
   )
   {
     _gisGeometryConverter = gisGeometryConverter;
-    _pointcloudLayerConverter = pointcloudLayerConverter;
     _featureClassUtils = featureClassUtils;
     _arcGISProjectUtils = arcGISProjectUtils;
   }
