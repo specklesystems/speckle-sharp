@@ -113,46 +113,6 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     {
       activeUIDoc.Selection.SetElementIds(elementIds);
       activeUIDoc.ShowElements(elementIds);
-
-      // Create a BoundingBoxXYZ to encompass the selected elements
-      BoundingBoxXYZ selectionBoundingBox = new();
-      bool first = true;
-
-      foreach (ElementId elementId in elementIds)
-      {
-        Element element = doc.GetElement(elementId);
-
-        if (element != null)
-        {
-          BoundingBoxXYZ elementBoundingBox = element.get_BoundingBox(null);
-
-          if (elementBoundingBox != null)
-          {
-            if (first)
-            {
-              selectionBoundingBox = elementBoundingBox;
-              first = false;
-            }
-            else
-            {
-              // selectionBoundingBox.Min = XYZ.Min(selectionBoundingBox.Min, elementBoundingBox.Min);
-              // selectionBoundingBox.Max = XYZ.Max(selectionBoundingBox.Max, elementBoundingBox.Max);
-            }
-          }
-        }
-      }
-
-      // Zoom the view to the selection bounding box
-      if (!first)
-      {
-        View activeView = activeUIDoc.ActiveView;
-
-        using Transaction tr = new(doc, "Zoom to Selection");
-        tr.Start();
-        activeView.CropBox = selectionBoundingBox;
-        doc.Regenerate();
-        tr.Commit();
-      }
     });
   }
 
