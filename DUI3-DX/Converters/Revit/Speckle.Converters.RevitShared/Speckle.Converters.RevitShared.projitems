@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -9,29 +9,46 @@
     <Import_RootNamespace>Speckle.Converters.RevitShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)IReferencePointConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\CategoryExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\DefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ForgeTypeIdExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GlobalUsings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DisplayValueExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IRevitConversionContextStack.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRevitVersionConversionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BeamConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\BoundarySegmentConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ColumnConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\ArcToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\BoundingBoxXYZToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CircleToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\EllipseToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\HermiteSplineToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\LineConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveArrayConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\MeshByMaterialDictionaryToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\MeshConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\NurbsSplineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PlaneToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PointCloudToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PointConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\SolidConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\PolylineToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\VectorToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\XyzConversionToPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\MaterialConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitConversionSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoomConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ModelCurveToSpeckleTopLevelConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategories.cs" />
@@ -45,7 +62,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\BaseConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\WallConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ElementConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConverterToSpeckle.cs" />
   </ItemGroup>
 </Project>
