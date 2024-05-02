@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Autodesk.Revit.UI;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
@@ -11,14 +10,6 @@ using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.Revit.Plugin;
-
-internal class DLlVersion
-{
-  public string Name;
-  public string Version;
-  public List<DLlVersion> dependencyChains = new();
-  public bool skipped = false;
-}
 
 internal class RevitExternalApplication : IExternalApplication
 {
