@@ -155,7 +155,8 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     {
       // POC: we have been assuming that the first curve is the element and the rest of the curves are openings
       // this isn't always true
-      speckleWall["voids"] = polycurves.Skip(1);
+      // https://spockle.atlassian.net/browse/CNX-9396
+      speckleWall["voids"] = polycurves.Skip(1).ToList();
     }
   }
 }

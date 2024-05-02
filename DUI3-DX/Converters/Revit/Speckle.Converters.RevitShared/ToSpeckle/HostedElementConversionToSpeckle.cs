@@ -28,6 +28,7 @@ public class HostedElementConversionToSpeckle
     return GetHostedElementsConvertedFromIds(host, host.GetHostedElementIds());
   }
 
+  // POC: needs to be reviewed
   public List<Base> GetHostedElementsConvertedFromIds(Element host, IList<ElementId> hostedElementIds)
   {
     var convertedHostedElements = new List<Base>();

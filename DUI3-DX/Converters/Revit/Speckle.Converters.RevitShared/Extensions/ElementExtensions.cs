@@ -4,6 +4,7 @@ namespace Speckle.Converters.RevitShared.Extensions;
 
 public static class ElementExtensions
 {
+  // POC: should this be an injected service?
   public static IList<ElementId> GetHostedElementIds(this Element host)
   {
     IList<ElementId> ids;
