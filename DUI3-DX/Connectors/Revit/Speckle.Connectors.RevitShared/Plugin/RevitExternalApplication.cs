@@ -5,13 +5,10 @@ using Speckle.Autofac.DependencyInjection;
 using Speckle.Autofac.Files;
 using System.Reflection;
 using System.IO;
-using System.Linq;
 using Autofac;
-using Speckle.Connectors.Utils.Reflection;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
-using Speckle.Converters.RevitShared;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
