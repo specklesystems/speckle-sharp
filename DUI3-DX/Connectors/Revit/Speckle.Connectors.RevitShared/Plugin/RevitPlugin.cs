@@ -102,16 +102,18 @@ internal class RevitPlugin : IRevitPlugin
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
       Debug.WriteLine(binding.Name);
-      binding.Parent.AssociateWithBinding(binding, _cefSharpPanel.Browser.ExecuteScriptAsync, _cefSharpPanel);
+      binding.Parent.AssociateWithBinding(
+        binding,
+        _cefSharpPanel.Browser.ExecuteScriptAsync,
+        _cefSharpPanel,
+        _cefSharpPanel.ShowDevTools
+      );
     }
 
     _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      // POC: dev tools
-      // also this can be called when the panel is closing, we should exit early
-#if DEBUG
-      _cefSharpPanel.ShowDevTools();
-#endif
+      // Not needed now, as we should be able to correctly open dev tools via user interaction
+      // _cefSharpPanel.ShowDevTools();
 
       foreach (IBinding binding in _bindings.Select(x => x.Value))
       {
