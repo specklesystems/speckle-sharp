@@ -3,6 +3,7 @@ using Speckle.Connectors.Utils.Operations;
 using Speckle.Core.Api;
 using System.Threading.Tasks;
 using System.Threading;
+using Speckle.Connectors.Revit.Plugin;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -17,10 +18,12 @@ internal class RootObjectSender : IRootObjectSender
 {
   // POC: unsure about this factory pattern - a little weakly typed (being a Func)
   private readonly ServerTransport.Factory _transportFactory;
+  private readonly RevitSettings _revitSettings;
 
-  public RootObjectSender(ServerTransport.Factory transportFactory)
+  public RootObjectSender(ServerTransport.Factory transportFactory, RevitSettings revitSettings)
   {
     _transportFactory = transportFactory;
+    _revitSettings = revitSettings;
   }
 
   public async Task<string> Send(
@@ -52,7 +55,7 @@ internal class RootObjectSender : IRootObjectSender
         {
           streamId = projectId,
           branchName = modelId,
-          sourceApplication = "Rhino",
+          sourceApplication = _revitSettings.HostSlug, // POC: These naming is a bit?
           objectId = sendResult.rootObjId
         },
         ct
