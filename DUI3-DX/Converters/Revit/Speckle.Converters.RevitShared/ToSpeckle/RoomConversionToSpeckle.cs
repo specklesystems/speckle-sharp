@@ -3,8 +3,6 @@ using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
-using DBA = Autodesk.Revit.DB.Architecture;
-using SOBE = Objects.BuiltElements;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
