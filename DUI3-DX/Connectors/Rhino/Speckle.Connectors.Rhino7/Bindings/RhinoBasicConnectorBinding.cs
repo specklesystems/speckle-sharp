@@ -77,11 +77,10 @@ public class RhinoBasicConnectorBinding : IBasicConnectorBinding
       objectIds = sender.SendFilter.GetObjectIds();
     }
 
-    // TODO: Disabled receiver specifics
-    // if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
-    // {
-    //   objectIds = receiver.ReceiveResult.BakedObjectIds;
-    // }
+    if (myModel is ReceiverModelCard receiver && receiver.ReceiveResult != null)
+    {
+      objectIds = receiver.ReceiveResult.BakedObjectIds;
+    }
 
     if (objectIds.Count == 0)
     {

@@ -14,12 +14,13 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 /// Default implementation of the <see cref="IRootObjectSender"/> which takes a <see cref="Base"/> and sends
 /// it to a server described by the parameters in the <see cref="Send"/> method
 /// </summary>
-internal class RootObjectSender : IRootObjectSender
+internal sealed class RootObjectSender : IRootObjectSender
 {
-  private readonly Func<Account, string, ITransport> _transportFactory;
+  // POC: unsure about this factory pattern - a little weakly typed (being a Func)
+  private readonly ServerTransport.Factory _transportFactory;
   private readonly RevitSettings _revitSettings;
 
-  public RootObjectSender(Func<Account, string, ITransport> transportFactory, RevitSettings revitSettings)
+  public RootObjectSender(ServerTransport.Factory transportFactory, RevitSettings revitSettings)
   {
     _transportFactory = transportFactory;
     _revitSettings = revitSettings;
@@ -40,7 +41,7 @@ internal class RootObjectSender : IRootObjectSender
 
     Account account = AccountManager.GetAccount(accountId);
 
-    ITransport transport = _transportFactory(account, projectId);
+    ITransport transport = _transportFactory(account, projectId, 60, null);
     var sendResult = await SendHelper.Send(commitObject, transport, true, null, ct).ConfigureAwait(false);
 
     ct.ThrowIfCancellationRequested();

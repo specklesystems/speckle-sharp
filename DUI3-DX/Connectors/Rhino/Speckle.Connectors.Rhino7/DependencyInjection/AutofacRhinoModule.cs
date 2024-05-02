@@ -25,6 +25,7 @@ using Speckle.Connectors.DUI.WebView;
 using Speckle.Connectors.Rhino7.Operations.Receive;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Rhino7.DependencyInjection;
 
@@ -68,6 +69,7 @@ public class AutofacRhinoModule : Module
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
     builder.RegisterType<SendOperation<RhinoObject>>().InstancePerLifetimeScope();
     builder.RegisterType<ReceiveOperation>().InstancePerLifetimeScope();
+    builder.RegisterInstance(DefaultTraversal.CreateTraversalFunc());
     builder.RegisterType<SyncToCurrentThread>().As<ISyncToMainThread>().SingleInstance();
 
     builder.RegisterType<RhinoHostObjectBuilder>().As<IHostObjectBuilder>().InstancePerLifetimeScope();

@@ -6,41 +6,41 @@ namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 public class CurveConversionToSpeckle : IRawConversion<DB.Curve, ICurve>
 {
-  // POC: can we do this sort of thing?
-  // Can this converter be made generic to make a ConverterFetcher? and be used
-  // whenever we have some ambiguity as to the specific converter we need to call?
-  // IIndex<string, IRawConversion<DB.Curve, ICurve>> _curveConverters;
-
   private readonly IRawConversion<DB.Line, SOG.Line> _lineConverter;
+  private readonly IRawConversion<DB.Arc, SOG.Arc> _arcConverter;
+  private readonly IRawConversion<DB.Arc, SOG.Circle> _circleConverter;
+  private readonly IRawConversion<DB.Ellipse, SOG.Ellipse> _ellipseConverter;
+  private readonly IRawConversion<DB.NurbSpline, SOG.Curve> _nurbsConverter;
+  private readonly IRawConversion<DB.HermiteSpline, SOG.Curve> _hermiteConverter; // POC: should this be ICurve?
 
-  //private readonly IRawConversion<DB.Arc, SOG.Line> _arcConverter;
-  //private readonly IRawConversion<DB.Ellipse, SOG.Line> _ellipseConverter;
-  //private readonly IRawConversion<DB.NurbSpline, SOG.Line> _nurbsConverter;
-  //private readonly IRawConversion<DB.HermiteSpline, SOG.Line> _hermiteConverter;
-
-  public CurveConversionToSpeckle(IRawConversion<DB.Line, SOG.Line> lineConverter)
+  public CurveConversionToSpeckle(
+    IRawConversion<DB.Line, SOG.Line> lineConverter,
+    IRawConversion<DB.Arc, SOG.Arc> arcConverter,
+    IRawConversion<DB.Arc, SOG.Circle> circleConverter,
+    IRawConversion<DB.Ellipse, SOG.Ellipse> ellipseConverter,
+    IRawConversion<DB.NurbSpline, SOG.Curve> nurbsConverter,
+    IRawConversion<DB.HermiteSpline, SOG.Curve> hermiteConverter
+  )
   {
     _lineConverter = lineConverter;
+    _arcConverter = arcConverter;
+    _circleConverter = circleConverter;
+    _ellipseConverter = ellipseConverter;
+    _nurbsConverter = nurbsConverter;
+    _hermiteConverter = hermiteConverter;
   }
 
   public ICurve RawConvert(DB.Curve target)
   {
-    // POC: and then here:
-    // if (_curveConverters.TryGetValue(target.GetType().Name, out IRawConversion<DB.Curve, ICurve> converter))
-    // {
-    //   return converter.RawConvert(target);
-    // }
-    //
-    // throw ...
-
     return target switch
     {
       DB.Line line => _lineConverter.RawConvert(line),
-      // POC: these conversions are "coming soon" can we use IIndex with variance with nice injection
-      //DB.Arc arc => _arcConverter.RawConvert(arc),
-      //DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
-      //DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),
-      //DB.HermiteSpline hermite => _hermiteConverter.RawConvert(hermite),
+      // POC: are maybe arc.IsCyclic ?
+      DB.Arc arc => arc.IsClosed ? _circleConverter.RawConvert(arc) : _arcConverter.RawConvert(arc),
+      DB.Ellipse ellipse => _ellipseConverter.RawConvert(ellipse),
+      DB.NurbSpline nurbs => _nurbsConverter.RawConvert(nurbs),
+      DB.HermiteSpline hermite => _hermiteConverter.RawConvert(hermite),
+
       _ => throw new SpeckleConversionException($"Unsupported curve type {target.GetType()}")
     };
   }
