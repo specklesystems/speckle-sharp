@@ -148,12 +148,12 @@ public static class AutomationRunner
   }
 }
 
-// `GetSchema` returning `null` indicates that the given type should not have a customised schema
-#pragma warning disable CS8603
-
 public class SpeckleSecretProvider : JSchemaGenerationProvider
 {
-  public override JSchema GetSchema(JSchemaTypeGenerationContext context)
+  // `GetSchema` returning `null` indicates that the given type should not have a customised schema
+  // Nullability of JSchemaTypeGenerationContext appears to be incorrect.
+#pragma warning disable CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
+  public override JSchema? GetSchema(JSchemaTypeGenerationContext context)
   {
     var attributes = context.MemberProperty?.AttributeProvider?.GetAttributes(false) ?? new List<Attribute>();
     var isSecretString = attributes.Any(att => att is SecretAttribute);
@@ -165,6 +165,8 @@ public class SpeckleSecretProvider : JSchemaGenerationProvider
 
     return null;
   }
+#pragma warning restore CS8764 // Nullability of return type doesn't match overridden member (possibly because of nullability attributes).
+
 
   private JSchema CreateSchemaWithWriteOnly(Type type, Required required)
   {
