@@ -333,6 +333,13 @@ public partial class ConverterRevit
         continue;
       }
 
+      //ignore parameters that are not visible by the end users
+      //these could be set by plugins, and historically have conflited with our send operation
+      if (param.Definition is InternalDefinition internalDef && !internalDef.Visible)
+      {
+        continue;
+      }
+
       var speckleParam = ParameterToSpeckle(param, internalName, isTypeParameter);
       paramDict[internalName] = speckleParam;
     }
