@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Speckle.Converters.Common;
+using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
@@ -32,7 +33,7 @@ internal sealed class RoofBaseConversionToSpeckle : BaseConversionToSpeckle<DB.R
 
     _parameterObjectAssigner.AssignParametersToBase(target, revitRoof);
     revitRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
-    _hostedElementConverter.AssignHostedElements(target, revitRoof);
+    revitRoof.elements = _hostedElementConverter.ConvertHostedElements(target.GetHostedElementIds()).ToList();
 
     return revitRoof;
   }

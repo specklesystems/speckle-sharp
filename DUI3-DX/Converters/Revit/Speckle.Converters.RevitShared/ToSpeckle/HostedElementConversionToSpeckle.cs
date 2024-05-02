@@ -1,9 +1,7 @@
 using Autodesk.Revit.DB;
 using Speckle.Converters.Common;
-using Speckle.Converters.RevitShared.Extensions;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -14,52 +12,41 @@ public class HostedElementConversionToSpeckle
 {
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ISpeckleConverterToSpeckle _converter;
+  private readonly RevitConversionContextStack _contextStack;
 
   public HostedElementConversionToSpeckle(
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
-    ISpeckleConverterToSpeckle converter
+    ISpeckleConverterToSpeckle converter,
+    RevitConversionContextStack contextStack
   )
   {
     _convertedObjectsCache = convertedObjectsCache;
     _converter = converter;
+    _contextStack = contextStack;
   }
 
-  public void AssignHostedElements(DB.Element element, Base @base)
+  public IEnumerable<Base> ConvertHostedElements(IEnumerable<ElementId> hostedElementIds)
   {
-    List<Base> hostedObjects = GetHostedElementsConverted(element);
-    if (hostedObjects.Count > 0)
-    {
-      if (@base.GetDetachedProp("elements") is List<Base> elements)
-      {
-        elements.AddRange(hostedObjects);
-      }
-      else
-      {
-        @base.SetDetachedProp("elements", hostedObjects);
-      }
-    }
-  }
-
-  public List<Base> GetHostedElementsConverted(Element host)
-  {
-    return GetHostedElementsConvertedFromIds(host, host.GetHostedElementIds());
-  }
-
-  // POC: needs to be reviewed
-  public List<Base> GetHostedElementsConvertedFromIds(Element host, IList<ElementId> hostedElementIds)
-  {
-    var convertedHostedElements = new List<Base>();
     foreach (var elemId in hostedElementIds)
     {
-      var element = host.Document.GetElement(elemId);
+      Element element = _contextStack.Current.Document.Document.GetElement(elemId);
       if (_convertedObjectsCache.ContainsBaseConvertedFromId(element.UniqueId))
       {
         continue;
       }
 
-      convertedHostedElements.Add(_converter.Convert(element));
-    }
+      Base @base;
+      try
+      {
+        @base = _converter.Convert(element);
+      }
+      catch (SpeckleConversionException)
+      {
+        // POC: logging
+        continue;
+      }
 
-    return convertedHostedElements;
+      yield return @base;
+    }
   }
 }

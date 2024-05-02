@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Objects.BuiltElements.Revit;
+using Speckle.Converters.RevitShared.Extensions;
 
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
@@ -63,7 +64,9 @@ public class ExtrusionRoofConversionToSpeckle : BaseConversionToSpeckle<DB.Extru
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleExtrusionRoof);
     speckleExtrusionRoof.displayValue = _displayValueExtractor.GetDisplayValue(target);
-    _hostedElementConverter.AssignHostedElements(target, speckleExtrusionRoof);
+    speckleExtrusionRoof.elements = _hostedElementConverter
+      .ConvertHostedElements(target.GetHostedElementIds())
+      .ToList();
 
     return speckleExtrusionRoof;
   }
