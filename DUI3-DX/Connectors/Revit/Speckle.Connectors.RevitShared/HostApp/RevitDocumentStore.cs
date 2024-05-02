@@ -43,9 +43,28 @@ internal class RevitDocumentStore : DocumentModelStore
 
     uiApplication.ApplicationClosing += (_, _) => WriteToFile();
 
-    uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile();
+    //uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
+    //uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
+    //uiApplication.Application.DocumentClosing += (_, _) => WriteToFile();
+    //uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile();
 
+    // This is the place where we track document switch for old document -> Responsible to Write into old
+    uiApplication.ViewActivating += (_, e) =>
+    {
+      if (e.Document == null)
+      {
+        return;
+      }
+
+      if (e.NewActiveView.Document.Equals(e.CurrentActiveView.Document))
+      {
+        return;
+      }
+
+      WriteToFile();
+    };
+
+    // This is the place where we track document switch for new document -> Responsible to Read from new doc
     uiApplication.ViewActivated += (_, e) =>
     {
       if (e.Document == null)
@@ -53,7 +72,8 @@ internal class RevitDocumentStore : DocumentModelStore
         return;
       }
 
-      if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName)
+      // Return only if we are switching views that belongs to same document
+      if (e.PreviousActiveView is not null && e.PreviousActiveView.Document.Equals(e.CurrentActiveView.Document))
       {
         return;
       }
@@ -64,7 +84,7 @@ internal class RevitDocumentStore : DocumentModelStore
     };
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
-    uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+    //uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
   }
 
   public override void WriteToFile()
@@ -77,47 +97,29 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    /*_syncToMainThread
-      .RunOnThread(() =>
-      {
-        // POC: re-instate
-        using Transaction t = new(doc.Document, "Speckle Write State");
-        t.Start();
-        using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
-
-        using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
-        string serializedModels = Serialize();
-        stateEntity.Set("contents", serializedModels);
-
-        using Entity idEntity = new(_idStorageSchema.GetSchema());
-        idEntity.Set("Id", s_revitDocumentStoreId);
-
-        ds.SetEntity(idEntity);
-        ds.SetEntity(stateEntity);
-        t.Commit();
-
-        return Task.CompletedTask;
-      })
-      .ConfigureAwait(false);*/
+    // NOTE: Document switched fixed by putting seralization outside of the RevitTask, otherwise it tries to serialize
+    // empty document state since we create new one per document.
+    string serializedModels = Serialize();
 
     // POC: previously we were calling below code
-    // RevitTask.RunAsync(() => {
-    // POC: re-instate
-    //using Transaction t = new(doc.Document, "Speckle Write State");
-    //t.Start();
-    //using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
+    RevitTask.RunAsync(() =>
+    {
+      // POC: re-instate
+      using Transaction t = new(doc.Document, "Speckle Write State");
+      t.Start();
+      using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
 
-    //using Entity stateEntity = new(DocumentModelStoreSchema.GetSchema());
-    //string serializedModels = Serialize();
-    //stateEntity.Set("contents", serializedModels);
+      using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
+      // string serializedModels = Serialize();
+      stateEntity.Set("contents", serializedModels);
 
-    //using Entity idEntity = new(IdStorageSchema.GetSchema());
-    //idEntity.Set("Id", s_revitDocumentStoreId);
+      using Entity idEntity = new(_idStorageSchema.GetSchema());
+      idEntity.Set("Id", s_revitDocumentStoreId);
 
-    //ds.SetEntity(idEntity);
-    //ds.SetEntity(stateEntity);
-    //t.Commit();
-    // });
+      ds.SetEntity(idEntity);
+      ds.SetEntity(stateEntity);
+      t.Commit();
+    });
   }
 
   public override void ReadFromFile()
@@ -141,7 +143,7 @@ internal class RevitDocumentStore : DocumentModelStore
     }
   }
 
-  private DataStorage GetSettingsDataStorage(Document doc)
+  private DataStorage? GetSettingsDataStorage(Document doc)
   {
     // POC: re-instate
     using FilteredElementCollector collector = new(doc);
@@ -168,7 +170,7 @@ internal class RevitDocumentStore : DocumentModelStore
     return null;
   }
 
-  private Entity GetSpeckleEntity(Document doc)
+  private Entity? GetSpeckleEntity(Document doc)
   {
     // POC: re-instate
     using FilteredElementCollector collector = new(doc);

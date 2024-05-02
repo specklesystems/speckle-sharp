@@ -59,9 +59,12 @@ public class AutofacUIModule : Module
     builder.RegisterType<RevitPlugin>().As<IRevitPlugin>().SingleInstance();
     builder.RegisterType<BrowserBridge>().As<IBridge>().InstancePerDependency();
 
+    // register
+    builder.RegisterType<RevitDocumentStore>().As<DocumentModelStore>().SingleInstance();
+
     // Storage Schema
-    builder.RegisterType<DocumentModelStorageSchema>().AsSelf().InstancePerLifetimeScope();
-    builder.RegisterType<IdStorageSchema>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<DocumentModelStorageSchema>().InstancePerLifetimeScope();
+    builder.RegisterType<IdStorageSchema>().InstancePerLifetimeScope();
 
     // POC: we need to review the scopes and create a document on what the policy is
     // and where the UoW should be
@@ -84,9 +87,6 @@ public class AutofacUIModule : Module
     builder.RegisterType<RootObjectBuilder>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ServerTransport>().As<ITransport>().InstancePerDependency();
     builder.RegisterType<RootObjectSender>().As<IRootObjectSender>().SingleInstance();
-
-    // register
-    builder.RegisterType<RevitDocumentStore>().As<DocumentModelStore>().SingleInstance().AsSelf();
 
     // POC: this can be injected in maybe a common place, perhaps a module in Speckle.Converters.Common.DependencyInjection
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();
