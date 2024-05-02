@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -108,51 +109,17 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     // POC: GetElementsFromDocument could be interfaced out, extension is cleaner
     List<ElementId> elementIds = doc.GetElements(objectsIds).Select(e => e.Id).ToList();
 
+    if (elementIds.Count == 0)
+    {
+      Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
+      return;
+    }
+
     // UiDocument operations should be wrapped into RevitTask, otherwise doesn't work on other tasks.
     RevitTask.RunAsync(() =>
     {
       activeUIDoc.Selection.SetElementIds(elementIds);
       activeUIDoc.ShowElements(elementIds);
-
-      // Create a BoundingBoxXYZ to encompass the selected elements
-      BoundingBoxXYZ selectionBoundingBox = new();
-      bool first = true;
-
-      foreach (ElementId elementId in elementIds)
-      {
-        Element element = doc.GetElement(elementId);
-
-        if (element != null)
-        {
-          BoundingBoxXYZ elementBoundingBox = element.get_BoundingBox(null);
-
-          if (elementBoundingBox != null)
-          {
-            if (first)
-            {
-              selectionBoundingBox = elementBoundingBox;
-              first = false;
-            }
-            else
-            {
-              // selectionBoundingBox.Min = XYZ.Min(selectionBoundingBox.Min, elementBoundingBox.Min);
-              // selectionBoundingBox.Max = XYZ.Max(selectionBoundingBox.Max, elementBoundingBox.Max);
-            }
-          }
-        }
-      }
-
-      // Zoom the view to the selection bounding box
-      if (!first)
-      {
-        View activeView = activeUIDoc.ActiveView;
-
-        using Transaction tr = new(doc, "Zoom to Selection");
-        tr.Start();
-        activeView.CropBox = selectionBoundingBox;
-        doc.Regenerate();
-        tr.Commit();
-      }
     });
   }
 

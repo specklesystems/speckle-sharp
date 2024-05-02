@@ -22,9 +22,8 @@ public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
     _scalingService = scalingService;
   }
 
-  public SOG.Line RawConvert(DB.Line target)
-  {
-    return new()
+  public SOG.Line RawConvert(DB.Line target) =>
+    new()
     {
       units = _contextStack.Current.SpeckleUnits,
       start = _xyzToPointConverter.RawConvert(target.GetEndPoint(0)),
@@ -32,5 +31,4 @@ public class LineConversionToSpeckle : IRawConversion<DB.Line, SOG.Line>
       domain = new Interval(target.GetEndParameter(0), target.GetEndParameter(1)),
       length = _scalingService.ScaleLength(target.Length)
     };
-  }
 }

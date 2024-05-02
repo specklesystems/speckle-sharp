@@ -23,8 +23,11 @@ public class SpeckleConnectorsRhino7Command : Command
     );
   }
 
+#nullable disable
   ///<summary>The only instance of this command.</summary>
   public static SpeckleConnectorsRhino7Command Instance { get; private set; }
+
+#nullable enable
 
   ///<returns>The command name as it appears on the Rhino command line.</returns>
   public override string EnglishName => "SpeckleNewUI";
