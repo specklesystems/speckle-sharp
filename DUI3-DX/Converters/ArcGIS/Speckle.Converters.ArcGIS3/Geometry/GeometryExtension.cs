@@ -31,6 +31,24 @@ public static class GeometryUtils
       | (int)Math.Round(color.Values[2]);
   }
 
+  public static List<double> Values(this SOG.Arc arc)
+  {
+    List<double> coords =
+      new()
+      {
+        arc.startPoint.x,
+        arc.startPoint.y,
+        arc.startPoint.z,
+        arc.midPoint.x,
+        arc.midPoint.y,
+        arc.midPoint.z,
+        arc.endPoint.x,
+        arc.endPoint.y,
+        arc.endPoint.z
+      };
+    return coords;
+  }
+
   public static bool IsClockwisePolygon(this SOG.Polyline polyline)
   {
     bool isClockwise;
