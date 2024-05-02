@@ -14,16 +14,19 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
 {
   private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
+  private readonly IFieldsUtils _fieldsUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public FeatureClassToHostConverter(
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IFeatureClassUtils featureClassUtils,
+    IFieldsUtils fieldsUtils,
     IArcGISProjectUtils arcGISProjectUtils
   )
   {
     _gisGeometryConverter = gisGeometryConverter;
     _featureClassUtils = featureClassUtils;
+    _fieldsUtils = fieldsUtils;
     _arcGISProjectUtils = arcGISProjectUtils;
   }
 
@@ -45,7 +48,7 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
     SpatialReference spatialRef = SpatialReferenceBuilder.CreateSpatialReference(wktString);
 
     // create Fields
-    List<FieldDescription> fields = _featureClassUtils.GetFieldsFromSpeckleLayer(target);
+    List<FieldDescription> fields = _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // getting rid of forbidden symbols in the class name: adding a letter in the beginning
     // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm

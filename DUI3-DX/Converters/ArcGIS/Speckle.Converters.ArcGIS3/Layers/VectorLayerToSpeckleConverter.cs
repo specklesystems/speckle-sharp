@@ -13,17 +13,20 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRawConversion<FeatureLayer, VectorLayer>
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
-  private readonly IConversionContextStack<Map, Unit> _contextStack;
   private readonly IFeatureClassUtils _featureClassUtils;
+  private readonly IFieldsUtils _fieldsUtils;
+  private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
     IRawConversion<Row, GisFeature> gisFeatureConverter,
     IFeatureClassUtils featureClassUtils,
+    IFieldsUtils fieldsUtils,
     IConversionContextStack<Map, Unit> contextStack
   )
   {
     _gisFeatureConverter = gisFeatureConverter;
     _featureClassUtils = featureClassUtils;
+    _fieldsUtils = fieldsUtils;
     _contextStack = contextStack;
   }
 
@@ -84,7 +87,7 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
         {
           continue;
         }
-        FieldType fieldType = _featureClassUtils.GetFieldTypeFromInt((int)field.Type);
+        FieldType fieldType = _fieldsUtils.GetFieldTypeFromInt((int)field.Type);
         allLayerAttributes[name] = (int)fieldType;
       }
     }

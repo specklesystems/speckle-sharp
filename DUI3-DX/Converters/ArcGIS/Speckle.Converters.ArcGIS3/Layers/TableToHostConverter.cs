@@ -11,12 +11,18 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
 {
   private readonly IFeatureClassUtils _featureClassUtils;
+  private readonly IFieldsUtils _fieldsUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
-  public TableLayerToHostConverter(IFeatureClassUtils featureClassUtils, IArcGISProjectUtils arcGISProjectUtils)
+  public TableLayerToHostConverter(
+    IFeatureClassUtils featureClassUtils,
+    IArcGISProjectUtils arcGISProjectUtils,
+    IFieldsUtils fieldsUtils
+  )
   {
     _featureClassUtils = featureClassUtils;
     _arcGISProjectUtils = arcGISProjectUtils;
+    _fieldsUtils = fieldsUtils;
   }
 
   public Table RawConvert(VectorLayer target)
@@ -27,7 +33,7 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
     SchemaBuilder schemaBuilder = new(geodatabase);
 
     // create Fields
-    List<FieldDescription> fields = _featureClassUtils.GetFieldsFromSpeckleLayer(target);
+    List<FieldDescription> fields = _fieldsUtils.GetFieldsFromSpeckleLayer(target);
 
     // getting rid of forbidden symbols in the class name: adding a letter in the beginning
     // https://pro.arcgis.com/en/pro-app/3.1/tool-reference/tool-errors-and-warnings/001001-010000/tool-errors-and-warnings-00001-00025-000020.htm
@@ -51,10 +57,10 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
       TableDescription featureClassDescription = new(featureClassName, fields);
       TableToken featureClassToken = schemaBuilder.Create(featureClassDescription);
     }
-    catch (ArgumentException ex)
+    catch (ArgumentException)
     {
       // if name has invalid characters/combinations
-      throw new ArgumentException($"{ex.Message}: {featureClassName}");
+      throw;
     }
     bool buildStatus = schemaBuilder.Build();
     if (!buildStatus)
