@@ -19,6 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\IRevitConversionContextStack.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IRevitVersionConversionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BeamConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\BoundarySegmentConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ColumnConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\ArcToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\BoundingBoxXYZToSpeckleConverter.cs" />
@@ -46,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoomConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ModelCurveToSpeckleTopLevelConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Helpers\ParameterObjectAssigner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ParameterValueExtractor.cs" />
