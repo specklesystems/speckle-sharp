@@ -64,7 +64,6 @@ public class AutofacRhinoModule : Module
 
     // register send filters
     builder.RegisterType<RhinoSelectionFilter>().As<ISendFilter>().InstancePerDependency();
-    builder.RegisterType<RhinoEverythingFilter>().As<ISendFilter>().InstancePerDependency();
 
     // register send operation and dependencies
     builder.RegisterType<UnitOfWorkFactory>().As<IUnitOfWorkFactory>().InstancePerLifetimeScope();

@@ -13,7 +13,7 @@ public interface IBridge
   // POC: documnetation comments
   string FrontendBoundName { get; }
 
-  void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser);
+  void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser, Action showDevToolsAction);
 
   /// <summary>
   /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.
