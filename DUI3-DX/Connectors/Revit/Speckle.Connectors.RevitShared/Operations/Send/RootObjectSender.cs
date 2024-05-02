@@ -14,7 +14,7 @@ namespace Speckle.Connectors.Revit.Operations.Send;
 /// Default implementation of the <see cref="IRootObjectSender"/> which takes a <see cref="Base"/> and sends
 /// it to a server described by the parameters in the <see cref="Send"/> method
 /// </summary>
-internal class RootObjectSender : IRootObjectSender
+internal sealed class RootObjectSender : IRootObjectSender
 {
   // POC: unsure about this factory pattern - a little weakly typed (being a Func)
   private readonly ServerTransport.Factory _transportFactory;

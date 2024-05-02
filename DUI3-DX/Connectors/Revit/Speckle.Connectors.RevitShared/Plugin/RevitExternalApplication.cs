@@ -84,18 +84,6 @@ internal class RevitExternalApplication : IExternalApplication
     return Result.Succeeded;
   }
 
-  static IEnumerable<DLlVersion> Walk(DLlVersion dllv)
-  {
-    var nodes = new Stack<DLlVersion>(new[] { dllv });
-    while (nodes.Any())
-    {
-      DLlVersion node = nodes.Pop();
-      yield return node;
-      foreach (var n in node.dependencyChains)
-        nodes.Push(n);
-    }
-  }
-
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
     // POC: need to settle on the mechanism and location as to where we should register these services

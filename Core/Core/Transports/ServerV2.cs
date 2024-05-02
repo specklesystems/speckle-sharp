@@ -16,6 +16,8 @@ namespace Speckle.Core.Transports;
 
 public sealed class ServerTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
+  // POC: autofac uses this to construct a factory in place if this delegate and this can then be injected and parameters passed
+  // this should, and I think can, come out of this class, because I think autofac does magic based on the return type
   public delegate ITransport Factory(Account account, string streamId, int timeoutSeconds, string? blobStorageFolder);
 
   private readonly object _elapsedLock = new();

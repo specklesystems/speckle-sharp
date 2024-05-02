@@ -4,6 +4,7 @@ namespace Speckle.Converters.RevitShared;
 
 // POC: this could perhaps becomes some RevitDocumentService but also...
 // This reference point feature needs review. We could do with knowing whether this feature is widely used.
+// there's also some bogus disposal happening
 // https://spockle.atlassian.net/browse/CNX-9357
 public class ReferencePointConverter : IReferencePointConverter
 {
@@ -68,7 +69,7 @@ public class ReferencePointConverter : IReferencePointConverter
     var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
     var surveyPoint = points.FirstOrDefault(o => o.IsShared);
 
-    // POC:
+    // POC: it's not clear what support is needed for this
     switch (referencePointSetting)
     {
       case REFPOINT_PROJECT_BASE: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
@@ -78,6 +79,8 @@ public class ReferencePointConverter : IReferencePointConverter
       case REFPOINT_SURVEY:
         // note that the project base (ui) rotation is registered on the survey pt, not on the base point
         // retrieve the survey point rotation from the project point
+
+        // POC: should a null angle resolve to 0?
         var angle = projectPoint.get_Parameter(DB.BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
 
         // POC: following disposed incorrectly or early or maybe a false negative?
