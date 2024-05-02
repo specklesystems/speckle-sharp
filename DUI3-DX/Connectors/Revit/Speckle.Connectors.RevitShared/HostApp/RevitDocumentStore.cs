@@ -102,24 +102,25 @@ internal class RevitDocumentStore : DocumentModelStore
     string serializedModels = Serialize();
 
     // POC: previously we were calling below code
-    RevitTask.RunAsync(() =>
-    {
-      // POC: re-instate
-      using Transaction t = new(doc.Document, "Speckle Write State");
-      t.Start();
-      using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
+    RevitTask
+      .RunAsync(() =>
+      {
+        using Transaction t = new(doc.Document, "Speckle Write State");
+        t.Start();
+        using DataStorage ds = GetSettingsDataStorage(doc.Document) ?? DataStorage.Create(doc.Document);
 
-      using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
-      // string serializedModels = Serialize();
-      stateEntity.Set("contents", serializedModels);
+        using Entity stateEntity = new(_documentModelStorageSchema.GetSchema());
+        // string serializedModels = Serialize();
+        stateEntity.Set("contents", serializedModels);
 
-      using Entity idEntity = new(_idStorageSchema.GetSchema());
-      idEntity.Set("Id", s_revitDocumentStoreId);
+        using Entity idEntity = new(_idStorageSchema.GetSchema());
+        idEntity.Set("Id", s_revitDocumentStoreId);
 
-      ds.SetEntity(idEntity);
-      ds.SetEntity(stateEntity);
-      t.Commit();
-    });
+        ds.SetEntity(idEntity);
+        ds.SetEntity(stateEntity);
+        t.Commit();
+      })
+      .ConfigureAwait(false);
   }
 
   public override void ReadFromFile()
