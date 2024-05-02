@@ -37,7 +37,10 @@ public class AutofacRhinoConverterModule : Module
       .RegisterType<Factory<string, IHostObjectToSpeckleConversion>>()
       .As<IFactory<string, IHostObjectToSpeckleConversion>>()
       .InstancePerLifetimeScope();
-
+    builder
+      .RegisterType<RecursiveConverterResolver<ISpeckleObjectToHostConversion>>()
+      .As<IConverterResolver<ISpeckleObjectToHostConversion>>()
+      .InstancePerLifetimeScope();
     builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
 
     /*

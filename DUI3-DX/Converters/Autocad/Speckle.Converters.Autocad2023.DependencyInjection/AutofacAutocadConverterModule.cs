@@ -33,5 +33,9 @@ public class AutofacAutocadConverterModule : Module
     builder
       .RegisterType<Factory<string, ISpeckleObjectToHostConversion>>()
       .As<IFactory<string, ISpeckleObjectToHostConversion>>();
+    builder
+      .RegisterType<RecursiveConverterResolver<ISpeckleObjectToHostConversion>>()
+      .As<IConverterResolver<ISpeckleObjectToHostConversion>>()
+      .InstancePerLifetimeScope();
   }
 }
