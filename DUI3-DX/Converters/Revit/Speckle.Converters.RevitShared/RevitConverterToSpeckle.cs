@@ -53,6 +53,8 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     return result;
   }
 
+  // POC: consider making this a more accessible as a pattern to other connectors
+  // https://spockle.atlassian.net/browse/CNX-9397
   private IHostObjectToSpeckleConversion? GetConversionForObject(Type objectType)
   {
     if (objectType == typeof(object))

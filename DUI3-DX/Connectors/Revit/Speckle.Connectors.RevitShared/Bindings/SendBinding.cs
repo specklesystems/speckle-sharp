@@ -73,25 +73,39 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
     // it can be injected where needed instead of passing it around like a bomb :D
     CancellationTokenSource cts = CancellationManager.InitCancellationTokenSource(modelCardId);
 
-    if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+    // POC: this try catch pattern is coming from Rhino. I see there is a semi implemented "SpeckleTopLevelExceptionHandler"
+    // above that wraps the call of this HandleSend, but it currently is not doing anything - resulting in all errors from here
+    // bubbling up to the bridge.
+    try
     {
-      throw new InvalidOperationException("No publish model card was found.");
+      if (_store.GetModelById(modelCardId) is not SenderModelCard modelCard)
+      {
+        throw new InvalidOperationException("No publish model card was found.");
+      }
+
+      using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
+
+      string versionId = await sendOperation.Service
+        .Execute(
+          modelCard.SendFilter,
+          modelCard.AccountId,
+          modelCard.ProjectId,
+          modelCard.ModelId,
+          (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
+          cts.Token
+        )
+        .ConfigureAwait(false);
+
+      Commands.SetModelCreatedVersionId(modelCardId, versionId);
     }
-
-    using IUnitOfWork<SendOperation> sendOperation = _unitOfWorkFactory.Resolve<SendOperation>();
-
-    string versionId = await sendOperation.Service
-      .Execute(
-        modelCard.SendFilter,
-        modelCard.AccountId,
-        modelCard.ProjectId,
-        modelCard.ModelId,
-        (status, progress) => OnSendOperationProgress(modelCardId, status, progress),
-        cts.Token
-      )
-      .ConfigureAwait(false);
-
-    Commands.SetModelCreatedVersionId(modelCardId, versionId);
+    catch (OperationCanceledException)
+    {
+      return;
+    }
+    catch (Exception e) when (!e.IsFatal()) // All exceptions should be handled here if possible, otherwise we enter "crashing the host app" territory.
+    {
+      Commands.SetModelError(modelCardId, e);
+    }
   }
 
   private void OnSendOperationProgress(string modelCardId, string status, double? progress)

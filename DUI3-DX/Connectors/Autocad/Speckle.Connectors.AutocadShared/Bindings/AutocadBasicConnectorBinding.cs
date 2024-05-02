@@ -97,7 +97,14 @@ public class AutocadBasicConnectorBinding : IBasicConnectorBinding
     if (model is SenderModelCard senderModelCard)
     {
       List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(senderModelCard.SendFilter.GetObjectIds());
+      objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
+    }
 
+    if (model is ReceiverModelCard receiverModelCard)
+    {
+      List<(DBObject obj, string applicationId)> dbObjects = doc.GetObjects(
+        receiverModelCard.ReceiveResult.BakedObjectIds
+      );
       objectIds = dbObjects.Select(tuple => tuple.obj.Id).ToArray();
     }
 
