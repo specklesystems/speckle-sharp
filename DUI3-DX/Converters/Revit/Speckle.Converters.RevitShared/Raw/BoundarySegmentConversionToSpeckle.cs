@@ -14,7 +14,7 @@ public class BoundarySegmentConversionToSpeckle : IRawConversion<IList<DB.Bounda
 
   public SOG.Polycurve RawConvert(IList<DB.BoundarySegment> target)
   {
-    if (!target.Any())
+    if (target.Count == 0)
     {
       throw new ArgumentException("Input Boundary segment list must at least have 1 segment");
     }
@@ -25,8 +25,8 @@ public class BoundarySegmentConversionToSpeckle : IRawConversion<IList<DB.Bounda
       DB.Curve revitCurve = segment.GetCurve();
       var curve = _curveConverter.RawConvert(revitCurve);
 
-      // POC: Not sure why we would need these to have an ElementID attached.
-      // curve["elementId"] = segment.ElementId.ToString();
+      // POC: We used to attach the `elementID` of every curve in a PolyCurve as a dynamic property.
+      // We've removed this as it seemed unnecessary.
 
       poly.segments.Add(curve);
     }
