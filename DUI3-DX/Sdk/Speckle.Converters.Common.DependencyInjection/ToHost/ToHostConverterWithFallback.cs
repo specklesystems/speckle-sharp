@@ -5,6 +5,7 @@ using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
+// POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
 public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
 {
   private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
