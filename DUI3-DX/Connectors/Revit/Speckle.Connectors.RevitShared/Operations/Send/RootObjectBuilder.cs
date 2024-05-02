@@ -37,6 +37,11 @@ public class RootObjectBuilder
   {
     List<Element> objects = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
 
+    if (objects.Count == 0)
+    {
+      throw new InvalidOperationException("No objects were found. Please update your send filter!");
+    }
+
     Base commitObject = new();
 
     foreach (Element obj in objects)
