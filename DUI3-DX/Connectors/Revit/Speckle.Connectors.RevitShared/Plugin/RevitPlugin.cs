@@ -107,8 +107,11 @@ internal class RevitPlugin : IRevitPlugin
 
     _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      // POC dev tools
+      // POC: dev tools
+      // also this can be called when the panel is closing, we should exit early
+#if DEBUG
       _cefSharpPanel.ShowDevTools();
+#endif
 
       foreach (IBinding binding in _bindings.Select(x => x.Value))
       {

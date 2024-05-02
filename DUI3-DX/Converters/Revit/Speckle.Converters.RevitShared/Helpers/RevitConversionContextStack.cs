@@ -10,7 +10,9 @@ namespace Speckle.Converters.RevitShared.Helpers;
 )]
 // POC: so this should *probably* be Document and NOT UI.UIDocument, the former is Conversion centric
 // and the latter is more for connector
-public class RevitConversionContextStack : ConversionContextStack<UI.UIDocument, ForgeTypeId>
+public class RevitConversionContextStack
+  : ConversionContextStack<UI.UIDocument, ForgeTypeId>,
+    IRevitConversionContextStack
 {
   public const double TOLERANCE = 0.0164042; // 5mm in ft
 
