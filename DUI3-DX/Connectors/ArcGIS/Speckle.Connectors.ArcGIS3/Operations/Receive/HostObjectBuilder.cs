@@ -46,11 +46,11 @@ public class HostObjectBuilder : IHostObjectBuilder
     _arcGISProjectUtils.AddDatabaseToProject(databasePath);
 
     // POC: This is where we will define our receive strategy, or maybe later somewhere else according to some setting pass from UI?
-    IEnumerable<(List<string>, Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
+    IEnumerable<(string[], Base)> objectsWithPath = rootObject.TraverseWithPath((obj) => obj is not Collection);
 
     List<string> objectIds = new();
     int count = 0;
-    foreach ((List<string> path, Base obj) in objectsWithPath)
+    foreach ((string[] path, Base obj) in objectsWithPath)
     {
       if (cancellationToken.IsCancellationRequested)
       {
