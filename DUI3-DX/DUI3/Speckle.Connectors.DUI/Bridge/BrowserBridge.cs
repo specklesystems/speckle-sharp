@@ -83,7 +83,12 @@ public class BrowserBridge : IBridge
     _mainThreadContext = SynchronizationContext.Current;
   }
 
-  public void AssociateWithBinding(IBinding binding, Action<string> scriptMethod, object browser)
+  public void AssociateWithBinding(
+    IBinding binding,
+    Action<string> scriptMethod,
+    object browser,
+    Action showDevToolsAction
+  )
   {
     // set via binding property to ensure explosion if already bound
     Binding = binding;
@@ -93,6 +98,7 @@ public class BrowserBridge : IBridge
 
     _bindingType = binding.GetType();
     BindingMethodCache = new Dictionary<string, MethodInfo>();
+    ShowDevToolsAction = showDevToolsAction;
 
     // Note: we need to filter out getter and setter methods here because they are not really nicely
     // supported across browsers, hence the !method.IsSpecialName.

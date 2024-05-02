@@ -4,6 +4,7 @@ using Autofac;
 using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.Autocad;
 using Speckle.Converters.Common;
+using Speckle.Converters.Common.DependencyInjection.ToHost;
 using Speckle.Converters.Common.Objects;
 
 namespace Speckle.Converters.Autocad2023.DependencyInjection;
@@ -17,7 +18,7 @@ public class AutofacAutocadConverterModule : Module
     // should be InstancePerLifetimeScope
     // most things should be InstancePerLifetimeScope so we get one per operation
     builder.RegisterType<AutocadConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().SingleInstance();
-    builder.RegisterType<AutocadConverterToHost>().As<ISpeckleConverterToHost>().SingleInstance();
+    builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().SingleInstance();
 
     // single stack per conversion
     builder

@@ -1,41 +1,30 @@
 using System.Diagnostics;
 using Autodesk.AutoCAD.DatabaseServices;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Connectors.Autocad.HostApp;
 using Speckle.Connectors.Autocad.HostApp.Extensions;
 using Speckle.Core.Models;
 using Speckle.Connectors.Utils.Builders;
 using Speckle.Converters.Common;
 using Speckle.Core.Logging;
-using Speckle.Core.Models.Extensions;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.Connectors.Autocad.Operations.Receive;
 
 public class HostObjectBuilder : IHostObjectBuilder
 {
-  private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+  private readonly ISpeckleConverterToHost _converter;
   private readonly AutocadLayerManager _autocadLayerManager;
+  private readonly GraphTraversal _traversalFunction;
 
-  public HostObjectBuilder(IUnitOfWorkFactory unitOfWorkFactory, AutocadLayerManager autocadLayerManager)
+  public HostObjectBuilder(
+    ISpeckleConverterToHost converter,
+    AutocadLayerManager autocadLayerManager,
+    GraphTraversal traversalFunction
+  )
   {
-    _unitOfWorkFactory = unitOfWorkFactory;
+    _converter = converter;
     _autocadLayerManager = autocadLayerManager;
-  }
-
-  private List<(List<string>, Base)> GetBaseWithPath(Base commitObject, CancellationToken cancellationToken)
-  {
-    List<(List<string>, Base)> objectsToConvert = new();
-    foreach ((List<string> objPath, Base obj) in commitObject.TraverseWithPath((obj) => obj is not Collection))
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-
-      if (obj is not Collection) // POC: equivalent of converter.CanConvertToNative(obj) ?
-      {
-        objectsToConvert.Add((objPath, obj));
-      }
-    }
-
-    return objectsToConvert;
+    _traversalFunction = traversalFunction;
   }
 
   public IEnumerable<string> Build(
@@ -49,14 +38,10 @@ public class HostObjectBuilder : IHostObjectBuilder
     // Prompt the UI conversion started. Progress bar will swoosh.
     onOperationProgressed?.Invoke("Converting", null);
 
-    // POC: does this feel like the right place? I am wondering if this should be called from within send/rcv?
-    // begin the unit of work
-    using var uow = _unitOfWorkFactory.Resolve<ISpeckleConverterToHost>();
-    var converter = uow.Service;
-
     // Layer filter for received commit with project and model name
     _autocadLayerManager.CreateLayerFilter(projectName, modelName);
-    List<(List<string>, Base)> objectsWithPath = GetBaseWithPath(rootObject, cancellationToken);
+    var traversalGraph = _traversalFunction.Traverse(rootObject).ToArray();
+
     string baseLayerPrefix = $"SPK-{projectName}-{modelName}-";
 
     HashSet<string> uniqueLayerNames = new();
@@ -66,20 +51,28 @@ public class HostObjectBuilder : IHostObjectBuilder
     // POC: Will be addressed to move it into AutocadContext!
     using (TransactionContext.StartTransaction(Application.DocumentManager.MdiActiveDocument))
     {
-      foreach ((List<string> path, Base obj) in objectsWithPath)
+      foreach (TraversalContext tc in traversalGraph)
       {
         cancellationToken.ThrowIfCancellationRequested();
 
         try
         {
-          string layerFullName = _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path));
+          string layerFullName = GetLayerPath(tc, baseLayerPrefix);
 
           if (uniqueLayerNames.Add(layerFullName))
           {
             _autocadLayerManager.CreateLayerOrPurge(layerFullName);
           }
 
-          object converted = converter.Convert(obj);
+          //POC: this transaction used to be called in the converter, We've moved it here to unify converter implementation
+          //POC: Is this transaction 100% needed? we are already inside a transaction?
+          object converted;
+          using (var tr = Application.DocumentManager.CurrentDocument.Database.TransactionManager.StartTransaction())
+          {
+            converted = _converter.Convert(tc.Current);
+            tr.Commit();
+          }
+
           List<object> flattened = Utilities.FlattenToHostConversionResult(converted);
 
           foreach (Entity conversionResult in flattened.Cast<Entity>())
@@ -95,7 +88,7 @@ public class HostObjectBuilder : IHostObjectBuilder
             handleValues.Add(conversionResult.Handle.Value.ToString());
           }
 
-          onOperationProgressed?.Invoke("Converting", (double)++count / objectsWithPath.Count);
+          onOperationProgressed?.Invoke("Converting", (double)++count / traversalGraph.Length);
         }
         catch (Exception e) when (!e.IsFatal()) // DO NOT CATCH SPECIFIC STUFF, conversion errors should be recoverable
         {
@@ -105,5 +98,13 @@ public class HostObjectBuilder : IHostObjectBuilder
       }
     }
     return handleValues;
+  }
+
+  private string GetLayerPath(TraversalContext context, string baseLayerPrefix)
+  {
+    string[] collectionBasedPath = context.GetAscendantOfType<Collection>().Select(c => c.name).ToArray();
+    string[] path = collectionBasedPath.Any() ? collectionBasedPath : context.GetPropertyPath().ToArray();
+
+    return _autocadLayerManager.LayerFullName(baseLayerPrefix, string.Join("-", path)); //TODO: reverse path?
   }
 }

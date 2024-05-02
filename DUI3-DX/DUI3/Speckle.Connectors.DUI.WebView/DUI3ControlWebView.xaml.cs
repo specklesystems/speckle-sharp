@@ -34,7 +34,7 @@ public sealed partial class DUI3ControlWebView : UserControl
   {
     foreach (IBinding binding in _bindings)
     {
-      binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser);
+      binding.Parent.AssociateWithBinding(binding, ExecuteScriptAsyncMethod, Browser, ShowDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(binding.Name, binding.Parent);
     }
   }

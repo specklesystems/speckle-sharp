@@ -102,13 +102,18 @@ internal class RevitPlugin : IRevitPlugin
     foreach (IBinding binding in _bindings.Select(x => x.Value))
     {
       Debug.WriteLine(binding.Name);
-      binding.Parent.AssociateWithBinding(binding, _cefSharpPanel.Browser.ExecuteScriptAsync, _cefSharpPanel);
+      binding.Parent.AssociateWithBinding(
+        binding,
+        _cefSharpPanel.Browser.ExecuteScriptAsync,
+        _cefSharpPanel,
+        _cefSharpPanel.ShowDevTools
+      );
     }
 
     _cefSharpPanel.Browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      // POC dev tools
-      _cefSharpPanel.ShowDevTools();
+      // Not needed now, as we should be able to correctly open dev tools via user interaction
+      // _cefSharpPanel.ShowDevTools();
 
       foreach (IBinding binding in _bindings.Select(x => x.Value))
       {
@@ -122,7 +127,9 @@ internal class RevitPlugin : IRevitPlugin
         );
       }
 
-      _cefSharpPanel.Browser.Load("https://deploy-preview-2076--boisterous-douhua-e3cefb.netlify.app/");
+      // POC: Below line seems unneccesary but not removing just in case we did it like this? Maybe check it later
+      //  with some other revit connectors again since CefSharp version is different
+      // _cefSharpPanel.Browser.Load("https://boisterous-douhua-e3cefb.netlify.app/");
 
       // POC: not sure where this comes from
 #if REVIT2020

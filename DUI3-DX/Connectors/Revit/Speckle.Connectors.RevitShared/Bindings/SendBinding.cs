@@ -50,7 +50,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
   public List<ISendFilter> GetSendFilters()
   {
-    return new List<ISendFilter> { new RevitEverythingFilter(), new RevitSelectionFilter() };
+    return new List<ISendFilter> { new RevitSelectionFilter() { IsDefault = true } };
   }
 
   public async Task Send(string modelCardId)

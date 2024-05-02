@@ -26,16 +26,15 @@ public sealed class CurveArrayConversionToSpeckle : IRawConversion<DB.CurveArray
 
   public Polycurve RawConvert(CurveArray target)
   {
-    Polycurve polycurve = new();
-
     List<DB.Curve> curves = target.Cast<DB.Curve>().ToList();
 
-    polycurve.units = _contextStack.Current.SpeckleUnits;
-    polycurve.closed =
-      curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConversionContextStack.TOLERANCE;
-    polycurve.length = _scalingService.ScaleLength(curves.Sum(x => x.Length));
-
-    polycurve.segments.AddRange(curves.Select(x => _curveConverter.RawConvert(x)));
-    return polycurve;
+    return new Polycurve()
+    {
+      units = _contextStack.Current.SpeckleUnits,
+      closed =
+        curves.First().GetEndPoint(0).DistanceTo(curves.Last().GetEndPoint(1)) < RevitConversionContextStack.TOLERANCE,
+      length = _scalingService.ScaleLength(curves.Sum(x => x.Length)),
+      segments = curves.Select(x => _curveConverter.RawConvert(x)).ToList()
+    };
   }
 }

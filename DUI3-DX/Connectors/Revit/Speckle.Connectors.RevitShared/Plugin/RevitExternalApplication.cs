@@ -8,7 +8,6 @@ using Autofac;
 using Speckle.Converters.Common.DependencyInjection;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Logging;
-using Speckle.Converters.RevitShared;
 
 namespace Speckle.Connectors.Revit.Plugin;
 
@@ -39,7 +38,8 @@ internal class RevitExternalApplication : IExternalApplication
       RevitVersionName = "2023",
       RevitButtonName = "Speckle DUI3 (DI)",
       RevitButtonText = "Revit Connector",
-      ModuleFolders = new string[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) }
+      ModuleFolders = new string[] { Path.GetDirectoryName(typeof(RevitExternalApplication).Assembly.Location) },
+      HostSlug = "Revit"
     };
   }
 
@@ -74,14 +74,8 @@ internal class RevitExternalApplication : IExternalApplication
 
   private void _container_PreBuildEvent(object sender, ContainerBuilder containerBuilder)
   {
-    // POC: refactor the conversions to be simper, this method could be the basis for this
-    // tbe event can probably go
-    // IRawConversions should be separately injectable (and not Require an IHostObject... or NameAndRank attribute)
-    // Name and Rank can become ConversionRank or something and be optional (otherwise it is rank 0)
-    containerBuilder.RegisterTypesInAssemblyAsInterface(
-      typeof(RevitConverterToSpeckle).Assembly,
-      typeof(IRawConversion<,>)
-    );
+    // POC: need to settle on the mechanism and location as to where we should register these services
+    containerBuilder.RegisterRawConversions();
     containerBuilder.InjectNamedTypes<IHostObjectToSpeckleConversion>();
     containerBuilder.InjectNamedTypes<ISpeckleObjectToHostConversion>();
   }
