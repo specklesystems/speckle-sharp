@@ -1,4 +1,10 @@
+using Autodesk.Revit.DB;
+using Objects;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
+using Speckle.Converters.RevitShared.Helpers;
+using Speckle.Converters.RevitShared.ToSpeckle;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common;
@@ -9,7 +15,94 @@ namespace Speckle.Converters.Common;
 // clould be anywhere or all in once place - rooting through box 274 for something you need, when said box has a miriad different
 // and unrelated items, is no fun. Plus when you need that item, you end up bringing out the whole box/
 [NameAndRankValue(nameof(DB.Floor), 0)]
-public class FloorConversionToSpeckle : IHostObjectToSpeckleConversion
+public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.RevitFloor>
 {
-  public Base Convert(object target) => throw new SpeckleConversionException();
+  private readonly IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> _curveArrArrayConverter;
+  private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
+  private readonly ParameterValueExtractor _parameterValueExtractor;
+  private readonly ParameterObjectAssigner _parameterObjectAssigner;
+  private readonly DisplayValueExtractor _displayValueExtractor;
+  private readonly SlopeArrowExtractor _slopeArrowExtractor;
+
+  public FloorConversionToSpeckle(
+    IRawConversion<CurveArrArray, List<Polycurve>> curveArrArrayConverter,
+    IRawConversion<Level, RevitLevel> levelConverter,
+    ParameterValueExtractor parameterValueExtractor,
+    ParameterObjectAssigner parameterObjectAssigner,
+    DisplayValueExtractor displayValueExtractor,
+    SlopeArrowExtractor slopeArrowExtractor
+  )
+  {
+    _curveArrArrayConverter = curveArrArrayConverter;
+    _levelConverter = levelConverter;
+    _parameterValueExtractor = parameterValueExtractor;
+    _parameterObjectAssigner = parameterObjectAssigner;
+    _displayValueExtractor = displayValueExtractor;
+    _slopeArrowExtractor = slopeArrowExtractor;
+  }
+
+  public override RevitFloor RawConvert(Floor target)
+  {
+    RevitFloor speckleFloor = new();
+
+    var sketch = (Sketch)target.Document.GetElement(target.SketchId);
+    List<SOG.Polycurve> profiles = _curveArrArrayConverter.RawConvert(sketch.Profile);
+
+    var type = target.Document.GetElement(target.GetTypeId()) as ElementType;
+    speckleFloor.family = type?.FamilyName;
+    speckleFloor.type = type?.Name;
+
+    // POC: https://spockle.atlassian.net/browse/CNX-9396
+    if (profiles.Count > 0)
+    {
+      speckleFloor.outline = profiles[0];
+    }
+    if (profiles.Count > 1)
+    {
+      speckleFloor.voids = profiles.Skip(1).ToList<ICurve>();
+    }
+
+    var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
+    speckleFloor.level = _levelConverter.RawConvert(level);
+    speckleFloor.structural =
+      _parameterValueExtractor.GetValueAsBool(target, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
+
+    // Divide by 100 to convert from percentage to unitless ratio (rise over run)
+    var slopeParam = _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.ROOF_SLOPE) / 100;
+
+    _parameterObjectAssigner.AssignParametersToBase(target, speckleFloor);
+    TryAssignSlopeFromSlopeArrow(target, speckleFloor, slopeParam);
+
+    speckleFloor.displayValue = _displayValueExtractor.GetDisplayValue(target);
+    // POC: hosted elements OOS for alpha, but this exists in existing connector
+    //_hostedElementConverter.AssignHostedElements(target, speckleCeiling);
+
+    return speckleFloor;
+  }
+
+  private void TryAssignSlopeFromSlopeArrow(Floor target, RevitFloor speckleFloor, double? slopeParam)
+  {
+    if (_slopeArrowExtractor.GetSlopeArrow(target) is not DB.ModelLine slopeArrow)
+    {
+      return;
+    }
+
+    var tail = _slopeArrowExtractor.GetSlopeArrowTail(slopeArrow);
+    var head = _slopeArrowExtractor.GetSlopeArrowHead(slopeArrow);
+    var tailOffset = _slopeArrowExtractor.GetSlopeArrowTailOffset(slopeArrow);
+    _ = _slopeArrowExtractor.GetSlopeArrowHeadOffset(slopeArrow, tailOffset, out var slope);
+
+    slopeParam ??= slope;
+    speckleFloor.slope = (double)slopeParam;
+
+    speckleFloor.slopeDirection = new SOG.Line(tail, head);
+    if (
+      speckleFloor["parameters"] is Base parameters
+      && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is SOBR.Parameter offsetParam
+      && offsetParam.value is double offset
+    )
+    {
+      offsetParam.value = offset + tailOffset;
+    }
+  }
 }
