@@ -13,6 +13,8 @@ namespace Speckle.Connectors.Utils.Operations;
 /// Default implementation of the <see cref="IRootObjectSender"/> which takes a <see cref="Base"/> and sends
 /// it to a server described by the parameters in the <see cref="Send"/> method
 /// </summary>
+/// POC: we have a generic RootObjectSender but we're not using it everywhere. It also appears to need some specialisation or at least
+/// a way to get the application name, so RevitContext is being used in the revit version but we could probably inject that as a IHostAppContext maybe?
 public sealed class RootObjectSender : IRootObjectSender
 {
   // POC: Revisit this factory pattern, I think we could solve this higher up by injecting a scoped factory for `SendOperation` in the SendBinding

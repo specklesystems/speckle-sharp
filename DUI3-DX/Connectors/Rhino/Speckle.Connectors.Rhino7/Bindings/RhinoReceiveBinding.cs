@@ -67,6 +67,7 @@ public class RhinoReceiveBinding : IReceiveBinding, ICancelable
         )
         .ConfigureAwait(false);
 
+      // POC: Here we can't set receive result if ReceiveOperation throws an error.
       Commands.SetModelReceiveResult(modelCardId, receivedObjectIds.ToList());
     }
     catch (OperationCanceledException)
