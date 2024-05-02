@@ -61,6 +61,41 @@ public class FeatureClassUtils : IFeatureClassUtils
     }
   }
 
+  public List<FieldDescription> GetFieldsFromGeometryList(List<Base> target)
+  {
+    List<FieldDescription> fields = new();
+    List<string> fieldAdded = new();
+
+    foreach (var field in target.attributes.GetMembers(DynamicBaseMemberType.Dynamic))
+    {
+      if (!fieldAdded.Contains(field.Key) && field.Key != FID_FIELD_NAME)
+      {
+        // POC: TODO check for the forbidden characters/combinations: https://support.esri.com/en-us/knowledge-base/what-characters-should-not-be-used-in-arcgis-for-field--000005588
+        try
+        {
+          if (field.Value is not null)
+          {
+            string key = field.Key;
+            FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
+
+            FieldDescription fiendDescription = new(CleanCharacters(key), fieldType) { AliasName = key };
+            fields.Add(fiendDescription);
+            fieldAdded.Add(key);
+          }
+          else
+          {
+            // log missing field
+          }
+        }
+        catch (GeodatabaseFieldException)
+        {
+          // log missing field
+        }
+      }
+    }
+    return fields;
+  }
+
   public ACG.GeometryType GetLayerGeometryType(VectorLayer target)
   {
     ACG.GeometryType geomType = new();
