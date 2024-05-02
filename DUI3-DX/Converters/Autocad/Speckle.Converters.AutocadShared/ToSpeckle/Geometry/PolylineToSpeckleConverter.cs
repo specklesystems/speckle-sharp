@@ -19,21 +19,21 @@ public class PolylineToSpeckleConverter
 {
   private readonly IRawConversion<AG.LineSegment3d, SOG.Line> _lineConverter;
   private readonly IRawConversion<AG.CircularArc3d, SOG.Arc> _arcConverter;
-  private readonly IRawConversion<AG.Plane, SOG.Plane> _planeConverter;
+  private readonly IRawConversion<AG.Vector3d, SOG.Vector> _vectorConverter;
   private readonly IRawConversion<Extents3d, SOG.Box> _boxConverter;
   private readonly IConversionContextStack<Document, UnitsValue> _contextStack;
 
   public PolylineToSpeckleConverter(
     IRawConversion<AG.LineSegment3d, SOG.Line> lineConverter,
     IRawConversion<AG.CircularArc3d, SOG.Arc> arcConverter,
-    IRawConversion<AG.Plane, SOG.Plane> planeConverter,
+    IRawConversion<AG.Vector3d, SOG.Vector> vectorConverter,
     IRawConversion<Extents3d, SOG.Box> boxConverter,
     IConversionContextStack<Document, UnitsValue> contextStack
   )
   {
     _lineConverter = lineConverter;
     _arcConverter = arcConverter;
-    _planeConverter = planeConverter;
+    _vectorConverter = vectorConverter;
     _boxConverter = boxConverter;
     _contextStack = contextStack;
   }
@@ -65,13 +65,13 @@ public class PolylineToSpeckleConverter
         case SegmentType.Arc:
           segments.Add(_arcConverter.RawConvert(target.GetArcSegmentAt(i)));
           break;
-        // POC: commented out claire's exception here because it breaks the conversion seems unnecessarily.. TBD
-        // default:
-        //   throw new InvalidOperationException("Polyline had an invalid segment of type Empty, Point, or Coincident.");
+        default:
+          // we are skipping segments of type Empty, Point, and Coincident
+          break;
       }
     }
 
-    SOG.Plane plane = _planeConverter.RawConvert(target.GetPlane());
+    SOG.Vector normal = _vectorConverter.RawConvert(target.Normal);
     SOG.Box bbox = _boxConverter.RawConvert(target.GeometricExtents);
 
     SOG.Autocad.AutocadPolycurve polycurve =
@@ -80,7 +80,8 @@ public class PolylineToSpeckleConverter
         segments = segments,
         value = value,
         bulges = bulges,
-        plane = plane,
+        normal = normal,
+        elevation = target.Elevation,
         polyType = SOG.Autocad.AutocadPolyType.Light,
         closed = target.Closed,
         length = target.Length,
