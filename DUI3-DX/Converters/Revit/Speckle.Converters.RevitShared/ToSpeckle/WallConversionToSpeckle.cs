@@ -122,7 +122,12 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     {
       speckleWall.displayValue = _displayValueExtractor.GetDisplayValue(target);
     }
-    speckleWall.displayValue = new List<SOG.Mesh>();
+    else
+    {
+      // POC: I have no why previously we were setting the display value, and then unsetting it.
+      // Probably curtain walls need a special case/etc.?
+      speckleWall.displayValue = new List<SOG.Mesh>();
+    }
   }
 
   private void AssignHostedElements(SOBR.RevitWall speckleWall, List<Base> hostedObjects)
