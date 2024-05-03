@@ -52,11 +52,12 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     speckleFloor.family = type?.FamilyName;
     speckleFloor.type = type?.Name;
 
-    // POC: https://spockle.atlassian.net/browse/CNX-9396
+    // POC: Re-evaluate Wall sketch curve extraction, assumption of only one outline is wrong. https://spockle.atlassian.net/browse/CNX-9396
     if (profiles.Count > 0)
     {
       speckleFloor.outline = profiles[0];
     }
+
     if (profiles.Count > 1)
     {
       speckleFloor.voids = profiles.Skip(1).ToList<ICurve>();
