@@ -12,35 +12,35 @@ public sealed class FamilyInstanceConversionToSpeckle : BaseConversionToSpeckle<
   private readonly IRawConversion<DB.Element, SOBR.RevitElement> _elementConverter;
   private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> _beamConversion;
   private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> _columnConversion;
+  private readonly IRawConversion<DB.FamilyInstance, SOBR.RevitBrace> _braceConversion;
 
   public FamilyInstanceConversionToSpeckle(
     IRawConversion<DB.Element, SOBR.RevitElement> elementConverter,
     IRawConversion<DB.FamilyInstance, SOBR.RevitBeam> beamConversion,
-    IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> columnConversion
+    IRawConversion<DB.FamilyInstance, SOBR.RevitColumn> columnConversion,
+    IRawConversion<DB.FamilyInstance, SOBR.RevitBrace> braceConversion
   )
   {
     _elementConverter = elementConverter;
     _beamConversion = beamConversion;
     _columnConversion = columnConversion;
+    _braceConversion = braceConversion;
   }
 
   public override Base RawConvert(DB.FamilyInstance target)
   {
-    if (target.StructuralType == DB.Structure.StructuralType.Beam)
+    return target.StructuralType switch
     {
-      return _beamConversion.RawConvert(target);
-    }
+      DB.Structure.StructuralType.Beam => _beamConversion.RawConvert(target),
+      DB.Structure.StructuralType.Column => _columnConversion.RawConvert(target),
+      DB.Structure.StructuralType.Brace => _braceConversion.RawConvert(target),
 
-    if (target.StructuralType == DB.Structure.StructuralType.Column)
-    {
-      return _columnConversion.RawConvert(target);
-    }
-
-    // POC: return generic element conversion or throw?
-    //
-    //throw new SpeckleConversionException(
-    //  $"No conditional converters registered that could convert object of type {target.GetType()}"
-    //);
-    return _elementConverter.RawConvert(target);
+      // POC: return generic element conversion or throw?
+      //
+      //throw new SpeckleConversionException(
+      //  $"No conditional converters registered that could convert object of type {target.GetType()}"
+      //);
+      _ => _elementConverter.RawConvert(target)
+    };
   }
 }
