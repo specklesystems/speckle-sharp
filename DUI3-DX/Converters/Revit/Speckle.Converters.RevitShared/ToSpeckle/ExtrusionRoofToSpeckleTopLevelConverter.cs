@@ -8,7 +8,7 @@ using Speckle.Converters.RevitShared.Extensions;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.ExtrusionRoof), 0)]
-public class ExtrusionRoofToSpeckleConverter : BaseConversionToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
+public class ExtrusionRoofToSpeckleTopLevelConverter : BaseConversionToSpeckle<DB.ExtrusionRoof, RevitExtrusionRoof>
 {
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.ModelCurveArray, SOG.Polycurve> _modelCurveArrayConverter;
@@ -18,7 +18,7 @@ public class ExtrusionRoofToSpeckleConverter : BaseConversionToSpeckle<DB.Extrus
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
-  public ExtrusionRoofToSpeckleConverter(
+  public ExtrusionRoofToSpeckleTopLevelConverter(
     IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
     IRawConversion<DB.ModelCurveArray, SOG.Polycurve> modelCurveArrayConverter,
     IRawConversion<DB.XYZ, SOG.Point> pointConverter,

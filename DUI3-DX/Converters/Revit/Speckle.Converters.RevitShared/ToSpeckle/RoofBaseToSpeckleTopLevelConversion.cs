@@ -7,13 +7,13 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.RoofBase), 0)]
-internal sealed class RoofBaseToSpeckleConversion : BaseConversionToSpeckle<DB.RoofBase, RevitRoof>
+internal sealed class RoofBaseToSpeckleTopLevelConversion : BaseConversionToSpeckle<DB.RoofBase, RevitRoof>
 {
   private readonly DisplayValueExtractor _displayValueExtractor;
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
-  public RoofBaseToSpeckleConversion(
+  public RoofBaseToSpeckleTopLevelConversion(
     DisplayValueExtractor displayValueExtractor,
     HostedElementConversionToSpeckle hostedElementConverter,
     ParameterObjectAssigner parameterObjectAssigner

@@ -40,20 +40,30 @@ public class ParameterValueExtractor
 
   public double GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueAsDoubleOrNull(element, builtInParameter)
-      ?? throw new SpeckleConversionException(
-        $"Received unexpected null value from builtInParameter {builtInParameter}"
-      );
+    if (!TryGetValueAsDouble(element, builtInParameter, out double? value))
+    {
+      throw new SpeckleConversionException($"Failed to get {builtInParameter} as double.");
+    }
+
+    return value!.Value; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
   }
 
-  public double? GetValueAsDoubleOrNull(Element element, BuiltInParameter builtInParameter)
+  public bool TryGetValueAsDouble(Element element, BuiltInParameter builtInParameter, out double? value)
   {
-    return GetValueGeneric<double?>(
+    var number = GetValueGeneric<double?>(
       element,
       builtInParameter,
       StorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
+    if (number.HasValue)
+    {
+      value = number.Value;
+      return true;
+    }
+
+    value = default;
+    return false;
   }
 
   private double? GetValueAsDouble(Parameter parameter)
@@ -107,21 +117,29 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
-  public T? GetValueAsDocumentObjectOrNull<T>(Element element, BuiltInParameter builtInParameter)
-    where T : class
+  public bool TryGetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter, out T? value)
   {
     ElementId? elementId = GetValueAsElementId(element, builtInParameter);
     Element paramElement = element.Document.GetElement(elementId);
-    return paramElement as T;
+    if (paramElement is T typedElement)
+    {
+      value = typedElement;
+      return true;
+    }
+
+    value = default;
+    return false;
   }
 
   public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
     where T : class
   {
-    return GetValueAsDocumentObjectOrNull<T>(element, builtInParameter)
-      ?? throw new SpeckleConversionException(
-        $"Unable to cast retrieved element of type {builtInParameter} to an element of type {typeof(T)}"
-      );
+    if (!TryGetValueAsDocumentObject<T>(element, builtInParameter, out var value))
+    {
+      throw new SpeckleConversionException($"Failed to get {builtInParameter} as an element of type {typeof(T)}");
+    }
+
+    return value!; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
   }
 
   private TResult? GetValueGeneric<TResult>(
