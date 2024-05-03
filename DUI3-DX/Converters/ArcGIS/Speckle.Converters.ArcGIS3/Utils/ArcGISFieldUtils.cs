@@ -6,14 +6,14 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
-public class FieldsUtils : IFieldsUtils
+public class ArcGISFieldUtils : IArcGISFieldUtils
 {
-  private readonly IOtherUtils _otherUtils;
+  private readonly ICharacterCleaner _characterCleaner;
   private const string FID_FIELD_NAME = "OBJECTID";
 
-  public FieldsUtils(IOtherUtils otherUtils)
+  public ArcGISFieldUtils(ICharacterCleaner characterCleaner)
   {
-    _otherUtils = otherUtils;
+    _characterCleaner = characterCleaner;
   }
 
   public object? FieldValueToNativeType(FieldType fieldType, object? value)
@@ -34,6 +34,8 @@ public class FieldsUtils : IFieldsUtils
       {
         switch (fieldType)
         {
+          case FieldType.String:
+            return (string)value;
           case FieldType.Single:
             return (float)(double)value;
           case FieldType.Integer:
@@ -45,39 +47,17 @@ public class FieldsUtils : IFieldsUtils
             return (short)(long)value;
           case FieldType.Double:
             return (double)value;
+          case FieldType.Date:
+            return DateTime.Parse((string)value);
+          case FieldType.DateOnly:
+            return DateOnly.Parse((string)value);
+          case FieldType.TimeOnly:
+            return TimeOnly.Parse((string)value);
         }
       }
       catch (InvalidCastException)
       {
         return value;
-      }
-
-      if (value is string stringValue)
-      {
-        try
-        {
-          switch (fieldType)
-          {
-            case FieldType.String:
-              return stringValue;
-            case FieldType.Date:
-              return DateTime.Parse(stringValue);
-            case FieldType.DateOnly:
-              return DateOnly.Parse(stringValue);
-            case FieldType.TimeOnly:
-              return TimeOnly.Parse(stringValue);
-            case FieldType.Blob:
-              return stringValue;
-            case FieldType.TimestampOffset:
-              return stringValue;
-            case FieldType.XML:
-              return stringValue;
-          }
-        }
-        catch (InvalidCastException)
-        {
-          return value;
-        }
       }
     }
 
@@ -159,7 +139,8 @@ public class FieldsUtils : IFieldsUtils
             string key = field.Key;
             FieldType fieldType = GetFieldTypeFromInt((int)(long)field.Value);
 
-            FieldDescription fieldDescription = new(_otherUtils.CleanCharacters(key), fieldType) { AliasName = key };
+            FieldDescription fieldDescription =
+              new(_characterCleaner.CleanCharacters(key), fieldType) { AliasName = key };
             fields.Add(fieldDescription);
             fieldAdded.Add(key);
           }
