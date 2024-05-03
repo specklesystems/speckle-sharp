@@ -43,7 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\MaterialConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrArrayConverterToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrArrayToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrayToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
