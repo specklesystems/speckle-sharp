@@ -14,7 +14,7 @@ public class RevitBrace : Brace
     string family,
     string type,
     [SchemaMainParam] ICurve baseLine,
-    Level level,
+    Level? level,
     List<Parameter>? parameters = null
   )
   {
@@ -29,5 +29,5 @@ public class RevitBrace : Brace
   public string type { get; set; }
   public Base? parameters { get; set; }
   public string elementId { get; set; }
-  public Level level { get; set; }
+  public Level? level { get; set; }
 }

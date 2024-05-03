@@ -20,7 +20,7 @@ internal class RevitIdleManager : IRevitIdleManager
 
   public RevitIdleManager(RevitContext revitContext)
   {
-    _uiApplication = revitContext.UIApplication;
+    _uiApplication = revitContext.UIApplication!;
   }
 
   /// <summary>
