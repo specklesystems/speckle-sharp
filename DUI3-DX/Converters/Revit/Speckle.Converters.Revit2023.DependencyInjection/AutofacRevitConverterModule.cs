@@ -53,5 +53,6 @@ public class AutofacRevitConverterModule : Module
     builder.RegisterType<DisplayValueExtractor>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<HostedElementConversionToSpeckle>().AsSelf().InstancePerLifetimeScope();
     builder.RegisterType<ParameterObjectAssigner>().AsSelf().InstancePerLifetimeScope();
+    builder.RegisterType<SlopeArrowExtractor>().As<ISlopeArrowExtractor>().InstancePerLifetimeScope();
   }
 }

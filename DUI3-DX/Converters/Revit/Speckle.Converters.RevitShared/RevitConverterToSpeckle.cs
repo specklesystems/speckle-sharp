@@ -42,11 +42,11 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     // shouldn't target ALWAYS be DB.Element?
     if (target is DB.Element element)
     {
-      _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
-      _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
-
       // POC: is this the right place?
       result.applicationId = element.UniqueId;
+
+      _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
     }
 
     return result;
