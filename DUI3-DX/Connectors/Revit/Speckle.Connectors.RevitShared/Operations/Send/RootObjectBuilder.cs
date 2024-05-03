@@ -42,26 +42,87 @@ public class RootObjectBuilder
       throw new InvalidOperationException("No objects were found. Please update your send filter!");
     }
 
-    Base commitObject = new();
+    var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
+    var rootObject = new Collection() { name = doc.PathName.Split('\\').Reverse().First().Split('.').First() };
 
-    foreach (Element obj in objects)
+    // memoize-er for the GetAndCreateObjectHostCollection calls below
+    // POC: if the lifetime of this builder is on a per-operation basis, we don't need this declaration here and we can
+    // tidy things up. In the interest of time, skipping this check.
+    var collectionCache = new Dictionary<string, Collection>();
+    var countProgress = 0; // because for(int i = 0; ...) loops are so last year
+
+    foreach (Element revitElement in objects)
     {
       ct.ThrowIfCancellationRequested();
-      if (_convertedObjectsCache.ContainsBaseConvertedFromId(obj.UniqueId))
+
+      var cat = revitElement.Category.Name;
+      var path = new[] { doc.GetElement(revitElement.LevelId) is not Level level ? "No level" : level.Name, cat };
+      var collection = GetAndCreateObjectHostCollection(path, collectionCache, rootObject);
+
+      if (_convertedObjectsCache.ContainsBaseConvertedFromId(revitElement.UniqueId))
       {
         continue;
       }
 
       try
       {
-        commitObject[obj.UniqueId] = _converter.Convert(obj);
+        var convertedElement = _converter.Convert(revitElement);
+        convertedElement.applicationId = revitElement.Id.ToString();
+        collection.elements.Add(convertedElement);
       }
       catch (SpeckleConversionException ex)
       {
         // POC: logging
       }
+
+      countProgress++;
+      onOperationProgressed?.Invoke("Converting", (double)countProgress / objects.Count);
     }
 
-    return commitObject;
+    return rootObject;
+  }
+
+  /// <summary>
+  /// Creates and nests collections based on the provided path within the root collection provided. This will not return a new collection each time is called, but an existing one if one is found.
+  /// For example, you can use this to use (or re-use) a new collection for a path of (level, category) as it's currently implemented.
+  /// </summary>
+  /// <param name="path"></param>
+  /// <param name="cache"></param>
+  /// <param name="root"></param>
+  /// <returns></returns>
+  private Collection GetAndCreateObjectHostCollection(
+    string[] path,
+    Dictionary<string, Collection> cache,
+    Collection root
+  )
+  {
+    string fullPathName = string.Join("", path);
+    if (cache.TryGetValue(fullPathName, out Collection value))
+    {
+      return value;
+    }
+
+    string flatPathName = "";
+    Collection previousCollection = root;
+
+    foreach (var pathItem in path)
+    {
+      flatPathName += pathItem;
+      Collection childCollection;
+      if (cache.ContainsKey(flatPathName))
+      {
+        childCollection = cache[flatPathName];
+      }
+      else
+      {
+        childCollection = new Collection(pathItem, "layer");
+        previousCollection.elements.Add(childCollection);
+        cache[flatPathName] = childCollection;
+      }
+
+      previousCollection = childCollection;
+    }
+
+    return previousCollection;
   }
 }
