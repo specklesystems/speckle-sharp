@@ -16,6 +16,8 @@ public class RootObjectBuilder
   private readonly ISpeckleConverterToSpeckle _converter;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly RevitConversionContextStack _contextStack;
+  private readonly Dictionary<string, Collection> _collectionCache;
+  private readonly Collection _rootObject;
 
   public RootObjectBuilder(
     ISpeckleConverterToSpeckle converter,
@@ -27,6 +29,12 @@ public class RootObjectBuilder
     // POC: needs considering if this is something to add now or needs refactoring
     _convertedObjectsCache = convertedObjectsCache;
     _contextStack = contextStack;
+
+    _collectionCache = new Dictionary<string, Collection>();
+    _rootObject = new Collection()
+    {
+      name = _contextStack.Current.Document.Document.PathName.Split('\\').Last().Split('.').First()
+    };
   }
 
   public Base Build(
@@ -43,7 +51,7 @@ public class RootObjectBuilder
     }
 
     var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
-    var rootObject = new Collection() { name = doc.PathName.Split('\\').Last().Split('.').First() };
+    // var rootObject = new Collection() { name = doc.PathName.Split('\\').Last().Split('.').First() };
 
     // memoize-er for the GetAndCreateObjectHostCollection calls below
     // POC: if the lifetime of this builder is on a per-operation basis, we don't need this declaration here and we can
@@ -57,7 +65,7 @@ public class RootObjectBuilder
 
       var cat = revitElement.Category.Name;
       var path = new[] { doc.GetElement(revitElement.LevelId) is not Level level ? "No level" : level.Name, cat };
-      var collection = GetAndCreateObjectHostCollection(path, collectionCache, rootObject);
+      var collection = GetAndCreateObjectHostCollection(path);
 
       if (_convertedObjectsCache.ContainsBaseConvertedFromId(revitElement.UniqueId))
       {
@@ -77,9 +85,10 @@ public class RootObjectBuilder
 
       countProgress++;
       onOperationProgressed?.Invoke("Converting", (double)countProgress / objects.Count);
+      Thread.Sleep(1000);
     }
 
-    return rootObject;
+    return _rootObject;
   }
 
   /// <summary>
@@ -90,34 +99,30 @@ public class RootObjectBuilder
   /// <param name="cache"></param>
   /// <param name="root"></param>
   /// <returns></returns>
-  private Collection GetAndCreateObjectHostCollection(
-    string[] path,
-    Dictionary<string, Collection> cache,
-    Collection root
-  )
+  private Collection GetAndCreateObjectHostCollection(string[] path)
   {
     string fullPathName = string.Concat(path);
-    if (cache.TryGetValue(fullPathName, out Collection value))
+    if (_collectionCache.TryGetValue(fullPathName, out Collection value))
     {
       return value;
     }
 
     string flatPathName = "";
-    Collection previousCollection = root;
+    Collection previousCollection = _rootObject;
 
     foreach (var pathItem in path)
     {
       flatPathName += pathItem;
       Collection childCollection;
-      if (cache.ContainsKey(flatPathName))
+      if (_collectionCache.ContainsKey(flatPathName))
       {
-        childCollection = cache[flatPathName];
+        childCollection = _collectionCache[flatPathName];
       }
       else
       {
         childCollection = new Collection(pathItem, "layer");
         previousCollection.elements.Add(childCollection);
-        cache[flatPathName] = childCollection;
+        _collectionCache[flatPathName] = childCollection;
       }
 
       previousCollection = childCollection;
