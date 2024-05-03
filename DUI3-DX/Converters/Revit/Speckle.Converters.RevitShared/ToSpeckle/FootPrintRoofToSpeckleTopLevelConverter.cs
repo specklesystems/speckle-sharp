@@ -11,7 +11,7 @@ using Speckle.Converters.RevitShared.Helpers;
 namespace Speckle.Converters.RevitShared.ToSpeckle;
 
 [NameAndRankValue(nameof(DB.FootPrintRoof), 0)]
-public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
+public class FootPrintRootToSpeckleConverter : BaseConversionToSpeckle<DB.FootPrintRoof, RevitFootprintRoof>
 {
   private readonly IRawConversion<DB.Level, SOBR.RevitLevel> _levelConverter;
   private readonly IRawConversion<DB.ModelCurveArrArray, SOG.Polycurve[]> _modelCurveArrArrayConverter;
@@ -20,7 +20,7 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
   private readonly HostedElementConversionToSpeckle _hostedElementConverter;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
 
-  public FootPrintRootConversionToSpeckle(
+  public FootPrintRootToSpeckleConverter(
     IRawConversion<Level, RevitLevel> levelConverter,
     IRawConversion<ModelCurveArrArray, Polycurve[]> modelCurveArrArrayConverter,
     ParameterValueExtractor parameterValueExtractor,
@@ -43,13 +43,17 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
       target,
       DB.BuiltInParameter.ROOF_BASE_LEVEL_PARAM
     );
-    var topLevel = _parameterValueExtractor.GetValueAsDocumentObjectOrNull<DB.Level>(
+
+    // We don't currently validate the success of this TryGet, it is assumed some Roofs don't have a top-level.
+    _parameterValueExtractor.TryGetValueAsDocumentObject<DB.Level>(
       target,
-      DB.BuiltInParameter.ROOF_UPTO_LEVEL_PARAM
+      DB.BuiltInParameter.ROOF_UPTO_LEVEL_PARAM,
+      out var topLevel
     );
 
-    //NOTE: can be null if the sides have different slopes
-    double? slope = _parameterValueExtractor.GetValueAsDoubleOrNull(target, DB.BuiltInParameter.ROOF_SLOPE);
+    //POC: CNX-9403 can be null if the sides have different slopes.
+    //We currently don't validate the success or failure of this TryGet as it's not necessary, but will be once we start the above ticket.
+    _parameterValueExtractor.TryGetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE, out var slope);
 
     RevitFootprintRoof speckleFootprintRoof =
       new()
@@ -59,10 +63,10 @@ public class FootPrintRootConversionToSpeckle : BaseConversionToSpeckle<DB.FootP
         slope = slope
       };
 
-    // POC: again with the incorrect assumption that the first profile is the floor and subsequent profiles
+    // POC: CNX-9396 again with the incorrect assumption that the first profile is the floor and subsequent profiles
     // are voids
-    // POC: in current connector, we are doing serious gymnastics to get the slope of the floor as defined by
-    // slope arrow. The way we are doing it relys on dynamic props and only works for Revit <-> Revit
+    // POC: CNX-9403 in current connector, we are doing serious gymnastics to get the slope of the floor as defined by
+    // slope arrow. The way we are doing it relies on dynamic props and only works for Revit <-> Revit
     var profiles = _modelCurveArrArrayConverter.RawConvert(target.GetProfiles());
     speckleFootprintRoof.outline = profiles.FirstOrDefault();
     speckleFootprintRoof.voids = profiles.Skip(1).ToList<ICurve>();
