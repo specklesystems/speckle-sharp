@@ -47,7 +47,7 @@ internal class RevitDocumentStore : DocumentModelStore
     // uiApplication.ApplicationClosing += (_, _) => WriteToFile(); // POC: Not sure why we would need it since we have save and clos events
     uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
     uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
-    uiApplication.Application.DocumentClosing += (_, _) => WriteToFile();
+    // uiApplication.Application.DocumentClosing += (_, _) => WriteToFile();
     // uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile(); // POC: Not sure why we have it
 
     uiApplication.ViewActivating += OnViewActivating;
@@ -61,7 +61,7 @@ internal class RevitDocumentStore : DocumentModelStore
   {
     IsDocumentInit = true;
     ReadFromFile();
-    _idleManager.SubscribeToIdle(OnDocumentChanged);
+    OnDocumentChanged();
   }
 
   /// <summary>
@@ -116,7 +116,7 @@ internal class RevitDocumentStore : DocumentModelStore
     string serializedModels = Serialize();
 
     // POC: previously we were calling below code
-    var a = RevitTask
+    RevitTask
       .RunAsync(() =>
       {
         using Transaction t = new(doc.Document, "Speckle Write State");
@@ -138,35 +138,6 @@ internal class RevitDocumentStore : DocumentModelStore
   }
 
   public override void ReadFromFile()
-  {
-    UIDocument doc = _revitContext.UIApplication.ActiveUIDocument;
-
-    // POC: this can happen?
-    if (doc == null)
-    {
-      return;
-    }
-
-    RevitTask
-      .RunAsync(() =>
-      {
-        using Transaction t = new(doc.Document, "Speckle Read State");
-        t.Start();
-        using Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication.ActiveUIDocument.Document);
-        if (stateEntity == null || !stateEntity.IsValid())
-        {
-          Models = new List<ModelCard>();
-          return;
-        }
-
-        string modelsString = stateEntity.Get<string>("contents");
-        Models = Deserialize(modelsString);
-        t.Commit();
-      })
-      .ConfigureAwait(false);
-  }
-
-  public void ReadFromFile2()
   {
     try
     {
