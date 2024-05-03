@@ -43,7 +43,7 @@ public class RootObjectBuilder
     }
 
     var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
-    var rootObject = new Collection() { name = doc.PathName.Split('\\').Reverse().First().Split('.').First() };
+    var rootObject = new Collection() { name = doc.PathName.Split('\\').Last().Split('.').First() };
 
     // memoize-er for the GetAndCreateObjectHostCollection calls below
     // POC: if the lifetime of this builder is on a per-operation basis, we don't need this declaration here and we can
@@ -96,7 +96,7 @@ public class RootObjectBuilder
     Collection root
   )
   {
-    string fullPathName = string.Join("", path);
+    string fullPathName = string.Concat(path);
     if (cache.TryGetValue(fullPathName, out Collection value))
     {
       return value;
