@@ -104,7 +104,7 @@ internal class RevitPlugin : IRevitPlugin
       Debug.WriteLine(binding.Name);
       binding.Parent.AssociateWithBinding(
         binding,
-        _cefSharpPanel.Browser.ExecuteScriptAsync,
+        _cefSharpPanel.ExecuteScriptAsync,
         _cefSharpPanel,
         _cefSharpPanel.ShowDevTools
       );

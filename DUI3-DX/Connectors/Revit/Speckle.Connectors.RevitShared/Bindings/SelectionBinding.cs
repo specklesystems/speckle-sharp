@@ -3,7 +3,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
+using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Converters.RevitShared.Helpers;
 
@@ -16,7 +16,7 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
 
   public SelectionBinding(
     RevitContext revitContext,
-    RevitDocumentStore store,
+    DocumentModelStore store,
     IRevitIdleManager idleManager,
     IBridge bridge
   )

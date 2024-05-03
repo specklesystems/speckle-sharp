@@ -21,12 +21,12 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
   public string Name { get; private set; }
   public IBridge Parent { get; private set; }
 
-  protected readonly RevitDocumentStore _store;
+  protected readonly DocumentModelStore _store;
   protected readonly RevitContext _revitContext;
   private readonly RevitSettings _revitSettings;
 
   public BasicConnectorBindingRevit(
-    RevitDocumentStore store,
+    DocumentModelStore store,
     RevitSettings revitSettings,
     IBridge parent,
     RevitContext revitContext
@@ -41,7 +41,7 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     // POC: event binding?
     _store.DocumentChanged += (_, _) =>
     {
-      parent.Send(Name, BasicConnectorBindingEvents.DOCUMENT_CHANGED);
+      Commands.NotifyDocumentChanged();
     };
   }
 
@@ -67,6 +67,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     }
 
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
+
+    // POC: Notify user here if document is null.
 
     return new DocumentInfo
     {
