@@ -58,9 +58,8 @@ internal class RevitDocumentStore : DocumentModelStore
       return;
     }
 
-    if (e.PreviousActiveView is not null && e.PreviousActiveView.Document is not null)
+    if (e.PreviousActiveView?.Document != null)
     {
-      // using UIDocument doc = new(e.PreviousActiveView.Document);
       WriteToFileWithDoc(e.PreviousActiveView.Document);
     }
 
