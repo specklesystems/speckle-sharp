@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Speckle.Connectors.Utils.Operations;
+using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
@@ -19,8 +20,15 @@ public class SyncToUIThread : ISyncToMainThread
 
     _bridge.RunOnMainThread(() =>
     {
-      T result = func.Invoke();
-      tcs.SetResult(result);
+      try
+      {
+        T result = func.Invoke();
+        tcs.SetResult(result);
+      }
+      catch (Exception ex)
+      {
+        tcs.SetException(ex);
+      }
     });
 
     return tcs.Task;
