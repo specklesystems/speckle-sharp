@@ -44,7 +44,8 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
     var objectsToConvert = _traverseFunction
       .Traverse(rootObject)
       .Where(obj => obj.Current is not Collection)
-      .Select(ctx => (GetLayerPath(ctx), ctx.Current));
+      .Select(ctx => (GetLayerPath(ctx), ctx.Current))
+      .ToArray();
 
     var convertedIds = BakeObjects(objectsToConvert, baseLayerName, onOperationProgressed, cancellationToken);
 
@@ -55,7 +56,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
   // POC: Potentially refactor out into an IObjectBaker.
   private List<string> BakeObjects(
-    IEnumerable<(string[], Base)> objects,
+    IReadOnlyCollection<(string[], Base)> objects,
     string baseLayerName,
     Action<string, double?>? onOperationProgressed,
     CancellationToken cancellationToken
@@ -72,7 +73,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
       Layer[]? childLayers = documentLayer.GetChildren();
       if (childLayers != null)
       {
-        doc.Views.RedrawEnabled = false;
+        using var layerNoDraw = new DisableRedrawScope(doc.Views);
         foreach (var layer in childLayers)
         {
           var purgeSuccess = doc.Layers.Purge(layer.Index, true);
@@ -81,7 +82,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
             Console.WriteLine($"Failed to purge layer: {layer}");
           }
         }
-        doc.Views.RedrawEnabled = true;
       }
     }
 
@@ -91,12 +91,12 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
 
     var newObjectIds = new List<string>();
     var count = 0;
-    var listObjects = objects.ToList();
 
     // POC: We delay throwing conversion exceptions until the end of the conversion loop, then throw all within an aggregate exception if something happened.
     var conversionExceptions = new List<Exception>();
 
-    doc.Views.RedrawEnabled = false;
+    using var noDraw = new DisableRedrawScope(doc.Views);
+
     foreach ((string[] path, Base baseObj) in objects)
     {
       try
@@ -108,7 +108,7 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
           ? value
           : GetAndCreateLayerFromPath(path, baseLayerName, cache);
 
-        onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / listObjects.Count);
+        onOperationProgressed?.Invoke("Converting & creating objects", (double)++count / objects.Count);
 
         var result = _toHostConverter.Convert(baseObj);
 
@@ -124,7 +124,6 @@ public class RhinoHostObjectBuilder : IHostObjectBuilder
         conversionExceptions.Add(e);
       }
     }
-    doc.Views.RedrawEnabled = true;
 
     if (conversionExceptions.Count != 0)
     {
