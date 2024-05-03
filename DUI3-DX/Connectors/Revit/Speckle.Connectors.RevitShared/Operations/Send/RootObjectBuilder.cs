@@ -80,7 +80,6 @@ public class RootObjectBuilder
 
       countProgress++;
       onOperationProgressed?.Invoke("Converting", (double)countProgress / objects.Count);
-      Thread.Sleep(1000);
     }
 
     return _rootObject;
