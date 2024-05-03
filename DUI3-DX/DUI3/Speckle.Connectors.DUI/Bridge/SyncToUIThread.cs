@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Speckle.Connectors.Utils.Operations;
-using Speckle.Core.Logging;
 
 namespace Speckle.Connectors.DUI.Bridge;
 
