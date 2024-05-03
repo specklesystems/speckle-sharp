@@ -103,23 +103,7 @@ public class ArcGISFieldUtils : IArcGISFieldUtils
 
   public FieldType GetFieldTypeFromInt(int fieldType)
   {
-    foreach (FieldType type in Enum.GetValues(typeof(FieldType)))
-    {
-      if ((int)type == fieldType)
-      {
-        if (
-          type == FieldType.Blob
-          || type == FieldType.Raster
-          || type == FieldType.XML
-          || type == FieldType.TimestampOffset
-        )
-        {
-          return FieldType.String;
-        }
-        return type;
-      }
-    }
-    throw new GeodatabaseFieldException($"Field type '{fieldType}' is not valid");
+    return (FieldType)fieldType;
   }
 
   public List<FieldDescription> GetFieldsFromSpeckleLayer(VectorLayer target)

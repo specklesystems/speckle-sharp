@@ -63,7 +63,9 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
         hasGeometry = true;
       }
       // Raster FieldType is not properly supported through API
-      else if (field.FieldType == FieldType.Raster)
+      else if (
+        field.FieldType == FieldType.Raster || field.FieldType == FieldType.Blob || field.FieldType == FieldType.XML
+      )
       {
         attributes[name] = null;
       }
@@ -71,8 +73,6 @@ public class GisFeatureToSpeckleConverter : IRawConversion<Row, SGIS.GisFeature>
       else if (
         field.FieldType == FieldType.DateOnly
         || field.FieldType == FieldType.TimeOnly
-        || field.FieldType == FieldType.Blob
-        || field.FieldType == FieldType.XML
         || field.FieldType == FieldType.TimestampOffset
       )
       {
