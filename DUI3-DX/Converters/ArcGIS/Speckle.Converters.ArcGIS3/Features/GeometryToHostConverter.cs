@@ -33,18 +33,25 @@ public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.G
     {
       if (target.Count > 0)
       {
-        return target[0] switch
+        switch (target[0])
         {
-          SOG.Point point => _multipointConverter.RawConvert(target.Cast<SOG.Point>().ToList()),
-          SOG.Polyline polyline => _polylineConverter.RawConvert(target.Cast<SOG.Polyline>().ToList()[0]),
-          SGIS.GisPolygonGeometry3d geometry3d
-            => _polygon3dConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry3d>().ToList()),
-          SGIS.GisPolygonGeometry geometry
-            => _polygonConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry>().ToList()),
-          SGIS.GisMultipatchGeometry mesh
-            => _multipatchConverter.RawConvert(target.Cast<SGIS.GisMultipatchGeometry>().ToList()),
-          _ => throw new NotSupportedException($"No conversion found for type {target[0]}"),
-        };
+          case SOG.Point point:
+            return _multipointConverter.RawConvert(target.Cast<SOG.Point>().ToList());
+          case SOG.Polyline polyline:
+            if (target.Count > 1)
+            {
+              throw new SpeckleConversionException("Polyline conversion only supports one polyline at a time");
+            }
+            return _polylineConverter.RawConvert(target.Cast<SOG.Polyline>().ToList()[0]);
+          case SGIS.GisPolygonGeometry3d geometry3d:
+            return _polygon3dConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry3d>().ToList());
+          case SGIS.GisPolygonGeometry geometry:
+            return _polygonConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry>().ToList());
+          case SGIS.GisMultipatchGeometry mesh:
+            return _multipatchConverter.RawConvert(target.Cast<SGIS.GisMultipatchGeometry>().ToList());
+          default:
+            throw new NotSupportedException($"No conversion found for type {target[0]}");
+        }
       }
       throw new NotSupportedException($"Feature contains no geometry");
     }
