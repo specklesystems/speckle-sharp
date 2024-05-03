@@ -5,7 +5,6 @@ using Speckle.Core.Models;
 using System.Threading;
 using Autodesk.Revit.DB;
 using Speckle.Converters.RevitShared.Helpers;
-using Speckle.Connectors.Revit.HostApp;
 using System.Linq;
 
 namespace Speckle.Connectors.Revit.Operations.Send;
