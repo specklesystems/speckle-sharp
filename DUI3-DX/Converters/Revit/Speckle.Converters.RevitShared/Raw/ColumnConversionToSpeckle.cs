@@ -54,12 +54,17 @@ public class ColumnConversionToSpeckle : IRawConversion<DB.FamilyInstance, Revit
       BuiltInParameter.FAMILY_TOP_LEVEL_PARAM
     );
 
-    // POC : what to do instead of falling back to default value
     speckleColumn.topLevel = _levelConverter.RawConvert(topLevel);
-    speckleColumn.baseOffset =
-      _parameterValueExtractor.GetValueAsDoubleOrNull(target, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM) ?? 0;
-    speckleColumn.topOffset =
-      _parameterValueExtractor.GetValueAsDoubleOrNull(target, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM) ?? 0;
+    speckleColumn.baseOffset = _parameterValueExtractor.GetValueAsDouble(
+      target,
+      DB.BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM
+    );
+
+    speckleColumn.topOffset = _parameterValueExtractor.GetValueAsDouble(
+      target,
+      DB.BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM
+    );
+
     speckleColumn.facingFlipped = target.FacingFlipped;
     speckleColumn.handFlipped = target.HandFlipped;
     speckleColumn.isSlanted = target.IsSlantedColumn;

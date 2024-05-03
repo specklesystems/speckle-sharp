@@ -75,9 +75,12 @@ public class ParameterValueExtractor
     );
   }
 
-  public int? GetValueAsInt(Element element, BuiltInParameter builtInParameter)
+  public int GetValueAsInt(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric<int?>(element, builtInParameter, StorageType.Integer, (parameter) => parameter.AsInteger());
+    return GetValueGeneric<int?>(element, builtInParameter, StorageType.Integer, (parameter) => parameter.AsInteger())
+      ?? throw new SpeckleConversionException(
+        $"Expected int but got null for property {builtInParameter} on element of type {element.GetType()}"
+      );
   }
 
   private int? GetValueAsInt(Parameter parameter)
