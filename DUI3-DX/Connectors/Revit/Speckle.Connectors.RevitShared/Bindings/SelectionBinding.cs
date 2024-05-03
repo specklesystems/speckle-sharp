@@ -44,16 +44,14 @@ internal class SelectionBinding : RevitBaseBinding, ISelectionBinding
     // POC: this was also being called on shutdown
     // probably the bridge needs to be able to know if the plugin has been terminated
     // also on termination the OnSelectionChanged event needs unwinding
-    List<Element> els = _revitContext.UIApplication.ActiveUIDocument.Selection
+    var selectionIds = _revitContext.UIApplication.ActiveUIDocument.Selection
       .GetElementIds()
-      .Select(id => _revitContext.UIApplication.ActiveUIDocument.Document.GetElement(id))
+      .Select(id => id.ToString())
       .ToList();
-    List<string> cats = els.Select(el => el.Category?.Name ?? el.Name).Distinct().ToList();
-    List<string> ids = els.Select(el => el.UniqueId.ToString()).ToList();
     return new SelectionInfo()
     {
-      SelectedObjectIds = ids,
-      Summary = $"{els.Count} objects ({string.Join(", ", cats)})"
+      SelectedObjectIds = selectionIds,
+      Summary = $"{selectionIds.Count} objects selected."
     };
   }
 }

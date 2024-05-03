@@ -44,7 +44,16 @@ public class RootObjectBuilder
     CancellationToken ct = default
   )
   {
-    List<Element> objects = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
+    var objects = new List<Element>(); // = _contextStack.Current.Document.Document.GetElements(sendSelection.SelectedItems).ToList();
+
+    foreach (var id in sendSelection.SelectedItems)
+    {
+      var el = _contextStack.Current.Document.Document.GetElement(ElementId.Parse(id));
+      if (el != null)
+      {
+        objects.Add(el);
+      }
+    }
 
     if (objects.Count == 0)
     {

@@ -106,11 +106,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
 
-    // POC: GetElementsFromDocument could be interfaced out, extension is cleaner
-    List<ElementId> elementIds = doc.GetElements(objectsIds).Select(e => e.Id).ToList();
-
+    var elementIds = model.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
     if (elementIds.Count == 0)
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
