@@ -5,7 +5,6 @@ using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;
@@ -16,6 +15,7 @@ using Speckle.Connectors.Revit.Operations.Send;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.DUI.Bindings;
 using Speckle.Autofac.DependencyInjection;
+using Speckle.Connectors.DUI.Models;
 
 namespace Speckle.Connectors.Revit.Bindings;
 
@@ -33,7 +33,7 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
   public SendBinding(
     IRevitIdleManager idleManager,
     RevitContext revitContext,
-    RevitDocumentStore store,
+    DocumentModelStore store,
     IBridge bridge,
     IUnitOfWorkFactory unitOfWorkFactory
   )
