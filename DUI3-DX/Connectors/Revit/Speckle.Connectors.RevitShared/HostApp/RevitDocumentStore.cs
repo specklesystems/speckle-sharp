@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Events;
 using Revit.Async;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
+using Speckle.Connectors.Revit.Plugin;
 using Speckle.Connectors.Utils.Operations;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
@@ -21,70 +25,80 @@ internal class RevitDocumentStore : DocumentModelStore
   private static readonly Guid s_revitDocumentStoreId = new("D35B3695-EDC9-4E15-B62A-D3FC2CB83FA3");
 
   private readonly RevitContext _revitContext;
-  private readonly ISyncToMainThread _syncToMainThread;
   private readonly DocumentModelStorageSchema _documentModelStorageSchema;
   private readonly IdStorageSchema _idStorageSchema;
+  private readonly IRevitIdleManager _idleManager;
 
   public RevitDocumentStore(
     RevitContext revitContext,
     JsonSerializerSettings serializerSettings,
-    ISyncToMainThread syncToMainThread,
     DocumentModelStorageSchema documentModelStorageSchema,
+    IRevitIdleManager idleManager,
     IdStorageSchema idStorageSchema
   )
     : base(serializerSettings)
   {
     _revitContext = revitContext;
-    _syncToMainThread = syncToMainThread;
     _documentModelStorageSchema = documentModelStorageSchema;
     _idStorageSchema = idStorageSchema;
+    _idleManager = idleManager;
 
     UIApplication uiApplication = _revitContext.UIApplication;
+    // uiApplication.ApplicationClosing += (_, _) => WriteToFile(); // POC: Not sure why we would need it since we have save and clos events
+    uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
+    uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
+    uiApplication.Application.DocumentClosing += (_, _) => WriteToFile();
+    // uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile(); // POC: Not sure why we have it
 
-    uiApplication.ApplicationClosing += (_, _) => WriteToFile();
-
-    //uiApplication.Application.DocumentSaving += (_, _) => WriteToFile();
-    //uiApplication.Application.DocumentSavingAs += (_, _) => WriteToFile();
-    //uiApplication.Application.DocumentClosing += (_, _) => WriteToFile();
-    //uiApplication.Application.DocumentSynchronizingWithCentral += (_, _) => WriteToFile();
-
-    // This is the place where we track document switch for old document -> Responsible to Write into old
-    uiApplication.ViewActivating += (_, e) =>
-    {
-      if (e.Document == null)
-      {
-        return;
-      }
-
-      if (e.NewActiveView.Document.Equals(e.CurrentActiveView.Document))
-      {
-        return;
-      }
-
-      WriteToFile();
-    };
-
-    // This is the place where we track document switch for new document -> Responsible to Read from new doc
-    uiApplication.ViewActivated += (_, e) =>
-    {
-      if (e.Document == null)
-      {
-        return;
-      }
-
-      // Return only if we are switching views that belongs to same document
-      if (e.PreviousActiveView is not null && e.PreviousActiveView.Document.Equals(e.CurrentActiveView.Document))
-      {
-        return;
-      }
-
-      IsDocumentInit = true;
-      ReadFromFile();
-      OnDocumentChanged();
-    };
+    uiApplication.ViewActivating += OnViewActivating;
+    uiApplication.ViewActivated += OnViewActivated;
 
     uiApplication.Application.DocumentOpening += (_, _) => IsDocumentInit = false;
-    //uiApplication.Application.DocumentOpened += (_, _) => IsDocumentInit = false;
+    uiApplication.Application.DocumentOpened += (_, _) => RunDocInitOperations();
+  }
+
+  private void RunDocInitOperations()
+  {
+    IsDocumentInit = true;
+    ReadFromFile();
+    _idleManager.SubscribeToIdle(OnDocumentChanged);
+  }
+
+  /// <summary>
+  /// This is the place where we track document switch for old document -> Responsible to Write into old
+  /// </summary>
+  private void OnViewActivating(object sender, ViewActivatingEventArgs e)
+  {
+    if (e.Document == null)
+    {
+      return;
+    }
+
+    if (e.NewActiveView.Document.Equals(e.CurrentActiveView.Document))
+    {
+      return;
+    }
+
+    WriteToFile();
+  }
+
+  /// <summary>
+  /// This is the place where we track document switch for new document -> Responsible to Read from new doc
+  /// </summary>
+  private void OnViewActivated(object sender, ViewActivatedEventArgs e)
+  {
+    if (e.Document == null)
+    {
+      return;
+    }
+
+    // Return only if we are switching views that belongs to same document
+    if (e.PreviousActiveView is not null && e.PreviousActiveView.Document.Equals(e.CurrentActiveView.Document))
+    {
+      return;
+    }
+
+    RunDocInitOperations();
   }
 
   public override void WriteToFile()
@@ -102,7 +116,7 @@ internal class RevitDocumentStore : DocumentModelStore
     string serializedModels = Serialize();
 
     // POC: previously we were calling below code
-    RevitTask
+    var a = RevitTask
       .RunAsync(() =>
       {
         using Transaction t = new(doc.Document, "Speckle Write State");
@@ -125,6 +139,35 @@ internal class RevitDocumentStore : DocumentModelStore
 
   public override void ReadFromFile()
   {
+    UIDocument doc = _revitContext.UIApplication.ActiveUIDocument;
+
+    // POC: this can happen?
+    if (doc == null)
+    {
+      return;
+    }
+
+    RevitTask
+      .RunAsync(() =>
+      {
+        using Transaction t = new(doc.Document, "Speckle Read State");
+        t.Start();
+        using Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication.ActiveUIDocument.Document);
+        if (stateEntity == null || !stateEntity.IsValid())
+        {
+          Models = new List<ModelCard>();
+          return;
+        }
+
+        string modelsString = stateEntity.Get<string>("contents");
+        Models = Deserialize(modelsString);
+        t.Commit();
+      })
+      .ConfigureAwait(false);
+  }
+
+  public void ReadFromFile2()
+  {
     try
     {
       Entity stateEntity = GetSpeckleEntity(_revitContext.UIApplication.ActiveUIDocument.Document);
@@ -142,11 +185,14 @@ internal class RevitDocumentStore : DocumentModelStore
     {
       Models = new List<ModelCard>();
     }
+    catch (Exception ex) when (!ex.IsFatal())
+    {
+      Debug.WriteLine(ex.Message); // POC: !!??
+    }
   }
 
   private DataStorage? GetSettingsDataStorage(Document doc)
   {
-    // POC: re-instate
     using FilteredElementCollector collector = new(doc);
     FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
 
@@ -173,7 +219,6 @@ internal class RevitDocumentStore : DocumentModelStore
 
   private Entity? GetSpeckleEntity(Document doc)
   {
-    // POC: re-instate
     using FilteredElementCollector collector = new(doc);
 
     FilteredElementCollector dataStorages = collector.OfClass(typeof(DataStorage));
