@@ -30,6 +30,7 @@ public class RootObjectBuilder
     _convertedObjectsCache = convertedObjectsCache;
     _contextStack = contextStack;
 
+    // Note, this class is instantiated per unit of work (aka per send operation), so we can safely initialize what we need in here.
     _collectionCache = new Dictionary<string, Collection>();
     _rootObject = new Collection()
     {
@@ -51,12 +52,6 @@ public class RootObjectBuilder
     }
 
     var doc = _contextStack.Current.Document.Document; // POC: Document.Document is funny
-    // var rootObject = new Collection() { name = doc.PathName.Split('\\').Last().Split('.').First() };
-
-    // memoize-er for the GetAndCreateObjectHostCollection calls below
-    // POC: if the lifetime of this builder is on a per-operation basis, we don't need this declaration here and we can
-    // tidy things up. In the interest of time, skipping this check.
-    var collectionCache = new Dictionary<string, Collection>();
     var countProgress = 0; // because for(int i = 0; ...) loops are so last year
 
     foreach (Element revitElement in objects)
@@ -96,8 +91,6 @@ public class RootObjectBuilder
   /// For example, you can use this to use (or re-use) a new collection for a path of (level, category) as it's currently implemented.
   /// </summary>
   /// <param name="path"></param>
-  /// <param name="cache"></param>
-  /// <param name="root"></param>
   /// <returns></returns>
   private Collection GetAndCreateObjectHostCollection(string[] path)
   {
