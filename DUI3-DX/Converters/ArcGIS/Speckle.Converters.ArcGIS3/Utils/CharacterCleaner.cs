@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
-public class OtherUtils : IOtherUtils
+public class CharacterCleaner : ICharacterCleaner
 {
   public string CleanCharacters(string key)
   {

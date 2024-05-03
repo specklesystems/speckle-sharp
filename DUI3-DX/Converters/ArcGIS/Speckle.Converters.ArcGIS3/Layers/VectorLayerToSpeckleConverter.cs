@@ -14,13 +14,13 @@ public class VectorLayerToSpeckleConverter : IHostObjectToSpeckleConversion, IRa
 {
   private readonly IRawConversion<Row, GisFeature> _gisFeatureConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
-  private readonly IFieldsUtils _fieldsUtils;
+  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IConversionContextStack<Map, Unit> _contextStack;
 
   public VectorLayerToSpeckleConverter(
     IRawConversion<Row, GisFeature> gisFeatureConverter,
     IFeatureClassUtils featureClassUtils,
-    IFieldsUtils fieldsUtils,
+    IArcGISFieldUtils fieldsUtils,
     IConversionContextStack<Map, Unit> contextStack
   )
   {

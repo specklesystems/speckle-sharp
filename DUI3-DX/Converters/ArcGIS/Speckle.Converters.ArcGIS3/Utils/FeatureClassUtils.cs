@@ -9,9 +9,9 @@ namespace Speckle.Converters.ArcGIS3.Utils;
 
 public class FeatureClassUtils : IFeatureClassUtils
 {
-  private readonly IFieldsUtils _fieldsUtils;
+  private readonly IArcGISFieldUtils _fieldsUtils;
 
-  public FeatureClassUtils(IFieldsUtils fieldsUtils)
+  public FeatureClassUtils(IArcGISFieldUtils fieldsUtils)
   {
     _fieldsUtils = fieldsUtils;
   }

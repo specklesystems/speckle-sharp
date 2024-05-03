@@ -14,13 +14,13 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
 {
   private readonly IRawConversion<IReadOnlyList<Base>, ACG.Geometry> _gisGeometryConverter;
   private readonly IFeatureClassUtils _featureClassUtils;
-  private readonly IFieldsUtils _fieldsUtils;
+  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public FeatureClassToHostConverter(
     IRawConversion<IReadOnlyList<Base>, ACG.Geometry> gisGeometryConverter,
     IFeatureClassUtils featureClassUtils,
-    IFieldsUtils fieldsUtils,
+    IArcGISFieldUtils fieldsUtils,
     IArcGISProjectUtils arcGISProjectUtils
   )
   {

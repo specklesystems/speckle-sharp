@@ -11,13 +11,13 @@ namespace Speckle.Converters.ArcGIS3.Layers;
 public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
 {
   private readonly IFeatureClassUtils _featureClassUtils;
-  private readonly IFieldsUtils _fieldsUtils;
+  private readonly IArcGISFieldUtils _fieldsUtils;
   private readonly IArcGISProjectUtils _arcGISProjectUtils;
 
   public TableLayerToHostConverter(
     IFeatureClassUtils featureClassUtils,
     IArcGISProjectUtils arcGISProjectUtils,
-    IFieldsUtils fieldsUtils
+    IArcGISFieldUtils fieldsUtils
   )
   {
     _featureClassUtils = featureClassUtils;

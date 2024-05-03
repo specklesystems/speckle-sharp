@@ -4,7 +4,7 @@ using FieldDescription = ArcGIS.Core.Data.DDL.FieldDescription;
 
 namespace Speckle.Converters.ArcGIS3.Utils;
 
-public interface IFieldsUtils
+public interface IArcGISFieldUtils
 {
   public RowBuffer AssignFieldValuesToRow(RowBuffer rowBuffer, List<FieldDescription> fields, GisFeature feat);
   public object? FieldValueToNativeType(FieldType fieldType, object? value);
