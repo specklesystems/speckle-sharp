@@ -15,8 +15,6 @@ public class AutofacAutocadConverterModule : Module
   {
     // POC: below comment maybe incorrect (sorry if I wrote that!) stateless services
     // can be injected as Singleton(), only where we have state we wish to wrap in a unit of work
-    // should be InstancePerLifetimeScope
-    // most things should be InstancePerLifetimeScope so we get one per operation
     builder.RegisterType<AutocadConverterToSpeckle>().As<ISpeckleConverterToSpeckle>().InstancePerLifetimeScope();
     builder.RegisterType<ToHostConverterWithFallback>().As<ISpeckleConverterToHost>().InstancePerLifetimeScope();
 
