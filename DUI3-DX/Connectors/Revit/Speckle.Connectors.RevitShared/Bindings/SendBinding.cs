@@ -5,7 +5,6 @@ using Autodesk.Revit.DB;
 using Speckle.Connectors.DUI.Models.Card.SendFilter;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Connectors.DUI.Bridge;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Revit.Plugin;
 using Speckle.Core.Logging;
 using Speckle.Connectors.Utils;

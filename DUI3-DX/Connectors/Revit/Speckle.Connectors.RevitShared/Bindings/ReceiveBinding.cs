@@ -1,7 +1,6 @@
 using System;
 using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Connectors.Utils.Cancellation;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
