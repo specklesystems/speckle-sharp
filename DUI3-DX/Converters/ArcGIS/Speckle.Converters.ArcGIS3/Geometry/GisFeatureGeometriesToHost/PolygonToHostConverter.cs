@@ -27,8 +27,8 @@ public class PolygonToHostConverter : IRawConversion<List<SGIS.GisPolygonGeometr
       foreach (SOG.Polyline loop in poly.voids)
       {
         // adding inner loops: https://github.com/esri/arcgis-pro-sdk/wiki/ProSnippets-Geometry#build-a-donut-polygon
-        ACG.Polyline loop_native = _polylineConverter.RawConvert(loop);
-        polyOuterRing.AddPart(loop_native.Copy3DCoordinatesToList());
+        ACG.Polyline loopNative = _polylineConverter.RawConvert(loop);
+        polyOuterRing.AddPart(loopNative.Copy3DCoordinatesToList());
       }
       ACG.Polygon polygon = polyOuterRing.ToGeometry();
       polyList.Add(polygon);

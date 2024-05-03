@@ -23,6 +23,7 @@ public class Polygon3dToHostConverter : IRawConversion<List<SGIS.GisPolygonGeome
     {
       throw new SpeckleConversionException("Feature contains no geometries");
     }
+
     ACG.MultipatchBuilderEx multipatchPart = new();
     foreach (SGIS.GisPolygonGeometry3d part in target)
     {

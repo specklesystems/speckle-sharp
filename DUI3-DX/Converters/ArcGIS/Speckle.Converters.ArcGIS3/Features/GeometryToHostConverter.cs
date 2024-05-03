@@ -29,44 +29,21 @@ public class GeometryToHostConverter : IRawConversion<IReadOnlyList<Base>, ACG.G
 
   public ACG.Geometry RawConvert(IReadOnlyList<Base> target)
   {
-    List<SOG.Point> pointList = new();
-    List<SOG.Polyline> polylineList = new();
-    List<SGIS.GisPolygonGeometry3d> polygon3dList = new();
-    List<SGIS.GisPolygonGeometry> polygonList = new();
-    List<SGIS.GisMultipatchGeometry> multipatchList = new();
-    foreach (var item in target)
-    {
-      switch (item)
-      {
-        case SOG.Point pt:
-          pointList.Add(pt);
-          continue;
-        case SOG.Polyline polyline:
-          polylineList.Add(polyline);
-          continue;
-        case SGIS.GisPolygonGeometry3d polygon3d:
-          polygon3dList.Add(polygon3d);
-          continue;
-        case SGIS.GisPolygonGeometry polygon:
-          polygonList.Add(polygon);
-          continue;
-        case SGIS.GisMultipatchGeometry multipatch:
-          multipatchList.Add(multipatch);
-          continue;
-      }
-    }
     try
     {
       if (target.Count > 0)
       {
         return target[0] switch
         {
-          SOG.Point point => _multipointConverter.RawConvert(pointList),
-          SOG.Polyline polyline => _polylineConverter.RawConvert(polylineList[0]),
-          SGIS.GisPolygonGeometry3d geometry3d => _polygon3dConverter.RawConvert(polygon3dList),
-          SGIS.GisPolygonGeometry geometry => _polygonConverter.RawConvert(polygonList),
-          SGIS.GisMultipatchGeometry mesh => _multipatchConverter.RawConvert(multipatchList),
-          _ => throw new NotSupportedException($"No conversion found"),
+          SOG.Point point => _multipointConverter.RawConvert(target.Cast<SOG.Point>().ToList()),
+          SOG.Polyline polyline => _polylineConverter.RawConvert(target.Cast<SOG.Polyline>().ToList()[0]),
+          SGIS.GisPolygonGeometry3d geometry3d
+            => _polygon3dConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry3d>().ToList()),
+          SGIS.GisPolygonGeometry geometry
+            => _polygonConverter.RawConvert(target.Cast<SGIS.GisPolygonGeometry>().ToList()),
+          SGIS.GisMultipatchGeometry mesh
+            => _multipatchConverter.RawConvert(target.Cast<SGIS.GisMultipatchGeometry>().ToList()),
+          _ => throw new NotSupportedException($"No conversion found for type {target[0]}"),
         };
       }
       throw new NotSupportedException($"Feature contains no geometry");

@@ -59,6 +59,7 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
     }
     catch (ArgumentException)
     {
+      // POC: review the exception
       // if name has invalid characters/combinations
       throw;
     }
@@ -81,10 +82,10 @@ public class TableLayerToHostConverter : IRawConversion<VectorLayer, Table>
 
       return newFeatureClass;
     }
-    catch (GeodatabaseException exObj)
+    catch (GeodatabaseException)
     {
       // POC: review the exception
-      throw new InvalidOperationException($"Something went wrong: {exObj.Message}");
+      throw;
     }
   }
 }

@@ -74,10 +74,11 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
       FeatureClassDescription featureClassDescription = new(featureClassName, fields, shpDescription);
       FeatureClassToken featureClassToken = schemaBuilder.Create(featureClassDescription);
     }
-    catch (ArgumentException ex)
+    catch (ArgumentException)
     {
+      // POC: review the exception
       // if name has invalid characters/combinations
-      throw new ArgumentException($"{ex.Message}: {featureClassName}", ex);
+      throw;
     }
     bool buildStatus = schemaBuilder.Build();
     if (!buildStatus)
@@ -98,10 +99,10 @@ public class FeatureClassToHostConverter : IRawConversion<VectorLayer, FeatureCl
 
       return newFeatureClass;
     }
-    catch (GeodatabaseException exObj)
+    catch (GeodatabaseException)
     {
       // POC: review the exception
-      throw exObj;
+      throw;
     }
   }
 }
