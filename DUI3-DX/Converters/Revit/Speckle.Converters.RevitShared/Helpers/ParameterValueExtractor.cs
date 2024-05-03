@@ -8,6 +8,7 @@ namespace Speckle.Converters.RevitShared.Helpers;
 // POC: needs reviewing, it may be fine, not sure how open/closed it is
 // really if we have to edit a switch statement...
 // maybe also better as an extension method, but maybe is fine?
+// POC: there are a lot of public methods here. Maybe consider consolodating
 public class ParameterValueExtractor
 {
   private readonly ScalingServiceToSpeckle _scalingService;
@@ -37,14 +38,32 @@ public class ParameterValueExtractor
     };
   }
 
-  public double? GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
+  public double GetValueAsDouble(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric<double?>(
+    if (!TryGetValueAsDouble(element, builtInParameter, out double? value))
+    {
+      throw new SpeckleConversionException($"Failed to get {builtInParameter} as double.");
+    }
+
+    return value!.Value; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
+  }
+
+  public bool TryGetValueAsDouble(Element element, BuiltInParameter builtInParameter, out double? value)
+  {
+    var number = GetValueGeneric<double?>(
       element,
       builtInParameter,
       StorageType.Double,
       (parameter) => _scalingService.Scale(parameter.AsDouble(), parameter.GetUnitTypeId())
     );
+    if (number.HasValue)
+    {
+      value = number.Value;
+      return true;
+    }
+
+    value = default;
+    return false;
   }
 
   private double? GetValueAsDouble(Parameter parameter)
@@ -56,9 +75,12 @@ public class ParameterValueExtractor
     );
   }
 
-  public int? GetValueAsInt(Element element, BuiltInParameter builtInParameter)
+  public int GetValueAsInt(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric<int?>(element, builtInParameter, StorageType.Integer, (parameter) => parameter.AsInteger());
+    return GetValueGeneric<int?>(element, builtInParameter, StorageType.Integer, (parameter) => parameter.AsInteger())
+      ?? throw new SpeckleConversionException(
+        $"Expected int but got null for property {builtInParameter} on element of type {element.GetType()}"
+      );
   }
 
   private int? GetValueAsInt(Parameter parameter)
@@ -98,15 +120,29 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
   }
 
-  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
-    where T : class
+  public bool TryGetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter, out T? value)
   {
     ElementId? elementId = GetValueAsElementId(element, builtInParameter);
     Element paramElement = element.Document.GetElement(elementId);
-    return paramElement as T
-      ?? throw new SpeckleConversionException(
-        $"Unable to cast retrieved element of type {paramElement.GetType()} to an element of type {typeof(T)}"
-      );
+    if (paramElement is T typedElement)
+    {
+      value = typedElement;
+      return true;
+    }
+
+    value = default;
+    return false;
+  }
+
+  public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
+    where T : class
+  {
+    if (!TryGetValueAsDocumentObject<T>(element, builtInParameter, out var value))
+    {
+      throw new SpeckleConversionException($"Failed to get {builtInParameter} as an element of type {typeof(T)}");
+    }
+
+    return value!; // If TryGet returns true, we succeeded in obtaining the value, and it will not be null.
   }
 
   private TResult? GetValueGeneric<TResult>(

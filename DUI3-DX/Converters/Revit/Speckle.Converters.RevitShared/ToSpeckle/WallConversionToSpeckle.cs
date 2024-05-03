@@ -81,11 +81,24 @@ public class WallConversionToSpeckle : BaseConversionToSpeckle<DB.Wall, SOBR.Rev
     speckleWall.topLevel = _levelConverter.RawConvert(topLevel);
 
     // POC : what to do if these parameters are unset (instead of assigning default)
-    speckleWall.height =
-      _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_USER_HEIGHT_PARAM) ?? 0;
-    speckleWall.baseOffset =
-      _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_BASE_OFFSET) ?? 0;
-    speckleWall.topOffset = _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.WALL_TOP_OFFSET) ?? 0;
+    _ = _parameterValueExtractor.TryGetValueAsDouble(
+      target,
+      DB.BuiltInParameter.WALL_USER_HEIGHT_PARAM,
+      out double? height
+    );
+    speckleWall.height = height ?? 0;
+    _ = _parameterValueExtractor.TryGetValueAsDouble(
+      target,
+      DB.BuiltInParameter.WALL_BASE_OFFSET,
+      out double? baseOffset
+    );
+    speckleWall.baseOffset = baseOffset ?? 0;
+    _ = _parameterValueExtractor.TryGetValueAsDouble(
+      target,
+      DB.BuiltInParameter.WALL_TOP_OFFSET,
+      out double? topOffset
+    );
+    speckleWall.topOffset = topOffset ?? 0;
     speckleWall.structural =
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT) ?? false;
     speckleWall.flipped = target.Flipped;

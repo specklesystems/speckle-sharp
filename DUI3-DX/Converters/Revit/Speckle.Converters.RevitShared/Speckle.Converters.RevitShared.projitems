@@ -46,6 +46,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LevelConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\LocationConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\MaterialConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrArrayToSpeckleConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\ModelCurveArrayToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ParameterConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConversionSettings.cs" />
@@ -53,6 +55,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CeilingConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FootPrintRoofToSpeckleTopLevelConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\ExtrusionRoofToSpeckleTopLevelConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoofBaseToSpeckleTopLevelConversion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\TopographyConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\RoomConversionToSpeckle.cs" />
