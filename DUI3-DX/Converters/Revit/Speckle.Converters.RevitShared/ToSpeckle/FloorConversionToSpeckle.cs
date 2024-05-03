@@ -1,7 +1,4 @@
-using Autodesk.Revit.DB;
 using Objects;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
 using Speckle.Converters.Common.Objects;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Converters.RevitShared.ToSpeckle;
@@ -25,8 +22,8 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
   private readonly SlopeArrowExtractor _slopeArrowExtractor;
 
   public FloorConversionToSpeckle(
-    IRawConversion<CurveArrArray, List<Polycurve>> curveArrArrayConverter,
-    IRawConversion<Level, RevitLevel> levelConverter,
+    IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
+    IRawConversion<DB.Level, SOBR.RevitLevel> levelConverter,
     ParameterValueExtractor parameterValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
     DisplayValueExtractor displayValueExtractor,
@@ -41,16 +38,17 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     _slopeArrowExtractor = slopeArrowExtractor;
   }
 
-  public override RevitFloor RawConvert(Floor target)
+  public override SOBR.RevitFloor RawConvert(DB.Floor target)
   {
-    RevitFloor speckleFloor = new();
+    SOBR.RevitFloor speckleFloor = new();
 
-    var sketch = (Sketch)target.Document.GetElement(target.SketchId);
+    var sketch = (DB.Sketch)target.Document.GetElement(target.SketchId);
     List<SOG.Polycurve> profiles = _curveArrArrayConverter.RawConvert(sketch.Profile);
 
-    var type = target.Document.GetElement(target.GetTypeId()) as ElementType;
-    speckleFloor.family = type?.FamilyName;
-    speckleFloor.type = type?.Name;
+    DB.ElementType type = (DB.ElementType)target.Document.GetElement(target.GetTypeId());
+
+    speckleFloor.family = type.FamilyName;
+    speckleFloor.type = type.Name;
 
     // POC: Re-evaluate Wall sketch curve extraction, assumption of only one outline is wrong. https://spockle.atlassian.net/browse/CNX-9396
     if (profiles.Count > 0)
@@ -66,10 +64,10 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     var level = _parameterValueExtractor.GetValueAsDocumentObject<DB.Level>(target, DB.BuiltInParameter.LEVEL_PARAM);
     speckleFloor.level = _levelConverter.RawConvert(level);
     speckleFloor.structural =
-      _parameterValueExtractor.GetValueAsBool(target, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
+      _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 
     // Divide by 100 to convert from percentage to unitless ratio (rise over run)
-    var slopeParam = _parameterValueExtractor.GetValueAsDouble(target, BuiltInParameter.ROOF_SLOPE) / 100;
+    var slopeParam = _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE) / 100;
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleFloor);
     TryAssignSlopeFromSlopeArrow(target, speckleFloor, slopeParam);
@@ -81,7 +79,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     return speckleFloor;
   }
 
-  private void TryAssignSlopeFromSlopeArrow(Floor target, RevitFloor speckleFloor, double? slopeParam)
+  private void TryAssignSlopeFromSlopeArrow(DB.Floor target, SOBR.RevitFloor speckleFloor, double? slopeParam)
   {
     if (_slopeArrowExtractor.GetSlopeArrow(target) is not DB.ModelLine slopeArrow)
     {
