@@ -25,7 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BoundarySegmentConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\BraceToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\ColumnConversionToSpeckle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Raw\CurveArrArrayToSpecklePolycurveConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CurveArrArrayToSpecklePolycurveConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\ArcToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\BoundingBoxXYZToSpeckleConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Raw\Geometry\CircleToSpeckleConverter.cs" />
@@ -50,6 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReferencePointConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitConversionSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\ScalingServiceToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\CeilingConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\DirectShapeConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FamilyInstanceConversionToSpeckle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ToSpeckle\FloorConversionToSpeckle.cs" />
