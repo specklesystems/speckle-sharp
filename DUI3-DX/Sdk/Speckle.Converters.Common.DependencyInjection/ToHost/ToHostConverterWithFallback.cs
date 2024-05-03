@@ -1,17 +1,23 @@
-﻿using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common.Objects;
+﻿using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
 namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
 // POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
+/// <summary>
+/// <inheritdoc cref="ToHostConverterWithoutFallback"/>
+/// <br/>
+/// If no suitable converter conversion is found, and the target <see cref="Base"/> object has a displayValue property
+/// a converter with strong name of <see cref="DisplayableObject"/> is resolved for.
+/// </summary>
+/// <seealso cref="ToHostConverterWithoutFallback"/>
 public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
 {
-  private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
+  private readonly IConverterResolver<ISpeckleObjectToHostConversion> _toHost;
   private readonly ToHostConverterWithoutFallback _baseConverter;
 
-  public ToHostConverterWithFallback(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public ToHostConverterWithFallback(IConverterResolver<ISpeckleObjectToHostConversion> toHost)
   {
     _toHost = toHost;
     _baseConverter = new ToHostConverterWithoutFallback(toHost);
@@ -57,7 +63,7 @@ public sealed class ToHostConverterWithFallback : ISpeckleConverterToHost
     // Create a temp Displayable object that handles the displayValue.
     var tempDisplayableObject = new DisplayableObject(displayValue);
 
-    var displayableObjectConverter = _toHost.ResolveInstance(nameof(DisplayableObject));
+    var displayableObjectConverter = _toHost.GetConversionForType(typeof(DisplayableObject));
 
     // It is not guaranteed that a fallback converter has been registered in all connectors
     if (displayableObjectConverter == null)

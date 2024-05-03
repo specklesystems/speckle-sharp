@@ -1,7 +1,6 @@
 using Speckle.Converters.Common;
 using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
-using Speckle.Autofac.DependencyInjection;
 using Speckle.Converters.RevitShared.Helpers;
 
 namespace Speckle.Converters.RevitShared;
@@ -9,12 +8,12 @@ namespace Speckle.Converters.RevitShared;
 // POC: maybe possible to restrict the access so this cannot be created directly?
 public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
 {
-  private readonly IFactory<string, IHostObjectToSpeckleConversion> _toSpeckle;
+  private readonly IConverterResolver<IHostObjectToSpeckleConversion> _toSpeckle;
   private readonly ToSpeckleConvertedObjectsCache _convertedObjectsCache;
   private readonly ParameterValueExtractor _parameterValueExtractor;
 
   public RevitConverterToSpeckle(
-    IFactory<string, IHostObjectToSpeckleConversion> toSpeckle,
+    IConverterResolver<IHostObjectToSpeckleConversion> toSpeckle,
     ToSpeckleConvertedObjectsCache convertedObjectsCache,
     ParameterValueExtractor parameterValueExtractor
   )
@@ -28,7 +27,7 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
   // if it cannot be converted then we should throw
   public Base Convert(object target)
   {
-    var objectConverter = GetConversionForObject(target.GetType());
+    var objectConverter = _toSpeckle.GetConversionForType(target.GetType());
 
     if (objectConverter == null)
     {
@@ -51,22 +50,5 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
     }
 
     return result;
-  }
-
-  // POC: consider making this a more accessible as a pattern to other connectors
-  // https://spockle.atlassian.net/browse/CNX-9397
-  private IHostObjectToSpeckleConversion? GetConversionForObject(Type objectType)
-  {
-    if (objectType == typeof(object))
-    {
-      return null;
-    }
-
-    if (_toSpeckle.ResolveInstance(objectType.Name) is IHostObjectToSpeckleConversion conversion)
-    {
-      return conversion;
-    }
-
-    return GetConversionForObject(objectType.BaseType);
   }
 }

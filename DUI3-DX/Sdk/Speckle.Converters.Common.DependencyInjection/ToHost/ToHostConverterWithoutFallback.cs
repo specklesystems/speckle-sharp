@@ -1,17 +1,21 @@
-﻿using Speckle.Autofac.DependencyInjection;
-using Speckle.Converters.Common.Objects;
+﻿using Speckle.Converters.Common.Objects;
 using Speckle.Core.Models;
 
 namespace Speckle.Converters.Common.DependencyInjection.ToHost;
 
 // POC: CNX-9394 Find a better home for this outside `DependencyInjection` project
+/// <summary>
+/// Provides an implementation for <see cref="ISpeckleConverterToHost"/>
+/// that resolves a <see cref="ISpeckleObjectToHostConversion"/> via the injected <see cref="RecursiveConverterResolver{TConverter}"/>
+/// </summary>
+/// <seealso cref="ToHostConverterWithFallback"/>
 public sealed class ToHostConverterWithoutFallback : ISpeckleConverterToHost
 {
-  private readonly IFactory<string, ISpeckleObjectToHostConversion> _toHost;
+  private readonly IConverterResolver<ISpeckleObjectToHostConversion> _toHost;
 
-  public ToHostConverterWithoutFallback(IFactory<string, ISpeckleObjectToHostConversion> toHost)
+  public ToHostConverterWithoutFallback(IConverterResolver<ISpeckleObjectToHostConversion> converterResolver)
   {
-    _toHost = toHost;
+    _toHost = converterResolver;
   }
 
   public object Convert(Base target)
@@ -25,10 +29,8 @@ public sealed class ToHostConverterWithoutFallback : ISpeckleConverterToHost
 
   internal bool TryConvert(Base target, out object? result)
   {
-    var typeName = target.GetType().Name;
-
     // Direct conversion if a converter is found
-    var objectConverter = _toHost.ResolveInstance(typeName);
+    var objectConverter = _toHost.GetConversionForType(target.GetType());
     if (objectConverter != null)
     {
       result = objectConverter.Convert(target);
