@@ -45,7 +45,17 @@ public class RevitConverterToSpeckle : ISpeckleConverterToSpeckle
       // POC: is this the right place?
       result.applicationId = element.UniqueId;
 
-      _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      try
+      {
+        _convertedObjectsCache.AddConvertedBase(element.UniqueId, result);
+      }
+      catch (ArgumentException)
+      {
+        // POC: object converted multiple times
+        // we are doing this all the time in our current converter, and the serializer is fixing it for us.
+        // so for now, I am just silencing this exception
+        // https://spockle.atlassian.net/browse/CNX-9402
+      }
       _parameterValueExtractor.RemoveUniqueId(element.UniqueId);
     }
 

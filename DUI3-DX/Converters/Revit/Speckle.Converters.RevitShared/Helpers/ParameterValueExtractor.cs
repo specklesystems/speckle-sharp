@@ -110,9 +110,30 @@ public class ParameterValueExtractor
     return GetValueGeneric(parameter, StorageType.String, (parameter) => parameter.AsString());
   }
 
-  public ElementId? GetValueAsElementId(Element element, BuiltInParameter builtInParameter)
+  public ElementId GetValueAsElementId(Element element, BuiltInParameter builtInParameter)
   {
-    return GetValueGeneric(element, builtInParameter, StorageType.ElementId, (parameter) => parameter.AsElementId());
+    if (TryGetValueAsElementId(element, builtInParameter, out ElementId elementId))
+    {
+      return elementId;
+    }
+    throw new SpeckleConversionException(
+      $"Failed to get {builtInParameter} on element of type {element.GetType()} as ElementId"
+    );
+  }
+
+  public bool TryGetValueAsElementId(Element element, BuiltInParameter builtInParameter, out ElementId elementId)
+  {
+    if (
+      GetValueGeneric(element, builtInParameter, StorageType.ElementId, (parameter) => parameter.AsElementId())
+      is ElementId elementIdNotNull
+    )
+    {
+      elementId = elementIdNotNull;
+      return true;
+    }
+
+    elementId = null;
+    return false;
   }
 
   public ElementId? GetValueAsElementId(Parameter parameter)
@@ -122,16 +143,21 @@ public class ParameterValueExtractor
 
   public bool TryGetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter, out T? value)
   {
-    ElementId? elementId = GetValueAsElementId(element, builtInParameter);
-    Element paramElement = element.Document.GetElement(elementId);
-    if (paramElement is T typedElement)
+    if (!TryGetValueAsElementId(element, builtInParameter, out ElementId elementId))
     {
-      value = typedElement;
-      return true;
+      value = default;
+      return false;
     }
 
-    value = default;
-    return false;
+    Element paramElement = element.Document.GetElement(elementId);
+    if (paramElement is not T typedElement)
+    {
+      value = default;
+      return false;
+    }
+
+    value = typedElement;
+    return true;
   }
 
   public T GetValueAsDocumentObject<T>(Element element, BuiltInParameter builtInParameter)
