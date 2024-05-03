@@ -54,7 +54,7 @@ public class RoomConversionToSpeckle : BaseConversionToSpeckle<DBA.Room, SOBE.Ro
     var speckleRoom = new SOBE.Room(name ?? "-", number, level, basePoint)
     {
       displayValue = displayValue,
-      area = area ?? 0,
+      area = area,
       outline = outline,
       voids = voids
     };
