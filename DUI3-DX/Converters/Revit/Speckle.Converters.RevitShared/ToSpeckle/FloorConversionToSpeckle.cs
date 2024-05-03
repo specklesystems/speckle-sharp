@@ -19,7 +19,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
   private readonly ParameterValueExtractor _parameterValueExtractor;
   private readonly ParameterObjectAssigner _parameterObjectAssigner;
   private readonly DisplayValueExtractor _displayValueExtractor;
-  private readonly SlopeArrowExtractor _slopeArrowExtractor;
+  private readonly ISlopeArrowExtractor _slopeArrowExtractor;
 
   public FloorConversionToSpeckle(
     IRawConversion<DB.CurveArrArray, List<SOG.Polycurve>> curveArrArrayConverter,
@@ -27,7 +27,7 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     ParameterValueExtractor parameterValueExtractor,
     ParameterObjectAssigner parameterObjectAssigner,
     DisplayValueExtractor displayValueExtractor,
-    SlopeArrowExtractor slopeArrowExtractor
+    ISlopeArrowExtractor slopeArrowExtractor
   )
   {
     _curveArrArrayConverter = curveArrArrayConverter;
@@ -66,8 +66,12 @@ public class FloorConversionToSpeckle : BaseConversionToSpeckle<DB.Floor, SOBR.R
     speckleFloor.structural =
       _parameterValueExtractor.GetValueAsBool(target, DB.BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL) ?? false;
 
-    // Divide by 100 to convert from percentage to unitless ratio (rise over run)
-    var slopeParam = _parameterValueExtractor.GetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE) / 100;
+    double? slopeParam = null;
+    if (_parameterValueExtractor.TryGetValueAsDouble(target, DB.BuiltInParameter.ROOF_SLOPE, out var slope))
+    {
+      // Divide by 100 to convert from percentage to unitless ratio (rise over run)
+      slopeParam = slope / 100d;
+    }
 
     _parameterObjectAssigner.AssignParametersToBase(target, speckleFloor);
     TryAssignSlopeFromSlopeArrow(target, speckleFloor, slopeParam);
