@@ -147,17 +147,17 @@ internal class SendBinding : RevitBaseBinding, ICancelable, ISendBinding
 
     foreach (ElementId elementId in addedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     foreach (ElementId elementId in deletedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     foreach (ElementId elementId in modifiedElementIds)
     {
-      ChangedObjectIds.Add(elementId.IntegerValue.ToString());
+      ChangedObjectIds.Add(elementId.ToString());
     }
 
     // TODO: CHECK IF ANY OF THE ABOVE ELEMENTS NEED TO TRIGGER A FILTER REFRESH

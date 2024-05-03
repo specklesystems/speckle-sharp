@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
@@ -9,7 +8,6 @@ using Speckle.Connectors.DUI.Bridge;
 using Speckle.Connectors.DUI.Models;
 using Speckle.Connectors.DUI.Models.Card;
 using Speckle.Connectors.Revit.Plugin;
-using Speckle.Connectors.Revit.HostApp;
 using Speckle.Converters.RevitShared.Helpers;
 using Speckle.Core.Logging;
 
@@ -106,11 +104,8 @@ internal class BasicConnectorBindingRevit : IBasicConnectorBinding
     var doc = _revitContext.UIApplication.ActiveUIDocument.Document;
 
     SenderModelCard model = (SenderModelCard)_store.GetModelById(modelCardId);
-    List<string> objectsIds = model.SendFilter.GetObjectIds();
 
-    // POC: GetElementsFromDocument could be interfaced out, extension is cleaner
-    List<ElementId> elementIds = doc.GetElements(objectsIds).Select(e => e.Id).ToList();
-
+    var elementIds = model.SendFilter.GetObjectIds().Select(ElementId.Parse).ToList();
     if (elementIds.Count == 0)
     {
       Commands.SetModelError(modelCardId, new InvalidOperationException("No objects found to highlight."));
