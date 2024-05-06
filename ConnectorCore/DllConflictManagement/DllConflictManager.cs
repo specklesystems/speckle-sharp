@@ -11,18 +11,22 @@ public sealed class DllConflictManager
   private readonly DllConflictManagmentOptionsLoader _optionsLoader;
   private readonly DllConflictEventEmitter _eventEmitter;
   private readonly string[] _assemblyPathFragmentsToIgnore;
+  private readonly string[] _exactAssemblyPathsToIgnore;
+
   public ICollection<AssemblyConflictInfo> AllConflictInfo => _assemblyConflicts.Values;
   public ICollection<AssemblyConflictInfoDto> AllConflictInfoAsDtos => _assemblyConflicts.Values.ToDtos().ToList();
 
   public DllConflictManager(
     DllConflictManagmentOptionsLoader optionsLoader,
     DllConflictEventEmitter eventEmitter,
-    params string[] assemblyPathFragmentsToIgnore
+    string[]? assemblyPathFragmentsToIgnore = null,
+    string[]? exactAssemblyPathsToIgnore = null
   )
   {
     _optionsLoader = optionsLoader;
     _eventEmitter = eventEmitter;
-    _assemblyPathFragmentsToIgnore = assemblyPathFragmentsToIgnore;
+    _assemblyPathFragmentsToIgnore = assemblyPathFragmentsToIgnore ?? Array.Empty<string>();
+    _exactAssemblyPathsToIgnore = exactAssemblyPathsToIgnore ?? Array.Empty<string>();
   }
 
   /// <summary>
@@ -99,6 +103,14 @@ public sealed class DllConflictManager
 
   private bool ShouldSkipCheckingConflictBecauseOfAssemblyLocation(Assembly loadedAssembly)
   {
+    foreach (var exactPath in _exactAssemblyPathsToIgnore)
+    {
+      if (Path.GetDirectoryName(loadedAssembly.Location) == exactPath)
+      {
+        return true;
+      }
+    }
+
     foreach (var pathFragment in _assemblyPathFragmentsToIgnore)
     {
       if (loadedAssembly.Location.Contains(pathFragment))
