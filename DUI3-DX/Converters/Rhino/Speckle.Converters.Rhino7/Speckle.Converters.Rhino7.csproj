@@ -5,13 +5,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsDesktopBuild)' == false">
-    <WarningsNotAsErrors>
-      $(WarningsNotAsErrors);
-      CS8618;
-    </WarningsNotAsErrors>
-  </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="RhinoCommon" Version="7.13.21348.13001" IncludeAssets="compile;build"/>
