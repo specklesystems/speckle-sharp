@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Autodesk.Revit.UI;
@@ -78,12 +77,6 @@ internal class RevitDocumentStore : DocumentModelStore
   {
     // POC: this can happen?
     if (doc == null)
-    {
-      return;
-    }
-
-    // Don't even attempt to write anything if empty.
-    if (!Models.Any())
     {
       return;
     }
